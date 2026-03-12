@@ -6,6 +6,7 @@ import {
   ChevronLeft,
   Check,
   SearchAlert,
+  HandHeart,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -56,7 +57,7 @@ export function MultiStepOnboarding() {
   const isStep2 = currentStep === 2;
 
   return (
-    <div className="dark flex flex-col items-center justify-center h-screen p-4 md:p-8 relative text-foreground">
+    <div className="dark flex flex-col items-center justify-center h-screen p-4 pt-10 relative text-foreground">
       <Image
         src="/bg-footer.jpg"
         alt="bg-image"
@@ -68,7 +69,7 @@ export function MultiStepOnboarding() {
       <div className="absolute -top-1/3 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[500px] bg-blue-500/45 blur-[200px] rounded-full pointer-events-none opacity-50" />
 
       {/* Progress Header */}
-      <div className="flex items-center gap-3 mb-14">
+      <div className="flex items-center gap-3 absolute top-12">
         {STEPS.map((step) => (
           <React.Fragment key={step.id}>
             <div
@@ -111,8 +112,8 @@ export function MultiStepOnboarding() {
                 <div className="space-y-5 relative">
                   <div className="text-center space-y-2 mb-5">
                     <h2 className="text-2xl font-semibold tracking-tight text-white flex items-center justify-center gap-2">
-                      Where did you hear about us?
-                      <SearchAlert className="w-5 h-5 text-white/60" />
+                      Where did you hear about us
+                      <SearchAlert className="w-6 h-6 " />
                     </h2>
                     <p className="text-white/50 text-sm">
                       Select the channel that brought you here
@@ -182,15 +183,15 @@ export function MultiStepOnboarding() {
               {currentStep === 2 && (
                 <div className="space-y-5 relative">
                   <div className="text-center space-y-2 mb-5">
-                    <h2 className="text-2xl font-semibold tracking-tight text-white">
-                      What brings you to WeKraft?
+                    <h2 className="text-2xl font-semibold tracking-tight text-white ">
+                      What brings you to WeKraft <HandHeart className="w-6 h-6 inline ml-2 text-white" />
                     </h2>
                     <p className="text-white/70 text-sm">
                       Pick one or more — helps us tailor your experience
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-2 gap-3">
+                  <div className="grid grid-cols-1 gap-3">
                     {PURPOSES.map((p) => {
                       const selected = purposes.includes(p.id);
                       return (
