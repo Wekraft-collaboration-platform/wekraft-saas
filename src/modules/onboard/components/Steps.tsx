@@ -57,7 +57,7 @@ export function MultiStepOnboarding() {
   const isStep2 = currentStep === 2;
 
   return (
-    <div className="dark flex flex-col items-center justify-center h-screen p-4 pt-10 relative text-foreground">
+    <div className="dark flex flex-col items-center justify-center h-screen p-4 pt-10 relative text-foreground overflow-hidden">
       <Image
         src="/bg-footer.jpg"
         alt="bg-image"
@@ -95,7 +95,7 @@ export function MultiStepOnboarding() {
       </div>
 
       {/* BODY  */}
-      <main className="w-full max-w-2xl bg-linear-to-b from-neutral-100/40 to-transparent rounded-2xl overflow-hidden font-sans">
+      <main className="w-full h-auto max-h-[520px] max-w-2xl  bg-linear-to-b from-neutral-100/40 to-transparent rounded-2xl overflow-hidden font-sans">
         <div className="p-5">
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
