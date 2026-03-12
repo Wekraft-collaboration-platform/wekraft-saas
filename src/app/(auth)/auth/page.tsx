@@ -20,7 +20,7 @@ export default async function LoginPage() {
           <div className="space-y-14">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-[11px] font-medium text-neutral-400 tracking-wider uppercase">
               <span className="size-1.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.8)]" />
-              New Era of Management
+              New Era of Collaboration
             </div>
             {/* main text */}
             <div className="space-y-6">
@@ -32,8 +32,8 @@ export default async function LoginPage() {
               </h1>
               <p className="text-base text-neutral-400 leading-relaxed max-w-md">
                 WeKraft turns your GitHub activity into actionable insights.
-                From collaboration To deployments — everything is tracked and
-                automated.
+                From collaboration To Project Management — Build together
+                frictionless.
               </p>
             </div>
 
