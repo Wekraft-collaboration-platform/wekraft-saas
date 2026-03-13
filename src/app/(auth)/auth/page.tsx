@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { redirect } from "next/navigation";
 import Image from "next/image";
 import DesignCarousel from "@/modules/auth/components/Design";
+import { SignInButton } from "@clerk/nextjs";
 
 export default async function LoginPage() {
   return (
@@ -62,10 +63,17 @@ export default async function LoginPage() {
                   </div>
 
                   <div className="space-y-5">
-                    <Button className="w-full h-9 bg-white text-black hover:bg-neutral-200 text-sm font-medium flex items-center justify-center gap-3 transition-all rounded-lg">
-                      <Image src="/github.png" alt="Github" width={25} height={25} />
-                      Continue with GitHub
-                    </Button>
+                    <SignInButton>
+                      <Button className="w-full h-9 bg-white text-black hover:bg-neutral-200 text-sm font-medium flex items-center justify-center gap-3 transition-all rounded-lg">
+                        <Image
+                          src="/github.png"
+                          alt="Github"
+                          width={25}
+                          height={25}
+                        />
+                        Continue with GitHub
+                      </Button>
+                    </SignInButton>
                   </div>
 
                   <div className="relative">

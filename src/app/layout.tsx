@@ -5,7 +5,7 @@ import { QueryProvider } from "@/providers/QueryProvider";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 import { ConvexClientProvider } from "@/providers/ConvexClientProvider";
 import { ClerkProvider } from "@clerk/nextjs";
-import { dark, neobrutalism } from '@clerk/ui/themes'
+import { dark, neobrutalism } from "@clerk/ui/themes";
 import { Toaster } from "sonner";
 
 const geistSans = Geist({
@@ -33,26 +33,26 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <QueryProvider>
-          <ThemeProvider
-            attribute="class"
-            defaultTheme="dark"
-            enableSystem
-            disableTransitionOnChange
-          >
-            <ClerkProvider
-              appearance={{
-                theme: dark,
-              }}
+        <ClerkProvider
+          appearance={{
+            theme: dark,
+          }}
+        >
+          <QueryProvider>
+            <ThemeProvider
+              attribute="class"
+              defaultTheme="dark"
+              enableSystem
+              disableTransitionOnChange
             >
               <ConvexClientProvider>
                 <main>{children}</main>
               </ConvexClientProvider>
-            </ClerkProvider>
 
-            <Toaster position="top-right" richColors />
-          </ThemeProvider>
-        </QueryProvider>
+              <Toaster position="top-right" richColors />
+            </ThemeProvider>
+          </QueryProvider>
+        </ClerkProvider>
       </body>
     </html>
   );
