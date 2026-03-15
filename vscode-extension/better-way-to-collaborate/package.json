@@ -1,0 +1,112 @@
+{
+  "name": "better-way-to-collaborate",
+  "displayName": "WeKraft",
+  "description": "WeKraft is the intelligent layer for real-world collaboration. Connect your GitHub repos, track contributions, and manage project deadlines — all inside VS Code.",
+  "version": "0.1.0",
+  "engines": {
+    "vscode": "^1.110.0"
+  },
+  "categories": [
+    "Other",
+    "SCM Providers"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "main": "./dist/extension.js",
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "wekraft-sidebar",
+          "title": "WeKraft",
+          "icon": "resources/wekraft-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "wekraft-sidebar": [
+        {
+          "type": "webview",
+          "id": "wekraft.sidebar",
+          "name": "WeKraft"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "wekraft.connectGitHub",
+        "title": "WeKraft: Connect GitHub Account"
+      },
+      {
+        "command": "wekraft.disconnect",
+        "title": "WeKraft: Disconnect GitHub Account"
+      },
+      {
+        "command": "wekraft.refresh",
+        "title": "WeKraft: Refresh",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "wekraft.setDeadline",
+        "title": "WeKraft: Set Project Deadline",
+        "icon": "$(calendar)"
+      }
+    ],
+    "menus": {
+      "view/title": [
+        {
+          "command": "wekraft.refresh",
+          "when": "view == wekraft.sidebar",
+          "group": "navigation@1"
+        },
+        {
+          "command": "wekraft.setDeadline",
+          "when": "view == wekraft.sidebar",
+          "group": "navigation@2"
+        }
+      ]
+    },
+    "configuration": {
+      "title": "WeKraft",
+      "properties": {
+        "wekraft.projectDeadline": {
+          "type": "string",
+          "default": "",
+          "description": "ISO date string for the current project deadline (e.g. 2026-04-01)"
+        },
+        "wekraft.projectName": {
+          "type": "string",
+          "default": "",
+          "description": "Override the project name shown in WeKraft sidebar"
+        }
+      }
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "pnpm run package",
+    "compile": "pnpm run check-types && pnpm run lint && node esbuild.js",
+    "watch": "npm-run-all -p watch:*",
+    "watch:esbuild": "node esbuild.js --watch",
+    "watch:tsc": "tsc --noEmit --watch --project tsconfig.json",
+    "package": "pnpm run check-types && pnpm run lint && node esbuild.js --production",
+    "compile-tests": "tsc -p . --outDir out",
+    "watch-tests": "tsc -p . -w --outDir out",
+    "pretest": "pnpm run compile-tests && pnpm run compile && pnpm run lint",
+    "check-types": "tsc --noEmit",
+    "lint": "eslint src",
+    "test": "vscode-test"
+  },
+  "devDependencies": {
+    "@types/mocha": "^10.0.10",
+    "@types/node": "~22.19.15",
+    "@types/vscode": "^1.110.0",
+    "@vscode/test-cli": "^0.0.12",
+    "@vscode/test-electron": "^2.5.2",
+    "esbuild": "^0.27.3",
+    "eslint": "^9.39.3",
+    "npm-run-all": "^4.1.5",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.56.1"
+  }
+}
