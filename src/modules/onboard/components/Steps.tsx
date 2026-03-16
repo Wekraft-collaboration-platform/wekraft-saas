@@ -117,7 +117,10 @@ export function MultiStepOnboarding() {
       setCurrentStep((prev) => Math.min(prev + 1, STEPS.length));
     } catch (error: any) {
       console.error(error);
-      if (error.message?.includes("unauthorized") || error.message?.includes("authentication")) {
+      if (
+        error.message?.includes("unauthorized") ||
+        error.message?.includes("authentication")
+      ) {
         toast.error("Session expired. Please sign in again.");
       } else {
         toast.error("An error occurred while saving. Please try again.");
@@ -405,10 +408,10 @@ export function MultiStepOnboarding() {
                               key={status}
                               onClick={() => setProjectStatus(status)}
                               className={cn(
-                                "relative px-5 py-2 rounded-lg border text-xs transition-all duration-300 capitalize overflow-hidden group",
+                                "relative px-5 py-2 rounded-lg border text-xs transition-all duration-300 capitalize overflow-hidden group cursor-pointer",
                                 isSelected
                                   ? "bg-white/20 border-white text-white opacity-100 scale-[1.02] shadow-[0_0_20px_rgba(255,255,255,0.05)]"
-                                  : "bg-white/5 border-white/10 text-neutral-400 hover:opacity-100 hover:bg-white/10 hover:border-white/20 hover:text-white",
+                                  : "bg-white/10 border-white/10 text-neutral-300 hover:bg-white/10 hover:border-white/20 hover:text-white",
                               )}
                             >
                               <span
@@ -460,7 +463,7 @@ export function MultiStepOnboarding() {
                           </div>
                           <div className="flex flex-col">
                             <span className="text-sm font-medium">Public</span>
-                            <span className="text-[10px] opacity-70">
+                            <span className="text-[11px] ">
                               Community can see and collab
                             </span>
                           </div>
@@ -471,7 +474,7 @@ export function MultiStepOnboarding() {
                           className={cn(
                             "cursor-pointer p-2 rounded-xl border flex items-center gap-3 transition-all",
                             !isPublic
-                              ? "bg-white/10 border-white text-white"
+                              ? "bg-white/20 border-white text-white"
                               : "bg-white/5 border-white/5 text-muted-foreground hover:bg-white/10",
                           )}
                         >
@@ -485,7 +488,7 @@ export function MultiStepOnboarding() {
                           </div>
                           <div className="flex flex-col">
                             <span className="text-sm font-medium">Private</span>
-                            <span className="text-[10px] opacity-70">
+                            <span className="text-[11px] ">
                               Only Invited one can see & collab.
                             </span>
                           </div>
@@ -564,6 +567,64 @@ export function MultiStepOnboarding() {
                         </Button>
                       </div>
                     </div>
+                  </div>
+
+                  <div className="flex items-center gap-4 my-5">
+                    <div className="h-px flex-1 bg-white/30"></div>
+                    <span className="text-sm text-white capitalize whitespace-nowrap">
+                      share it via
+                    </span>
+                    <div className="h-px flex-1 bg-white/30"></div>
+                  </div>
+
+                  <div className="grid grid-cols-3 gap-4">
+                    <Button
+                      variant="outline"
+                      className="h-18 flex flex-col items-center justify-center gap-2 bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 transition-all group"
+                      onClick={() => {
+                        navigator.clipboard.writeText(`${INVITE_LINK}${generatedInviteLink}`);
+                        toast.success("Link copied for WhatsApp!");
+                      }}
+                    >
+                      <Image 
+                        src="/whatsapp.png" 
+                        alt="WhatsApp" 
+                        width={24} 
+                        height={24} 
+                        className="opacity-70 group-hover:opacity-100 transition-opacity"
+                      />
+                      <span className="text-[10px] text-white/50 group-hover:text-white transition-colors">WhatsApp</span>
+                    </Button>
+                    
+                    <Button
+                      variant="outline"
+                      className="h-18 flex flex-col items-center justify-center gap-2 bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 transition-all group"
+                      onClick={() => window.open("https://discord.com", "_blank")}
+                    >
+                      <Image 
+                        src="/discord.png" 
+                        alt="Discord" 
+                        width={24} 
+                        height={24} 
+                        className="opacity-70 group-hover:opacity-100 transition-opacity"
+                      />
+                      <span className="text-[10px] text-white/50 group-hover:text-white transition-colors">Discord</span>
+                    </Button>
+
+                    <Button
+                      variant="outline"
+                      className="h-18 flex flex-col items-center justify-center gap-2 bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 transition-all group"
+                      onClick={() => window.open("https://slack.com", "_blank")}
+                    >
+                      <Image 
+                        src="/slack.png" 
+                        alt="Slack" 
+                        width={24} 
+                        height={24} 
+                        className="opacity-70 group-hover:opacity-100 transition-opacity"
+                      />
+                      <span className="text-[10px] text-white/50 group-hover:text-white transition-colors">Slack</span>
+                    </Button>
                   </div>
                 </div>
               )}

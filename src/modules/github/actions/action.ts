@@ -144,4 +144,42 @@ export const createWebhook = async (owner: string, repo: string) => {
 
   return data;
 };
+// ===============================
+// GETTING THE USER CONTRIBUTIONS.
+// ================================
+export async function fetchUserContributions(token: string, username: string) {
+  const accessToken = token || (await getGithubAccessToken());
+  const octokit = new Octokit({
+    auth: accessToken,
+  });
 
+  const query = `
+    query($username:String!){
+        user(login:$username){
+            contributionsCollection{
+                contributionCalendar{
+                    totalContributions
+                    weeks{
+                        contributionDays{
+                            contributionCount
+                            date
+                            color
+                        }
+                    }
+                }
+            }
+        }
+    }`;
+
+  try {
+    const response: any = await octokit.graphql(query, {
+      username: username,
+    });
+
+    console.log("contribution collected successfully at action.ts");
+    return response.user.contributionsCollection.contributionCalendar;
+  } catch (error) {
+    console.error(error);
+    return null;
+  }
+}

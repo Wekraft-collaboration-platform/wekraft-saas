@@ -18,7 +18,6 @@ export const projectInit = mutation({
       throw new Error("Called projectInit without authentication present");
     }
 
-    // Security checks
     const user = await ctx.db
       .query("users")
       .withIndex("by_token", (q) =>
@@ -30,7 +29,7 @@ export const projectInit = mutation({
       throw new Error("User not found");
     }
 
-    // Check for existing project by this owner (Onboarding specific: typically 1 project)
+    // Check for existing project by this owner 
     const existingProject = await ctx.db
       .query("projects")
       .withIndex("by_owner", (q) => q.eq("ownerId", user._id))
