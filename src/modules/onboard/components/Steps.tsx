@@ -7,11 +7,18 @@ import {
   Check,
   SearchAlert,
   HandHeart,
+  FolderGit2,
+  Search,
+  Lock,
+  Globe,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { STEPS, SOURCES, PURPOSES } from "./StaticContent";
+import { PROJECT_STATUS } from "@/lib/static-store";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 const variants = {
   enter: (direction: number) => ({
@@ -38,6 +45,14 @@ export function MultiStepOnboarding() {
   const [hearAboutUs, setHearAboutUs] = useState("");
   const [purposes, setPurposes] = useState<string[]>([]);
 
+  // Step 3
+  const [projectName, setProjectName] = useState("");
+  const [isPublic, setIsPublic] = useState(true);
+  const [projectStatus, setProjectStatus] = useState("");
+  // step 4
+  const [selectedRepo, setSelectedRepo] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+
   const handleNext = () => {
     setDirection(1);
     setCurrentStep((prev) => Math.min(prev + 1, STEPS.length));
@@ -54,7 +69,7 @@ export function MultiStepOnboarding() {
     );
   };
 
-  const isStep2 = currentStep === 2;
+  const isSkip = currentStep === 2 || currentStep === 4;
 
   return (
     <div className="dark flex flex-col items-center justify-center h-screen p-4 pt-10 relative text-foreground overflow-hidden">
@@ -121,7 +136,7 @@ export function MultiStepOnboarding() {
                   </div>
 
                   <div className="grid grid-cols-4 gap-5">
-                    {SOURCES.map((source) => { 
+                    {SOURCES.map((source) => {
                       const selected = hearAboutUs === source.id;
                       return (
                         <button
@@ -184,10 +199,14 @@ export function MultiStepOnboarding() {
                 <div className="space-y-5 relative">
                   <div className="text-center space-y-2 mb-5">
                     <h2 className="text-2xl font-semibold tracking-tight text-white ">
-                      What brings you to WeKraft <HandHeart className="w-6 h-6 inline ml-2 text-white" />
+                      What brings you to WeKraft{" "}
+                      <HandHeart className="w-6 h-6 inline ml-2 text-white" />
                     </h2>
                     <p className="text-white/70 text-sm">
-                      Pick one or more — helps us tailor your experience
+                      Pick one or more — helps us tailor your experience{" "}
+                      <span className="text-white relative font-inter ">
+                        (Optional)
+                      </span>
                     </p>
                   </div>
 
@@ -255,15 +274,174 @@ export function MultiStepOnboarding() {
                                   p.border,
                                 )}
                               >
-                                <Check
-                                  className={cn("w-3 h-3 text-white")}
-                                />
+                                <Check className={cn("w-3 h-3 text-white")} />
                               </div>
                             </motion.div>
                           )}
                         </button>
                       );
                     })}
+                  </div>
+                </div>
+              )}
+
+              {/* --- STEP 3 : CREATE FIRST PROJECT */}
+              {currentStep === 3 && (
+                <div className="space-y-5 relative">
+                  <div className="text-center space-y-2 mb-5">
+                    <h2 className="text-2xl font-semibold tracking-tight text-white flex items-center justify-center gap-2">
+                      Create your first project
+                      <FolderGit2 className="w-6 h-6 " />
+                    </h2>
+                    <p className="text-white/50 text-sm">
+                      Create your first project to sync and collab{" "}
+                    </p>
+                  </div>
+
+                  <div className="space-y-4">
+                    <div className="space-y-2">
+                      <Label
+                        htmlFor="projectName"
+                        className="text-sm text-white"
+                      >
+                        Project Name
+                      </Label>
+                      <Input
+                        id="projectName"
+                        placeholder={"Acme-saas"}
+                        className="bg-white/5 border-white/10 focus:ring-1 focus:ring-white/20"
+                        value={projectName}
+                        onChange={(e) => setProjectName(e.target.value)}
+                      />
+                    </div>
+
+                    <div className="space-y-3">
+                      <Label className="text-sm text-white">
+                        Status{" "}
+                        <span className="text-xs normal-case tracking-tight font-inter text-neutral-300 ml-1">
+                          (will help the community to know about your project.)
+                        </span>
+                      </Label>
+                      <div className="grid grid-cols-3 gap-x-8 gap-y-3">
+                        {PROJECT_STATUS.map((status) => {
+                          const isSelected = projectStatus === status;
+
+                          return (
+                            <button
+                              key={status}
+                              onClick={() => setProjectStatus(status)}
+                              className={cn(
+                                "relative px-5 py-2 rounded-lg border text-xs transition-all duration-300 capitalize overflow-hidden group",
+                                isSelected 
+                                  ? "bg-white/20 border-white text-white opacity-100 scale-[1.02] shadow-[0_0_20px_rgba(255,255,255,0.05)]" 
+                                  : "bg-white/5 border-white/10 text-neutral-400 hover:opacity-100 hover:bg-white/10 hover:border-white/20 hover:text-white"
+                              )}
+                            >
+                              <span className={cn(
+                                "relative z-10 transition-colors duration-300",
+                                isSelected ? "font-medium" : "font-medium"
+                              )}>
+                                {status}
+                              </span>
+                              
+                              {isSelected && (
+                                <motion.div
+                                  layoutId="status-active-glow"
+                                  className="absolute inset-0 bg-white/5"
+                                  initial={false}
+                                  transition={{ type: "spring", bounce: 0.2, duration: 0.5 }}
+                                />
+                              )}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    </div>
+
+                    <div className="space-y-3 pt-2">
+                      <Label className="text-sm text-white">
+                        Visibility
+                      </Label>
+                      <div className="grid grid-cols-2 gap-3">
+                        <div
+                          onClick={() => setIsPublic(true)}
+                          className={cn(
+                            "cursor-pointer p-2 rounded-xl border flex items-center gap-3 transition-all",
+                            isPublic
+                              ? "bg-white/10 border-white text-white"
+                              : "bg-white/5 border-white/5 text-muted-foreground hover:bg-white/10",
+                          )}
+                        >
+                          <div
+                            className={cn(
+                              "p-2 rounded-full",
+                              isPublic ? "bg-white text-black" : "bg-white/10",
+                            )}
+                          >
+                            <Globe className="w-4 h-4" />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium">Public</span>
+                            <span className="text-[10px] opacity-70">
+                              Community can see and collab
+                            </span>
+                          </div>
+                        </div>
+
+                        <div
+                          onClick={() => setIsPublic(false)}
+                          className={cn(
+                            "cursor-pointer p-2 rounded-xl border flex items-center gap-3 transition-all",
+                            !isPublic
+                              ? "bg-white/10 border-white text-white"
+                              : "bg-white/5 border-white/5 text-muted-foreground hover:bg-white/10",
+                          )}
+                        >
+                          <div
+                            className={cn(
+                              "p-2 rounded-full",
+                              !isPublic ? "bg-white text-black" : "bg-white/10",
+                            )}
+                          >
+                            <Lock className="w-4 h-4" />
+                          </div>
+                          <div className="flex flex-col">
+                            <span className="text-sm font-medium">Private</span>
+                            <span className="text-[10px] opacity-70">
+                              Only Invited one can see & collab.
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* STE 4 :  REPO CONNECT ( OPTIONAL) --- */}
+              {currentStep === 4 && (
+                <div className="space-y-5 relative">
+                  <div className="text-center space-y-2 mb-5">
+                    <h2 className="text-2xl font-semibold tracking-tight text-white flex items-center justify-center gap-2">
+                      Connect your repository
+                      <FolderGit2 className="w-6 h-6 " />
+                    </h2>
+                    <p className="text-white/50 text-sm">
+                      Connect your github repository to sync and collab{" "}
+                      <span className="text-white relative font-inter ">
+                        (Optional)
+                      </span>
+                    </p>
+                  </div>
+
+                  <div className="relative flex items-center">
+                    <Search className="absolute left-3 top-2 w-4 h-4 text-muted-foreground" />
+                    <Input
+                      placeholder="Search repositories..."
+                      className="bg-white/5 border-white/10 pl-10 mb-4 focus:ring-1 focus:ring-white/20"
+                      value={searchQuery}
+                      onChange={(e) => setSearchQuery(e.target.value)}
+                    />
                   </div>
                 </div>
               )}
@@ -283,22 +461,20 @@ export function MultiStepOnboarding() {
             </Button>
 
             <div className="flex items-center gap-5">
-              {isStep2 && (
+              {isSkip && (
                 <Button
-                  variant="outline"
+                  variant="default"
                   onClick={handleNext}
-                  className="text-white/70 hover:text-white text-sm h-8 px-5 transition-all z-10"
+                  className=" text-sm h-8 px-5 transition-all z-10"
                 >
                   Skip <ChevronRight className="w-3.5 h-3.5 ml-1" />
                 </Button>
               )}
               <Button
                 onClick={handleNext}
-                className="bg-white/90 text-xs text-black hover:bg-white font-medium px-6 h-8 transition-all active:scale-95 z-10 cursor-pointer rounded-lg"
+                className="bg-white/90 text-sm text-black hover:bg-white font-medium px-6 h-8 transition-all active:scale-95 z-10 cursor-pointer rounded-lg"
               >
-                {isStep2 && purposes.length > 0
-                  ? `Continue (${purposes.length})`
-                  : "Continue"}
+                {isSkip && purposes.length > 0 ? `Continue` : "Continue"}
                 <ChevronRight className="w-3.5 h-3.5 ml-1" />
               </Button>
             </div>
