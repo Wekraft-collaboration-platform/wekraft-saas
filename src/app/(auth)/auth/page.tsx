@@ -122,13 +122,6 @@ export default async function LoginPage() {
                 </div>
               </div>
 
-              {/* Bottom Card Footer */}
-              <div className="text-center bg-linear-to-br from-gray-700 to-gray-950 w-fit mx-auto py-2 px-8 rounded-full -mb-10 transition-all duration-300">
-                <p className="text-xs italic cursor-pointer">
-                  Star WeKraft on GitHub{" "}
-                  <LucideGithub className="inline ml-2" size={20} />
-                </p>
-              </div>
             </div>
           </div>
         </div>
