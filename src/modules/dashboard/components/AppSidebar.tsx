@@ -99,7 +99,7 @@ export const AppSidebar = () => {
   return (
     <Sidebar collapsible="icon" className="cursor-move">
       <SidebarHeader className="border-b ">
-        <div className="flex items-center justify-between px-3 py-3">
+        <div className="flex items-center justify-center gap-3 px-3 py-3">
           <Image
             src="/logo.svg"
             alt="Logo"
@@ -107,8 +107,8 @@ export const AppSidebar = () => {
             height={30}
             className="cursor-pointer"
           />
-          <h1 className="font-bold text-xl group-data-[collapsible=icon]:hidden">
-            We<span className="italic">Kraft</span>
+          <h1 className="font-bold font-pop text-xl group-data-[collapsible=icon]:hidden">
+            WeKraft
           </h1>
 
         </div>
@@ -121,7 +121,7 @@ export const AppSidebar = () => {
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-4 my-0.5 mx-auto border px-6 py-2 bg-sidebar-accent/30 rounded-md group-data-[collapsible=icon]:hidden">
+          <div className="flex items-center gap-4 my-0.5 mx-auto border px-6 py-2 bg-accent/40 rounded-md group-data-[collapsible=icon]:hidden font-sans">
             <Avatar className="h-10 w-10">
               <AvatarImage src={user?.avatarUrl} />
               <AvatarFallback>UN</AvatarFallback>

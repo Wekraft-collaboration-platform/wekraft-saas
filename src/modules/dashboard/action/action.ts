@@ -1,10 +1,10 @@
+"use server"
 import { redis } from "@/lib/redis";
 import {
   fetchUserContributions,
   getGithubAccessToken,
 } from "@/modules/github/actions/action";
 import { auth } from "@clerk/nextjs/server";
-import { clerkClient } from "@clerk/nextjs/server";
 import { Octokit } from "octokit";
 
 interface DashboardStats {
