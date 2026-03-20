@@ -71,7 +71,8 @@ function getTier(score: number): string {
   if (score >= 180) return "PLATINUM";
   if (score >= 120) return "GOLD";
   if (score >= 70) return "SILVER";
-  return "BRONZE";
+  if (score >= 40) return "BRONZE";
+  return "NEWBIE";
 }
 
 export function calculateImpactScore(stats: GitHubStats): ImpactScoreResult {
@@ -108,7 +109,7 @@ export function calculateImpactScore(stats: GitHubStats): ImpactScoreResult {
   // Age normalization
   const ageFactor = Math.max(Math.sqrt(stats.accountAgeInYears), 0.5);
   let baseScore = weightedActivity / ageFactor / scoreDivisor;
-  const baseScoreClean = baseScore; // preserved for penalty floor recalc
+  const baseScoreClean = baseScore; 
 
   // ── Penalties ──
   const penalties: PenaltyEntry[] = [];

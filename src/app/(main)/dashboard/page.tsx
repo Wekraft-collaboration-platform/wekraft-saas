@@ -17,6 +17,7 @@ import {
   LucideGitPullRequestArrow,
   LucideLayers2,
   Merge,
+  Waypoints,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getActiveUserPlan, getPlanLimits } from "../../../../convex/pricing";
@@ -25,7 +26,10 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import ContributionGraph from "@/modules/dashboard/components/ContributionGraph";
-import { PieChartVariant1 } from "@/modules/dashboard/components/PieChart";
+import {
+  PieChartVariant1,
+  ScoreDetailsDialog,
+} from "@/modules/dashboard/components/PieChart";
 
 export default function DashboardPage() {
   const user = useConvexQuery(api.user.getCurrentUser);
@@ -227,7 +231,6 @@ export default function DashboardPage() {
           </Button>
         </div>
         <Separator className="max-w-[80%] mx-auto my-5" />
-
         <div>
           {activeTab === "stats" && (
             <div className="space-y-10">
@@ -240,7 +243,7 @@ export default function DashboardPage() {
                 )}
               >
                 {/* Left */}
-                <Card className="p-4 bg-linear-to-b from-accent/40 to-transparent dark:to-black">
+                <Card className="p-4 bg-linear-to-b from-accent/5 to-transparent dark:to-black">
                   <CardContent className="pt-6">
                     <ContributionGraph />
                   </CardContent>
@@ -249,9 +252,15 @@ export default function DashboardPage() {
                 {/* Right */}
                 <div className="w-full">
                   {dashboardStats ? (
-                    <Card className="p-2 bg-linear-to-b from-accent/40 to-transparent dark:to-black">
+                    <Card className="p-2 bg-linear-to-b from-accent/5 to-transparent dark:to-black">
                       <CardContent>
                         <PieChartVariant1 stats={dashboardStats} />
+                        <ScoreDetailsDialog stats={dashboardStats}>
+                          <p className="text-center text-[11px] mt-1.5 border py-1.5 px-4 rounded-md mx-auto w-fit text-muted-foreground hover:bg-accent cursor-pointer transition-colors">
+                            View Stats{" "}
+                            <Waypoints className="h-3 w-3 inline ml-1" />
+                          </p>
+                        </ScoreDetailsDialog>
                       </CardContent>
                     </Card>
                   ) : (
@@ -260,6 +269,25 @@ export default function DashboardPage() {
                     </div>
                   )}
                 </div>
+              </div>
+
+              {/* Notification */}
+              {/* Recent activity + changelog + limits and to upgrade */}
+              {/* New comer ->
+              1. discover community and join any project
+              2. complete your user profile
+              3. invite your teamate to your project.
+              4. make your first todo.
+              5. install extension in your ide
+               */}
+              <div className="w-full max-w-[90%] mx-auto">
+                <Card>
+                  <CardHeader className="flex justify-between px-6">
+                    <CardTitle>Recent Activity</CardTitle>
+                    <CardTitle>Usage & Limits</CardTitle>
+                  </CardHeader>
+                  <CardContent></CardContent>
+                </Card>
               </div>
             </div>
           )}

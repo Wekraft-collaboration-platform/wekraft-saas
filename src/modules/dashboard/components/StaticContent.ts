@@ -64,7 +64,7 @@ export const CONFIG = {
     commits: 1,
     prs: 3,
     mergedPrs: 2,
-    issues: 2.5,
+    issues: 2,
     reviews: 2,
   },
   commitCapPerDay: 10,
