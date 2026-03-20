@@ -5,19 +5,37 @@ import { useQuery as useConvexQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { useSidebar } from "@/components/ui/sidebar";
 import { getDashboardStats } from "@/modules/dashboard/action/action";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
-import { LucideGitCommit } from "lucide-react";
+import {
+  ChartNoAxesColumn,
+  FolderSearch,
+  Layers2,
+  LucideGem,
+  LucideGitCommit,
+  LucideGitPullRequest,
+  LucideGitPullRequestArrow,
+  LucideLayers2,
+  Merge,
+} from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getActiveUserPlan, getPlanLimits } from "../../../../convex/pricing";
+import { Progress } from "@/components/ui/progress";
+import { useState } from "react";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import ContributionGraph from "@/modules/dashboard/components/ContributionGraph";
+import { PieChartVariant1 } from "@/modules/dashboard/components/PieChart";
 
 export default function DashboardPage() {
   const user = useConvexQuery(api.user.getCurrentUser);
   const { open: sidebarOpen, isMobile } = useSidebar();
+  const [activeTab, setActiveTab] = useState("stats");
+
+  const activePlan = user ? getActiveUserPlan(user as any) : "free";
+  const limits = user ? getPlanLimits(user as any) : null;
+  const showUpgrade =
+    !!user && (activePlan === "free" || activePlan === "plus");
 
   // Query 1 : dashboardStats
   const {
@@ -37,15 +55,21 @@ export default function DashboardPage() {
     <div className="w-full h-full p-6 2xl:py-7 2xl:px-10">
       <div className="px-4 flex items-center gap-8">
         <h1 className="text-3xl font-semibold ">
-          Welcome {user?.name || <Skeleton className="h-8 w-40 inline-block align-bottom" />}
+          Welcome{" "}
+          {user?.name || (
+            <Skeleton className="h-8 w-40 inline-block align-bottom" />
+          )}
         </h1>
       </div>
 
+      {/* =========CARDS============ */}
       <div className="grid grid-cols-3 gap-10 w-full my-5 px-8 font-sans">
         {/* COMMIT */}
-        <Card className="bg-linear-to-br from-accent/90 to-transparent dark:to-black  min-w-[260px]">
+        <Card className="bg-linear-to-br from-accent/90 to-transparent dark:to-black  min-w-[260px] ">
           <CardHeader>
-            <CardTitle>Commits</CardTitle>
+            <CardTitle className="font-medium ">
+              Commits <LucideGitCommit className="h-5 w-5 inline ml-1" />
+            </CardTitle>
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between -mt-1">
@@ -54,7 +78,7 @@ export default function DashboardPage() {
                   {isLoading ? (
                     <Skeleton className="h-8 w-16" />
                   ) : (
-                    dashboardStats?.totalCommits ?? 0
+                    (dashboardStats?.totalCommits ?? 0)
                   )}
                 </p>
                 <p className="text-sm text-muted-foreground">
@@ -70,9 +94,15 @@ export default function DashboardPage() {
         {/* TOTAL PR*/}
         <Card className="bg-linear-to-br from-accent/90 to-transparent dark:to-black  min-w-[260px]">
           <CardHeader>
-            <CardTitle className="flex items-center justify-between">
-              <p>Pull Requests</p>
-              <p>Merged PRs</p>{" "}
+            <CardTitle className="flex items-center font-medium justify-between">
+              <p>
+                Pull Request{" "}
+                <LucideGitPullRequest className="h-5 w-5 inline ml-1" />
+              </p>
+              <p>
+                Merged PRs{" "}
+                <LucideGitPullRequestArrow className="h-5 w-5 inline ml-1" />
+              </p>{" "}
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -82,7 +112,7 @@ export default function DashboardPage() {
                   {isLoading ? (
                     <Skeleton className="h-8 w-16" />
                   ) : (
-                    dashboardStats?.totalPRs ?? 0
+                    (dashboardStats?.totalPRs ?? 0)
                   )}
                 </p>
                 <p className="text-sm text-muted-foreground">Total PRs</p>
@@ -96,7 +126,7 @@ export default function DashboardPage() {
                   {isLoading ? (
                     <Skeleton className="h-8 w-16" />
                   ) : (
-                    dashboardStats?.totalMergedPRs ?? 0
+                    (dashboardStats?.totalMergedPRs ?? 0)
                   )}
                 </p>
                 <p className="text-sm text-muted-foreground">Merged PRs</p>
@@ -106,10 +136,135 @@ export default function DashboardPage() {
         </Card>
 
         <Card className="relative  min-w-[260px] bg-linear-to-br from-accent/90 to-transparent dark:to-black">
-          {/* TODO FUTURE PART */}
+          <CardHeader>
+            <CardTitle className="flex items-center justify-between">
+              <p>
+                Projects Created{" "}
+                <LucideLayers2 className="h-5 w-5 inline ml-1" />
+              </p>
+              <p>
+                Joined <Merge className="h-5 w-5 inline ml-1" />
+              </p>{" "}
+            </CardTitle>
+          </CardHeader>
+
+          <CardContent>
+            <div className="flex flex-col gap-4 -mt-2">
+              <div className="flex items-center justify-between px-4">
+                <div className="flex flex-col space-y-1">
+                  <p className="text-3xl font-semibold flex items-baseline gap-1">
+                    {isLoading ? (
+                      <Skeleton className="h-9 w-16" />
+                    ) : (
+                      <>
+                        1
+                        <span className="text-sm font-medium text-muted-foreground/60">
+                          / {limits?.project_creation_limit || 2}
+                        </span>
+                      </>
+                    )}
+                  </p>
+                </div>
+
+                <Separator
+                  orientation="vertical"
+                  className="mx-2 h-10! bg-accent"
+                />
+
+                <div className="flex flex-col space-y-1 text-right">
+                  <p className="text-3xl font-semibold flex items-baseline justify-end gap-1">
+                    {isLoading ? (
+                      <Skeleton className="h-9 w-16" />
+                    ) : (
+                      <>
+                        1
+                        <span className="text-sm font-medium text-muted-foreground/60">
+                          / {limits?.project_joining_limit || 2}
+                        </span>
+                      </>
+                    )}
+                  </p>
+                </div>
+              </div>
+            </div>
+            {showUpgrade && (
+              <div className="absolute -top-4 left-0 bg-blue-500/70 py-0.5 px-2 rounded-full border">
+                <p className="text-[13px] text-neutral-200">
+                  Unlock Pro Limits
+                  <LucideGem className="h-4 w-4 inline ml-1" />
+                </p>
+              </div>
+            )}
+          </CardContent>
         </Card>
+      </div>
+
+      {/* ============TABS========= */}
+      <div className="my-10 flex flex-col">
+        <div className="flex gap-6 px-10">
+          <Button
+            size="sm"
+            className="px-10"
+            variant={activeTab === "stats" ? "default" : "outline"}
+            onClick={() => setActiveTab("stats")}
+          >
+            Stats <ChartNoAxesColumn className="h-5 w-5 inline ml-1" />
+          </Button>
+          <Button
+            size="sm"
+            className="px-10"
+            variant={activeTab === "discover" ? "default" : "outline"}
+            onClick={() => setActiveTab("discover")}
+          >
+            Discover <FolderSearch className="h-5 w-5 inline ml-1" />
+          </Button>
+          <Button
+            size="sm"
+            variant={activeTab === "workspaces" ? "default" : "outline"}
+            onClick={() => setActiveTab("workspaces")}
+          >
+            Projects <Layers2 className="h-5 w-5 inline ml-1" />
+          </Button>
+        </div>
+        <Separator className="max-w-[80%] mx-auto my-5" />
+
+        <div>
+          {activeTab === "stats" && (
+            <div className="space-y-10">
+              <div
+                className={cn(
+                  "grid transition-all duration-150 ",
+                  sidebarOpen
+                    ? "grid-cols-[minmax(0,1fr)_320px] gap-5 2xl:gap-10"
+                    : "grid-cols-[minmax(0,1fr)_360px] gap-10 2xl:gap-14",
+                )}
+              >
+                {/* Left */}
+                <Card className="p-4 bg-linear-to-b from-accent/40 to-transparent dark:to-black">
+                  <CardContent className="pt-6">
+                    <ContributionGraph />
+                  </CardContent>
+                </Card>
+
+                {/* Right */}
+                <div className="w-full">
+                  {dashboardStats ? (
+                    <Card className="p-2 bg-linear-to-b from-accent/40 to-transparent dark:to-black">
+                      <CardContent>
+                        <PieChartVariant1 stats={dashboardStats} />
+                      </CardContent>
+                    </Card>
+                  ) : (
+                    <div>
+                      <Skeleton className="w-full h-60" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </div>
     </div>
   );
 }
-

@@ -92,6 +92,8 @@ async function fetchDashboardStats(
   };
 }
 
+
+
 export async function getDashboardStats(
   githubName: string,
 ): Promise<DashboardStats> {
@@ -113,4 +115,48 @@ export async function getDashboardStats(
   await redis.set(cacheKey, data, { ex: 60 * 30 });
 
   return data;
+}
+
+
+export async function getContributionStats(githubName: string) {
+  const { userId } = await auth();
+  if (!userId) {
+    throw new Error("Not authenticated");
+  }
+
+  const cacheKey = `wekraft:contributionStats:${githubName}`;
+
+  const cached = await redis.get<{ contributions: any[]; totalContributions: number }>(cacheKey);
+  if (cached) {
+    console.log("----Contribution stats cache HIT----");
+    return cached;
+  }
+
+  console.log("----Contribution stats, hitting GitHub API----");
+
+  try {
+    const accessToken = await getGithubAccessToken();
+    const calendar = await fetchUserContributions(accessToken, githubName);
+
+    if (!calendar) {
+      return { contributions: [], totalContributions: 0 };
+    }
+
+    const contributions = calendar.weeks.flatMap((week: any) =>
+      week.contributionDays.map((day: any) => ({
+        date: day.date,
+        count: day.contributionCount,
+        level: Math.min(4, Math.floor(day.contributionCount / 3)),
+      }))
+    );
+
+    const data = { contributions, totalContributions: calendar.totalContributions };
+
+    await redis.set(cacheKey, data, { ex: 60 * 60 * 6 }); 
+
+    return data;
+  } catch (error) {
+    console.log(error);
+    return { contributions: [], totalContributions: 0 };
+  }
 }

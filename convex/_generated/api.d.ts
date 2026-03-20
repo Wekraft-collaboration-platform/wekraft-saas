@@ -8,6 +8,7 @@
  * @module
  */
 
+import type * as pricing from "../pricing.js";
 import type * as project from "../project.js";
 import type * as user from "../user.js";
 
@@ -18,6 +19,7 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  pricing: typeof pricing;
   project: typeof project;
   user: typeof user;
 }>;

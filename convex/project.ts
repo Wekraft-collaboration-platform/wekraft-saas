@@ -1,5 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { getPlanLimits } from "./pricing";
 
 // =============================
 // CREATE PROJECT
@@ -29,25 +30,25 @@ export const projectInit = mutation({
       throw new Error("User not found");
     }
 
-    // Check for existing project by this owner 
-    const existingProject = await ctx.db
+    // --- PRICING & LIMITS CHECK ---
+    const limits = getPlanLimits(user);
+    const userProjects = await ctx.db
       .query("projects")
       .withIndex("by_owner", (q) => q.eq("ownerId", user._id))
-      .first();
+      .collect();
 
-    // Check if the project name is taken by ANOTHER project of the user
-    if (args.projectName) {
-      const duplicateName = await ctx.db
-        .query("projects")
-        .withIndex("by_owner_name", (q) =>
-          q.eq("ownerId", user._id).eq("projectName", args.projectName),
-        )
-        .unique();
+    // Check for existing project by this owner with EXACT SAME NAME (for updates)
+    const existingProject = userProjects.find(p => p.projectName === args.projectName);
 
-      if (duplicateName && duplicateName._id !== existingProject?._id) {
-        throw new Error("You already have a project with this name.");
+    if (!existingProject) {
+      // Trying to create a NEW project
+      if (userProjects.length >= limits.project_creation_limit) {
+        throw new Error(
+          `You've reached your limit of ${limits.project_creation_limit} projects. Please upgrade your plan to create more!`
+        );
       }
     }
+    // ------------------------------
 
     const validStatuses = ["ideation", "validation", "development", "beta", "production", "scaling"];
     if (!validStatuses.includes(args.projectStatus)) {

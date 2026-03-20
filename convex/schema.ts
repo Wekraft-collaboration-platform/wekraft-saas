@@ -11,8 +11,9 @@ export default defineSchema({
     last_signIn: v.optional(v.number()),
     accountType: v.union(
       v.literal("free"),
+      v.literal("plus"),
       v.literal("pro"),
-      v.literal("elite"),
+      v.literal("sclae"),
     ),
     skills: v.optional(v.array(v.string())),
     lastUpdatedSkillsAt: v.optional(v.number()),
@@ -23,6 +24,7 @@ export default defineSchema({
 
     createdAt: v.number(),
     updatedAt: v.number(),
+    planExpiry: v.optional(v.number()), // For temporary upgrades/coupons
   })
     .index("by_token", ["clerkToken"])
     .index("by_accountType", ["accountType"]),
@@ -68,7 +70,6 @@ export default defineSchema({
         }),
       ),
     ),
-    // Owner of the project
     ownerId: v.id("users"),
     ownerName: v.string(),
     ownerImage: v.string(),
