@@ -30,6 +30,7 @@ import {
   FolderCode,
   Gift,
   GitBranch,
+  GitBranchPlus,
   Github,
   GithubIcon,
   LayoutDashboard,
@@ -54,6 +55,7 @@ import {
   Store,
   Sun,
   User,
+  User2,
   UserPlus,
   Users,
   Wallet,
@@ -74,6 +76,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { UserAvatar } from "@clerk/nextjs";
 
 export const AppSidebar = () => {
   const { theme, setTheme } = useTheme();
@@ -136,8 +139,8 @@ export const AppSidebar = () => {
         )}
       </SidebarHeader>
       <SidebarContent className="flex flex-col px-3 py-5 relative overflow-y-scroll scroll-smooth">
-        {/* 1 */}
-        <SidebarMenu className="flex flex-col gap-3">
+        <SidebarMenu className="flex flex-col gap-2.5">
+          {/* 1 */}
           <SidebarMenuButton
             asChild
             data-active={isActive("/dashboard")}
@@ -166,7 +169,7 @@ export const AppSidebar = () => {
                 data-active={isActive("/dashboard/community")}
                 className="group relative overflow-hidden"
               >
-                <div className="relative z-10 flex items-center gap-3 w-full text-muted-foreground">
+                <div className="relative z-10 flex items-center gap-3 w-full">
                   <Users className="h-5 w-5" />
                   <span className="text-sm">Community</span>
                   <ChevronRight className="h-4 w-4 ml-auto" />
@@ -179,7 +182,7 @@ export const AppSidebar = () => {
               <div className="flex flex-col gap-1">
                 <Link
                   href="/dashboard/community?mode=discover"
-                  className="flex items-center gap-2 rounded px-2 py-1 text-sm text-base hover:bg-accent"
+                  className="flex items-center gap-2 rounded px-2 py-1 text-sm hover:bg-accent"
                 >
                   <Compass className="h-4 w-4" />
                   Discover Projects
@@ -203,6 +206,101 @@ export const AppSidebar = () => {
               </div>
             </PopoverContent>
           </Popover>
+          {/* 3 */}
+          <div className="px-1 my-2 group-data-[collapsible=icon]:hidden">
+            <div className="flex items-center justify-center gap-2">
+              <span className="w-10 h-px bg-muted-foreground/30"></span>
+              <h3 className="mb-2 text-sm font-medium text-muted-foreground capitalize text-center">
+                My Projects
+              </h3>
+              <span className="w-10 h-px bg-muted-foreground/30"></span>
+            </div>
+
+            <Tabs defaultValue="my" className="w-full">
+              <TabsList className="grid grid-cols-2 h-8 mx-auto w-full">
+                <TabsTrigger value="my" className="text-xs">
+                  My Creations
+                </TabsTrigger>
+                <TabsTrigger value="team" className="text-xs">
+                  Team Projects
+                </TabsTrigger>
+              </TabsList>
+
+              <div className="mt-2 p-1 h-[156px] overflow-y-auto rounded-md border bg-sidebar-accent/30">
+                {/* MY CREATIONS */}
+                <TabsContent value="my" className="m-0 p-2">
+                  <div className="flex flex-col gap-2 ">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="text-xs mt-2"
+                    >
+                      <Plus className="h-4 w-4 mr-1" />
+                      Create Project
+                    </Button>
+                  </div>
+                </TabsContent>
+
+                {/* TEAM PROJECTS */}
+                <TabsContent value="team" className="m-0 p-2">
+                  <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
+                    <Users className="h-5 w-5 text-muted-foreground" />
+                    <p className="text-xs text-muted-foreground">
+                      No team projects
+                    </p>
+                    <Button size="sm" variant="outline">
+                      <Plus className="h-4 w-4 mr-1" />
+                      Collab Now
+                    </Button>
+                  </div>
+                </TabsContent>
+              </div>
+            </Tabs>
+          </div>
+          {/* 4 */}
+          <SidebarMenuButton
+            asChild
+            data-active={isActive("/dashboard/repositories")}
+            className="group relative overflow-hidden"
+          >
+            <Link
+              href="/dashboard/repositories"
+              className="relative z-10 flex items-center gap-3 px-3 py-2 dark:data-[active=true]:text-white data-[active=true]:text-gray-700"
+            >
+              <GitBranchPlus className="h-5 w-5" />
+              <span className="text-sm">Repositories</span>
+              <span
+                className="
+        pointer-events-none absolute inset-0 -z-10
+        opacity-0 transition-opacity
+        group-data-[active=true]:opacity-100
+        bg-linear-to-l from-blue-600/80 dark:from-blue-600/50 via-blue-600/10  to-transparent
+      "
+              />
+            </Link>
+          </SidebarMenuButton>
+          {/* 5 */}
+          <SidebarMenuButton
+            asChild
+            data-active={isActive("/dashboard/my-profile")}
+            className="group relative overflow-hidden"
+          >
+            <Link
+              href="/dashboard/my-profile"
+              className="relative z-10 flex items-center gap-3 px-3 py-2 dark:data-[active=true]:text-white data-[active=true]:text-gray-700"
+            >
+              <User2 className="h-5 w-5" />
+              <span className="text-sm">My Profile</span>
+              <span
+                className="
+        pointer-events-none absolute inset-0 -z-10
+        opacity-0 transition-opacity
+        group-data-[active=true]:opacity-100
+        bg-linear-to-l from-blue-600/80 dark:from-blue-600/50 via-blue-600/10  to-transparent
+      "
+              />
+            </Link>
+          </SidebarMenuButton>
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter className="border-t px-2 py-2 group-data-[collapsible=icon]:hidden"></SidebarFooter>

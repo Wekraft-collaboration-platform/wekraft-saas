@@ -223,3 +223,55 @@ export const upgradeAccount = mutation({
     return { success: true, plan: args.plan, expires: planExpiry };
   },
 });
+
+
+// =======================================
+// UPDATE USER PROFILE
+// =======================================
+export const updateUserBio = mutation({
+  args: { bio: v.string() },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) throw new Error("User not found");
+
+    await ctx.db.patch(user._id, {
+      bio: args.bio,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+// Add this to r:\wekraft-saas\convex\user.ts
+
+export const updateSocialLinks = mutation({
+  args: { links: v.array(v.string()) },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("clerkToken", identity.tokenIdentifier))
+      .unique();
+
+    if (!user) throw new Error("User not found");
+
+    const trimmedLinks = args.links.slice(0, 3);
+
+    await ctx.db.patch(user._id, {
+      socialLinks: trimmedLinks,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+

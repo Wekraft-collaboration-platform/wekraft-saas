@@ -25,6 +25,9 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
     planExpiry: v.optional(v.number()), // For temporary upgrades/coupons
+    occupation: v.optional(v.string()),
+    bio: v.optional(v.string()),
+    socialLinks: v.optional(v.array(v.string())), // max 3 links (excluding github)
   })
     .index("by_token", ["clerkToken"])
     .index("by_accountType", ["accountType"]),
