@@ -38,19 +38,28 @@ export const projectInit = mutation({
       .collect();
 
     // Check for existing project by this owner with EXACT SAME NAME (for updates)
-    const existingProject = userProjects.find(p => p.projectName === args.projectName);
+    const existingProject = userProjects.find(
+      (p) => p.projectName === args.projectName,
+    );
 
     if (!existingProject) {
       // Trying to create a NEW project
       if (userProjects.length >= limits.project_creation_limit) {
         throw new Error(
-          `You've reached your limit of ${limits.project_creation_limit} projects. Please upgrade your plan to create more!`
+          `You've reached your limit of ${limits.project_creation_limit} projects. Please upgrade your plan to create more!`,
         );
       }
     }
     // ------------------------------
 
-    const validStatuses = ["ideation", "validation", "development", "beta", "production", "scaling"];
+    const validStatuses = [
+      "ideation",
+      "validation",
+      "development",
+      "beta",
+      "production",
+      "scaling",
+    ];
     if (!validStatuses.includes(args.projectStatus)) {
       throw new Error("Invalid project status selected.");
     }
@@ -81,12 +90,95 @@ export const projectInit = mutation({
         ownerId: user._id,
         ownerName: user.name,
         ownerImage: user.avatarUrl ?? "",
-        projectStars: 0,
         projectUpvotes: 0,
         inviteLink: args.inviteLink,
         createdAt: Date.now(),
         updatedAt: Date.now(),
       });
     }
+  },
+});
+
+export const getUserProjects = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) return [];
+
+    const projects = await ctx.db
+      .query("projects")
+      .withIndex("by_owner", (q) => q.eq("ownerId", user._id))
+      .collect();
+
+    return projects.map((p) => ({
+      _id: p._id,
+      projectName: p.projectName,
+      isPublic: p.isPublic,
+      thumbnailUrl: p.thumbnailUrl,
+      repoId: p.repositoryId,
+      projectWorkStatus: p.projectWorkStatus,
+    }));
+  },
+});
+
+export const getProjectById = query({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, args) => {
+    const project = await ctx.db.get(args.projectId);
+    if (!project) return null;
+
+    const identity = await ctx.auth.getUserIdentity();
+    const user = identity
+      ? await ctx.db
+          .query("users")
+          .withIndex("by_token", (q) =>
+            q.eq("clerkToken", identity.tokenIdentifier),
+          )
+          .unique()
+      : null;
+
+    // Security: Only return if public OR the user is the owner
+    if (project.isPublic || (user && project.ownerId === user._id)) {
+      return project;
+    }
+
+    return null;
+  },
+});
+
+// ============================================
+// getUnlinkedProjects query. It retrieves all projects owned by the user that don't have a 
+// repositoryId or repoName.
+// ============================================
+export const getUnlinkedProjects = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) return [];
+
+    const projects = await ctx.db
+      .query("projects")
+      .withIndex("by_owner", (q) => q.eq("ownerId", user._id))
+      .collect();
+
+    return projects.filter((p) => !p.repositoryId && !p.repoName);
   },
 });

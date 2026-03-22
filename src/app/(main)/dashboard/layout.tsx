@@ -12,6 +12,7 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
+import { DashboardBreadcrumbs } from "@/modules/dashboard/components/HeaderCrumbs";
 
 export default function Layout({
   children,
@@ -45,8 +46,11 @@ export default function Layout({
             <header className="flex justify-between h-19 py-1 shrink-0 items-center border-b px-4">
               <div className="flex items-center gap-2">
                 <SidebarTrigger className="-ml-1 cursor-pointer hover:scale-105 transition-all duration-200" />
-                <Separator orientation="vertical" className="mx-4 h-8" />
-                {/* <DashboardBreadcrumbs /> */}
+                <Separator
+                  orientation="vertical"
+                  className="mx-4 h-8! bg-accent"
+                />
+                <DashboardBreadcrumbs />
               </div>
               <div>{/* <CommunitySearchBar /> */}</div>
               <div className="">

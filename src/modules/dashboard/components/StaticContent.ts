@@ -13,7 +13,6 @@ export interface GitHubStats {
   totalMergedPRs: number;
   totalIssuesClosed: number;
   totalReviews: number;
-  accountAgeInYears: number;
 }
 
 export interface PenaltyEntry {
@@ -61,20 +60,20 @@ export interface ImpactScoreResult {
 
 export const CONFIG = {
   weights: {
-    commits: 1,
+    commits: 0.8,
     prs: 3,
-    mergedPrs: 2,
-    issues: 2.5,
-    reviews: 2,
+    mergedPrs: 3, 
+    issues: 3,    
+    reviews: 2,   
   },
-  commitCapPerDay: 10,
-  scoreDivisor: 14,
-  penaltyFloor: 0.5,
+  yearlyCommitCap: 2000,
+  scoreDivisor: 18,      
+  penaltyFloor: 0.4,     
   mergeRateMultipliers: [
-    { threshold: 0.9, multiplier: 1.3 },
-    { threshold: 0.75, multiplier: 1.15 },
+    { threshold: 0.9, multiplier: 1.2 },
+    { threshold: 0.75, multiplier: 1.05 },
     { threshold: 0.5, multiplier: 1.0 },
-    { threshold: 0.25, multiplier: 0.9 },
-    { threshold: 0.0, multiplier: 0.75 },
+    { threshold: 0.25, multiplier: 0.8 },
+    { threshold: 0.0, multiplier: 0.6 },
   ],
 };

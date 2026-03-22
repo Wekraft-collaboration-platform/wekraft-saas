@@ -14,8 +14,6 @@ interface DashboardStats {
   totalIssuesClosed: number;
   totalOpenIssues: number;
   totalReviews: number;
-  accountAgeInYears: number;
-  accountCreatedAt: string;
 }
 
 async function fetchDashboardStats(
@@ -31,7 +29,6 @@ async function fetchDashboardStats(
     closedIssuesResult,
     openIssuesResult,
     reviewsResult,
-    userResult,
   ] = await Promise.allSettled([
     fetchUserContributions(accessToken, githubName),
     octokit.rest.search.issuesAndPullRequests({
@@ -54,13 +51,7 @@ async function fetchDashboardStats(
       q: `commenter:${githubName} type:pr`,
       per_page: 1,
     }),
-    octokit.rest.users.getByUsername({ username: githubName }),
   ]);
-
-  const accountCreatedAt =
-    userResult.status === "fulfilled"
-      ? userResult.value.data.created_at
-      : new Date().toISOString();
 
   return {
     totalCommits:
@@ -85,13 +76,8 @@ async function fetchDashboardStats(
       reviewsResult.status === "fulfilled"
         ? reviewsResult.value.data.total_count
         : 0,
-    accountAgeInYears:
-      (Date.now() - new Date(accountCreatedAt).getTime()) /
-      (1000 * 60 * 60 * 24 * 365),
-    accountCreatedAt,
   };
 }
-
 
 
 export async function getDashboardStats(

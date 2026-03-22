@@ -38,7 +38,7 @@ export const PLAN_CONFIGS: Record<PlanType, PlanLimits> = {
   plus: {
     project_creation_limit: 3,
     project_joining_limit: 5,
-    team_insights: "full",
+    team_insights: "full", 
     pm_agent: "none",
     ai_code_review: "none",
     members_per_project_limit: 5,
@@ -52,7 +52,7 @@ export const PLAN_CONFIGS: Record<PlanType, PlanLimits> = {
   },
   pro: {
     project_creation_limit: 10,
-    project_joining_limit: 100,
+    project_joining_limit: 100, 
     team_insights: "full",
     pm_agent: "limited",
     ai_code_review: "limited",

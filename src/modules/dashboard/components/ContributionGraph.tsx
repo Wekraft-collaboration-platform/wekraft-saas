@@ -24,7 +24,7 @@ const ContributionGraph = () => {
     queryKey: ["contribution-graph"],
     queryFn: () => getContributionStats(userName || "") as any,
     enabled: !!userName, 
-    staleTime: 60 * 60 * 1000, 
+    staleTime: 60 * 60 * 6, 
     refetchOnWindowFocus: true,
   });
 
