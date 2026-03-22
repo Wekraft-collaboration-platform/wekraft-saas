@@ -10,6 +10,7 @@
 
 import type * as pricing from "../pricing.js";
 import type * as project from "../project.js";
+import type * as repo from "../repo.js";
 import type * as user from "../user.js";
 
 import type {
@@ -21,6 +22,7 @@ import type {
 declare const fullApi: ApiFromModules<{
   pricing: typeof pricing;
   project: typeof project;
+  repo: typeof repo;
   user: typeof user;
 }>;
 

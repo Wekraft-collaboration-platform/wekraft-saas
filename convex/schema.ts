@@ -53,12 +53,13 @@ export default defineSchema({
     description: v.optional(v.string()),
     tags: v.optional(v.array(v.string())), // (2-5)
     isPublic: v.boolean(),
+    projectLiveLink: v.optional(v.string()),
     // for repo---
     repositoryId: v.optional(v.id("repositories")),
     repoName: v.optional(v.string()),
     repoFullName: v.optional(v.string()),
-    repoOwner: v.optional(v.string()),
-    repoUrl: v.optional(v.string()),
+    // repoOwner: v.optional(v.string()),
+    // repoUrl: v.optional(v.string()),
     // ----
     thumbnailUrl: v.optional(v.string()),
     lookingForMembers: v.optional(
@@ -77,7 +78,6 @@ export default defineSchema({
     ownerName: v.string(),
     ownerImage: v.string(),
     about: v.optional(v.string()),
-    projectStars: v.number(), // wekraft platfrom likes
     projectUpvotes: v.number(),
     inviteLink: v.optional(v.string()),
     projectWorkStatus: v.optional(
@@ -98,4 +98,19 @@ export default defineSchema({
     .index("by_repository", ["repositoryId"])
     .index("by_public", ["isPublic"])
     .index("by_invite_link", ["inviteLink"]),
+
+  // -------------------------------------------------------
+
+  projectMembers: defineTable({
+    projectId: v.id("projects"),
+    userId: v.id("users"),
+    userName: v.string(),
+    userImage: v.optional(v.string()),
+    AccessRole: v.optional(v.union(v.literal("admin"), v.literal("member"))),
+    joinedAt: v.optional(v.number()),
+    leftAt: v.optional(v.number()),
+  })
+    .index("by_project", ["projectId"])
+    .index("by_user", ["userId"])
+    .index("by_access_role", ["AccessRole"]),
 });

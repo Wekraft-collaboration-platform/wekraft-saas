@@ -17,8 +17,10 @@ import {
   LucideGitPullRequestArrow,
   LucideLayers2,
   Merge,
+  Plus,
   Waypoints,
 } from "lucide-react";
+import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getActiveUserPlan, getPlanLimits } from "../../../../convex/pricing";
 import { Progress } from "@/components/ui/progress";
@@ -34,6 +36,7 @@ import { GitHubStats } from "@/modules/dashboard/components/StaticContent";
 
 export default function DashboardPage() {
   const user = useConvexQuery(api.user.getCurrentUser);
+  const userProjects = useConvexQuery(api.project.getUserProjects);
   const { open: sidebarOpen } = useSidebar();
   const [activeTab, setActiveTab] = useState("stats");
 
@@ -58,8 +61,8 @@ export default function DashboardPage() {
   } = useQuery({
     queryKey: ["dashboardStats", user?.githubUsername],
     queryFn: () => getDashboardStats(user?.githubUsername || ""),
-    staleTime: 30 * 60 * 1000, 
-    gcTime: 30 * 60 * 1000, 
+    staleTime: 30 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
     refetchOnWindowFocus: false,
     enabled: !!user?.githubUsername,
   });
@@ -233,8 +236,8 @@ export default function DashboardPage() {
           </Button>
           <Button
             size="sm"
-            variant={activeTab === "workspaces" ? "default" : "outline"}
-            onClick={() => setActiveTab("workspaces")}
+            variant={activeTab === "projects" ? "default" : "outline"}
+            onClick={() => setActiveTab("projects")}
           >
             Projects <Layers2 className="h-5 w-5 inline ml-1" />
           </Button>
@@ -297,6 +300,107 @@ export default function DashboardPage() {
                   </CardHeader>
                   <CardContent></CardContent>
                 </Card>
+              </div>
+            </div>
+          )}
+
+          {activeTab === "projects" && (
+            <div className="px-6 pb-10">
+              <div className="flex items-center justify-between mb-8">
+                <div>
+                  <h2 className="text-2xl font-bold flex items-center gap-2">
+                    My Projects <Layers2 className="h-6 w-6 text-primary" />
+                  </h2>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Manage and overview your active development workspaces.
+                  </p>
+                </div>
+                <div className="flex items-center gap-3">
+                  
+                  <Button size="sm" className="gap-2 text-xs">
+                    <Plus className="h-4 w-4" /> New Project
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {userProjects?.map((project) => (
+                  <Link
+                    key={project._id}
+                    href={`/dashboard/my-projects/${project._id}`}
+                  >
+                    <Card className="overflow-hidden group hover:shadow-lg transition-all border-accent/40 flex flex-col h-full">
+                      <div className="aspect-video w-full bg-accent/20 relative cursor-pointer border-b overflow-hidden">
+                        {project.thumbnailUrl ? (
+                          <img
+                            src={project.thumbnailUrl}
+                            alt={project.projectName}
+                            className="object-cover w-full h-full group-hover:scale-105 transition-transform duration-300"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center bg-linear-to-br from-accent/30 to-background">
+                            <LucideLayers2 className="h-10 w-10 text-muted-foreground/20" />
+                          </div>
+                        )}
+                        <div className="absolute top-2 left-2">
+                          <span
+                            className={cn(
+                              "text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-sm border backdrop-blur-md",
+                              project.isPublic
+                                ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                                : "bg-amber-500/10 text-amber-500 border-amber-500/20",
+                            )}
+                          >
+                            {project.isPublic ? "Public" : "Private"}
+                          </span>
+                        </div>
+                      </div>
+                      <CardHeader className="p-4 space-y-1">
+                        <CardTitle className="text-base truncate">
+                          {project.projectName}
+                        </CardTitle>
+                        <div className="flex items-center gap-2">
+                          <div
+                            className={cn(
+                              "h-2 w-2 rounded-full",
+                              project.projectWorkStatus === "production"
+                                ? "bg-green-500"
+                                : project.projectWorkStatus === "beta"
+                                  ? "bg-blue-500"
+                                  : "bg-yellow-500",
+                            )}
+                          />
+                          <span className="text-[11px] text-muted-foreground capitalize">
+                            {project.projectWorkStatus}
+                          </span>
+                        </div>
+                      </CardHeader>
+                      <div className="mt-auto p-4 pt-0 flex items-center justify-between text-[11px] text-muted-foreground">
+                        <div className="flex items-center gap-3">
+                          {project.repoId && (
+                            <span className="flex items-center gap-1">
+                              <LucideGitPullRequest className="h-3.5 w-3.5 text-blue-400" />
+                              <span className="text-[10px]">GitHub Linked</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </Card>
+                  </Link>
+                ))}
+
+                {/* Dashed Create Card */}
+                <div className="flex flex-col border-2 border-dashed border-accent hover:border-primary/50 hover:bg-accent/10 transition-all rounded-xl cursor-pointer items-center justify-center p-8 gap-3 min-h-[220px] group">
+                  <div className="h-12 w-12 rounded-full bg-accent flex items-center justify-center group-hover:bg-primary/10 transition-colors">
+                    <Plus className="h-6 w-6 text-muted-foreground group-hover:text-primary transition-colors" />
+                  </div>
+                  <div className="text-center">
+                    <p className="text-sm font-semibold">Create Project</p>
+                    <p className="text-[12px] text-muted-foreground">
+                      Start a new venture
+                    </p>
+                  </div>
+                </div>
               </div>
             </div>
           )}
