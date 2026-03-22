@@ -1,5 +1,72 @@
-import { query } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+
+
+// ====================================
+// CONNECT REPO  & update project.
+// ====================================
+export const connectRepository = mutation({
+  args: {
+    projectId: v.id("projects"),
+    githubId: v.int64(),
+    repoName: v.string(),
+    repoOwner: v.string(),
+    repoFullName: v.string(),
+    repoType: v.string(),
+    repoUrl: v.string(),
+    language: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("Unauthorized");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) {
+      throw new Error("User not found");
+    }
+
+    // Check if repo already exists for this user
+    let repoId = (await ctx.db
+      .query("repositories")
+      .withIndex("by_github_id", (q) => q.eq("githubId", args.githubId))
+      .unique())?._id;
+
+    if (!repoId) {
+      repoId = await ctx.db.insert("repositories", {
+        githubId: args.githubId,
+        repoName: args.repoName,
+        repoOwner: args.repoOwner,
+        repoFullName: args.repoFullName,
+        repoType: args.repoType,
+        repoUrl: args.repoUrl,
+        userId: user._id,
+        language: args.language,
+        createdAt: Date.now(),
+        updatedAt: Date.now(),
+      });
+    }
+
+    // Update project
+    await ctx.db.patch(args.projectId, {
+      repositoryId: repoId,
+      repoName: args.repoName,
+      repoFullName: args.repoFullName,
+      updatedAt: Date.now(),
+    });
+
+    return { success: true, repoId, projectId: args.projectId };
+  },
+});
+
+
 
 export const getConnectedRepos = query({
   args: {},
@@ -9,7 +76,9 @@ export const getConnectedRepos = query({
 
     const user = await ctx.db
       .query("users")
-      .withIndex("by_token", (q) => q.eq("clerkToken", identity.tokenIdentifier))
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
       .unique();
 
     if (!user) return [];
@@ -34,3 +103,5 @@ export const getConnectedRepos = query({
     });
   },
 });
+
+
