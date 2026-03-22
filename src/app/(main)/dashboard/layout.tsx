@@ -6,7 +6,6 @@ import { api } from "../../../../convex/_generated/api";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { RedirectToSignIn, UserButton } from "@clerk/nextjs";
-import { ThemeButtons } from "@/modules/dashboard/components/ThemeButton";
 import {
   SidebarInset,
   SidebarProvider,
@@ -49,13 +48,12 @@ export default function Layout({
                 <SidebarTrigger className="-ml-1 cursor-pointer hover:scale-105 transition-all duration-200" />
                 <Separator
                   orientation="vertical"
-                  className="mx-4 h-5! bg-accent"
+                  className="mx-4 h-8! bg-accent"
                 />
                 <DashboardBreadcrumbs />
               </div>
               <div>{/* <CommunitySearchBar /> */}</div>
-              <div className="flex items-center gap-4">
-                <ThemeButtons />
+              <div className="">
                 <UserButton />
               </div>
             </header>
