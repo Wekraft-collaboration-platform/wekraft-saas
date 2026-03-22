@@ -1,5 +1,5 @@
 "use client";
-import { FolderGit2, GitBranch, LayoutGrid, Search } from "lucide-react";
+import { FolderGit2, GitBranch, Layers2, LayoutGrid, LucideGitBranch, Search } from "lucide-react";
 import React, { useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../../../../convex/_generated/api";
@@ -49,7 +49,7 @@ const RepositoriesPage = () => {
             <Search className="absolute left-3 top-2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Search repositories..."
-              className="bg-white/5 border-white/10 pl-10 focus:ring-1 focus:ring-white/20"
+              className="bg-accent border-muted-foreground/10 pl-10 focus:ring-1 focus:ring-white/20"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
@@ -64,7 +64,8 @@ const RepositoriesPage = () => {
             <PopoverContent className="w-[350px] p-0" align="end">
               <div className="p-4 border-b bg-muted/50">
                 <h3 className="text-sm font-semibold flex items-center gap-2">
-                  <GitBranch className="size-4 text-primary" /> Active Links
+                  <GitBranch className="size-4 text-primary" /> Active Linked
+                  Repositories
                 </h3>
                 <p className="text-[10px] text-muted-foreground mt-1">
                   Repositories currently linked to your projects.
@@ -93,19 +94,19 @@ const RepositoriesPage = () => {
                       .map((repo) => (
                         <div
                           key={repo._id}
-                          className="p-2.5 rounded-lg border border-transparent hover:border-white/10 hover:bg-white/5 transition-all group"
+                          className="p-2.5 rounded-lg border dark:bg-accent/30 bg-accent"
                         >
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0">
-                              <p className="text-[11px] font-bold truncate">
-                                {repo.repoFullName}
+                              <p className="text-xs font-semibold truncate font-inter capitalize">
+                               <Layers2 className="size-3 text-primary inline mr-1" /> {repo.projectName}
                               </p>
-                              <div className="flex items-center gap-1.5 mt-1">
+                              <div className="flex items-center gap-1.5 mt-2">
                                 <Badge
                                   variant="secondary"
                                   className="text-[9px] px-1.5 py-0 h-4 bg-primary/10 text-primary border-primary/20"
                                 >
-                                  {repo.projectName}
+                                  {repo.repoName}
                                 </Badge>
                                 <span className="text-[9px] text-muted-foreground font-medium">
                                   Linked
@@ -114,11 +115,11 @@ const RepositoriesPage = () => {
                             </div>
                             <Link
                               href={`/dashboard/my-projects/${repo.projectId}`}
-                              className="opacity-0 group-hover:opacity-100 transition-opacity"
+                              className=" cursor-pointer"
                             >
                               <Button
                                 size="icon"
-                                variant="ghost"
+                                variant="outline"
                                 className="size-6 shrink-0"
                               >
                                 <LayoutGrid className="size-3" />
@@ -132,7 +133,9 @@ const RepositoriesPage = () => {
               </ScrollArea>
               <div className="p-3 bg-muted/30 border-t">
                 <p className="text-[9px] text-center text-muted-foreground">
-                  Total {connectedRepos?.filter((r) => r.projectName).length || 0} active connections
+                  Total{" "}
+                  {connectedRepos?.filter((r) => r.projectName).length || 0}{" "}
+                  active connections
                 </p>
               </div>
             </PopoverContent>
@@ -143,6 +146,8 @@ const RepositoriesPage = () => {
           searchQuery={searchQuery}
           selectedRepo={selectedRepo}
           setSelectedRepo={setSelectedRepo}
+          unlinkedProjects={unlinkedProjects}
+          connectedRepos={connectedRepos}
         />
       </div>
     </div>

@@ -38,6 +38,7 @@ export default defineSchema({
     repoName: v.string(),
     repoOwner: v.string(),
     repoFullName: v.string(),
+    repoType: v.optional(v.string()),
     repoUrl: v.string(),
     userId: v.id("users"),
     language: v.optional(v.any()),
@@ -58,8 +59,6 @@ export default defineSchema({
     repositoryId: v.optional(v.id("repositories")),
     repoName: v.optional(v.string()),
     repoFullName: v.optional(v.string()),
-    // repoOwner: v.optional(v.string()),
-    // repoUrl: v.optional(v.string()),
     // ----
     thumbnailUrl: v.optional(v.string()),
     lookingForMembers: v.optional(

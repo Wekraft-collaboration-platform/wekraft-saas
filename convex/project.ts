@@ -99,6 +99,9 @@ export const projectInit = mutation({
   },
 });
 
+// ====================================
+// GET USER PROJECTS with members
+// ====================================
 export const getUserProjects = query({
   args: {},
   handler: async (ctx) => {
@@ -119,17 +122,38 @@ export const getUserProjects = query({
       .withIndex("by_owner", (q) => q.eq("ownerId", user._id))
       .collect();
 
-    return projects.map((p) => ({
-      _id: p._id,
-      projectName: p.projectName,
-      isPublic: p.isPublic,
-      thumbnailUrl: p.thumbnailUrl,
-      repoId: p.repositoryId,
-      projectWorkStatus: p.projectWorkStatus,
-    }));
+    const projectsWithMembers = await Promise.all(
+      projects.map(async (p) => {
+        const members = await ctx.db
+          .query("projectMembers")
+          .withIndex("by_project", (q) => q.eq("projectId", p._id))
+          .collect();
+
+        return {
+          _id: p._id,
+          projectName: p.projectName,
+          isPublic: p.isPublic,
+          thumbnailUrl: p.thumbnailUrl,
+          repoId: p.repositoryId,
+          repoName: p.repoName,
+          projectWorkStatus: p.projectWorkStatus,
+          members: members.slice(0, 4).map((m) => ({
+            userId: m.userId,
+            userImage: m.userImage,
+            userName: m.userName,
+          })),
+          totalMembers: members.length,
+        };
+      }),
+    );
+
+    return projectsWithMembers;
   },
 });
 
+// ====================================
+// GET PROJECT BY ID
+// ====================================
 export const getProjectById = query({
   args: { projectId: v.id("projects") },
   handler: async (ctx, args) => {

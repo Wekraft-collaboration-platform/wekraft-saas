@@ -1,30 +1,8 @@
+
 import { useQuery } from "@tanstack/react-query";
 import { getRepositories } from "../github/actions/action";
+import { Repository } from "@/types/types";
 
-interface Repository {
-  id: number;
-  name: string;
-  full_name: string;
-  description: string | null;
-  html_url: string;
-  stargazers_count: number;
-  language: string | null;
-  topics: string[];
-  owner: {
-    login: string;
-    avatar_url: string;
-    type: string;
-  };
-  private: boolean;
-  forks_count: number;
-  watchers_count: number;
-  pushed_at: string;
-  permissions?: {
-    admin: boolean;
-    push: boolean;
-    pull: boolean;
-  };
-}
 
 export function useRepositories(page: number = 1, perPage: number = 10) {
   return useQuery<Repository[]>({
@@ -41,3 +19,4 @@ export function useRepositories(page: number = 1, perPage: number = 10) {
     retryDelay: 1000,
   });
 }
+
