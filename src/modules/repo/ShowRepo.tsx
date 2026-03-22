@@ -16,7 +16,7 @@ import { useRepositories } from ".";
 
 interface RepositoryListProps {
   searchQuery: string;
-  selectedRepo: string;
+  selectedRepo: { owner: string; repo: string } | null;
   setSelectedRepo: (data: { owner: string; repo: string }) => void;
 }
 
@@ -132,7 +132,7 @@ const ShowRepo = ({
                 }
                 className={cn(
                   "w-full flex flex-col space-y-4 p-4 rounded-xl border transition-all duration-300 group cursor-pointer",
-                  selectedRepo === repo.name
+                  selectedRepo?.repo === repo.name
                     ? "bg-white/10 text-white border-white/30 shadow-lg shadow-black/20"
                     : "bg-white/5 text-white border-white/10 hover:border-white/10 hover:bg-white/10",
                 )}
