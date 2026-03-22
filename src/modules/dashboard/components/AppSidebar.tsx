@@ -77,7 +77,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserAvatar } from "@clerk/nextjs";
-import { ThemeButtons } from "./ThemeButton";
 
 export const AppSidebar = () => {
   const { theme, setTheme } = useTheme();
@@ -313,41 +312,6 @@ export const AppSidebar = () => {
             </Link>
           </SidebarMenuButton>
 
-          {/* THEME SWITCHER */}
-          <Popover>
-            <SidebarMenuButton
-              asChild
-              className="group relative overflow-hidden"
-            >
-              <PopoverTrigger asChild>
-                <button
-                  type="button"
-                  className="relative z-10 flex w-full items-center gap-3 px-3 py-2 text-muted-foreground data-[active=true]:text-white"
-                >
-                  <Palette className="h-5 w-5" />
-                  <span className="text-base">Theme</span>
-
-                  {/* Active gradient */}
-                  <span
-                    className="
-            pointer-events-none absolute inset-0 -z-10
-            opacity-0 transition-opacity
-            group-data-[active=true]:opacity-100
-            bg-linear-to-l from-blue-600/50 via-transparent to-transparent
-          "
-                  />
-                </button>
-              </PopoverTrigger>
-            </SidebarMenuButton>
-
-            <PopoverContent
-              align="start"
-              side="right"
-              className="w-48 rounded-lg p-2"
-            >
-              <ThemeButtons />
-            </PopoverContent>
-          </Popover>
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter className="border-t px-2 py-2 group-data-[collapsible=icon]:hidden"></SidebarFooter>
