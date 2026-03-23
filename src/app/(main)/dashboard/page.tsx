@@ -35,6 +35,7 @@ import {
   ScoreDetailsDialog,
 } from "@/modules/dashboard/components/PieChart";
 import { GitHubStats } from "@/modules/dashboard/components/StaticContent";
+import CreateProjectDialog from "@/modules/project/CreateProjectDialog";
 
 export default function DashboardPage() {
   const user = useConvexQuery(api.user.getCurrentUser);
@@ -321,13 +322,15 @@ export default function DashboardPage() {
                   <Button size="sm" className="gap-2 text-xs">
                     <SlidersHorizontal className="h-4 w-4" /> Filter
                   </Button>
-
-                  <Button size="sm" className="gap-2 text-xs">
-                    <Plus className="h-4 w-4" /> New Project
-                  </Button>
+                  <CreateProjectDialog 
+                    trigger={
+                      <Button size="sm" className="gap-2 text-xs">
+                        <Plus className="h-4 w-4" /> New Project
+                      </Button>
+                    }
+                  />
                 </div>
               </div>
-
               <ProjectCards projects={userProjects} />
             </div>
           )}

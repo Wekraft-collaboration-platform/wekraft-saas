@@ -8,6 +8,7 @@ import { getPlanLimits } from "./pricing";
 export const projectInit = mutation({
   args: {
     projectName: v.string(),
+    description: v.optional(v.string()),
     isPublic: v.boolean(),
     projectStatus: v.string(),
     inviteLink: v.string(),
@@ -67,6 +68,7 @@ export const projectInit = mutation({
     if (existingProject) {
       await ctx.db.patch(existingProject._id, {
         projectName: args.projectName,
+        description: args.description,
         isPublic: args.isPublic,
         projectWorkStatus: args.projectStatus as any,
         updatedAt: Date.now(),
@@ -85,6 +87,7 @@ export const projectInit = mutation({
 
       return await ctx.db.insert("projects", {
         projectName: args.projectName,
+        description: args.description,
         isPublic: args.isPublic,
         projectWorkStatus: args.projectStatus as any,
         ownerId: user._id,
@@ -96,6 +99,39 @@ export const projectInit = mutation({
         updatedAt: Date.now(),
       });
     }
+  },
+});
+
+// ====================================
+// GET PROJECT USAGE
+// ====================================
+export const getProjectUsage = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) return null;
+
+    const limits = getPlanLimits(user);
+    const count = (await ctx.db
+      .query("projects")
+      .withIndex("by_owner", (q) => q.eq("ownerId", user._id))
+      .collect()).length;
+
+    return {
+      canCreate: count < limits.project_creation_limit,
+      currentCount: count,
+      limit: limits.project_creation_limit,
+      accountType: user.accountType,
+    };
   },
 });
 

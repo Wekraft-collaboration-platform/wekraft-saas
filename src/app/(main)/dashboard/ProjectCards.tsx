@@ -42,10 +42,9 @@ export const ProjectCards = ({ projects }: ProjectCardsProps) => {
       {projects?.map((project) => (
         <Card
           key={project._id}
-          className="overflow-hidden bg-card border border-white/10 flex flex-col h-full rounded-xl shadow-sm p-0"
+          className="overflow-hidden bg-card border border-accent/20 flex flex-col h-full rounded-xl shadow-sm p-0"
         >
-          {/* Image - Full Top Coverage */}
-          <div className="aspect-video w-full bg-accent/20 relative border-b border-white/5 overflow-hidden">
+          <div className="aspect-video w-full bg-accent/20 relative border-b border-accent/10 overflow-hidden">
             {project.thumbnailUrl ? (
               <img
                 src={project.thumbnailUrl}
@@ -60,7 +59,7 @@ export const ProjectCards = ({ projects }: ProjectCardsProps) => {
             <div className="absolute top-2 left-2">
               <span
                 className={cn(
-                  "text-[9px] font-bold uppercase tracking-wider px-2 py-0.5 rounded-full border flex items-center gap-1.5 backdrop-blur-md",
+                  "text-[9px] font-bold uppercase px-2 py-0.5 rounded-full border flex items-center gap-1.5 backdrop-blur-md",
                   project.isPublic
                     ? "bg-emerald-500/10 text-neutral-200 border-emerald-500/20"
                     : "bg-amber-500/10 text-neutral-200 border-amber-500/20",
@@ -77,11 +76,10 @@ export const ProjectCards = ({ projects }: ProjectCardsProps) => {
           </div>
 
           <div className="p-4 flex flex-col flex-1 -mt-2">
-            {/* Top section: Name and Members */}
             <div className="flex items-start justify-between gap-3 decoration-0">
               <div className="min-w-0">
                 <Link href={`/dashboard/my-projects/${project._id}`}>
-                  <h3 className="text-sm font-bold text-white truncate hover:text-primary transition-colors">
+                  <h3 className="text-sm font-bold text-primary truncate hover:text-primary/80 transition-colors">
                     {project.projectName}
                   </h3>
                 </Link>
@@ -134,7 +132,6 @@ export const ProjectCards = ({ projects }: ProjectCardsProps) => {
               )}
             </div>
 
-            {/* Bottom Actions - Small & Clean */}
             <div className="mt-auto pt-4 grid grid-cols-2 gap-2">
               <Link
                 href={`/dashboard/my-projects/${project._id}`}
@@ -143,7 +140,7 @@ export const ProjectCards = ({ projects }: ProjectCardsProps) => {
                 <Button
                   variant="outline"
                   size="sm"
-                  className="w-full h-7 text-[10px] gap-1.5 border-white/5 bg-white/5 hover:bg-white/10 transition-colors"
+                  className="w-full h-7 text-[10px] gap-1.5 border-accent/20 bg-accent/5 hover:bg-accent/10 transition-colors"
                 >
                   <Settings2 className="size-3" /> Edit
                 </Button>
@@ -165,12 +162,12 @@ export const ProjectCards = ({ projects }: ProjectCardsProps) => {
       ))}
 
       {/* Dashed Create Card */}
-      <div className="flex flex-col border-2 border-dashed border-white/5 hover:border-white/10 transition-all rounded-xl cursor-pointer items-center justify-center p-8 gap-3 min-h-[200px] bg-white/3 hover:bg-white/5 group">
-        <div className="h-10 w-10 rounded-full border border-white/10 flex items-center justify-center group-hover:bg-primary group-hover:text-white transition-all">
+      <div className="flex flex-col border-2 border-dashed border-accent transition-all rounded-xl cursor-pointer items-center justify-center p-8 gap-3 min-h-[200px] bg-accent/5 hover:bg-accent/30 group">
+        <div className="h-10 w-10 rounded-full border border-accent flex items-center justify-center group-hover:bg-primary group-hover:text-accent transition-all">
           <Plus className="h-5 w-5" />
         </div>
         <div className="text-center">
-          <p className="text-sm font-semibold text-white">Create Project</p>
+          <p className="text-sm font-semibold text-primary">Create Project</p>
           <p className="text-[11px] text-muted-foreground">
             Start a new venture
           </p>

@@ -27,6 +27,16 @@ export async function POST(req: NextRequest) {
       console.log("branch", branch);
       console.log("pusher", pusher);
     }
+
+
+//     ============Pushed Event Triggered for COMMIT !============
+// owner Wekraft-collaboration-platform
+// repoName wekraft-saas
+// branch webhooks-&-project
+// pusher {
+//   name: 'ronitrai27',
+//   email: '108011380+ronitrai27@users.noreply.github.com'
+// }
     // ===============================
     // ISSUES
     // ===============================

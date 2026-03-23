@@ -105,14 +105,6 @@ const ShowRepo = ({
 
       // Fire & Forget
       // ConnectRepo({
-      //   projectId: selectedProjectId as Id<"projects">,
-      //   owner: repoToConnect.owner.login,
-      //   repo: repoToConnect.name,
-      //   githubId: BigInt(repoToConnect.id),
-      //   name: repoToConnect.name,
-      //   fullName: repoToConnect.full_name,
-      //   url: repoToConnect.html_url,
-      //   repoType: repoToConnect.owner.type,
       // });
     } catch (error) {
       toast.dismiss("toast-connect-repo");
@@ -144,14 +136,14 @@ const ShowRepo = ({
         {[...Array(5)].map((_, i) => (
           <div
             key={i}
-            className="w-full p-2.5 rounded-lg border border-white/5 bg-white/[0.02]"
+            className="w-full p-2.5 rounded-lg border border-accent/10 bg-accent/5"
           >
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-3">
-                <Skeleton className="size-8 rounded-md bg-white/5" />
-                <Skeleton className="h-4 w-32 rounded bg-white/5" />
+                <Skeleton className="size-8 rounded-md bg-accent/10" />
+                <Skeleton className="h-4 w-32 rounded bg-accent/10" />
               </div>
-              <Skeleton className="h-5 w-12 rounded-full bg-white/5" />
+              <Skeleton className="h-5 w-12 rounded-full bg-accent/10" />
             </div>
           </div>
         ))}
@@ -201,7 +193,7 @@ const ShowRepo = ({
                     })
                   }
                   className={cn(
-                    "w-full flex flex-col space-y-4 p-4 rounded-xl border transition-all group cursor-pointer bg-accent/10 text-primary border-primary/10 hover:border-primary/10 hover:bg-accent/30",
+                    "w-full flex flex-col space-y-4 p-3 rounded-lg border transition-all group cursor-pointer bg-muted/70 text-primary border-primary/10 hover:border-primary/10 hover:bg-accent/30",
                   )}
                 >
                   <div className="flex w-full justify-between items-start gap-4">
@@ -210,9 +202,9 @@ const ShowRepo = ({
                         <img
                           src={repo.owner.avatar_url}
                           alt={repo.owner.login}
-                          className="size-10 rounded-lg object-cover border border-white/10"
+                          className="size-10 rounded-lg object-cover border border-accent/20"
                         />
-                        <div className="absolute -bottom-1 -right-1 bg-background rounded-full p-0.5 border border-white/10">
+                        <div className="absolute -bottom-1 -right-1 bg-background rounded-full p-0.5 border border-accent/20">
                           {repo.private ? (
                             <Lock className="size-3 text-amber-500" />
                           ) : (
@@ -226,12 +218,12 @@ const ShowRepo = ({
                           <p className="font-semibold text-sm truncate tracking-tight">
                             {repo.name}
                           </p>
-                          <span className="text-[10px] text-muted-foreground/60">
+                          <span className="text-[10px] text-muted-foreground">
                             {repo.owner.login}
                           </span>
                         </div>
 
-                        <div className="flex items-center gap-3 text-[10px] text-muted-foreground/60">
+                        <div className="flex items-center gap-3 text-[10px] text-muted-foreground">
                           <span className="flex items-center gap-1">
                             <Star className="size-3" /> {repo.stargazers_count}
                           </span>
@@ -260,7 +252,7 @@ const ShowRepo = ({
                     </div>
                   </div>
 
-                  <div className="flex items-center justify-between pt-2 border-t border-white/5">
+                  <div className="flex items-center justify-between pt-2 border-t border-primary/10">
                     <div className="flex items-center gap-2">
                       {repo.language && (
                         <div className="flex items-center gap-1.5">
@@ -271,7 +263,7 @@ const ShowRepo = ({
                         </div>
                       )}
                       {repo.owner.type === "Organization" && (
-                        <span className="text-[9px] bg-white/5 px-1.5 py-0.5 rounded text-muted-foreground border border-white/5">
+                        <span className="text-[9px] bg-accent/10 px-1.5 py-0.5 rounded text-muted-foreground border border-accent/20 font-medium">
                           Org
                         </span>
                       )}
@@ -286,8 +278,8 @@ const ShowRepo = ({
                       className={cn(
                         "h-7 py-0 px-6! text-[10px] flex items-center gap-1.5 rounded-md transition-all",
                         isConnected
-                          ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/40 hover:bg-emerald-500/10 cursor-default"
-                          : "bg-primary/5 hover:bg-primary/10 text-white border border-primary/40",
+                          ? ""
+                          : "bg-primary text-primary-foreground hover:bg-primary/90 border border-primary/40 shadow-sm",
                       )}
                     >
                       {isConnected ? (
@@ -317,14 +309,14 @@ const ShowRepo = ({
                 <PaginationPrevious
                   onClick={() => handlePageChange(currentPage - 1)}
                   className={cn(
-                    "bg-white/5 border-white/5 hover:bg-white/10 cursor-pointer transition-all",
+                    "bg-accent/5 border-accent/20 hover:bg-accent/10 cursor-pointer transition-all",
                     currentPage === 1 && "pointer-events-none opacity-30",
                   )}
                 />
               </PaginationItem>
 
               <PaginationItem>
-                <div className="px-3 py-1.5 rounded-md bg-white/5 border border-white/5 text-xs font-medium min-w-[32px] text-center">
+                <div className="px-3 py-1.5 rounded-md bg-accent/5 border border-accent/20 text-xs font-medium min-w-[32px] text-center">
                   {currentPage}
                 </div>
               </PaginationItem>
@@ -333,7 +325,7 @@ const ShowRepo = ({
                 <PaginationNext
                   onClick={() => handlePageChange(currentPage + 1)}
                   className={cn(
-                    "bg-white/5 border-white/5 hover:bg-white/10 cursor-pointer transition-all",
+                    "bg-accent/5 border-accent/20 hover:bg-accent/10 cursor-pointer transition-all",
                     filteredRepos.length < ITEMS_PER_PAGE &&
                       "pointer-events-none opacity-30",
                   )}

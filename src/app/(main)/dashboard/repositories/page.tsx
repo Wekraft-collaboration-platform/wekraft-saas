@@ -49,12 +49,11 @@ const RepositoriesPage = () => {
             <Search className="absolute left-3 top-2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Search repositories..."
-              className="bg-accent border-muted-foreground/10 pl-10 focus:ring-1 focus:ring-white/20"
+              className="bg-accent border-muted-foreground/10 pl-10 focus:ring-1 focus:ring-primary/20"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />
           </div>
-
           <Popover>
             <PopoverTrigger asChild>
               <Button size="sm" className="text-xs cursor-pointer gap-2">
@@ -141,7 +140,6 @@ const RepositoriesPage = () => {
             </PopoverContent>
           </Popover>
         </div>
-
         <ShowRepo
           searchQuery={searchQuery}
           selectedRepo={selectedRepo}
