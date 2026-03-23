@@ -104,4 +104,15 @@ export const getConnectedRepos = query({
   },
 });
 
+// ====================================
+// get repo by id
+// ====================================
+export const getRepositoryById = query({
+  args: { repoId: v.optional(v.id("repositories")) },
+  handler: async (ctx, args) => {
+    if (!args.repoId) return null;
+    return await ctx.db.get(args.repoId);
+  },
+});
+
 

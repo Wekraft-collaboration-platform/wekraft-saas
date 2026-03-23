@@ -73,7 +73,7 @@ export default function DashboardPage() {
   return (
     <div className="w-full h-full p-6 2xl:py-7 2xl:px-10">
       <div className="px-4 flex items-center gap-8">
-        <h1 className="text-3xl font-semibold ">
+        <h1 className="text-3xl font-bold tracking-tight ">
           Welcome{" "}
           {user?.name || (
             <Skeleton className="h-8 w-40 inline-block align-bottom" />
