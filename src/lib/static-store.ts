@@ -1,3 +1,5 @@
+import { Bug, Hourglass, Kanban, List } from "lucide-react";
+
 export const AVAILABLE_TAGS = [
   "Productivity",
   "AI",
@@ -108,5 +110,13 @@ export const PROJECT_STATUS = [
   "production",
   "scaling",
 ];
+
+export const  TABS = [
+  { id: "List", label: "List", icon: List },
+  { id: "Kanban", label: "Kanban", icon: Kanban },
+  { id: "Issues", label: "Issues", icon: Bug },
+  { id: "Sprint", label: "Sprint", icon: Hourglass },
+];
+
 
 export const INVITE_LINK="http://localhost:3000/";
