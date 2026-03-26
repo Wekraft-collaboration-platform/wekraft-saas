@@ -12,9 +12,9 @@ const HeatmapPage = () => {
   const { open: sidebarOpen, setOpen: setSidebarOpen } = useSidebar();
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const params = useParams();
-  const projectId = params.id as Id<"projects">;
+  const slug = params.slug as string;
 
-  const project = useQuery(api.project.getProjectById, { projectId });
+  const project = useQuery(api.project.getProjectBySlug, { slug });
   const repoId = project?.repositoryId;
 
   const didInit = useRef(false);

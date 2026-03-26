@@ -15,25 +15,10 @@ import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
-
-interface Project {
-  _id: string;
-  projectName: string;
-  isPublic: boolean;
-  thumbnailUrl?: string;
-  repoId?: string;
-  repoName?: string;
-  projectWorkStatus?: string;
-  members?: {
-    userId: string;
-    userImage?: string;
-    userName: string;
-  }[];
-  totalMembers: number;
-}
+import { ProjectQuickStats } from "@/types/types";
 
 interface ProjectCardsProps {
-  projects: Project[] | undefined;
+  projects: ProjectQuickStats[] | undefined;
 }
 
 export const ProjectCards = ({ projects }: ProjectCardsProps) => {
@@ -134,7 +119,7 @@ export const ProjectCards = ({ projects }: ProjectCardsProps) => {
 
             <div className="mt-auto pt-4 grid grid-cols-2 gap-2">
               <Link
-                href={`/dashboard/my-projects/${project._id}`}
+                href={`/dashboard/my-projects/${project.slug}`}
                 className="w-full"
               >
                 <Button
@@ -142,11 +127,11 @@ export const ProjectCards = ({ projects }: ProjectCardsProps) => {
                   size="sm"
                   className="w-full h-7 text-[10px] gap-1.5 border-accent/20 bg-accent/5 hover:bg-accent/10 transition-colors"
                 >
-                  <Settings2 className="size-3" /> Edit
+                  <Settings2 className="size-3" /> View
                 </Button>
               </Link>
               <Link
-                href={`/dashboard/my-projects/${project._id}/workspace`}
+                href={`/dashboard/my-projects/${project.slug}/workspace`}
                 className="w-full"
               >
                 <Button

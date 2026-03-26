@@ -20,11 +20,11 @@ const users = [
 
 const TaskPage = () => {
   const params = useParams();
-  const projectId = params.id as Id<"projects">;
+  const slug = params.slug as string;
   
   const [activeTab, setActiveTab] = useState("List");
 
-  const project = useQuery(api.project.getProjectById, { projectId });
+  const project = useQuery(api.project.getProjectBySlug, { slug });
   const projectName = project?.projectName;
   const repoId = project?.repositoryId;
 

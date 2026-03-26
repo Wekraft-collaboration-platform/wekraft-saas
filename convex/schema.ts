@@ -3,7 +3,8 @@ import { v } from "convex/values";
 
 export default defineSchema({
   users: defineTable({
-    name: v.string(),
+    name: v.optional(v.string()), // unique
+    occupation: v.optional(v.string()),
     clerkToken: v.string(),
     email: v.string(),
     githubUsername: v.optional(v.string()),
@@ -19,18 +20,17 @@ export default defineSchema({
     lastUpdatedSkillsAt: v.optional(v.number()),
     // For Onboarding
     hasCompletedOnboarding: v.boolean(),
-    whereFoundPlatform: v.optional(v.string()),
     primaryUsage: v.optional(v.array(v.string())),
 
     createdAt: v.number(),
     updatedAt: v.number(),
     planExpiry: v.optional(v.number()), // For temporary upgrades/coupons
-    occupation: v.optional(v.string()),
     bio: v.optional(v.string()),
     socialLinks: v.optional(v.array(v.string())), // max 3 links (excluding github)
   })
     .index("by_token", ["clerkToken"])
-    .index("by_accountType", ["accountType"]),
+    .index("by_accountType", ["accountType"])
+    .index("by_name", ["name"]),
   // ---------------------------------------------
 
   repositories: defineTable({
@@ -51,6 +51,7 @@ export default defineSchema({
 
   projects: defineTable({
     projectName: v.string(),
+    slug: v.string(), // Globally-unique, URL-safe slug (name + random suffix)
     description: v.optional(v.string()),
     tags: v.optional(v.array(v.string())), // (2-5)
     isPublic: v.boolean(),
@@ -94,6 +95,7 @@ export default defineSchema({
   })
     .index("by_owner", ["ownerId"])
     .index("by_owner_name", ["ownerId", "projectName"])
+    .index("by_slug", ["slug"])
     .index("by_repository", ["repositoryId"])
     .index("by_public", ["isPublic"])
     .index("by_invite_link", ["inviteLink"]),

@@ -88,7 +88,15 @@ const ShowRepo = ({
         description: "Kindly wait for the proper syncing...",
         id: "toast-connect-repo",
       });
-      await createWebhook(repoToConnect.owner.login, repoToConnect.name);
+
+      const result = await createWebhook(
+        repoToConnect.owner.login,
+        repoToConnect.name,
+      );
+
+      if (!result.success) {
+        throw new Error(result.error ?? "Webhook creation failed");
+      }
 
       await conectAndUpdateRepoMutation({
         projectId: selectedProjectId as Id<"projects">,
@@ -99,19 +107,15 @@ const ShowRepo = ({
         repoType: repoToConnect.owner.type,
         repoUrl: repoToConnect.html_url,
       });
-      toast.success(
-        `Link prepared: ${repoToConnect.full_name} → ${project?.projectName ?? "project"}`,
-      );
 
-      // Fire & Forget
-      // ConnectRepo({
-      // });
+      toast.success(
+        `Linked ${repoToConnect.name} → ${project?.projectName ?? "project"} successfully!`,
+      );
     } catch (error) {
-      toast.dismiss("toast-connect-repo");
-      toast.error("Failed to connect repository");
-      setConnectDialogOpen(false);
-      setRepoToConnect(null);
-      setSelectedProjectId("");
+      toast.error("Failed to connect repository", {
+        description:
+          error instanceof Error ? error.message : "Something went wrong",
+      });
     } finally {
       toast.dismiss("toast-connect-repo");
       setConnectDialogOpen(false);
@@ -136,14 +140,14 @@ const ShowRepo = ({
         {[...Array(5)].map((_, i) => (
           <div
             key={i}
-            className="w-full p-2.5 rounded-lg border border-accent/10 bg-accent/5"
+            className="w-full p-2.5 rounded-lg border border-accent/10 bg-accent/40"
           >
             <div className="flex items-center justify-between w-full">
               <div className="flex items-center gap-3">
-                <Skeleton className="size-8 rounded-md bg-accent/10" />
-                <Skeleton className="h-4 w-32 rounded bg-accent/10" />
+                <Skeleton className="size-8 rounded-md dark:bg-white/5 bg-black/5" />
+                <Skeleton className="h-4 w-32 rounded dark:bg-white/10 bg-black/10" />
               </div>
-              <Skeleton className="h-5 w-12 rounded-full bg-accent/10" />
+              <Skeleton className="h-5 w-12 rounded-full dark:bg-white/10 bg-black/10" />
             </div>
           </div>
         ))}

@@ -12,9 +12,9 @@ import React from "react";
 
 const ProjectPage = () => {
   const params = useParams();
-  const projectId = params.id as Id<"projects">;
+  const slug = params.slug as string;
 
-  const project = useQuery(api.project.getProjectById, { projectId });
+  const project = useQuery(api.project.getProjectBySlug, { slug });
   const user = useQuery(api.user.getCurrentUser);
 
   if (project === undefined) {
@@ -33,7 +33,7 @@ const ProjectPage = () => {
   }
   return (
     <div className="w-full h-full animate-in fade-in duration-700 p-6 2xl:p-10 2xl:py-7">
-      <Link href={`/dashboard/my-projects/${project?._id}/workspace`}>
+      <Link href={`/dashboard/my-projects/${project?.slug}/workspace`}>
         <Button size="sm" className="px-10 cursor-pointer">
           <LucideExternalLink className="w-4 h-4 inline mr-2" /> Visit workspace
         </Button>

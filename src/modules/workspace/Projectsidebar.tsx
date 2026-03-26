@@ -102,13 +102,13 @@ export default function ProjectSidebar() {
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
   const params = useParams();
-  const projectId = params.id as Id<"projects">;
+  const slug = params.slug as string;
 
   const user: Doc<"users"> | undefined | null = useQuery(
     api.user.getCurrentUser,
   );
 
-  const project = useQuery(api.project.getProjectById, { projectId });
+  const project = useQuery(api.project.getProjectBySlug, { slug });
 
   useEffect(() => {
     setMounted(true);
@@ -133,7 +133,11 @@ export default function ProjectSidebar() {
             {project?.projectName}
           </h1>
 
-          <Button size="icon-sm" variant={"ghost"} className="group-data-[collapsible=icon]:hidden">
+          <Button
+            size="icon-sm"
+            variant={"ghost"}
+            className="group-data-[collapsible=icon]:hidden"
+          >
             <ChevronsUpDown />
           </Button>
         </div>
@@ -179,11 +183,13 @@ export default function ProjectSidebar() {
             variant={"outline"}
           >
             <Link
-              href={`/dashboard/my-projects/${projectId}/inbox`}
+              href={`/dashboard/my-projects/${slug}/inbox`}
               className="relative z-10 flex items-center gap-3 px-3 py-2 dark:data-[active=true]:text-white data-[active=true]:text-gray-700"
             >
               <Inbox className="h-5 w-5" />
-              <span className="text-sm group-data-[collapsible=icon]:hidden">Inbox</span>
+              <span className="text-sm group-data-[collapsible=icon]:hidden">
+                Inbox
+              </span>
               <span
                 className="
         pointer-events-none absolute inset-0 -z-10
@@ -204,7 +210,9 @@ export default function ProjectSidebar() {
             >
               <div className="relative z-10 flex items-center gap-3 px-1 w-full text-sm text-primary">
                 <Bot className="h-5 w-5" />
-                <span className="group-data-[collapsible=icon]:hidden">AI Assistant</span>
+                <span className="group-data-[collapsible=icon]:hidden">
+                  AI Assistant
+                </span>
                 <ChevronRight className="h-4 w-4 ml-auto group-data-[collapsible=icon]:hidden" />
 
                 <span
@@ -257,7 +265,7 @@ export default function ProjectSidebar() {
         <SidebarMenu className="flex flex-col space-y-2 py-2 ">
           {workspaceMenu.map((item) => {
             const Icon = item.icon;
-            const href = `/dashboard/my-projects/${projectId}/${item.path}`;
+            const href = `/dashboard/my-projects/${slug}/${item.path}`;
 
             return (
               <SidebarMenuButton
@@ -271,7 +279,9 @@ export default function ProjectSidebar() {
                   className="relative z-10 flex items-center gap-3 px-3 py-2 dark:data-[active=true]:text-white data-[active=true]:text-primary text-primary"
                 >
                   <Icon className="h-5 w-5" />
-                  <span className="text-sm group-data-[collapsible=icon]:hidden">{item.label}</span>
+                  <span className="text-sm group-data-[collapsible=icon]:hidden">
+                    {item.label}
+                  </span>
 
                   <span
                     className="

@@ -24,7 +24,7 @@ export const createNewUser = mutation({
     }
 
     return await ctx.db.insert("users", {
-      name: identity?.name || "",
+      // Excluded name for later unique constraint
       clerkToken: identity?.tokenIdentifier!,
       email: identity?.email!,
       githubUsername: identity.nickname,
@@ -111,34 +111,6 @@ export const getUserLimits = query({
 // ==============================
 // UPDATES USER FOR ONBOARDING
 // =============================
-export const updateUserFoundPlatform = mutation({
-  args: { platform: v.string() },
-  handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-
-    if (!identity) {
-      throw new Error(
-        "Called updateUserFoundPlatform without authentication present",
-      );
-    }
-
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_token", (q) =>
-        q.eq("clerkToken", identity.tokenIdentifier),
-      )
-      .unique();
-
-    if (!user) {
-      throw new Error("User not found");
-    }
-
-    await ctx.db.patch(user._id, {
-      whereFoundPlatform: args.platform,
-      updatedAt: Date.now(),
-    });
-  },
-});
 
 export const updateUserPrimaryUsage = mutation({
   args: { purposes: v.array(v.string()) },
@@ -163,6 +135,41 @@ export const updateUserPrimaryUsage = mutation({
     await ctx.db.patch(user._id, {
       primaryUsage: args.purposes,
       updatedAt: Date.now(),
+    });
+  },
+});
+
+export const updateUserIdentity = mutation({
+  args: {
+    name: v.string(),
+    occupation: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) {
+      throw new Error("unauthorized");
+    }
+
+    const currentUser = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("clerkToken", identity.tokenIdentifier))
+      .unique();
+
+    if (!currentUser) throw new Error("User not found");
+
+    // Check if name is already taken by a diff user
+    const existingUserWithName = await ctx.db
+      .query("users")
+      .withIndex("by_name", (q) => q.eq("name", args.name))
+      .unique();
+
+    if (existingUserWithName && existingUserWithName._id !== currentUser._id) {
+      throw new Error("Username is already taken");
+    }
+
+    await ctx.db.patch(currentUser._id, {
+      name: args.name,
+      occupation: args.occupation,
     });
   },
 });
@@ -224,7 +231,6 @@ export const upgradeAccount = mutation({
   },
 });
 
-
 // =======================================
 // UPDATE USER PROFILE
 // =======================================
@@ -260,7 +266,9 @@ export const updateSocialLinks = mutation({
 
     const user = await ctx.db
       .query("users")
-      .withIndex("by_token", (q) => q.eq("clerkToken", identity.tokenIdentifier))
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
       .unique();
 
     if (!user) throw new Error("User not found");
@@ -273,5 +281,3 @@ export const updateSocialLinks = mutation({
     });
   },
 });
-
-

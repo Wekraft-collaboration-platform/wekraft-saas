@@ -1,6 +1,21 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { getPlanLimits } from "./pricing";
+import { customAlphabet } from "nanoid";
+
+const slugId = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 5);
+
+function slugifyProjectName(name: string) {
+  const base = name
+    .toLowerCase()
+    .trim()
+    .replace(/['"]/g, "")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/-+/g, "-")
+    .replace(/^-|-$/g, "");
+
+  return base.length ? base : "project";
+}
 
 // =============================
 // CREATE PROJECT
@@ -38,20 +53,87 @@ export const projectInit = mutation({
       .withIndex("by_owner", (q) => q.eq("ownerId", user._id))
       .collect();
 
-    // Check for existing project by this owner with EXACT SAME NAME (for updates)
-    const existingProject = userProjects.find(
-      (p) => p.projectName === args.projectName,
-    );
-
-    if (!existingProject) {
-      // Trying to create a NEW project
-      if (userProjects.length >= limits.project_creation_limit) {
-        throw new Error(
-          `You've reached your limit of ${limits.project_creation_limit} projects. Please upgrade your plan to create more!`,
-        );
-      }
+    if (userProjects.length >= limits.project_creation_limit) {
+      throw new Error(
+        `You've reached your limit of ${limits.project_creation_limit} projects. Please upgrade your plan to create more!`,
+      );
     }
-    // ------------------------------
+
+    // Check for unique invite link (only on new project creation)
+    const existingProjectWithInvite = await ctx.db
+      .query("projects")
+      .withIndex("by_invite_link", (q) => q.eq("inviteLink", args.inviteLink))
+      .unique();
+
+    if (existingProjectWithInvite) {
+      throw new Error("Invite link already exists.");
+    }
+
+    // Create globally-unique slug: "<kebab-name>-<5 random chars>"
+    const slugBase = slugifyProjectName(args.projectName);
+    let slug = `${slugBase}-${slugId()}`;
+    for (let attempt = 0; attempt < 10; attempt++) {
+      const existingBySlug = await ctx.db
+        .query("projects")
+        .withIndex("by_slug", (q) => q.eq("slug", slug))
+        .unique();
+      if (!existingBySlug) break;
+      slug = `${slugBase}-${slugId()}`;
+    }
+
+    const stillExists = await ctx.db
+      .query("projects")
+      .withIndex("by_slug", (q) => q.eq("slug", slug))
+      .unique();
+    if (stillExists) {
+      throw new Error("Could not create a unique project slug. Please retry.");
+    }
+
+    return await ctx.db.insert("projects", {
+      projectName: args.projectName,
+      slug,
+      description: args.description,
+      isPublic: args.isPublic,
+      projectWorkStatus: args.projectStatus as any,
+      ownerId: user._id,
+      ownerName: user.name ?? "",
+      ownerImage: user.avatarUrl ?? "",
+      projectUpvotes: 0,
+      inviteLink: args.inviteLink,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+// =============================
+// CREATE / UPDATE ONBOARDING DRAFT PROJECT
+// =============================
+export const projectInitOnboarding = mutation({
+  args: {
+    projectName: v.string(),
+    description: v.optional(v.string()),
+    isPublic: v.boolean(),
+    projectStatus: v.string(),
+    inviteLink: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+
+    if (!identity) {
+      throw new Error("Called projectInitOnboarding without authentication present");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) {
+      throw new Error("User not found");
+    }
 
     const validStatuses = [
       "ideation",
@@ -65,40 +147,119 @@ export const projectInit = mutation({
       throw new Error("Invalid project status selected.");
     }
 
-    if (existingProject) {
-      await ctx.db.patch(existingProject._id, {
-        projectName: args.projectName,
-        description: args.description,
-        isPublic: args.isPublic,
-        projectWorkStatus: args.projectStatus as any,
-        updatedAt: Date.now(),
-      });
-      return existingProject._id;
-    } else {
-      // Check for unique invite link (only on new project creation)
+    const userProjects = await ctx.db
+      .query("projects")
+      .withIndex("by_owner", (q) => q.eq("ownerId", user._id))
+      .collect();
+
+    const unlinkedProjects = userProjects
+      .filter((p) => !p.repositoryId && !p.repoName)
+      .sort((a, b) => b.createdAt - a.createdAt);
+
+    const existingDraft = unlinkedProjects[0];
+
+    if (existingDraft) {
+      // Only allow a globally-unique invite link
       const existingProjectWithInvite = await ctx.db
         .query("projects")
         .withIndex("by_invite_link", (q) => q.eq("inviteLink", args.inviteLink))
         .unique();
 
-      if (existingProjectWithInvite) {
+      if (
+        existingProjectWithInvite &&
+        existingProjectWithInvite._id !== existingDraft._id
+      ) {
         throw new Error("Invite link already exists.");
       }
 
-      return await ctx.db.insert("projects", {
+      // Regenerate slug based on latest project name, enforcing global uniqueness
+      const slugBase = slugifyProjectName(args.projectName);
+      let slug = `${slugBase}-${slugId()}`;
+
+      for (let attempt = 0; attempt < 10; attempt++) {
+        const existingBySlug = await ctx.db
+          .query("projects")
+          .withIndex("by_slug", (q) => q.eq("slug", slug))
+          .unique();
+
+        if (!existingBySlug) break;
+        if (existingBySlug._id === existingDraft._id) break;
+
+        slug = `${slugBase}-${slugId()}`;
+      }
+
+      const stillExists = await ctx.db
+        .query("projects")
+        .withIndex("by_slug", (q) => q.eq("slug", slug))
+        .unique();
+
+      if (
+        stillExists &&
+        stillExists._id !== existingDraft._id
+      ) {
+        throw new Error(
+          "Could not update a unique project slug. Please retry.",
+        );
+      }
+
+      await ctx.db.patch(existingDraft._id, {
         projectName: args.projectName,
+        slug,
         description: args.description,
         isPublic: args.isPublic,
         projectWorkStatus: args.projectStatus as any,
-        ownerId: user._id,
-        ownerName: user.name,
-        ownerImage: user.avatarUrl ?? "",
-        projectUpvotes: 0,
         inviteLink: args.inviteLink,
-        createdAt: Date.now(),
         updatedAt: Date.now(),
       });
+
+      return existingDraft._id;
     }
+
+    // No draft exists -> create one (onboarding only enforces slug+invite uniqueness)
+    const existingProjectWithInvite = await ctx.db
+      .query("projects")
+      .withIndex("by_invite_link", (q) => q.eq("inviteLink", args.inviteLink))
+      .unique();
+
+    if (existingProjectWithInvite) {
+      throw new Error("Invite link already exists.");
+    }
+
+    // Create globally-unique slug: "<kebab-name>-<5 random chars>"
+    const slugBase = slugifyProjectName(args.projectName);
+    let slug = `${slugBase}-${slugId()}`;
+    // Extremely low collision risk, but enforce uniqueness globally.
+    for (let attempt = 0; attempt < 10; attempt++) {
+      const existingBySlug = await ctx.db
+        .query("projects")
+        .withIndex("by_slug", (q) => q.eq("slug", slug))
+        .unique();
+      if (!existingBySlug) break;
+      slug = `${slugBase}-${slugId()}`;
+    }
+
+    const stillExists = await ctx.db
+      .query("projects")
+      .withIndex("by_slug", (q) => q.eq("slug", slug))
+      .unique();
+    if (stillExists) {
+      throw new Error("Could not create a unique project slug. Please retry.");
+    }
+
+    return await ctx.db.insert("projects", {
+      projectName: args.projectName,
+      slug,
+      description: args.description,
+      isPublic: args.isPublic,
+      projectWorkStatus: args.projectStatus as any,
+      ownerId: user._id,
+      ownerName: user.name ?? "",
+      ownerImage: user.avatarUrl ?? "",
+      projectUpvotes: 0,
+      inviteLink: args.inviteLink,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
   },
 });
 
@@ -173,6 +334,7 @@ export const getUserProjects = query({
           repoId: p.repositoryId,
           repoName: p.repoName,
           projectWorkStatus: p.projectWorkStatus,
+          slug: p.slug,
           members: members.slice(0, 4).map((m) => ({
             userId: m.userId,
             userImage: m.userImage,
@@ -188,22 +350,25 @@ export const getUserProjects = query({
 });
 
 // ====================================
-// GET PROJECT BY ID
+// GET PROJECT BY SLUG
 // ====================================
-export const getProjectById = query({
-  args: { projectId: v.id("projects") },
+export const getProjectBySlug = query({
+  args: { slug: v.string() },
   handler: async (ctx, args) => {
-    const project = await ctx.db.get(args.projectId);
+    const project = await ctx.db
+      .query("projects")
+      .withIndex("by_slug", (q) => q.eq("slug", args.slug))
+      .unique();
     if (!project) return null;
 
     const identity = await ctx.auth.getUserIdentity();
     const user = identity
       ? await ctx.db
-          .query("users")
-          .withIndex("by_token", (q) =>
-            q.eq("clerkToken", identity.tokenIdentifier),
-          )
-          .unique()
+        .query("users")
+        .withIndex("by_token", (q) =>
+          q.eq("clerkToken", identity.tokenIdentifier),
+        )
+        .unique()
       : null;
 
     // Security: Only return if public OR the user is the owner

@@ -10,9 +10,9 @@ import { ChevronLeft, Home } from "lucide-react";
 
 const ProjectWorkspace = () => {
   const params = useParams();
-  const projectId = params.id as Id<"projects">;
+  const slug = params.slug as string;
 
-  const project = useQuery(api.project.getProjectById, { projectId });
+  const project = useQuery(api.project.getProjectBySlug, { slug });
   const projectName = project?.projectName;
   const repoId = project?.repositoryId;
 
@@ -33,7 +33,7 @@ const ProjectWorkspace = () => {
             Monitor project insights, track progress and team performance all in one platform Wekraft 
           </p>
         </div>
-        <Link href={`/dashboard/my-projects/${projectId}`}>
+        <Link href={`/dashboard/my-projects/${slug}`}>
           <Button className="text-xs cursor-pointer" variant="outline" size="sm">
             <ChevronLeft />
             Back to Home

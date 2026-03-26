@@ -15,12 +15,13 @@ import {
   FolderGit,
   Loader2,
   Copy,
+  UserRoundCog,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
 import { STEPS, SOURCES, PURPOSES } from "./StaticContent";
-import { PROJECT_STATUS, INVITE_LINK } from "@/lib/static-store";
+import { PROJECT_STATUS, INVITE_LINK, ROLES } from "@/lib/static-store";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useMutation } from "convex/react";
@@ -28,6 +29,7 @@ import { toast } from "sonner";
 import { api } from "../../../../convex/_generated/api";
 import { useRouter } from "next/navigation";
 import { nanoid } from "nanoid";
+import { IdentityRolePicker } from "./IdentityRolePicker";
 
 const variants = {
   enter: (direction: number) => ({
@@ -53,14 +55,17 @@ export function MultiStepOnboarding() {
   const router = useRouter();
 
   // Mutations
-  const updateSource = useMutation(api.user.updateUserFoundPlatform);
   const updatePurposes = useMutation(api.user.updateUserPrimaryUsage);
-  const initProject = useMutation(api.project.projectInit);
+  const updateIdentity = useMutation(api.user.updateUserIdentity);
+  const initProject = useMutation(api.project.projectInitOnboarding);
   const completeOnboarding = useMutation(api.user.completeOnboarding);
 
   // Form State
-  const [hearAboutUs, setHearAboutUs] = useState("");
   const [purposes, setPurposes] = useState<string[]>([]);
+
+  // Step 2
+  const [username, setUsername] = useState("");
+  const [selectedRole, setSelectedRole] = useState("");
 
   // Step 3
   const [projectName, setProjectName] = useState("");
@@ -77,17 +82,26 @@ export function MultiStepOnboarding() {
       setIsLoading(true);
 
       if (currentStep === 1) {
-        if (!hearAboutUs) {
-          toast.error("Please select how you heard about us");
-          return;
-        }
-        await updateSource({ platform: hearAboutUs });
-      }
-
-      if (currentStep === 2) {
         // optional
         if (purposes.length > 0) {
           await updatePurposes({ purposes });
+        }
+      }
+
+      if (currentStep === 2) {
+        if (!username || !selectedRole) {
+          toast.error("Please provide a username and select a role");
+          setIsLoading(false);
+          return;
+        }
+
+        try {
+          await updateIdentity({ name: username, occupation: selectedRole });
+          toast.success("Identity updated successfully");
+        } catch (error: any) {
+          toast.error(error.message || "Username is already taken");
+          setIsLoading(false);
+          return; // Stop here, don't go to step 3
         }
       }
 
@@ -96,14 +110,20 @@ export function MultiStepOnboarding() {
           toast.error("Please provide project name and status");
           return;
         }
-        const inviteCode = nanoid(32);
-        await initProject({
-          projectName,
-          isPublic,
-          projectStatus,
-          inviteLink: inviteCode,
-        });
-        setGeneratedInviteLink(inviteCode);
+        try {
+          const inviteCode = nanoid(32);
+          await initProject({
+            projectName,
+            isPublic,
+            projectStatus,
+            inviteLink: inviteCode,
+          });
+          setGeneratedInviteLink(inviteCode);
+        } catch (error: any) {
+          toast.error(error.message || "Try with another name");
+          setIsLoading(false);
+          return;
+        }
       }
 
       if (currentStep === 5) {
@@ -146,7 +166,7 @@ export function MultiStepOnboarding() {
     );
   };
 
-  const isSkip = currentStep === 2 || currentStep === 4;
+  const isSkip = currentStep === 1 || currentStep === 4;
 
   return (
     <div className="dark flex flex-col items-center justify-center h-screen p-4 pt-10 relative text-foreground overflow-hidden">
@@ -154,7 +174,7 @@ export function MultiStepOnboarding() {
         src="/bg-footer.jpg"
         alt="bg-image"
         fill
-        className="absolute w-full h-full object-cover opacity-30"
+        className="absolute w-full h-full object-cover opacity-25"
         priority
       />
 
@@ -199,80 +219,8 @@ export function MultiStepOnboarding() {
               exit="exit"
               transition={{ duration: 0.2, ease: "easeOut" }}
             >
-              {/* ── STEP 1 : Where did you hear about us ── */}
+              {/* ── STEP 1 : your Main purpose of using wekraft (SKIP) ── */}
               {currentStep === 1 && (
-                <div className="space-y-5 relative">
-                  <div className="text-center space-y-2 mb-5">
-                    <h2 className="text-2xl font-semibold tracking-tight text-white flex items-center justify-center gap-2">
-                      Where did you hear about us
-                      <SearchAlert className="w-6 h-6 " />
-                    </h2>
-                    <p className="text-white/50 text-sm">
-                      Select the channel that brought you here
-                    </p>
-                  </div>
-
-                  <div className="grid grid-cols-4 gap-5">
-                    {SOURCES.map((source) => {
-                      const selected = hearAboutUs === source.id;
-                      return (
-                        <button
-                          key={source.id}
-                          onClick={() => setHearAboutUs(source.id)}
-                          className={cn(
-                            "relative flex flex-col items-center justify-center gap-2 py-3.5 px-2 rounded-xl border transition-all duration-150 group overflow-hidden",
-                            selected
-                              ? "bg-white text-black border-white shadow-[0_0_18px_rgba(255,255,255,0.25)]"
-                              : "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 text-white/60 hover:text-white",
-                          )}
-                        >
-                          {selected && (
-                            <motion.div
-                              layoutId="source-glow"
-                              className="absolute inset-0 bg-white/10 blur-lg pointer-events-none"
-                            />
-                          )}
-
-                          <div
-                            className={cn(
-                              "p-3 rounded-lg transition-all duration-200",
-                              selected
-                                ? "bg-black/10"
-                                : "bg-white/5 group-hover:scale-110",
-                            )}
-                          >
-                            <source.icon
-                              className={cn(
-                                "w-5 h-5",
-                                selected ? "text-black" : "text-white/70",
-                              )}
-                            />
-                          </div>
-
-                          <span className="text-sm font-medium tracking-wide leading-tight">
-                            {source.label}
-                          </span>
-
-                          {selected && (
-                            <motion.div
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              className="absolute top-1.5 right-1.5"
-                            >
-                              <div className="bg-blue-500 rounded-full p-1 border border-white/20">
-                                <Check className="w-2.5 h-2.5 text-white" />
-                              </div>
-                            </motion.div>
-                          )}
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-
-              {/* ── STEP 2 : Purpose ── */}
-              {currentStep === 2 && (
                 <div className="space-y-5 relative">
                   <div className="text-center space-y-2 mb-5">
                     <h2 className="text-2xl font-semibold tracking-tight text-white ">
@@ -297,7 +245,7 @@ export function MultiStepOnboarding() {
                           className={cn(
                             "relative flex items-start gap-3 p-4 rounded-xl border text-left transition-all duration-200 group overflow-hidden",
                             selected
-                              ? `bg-gradient-to-br from-white/30 to-white/10 shadow-[0_0_20px_rgba(255,255,255,0.06)]`
+                              ? `bg-linear-to-br from-white/30 to-white/10 shadow-[0_0_20px_rgba(255,255,255,0.06)]`
                               : "bg-white/5 border-white/10 hover:bg-white/[0.08] hover:border-white/20",
                           )}
                         >
@@ -361,7 +309,29 @@ export function MultiStepOnboarding() {
                   </div>
                 </div>
               )}
+              {/* ── STEP 2 : Update User Name and Occupation ── */}
+              {currentStep === 2 && (
+                <div className="space-y-4 relative">
+                  <div className="text-center space-y-2 mb-3">
+                    <h2 className="text-2xl font-semibold tracking-tight text-white ">
+                      Let’s set up your identity
+                      <UserRoundCog className="w-6 h-6 inline ml-2 text-white" />
+                    </h2>
+                    <p className="text-neutral-300 text-sm px-12 text-center">
+                      Choose a unique name & your role — this is how people will
+                      find you, connect, and build with you.
+                    </p>
+                  </div>
 
+                  <IdentityRolePicker
+                    username={username}
+                    onUsernameChange={setUsername}
+                    roles={ROLES}
+                    selectedRole={selectedRole}
+                    onRoleSelect={setSelectedRole}
+                  />
+                </div>
+              )}
               {/* --- STEP 3 : CREATE FIRST PROJECT */}
               {currentStep === 3 && (
                 <div className="space-y-5 relative">
@@ -385,8 +355,8 @@ export function MultiStepOnboarding() {
                       </Label>
                       <Input
                         id="projectName"
-                        placeholder={"Acme-saas"}
-                        className="bg-white/5 border-white/10 focus:ring-1 focus:ring-white/20"
+                        placeholder={"Acme saas"}
+                        className="bg-white/20! border border-white/30! text-white placeholder:text-neutral-300"
                         value={projectName}
                         onChange={(e) => setProjectName(e.target.value)}
                       />
@@ -411,7 +381,7 @@ export function MultiStepOnboarding() {
                                 "relative px-5 py-2 rounded-lg border text-xs transition-all duration-300 capitalize overflow-hidden group cursor-pointer",
                                 isSelected
                                   ? "bg-white/20 border-white text-white opacity-100 scale-[1.02] shadow-[0_0_20px_rgba(255,255,255,0.05)]"
-                                  : "bg-white/10 border-white/10 text-neutral-300 hover:bg-white/10 hover:border-white/20 hover:text-white",
+                                  : "bg-white/10 border-white/30 text-neutral-300 hover:bg-white/10 hover:border-white/20 hover:text-white",
                               )}
                             >
                               <span
@@ -498,8 +468,7 @@ export function MultiStepOnboarding() {
                   </div>
                 </div>
               )}
-
-              {/* STE 4 :  REPO CONNECT ( OPTIONAL) --- */}
+              {/* STE 4 :  REPO CONNECT (SKIP) --- */}
               {currentStep === 4 && (
                 <div className="space-y-5 relative">
                   <div className="text-center space-y-2 mb-5">
@@ -582,33 +551,41 @@ export function MultiStepOnboarding() {
                       variant="outline"
                       className="h-18 flex flex-col items-center justify-center gap-2 bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 transition-all group"
                       onClick={() => {
-                        navigator.clipboard.writeText(`${INVITE_LINK}${generatedInviteLink}`);
+                        navigator.clipboard.writeText(
+                          `${INVITE_LINK}${generatedInviteLink}`,
+                        );
                         toast.success("Link copied for WhatsApp!");
                       }}
                     >
-                      <Image 
-                        src="/whatsapp.png" 
-                        alt="WhatsApp" 
-                        width={24} 
-                        height={24} 
+                      <Image
+                        src="/whatsapp.png"
+                        alt="WhatsApp"
+                        width={24}
+                        height={24}
                         className="opacity-70 group-hover:opacity-100 transition-opacity"
                       />
-                      <span className="text-[10px] text-white/50 group-hover:text-white transition-colors">WhatsApp</span>
+                      <span className="text-[10px] text-white/50 group-hover:text-white transition-colors">
+                        WhatsApp
+                      </span>
                     </Button>
-                    
+
                     <Button
                       variant="outline"
                       className="h-18 flex flex-col items-center justify-center gap-2 bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 transition-all group"
-                      onClick={() => window.open("https://discord.com", "_blank")}
+                      onClick={() =>
+                        window.open("https://discord.com", "_blank")
+                      }
                     >
-                      <Image 
-                        src="/discord.png" 
-                        alt="Discord" 
-                        width={24} 
-                        height={24} 
+                      <Image
+                        src="/discord.png"
+                        alt="Discord"
+                        width={24}
+                        height={24}
                         className="opacity-70 group-hover:opacity-100 transition-opacity"
                       />
-                      <span className="text-[10px] text-white/50 group-hover:text-white transition-colors">Discord</span>
+                      <span className="text-[10px] text-white/50 group-hover:text-white transition-colors">
+                        Discord
+                      </span>
                     </Button>
 
                     <Button
@@ -616,14 +593,16 @@ export function MultiStepOnboarding() {
                       className="h-18 flex flex-col items-center justify-center gap-2 bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 transition-all group"
                       onClick={() => window.open("https://slack.com", "_blank")}
                     >
-                      <Image 
-                        src="/slack.png" 
-                        alt="Slack" 
-                        width={24} 
-                        height={24} 
+                      <Image
+                        src="/slack.png"
+                        alt="Slack"
+                        width={24}
+                        height={24}
                         className="opacity-70 group-hover:opacity-100 transition-opacity"
                       />
-                      <span className="text-[10px] text-white/50 group-hover:text-white transition-colors">Slack</span>
+                      <span className="text-[10px] text-white/50 group-hover:text-white transition-colors">
+                        Slack
+                      </span>
                     </Button>
                   </div>
                 </div>
@@ -637,7 +616,7 @@ export function MultiStepOnboarding() {
               variant="outline"
               onClick={handleBack}
               disabled={currentStep === 1 || isLoading}
-              className="text-muted-foreground hover:text-white disabled:opacity-30 transition-all z-10 text-sm h-8 px-3"
+              className="text-muted-foreground hover:text-white disabled:opacity-30 transition-all z-10 text-xs h-8 px-3"
             >
               <ChevronLeft className="w-3.5 h-3.5 mr-1" />
               Back
@@ -649,7 +628,7 @@ export function MultiStepOnboarding() {
                   variant="default"
                   onClick={handleSkip}
                   disabled={isLoading}
-                  className=" text-sm h-8 px-5 transition-all z-10"
+                  className=" text-xs h-8 px-5 transition-all z-10"
                 >
                   Skip <ChevronRight className="w-3.5 h-3.5 ml-1" />
                 </Button>
@@ -657,7 +636,7 @@ export function MultiStepOnboarding() {
               <Button
                 onClick={handleNext}
                 disabled={isLoading}
-                className="bg-white/90 text-sm text-black hover:bg-white font-medium px-6 h-8 transition-all active:scale-95 z-10 cursor-pointer rounded-lg flex items-center justify-center gap-2"
+                className="text-xs font-medium px-6 h-8 transition-all active:scale-95 z-10 cursor-pointer rounded-lg flex items-center justify-center gap-2"
               >
                 {isLoading ? (
                   <>
