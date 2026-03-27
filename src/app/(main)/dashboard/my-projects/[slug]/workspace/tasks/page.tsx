@@ -9,6 +9,7 @@ import { Layers2, UserPlus, Search, Filter, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { CreateTaskDialog } from "@/components/CreateTaskDialog";
 import { TABS } from "@/lib/static-store";
 
 const users = [
@@ -24,6 +25,7 @@ const TaskPage = () => {
   
   const [activeTab, setActiveTab] = useState("List");
 
+  const currentUser = useQuery(api.user.getCurrentUser)
   const project = useQuery(api.project.getProjectBySlug, { slug });
   const projectName = project?.projectName;
   const repoId = project?.repositoryId;
@@ -58,7 +60,7 @@ const TaskPage = () => {
 
           {/* Invite Button */}
           <Button className="text-xs cursor-pointer px-4 bg-blue-600 text-white hover:bg-blue-700" size="sm">
-            <UserPlus className="w-4 h-4 mr-1" />
+            <UserPlus className="w-5 h-5 mr-1" />
             Invite
           </Button>
         </div>
@@ -81,7 +83,7 @@ const TaskPage = () => {
                     : "hover:text-foreground border-b-2 border-transparent"
                 }`}
               >
-                <Icon className="w-4 h-4" />
+                <Icon className="w-5 h-5" />
                 {tab.label}
               </Button>
             );
@@ -94,17 +96,23 @@ const TaskPage = () => {
             <Input 
               type="text"
               placeholder="Search ..." 
-              className="pl-9 h-9 w-[200px] border-muted"
+              className="pl-9 h-9 w-[240px] border-muted"
             />
           </div>
           <Button variant="outline" size="sm" className="h-9">
-            <Filter className="w-4 h-4 mr-2" />
+            <Filter className="w-5 h-5 mr-2" />
             Filter
           </Button>
-          <Button size="sm" className=" text-xs">
-            <Plus className="w-4 h-4 mr-2" />
-            New Task
-          </Button>
+          <CreateTaskDialog 
+            projectName={projectName || "Project"} 
+            projectId={project._id} 
+            trigger={
+              <Button size="sm" className="text-xs">
+                <Plus className="w-5 h-5 mr-2" />
+                New Task
+              </Button>
+            }
+          />
         </div>
       </div>
 

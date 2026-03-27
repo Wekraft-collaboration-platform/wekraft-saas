@@ -12,6 +12,7 @@ import type * as pricing from "../pricing.js";
 import type * as project from "../project.js";
 import type * as repo from "../repo.js";
 import type * as user from "../user.js";
+import type * as workspace from "../workspace.js";
 
 import type {
   ApiFromModules,
@@ -24,6 +25,7 @@ declare const fullApi: ApiFromModules<{
   project: typeof project;
   repo: typeof repo;
   user: typeof user;
+  workspace: typeof workspace;
 }>;
 
 /**
