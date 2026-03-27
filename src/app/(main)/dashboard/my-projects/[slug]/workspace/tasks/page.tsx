@@ -9,7 +9,7 @@ import { Layers2, UserPlus, Search, Filter, Plus } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CreateTaskDialog } from "@/components/CreateTaskDialog";
+import { CreateTaskDialog } from "@/modules/workspace/CreateTaskDialog";
 import { TABS } from "@/lib/static-store";
 
 const users = [
@@ -106,6 +106,7 @@ const TaskPage = () => {
           <CreateTaskDialog 
             projectName={projectName || "Project"} 
             projectId={project._id} 
+            repoFullName={project.repoFullName}
             trigger={
               <Button size="sm" className="text-xs">
                 <Plus className="w-5 h-5 mr-2" />

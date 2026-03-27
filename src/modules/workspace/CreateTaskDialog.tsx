@@ -5,7 +5,6 @@ import {
   Dialog,
   DialogContent,
   DialogHeader,
-  DialogTitle,
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
@@ -26,9 +25,11 @@ import {
   BugPlay,
   Ellipse,
   Ellipsis,
+  Loader2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
 import {
   Popover,
   PopoverContent,
@@ -43,16 +44,20 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { cn } from "@/lib/utils";
+import { Id } from "../../../convex/_generated/dataModel";
+import { GetRepoStructure } from "./GetRepoStructure";
 
 interface CreateTaskDialogProps {
   projectName: string;
-  projectId: string; // From Convex
+  projectId: Id<"projects">; // From Convex
+  repoFullName?: string; // owner/repo
   trigger: React.ReactNode;
 }
 
 export const CreateTaskDialog = ({
   projectName,
   projectId,
+  repoFullName,
   trigger,
 }: CreateTaskDialogProps) => {
   const [open, setOpen] = useState(false);
@@ -66,6 +71,8 @@ export const CreateTaskDialog = ({
   const [endDate, setEndDate] = useState<Date>();
   const [taskType, setTaskType] = useState("");
 
+  const [selectedPath, setSelectedPath] = useState<string | null>(null);
+
   const statusIcons: Record<string, React.ReactNode> = {
     "not started": <Ellipsis className="w-3.5 h-3.5" />,
     inprogress: (
@@ -73,15 +80,36 @@ export const CreateTaskDialog = ({
     ),
     issue: <Bug className="w-3.5 h-3.5 text-red-500" />,
     reviewing: <CircleDashed className="w-3.5 h-3.5 text-blue-500" />,
-    testing: <BugPlay className="w-3.5 h-3.5 text-purple-500" />,
+    testing: <BugPlay className="w-3.5 h-3.5 text-indigo-500" />,
     completed: <div className="w-3.5 h-3.5 rounded-full bg-green-500" />,
   };
 
-  const priorityIcons = {
+  const priorityIcons: Record<string, React.ReactNode> = {
     none: <MoreHorizontal className="w-3.5 h-3.5" />,
-    low: <Flag className="w-3.5 h-3.5 text-blue-400" />,
-    medium: <Flag className="w-3.5 h-3.5 text-yellow-400" />,
-    high: <Flag className="w-3.5 h-3.5 text-red-400" />,
+    low: (
+      <div className="flex items-end gap-px h-3 mb-0.5">
+        <div className="w-[1.5px] h-3 bg-yellow-500 rounded-px" />
+        <div className="w-[1.5px] h-2 dark:bg-neutral-400 bg-accent rounded-px" />
+        <div className="w-[1.5px] h-1.5 dark:bg-neutral-400 bg-accent rounded-px" />
+        <div className="w-[1.5px] h-[4px] dark:bg-neutral-400 bg-accent rounded-px" />
+      </div>
+    ),
+    medium: (
+      <div className="flex items-end gap-px h-3 mb-0.5">
+        <div className="w-[1.5px] h-3 bg-green-500 rounded-px" />
+        <div className="w-[1.5px] h-2 bg-green-500 rounded-px" />
+        <div className="w-[1.5px] h-1.5  dark:bg-neutral-400 bg-accent  rounded-px" />
+        <div className="w-[1.5px] h-[4px] dark:bg-neutral-400 bg-accent rounded-px" />
+      </div>
+    ),
+    high: (
+      <div className="flex items-end gap-px h-3 mb-0.5">
+        <div className="w-[1.5px] h-3 bg-red-500 rounded-px" />
+        <div className="w-[1.5px] h-2.5 bg-red-500 rounded-px" />
+        <div className="w-[1.5px] h-2 bg-red-500 rounded-px" />
+        <div className="w-[1.5px] h-[4px] dark:bg-neutral-400 bg-accent rounded-px" />
+      </div>
+    ),
   };
 
   return (
@@ -121,7 +149,10 @@ export const CreateTaskDialog = ({
                   <span className="capitalize">{status.replace("-", " ")}</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200">
+              <DropdownMenuContent className="bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200 ">
+                <div className="text-xs text-center font-medium p-2 border-b border-accent">
+                  Select Status
+                </div>
                 {Object.keys(statusIcons).map((s) => (
                   <DropdownMenuItem
                     key={s}
@@ -129,7 +160,7 @@ export const CreateTaskDialog = ({
                     className="gap-2 cursor-pointer"
                   >
                     {statusIcons[s]}
-                    <span className="capitalize">{s.replace("-", " ")}</span>
+                    <span className="capitalize text-xs px-1.5">{s.replace("-", " ")}</span>
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
@@ -144,12 +175,13 @@ export const CreateTaskDialog = ({
                   className="h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-neutral-400 px-2 gap-1.5 rounded-full text-[11px]"
                 >
                   {priorityIcons[priority]}
-                  <span className="capitalize">
-                    {priority === "none" ? "Priority" : priority}
-                  </span>
+                  <span>Priority</span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200">
+                <div className="text-xs text-center font-medium p-2 border-b border-accent">
+                  Select Priority
+                </div>
                 {(["none", "low", "medium", "high"] as const).map((p) => (
                   <DropdownMenuItem
                     key={p}
@@ -231,7 +263,7 @@ export const CreateTaskDialog = ({
                   {taskType || "Type"}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[200px] p-3 bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200">
+              <PopoverContent className="w-[280px] p-3 bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200">
                 <div className="space-y-3">
                   <p className="text-xs font-medium text-neutral-500">
                     Custom Task Type
@@ -263,21 +295,36 @@ export const CreateTaskDialog = ({
               </PopoverContent>
             </Popover>
 
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-neutral-400 px-2 gap-1.5 rounded-full text-[11px]"
-            >
-              <Link2 className="w-3.5 h-3.5" />
-              Link Code
-            </Button>
+            {/* Link Codebase */}
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={cn(
+                    "h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-neutral-400 px-2 gap-1.5 rounded-full text-[11px]",
+                    selectedPath && "text-blue-400 border-blue-900/50 bg-blue-900/10"
+                  )}
+                >
+                  <Link2 className="w-3.5 h-3.5" />
+                  {selectedPath ? selectedPath.split('/').pop() : "Link Code"}
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-[320px] p-0 bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200">
+                <GetRepoStructure 
+                  repoFullName={repoFullName}
+                  onSelect={setSelectedPath}
+                  selectedPath={selectedPath}
+                />
+              </PopoverContent>
+            </Popover>
           </div>
 
           <Textarea
             placeholder="Add a description, a project brief, or collect ideas..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="min-h-[160px] bg-transparent border-none p-0 focus-visible:ring-0 placeholder:text-neutral-600 resize-none text-sm leading-relaxed"
+            className="min-h-[220px] bg-transparent border-none p-2 focus-visible:ring-0 placeholder:text-neutral-600 resize-none text-sm leading-relaxed"
           />
         </div>
 
