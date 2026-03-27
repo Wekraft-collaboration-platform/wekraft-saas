@@ -5,7 +5,12 @@ import { Id } from "@/../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "convex/react";
-import { LucideExternalLink } from "lucide-react";
+import {
+  ChevronLeft,
+  Link2,
+  LucideExternalLink,
+  LucideLayers3,
+} from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import React from "react";
@@ -33,11 +38,37 @@ const ProjectPage = () => {
   }
   return (
     <div className="w-full h-full animate-in fade-in duration-700 p-6 2xl:p-10 2xl:py-7">
-      <Link href={`/dashboard/my-projects/${project?.slug}/workspace`}>
-        <Button size="sm" className="px-10 cursor-pointer">
-          <LucideExternalLink className="w-4 h-4 inline mr-2" /> Visit workspace
-        </Button>
-      </Link>
+      <header className="flex justify-between items-center mb-6">
+        <div className="flex flex-col space-y-1.5">
+          <h1 className="text-3xl font-bold flex items-center gap-2">
+            <LucideLayers3 className="w-6 h-6 text-primary" />{" "}
+            {project.projectName}
+          </h1>
+          <Link href={""}>
+            <p className="text-muted-foreground text-sm cursor-pointer hover:text-primary/90">
+              <Link2 className="inline w-5 h-5" /> {project.repoFullName}
+            </p>
+          </Link>
+        </div>
+        <div className="flex gap-5">
+          <Link href={`/dashboard/`}>
+            <Button
+              size="sm"
+              variant={"outline"}
+              className="px-6 text-xs cursor-pointer"
+            >
+              <ChevronLeft className="w-4 h-4 inline mr-2" /> Back
+            </Button>
+          </Link>
+
+          <Link href={`/dashboard/my-projects/${project?.slug}/workspace`}>
+            <Button size="sm" className="px-10 text-xs cursor-pointer">
+              <LucideExternalLink className="w-4 h-4 inline mr-2" /> Visit
+              workspace
+            </Button>
+          </Link>
+        </div>
+      </header>
     </div>
   );
 };

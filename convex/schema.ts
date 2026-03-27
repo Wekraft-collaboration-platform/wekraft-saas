@@ -114,4 +114,43 @@ export default defineSchema({
     .index("by_project", ["projectId"])
     .index("by_user", ["userId"])
     .index("by_access_role", ["AccessRole"]),
+
+  // ------------------------------------------------------------
+  tasks: defineTable({
+    title: v.string(),
+    description: v.optional(v.string()),
+    type: v.string(), // Custom tags like "dashboard", "mobile", "auth"
+    priority: v.optional(v.union(v.literal("high"), v.literal("medium"), v.literal("low"))),
+    assignedTo: v.optional(
+      v.array(
+        v.object({
+          userId: v.id("users"),
+          name: v.string(),
+          avatar: v.optional(v.string()),
+        }),
+      ),
+    ),
+    status: v.union(
+      v.literal("not started"),
+      v.literal("inprogress"),
+      v.literal("issue"),
+      v.literal("reviewing"),
+      v.literal("testing"),
+      v.literal("completed"),
+    ),
+    estimation: v.object({
+      startDate: v.number(),
+      endDate: v.number(),
+    }),
+    linkWithCodebase: v.optional(v.string()),
+    projectId: v.id("projects"),
+    createdByUserId: v.id("users"),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_project", ["projectId"])
+    .index("by_creator", ["createdByUserId"])
+    .index("by_status", ["status"])
+    .index("by_priority", ["priority"])
+    .index("by_project_status", ["projectId", "status"]),
 });
