@@ -1,6 +1,8 @@
 "use client";
 
 import React, { useState } from "react";
+import { useMutation } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 import {
   Dialog,
   DialogContent,
@@ -72,6 +74,53 @@ export const CreateTaskDialog = ({
   const [taskType, setTaskType] = useState("");
 
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
+  const [isPending, setIsPending] = useState(false);
+
+  const createTask = useMutation(api.workspace.createTask);
+
+  const handleCreateTask = async () => {
+    if (!title.trim()) {
+      toast.error("Task title is required");
+      return;
+    }
+    if (!startDate || !endDate) {
+      toast.error("Please select start and target dates");
+      return;
+    }
+
+    try {
+      setIsPending(true);
+      await createTask({
+        title,
+        description: description.trim() || undefined,
+        status: status as any,
+        priority: priority === "none" ? undefined : (priority as any),
+        estimation: {
+          startDate: startDate.getTime(),
+          endDate: endDate.getTime(),
+        },
+        type: taskType || "task",
+        projectId,
+        linkWithCodebase: selectedPath || undefined,
+      });
+      toast.success("Task created successfully");
+      setOpen(false);
+      // Reset form
+      setTitle("");
+      setDescription("");
+      setStatus("not started");
+      setPriority("none");
+      setStartDate(undefined);
+      setEndDate(undefined);
+      setTaskType("");
+      setSelectedPath(null);
+    } catch (error) {
+      console.error(error);
+      toast.error("Failed to create task");
+    } finally {
+      setIsPending(false);
+    }
+  };
 
   const statusIcons: Record<string, React.ReactNode> = {
     "not started": <Ellipsis className="w-3.5 h-3.5" />,
@@ -328,17 +377,7 @@ export const CreateTaskDialog = ({
           />
         </div>
 
-        <div className="p-4 border-t border-[#2b2b2b] flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <span className="text-[10px] text-neutral-500 px-1.5 py-0.5 border border-[#333] rounded uppercase font-bold">
-              M
-            </span>
-            <span className="text-[11px] text-neutral-500 font-medium">
-              Add milestones
-            </span>
-            <Plus className="w-3.5 h-3.5 text-neutral-500" />
-          </div>
-
+        <div className="p-4 border-t border-[#2b2b2b] flex items-center justify-end">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
@@ -347,8 +386,19 @@ export const CreateTaskDialog = ({
             >
               Cancel
             </Button>
-            <Button className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white px-4">
-              Create task
+            <Button 
+              disabled={isPending}
+              onClick={handleCreateTask}
+              className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white px-4"
+            >
+              {isPending ? (
+                <>
+                  <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
+                  Creating...
+                </>
+              ) : (
+                "Create task"
+              )}
             </Button>
           </div>
         </div>

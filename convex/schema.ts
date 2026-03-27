@@ -119,7 +119,7 @@ export default defineSchema({
   tasks: defineTable({
     title: v.string(),
     description: v.optional(v.string()),
-    type: v.string(), // Custom tags like "dashboard", "mobile", "auth"
+    type: v.optional(v.string()), // Custom tags like "dashboard", "mobile", "auth"
     priority: v.optional(v.union(v.literal("high"), v.literal("medium"), v.literal("low"))),
     assignedTo: v.optional(
       v.array(

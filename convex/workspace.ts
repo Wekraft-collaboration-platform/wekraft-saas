@@ -52,3 +52,15 @@ export const createTask = mutation({
     return taskId;
   },
 });
+
+export const getTasks = query({
+  args: {
+    projectId: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("tasks")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+  },
+});
