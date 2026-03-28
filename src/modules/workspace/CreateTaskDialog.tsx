@@ -28,6 +28,7 @@ import {
   Ellipse,
   Ellipsis,
   Loader2,
+  LucideSettings2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -164,7 +165,7 @@ export const CreateTaskDialog = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="w-full max-w-3xl bg-[#1c1c1c] border-[#2b2b2b] p-0 overflow-hidden text-neutral-200">
+      <DialogContent className="w-full max-w-[800px] h-full max-h-[600px] dark:bg-[#1c1c1c] border-[#2b2b2b] p-0 overflow-hidden dark:text-neutral-200">
         <DialogHeader className="p-4 flex flex-row items-center gap-2 border-b border-[#2b2b2b]">
           <div className="flex items-center gap-1.5 text-xs text-neutral-400 font-medium">
             <div className="w-3 h-3 rounded-full bg-blue-600 flex items-center justify-center text-[10px] text-white"></div>
@@ -185,6 +186,7 @@ export const CreateTaskDialog = ({
             />
           </div>
 
+          <p className="text-sm tracking-tight ">Details <LucideSettings2  className="w-4 h-4 inline ml-1.5"/></p>
           <div className="flex flex-wrap gap-2 items-center">
             {/* Status */}
             <DropdownMenu>
@@ -192,7 +194,7 @@ export const CreateTaskDialog = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-neutral-400 px-2 gap-1.5 rounded-full text-[11px]"
+                  className="h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]"
                 >
                   {statusIcons[status]}
                   <span className="capitalize">{status.replace("-", " ")}</span>
@@ -209,7 +211,9 @@ export const CreateTaskDialog = ({
                     className="gap-2 cursor-pointer"
                   >
                     {statusIcons[s]}
-                    <span className="capitalize text-xs px-1.5">{s.replace("-", " ")}</span>
+                    <span className="capitalize text-xs px-1.5">
+                      {s.replace("-", " ")}
+                    </span>
                   </DropdownMenuItem>
                 ))}
               </DropdownMenuContent>
@@ -221,7 +225,7 @@ export const CreateTaskDialog = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-neutral-400 px-2 gap-1.5 rounded-full text-[11px]"
+                  className="h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]"
                 >
                   {priorityIcons[priority]}
                   <span>Priority</span>
@@ -248,7 +252,7 @@ export const CreateTaskDialog = ({
             <Button
               variant="outline"
               size="sm"
-              className="h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-neutral-400 px-2 gap-1.5 rounded-full text-[11px]"
+              className="h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]"
             >
               <User className="w-3.5 h-3.5" />
               Members
@@ -260,7 +264,7 @@ export const CreateTaskDialog = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-neutral-400 px-2 gap-1.5 rounded-full text-[11px]"
+                  className="h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]"
                 >
                   <CalendarIcon className="w-3.5 h-3.5" />
                   {startDate ? format(startDate, "MMM d") : "Start date"}
@@ -283,7 +287,7 @@ export const CreateTaskDialog = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-neutral-400 px-2 gap-1.5 rounded-full text-[11px]"
+                  className="h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]"
                 >
                   <CalendarIcon className="w-3.5 h-3.5" />
                   {endDate ? format(endDate, "MMM d") : "Target date"}
@@ -306,7 +310,7 @@ export const CreateTaskDialog = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-neutral-400 px-2 gap-1.5 rounded-full text-[11px]"
+                  className="h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]"
                 >
                   <Tag className="w-3.5 h-3.5" />
                   {taskType || "Type"}
@@ -351,12 +355,13 @@ export const CreateTaskDialog = ({
                   variant="outline"
                   size="sm"
                   className={cn(
-                    "h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-neutral-400 px-2 gap-1.5 rounded-full text-[11px]",
-                    selectedPath && "text-blue-400 border-blue-900/50 bg-blue-900/10"
+                    "h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
+                    selectedPath &&
+                      "text-blue-400 border-blue-900/50 bg-blue-900/10",
                   )}
                 >
                   <Link2 className="w-3.5 h-3.5" />
-                  {selectedPath ? selectedPath.split('/').pop() : "Link Code"}
+                  {selectedPath ? selectedPath.split("/").pop() : "Link Code"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-[320px] p-0 bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200">
@@ -373,7 +378,7 @@ export const CreateTaskDialog = ({
             placeholder="Add a description, a project brief, or collect ideas..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="min-h-[220px] bg-transparent border-none p-2 focus-visible:ring-0 placeholder:text-neutral-600 resize-none text-sm leading-relaxed"
+            className="min-h-[250px] bg-transparent border p-2 focus-visible:ring-0 placeholder:text-neutral-600 resize-none text-sm leading-relaxed"
           />
         </div>
 

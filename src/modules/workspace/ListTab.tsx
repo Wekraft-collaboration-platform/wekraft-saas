@@ -18,6 +18,7 @@ import {
   Layers2,
   Minus,
   Edit,
+  ChevronsUpDown,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -159,7 +160,7 @@ const TaskGroup = ({
                 </TableHead>
                 <TableHead className="px-4 text-[11px] font-medium  capitalize tracking-widest shrink-0 border-r border-neutral-800">
                   <div className="flex items-center gap-2">
-                    <Hourglass className="w-4 h-4" /> Estimation
+                    <Hourglass className="w-4 h-4" /> Estimation  <ChevronsUpDown className="w-4 h-4 inline ml-auto cursor-pointer" />
                   </div>
                 </TableHead>
                 <TableHead className="px-4 text-[11px] font-medium  capitalize tracking-widest shrink-0 border-r border-neutral-800 min-w-[120px]">
@@ -174,7 +175,7 @@ const TaskGroup = ({
                 </TableHead>
                 <TableHead className="px-4 text-[11px] font-medium  capitalize tracking-widest shrink-0 ">
                   <div className="flex items-center gap-2">
-                    <ChartNoAxesColumnIncreasing className="w-4 h-4" /> Priority
+                    <ChartNoAxesColumnIncreasing className="w-4 h-4" /> Priority  <ChevronsUpDown className="w-4 h-4 inline ml-auto cursor-pointer" />
                   </div>
                 </TableHead>
                 <TableHead className="w-[50px]"></TableHead>
@@ -261,7 +262,8 @@ const TaskGroup = ({
                     <TableCell className="p-2.5 border-b border-neutral-800 whitespace-nowrap">
                       <PriorityBadge priority={task.priority} />
                     </TableCell>
-                    <TableCell className="px-4 py-4 text-right" onClick={(e) => e.stopPropagation()}>
+                    
+                    <TableCell className="p-2.5 text-right" onClick={(e) => e.stopPropagation()}>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
@@ -311,7 +313,7 @@ export const ListTab = ({ tasks }: { tasks: Task[] }) => {
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-top-4 duration-500">
       <TaskGroup
-        title="To-do"
+        title="Not-Started"
         tasks={tasks.filter((t) => t.status === "not started")}
         accentColor="bg-slate-400"
         defaultExpanded={true}
