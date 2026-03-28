@@ -214,7 +214,7 @@ const TaskGroup = ({
                     </TableCell>
                     <TableCell className="p-2.5 border-r border-b border-neutral-800">
                       <p className="text-xs text-muted-foreground line-clamp-1 max-w-[280px] truncate">
-                        {task.description || "No description"}
+                        {task.description || "No description provided yet..."}
                       </p>
                     </TableCell>
                     <TableCell className="p-2.5 whitespace-nowrap text-xs text-muted-foreground border-r border-b border-neutral-800">
@@ -320,7 +320,7 @@ export const ListTab = ({ tasks }: { tasks: Task[] }) => {
         onTaskClick={handleTaskClick}
       />
       <TaskGroup
-        title="On Progress"
+        title="In Progress"
         tasks={tasks.filter((t) => t.status === "inprogress")}
         accentColor="bg-amber-500"
         onTaskClick={handleTaskClick}

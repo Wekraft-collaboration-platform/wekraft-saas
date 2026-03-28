@@ -305,9 +305,11 @@ TreeIndicator.displayName = "TreeIndicator"
 
 type FolderProps = {
   expandedItems?: string[]
-  element: string
+  element: React.ReactNode
   isSelectable?: boolean
   isSelect?: boolean
+  openIcon?: React.ReactNode
+  closeIcon?: React.ReactNode
 } & React.ComponentPropsWithoutRef<typeof AccordionPrimitive.Item>
 
 const Folder = forwardRef<
@@ -321,6 +323,8 @@ const Folder = forwardRef<
       value,
       isSelectable = true,
       isSelect,
+      openIcon: propOpenIcon,
+      closeIcon: propCloseIcon,
       children,
       ...props
     },
@@ -333,9 +337,13 @@ const Folder = forwardRef<
       indicator,
       selectedId,
       selectItem,
-      openIcon,
-      closeIcon,
+      openIcon: contextOpenIcon,
+      closeIcon: contextCloseIcon,
     } = useTree()
+
+    const openIcon = propOpenIcon ?? contextOpenIcon
+    const closeIcon = propCloseIcon ?? contextCloseIcon
+
     const isSelected = isSelect ?? selectedId === value
 
     return (
@@ -365,7 +373,7 @@ const Folder = forwardRef<
           {expandedItems?.includes(value)
             ? (openIcon ?? <FolderOpenIcon className="size-4" />)
             : (closeIcon ?? <FolderIcon className="size-4" />)}
-          <span>{element}</span>
+          <div className="flex-1 text-left">{element}</div>
         </AccordionPrimitive.Trigger>
         <AccordionPrimitive.Content className="data-[state=closed]:animate-accordion-up data-[state=open]:animate-accordion-down relative h-full overflow-hidden text-sm">
           {element && indicator && <TreeIndicator aria-hidden="true" />}

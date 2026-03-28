@@ -21,7 +21,6 @@ export default defineSchema({
     // For Onboarding
     hasCompletedOnboarding: v.boolean(),
     primaryUsage: v.optional(v.array(v.string())),
-
     createdAt: v.number(),
     updatedAt: v.number(),
     planExpiry: v.optional(v.number()), // For temporary upgrades/coupons
