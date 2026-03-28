@@ -112,7 +112,7 @@ export const GetRepoStructure = ({
           key={element.id} 
           value={element.id} 
           onClick={() => onSelect(element.id)}
-          className={cn(selectedPath === element.id && "text-blue-400 font-medium")}
+          className={cn(selectedPath === element.id && "text-blue-400 font-medium", "text-xs tracking-tight")}
         >
           {element.name}
         </File>
