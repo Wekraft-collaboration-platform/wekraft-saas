@@ -17,11 +17,13 @@ import {
   AlertCircle,
   Layers2,
   Minus,
+  Edit,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { TaskDetailSheet } from "./TaskDetailSheet";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -94,6 +96,7 @@ interface TaskGroupProps {
   tasks: Task[];
   accentColor: string;
   defaultExpanded?: boolean;
+  onTaskClick: (task: Task) => void;
 }
 
 const TaskGroup = ({
@@ -101,6 +104,7 @@ const TaskGroup = ({
   tasks,
   accentColor,
   defaultExpanded = false,
+  onTaskClick,
 }: TaskGroupProps) => {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
@@ -195,9 +199,10 @@ const TaskGroup = ({
                 tasks.map((task) => (
                   <TableRow
                     key={task._id}
-                    className="group border-none hover:bg-muted/40 transition-all duration-200"
+                    className="group border-none hover:bg-muted/40 transition-all duration-200 cursor-pointer"
+                    onClick={() => onTaskClick(task)}
                   >
-                    <TableCell className="px-4 py-4">
+                    <TableCell className="px-4 py-4" onClick={(e) => e.stopPropagation()}>
                       <Checkbox className="rounded border-muted-foreground/30 data-[state=checked]:bg-primary" />
                     </TableCell>
 
@@ -256,7 +261,7 @@ const TaskGroup = ({
                     <TableCell className="p-2.5 border-b border-neutral-800 whitespace-nowrap">
                       <PriorityBadge priority={task.priority} />
                     </TableCell>
-                    <TableCell className="px-4 py-4 text-right">
+                    <TableCell className="px-4 py-4 text-right" onClick={(e) => e.stopPropagation()}>
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button
@@ -272,12 +277,12 @@ const TaskGroup = ({
                           className="w-48 rounded-xl shadow-xl border-muted/50"
                         >
                           <DropdownMenuItem className="gap-2 focus:bg-primary/5 cursor-pointer">
-                            <Plus className="w-4 h-4" /> Add Subtask
+                            <Edit className="w-4 h-4" /> Edit Task
                           </DropdownMenuItem>
                           <DropdownMenuItem className="gap-2 focus:bg-primary/5 cursor-pointer">
                             <Layout className="w-4 h-4" /> Move to Sprint
                           </DropdownMenuItem>
-                          <DropdownMenuItem className="gap-2 text-rose-600 focus:text-rose-600 focus:bg-rose-50 cursor-pointer">
+                          <DropdownMenuItem className="gap-2  cursor-pointer">
                             <AlertCircle className="w-4 h-4" /> Delete Task
                           </DropdownMenuItem>
                         </DropdownMenuContent>
@@ -295,6 +300,14 @@ const TaskGroup = ({
 };
 
 export const ListTab = ({ tasks }: { tasks: Task[] }) => {
+  const [selectedTask, setSelectedTask] = useState<Task | null>(null);
+  const [isSheetOpen, setIsSheetOpen] = useState(false);
+
+  const handleTaskClick = (task: Task) => {
+    setSelectedTask(task);
+    setIsSheetOpen(true);
+  };
+
   return (
     <div className="space-y-10 animate-in fade-in slide-in-from-top-4 duration-500">
       <TaskGroup
@@ -302,26 +315,37 @@ export const ListTab = ({ tasks }: { tasks: Task[] }) => {
         tasks={tasks.filter((t) => t.status === "not started")}
         accentColor="bg-slate-400"
         defaultExpanded={true}
+        onTaskClick={handleTaskClick}
       />
       <TaskGroup
         title="On Progress"
         tasks={tasks.filter((t) => t.status === "inprogress")}
         accentColor="bg-amber-500"
+        onTaskClick={handleTaskClick}
       />
       <TaskGroup
         title="Reviewing"
         tasks={tasks.filter((t) => t.status === "reviewing")}
         accentColor="bg-blue-500"
+        onTaskClick={handleTaskClick}
       />
       <TaskGroup
         title="Testing"
         tasks={tasks.filter((t) => t.status === "testing")}
         accentColor="bg-indigo-500"
+        onTaskClick={handleTaskClick}
       />
       <TaskGroup
         title="Completed"
         tasks={tasks.filter((t) => t.status === "completed")}
         accentColor="bg-emerald-500"
+        onTaskClick={handleTaskClick}
+      />
+
+      <TaskDetailSheet
+        task={selectedTask}
+        isOpen={isSheetOpen}
+        onClose={() => setIsSheetOpen(false)}
       />
     </div>
   );

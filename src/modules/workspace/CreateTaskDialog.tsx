@@ -314,7 +314,7 @@ export const CreateTaskDialog = ({
               </PopoverTrigger>
               <PopoverContent className="w-[280px] p-3 bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200">
                 <div className="space-y-3">
-                  <p className="text-xs font-medium text-neutral-500">
+                  <p className="text-xs font-medium text-center text-muted-foreground border-b border-accent pb-2">
                     Custom Task Type
                   </p>
                   <Input
@@ -360,7 +360,7 @@ export const CreateTaskDialog = ({
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-[320px] p-0 bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200">
-                <GetRepoStructure 
+                <GetRepoStructure
                   repoFullName={repoFullName}
                   onSelect={setSelectedPath}
                   selectedPath={selectedPath}
@@ -386,7 +386,7 @@ export const CreateTaskDialog = ({
             >
               Cancel
             </Button>
-            <Button 
+            <Button
               disabled={isPending}
               onClick={handleCreateTask}
               className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white px-4"
