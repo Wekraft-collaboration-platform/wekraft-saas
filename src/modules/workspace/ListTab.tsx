@@ -54,17 +54,8 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import { Task } from "@/types/types";
 
-export interface Task {
-  _id: Id<"tasks">;
-  title: string;
-  description?: string;
-  estimation: { startDate: number; endDate: number };
-  type?: string;
-  assignedTo?: { name: string; avatar?: string; userId: Id<"users"> }[];
-  priority?: string;
-  status: string;
-}
 
 const priorityIcons: Record<string, React.ReactNode> = {
   none: <Minus className="w-3.5 h-3.5" />,
@@ -139,7 +130,7 @@ const SortPopover = ({
         {trigger}
       </div>
     </PopoverTrigger>
-    <PopoverContent className="w-56 p-2 rounded-lg shadow-md border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950" align="end" sideOffset={8}>
+    <PopoverContent className="w-56 p-2 rounded-lg shadow-md border-zinc-200 dark:border-zinc-800 bg-sidebar" align="end" sideOffset={8}>
       <div className="flex items-center gap-2 px-3 py-2 mb-1">
         <TitleIcon className="w-4 h-4 text-primary" />
         <span className="text-[13px] tracking-tight font-medium text-primary/70">{title}</span>
@@ -209,17 +200,17 @@ const TaskGroup = ({
                 <TableHead className="w-[50px] px-4">
                   <Checkbox className="rounded border-muted-foreground/30 data-[state=checked]:bg-primary" />
                 </TableHead>
-                <TableHead className="px-4 text-[11px] font-medium  capitalize tracking-widest min-w-[200px]  border-r border-neutral-800">
+                <TableHead className="px-4 text-[11px] font-medium  capitalize tracking-widest min-w-[200px]  border-r border-b border-neutral-800">
                   <div className="flex items-center gap-2">
                     <FolderPen className="w-4 h-4" /> Task Name
                   </div>
                 </TableHead>
-                <TableHead className="px-4 text-[11px] font-medium capitalize tracking-widest min-w-[300px] border-r border-neutral-800">
+                <TableHead className="px-4 text-[11px] font-medium capitalize tracking-widest min-w-[300px] border-r border-b border-neutral-800">
                   <div className="flex items-center gap-2">
                     <TextQuote className="w-4 h-4" /> Description
                   </div>
                 </TableHead>
-                <TableHead className="px-4 text-[11px] font-medium  capitalize tracking-widest shrink-0 border-r border-neutral-800">
+                <TableHead className="px-4 text-[11px] font-medium  capitalize tracking-widest shrink-0 border-r border-b border-neutral-800">
                   <div className="flex items-center justify-between gap-2 overflow-hidden">
                     <div className="flex items-center gap-2">
                        <Hourglass className="w-4 h-4" /> Estimation
@@ -237,7 +228,7 @@ const TaskGroup = ({
                     </SortPopover>
                   </div>
                 </TableHead>
-                <TableHead className="px-4 text-[11px] font-medium  capitalize tracking-widest shrink-0 border-r border-neutral-800 min-w-[120px]">
+                <TableHead className="px-4 text-[11px] font-medium  capitalize tracking-widest shrink-0 border-r border-b border-neutral-800 min-w-[120px]">
                   <div className="flex items-center justify-between gap-2 overflow-hidden">
                     <div className="flex items-center gap-2">
                       <Box className="w-4 h-4" /> Tags
@@ -252,12 +243,12 @@ const TaskGroup = ({
                     </SortPopover>
                   </div>
                 </TableHead>
-                <TableHead className="px-4 text-[11px] font-medium  capitalize tracking-widest shrink-0 border-r border-neutral-800">
+                <TableHead className="px-4 text-[11px] font-medium  capitalize tracking-widest shrink-0 border-r border-b border-neutral-800">
                   <div className="flex items-center gap-2">
                     <Users className="w-4 h-4" /> Assigned
                   </div>
                 </TableHead>
-                <TableHead className="px-4 text-[11px] font-medium  capitalize tracking-widest shrink-0">
+                <TableHead className="px-4 text-[11px] font-medium  capitalize tracking-widest shrink-0 border-b border-neutral-800">
                   <div className="flex items-center justify-between gap-2 overflow-hidden">
                     <div className="flex items-center gap-2">
                       <ChartNoAxesColumnIncreasing className="w-4 h-4" /> Priority

@@ -35,16 +35,14 @@ import {
   ClipboardList,
   AudioWaveform,
   PlaneTakeoff,
-  SparklesIcon,
-  Brain,
-  Code2,
   Network,
-  FileText,
+  Inbox,
+  MessageCircleQuestionMark,
+  Clover,
   Bot,
   Link2,
-  Mic,
-  Code,
-  Inbox,
+  FileText,
+  Stars,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
@@ -57,12 +55,8 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Progress } from "@/components/ui/progress";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const workspaceMenu = [
   {
@@ -141,32 +135,6 @@ export default function ProjectSidebar() {
             <ChevronsUpDown />
           </Button>
         </div>
-        {/* SHOWING GITHUB CONNECTED ACCOUNT */}
-        {user === undefined ? (
-          <div className="flex items-center gap-4 my-1 mx-auto border px-6 py-2 bg-sidebar-accent/30 rounded-md w-full">
-            <Skeleton className="h-10 w-10 rounded-full" />
-            <div className="flex flex-col space-y-2 group-data-[collapsible=icon]:hidden">
-              <Skeleton className="h-4 w-24" />
-              <Skeleton className="h-3 w-16" />
-            </div>
-          </div>
-        ) : (
-          <div className="flex items-center gap-4 my-0.5 mx-auto border px-6 py-2 bg-sidebar-accent/30 rounded-md group-data-[collapsible=icon]:hidden">
-            <Avatar className="h-10 w-10">
-              <AvatarImage src={user?.avatarUrl} />
-              <AvatarFallback>UN</AvatarFallback>
-            </Avatar>
-
-            <div className="flex flex-col space-y-0.5 group-data-[collapsible=icon]:hidden">
-              <h2 className="flex gap-2 text-sm items-center truncate">
-                <Github className="h-4 w-4" /> {user?.githubUsername}
-              </h2>
-              <p className="text-xs text-muted-foreground ml-3">
-                Account Synced
-              </p>
-            </div>
-          </div>
-        )}
       </SidebarHeader>
 
       {/* ───────── CONTENT ───────── */}
@@ -201,68 +169,13 @@ export default function ProjectSidebar() {
             </Link>
           </Button>
         </SidebarMenuButton>
-        {/* =========AI ASSISTANT====== */}
-        <Popover>
-          <PopoverTrigger asChild>
-            <SidebarMenuButton
-              data-active={isActive("/dashboard/ai")}
-              className="group relative overflow-hidden"
-            >
-              <div className="relative z-10 flex items-center gap-3 px-1 w-full text-sm text-primary">
-                <Bot className="h-5 w-5" />
-                <span className="group-data-[collapsible=icon]:hidden">
-                  AI Assistant
-                </span>
-                <ChevronRight className="h-4 w-4 ml-auto group-data-[collapsible=icon]:hidden" />
-
-                <span
-                  className="
-              pointer-events-none absolute inset-0 -z-10
-              opacity-0 transition-opacity
-              group-data-[active=true]:opacity-100
-              bg-gradient-to-r from-blue-600/20 via-blue-600/5 to-transparent
-            "
-                />
-              </div>
-            </SidebarMenuButton>
-          </PopoverTrigger>
-
-          <PopoverContent side="right" className="w-64 p-2">
-            <div className="flex flex-col gap-1">
-              <Link
-                href="/dashboard/ai/notion"
-                className="flex items-center gap-2 rounded px-2 py-1 text-sm hover:bg-accent"
-              >
-                <Link2 className="h-4 w-4" />
-                Connect to Notion
-              </Link>
-
-              <Link
-                href="/dashboard/ai/voice"
-                className="flex items-center gap-2 rounded px-2 py-1 text-sm hover:bg-accent"
-              >
-                <Mic className="h-4 w-4" />
-                Ask via Voice
-              </Link>
-
-              <Link
-                href="/dashboard/ai/project"
-                className="flex items-center gap-2 rounded px-2 py-1 text-sm hover:bg-accent"
-              >
-                <FileText className="h-4 w-4" />
-                Get Project Details
-              </Link>
-            </div>
-          </PopoverContent>
-        </Popover>
-
         {/* MANAGE PROJECT */}
-        <div className="flex items-center justify-center gap-2 my-2 group-data-[collapsible=icon]:hidden">
+        <div className="flex items-center justify-center gap-2 mt-2 group-data-[collapsible=icon]:hidden">
           <hr className="w-12 border border-accent" />
           <p className="text-sm text-center">Manage Project</p>
           <hr className="w-12 border border-accent" />
         </div>
-        <SidebarMenu className="flex flex-col space-y-2 py-2 ">
+        <SidebarMenu className="flex flex-col space-y-1.5 py-1.5 ">
           {workspaceMenu.map((item) => {
             const Icon = item.icon;
             const href = `/dashboard/my-projects/${slug}/${item.path}`;
@@ -299,7 +212,91 @@ export default function ProjectSidebar() {
       </SidebarContent>
 
       {/* ───────── FOOTER ───────── */}
-      <SidebarFooter className="border-t px-2 py-2 group-data-[collapsible=icon]:hidden"></SidebarFooter>
+      <SidebarFooter className="border-t border-accent px-2 group-data-[collapsible=icon]:hidden">
+          {/* =========AI ASSISTANT====== */}
+        <Popover>
+          <PopoverTrigger asChild>
+            <SidebarMenuButton
+              data-active={isActive("/dashboard/ai")}
+              className="group relative overflow-hidden"
+            >
+              <div className="relative z-10 flex items-center gap-3 px-1 w-full text-sm text-primary">
+                <Stars className="h-4.5 w-4.5" />
+                <span className="group-data-[collapsible=icon]:hidden">
+                  AI Assistant
+                </span>
+                <ChevronRight className="h-4 w-4 ml-auto group-data-[collapsible=icon]:hidden" />
+
+                <span
+                  className="
+              pointer-events-none absolute inset-0 -z-10
+              opacity-0 transition-opacity
+              group-data-[active=true]:opacity-100
+              bg-gradient-to-r from-blue-600/20 via-blue-600/5 to-transparent
+            "
+                />
+              </div>
+            </SidebarMenuButton>
+          </PopoverTrigger>
+
+          <PopoverContent side="right" className="w-64 p-2">
+            <div className="flex flex-col gap-1">
+              <Link
+                href="/dashboard/ai/notion"
+                className="flex items-center gap-2 rounded px-2 py-1 text-sm hover:bg-accent"
+              >
+                <Link2 className="h-4 w-4" />
+                Connect to Notion
+              </Link>
+
+              <Link
+                href="/dashboard/ai/project"
+                className="flex items-center gap-2 rounded px-2 py-1 text-sm hover:bg-accent"
+              >
+                <FileText className="h-4 w-4" />
+                Get Project Details
+              </Link>
+            </div>
+          </PopoverContent>
+        </Popover>
+
+        {/* ==========Help========== */}
+        <SidebarMenuButton
+          data-active={isActive("/dashboard/help")}
+          className="group relative overflow-hidden"
+        >
+          <div className="relative z-10 flex items-center gap-3 px-1 w-full text-sm text-primary">
+            <MessageCircleQuestionMark className="h-4 w-4" />
+            <span className="group-data-[collapsible=icon]:hidden">
+              Help
+            </span>
+
+            <span
+              className="
+              pointer-events-none absolute inset-0 -z-10
+              opacity-0 transition-opacity
+              group-data-[active=true]:opacity-100
+              bg-gradient-to-r from-blue-600/20 via-blue-600/5 to-transparent
+            "
+            />
+          </div>
+        </SidebarMenuButton>
+
+        {/* =======USER PLAN========= */}
+        <div className="my-2 border p-3 rounded-md bg-linear-to-br from-card via-card to-blue-600/70">
+          <div className="flex items-center gap-2">
+            <div className="h-7 w-7 rounded-full bg-blue-600/20 flex items-center justify-center">
+              <Clover className="h-4 w-4 text-primary" />
+            </div>
+            <div className="flex flex-col">
+              <h3 className="text-sm font-medium">Current Plan</h3>
+              <p className="text-xs text-muted-foreground">Free</p>
+            </div>
+          </div>
+           <p className="text-xs text-muted-foreground text-left my-1.5">Upgrade to Pro to unlock AI to boost productivity.</p>
+           <Button className="text-[10px] cursor-pointer w-full my-1.5 font-medium" size='xs'>Upgrade to Pro</Button>
+        </div>
+      </SidebarFooter>
     </Sidebar>
   );
 }

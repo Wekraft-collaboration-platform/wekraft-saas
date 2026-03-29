@@ -1,3 +1,5 @@
+import { Id } from "../../convex/_generated/dataModel";
+
 export interface Repository {
   id: number;
   name: string;
@@ -33,4 +35,17 @@ export interface ProjectQuickStats {
     userName: string;
   }[];
   totalMembers: number;
+}
+
+export interface Task {
+  _id: Id<"tasks">;
+  title: string;
+  description?: string;
+  estimation: { startDate: number; endDate: number };
+  type?: string;
+  assignedTo?: { name: string; avatar?: string; userId: Id<"users"> }[];
+  priority?: string;
+  status: string;
+  tags?: string[];
+  linkWithCodebase?: string;
 }
