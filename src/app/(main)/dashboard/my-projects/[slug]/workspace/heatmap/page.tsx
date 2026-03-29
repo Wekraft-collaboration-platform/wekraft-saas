@@ -2,11 +2,12 @@
 
 import { useSidebar } from "@/components/ui/sidebar";
 import React, { useEffect, useState, useRef } from "react";
-import { HeatmapPanel } from "@/modules/workspace/HeatmapPanel";
+import { HeatmapFlow } from "@/modules/workspace/heatmaps/HeatmapFlow";
 import { useParams } from "next/navigation";
 import { Id } from "../../../../../../../../convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { api } from "../../../../../../../../convex/_generated/api";
+import { HeatmapPanel } from "@/modules/workspace/heatmaps/HeatmapPanel";
 
 const HeatmapPage = () => {
   const { open: sidebarOpen, setOpen: setSidebarOpen } = useSidebar();
@@ -43,8 +44,9 @@ const HeatmapPage = () => {
           if (open) setSidebarOpen(false);
         }}
       />
-      <div className="flex-1 flex flex-col p-8 overflow-y-auto scroll-smooth">
-       
+      {/* REACT FLOW  */}
+      <div className="flex-1 pl-8 pr- pt-0 pb-5 overflow-hidden">
+        <HeatmapFlow />
       </div>
     </div>
   );

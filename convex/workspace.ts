@@ -53,6 +53,7 @@ export const createTask = mutation({
   },
 });
 
+// ---------------------------------------
 export const getTasks = query({
   args: {
     projectId: v.id("projects"),
@@ -62,5 +63,21 @@ export const getTasks = query({
       .query("tasks")
       .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
       .collect();
+  },
+});
+
+// --------------------------------------------
+export const getTimelineTasks = query({
+  args: {
+    projectId: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    const tasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .filter((q) => q.neq(q.field("status"), "issue"))
+      .collect();
+
+    return tasks;
   },
 });

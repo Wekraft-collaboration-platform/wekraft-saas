@@ -15,13 +15,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { toast } from "sonner";
@@ -198,87 +196,129 @@ const CreateProjectDialog = ({
       if (!val) resetForm();
     }}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-      <DialogContent className="w-full max-w-xl p-0 overflow-hidden border-accent/20 bg-[#0A0A0B]">
+      <DialogContent className="w-full max-w-[480px] p-0 overflow-hidden border bg-card text-neutral-200 shadow-2xl">
         
-        <div className="p-6">
-          <DialogHeader className="mb-6">
-            <div className="flex items-center gap-2 text-primary font-medium mb-1">
-              {step === 1 ? <Rocket className="size-4" /> : <Github className="size-4" /> }
-              <span className="text-xs uppercase tracking-wider font-bold">Step {step} of 2</span>
+        {step === 1 && (
+          <div className="relative h-[160px] w-full overflow-hidden shrink-0">
+            <img 
+              src="/2.svg" 
+              alt="Create Project" 
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-linear-to-t from-[#0A0A0B] to-transparent" />
+            <div className="absolute bottom-3 left-5 flex flex-col">
+              <div className="flex items-center gap-2 text-primary font-medium mb-1">
+                <Rocket className="size-3.5" />
+                <span className="text-[9px] uppercase tracking-widest font-bold opacity-70">Step 1 of 2</span>
+              </div>
+              <h2 className="text-xl font-bold tracking-tight">Start New Project</h2>
+              <p className="text-[10px] text-muted-foreground/80 line-clamp-1">Define your vision and set the stage for collaboration.</p>
             </div>
-            <DialogTitle className="text-2xl font-bold tracking-tight">
-              {step === 1 ? "Start New Project" : "Connect Repository"}
-            </DialogTitle>
-            <DialogDescription className="text-sm text-muted-foreground">
-              {step === 1 
-                ? "Define your vision and set the stage for collaboration." 
-                : "Link your codebase to automatically sync progress and insights."
-              }
-            </DialogDescription>
-          </DialogHeader>
+          </div>
+        )}
 
+        {step === 2 && (
+           <DialogHeader className="p-3.5 flex flex-row items-center gap-2 border-b border-[#2b2b2b] bg-[#0A0A0B]">
+             <div className="flex items-center gap-1.5 text-xs text-neutral-400 font-medium">
+               <Github className="size-4 text-white" />
+               <span className="text-sm">Connect Repository</span>
+               <ChevronRight className="w-3 h-3" />
+               <span className="text-[10px]">Step 2 of 2</span>
+             </div>
+           </DialogHeader>
+        )}
+
+        <div className="p-5 space-y-4">
           {step === 1 ? (
             <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
-              <div className="space-y-2">
-                <Label htmlFor="name" className="text-sm font-semibold">Project Name</Label>
+              {/* Title Section */}
+              <div className="flex flex-col space-y-1.5">
+                <Label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1">Project Name</Label>
                 <Input
-                  id="name"
                   placeholder="e.g. My Awesome Startup"
-                  className="bg-accent/30 border-accent/10 focus:border-primary/50 transition-all font-inter"
+                  className="text-lg font-medium border-none bg-transparent p-1 h-auto focus-visible:ring-0 placeholder:text-neutral-700"
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
                 />
               </div>
 
-              <div className="space-y-2">
-                <Label htmlFor="desc" className="text-sm font-semibold">Description (Optional)</Label>
+              {/* Action Buttons Row */}
+              <div className="flex items-center gap-3">
+                 <div className="flex flex-col space-y-2">
+                    <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1">Settings & Visibility</p>
+                    <div className="flex items-center gap-2">
+                         {/* Visibility Toggle */}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8 bg-[#18181A] border-accent/20 hover:bg-[#212123] text-neutral-300 px-3 gap-2 rounded-lg text-xs"
+                            >
+                              {isPublic ? <Globe className="size-3.5 text-emerald-500" /> : <Lock className="size-3.5 text-amber-500" />}
+                              <span className="capitalize">{isPublic ? "Public" : "Private"}</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="bg-[#0A0A0B] border-accent/20 text-neutral-200">
+                            <DropdownMenuItem onClick={() => setIsPublic(true)} className="gap-2 cursor-pointer">
+                              <Globe className="size-3.5 text-emerald-500" />
+                              <span className="text-xs">Public Project</span>
+                            </DropdownMenuItem>
+                            <DropdownMenuItem onClick={() => setIsPublic(false)} className="gap-2 cursor-pointer">
+                              <Lock className="size-3.5 text-amber-500" />
+                              <span className="text-xs">Private Project</span>
+                            </DropdownMenuItem>
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+
+                        {/* Status Select */}
+                        <DropdownMenu>
+                          <DropdownMenuTrigger asChild>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-8 bg-[#18181A] border-accent/20 hover:bg-[#212123] text-neutral-300 px-3 gap-2 rounded-lg text-xs"
+                            >
+                              <div className={cn(
+                                "size-2 rounded-full",
+                                status === "ideation" && "bg-blue-500",
+                                status === "validation" && "bg-amber-500",
+                                status === "development" && "bg-indigo-500",
+                                status === "beta" && "bg-purple-500",
+                                status === "production" && "bg-emerald-500",
+                              )} />
+                              <span className="capitalize">{status}</span>
+                            </Button>
+                          </DropdownMenuTrigger>
+                          <DropdownMenuContent className="bg-[#0A0A0B] border-accent/20 text-neutral-200">
+                             {["ideation", "validation", "development", "beta", "production"].map((s) => (
+                                <DropdownMenuItem key={s} onClick={() => setStatus(s)} className="gap-2 cursor-pointer capitalize text-xs">
+                                   <div className={cn(
+                                      "size-2 rounded-full",
+                                      s === "ideation" && "bg-blue-500",
+                                      s === "validation" && "bg-amber-500",
+                                      s === "development" && "bg-indigo-500",
+                                      s === "beta" && "bg-purple-500",
+                                      s === "production" && "bg-emerald-500",
+                                    )} />
+                                   {s}
+                                </DropdownMenuItem>
+                             ))}
+                          </DropdownMenuContent>
+                        </DropdownMenu>
+                    </div>
+                 </div>
+              </div>
+
+              {/* Description Section */}
+              <div className="flex flex-col space-y-1.5">
+                <Label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1">Project Brief</Label>
                 <Textarea
-                  id="desc"
                   placeholder="Tell us what you're building..."
-                  className="bg-accent/30 border-accent/10 focus:border-primary/50 transition-all min-h-[100px] resize-none font-inter"
+                  className="bg-transparent border-none p-1 focus-visible:ring-0 transition-all h-[100px] resize-none font-inter text-sm leading-relaxed placeholder:text-neutral-700"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                 />
-              </div>
-
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold">Project Status</Label>
-                  <Select value={status} onValueChange={setStatus}>
-                    <SelectTrigger className="bg-accent/30 border-accent/10">
-                      <SelectValue placeholder="Select status" />
-                    </SelectTrigger>
-                    <SelectContent className="bg-[#121214] border-accent/10">
-                      <SelectItem value="ideation">Ideation</SelectItem>
-                      <SelectItem value="validation">Validation</SelectItem>
-                      <SelectItem value="development">Development</SelectItem>
-                      <SelectItem value="beta">Beta</SelectItem>
-                      <SelectItem value="production">Production</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                <div className="space-y-2">
-                  <Label className="text-sm font-semibold">Visibility</Label>
-                  <RadioGroup 
-                    value={isPublic ? "public" : "private"} 
-                    onValueChange={(val) => setIsPublic(val === "public")}
-                    className="flex h-10 items-center gap-4 bg-accent/30 rounded-md px-3 border border-accent/10"
-                  >
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="public" id="public" className="size-4 border-primary" />
-                      <Label htmlFor="public" className="text-xs flex items-center gap-1 cursor-pointer">
-                        <Globe className="size-3 text-emerald-500" /> Public
-                      </Label>
-                    </div>
-                    <div className="flex items-center space-x-2">
-                      <RadioGroupItem value="private" id="private" className="size-4 border-primary" />
-                      <Label htmlFor="private" className="text-xs flex items-center gap-1 cursor-pointer">
-                        <Lock className="size-3 text-amber-500" /> Private
-                      </Label>
-                    </div>
-                  </RadioGroup>
-                </div>
               </div>
             </div>
           ) : (

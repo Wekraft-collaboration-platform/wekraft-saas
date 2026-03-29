@@ -21,7 +21,6 @@ export default defineSchema({
     // For Onboarding
     hasCompletedOnboarding: v.boolean(),
     primaryUsage: v.optional(v.array(v.string())),
-
     createdAt: v.number(),
     updatedAt: v.number(),
     planExpiry: v.optional(v.number()), // For temporary upgrades/coupons
@@ -153,4 +152,15 @@ export default defineSchema({
     .index("by_status", ["status"])
     .index("by_priority", ["priority"])
     .index("by_project_status", ["projectId", "status"]),
+    
+    // ----------------------------------------------------
+    projectDetails: defineTable({
+      projectId: v.id("projects"),
+      repoId: v.optional(v.id("repositories")), // optional if project has connected repo.
+      targetDate: v.optional(v.number()),
+      // healthscore to:do
+    })
+    .index("by_project", ["projectId"])
+    .index("by_repo", ["repoId"])
+
 });

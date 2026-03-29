@@ -19,7 +19,18 @@ import {
   Minus,
   Edit,
   ChevronsUpDown,
+  ArrowUpNarrowWide,
+  ArrowDownWideNarrow,
+  Calendar,
+  Tag,
+  CircleDot,
 } from "lucide-react";
+import { 
+  Popover, 
+  PopoverContent, 
+  PopoverTrigger 
+} from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -91,6 +102,56 @@ const PriorityBadge = ({ priority = "none" }: { priority?: string }) => {
   );
 };
 
+interface SortOptionProps {
+  label: string;
+  icon?: React.ReactNode;
+  onClick?: () => void;
+  isActive?: boolean;
+}
+
+const SortOption = ({ label, icon, onClick, isActive }: SortOptionProps) => (
+  <button
+    onClick={onClick}
+    className={cn(
+      "flex items-center gap-3 w-full px-3 py-2 text-[11px] font-medium transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800/50 rounded-lg group",
+      isActive ? "text-primary bg-primary/5" : "text-muted-foreground"
+    )}
+  >
+    {icon && <div className="shrink-0 transition-transform group-hover:scale-110">{icon}</div>}
+    <span>{label}</span>
+  </button>
+);
+
+const SortPopover = ({ 
+  title, 
+  icon: TitleIcon, 
+  children,
+  trigger
+}: { 
+  title: string; 
+  icon: React.ElementType; 
+  children: React.ReactNode;
+  trigger: React.ReactNode;
+}) => (
+  <Popover>
+    <PopoverTrigger asChild>
+      <div className="flex items-center cursor-pointer ml-auto shrink-0 transition-opacity hover:opacity-100 opacity-100">
+        {trigger}
+      </div>
+    </PopoverTrigger>
+    <PopoverContent className="w-56 p-2 rounded-lg shadow-md border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-950" align="end" sideOffset={8}>
+      <div className="flex items-center gap-2 px-3 py-2 mb-1">
+        <TitleIcon className="w-4 h-4 text-primary" />
+        <span className="text-[13px] tracking-tight font-medium text-primary/70">{title}</span>
+      </div>
+      <Separator className="mb-2 bg-zinc-100 dark:bg-zinc-800" />
+      <div className="space-y-0.5">
+        {children}
+      </div>
+    </PopoverContent>
+  </Popover>
+);
+
 
 interface TaskGroupProps {
   title: string;
@@ -159,13 +220,36 @@ const TaskGroup = ({
                   </div>
                 </TableHead>
                 <TableHead className="px-4 text-[11px] font-medium  capitalize tracking-widest shrink-0 border-r border-neutral-800">
-                  <div className="flex items-center gap-2">
-                    <Hourglass className="w-4 h-4" /> Estimation  <ChevronsUpDown className="w-4 h-4 inline ml-auto cursor-pointer" />
+                  <div className="flex items-center justify-between gap-2 overflow-hidden">
+                    <div className="flex items-center gap-2">
+                       <Hourglass className="w-4 h-4" /> Estimation
+                    </div>
+                    <SortPopover
+                      title="Sort Estimation"
+                      icon={Calendar}
+                      trigger={<ChevronsUpDown className="w-3.5 h-3.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer shrink-0" />}
+                    >
+                      <SortOption label="Upcoming First" icon={<ArrowUpNarrowWide className="w-3 h-3" />} />
+                      <SortOption label="Latest First" icon={<ArrowDownWideNarrow className="w-3 h-3" />} />
+                      <Separator className="my-1.5 opacity-50" />
+                      <SortOption label="Shortest Duration" icon={<Clock className="w-3 h-3" />} />
+                      <SortOption label="Longest Duration" icon={<Clock className="w-3 h-3" />} />
+                    </SortPopover>
                   </div>
                 </TableHead>
                 <TableHead className="px-4 text-[11px] font-medium  capitalize tracking-widest shrink-0 border-r border-neutral-800 min-w-[120px]">
-                  <div className="flex items-center gap-2">
-                    <Box className="w-4 h-4" /> Type
+                  <div className="flex items-center justify-between gap-2 overflow-hidden">
+                    <div className="flex items-center gap-2">
+                      <Box className="w-4 h-4" /> Tags
+                    </div>
+                    <SortPopover
+                      title="Filter & Sort"
+                      icon={Tag}
+                      trigger={<ChevronsUpDown className="w-3.5 h-3.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer shrink-0" />}
+                    >
+                      <SortOption label="Sort A-Z" icon={<ArrowUpNarrowWide className="w-3 h-3" />} />
+                      <SortOption label="Filter by Type" icon={<CircleDot className="w-3 h-3" />} />
+                    </SortPopover>
                   </div>
                 </TableHead>
                 <TableHead className="px-4 text-[11px] font-medium  capitalize tracking-widest shrink-0 border-r border-neutral-800">
@@ -173,9 +257,19 @@ const TaskGroup = ({
                     <Users className="w-4 h-4" /> Assigned
                   </div>
                 </TableHead>
-                <TableHead className="px-4 text-[11px] font-medium  capitalize tracking-widest shrink-0 ">
-                  <div className="flex items-center gap-2">
-                    <ChartNoAxesColumnIncreasing className="w-4 h-4" /> Priority  <ChevronsUpDown className="w-4 h-4 inline ml-auto cursor-pointer" />
+                <TableHead className="px-4 text-[11px] font-medium  capitalize tracking-widest shrink-0">
+                  <div className="flex items-center justify-between gap-2 overflow-hidden">
+                    <div className="flex items-center gap-2">
+                      <ChartNoAxesColumnIncreasing className="w-4 h-4" /> Priority
+                    </div>
+                    <SortPopover
+                      title="Sort Priority"
+                      icon={ChartNoAxesColumnIncreasing}
+                      trigger={<ChevronsUpDown className="w-3.5 h-3.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer shrink-0" />}
+                    >
+                      <SortOption label="High to Low" icon={<ArrowUpNarrowWide className="w-3 h-3" />} />
+                      <SortOption label="Low to High" icon={<ArrowDownWideNarrow className="w-3 h-3" />} />
+                    </SortPopover>
                   </div>
                 </TableHead>
                 <TableHead className="w-[50px]"></TableHead>
@@ -208,13 +302,13 @@ const TaskGroup = ({
                     </TableCell>
 
                     <TableCell className="p-2.5 border-r border-b border-neutral-800  max-w-[180px] truncate">
-                      <span className="text-xs font-medium text-foreground/90 capitalize">
+                      <span className="text-xs font-medium text-muted-foreground capitalize">
                         {task.title}
                       </span>
                     </TableCell>
                     <TableCell className="p-2.5 border-r border-b border-neutral-800">
                       <p className="text-xs text-muted-foreground line-clamp-1 max-w-[280px] truncate">
-                        {task.description || "No description"}
+                        {task.description || "No description provided yet..."}
                       </p>
                     </TableCell>
                     <TableCell className="p-2.5 whitespace-nowrap text-xs text-muted-foreground border-r border-b border-neutral-800">
@@ -320,7 +414,7 @@ export const ListTab = ({ tasks }: { tasks: Task[] }) => {
         onTaskClick={handleTaskClick}
       />
       <TaskGroup
-        title="On Progress"
+        title="In Progress"
         tasks={tasks.filter((t) => t.status === "inprogress")}
         accentColor="bg-amber-500"
         onTaskClick={handleTaskClick}
