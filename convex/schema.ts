@@ -153,6 +153,20 @@ export default defineSchema({
     .index("by_priority", ["priority"])
     .index("by_project_status", ["projectId", "status"]),
     
+    // --------------------------------------------------
+    taskComments: defineTable({
+      taskId: v.id("tasks"),
+      userId: v.id("users"),
+      userName: v.string(),
+      userImage: v.optional(v.string()),
+      comment: v.string(),
+      createdAt: v.number(),
+      updatedAt: v.number(),
+    })
+    .index("by_task", ["taskId"])
+    .index("by_user", ["userId"])
+    .index("by_task_user", ["taskId", "userId"]),
+
     // ----------------------------------------------------
     projectDetails: defineTable({
       projectId: v.id("projects"),

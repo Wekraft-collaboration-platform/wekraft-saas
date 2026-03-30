@@ -17,10 +17,9 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { CreateTaskDialog } from "@/modules/workspace/CreateTaskDialog";
 import { TABS } from "@/lib/static-store";
-import { ListTab, Task } from "@/modules/workspace/ListTab";
+import { ListTab } from "@/modules/workspace/ListTab";
+import { TableTab } from "@/modules/workspace/TableTab";
 import { PageTransition } from "@/components/PageTransition";
-
-
 
 const users = [
   { name: "Ritesh", img: "https://i.pravatar.cc/40?img=1" },
@@ -28,8 +27,6 @@ const users = [
   { name: "Alex", img: "https://i.pravatar.cc/40?img=3" },
   { name: "John", img: "https://i.pravatar.cc/40?img=4" },
 ];
-
-const mockTasks: Task[] = [];
 
 const TaskPage = () => {
   const params = useParams();
@@ -115,7 +112,7 @@ const TaskPage = () => {
             <Input
               type="text"
               placeholder="Search ..."
-              className="pl-9 h-9 w-[240px] border-muted"
+              className="pl-9 h-9 w-[200px] border-muted"
             />
           </div>
           <Button variant="outline" size="sm" className="h-9 text-xs">
@@ -139,6 +136,7 @@ const TaskPage = () => {
       {/* BODY PART */}
       <div className="mt-6">
         {activeTab === "List" && <ListTab tasks={tasks || []} />}
+        {activeTab === "Table" && <TableTab tasks={tasks || []} />}
       </div>
     </PageTransition>
   );
