@@ -79,7 +79,7 @@ const MyProfilePage = () => {
               <p className="text-muted-foreground text-sm font-pop font-medium">
                 @
                 {user.githubUsername ||
-                  user.name.toLowerCase().replace(" ", "")}
+                  user?.name?.toLowerCase().replace(" ", "")}
                 <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
                   {" "}
                   | joined{" "}

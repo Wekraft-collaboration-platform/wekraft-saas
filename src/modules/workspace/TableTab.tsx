@@ -203,15 +203,15 @@ export const TableTab = ({ tasks }: TableTabProps) => {
                     </TableCell>
                     <TableCell className="px-4">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        {task.tags && task.tags.length > 0 ? (
-                          task.tags.map((tag: string, i: number) => (
+                        {/* {task.type && task.type.length > 0 ? (
+                          task.type.map((tag: string, i: number) => (
                             <div key={i} className="flex items-center gap-1 bg-neutral-800/50 border border-neutral-800/50 px-2 py-0.5 rounded text-[9px] font-medium text-primary/40 uppercase">
                               <TagIcon size={8} className="opacity-50" /> {tag}
                             </div>
                           ))
                         ) : (
                           <span className="text-[10px] text-primary/10">—</span>
-                        )}
+                        )} */}
                       </div>
                     </TableCell>
                     <TableCell className="px-4">
