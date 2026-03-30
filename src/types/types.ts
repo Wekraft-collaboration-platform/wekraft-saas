@@ -46,6 +46,8 @@ export interface Task {
   assignedTo?: { name: string; avatar?: string; userId: Id<"users"> }[];
   priority?: string;
   status: string;
-  tags?: string[];
   linkWithCodebase?: string;
+  createdByUserId: string;
+  createdAt: number;
+  updatedAt: number;
 }

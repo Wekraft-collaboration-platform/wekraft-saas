@@ -15,18 +15,12 @@ import { Textarea } from "@/components/ui/textarea";
 import {
   Plus,
   X,
-  CircleDashed,
   ChevronRight,
   Flag,
   User,
   CalendarIcon,
   Tag,
   Link2,
-  MoreHorizontal,
-  Bug,
-  BugPlay,
-  Ellipse,
-  Ellipsis,
   Loader2,
   LucideSettings2,
   Paperclip,
@@ -52,6 +46,8 @@ import {
 import { cn } from "@/lib/utils";
 import { Id } from "../../../convex/_generated/dataModel";
 import { GetRepoStructure } from "./GetRepoStructure";
+
+import { priorityIcons, statusIcons } from "@/lib/static-store";
 
 interface CreateTaskDialogProps {
   projectName: string;
@@ -125,45 +121,6 @@ export const CreateTaskDialog = ({
     } finally {
       setIsPending(false);
     }
-  };
-
-  const statusIcons: Record<string, React.ReactNode> = {
-    "not started": <Ellipsis className="w-3.5 h-3.5" />,
-    inprogress: (
-      <div className="w-3.5 h-3.5 rounded-full border-2 border-yellow-500 border-t-transparent animate-spin" />
-    ),
-    issue: <Bug className="w-3.5 h-3.5 text-red-500" />,
-    reviewing: <CircleDashed className="w-3.5 h-3.5 text-blue-500" />,
-    testing: <BugPlay className="w-3.5 h-3.5 text-indigo-500" />,
-    completed: <div className="w-3.5 h-3.5 rounded-full bg-green-500" />,
-  };
-
-  const priorityIcons: Record<string, React.ReactNode> = {
-    none: <MoreHorizontal className="w-3.5 h-3.5" />,
-    low: (
-      <div className="flex items-end gap-px h-3 mb-0.5">
-        <div className="w-[1.5px] h-3 bg-yellow-500 rounded-px" />
-        <div className="w-[1.5px] h-2 dark:bg-neutral-400 bg-accent rounded-px" />
-        <div className="w-[1.5px] h-1.5 dark:bg-neutral-400 bg-accent rounded-px" />
-        <div className="w-[1.5px] h-[4px] dark:bg-neutral-400 bg-accent rounded-px" />
-      </div>
-    ),
-    medium: (
-      <div className="flex items-end gap-px h-3 mb-0.5">
-        <div className="w-[1.5px] h-3 bg-green-500 rounded-px" />
-        <div className="w-[1.5px] h-2 bg-green-500 rounded-px" />
-        <div className="w-[1.5px] h-1.5  dark:bg-neutral-400 bg-accent  rounded-px" />
-        <div className="w-[1.5px] h-[4px] dark:bg-neutral-400 bg-accent rounded-px" />
-      </div>
-    ),
-    high: (
-      <div className="flex items-end gap-px h-3 mb-0.5">
-        <div className="w-[1.5px] h-3 bg-red-500 rounded-px" />
-        <div className="w-[1.5px] h-2.5 bg-red-500 rounded-px" />
-        <div className="w-[1.5px] h-2 bg-red-500 rounded-px" />
-        <div className="w-[1.5px] h-[4px] dark:bg-neutral-400 bg-accent rounded-px" />
-      </div>
-    ),
   };
 
   return (

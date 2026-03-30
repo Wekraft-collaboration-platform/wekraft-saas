@@ -20,6 +20,7 @@ import {
   Merge,
   Waypoints,
   SlidersHorizontal,
+  Layers3,
 } from "lucide-react";
 import { ProjectCards } from "./ProjectCards";
 import Link from "next/link";
@@ -319,7 +320,10 @@ export default function DashboardPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
-                  <Button size="sm" className="gap-2 text-xs">
+                   <Button size="sm" variant={'outline'} className="gap-2 text-xs">
+                    <Layers3 className="h-4 w-4" /> View All Projects
+                  </Button>
+                  <Button size="sm" variant={'outline'} className="gap-2 text-xs">
                     <SlidersHorizontal className="h-4 w-4" /> Filter
                   </Button>
                   <CreateProjectDialog 

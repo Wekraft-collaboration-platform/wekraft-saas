@@ -14,32 +14,28 @@ import {
   Tag,
   Users,
   AlertCircle,
-  MessageSquare,
   Paperclip,
-  X,
-  CheckCircle2,
-  Trash2,
-  Copy,
-  ChevronRight,
-  Send,
   Plus,
-  Maximize2,
-  ExternalLink,
   Edit2,
-  MoreVertical,
-  FileText,
-  FileSpreadsheet,
-  Bug
+  Circle,
+  Bug,
+  CalendarClock,
+  TextQuote,
+  MessagesSquare,
+  GitBranch
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { Input } from "@/components/ui/input";
+import { Send } from "lucide-react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { toast } from "sonner";
 import { Task } from "@/types/types";
+import { priorityIcons2, statusColors, statusIcons } from "@/lib/static-store";
 
 interface TaskDetailSheetProps {
   task: Task | null;
@@ -47,20 +43,11 @@ interface TaskDetailSheetProps {
   onClose: () => void;
 }
 
-const statusColors: Record<string, string> = {
-  "not started": "bg-slate-500/10 text-slate-500 border-slate-500/20",
-  inprogress: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-  reviewing: "bg-blue-500/10 text-blue-500 border-blue-500/20",
-  testing: "bg-indigo-500/10 text-indigo-500 border-indigo-500/20",
-  completed: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-  issue: "bg-red-500/10 text-red-500 border-red-500/20",
-};
-
-const priorityConfig: Record<string, { label: string; color: string; icon: any }> = {
-  low: { label: "Low", color: "text-green-500 bg-green-500/10", icon: CheckCircle2 },
-  medium: { label: "Medium", color: "text-purple-500 bg-purple-500/10", icon: AlertCircle },
-  high: { label: "High", color: "text-red-500 bg-red-500/10", icon: AlertCircle },
-  none: { label: "None", color: "text-slate-500 bg-slate-500/10", icon: CheckCircle2 },
+const priorityConfig: Record<string, { label: string; color: string }> = {
+  low: { label: "low", color: "text-green-500 bg-green-500/10" },
+  medium: { label: "medium", color: "text-purple-500 bg-purple-500/10" },
+  high: { label: "high", color: "text-red-500 bg-red-500/10" },
+  none: { label: "none", color: "text-slate-500 bg-slate-500/10" },
 };
 
 export const TaskDetailSheet = ({ task, isOpen, onClose }: TaskDetailSheetProps) => {
@@ -69,6 +56,8 @@ export const TaskDetailSheet = ({ task, isOpen, onClose }: TaskDetailSheetProps)
 
   const comments = useQuery(api.workspace.getComments, task ? { taskId: task._id } : "skip");
   const createComment = useMutation(api.workspace.createComment);
+
+  const creator = useQuery(api.user.getUserById, task ? { userId: task.createdByUserId as any } : "skip");
 
   if (!task) return null;
 
@@ -103,16 +92,31 @@ export const TaskDetailSheet = ({ task, isOpen, onClose }: TaskDetailSheetProps)
             </div>
           </div>
 
-            <div className="px-4 py-2 space-y-2">
+            <div className="flex-1 overflow-y-auto px-4 py-4 scrollbar-hide">
               {/* Title Section */}
-              <div className="">
+              <div className="flex flex-col space-y-2.5">
                 <h1 className="text-xl font-semibold tracking-tight text-primary capitalize max-w-[300px] truncate leading-tight">
                   {task.title}
                 </h1>
+                <div className="flex items-center gap-2">
+                  <Badge className={cn("px-4 py-1 rounded-full text-xs  border capitalize  bg-primary")}>
+                  {task?.type}
+                  </Badge>
+                <div className="flex items-center gap-1.5 ml-2">
+                  <span className="text-xs text-muted-foreground">Created by: </span>
+                  <Avatar className="w-6 h-6 border">
+                    <AvatarImage src={creator?.avatarUrl || ""} />
+                    <AvatarFallback className="text-sm bg-neutral-800 text-neutral-400">
+                      {creator?.name?.[0] || "?"}
+                    </AvatarFallback>
+                  </Avatar>
+                  <span className="text-sm font-medium text-primary">{creator?.name || "Loading..."}</span>
+                </div>
+                </div>
               </div>
 
               {/* Stats Grid */}
-              <div className="space-y-4  mt-5">
+              <div className="space-y-4  mt-6">
                 <div className="grid grid-cols-[120px_1fr] items-center">
                   <div className="flex items-center gap-2.5 text-muted-foreground text-sm font-medium">
                     <Calendar size={16} /> Duration
@@ -127,17 +131,20 @@ export const TaskDetailSheet = ({ task, isOpen, onClose }: TaskDetailSheetProps)
                 </div>
 
                 <div className="grid grid-cols-2 gap-x-6 gap-y-5 justify-items-start w-full items-center">
+                  {/* STATUS */}
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-muted-foreground text-sm font-medium">
                       <Clock size={14} /> Status
                     </div>
                     <div>
-                      <Badge className={cn("px-3 py-1 rounded-full text-[10px]  border capitalize", statusColors[task.status] || "bg-neutral-800")}>
+                      <p className={cn("px-3 py-1 flex items-center bg-accent rounded-full text-[10px] border capitalize gap-1.5")}>
+                        {statusIcons[task.status] || <Circle size={12} />}
                         {task.status}
-                      </Badge>
+                      </p>
                     </div>
                   </div>
 
+{/* ASSIGNEE */}
                   <div className="space-y-2">
                     <div className="flex items-center gap-2 text-muted-foreground text-sm font-medium">
                       <Users size={14} /> Assignee
@@ -159,37 +166,48 @@ export const TaskDetailSheet = ({ task, isOpen, onClose }: TaskDetailSheetProps)
                     </div>
                   </div>
 
-                  <div className="space-y-2">
+{/* PRIORITY */}
+                  <div className="space-y-3">
                     <div className="flex items-center gap-2 text-muted-foreground text-sm font-medium">
                       <AlertCircle size={14} /> Priority
                     </div>
                     <div>
-                      <Badge className={cn("px-3 py-1 rounded-full text-[10px]  border capitalize", priority.color)}>
-                        <priority.icon size={11} className="mr-1.5 inline" />
+                    <p className={'flex items-center gap-2 text-xs capitalize text-primary ml-2'}>
+                        {priorityIcons2[task.priority || "none"]}
                         {priority.label}
-                      </Badge>
+                      </p>
                     </div>
                   </div>
 
-                  {task.linkWithCodebase && (
+{/* LINK WITH CODEBASE */}
+                  {task.linkWithCodebase ? (
                     <div className="space-y-2">
                       <div className="flex items-center gap-2 text-muted-foreground text-sm font-medium">
                         <Tag size={14} /> Link Code
                       </div>
-                      <div className="text-[11px] font-medium text-blue-400 truncate max-w-[150px] bg-blue-500/10 px-2 py-1 rounded-md border border-blue-500/20">
-                        {task.linkWithCodebase.split("/").pop()}
+                      <div className="text-xs font-medium text-primary ml-2">
+                       <GitBranch size={12} className="inline"/> {task.linkWithCodebase.split("/").pop()}
                       </div>
+                    </div>
+                  ): (
+                    <div>
+                      <p className="text-xs text-muted-foreground">No codebase linked</p>
                     </div>
                   )}
                 </div>
               </div>
 
+              <div className="my-3">
+                <p className="text-sm text-muted-foreground"><CalendarClock size={16} className=" mr-1 inline -mt-1"/>  Last updated: <span className="text-xs font-medium ml-3 text-primary">{format(task.updatedAt, "d MMMM, yyyy")}</span></p>
+              </div>
+
               {/* Description & Attachments Tabs */}
-              <div className="space-y-4 mt-5">
-                <Tabs defaultValue="description" className="w-full">
+              <div className="space-y-4 mt-6">
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
                   <TabsList className="w-full">
-                    <TabsTrigger value="description" className="text-xs">Description</TabsTrigger>
-                    <TabsTrigger value="attachments" className="text-xs">Attachments</TabsTrigger>
+                    <TabsTrigger value="description" className="text-xs">Description <TextQuote className="w-4 h-4" /> </TabsTrigger>
+                    <TabsTrigger value="attachments" className="text-xs">Attachments <Paperclip className="w-4 h-4" /> </TabsTrigger>
+                      <TabsTrigger value="comments" className="text-xs">Comments <MessagesSquare className="w-4 h-4" /> </TabsTrigger>
                   </TabsList>
                   
                   <TabsContent value="description" className=" pt-2">
@@ -211,37 +229,80 @@ export const TaskDetailSheet = ({ task, isOpen, onClose }: TaskDetailSheetProps)
                       </div>
                     </div>
                   </TabsContent>
+
+                  <TabsContent value="comments" className="pt-2">
+                   <div className="pt-2">
+  {comments && comments.length > 0 ? (
+    <div className="border border-border/60 rounded-xl overflow-hidden divide-y divide-border/40 bg-card/30 backdrop-blur-sm max-h-[260px] py-6 overflow-y-auto">
+      {comments.map((comment) => (
+        <div
+          key={comment._id}
+          className="group relative flex gap-3 px-3 py-2.5 hover:bg-accent/30 transition-colors duration-150"
+        >
+          <Avatar className="h-5 w-5 border border-border/70 shrink-0 mt-0.5">
+            <AvatarImage src={comment.userImage} />
+            <AvatarFallback className="bg-muted text-muted-foreground text-[9px] uppercase font-bold">
+              {comment.userName.charAt(0)}
+            </AvatarFallback>
+          </Avatar>
+
+          <div className="flex-1 min-w-0">
+            <div className="flex items-baseline gap-1.5 mb-0.5">
+              <span className="text-[11px] font-semibold text-primary/90 truncate max-w-[120px] font-mono">
+                {comment.userName}
+              </span>
+              <span className="text-[9px] text-muted-foreground/50 whitespace-nowrap tabular-nums">
+                {format(comment.createdAt, "MMM d, h:mm a")}
+              </span>
+            </div>
+            <p className="text-[11px] text-muted-foreground leading-relaxed break-words">
+              {comment.comment}
+            </p>
+          </div>
+        </div>
+      ))}
+    </div>
+  ) : (
+    <div className="flex flex-col items-center border border-dashed border-border/60 p-6 rounded-xl justify-center text-center bg-accent/10 gap-2">
+      <MessagesSquare className="w-8 h-8 text-muted-foreground/30" />
+      <div>
+        <p className="text-xs text-primary/70 font-medium">No comments yet</p>
+        <p className="text-[10px] text-muted-foreground/50 mt-0.5">Be the first to start the discussion</p>
+      </div>
+    </div>
+  )}
+</div>
+                  </TabsContent>
                 </Tabs>
               </div>
             </div>
 
-          {/* Comment Input Fixed at Bottom */}
-          {/* <div className="p-1 border-t border-neutral-800/50 bg-neutral-900/80 backdrop-blur-md">
-            <div className="relative group">
-              <textarea 
-                value={commentText}
-                onChange={(e) => setCommentText(e.target.value)}
-                onKeyDown={(e) => {
-                  if (e.key === "Enter" && !e.shiftKey) {
-                    e.preventDefault();
-                    handleSendComment();
-                  }
-                }}
-                placeholder="Write a comment..." 
-                className="w-full bg-neutral-800/50 border border-neutral-700/50 rounded-2xl p-4 pr-14 text-sm focus:outline-none focus:ring-1 focus:ring-white/20 transition-all resize-none min-h-[90px] text-neutral-200 placeholder:text-neutral-500 scrollbar-hide"
-              />
-              <div className="absolute bottom-4 right-4 animate-in fade-in zoom-in duration-300">
-                <Button 
-                   size="icon" 
-                   onClick={handleSendComment}
-                   className="h-8 w-8 rounded-full bg-white text-neutral-900 hover:bg-neutral-200 hover:scale-105 transition-all shadow-lg active:scale-95 disabled:opacity-50"
-                   disabled={!commentText.trim()}
-                >
-                  <Send size={14} />
-                </Button>
-              </div>
-            </div>
-          </div> */}
+          {activeTab === "comments" && (
+  <div className="px-3 py-4 border-t border-border/60 bg-card/80 backdrop-blur-sm sticky bottom-0">
+    <div className="flex items-center gap-2">
+      <Input
+        placeholder="Type your message..."
+        value={commentText}
+        onChange={(e) => setCommentText(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter" && !e.shiftKey) {
+            e.preventDefault();
+            handleSendComment();
+          }
+        }}
+        className="flex-1 bg-transparent border-border/60 focus-visible:ring-0 focus-visible:ring-offset-0 text-[11px] h-8 px-3 placeholder:text-muted-foreground/30 rounded-lg"
+      />
+      <Button
+        size="icon"
+        onClick={handleSendComment}
+        disabled={!commentText.trim()}
+        className="h-8 w-8 shrink-0 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed"
+      >
+        <Send size={12} />
+      </Button>
+    </div>
+  </div>
+)}
         </div>
       </SheetContent>
     </Sheet>

@@ -281,3 +281,18 @@ export const updateSocialLinks = mutation({
     });
   },
 });
+
+// ==================================
+// GET USER BY ID (name + avatar)
+// ==================================
+export const getUserById = query({
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
+    const user = await ctx.db.get(args.userId);
+    if (!user) return null;
+    return {
+      name: user.name ?? "Unknown",
+      avatarUrl: user.avatarUrl ?? null,
+    };
+  },
+});

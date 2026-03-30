@@ -23,6 +23,7 @@ import {
   ChevronsLeftRight,
   ChevronsRight,
   ChevronsUpDown,
+  Clover,
   Compass,
   CreditCard,
   FileText,
@@ -403,7 +404,22 @@ export const AppSidebar = () => {
           </Popover>
         </SidebarMenu>
       </SidebarContent>
-      <SidebarFooter className="border-t px-2 py-2 group-data-[collapsible=icon]:hidden"></SidebarFooter>
+      <SidebarFooter className="border-t border-accent px-2 py-2 group-data-[collapsible=icon]:hidden">
+          {/* =======USER PLAN========= */}
+                <div className="my-2 border p-3 rounded-md bg-linear-to-br from-card via-card to-blue-600/70">
+                  <div className="flex items-center gap-2">
+                    <div className="h-7 w-7 rounded-full bg-blue-600/20 flex items-center justify-center">
+                      <Clover className="h-4 w-4 text-primary" />
+                    </div>
+                    <div className="flex flex-col">
+                      <h3 className="text-sm font-medium">Current Plan</h3>
+                      <p className="text-xs text-muted-foreground">Free</p>
+                    </div>
+                  </div>
+                   <p className="text-xs text-muted-foreground text-left my-1.5">Upgrade to Pro to unlock AI to boost productivity.</p>
+                   <Button className="text-[10px] cursor-pointer w-full my-1.5 font-medium" size='xs'>Upgrade to Pro</Button>
+                </div>
+      </SidebarFooter>
     </Sidebar>
   );
 };
