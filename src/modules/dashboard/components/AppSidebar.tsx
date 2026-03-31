@@ -142,7 +142,7 @@ export const AppSidebar = () => {
         )}
       </SidebarHeader>
       <SidebarContent className="flex flex-col px-3 py-5 relative overflow-y-scroll scroll-smooth">
-        <SidebarMenu className="flex flex-col gap-2.5">
+        <SidebarMenu className="flex flex-col gap-2">
           {/* 1 */}
           <SidebarMenuButton
             asChild
@@ -210,7 +210,29 @@ export const AppSidebar = () => {
             </PopoverContent>
           </Popover>
           {/* 3 */}
-          <div className="px-1 my-2 group-data-[collapsible=icon]:hidden">
+           <SidebarMenuButton
+            asChild
+            data-active={isActive("/dashboard/repositories")}
+            className="group relative overflow-hidden"
+          >
+            <Link
+              href="/dashboard/repositories"
+              className="relative z-10 flex items-center gap-3 px-2 py-2 dark:data-[active=true]:text-white data-[active=true]:text-gray-700"
+            >
+              <GitBranchPlus className="h-5 w-5" />
+              <span className="text-sm">Repositories</span>
+              <span
+                className="
+        pointer-events-none absolute inset-0 -z-10
+        opacity-0 transition-opacity
+        group-data-[active=true]:opacity-100
+        bg-linear-to-l from-blue-600/80 dark:from-blue-600/50 via-blue-600/10  to-transparent
+      "
+              />
+            </Link>
+          </SidebarMenuButton>
+          {/* 4 */}
+           <div className="px-1 my-2 group-data-[collapsible=icon]:hidden">
             <div className="flex items-center justify-center gap-2">
               <span className="w-10 h-px bg-muted-foreground/30"></span>
               <h3 className="mb-2 text-sm font-medium text-muted-foreground capitalize text-center">
@@ -312,28 +334,6 @@ export const AppSidebar = () => {
               </div>
             </Tabs>
           </div>
-          {/* 4 */}
-          <SidebarMenuButton
-            asChild
-            data-active={isActive("/dashboard/repositories")}
-            className="group relative overflow-hidden"
-          >
-            <Link
-              href="/dashboard/repositories"
-              className="relative z-10 flex items-center gap-3 px-3 py-2 dark:data-[active=true]:text-white data-[active=true]:text-gray-700"
-            >
-              <GitBranchPlus className="h-5 w-5" />
-              <span className="text-sm">Repositories</span>
-              <span
-                className="
-        pointer-events-none absolute inset-0 -z-10
-        opacity-0 transition-opacity
-        group-data-[active=true]:opacity-100
-        bg-linear-to-l from-blue-600/80 dark:from-blue-600/50 via-blue-600/10  to-transparent
-      "
-              />
-            </Link>
-          </SidebarMenuButton>
 
           {/* QUICK ACCESS */}
           <div className="flex items-center justify-center gap-2 group-data-[collapsible=icon]:hidden">

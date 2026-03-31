@@ -1,5 +1,5 @@
 "use client"
-import { ChartNoAxesGantt, Loader2, CalendarPlus, Target, ArrowRight } from 'lucide-react'
+import { ChartNoAxesGantt, Loader2, CalendarPlus, Target, ArrowRight, ClipboardClock, Frown } from 'lucide-react'
 import React, { useState } from 'react'
 import { useParams } from 'next/navigation'
 import { useQuery } from 'convex/react'
@@ -8,6 +8,7 @@ import { Id } from '../../../../../../../../convex/_generated/dataModel'
 import { PageTransition } from '@/components/PageTransition'
 import { SetTargetDateDialog } from '@/modules/workspace/SetTargetDateDialog'
 import { Button } from '@/components/ui/button'
+import { ProjectTimeline } from '@/modules/workspace/timeLogs/ProjectTimeline'
 
 const TimeLogsPage = () => {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
@@ -42,33 +43,32 @@ const TimeLogsPage = () => {
   return (
     <PageTransition className='w-full h-full p-6 2xl:p-8'>
         <header>
-             <h1 className="text-3xl font-semibold">
+             <h1 className="text-2xl font-semibold">
         <ChartNoAxesGantt className="w-6 h-6 ml-1 text-primary inline" />  Time Logs 
         </h1>
         </header>
-
-        <div className="my-5 border border-dashed rounded-md h-[200px] w-full flex items-center justify-center">
-            <p className="text-muted-foreground">Rsereved for Future deadline tracking charts & Insights</p>
-        </div>
-
-        {/* Timeline tracker */}
-        <div className='mt-10 h-[calc(100vh-280px)]'>
+        <div className='my-6'>
            {projectDetails?.targetDate ? (
             <div className="h-full">
-                {/* Timeline logic will go here */}
-                <div className="text-muted-foreground text-xs italic opacity-60">
-                   Timeline engine initialized. Waiting for task data streams...
-                </div>
+               <div className="h-[180px] border">
+                <p>saved to displaydeadline charts later...</p>
+                <p>Timelogs tracker below will only diaplay tasks that are going to hit deadline or already late.</p>
+               </div>
+
+               <ProjectTimeline 
+                  tasks={tasks as any}
+                  projectCreatedAt={project.createdAt}
+                  projectDeadline={projectDetails.targetDate} 
+               />
             </div>
            ): (
-            <div className="">
-                <p>deadline not set for this project</p>
-              <Button 
-                        onClick={() => setIsDialogOpen(true)}
-                        className=""
-                    >
-                        Initialize Project Timeline <ArrowRight className="w-4 h-4 ml-2" />
-                    </Button>
+            <div className="h-[300px] max-w-5xl mx-auto border border-dashed border-accent bg-accent/30 rounded-md flex flex-col space-y-2 items-center justify-center">
+              <ClipboardClock size={60} className='text-muted-foreground opacity-30' />
+              <h1 className='text-lg font-medium tracking-tight text-primary/70'>Project Deliver Date not set </h1>
+              <p className='text-sm text-primary/70 max-w-[440px] tracking-tight text-center text-pretty'>Setting up Delivery date for the project {project?.projectName}, will enable deadline tracking and more insights for the project.</p>
+             <Button size={'sm'} className='text-xs cursor-pointer mt-5'   onClick={() => setIsDialogOpen(true)}>
+                Set up Now <ClipboardClock/>
+             </Button>
             </div>
            )}
         </div>
@@ -84,3 +84,5 @@ const TimeLogsPage = () => {
 }
 
 export default TimeLogsPage;
+
+

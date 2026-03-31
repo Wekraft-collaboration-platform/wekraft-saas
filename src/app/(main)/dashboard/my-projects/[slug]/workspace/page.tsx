@@ -53,7 +53,7 @@ const ProjectWorkspace = () => {
               Workspace
             </p>
           </div>
-          <h1 className="text-3xl font-bold tracking-tighter">
+          <h1 className="text-2xl font-semibold tracking-tighter">
             Activity Workspace
           </h1>
           <p className="text-sm text-muted-foreground max-w-lg leading-relaxed">

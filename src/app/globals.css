@@ -222,3 +222,149 @@
     display: none; 
   }
 }
+
+@layer components {
+  .fc-theme {
+    --fc-border-color: color-mix(in oklab, var(--border) 78%, black);
+    --fc-page-bg-color: transparent;
+    --fc-neutral-bg-color: color-mix(in oklab, var(--background) 92%, white);
+    --fc-list-event-hover-bg-color: color-mix(in oklab, var(--accent) 55%, black);
+    --fc-event-bg-color: color-mix(in oklab, var(--primary) 80%, #334155);
+    --fc-event-border-color: transparent;
+    --fc-today-bg-color: color-mix(in oklab, #2563eb 9%, transparent);
+    --fc-button-bg-color: color-mix(in oklab, var(--secondary) 90%, black);
+    --fc-button-border-color: color-mix(in oklab, var(--border) 85%, black);
+    --fc-button-hover-bg-color: color-mix(in oklab, var(--accent) 72%, black);
+    --fc-button-hover-border-color: color-mix(in oklab, var(--border) 75%, black);
+    --fc-button-active-bg-color: color-mix(in oklab, var(--accent) 62%, black);
+    --fc-button-active-border-color: color-mix(in oklab, var(--border) 72%, black);
+  }
+
+  .fc-theme .fc {
+    height: 100%;
+    font-size: 0.9rem;
+  }
+
+  .fc-theme .fc-toolbar {
+    padding: 0.75rem;
+    border-bottom: 1px solid var(--fc-border-color);
+    background: color-mix(in oklab, var(--background) 96%, black);
+  }
+
+  .fc-theme .fc-toolbar-title {
+    font-size: 0.96rem;
+    font-weight: 700;
+    color: var(--foreground);
+    letter-spacing: -0.015em;
+  }
+
+  .fc-theme .fc-button {
+    border-radius: 0.45rem !important;
+    font-size: 0.72rem !important;
+    font-weight: 600 !important;
+    text-transform: none;
+    box-shadow: none !important;
+    padding: 0.35rem 0.6rem !important;
+  }
+
+  .fc-theme .fc-col-header-cell-cushion {
+    padding: 0.65rem 0.35rem;
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: var(--muted-foreground);
+    letter-spacing: 0.01em;
+  }
+
+  .fc-theme .fc-daygrid-day-number {
+    padding: 0.4rem 0.55rem;
+    font-size: 0.76rem;
+    color: var(--muted-foreground);
+  }
+
+  .fc-theme .fc-daygrid-day.fc-day-today .fc-daygrid-day-number {
+    color: #dbeafe;
+    font-weight: 700;
+    background: color-mix(in oklab, #2563eb 18%, transparent);
+    border: 1px solid color-mix(in oklab, #2563eb 35%, transparent);
+    border-radius: 9999px;
+    margin: 0.25rem;
+    padding: 0.2rem 0.45rem;
+  }
+
+  .fc-theme .fc-daygrid-event {
+    margin-top: 0.14rem;
+    padding: 0.1rem 0.28rem;
+    border-radius: 0.35rem;
+    font-size: 0.69rem;
+    line-height: 1.15;
+    font-weight: 600;
+    opacity: 1 !important;
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+      0 10px 22px rgba(0, 0, 0, 0.18);
+  }
+
+  .fc-theme .fc-daygrid-event-dot {
+    border-color: currentColor !important;
+  }
+
+  .fc-theme .fc-task-event .fc-event-title {
+    color: #e2e8f0;
+    font-weight: 500;
+    letter-spacing: -0.005em;
+  }
+
+  .fc-theme .fc-task-status-completed {
+    color: #22c55e !important;
+  }
+  .fc-theme .fc-task-status-inprogress,
+  .fc-theme .fc-task-status-in-progress {
+    color: #3b82f6 !important;
+  }
+  .fc-theme .fc-task-status-reviewing {
+    color: #a78bfa !important;
+  }
+  .fc-theme .fc-task-status-testing {
+    color: #06b6d4 !important;
+  }
+  .fc-theme .fc-task-status-not-started,
+  .fc-theme .fc-task-status-not_started {
+    color: #94a3b8 !important;
+  }
+  .fc-theme .fc-task-status-issue,
+  .fc-theme .fc-task-status-blocked {
+    color: #ef4444 !important;
+  }
+
+  .fc-theme .fc-daygrid-more-link {
+    font-size: 0.68rem;
+    color: var(--muted-foreground);
+    font-weight: 600;
+  }
+
+  .fc-theme .fc-scrollgrid,
+  .fc-theme .fc-scrollgrid td,
+  .fc-theme .fc-scrollgrid th {
+    border-color: var(--fc-border-color) !important;
+  }
+
+  /* Time-grid look without showing any time (date-only tasks). */
+  .fc-theme .fc-timegrid-axis,
+  .fc-theme .fc-timegrid-slot-label,
+  .fc-theme .fc-timegrid-slot-label-cushion {
+    display: none !important;
+  }
+
+  .fc-theme .fc-timegrid-event {
+    margin-top: 0.14rem;
+    padding: 0.1rem 0.28rem;
+    border-radius: 0.35rem;
+    font-size: 0.69rem;
+    line-height: 1.15;
+    font-weight: 600;
+    opacity: 1 !important;
+    box-shadow:
+      inset 0 0 0 1px rgba(255, 255, 255, 0.06),
+      0 10px 22px rgba(0, 0, 0, 0.18);
+  }
+}
