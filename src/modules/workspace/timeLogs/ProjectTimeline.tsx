@@ -231,7 +231,7 @@ function TimelineWeekAxis({
         })}
 
         {/* Task Slabs */}
-        <div className="absolute top-[86px] left-0 right-0 z-50 flex flex-col gap-2.5 p-2 px-1 pointer-events-none">
+        <div className="absolute top-[70px] left-0 right-0 z-50 flex flex-col gap-2.5 p-2 px-1 pointer-events-none">
           {tasks?.map((task) => {
             const start = startOfDay(new Date(task.estimation.startDate));
             const end = startOfDay(new Date(task.estimation.endDate));
