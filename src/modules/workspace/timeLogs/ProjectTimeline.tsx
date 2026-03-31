@@ -1,4 +1,4 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useState, useMemo, useEffect } from "react";
 import {
   addDays,
   differenceInDays,
@@ -12,10 +12,18 @@ import {
   getDay,
   isToday,
   isSameDay,
-} from 'date-fns';
-import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
-import { ChartNoAxesGantt, ChevronDown, ClipboardList, Clock, Filter, Layers, Layers2 } from 'lucide-react';
+} from "date-fns";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import {
+  ChartNoAxesGantt,
+  ChevronDown,
+  ClipboardList,
+  Clock,
+  Filter,
+  Layers,
+  Layers2,
+} from "lucide-react";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -23,17 +31,17 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu';
-import { statusIcons, priorityIcons } from '@/lib/static-store';
-import { Task } from '@/types/types';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Calendar, User } from 'lucide-react';
-import { Layer } from 'recharts';
+} from "@/components/ui/dropdown-menu";
+import { statusIcons, priorityIcons } from "@/lib/static-store";
+import { Task } from "@/types/types";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Calendar, User } from "lucide-react";
+import { Layer } from "recharts";
 
 /** Major tick + label every N days (all slabs, day view). */
 export const TIMELINE_DAY_TICK_INTERVAL = 3;
 
-export type TimelineView = 'day' | 'week' | 'month';
+export type TimelineView = "day" | "week" | "month";
 
 export interface TimelineConfig {
   startDate: Date;
@@ -50,7 +58,7 @@ export interface TimelineConfig {
 /** Slab from creation→deadline; visible range ends 3 days after deadline for layout breathing room. */
 export const useTimelineConfig = (
   projectCreatedAt: string | number | Date | undefined,
-  projectDeadline: string | number | Date | undefined
+  projectDeadline: string | number | Date | undefined,
 ): TimelineConfig | null => {
   return useMemo(() => {
     if (projectCreatedAt == null || !projectDeadline) return null;
@@ -65,21 +73,21 @@ export const useTimelineConfig = (
     const totalDays = Math.max(1, differenceInDays(endDate, startDate));
 
     let slab: 1 | 2 | 3 = 1;
-    let defaultView: TimelineView = 'day';
-    let availableViews: TimelineView[] = ['day'];
+    let defaultView: TimelineView = "day";
+    let availableViews: TimelineView[] = ["day"];
 
     if (slabSpanDays < 90) {
       slab = 1;
-      defaultView = 'day';
-      availableViews = [];
+      defaultView = "day";
+      availableViews = ["day", "week"];
     } else if (slabSpanDays < 180) {
       slab = 2;
-      defaultView = 'day';
-      availableViews = ['day', 'week'];
+      defaultView = "day";
+      availableViews = ["day", "week"];
     } else {
       slab = 3;
-      defaultView = 'week';
-      availableViews = ['week', 'month'];
+      defaultView = "week";
+      availableViews = ["week", "month"];
     }
 
     return {
@@ -96,7 +104,6 @@ export const useTimelineConfig = (
   }, [projectCreatedAt, projectDeadline]);
 };
 
-
 interface ProjectTimelineProps {
   tasks?: Task[] | undefined;
   projectCreatedAt: string | number | Date | undefined;
@@ -107,16 +114,15 @@ const DAY_COL_MIN_PX = 14;
 const TRACK_MIN_PX = 900;
 const WEEK_COL_MIN_PX = 92;
 
-
 // WEEKLY FUNCTION
-function TimelineWeekAxis({ 
+function TimelineWeekAxis({
   config,
   tasks,
-  statusFilter 
-}: { 
-  config: TimelineConfig,
-  tasks?: Task[],
-  statusFilter: string
+  statusFilter,
+}: {
+  config: TimelineConfig;
+  tasks?: Task[];
+  statusFilter: string;
 }) {
   const weekStartsOnMonday = 1;
 
@@ -137,12 +143,14 @@ function TimelineWeekAxis({
   return (
     <div className="w-full min-w-0 overflow-x-auto">
       <div
-        className="relative flex min-h-[280px] max-h-[320px] w-full min-w-[900px] max-w-[900px]"
+        className="relative flex h-full min-h-[360px] max-h-[400px]  w-full min-w-[900px] max-w-[900px]"
         style={{ width: trackWidth }}
         aria-label="Timeline weeks"
       >
         {weeks.map((weekStart, i) => {
-          const weekEnd = endOfWeek(weekStart, { weekStartsOn: weekStartsOnMonday });
+          const weekEnd = endOfWeek(weekStart, {
+            weekStartsOn: weekStartsOnMonday,
+          });
           const weekend = false; // keep week columns visually neutral
 
           const prevWeek = i > 0 ? weeks[i - 1] : undefined;
@@ -154,7 +162,8 @@ function TimelineWeekAxis({
 
           const today = new Date();
           const todayStart = startOfDay(today);
-          const containsToday = todayStart >= weekStart && todayStart <= weekEnd;
+          const containsToday =
+            todayStart >= weekStart && todayStart <= weekEnd;
 
           const containsDeadline =
             config.deadlineDate >= weekStart && config.deadlineDate <= weekEnd;
@@ -164,8 +173,8 @@ function TimelineWeekAxis({
               key={weekStart.toISOString()}
               style={{ width: columnWidth }}
               className={cn(
-                'relative shrink-0 border-l border-border/40 first:border-l-0',
-                weekend && 'bg-muted/10'
+                "relative shrink-0 border-l border-border/40 first:border-l-0",
+                weekend && "bg-muted/10",
               )}
             >
               {/* TODAY */}
@@ -196,18 +205,21 @@ function TimelineWeekAxis({
                   <div className="flex flex-col items-center">
                     <div
                       className={cn(
-                        'w-px rounded-full bg-accent',
-                        showMonthLabel ? 'h-6 bg-blue-600' : 'h-4'
+                        "w-px rounded-full bg-accent",
+                        showMonthLabel ? "h-6 bg-blue-600" : "h-4",
                       )}
                     />
                     <span
                       className={cn(
-                        'mt-1.5 text-center text-[10px] font-medium leading-none text-muted-foreground tabular-nums',
-                        showMonthLabel && 'text-foreground/80',
-                        containsDeadline && 'font-semibold text-amber-700 dark:text-amber-300'
+                        "mt-1.5 text-center text-[10px] font-medium leading-none text-muted-foreground tabular-nums",
+                        showMonthLabel && "text-foreground/80",
+                        containsDeadline &&
+                          "font-semibold text-amber-700 dark:text-amber-300",
                       )}
                     >
-                      {showMonthLabel ? format(weekStart, 'MMM d') : format(weekStart, 'd')}
+                      {showMonthLabel
+                        ? format(weekStart, "MMM d")
+                        : format(weekStart, "d")}
                     </span>
                   </div>
                 </div>
@@ -225,8 +237,12 @@ function TimelineWeekAxis({
             const end = startOfDay(new Date(task.estimation.endDate));
 
             // Grid start date for offset calculation
-            const gridStart = startOfWeek(startOfDay(config.startDate), { weekStartsOn: weekStartsOnMonday });
-            const gridEnd = endOfWeek(startOfDay(config.endDate), { weekStartsOn: weekStartsOnMonday });
+            const gridStart = startOfWeek(startOfDay(config.startDate), {
+              weekStartsOn: weekStartsOnMonday,
+            });
+            const gridEnd = endOfWeek(startOfDay(config.endDate), {
+              weekStartsOn: weekStartsOnMonday,
+            });
 
             if (end < gridStart || start > gridEnd) return null;
 
@@ -251,19 +267,24 @@ function TimelineWeekAxis({
               const today = startOfDay(new Date());
               const endTask = startOfDay(new Date(t.estimation.endDate));
               const daysLeft = differenceInDays(endTask, today);
-              if (daysLeft < 0) return 'bg-red-500 border-primary/70 text-white';
-              if (daysLeft <= 3) return 'bg-orange-500 border-primary/70 text-white';
-              return 'bg-primary border-primary/50 text-primary-foreground';
+              if (daysLeft < 0)
+                return "bg-red-500 border-primary/70 text-white";
+              if (daysLeft <= 3)
+                return "bg-orange-500 border-primary/70 text-white";
+              return "bg-primary border-primary/50 text-primary-foreground";
             };
 
             const colorClasses = getTaskColor(task);
 
             return (
-              <div key={task._id} className="relative h-7 pointer-events-auto flex items-center">
+              <div
+                key={task._id}
+                className="relative h-7 pointer-events-auto flex items-center"
+              >
                 <div
                   className={cn(
                     "absolute h-full rounded border flex items-center px-2.5 shadow-md group transition-colors",
-                    colorClasses
+                    colorClasses,
                   )}
                   style={{ left, width }}
                 >
@@ -283,30 +304,41 @@ function TimelineWeekAxis({
                   <div className="absolute bottom-full left-0 mb-2 z-50 hidden group-hover:flex flex-col gap-1.5 bg-popover border border-border rounded-lg shadow-xl p-2.5 pointer-events-none min-w-[180px]">
                     <div className="flex items-center gap-1.5 text-primary">
                       <Layers2 size={11} className="shrink-0" />
-                      <span className="text-[11px] font-semibold">{task.title}</span>
+                      <span className="text-[11px] font-semibold">
+                        {task.title}
+                      </span>
                     </div>
                     <div className="flex items-center gap-2 text-[10px] text-primary">
                       <Clock className="w-3 h-3" />
                       <span>
-                        {format(task.estimation.startDate, "MMM d")} - {format(task.estimation.endDate, "MMM d")}
+                        {format(task.estimation.startDate, "MMM d")} -{" "}
+                        {format(task.estimation.endDate, "MMM d")}
                       </span>
                     </div>
                     <div className="flex items-center gap-1 flex-wrap pt-0.5 border-t border-border/50">
                       {assignees.length === 0 ? (
-                        <span className="text-[10px] text-muted-foreground/50">No assignees</span>
+                        <span className="text-[10px] text-muted-foreground/50">
+                          No assignees
+                        </span>
                       ) : (
                         assignees.map((a, i) => (
                           <div key={i} className="flex items-center gap-1">
                             <div className="h-3.5 w-3.5 rounded-full bg-muted overflow-hidden border border-border">
                               {a.avatar ? (
-                                <img src={a.avatar} alt={a.name} className="h-full w-full object-cover" />
+                                <img
+                                  src={a.avatar}
+                                  alt={a.name}
+                                  className="h-full w-full object-cover"
+                                />
                               ) : (
                                 <div className="h-full w-full flex items-center justify-center bg-accent text-[7px] font-bold uppercase">
                                   {a.name.charAt(0)}
                                 </div>
                               )}
                             </div>
-                            <span className="text-[10px] text-muted-foreground">{a.name}</span>
+                            <span className="text-[10px] text-muted-foreground">
+                              {a.name}
+                            </span>
                           </div>
                         ))
                       )}
@@ -323,16 +355,16 @@ function TimelineWeekAxis({
 }
 
 // DAILY FUNCTION
-function TimelineDayAxis({ 
+function TimelineDayAxis({
   config,
   tasks,
   statusFilter,
-  dayInterval
-}: { 
-  config: TimelineConfig,
-  tasks?: Task[],
-  statusFilter: string,
-  dayInterval: number
+  dayInterval,
+}: {
+  config: TimelineConfig;
+  tasks?: Task[];
+  statusFilter: string;
+  dayInterval: number;
 }) {
   const tick = dayInterval;
 
@@ -349,18 +381,17 @@ function TimelineDayAxis({
   const columnWidth = trackWidth / days.length;
 
   return (
-    <div className="w-full min-w-0 overflow-x-auto">
+    <div className="w-full min-w-0 overflow-x-auto dark:bg-card">
       <div
-        className="relative flex h-[300px]  w-full min-w-[900px] max-w-[900px]"
+        className="relative flex h-full min-h-[360px] max-h-[400px]  w-full min-w-[900px] max-w-[900px]"
         style={{ width: trackWidth }}
-        aria-label={`Timeline from ${format(days[0]!, 'PPP')} to ${format(days[days.length - 1]!, 'PPP')}, one column per day`}
+        aria-label={`Timeline from ${format(days[0]!, "PPP")} to ${format(days[days.length - 1]!, "PPP")}, one column per day`}
       >
         {days.map((day, i) => {
           const dow = getDay(day);
           const weekend = dow === 0 || dow === 6;
           const isMajorTick = i % tick === 0;
-          const prevMajor =
-            i >= tick ? days[i - tick] : undefined;
+          const prevMajor = i >= tick ? days[i - tick] : undefined;
           const showMonth =
             isMajorTick &&
             (i === 0 ||
@@ -374,8 +405,8 @@ function TimelineDayAxis({
               key={day.toISOString()}
               style={{ width: columnWidth }}
               className={cn(
-                'relative shrink-0 border-l border-border/40 first:border-l-0',
-                weekend && 'bg-muted/10'
+                "relative shrink-0 border-l border-border/40 first:border-l-0",
+                weekend && "bg-muted/10",
               )}
             >
               {/* TODAY  */}
@@ -403,18 +434,18 @@ function TimelineDayAxis({
                     <>
                       <div
                         className={cn(
-                          'w-px rounded-full bg-accent',
-                          showMonth ? 'h-6 bg-blue-600' : 'h-4'
+                          "w-px rounded-full bg-accent",
+                          showMonth ? "h-6 bg-blue-600" : "h-4",
                         )}
                       />
                       <span
                         className={cn(
-                          'mt-1.5 text-center text-[10px] font-medium leading-none text-muted-foreground tabular-nums',
-                          showMonth && 'text-foreground/80',
-                          isDeadline && 'font-semibold text-amber-700'
+                          "mt-1.5 text-center text-[10px] font-medium leading-none text-muted-foreground tabular-nums",
+                          showMonth && "text-foreground/80",
+                          isDeadline && "font-semibold text-amber-700",
                         )}
                       >
-                        {showMonth ? format(day, 'MMM d') : format(day, 'd')}
+                        {showMonth ? format(day, "MMM d") : format(day, "d")}
                       </span>
                     </>
                   )}
@@ -425,144 +456,166 @@ function TimelineDayAxis({
           );
         })}
 
-{/* Task Slabs */}
-<div className="absolute top-[86px] left-0 right-0 z-50 flex flex-col gap-2.5 p-2 px-1 pointer-events-none">
-  {tasks?.map((task) => {
-    const start = startOfDay(new Date(task.estimation.startDate));
-    const end = startOfDay(new Date(task.estimation.endDate));
+        {/* Task Slabs */}
+        <div className="absolute top-[70px] left-0 right-0 z-50 flex flex-col gap-2.5 p-2 px-1 pointer-events-none">
+          {tasks?.map((task) => {
+            const start = startOfDay(new Date(task.estimation.startDate));
+            const end = startOfDay(new Date(task.estimation.endDate));
 
-    if (end < config.startDate || start > config.endDate) return null;
+            if (end < config.startDate || start > config.endDate) return null;
 
-    const displayStart = start < config.startDate ? config.startDate : start;
-    const displayEnd = end > config.endDate ? config.endDate : end;
+            const displayStart =
+              start < config.startDate ? config.startDate : start;
+            const displayEnd = end > config.endDate ? config.endDate : end;
 
-    const startOffsetDays = Math.max(0, differenceInDays(displayStart, config.startDate));
-    const durationDays = Math.max(1, differenceInDays(displayEnd, displayStart) + 1);
-    const actualDurationDays = differenceInDays(end, start) + 1;
+            const startOffsetDays = Math.max(
+              0,
+              differenceInDays(displayStart, config.startDate),
+            );
+            const durationDays = Math.max(
+              1,
+              differenceInDays(displayEnd, displayStart) + 1,
+            );
+            const actualDurationDays = differenceInDays(end, start) + 1;
 
-    const left = startOffsetDays * columnWidth;
-    const width = Math.max(durationDays * columnWidth, 90);
+            const left = startOffsetDays * columnWidth;
+            const width = Math.max(durationDays * columnWidth, 90);
 
-    // Width thresholds
-    const isWide = width >= 180;   // show icon + avatars + title + duration
-    const isMed  = width >= 90;    // show title + duration only
+            // Width thresholds
+            const isWide = width >= 180; // show icon + avatars + title + duration
+            const isMed = width >= 90; // show title + duration only
 
-    const assignees = task.assignedTo ?? [];
+            const assignees = task.assignedTo ?? [];
 
-    const getTaskColor = (t: Task) => {
-      const today = startOfDay(new Date());
-      const endTask = startOfDay(new Date(t.estimation.endDate));
-      const daysLeft = differenceInDays(endTask, today);
-      if (daysLeft < 0) return 'bg-red-500 border-primary/70 text-white';
-      if (daysLeft <= 3) return 'bg-orange-500 border-primary/70 text-white';
-      return 'bg-primary border-primary/50 text-primary-foreground ';
-    };
+            const getTaskColor = (t: Task) => {
+              const today = startOfDay(new Date());
+              const endTask = startOfDay(new Date(t.estimation.endDate));
+              const daysLeft = differenceInDays(endTask, today);
+              if (daysLeft < 0)
+                return "bg-red-500 border-primary/70 text-white";
+              if (daysLeft <= 2)
+                return "bg-orange-500 border-primary/70 text-white";
+              return "bg-primary border-primary/50 text-primary-foreground ";
+            };
 
-    const colorClasses = getTaskColor(task);
+            const colorClasses = getTaskColor(task);
 
-    return (
-      <div key={task._id} className="relative h-7 pointer-events-auto flex items-center">
+            return (
+              <div
+                key={task._id}
+                className="relative h-7 pointer-events-auto flex items-center"
+              >
+                {/* Bar — group is ON the bar itself, not the outer wrapper */}
+                <div
+                  className={cn(
+                    "absolute h-full rounded border flex items-center px-2.5 shadow-md group transition-colors",
+                    colorClasses,
+                  )}
+                  style={{ left, width }}
+                >
+                  <div className="flex items-center gap-1.5 overflow-hidden w-full">
+                    {/* Icon — only when wide */}
+                    {isWide && <ClipboardList size={12} className="shrink-0" />}
 
-        {/* Bar — group is ON the bar itself, not the outer wrapper */}
-        <div
-          className={cn(
-            "absolute h-full rounded border flex items-center px-2.5 shadow-md group transition-colors",
-            colorClasses
-          )}
-          style={{ left, width }}
-        >
-          <div className="flex items-center gap-1.5 overflow-hidden w-full">
+                    {/* Title */}
+                    <span className="text-[11px] font-medium capitalize truncate leading-none flex-1">
+                      {task.title}
+                    </span>
 
-            {/* Icon — only when wide */}
-            {isWide && (
-              <ClipboardList size={12} className="shrink-0" />
-            )}
+                    {/* Duration */}
+                    {isMed && (
+                      <span className="text-[10px] opacity-90 font-mono shrink-0">
+                        {actualDurationDays}d
+                      </span>
+                    )}
 
-            {/* Title */}
-            <span className="text-[11px] font-medium capitalize truncate leading-none flex-1">
-              {task.title}
-            </span>
-
-            {/* Duration */}
-            {isMed && (
-              <span className="text-[10px] opacity-90 font-mono shrink-0">
-                {actualDurationDays}d
-              </span>
-            )}
-
-            {/* Stacked Avatars — only when wide */}
-            {isWide && (
-              <div className="flex items-center shrink-0 -space-x-1.5">
-                {assignees.length === 0 ? (
-                  <span className="text-[10px] opacity-40 font-mono">—</span>
-                ) : (
-                  assignees.slice(0, 3).map((a, i) => (
-                    <div
-                      key={i}
-                      className="h-4 w-4 rounded-full border border-current bg-muted overflow-hidden shrink-0"
-                      style={{ zIndex: 10 - i }}
-                    >
-                      {a.avatar ? (
-                        <img src={a.avatar} alt={a.name} className="h-full w-full object-cover" />
-                      ) : (
-                        <div className="h-full w-full flex items-center justify-center bg-accent text-[8px] font-bold text-foreground uppercase">
-                          {a.name.charAt(0)}
-                        </div>
-                      )}
-                    </div>
-                  ))
-                )}
-              </div>
-            )}
-          </div>
-
-          {/* Tooltip — group is on bar */}
-          <div className="absolute bottom-full left-0 mb-2 z-50 hidden group-hover:flex flex-col gap-1.5 bg-popover border border-border rounded-lg shadow-xl p-2.5 pointer-events-none min-w-[180px]">
-            
-            <div className="flex items-center gap-1.5 text-primary">
-              <Layers2 size={11} className=" shrink-0" />
-              <span className="text-[11px] font-semibold ">{task.title}</span>
-            </div>
-             <div className="flex items-center gap-2 text-[10px] text-primary">
-                        <Clock className="w-3 h-3" />
-                        {task.estimation ? (
-                          <span>
-                            {format(task.estimation.startDate, "MMM d")} -{" "}
-                            {format(task.estimation.endDate, "MMM d")}
+                    {/* Stacked Avatars — only when wide */}
+                    {isWide && (
+                      <div className="flex items-center shrink-0 -space-x-1.5">
+                        {assignees.length === 0 ? (
+                          <span className="text-[10px] opacity-40 font-mono">
+                            —
                           </span>
                         ) : (
-                          "No date"
+                          assignees.slice(0, 3).map((a, i) => (
+                            <div
+                              key={i}
+                              className="h-4 w-4 rounded-full border border-current bg-muted overflow-hidden shrink-0"
+                              style={{ zIndex: 10 - i }}
+                            >
+                              {a.avatar ? (
+                                <img
+                                  src={a.avatar}
+                                  alt={a.name}
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <div className="h-full w-full flex items-center justify-center bg-accent text-[8px] font-bold text-foreground uppercase">
+                                  {a.name.charAt(0)}
+                                </div>
+                              )}
+                            </div>
+                          ))
                         )}
                       </div>
+                    )}
+                  </div>
 
-            {/* Assignees in tooltip */}
-            <div className="flex items-center gap-1 flex-wrap pt-0.5 border-t border-border/50">
-              {assignees.length === 0 ? (
-                <span className="text-[10px] text-muted-foreground/50">No assignees</span>
-              ) : (
-                assignees.map((a, i) => (
-                  <div key={i} className="flex items-center gap-1">
-                    <div className="h-3.5 w-3.5 rounded-full bg-muted overflow-hidden border border-border">
-                      {a.avatar ? (
-                        <img src={a.avatar} alt={a.name} className="h-full w-full object-cover" />
+                  {/* Tooltip — group is on bar */}
+                  <div className="absolute bottom-full left-0 mb-2 z-50 hidden group-hover:flex flex-col gap-1.5 bg-popover border border-border rounded-lg shadow-xl p-2.5 pointer-events-none min-w-[220px]">
+                    <div className="flex items-center gap-1.5 text-primary">
+                      <Layers2 size={11} className=" shrink-0" />
+                      <span className="text-[11px] font-semibold ">
+                        {task.title}
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-2 text-[10px] text-primary">
+                      <Clock className="w-3 h-3" />
+                      {task.estimation ? (
+                        <span>
+                          {format(task.estimation.startDate, "MMM d")} -{" "}
+                          {format(task.estimation.endDate, "MMM d")}
+                        </span>
                       ) : (
-                        <div className="h-full w-full flex items-center justify-center bg-accent text-[7px] font-bold uppercase">
-                          {a.name.charAt(0)}
-                        </div>
+                        "No date"
                       )}
                     </div>
-                    <span className="text-[10px] text-muted-foreground">{a.name}</span>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
 
+                    {/* Assignees in tooltip */}
+                    <div className="flex items-center gap-1 flex-wrap pt-0.5 border-t border-border/50">
+                      {assignees.length === 0 ? (
+                        <span className="text-[10px] text-muted-foreground/50">
+                          No assignees
+                        </span>
+                      ) : (
+                        assignees.map((a, i) => (
+                          <div key={i} className="flex items-center gap-1">
+                            <div className="h-3.5 w-3.5 rounded-full bg-muted overflow-hidden border border-border">
+                              {a.avatar ? (
+                                <img
+                                  src={a.avatar}
+                                  alt={a.name}
+                                  className="h-full w-full object-cover"
+                                />
+                              ) : (
+                                <div className="h-full w-full flex items-center justify-center bg-accent text-[7px] font-bold uppercase">
+                                  {a.name.charAt(0)}
+                                </div>
+                              )}
+                            </div>
+                            <span className="text-[10px] text-muted-foreground">
+                              {a.name}
+                            </span>
+                          </div>
+                        ))
+                      )}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
         </div>
-      </div>
-    );
-  })}
-</div>
       </div>
     </div>
   );
@@ -575,7 +628,7 @@ export const ProjectTimeline = ({
 }: ProjectTimelineProps) => {
   const config = useTimelineConfig(projectCreatedAt, projectDeadline);
   const [userView, setUserView] = useState<TimelineView | null>(null);
-  const [statusFilter, setStatusFilter] = useState<string>('not started');
+  const [statusFilter, setStatusFilter] = useState<string>("not started");
   const [dayInterval, setDayInterval] = useState<number>(3);
 
   useEffect(() => {
@@ -587,8 +640,9 @@ export const ProjectTimeline = ({
   const activeView = userView ?? config.defaultView;
 
   // Simple normalization for comparing statuses
-  const normalizeStatus = (s: string) => s.toLowerCase().replace(/[^a-z0-9]+/g, "");
-  
+  const normalizeStatus = (s: string) =>
+    s.toLowerCase().replace(/[^a-z0-9]+/g, "");
+
   const filteredTasks = (tasks ?? []).filter((task) => {
     const taskStatus = normalizeStatus(task.status ?? "");
     const currentFilter = normalizeStatus(statusFilter);
@@ -596,139 +650,182 @@ export const ProjectTimeline = ({
   });
 
   return (
-    <div className="w-full bg-card border rounded-lg overflow-hidden shadow-sm">
+    <div className="w-full bg-sidebar border rounded-lg overflow-hidden shadow-sm ">
       {config.availableViews.length > 0 && (
         <div className="flex items-center justify-between p-2.5 border-b bg-muted/30">
           <div className="flex items-center gap-2">
             <div className="p-1.5 bg-primary border rounded-md">
               <ChartNoAxesGantt className="w-4 h-4 text-primary-foreground" />
             </div>
-            <h3 className='text-sm font-medium'>Project Time Logs</h3>
+            <h3 className="text-sm font-medium">Project Time Logs</h3>
             <span className="ml-2 rounded-full bg-muted border px-1.5 py-0.5 text-[9px] font-medium text-muted-foreground">
-             Task Count: {filteredTasks.length}
+              Task Count: {filteredTasks.length}
             </span>
           </div>
           {/* EXTRA SETTINGS */}
-          
-          <div className="flex items-center gap-4">
-           {/* Red — hard overdue (end date already passed) */}
-<div className='flex items-center gap-2'>
-  <div className="w-2.5 h-2.5 bg-red-500 rounded-full"></div>
-  <span className="text-xs font-light">Overdue</span>
-</div>
 
-{/* Amber — at risk (ending within next 1 days) */}
-<div className='flex items-center gap-2'>
-  <div className="w-2.5 h-2.5 bg-orange-500 rounded-full"></div>
-  <span className="text-xs font-light">At Risk</span>
-</div>
+          <div className="flex items-center gap-4">
+            {/* Red — hard overdue (end date already passed) */}
+            <div className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 bg-red-500 rounded-full"></div>
+              <span className="text-xs font-light">Overdue</span>
+            </div>
+
+            {/* Amber — at risk (ending within next 1 days) */}
+            <div className="flex items-center gap-2">
+              <div className="w-2.5 h-2.5 bg-orange-500 rounded-full"></div>
+              <span className="text-xs font-light">At Risk</span>
+            </div>
 
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <Button variant="outline" size="xs" className="h-7 gap-2 px-2 text-[10px] font-medium capitalize">
-                  {statusIcons[statusFilter] || <Filter className="w-3 h-3 text-muted-foreground" />}
-                  <span>{statusFilter === 'inprogress' ? 'In Progress' : statusFilter}</span>
+                <Button
+                  variant="outline"
+                  size="xs"
+                  className="h-7 gap-2 px-2 text-[10px] font-medium capitalize"
+                >
+                  {statusIcons[statusFilter] || (
+                    <Filter className="w-3 h-3 text-muted-foreground" />
+                  )}
+                  <span>
+                    {statusFilter === "inprogress"
+                      ? "In Progress"
+                      : statusFilter}
+                  </span>
                   <ChevronDown className="w-3 h-3 text-muted-foreground" />
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-[160px]">
-                <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">Filter by Status</DropdownMenuLabel>
+                <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                  Filter by Status
+                </DropdownMenuLabel>
                 <DropdownMenuSeparator />
                 {Object.entries(statusIcons)
-                  .filter(([status]) => ['not started', 'inprogress', 'reviewing', 'testing'].includes(status))
+                  .filter(([status]) =>
+                    [
+                      "not started",
+                      "inprogress",
+                      "reviewing",
+                      "testing",
+                    ].includes(status),
+                  )
                   .map(([status, icon]) => (
-                    <DropdownMenuItem 
-                      key={status} 
-                      onClick={() => setStatusFilter(status)} 
+                    <DropdownMenuItem
+                      key={status}
+                      onClick={() => setStatusFilter(status)}
                       className="text-xs gap-2"
                     >
                       {icon}
-                      <span className="capitalize">{status === 'inprogress' ? 'In Progress' : status}</span>
+                      <span className="capitalize">
+                        {status === "inprogress" ? "In Progress" : status}
+                      </span>
                     </DropdownMenuItem>
                   ))}
               </DropdownMenuContent>
             </DropdownMenu>
-          <div className="flex bg-muted border p-1 rounded-md">
-            {config.availableViews.map((view) => (
-              <Button
-                key={view}
-                onClick={() => setUserView(view)}
-                variant={activeView === view ? 'default' : 'ghost'}
-                size="xs"
-                className={cn(
-                  'px-4 capitalize text-[10px]',
-                  activeView === view && ''
-                )}
-              >
-                {view === 'day' ? 'Days' : view}
-              </Button>
-            ))}
-          </div>
+            <div className="flex bg-muted border p-1 rounded-md">
+              {config.availableViews.map((view) => (
+                <Button
+                  key={view}
+                  onClick={() => setUserView(view)}
+                  variant={activeView === view ? "default" : "ghost"}
+                  size="xs"
+                  className={cn(
+                    "px-4 capitalize text-[10px]",
+                    activeView === view && "",
+                  )}
+                >
+                  {view === "day" ? "Days" : view}
+                </Button>
+              ))}
+            </div>
 
-             {activeView === 'day' ? (
+            {activeView === "day" ? (
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="xs" className="h-7 gap-2 px-2 text-[10px] font-medium">
+                  <Button
+                    variant="outline"
+                    size="xs"
+                    className="h-7 gap-2 px-2 text-[10px] font-medium"
+                  >
                     <Clock className="w-3 h-3 text-muted-foreground" />
                     <span>{dayInterval}d Tick</span>
                     <ChevronDown className="w-3 h-3 text-muted-foreground" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-[120px]">
-                  <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">Grid Interval</DropdownMenuLabel>
+                  <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Grid Interval
+                  </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {[2, 3, 5].map((val) => (
-                    <DropdownMenuItem 
-                      key={val} 
-                      onClick={() => setDayInterval(val)} 
+                    <DropdownMenuItem
+                      key={val}
+                      onClick={() => setDayInterval(val)}
                       className="text-xs gap-2"
                     >
-                      <div className={cn("w-1.5 h-1.5 rounded-full", dayInterval === val ? "bg-primary" : "bg-transparent")} />
+                      <div
+                        className={cn(
+                          "w-1.5 h-1.5 rounded-full",
+                          dayInterval === val ? "bg-primary" : "bg-transparent",
+                        )}
+                      />
                       <span>{val} Days</span>
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
-             ): (
-               <DropdownMenu>
+            ) : (
+              <DropdownMenu>
                 <DropdownMenuTrigger asChild>
-                  <Button variant="outline" size="xs" className="h-7 gap-2 px-2 text-[10px] font-medium pointer-events-none opacity-30">
+                  <Button
+                    variant="outline"
+                    size="xs"
+                    className="h-7 gap-2 px-2 text-[10px] font-medium pointer-events-none opacity-30"
+                  >
                     <Clock className="w-3 h-3 text-muted-foreground" />
                     <span>{dayInterval}d Tick</span>
                     <ChevronDown className="w-3 h-3 text-muted-foreground" />
                   </Button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-[120px]">
-                  <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">Grid Interval</DropdownMenuLabel>
+                  <DropdownMenuLabel className="text-[10px] uppercase tracking-wider text-muted-foreground">
+                    Grid Interval
+                  </DropdownMenuLabel>
                   <DropdownMenuSeparator />
                   {[2, 3, 5].map((val) => (
-                    <DropdownMenuItem 
-                      key={val} 
-                      onClick={() => setDayInterval(val)} 
+                    <DropdownMenuItem
+                      key={val}
+                      onClick={() => setDayInterval(val)}
                       className="text-xs gap-2"
                     >
-                      <div className={cn("w-1.5 h-1.5 rounded-full", dayInterval === val ? "bg-primary" : "bg-transparent")} />
+                      <div
+                        className={cn(
+                          "w-1.5 h-1.5 rounded-full",
+                          dayInterval === val ? "bg-primary" : "bg-transparent",
+                        )}
+                      />
                       <span>{val} Days</span>
                     </DropdownMenuItem>
                   ))}
                 </DropdownMenuContent>
               </DropdownMenu>
-             )}
+            )}
           </div>
         </div>
       )}
 
-      <div className="min-h-[280px] p-4">
-        {activeView === 'day' ? (
-          <TimelineDayAxis 
-            config={config} 
+      <div className=" p-4">
+        {activeView === "day" ? (
+          <TimelineDayAxis
+            config={config}
             tasks={filteredTasks}
             statusFilter={statusFilter}
             dayInterval={dayInterval}
           />
-        ) : activeView === 'week' ? (
-          <TimelineWeekAxis 
-            config={config} 
+        ) : activeView === "week" ? (
+          <TimelineWeekAxis
+            config={config}
             tasks={filteredTasks}
             statusFilter={statusFilter}
           />
