@@ -52,7 +52,7 @@ const TaskPage = () => {
   return (
     <PageTransition className="w-full h-full p-6 2xl:p-8">
       <header className="flex items-center justify-between">
-        <h1 className="text-3xl font-semibold">
+        <h1 className="text-2xl font-semibold">
         <Layers3 className="w-6 h-6 ml-1 text-primary inline" />  {projectName} 
         </h1>
 

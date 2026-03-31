@@ -43,6 +43,7 @@ import {
   Link2,
   FileText,
   Stars,
+  Calendar,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
@@ -73,6 +74,11 @@ const workspaceMenu = [
     label: "Time Logs",
     path: "workspace/time-logs",
     icon: AudioWaveform,
+  },
+  {
+    label: "Calendar",
+    path: "workspace/calendar",
+    icon: Calendar,
   },
   {
     label: "Teamspace",
@@ -175,7 +181,7 @@ export default function ProjectSidebar() {
           <p className="text-sm text-center">Manage Project</p>
           <hr className="w-12 border border-accent" />
         </div>
-        <SidebarMenu className="flex flex-col space-y-1.5 py-1.5 ">
+        <SidebarMenu className="flex flex-col space-y-1 py-1.5 ">
           {workspaceMenu.map((item) => {
             const Icon = item.icon;
             const href = `/dashboard/my-projects/${slug}/${item.path}`;
@@ -189,7 +195,7 @@ export default function ProjectSidebar() {
               >
                 <Link
                   href={href}
-                  className="relative z-10 flex items-center gap-3 px-3 py-2 dark:data-[active=true]:text-white data-[active=true]:text-primary text-primary"
+                  className="relative z-10 flex items-center gap-3 px-2 py-2 dark:data-[active=true]:text-white data-[active=true]:text-primary text-primary"
                 >
                   <Icon className="h-5 w-5" />
                   <span className="text-sm group-data-[collapsible=icon]:hidden">
@@ -214,7 +220,7 @@ export default function ProjectSidebar() {
       {/* ───────── FOOTER ───────── */}
       <SidebarFooter className="border-t border-accent px-2 group-data-[collapsible=icon]:hidden">
           {/* =========AI ASSISTANT====== */}
-        <Popover>
+        {/* <Popover>
           <PopoverTrigger asChild>
             <SidebarMenuButton
               data-active={isActive("/dashboard/ai")}
@@ -258,10 +264,10 @@ export default function ProjectSidebar() {
               </Link>
             </div>
           </PopoverContent>
-        </Popover>
+        </Popover> */}
 
         {/* ==========Help========== */}
-        <SidebarMenuButton
+        {/* <SidebarMenuButton
           data-active={isActive("/dashboard/help")}
           className="group relative overflow-hidden"
         >
@@ -280,7 +286,7 @@ export default function ProjectSidebar() {
             "
             />
           </div>
-        </SidebarMenuButton>
+        </SidebarMenuButton> */}
 
         {/* =======USER PLAN========= */}
         <div className="my-2 border p-3 rounded-md bg-linear-to-br from-card via-card to-blue-600/70">
