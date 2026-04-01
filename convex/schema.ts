@@ -132,7 +132,7 @@ export default defineSchema({
     status: v.union(
       v.literal("not started"),
       v.literal("inprogress"),
-      v.literal("issue"),
+      // v.literal("issue"),
       v.literal("reviewing"),
       v.literal("testing"),
       v.literal("completed"),
@@ -141,6 +141,7 @@ export default defineSchema({
       startDate: v.number(),
       endDate: v.number(),
     }),
+    isBlocked: v.optional(v.boolean()), // due to this task is marked as issue
     linkWithCodebase: v.optional(v.string()),
     projectId: v.id("projects"),
     createdByUserId: v.id("users"),

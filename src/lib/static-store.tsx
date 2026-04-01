@@ -130,7 +130,6 @@ export const PROJECT_STATUS = [
 export const TABS = [
   { id: "List", label: "List", icon: List },
   { id: "Table", label: "Table", icon: Table },
-  // { id: "Kanban", label: "Kanban", icon: Kanban },
   { id: "Issues", label: "Issues", icon: Bug },
   { id: "Sprint", label: "Sprint", icon: Hourglass },
 ];
@@ -138,7 +137,6 @@ export const TABS = [
 export const statusIcons: Record<string, React.ReactNode> = {
   "not started": <Ellipsis className="w-3.5 h-3.5" />,
   inprogress: <Loader className="w-3.5 h-3.5 text-yellow-500" />,
-  issue: <Bug className="w-3.5 h-3.5 text-red-500" />,
   reviewing: <ScanSearch className="w-3.5 h-3.5 text-blue-500" />,
   testing: <BugPlay className="w-3.5 h-3.5 text-indigo-500" />,
   completed: <CircleCheckBig className="w-3.5 h-3.5 text-green-500" />,
@@ -150,7 +148,6 @@ export const statusColors: Record<string, string> = {
   reviewing: "bg-blue-500/10 text-blue-500 border-blue-500/20",
   testing: "bg-indigo-500/10 text-indigo-500 border-indigo-500/20",
   completed: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
-  issue: "bg-red-500/10 text-red-500 border-red-500/20",
 };
 
 export const priorityIcons: Record<string, React.ReactNode> = {

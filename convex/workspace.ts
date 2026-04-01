@@ -1,6 +1,11 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
+
+
+// =======================================
+// CREATING TASK WITH NO ISSUE INITIAL
+// =======================================
 export const createTask = mutation({
   args: {
     title: v.string(),
@@ -19,7 +24,6 @@ export const createTask = mutation({
     status: v.union(
       v.literal("not started"),
       v.literal("inprogress"),
-      v.literal("issue"),
       v.literal("reviewing"),
       v.literal("testing"),
       v.literal("completed"),
@@ -45,6 +49,7 @@ export const createTask = mutation({
     const taskId = await ctx.db.insert("tasks", {
       ...args,
       createdByUserId: user._id,
+      isBlocked: false,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
