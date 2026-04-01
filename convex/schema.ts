@@ -175,6 +175,22 @@ export default defineSchema({
       // healthscore to:do
     })
     .index("by_project", ["projectId"])
-    .index("by_repo", ["repoId"])
+    .index("by_repo", ["repoId"]),
 
+  // ----------------------------------------------------
+  calendarEvents: defineTable({
+    projectId: v.id("projects"),
+    creatorId: v.id("users"),
+    title: v.string(),
+    description: v.optional(v.string()),
+    type: v.union(v.literal("event"), v.literal("milestone"), v.literal("comment")),
+    start: v.number(),
+    end: v.number(),
+    allDay: v.boolean(),
+    color: v.optional(v.string()),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_project", ["projectId"])
+    .index("by_creator", ["creatorId"]),
 });
