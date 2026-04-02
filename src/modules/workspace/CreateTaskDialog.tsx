@@ -73,7 +73,9 @@ export const CreateTaskDialog = ({
     from: undefined,
     to: undefined,
   });
-  const [taskType, setTaskType] = useState("");
+  const [tags, setTags] = useState<{ label: string; color: string }[]>([]);
+  const [tagInput, setTagInput] = useState("");
+  const [selectedTagColor, setSelectedTagColor] = useState("blue");
 
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
   const [isPending, setIsPending] = useState(false);
@@ -101,7 +103,7 @@ export const CreateTaskDialog = ({
           startDate: date.from.getTime(),
           endDate: date.to.getTime(),
         },
-        type: taskType || "task",
+        type: tags.length > 0 ? tags : undefined,
         projectId,
         linkWithCodebase: selectedPath || undefined,
       });
@@ -113,7 +115,9 @@ export const CreateTaskDialog = ({
       setStatus("not started");
       setPriority("none");
       setDate({ from: undefined, to: undefined });
-      setTaskType("");
+      setTags([]);
+      setTagInput("");
+      setSelectedTagColor("blue");
       setSelectedPath(null);
     } catch (error) {
       console.error(error);
@@ -274,10 +278,13 @@ export const CreateTaskDialog = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]"
+                  className={cn(
+                    "h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
+                    tags.length > 0 && "text-blue-400 border-blue-900/40 bg-blue-900/10"
+                  )}
                 >
                   <Tag className="w-3.5 h-3.5" />
-                  {taskType || "Tags"}
+                  {tags.length > 0 ? `${tags.length} Tags` : "Tags"}
                 </Button>
               </PopoverTrigger>
               <PopoverContent className="w-[280px] p-3 bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200">
@@ -285,28 +292,66 @@ export const CreateTaskDialog = ({
                   <p className="text-xs font-medium text-center text-muted-foreground border-b border-accent pb-2">
                     Custom Tags
                   </p>
-                  <Input
-                    placeholder="e.g. Dashboard, Auth..."
-                    value={taskType}
-                    onChange={(e) => setTaskType(e.target.value)}
-                    className="h-8 bg-transparent border-[#333] text-xs focus-visible:ring-0"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter") {
-                        // Close or just keep value
-                      }
-                    }}
-                  />
-                  <div className="flex flex-wrap gap-1">
-                    {["dashboard", "mobile", "auth", "infra"].map((t) => (
-                      <Badge
-                        key={t}
-                        variant="ghost"
-                        onClick={() => setTaskType(t)}
-                        className="cursor-pointer bg-[#252525] hover:bg-blue-900/30 text-[10px] py-0 px-2 h-5 lowercase"
-                      >
-                        {t}
-                      </Badge>
-                    ))}
+                  
+                  {/* Current Tags */}
+                  {tags.length > 0 && (
+                    <div className="flex flex-wrap gap-1.5 mb-2">
+                      {tags.map((t, idx) => (
+                        <Badge
+                          key={idx}
+                          className={cn(
+                            "text-[10px] py-0 px-2 h-5 gap-1 border-none font-medium capitalize",
+                            t.color === "green" && "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30",
+                            t.color === "yellow" && "bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30",
+                            t.color === "purple" && "bg-purple-500/20 text-purple-400 hover:bg-purple-500/30",
+                            t.color === "blue" && "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30",
+                            t.color === "grey" && "bg-neutral-500/20 text-neutral-400 hover:bg-neutral-500/30",
+                          )}
+                        >
+                          {t.label}
+                          <X 
+                            className="w-2.5 h-2.5 cursor-pointer opacity-70 hover:opacity-100" 
+                            onClick={() => setTags(prev => prev.filter((_, i) => i !== idx))}
+                          />
+                        </Badge>
+                      ))}
+                    </div>
+                  )}
+
+                  <div className="flex flex-col gap-2">
+                    <Input
+                      placeholder="Type tag name..."
+                      value={tagInput}
+                      onChange={(e) => setTagInput(e.target.value)}
+                      className="h-8 bg-transparent border-[#333] text-xs focus-visible:ring-0"
+                      onKeyDown={(e) => {
+                        if (e.key === "Enter" && tagInput.trim()) {
+                          e.preventDefault();
+                          const newTag = { label: tagInput.trim(), color: selectedTagColor };
+                          if (!tags.some(t => t.label.toLowerCase() === newTag.label.toLowerCase())) {
+                            setTags(prev => [...prev, newTag]);
+                          }
+                          setTagInput("");
+                        }
+                      }}
+                    />
+                    <div className="flex items-center gap-1.5 justify-center mt-1">
+                      {["green", "yellow", "purple", "blue", "grey"].map((c) => (
+                        <div
+                          key={c}
+                          onClick={() => setSelectedTagColor(c)}
+                          className={cn(
+                            "w-4 h-4 rounded-full cursor-pointer transition-all border-2",
+                            c === "green" && "bg-emerald-500",
+                            c === "yellow" && "bg-yellow-500",
+                            c === "purple" && "bg-purple-500",
+                            c === "blue" && "bg-blue-500",
+                            c === "grey" && "bg-neutral-500",
+                            selectedTagColor === c ? "border-white scale-110" : "border-transparent"
+                          )}
+                        />
+                      ))}
+                    </div>
                   </div>
                 </div>
               </PopoverContent>

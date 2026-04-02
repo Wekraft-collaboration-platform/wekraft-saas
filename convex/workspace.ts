@@ -10,7 +10,7 @@ export const createTask = mutation({
   args: {
     title: v.string(),
     description: v.optional(v.string()),
-    type: v.string(), // Custom tags
+    type: v.optional(v.array(v.object({ label: v.string(), color: v.string() }))), // Custom tags
     priority: v.optional(v.union(v.literal("high"), v.literal("medium"), v.literal("low"))),
     assignedTo: v.optional(
       v.array(

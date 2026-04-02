@@ -284,12 +284,27 @@ const TaskGroup = ({
                       </div>
                     </TableCell>
                     <TableCell className="p-2.5 whitespace-nowrap border-r border-b border-neutral-800 text-center">
-                      <Badge
-                        variant="secondary"
-                        className="font-medium tracking-tight text-[9px] px-4 py-0.5 rounded-full bg-primary text-black"
-                      >
-                        {task.type || "task"}
-                      </Badge>
+                     <div className="flex items-center gap-1.5 flex-wrap">
+                        {task.type && (task.type as any[]).length > 0 ? (
+                          (task.type as any[]).map((tag, i: number) => (
+                            <div 
+                              key={i} 
+                              className={cn(
+                                "flex items-center gap-1 px-3 py-0.5 rounded-full text-[10px] font-medium",
+                                tag.color === "green" && "bg-emerald-500/10 text-emerald-400 border border-emerald-400/20",
+                                tag.color === "yellow" && "bg-yellow-500/10 text-yellow-400 border border-yellow-400/20",
+                                tag.color === "purple" && "bg-purple-500/10 text-purple-400 border border-purple-400/20",
+                                tag.color === "blue" && "bg-blue-500/10 text-blue-400 border border-blue-400/20",
+                                tag.color === "grey" && "bg-neutral-500/10 text-neutral-400 border border-neutral-400/20",
+                              )}
+                            >
+                              {tag.label}
+                            </div>
+                          ))
+                        ) : (
+                          <span className="text-[10px] text-primary/10">—</span>
+                        )}
+                      </div>
                     </TableCell>
                     <TableCell className="p-2.5 border-r border-b border-neutral-800">
                       {task.assignedTo && task.assignedTo.length > 0 ? (

@@ -113,8 +113,8 @@ export const TableTab = ({ tasks }: TableTabProps) => {
   };
 
   return (
-    <div className="relative border-none flex flex-col ">
-      <div className="overflow-auto custom-scrollbar">
+    <div className="relative border-none flex flex-col min-h-[500px]">
+      <div className="overflow-auto custom-scrollbar flex-1">
         <Table>
           <TableHeader className="bg-neutral-900  z-10 ">
             <TableRow className="hover:bg-transparent border-none">
@@ -214,11 +214,11 @@ export const TableTab = ({ tasks }: TableTabProps) => {
           </TableHeader>
           <TableBody>
             {tasks.length === 0 ? (
-              <TableRow>
-                <TableCell colSpan={8} className="h-48 text-center">
-                  <div className="flex flex-col items-center justify-center space-y-2 opacity-20">
-                    <TableIcon size={32} />
-                    <p className="text-xs font-medium uppercase tracking-widest text-primary/80">
+              <TableRow className="">
+                <TableCell colSpan={8} className="h-[400px] text-center">
+                  <div className="flex flex-col items-center justify-center space-y-2 opacity-40">
+                    <TableIcon size={48} />
+                    <p className="text-base font-medium  text-primary/80">
                       Empty Workspace
                     </p>
                   </div>
@@ -253,15 +253,15 @@ export const TableTab = ({ tasks }: TableTabProps) => {
                     <TableCell className="px-4 border-r border-neutral-700">
                       <Badge
                         className={cn(
-                          "px-2.5 py-0.5 rounded-full text-[10px] flex items-center gap-1.5 border font-semibold capitalize whitespace-nowrap",
-                          statusColors[task.status] || "bg-neutral-800",
+                          "px-2.5 py-0.5 rounded-full text-[12px] flex items-center gap-1.5 border font-medium capitalize whitespace-nowrap bg-primary/10 text-primary",
+                          // statusColors[task.status] || "bg-neutral-800",
                         )}
                       >
                         {statusIcons[task.status]}
                         {task.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="px-4 text-[12px] font-medium text-primary/50 border-r border-neutral-700">
+                    <TableCell className="px-4 text-[12px] font-medium text-primary/70 border-r border-neutral-700">
                       {task.estimation ? (
                         <span className="flex items-center gap-1.5 opacity-80">
                           {format(task.estimation.startDate, "MMM d")} —{" "}
@@ -273,15 +273,25 @@ export const TableTab = ({ tasks }: TableTabProps) => {
                     </TableCell>
                     <TableCell className="px-4 border-r border-neutral-700">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        {/* {task.type && task.type.length > 0 ? (
-                          task.type.map((tag: string, i: number) => (
-                            <div key={i} className="flex items-center gap-1 bg-neutral-800/50 border border-neutral-800/50 px-2 py-0.5 rounded text-[9px] font-medium text-primary/40 uppercase">
-                              <TagIcon size={8} className="opacity-50" /> {tag}
+                        {task.type && (task.type as any[]).length > 0 ? (
+                          (task.type as any[]).map((tag, i: number) => (
+                            <div 
+                              key={i} 
+                              className={cn(
+                                "flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider",
+                                tag.color === "green" && "bg-emerald-500/10 text-emerald-400 border border-emerald-400/20",
+                                tag.color === "yellow" && "bg-yellow-500/10 text-yellow-400 border border-yellow-400/20",
+                                tag.color === "purple" && "bg-purple-500/10 text-purple-400 border border-purple-400/20",
+                                tag.color === "blue" && "bg-blue-500/10 text-blue-400 border border-blue-400/20",
+                                tag.color === "grey" && "bg-neutral-500/10 text-neutral-400 border border-neutral-400/20",
+                              )}
+                            >
+                              {tag.label}
                             </div>
                           ))
                         ) : (
                           <span className="text-[10px] text-primary/10">—</span>
-                        )} */}
+                        )}
                       </div>
                     </TableCell>
                     <TableCell className="px-4 border-r border-neutral-700">
@@ -371,8 +381,8 @@ export const TableTab = ({ tasks }: TableTabProps) => {
       )}
 
       {/* Simple Pagination */}
-      <div className="flex items-center justify-between px-6 py-4 border-t border-neutral-800/60 mt-auto">
-        <div className="text-[10px] font-medium text-primary/30 uppercase tracking-widest">
+      <div className="flex items-center justify-between px-6 py-4 border-t border-neutral-800/60">
+        <div className="text-xs font-medium text-muted-foreground tracking-wider">
           Showing {tasks.length} Results
         </div>
 
@@ -380,7 +390,7 @@ export const TableTab = ({ tasks }: TableTabProps) => {
           <Button
             variant="outline"
             size="sm"
-            className="h-7 px-3 text-[10px] font-semibold bg-transparent border-neutral-800 text-primary/40 hover:text-primary transition-all disabled:opacity-20"
+            className="h-7 px-3 text-[10px] font-semibold bg-transparent border-neutral-800 text-primary transition-all disabled:opacity-20"
           >
             <ChevronLeft size={12} className="mr-1" /> Previous
           </Button>
@@ -396,7 +406,7 @@ export const TableTab = ({ tasks }: TableTabProps) => {
           <Button
             variant="outline"
             size="sm"
-            className="h-7 px-3 text-[10px] font-semibold bg-transparent border-neutral-800 text-primary/40 hover:text-primary transition-all disabled:opacity-20"
+            className="h-7 px-3 text-[10px] font-semibold bg-transparent border-neutral-800 text-primary transition-all disabled:opacity-20"
           >
             Next <ChevronRight size={12} className="ml-1" />
           </Button>

@@ -37,12 +37,17 @@ export interface ProjectQuickStats {
   totalMembers: number;
 }
 
+export interface Tag {
+  label: string;
+  color: string;
+}
+
 export interface Task {
   _id: Id<"tasks">;
   title: string;
   description?: string;
   estimation: { startDate: number; endDate: number };
-  type?: string;
+  type?: Tag[];
   assignedTo?: { name: string; avatar?: string; userId: Id<"users"> }[];
   priority?: string;
   status: string;
