@@ -100,24 +100,29 @@ export const TaskDetailSheet = ({ task, isOpen, onClose }: TaskDetailSheetProps)
                 </h1>
                 <div className="flex items-center gap-2">
                  <div className="flex items-center gap-1.5 flex-wrap">
-                        {task.type && (task.type as any[]).length > 0 ? (
-                          (task.type as any[]).map((tag, i: number) => (
+                        {task.type ? (
                             <div 
-                              key={i} 
                               className={cn(
-                                "flex items-center gap-1 px-3 py-0.5 rounded-full text-[10px] font-medium",
-                                tag.color === "green" && "bg-emerald-500/10 text-emerald-400 border border-emerald-400/20",
-                                tag.color === "yellow" && "bg-yellow-500/10 text-yellow-400 border border-yellow-400/20",
-                                tag.color === "purple" && "bg-purple-500/10 text-purple-400 border border-purple-400/20",
-                                tag.color === "blue" && "bg-blue-500/10 text-blue-400 border border-blue-400/20",
-                                tag.color === "grey" && "bg-neutral-500/10 text-neutral-400 border border-neutral-400/20",
+                                "flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold border transition-all duration-200",
+                                task.type.color === "green" && "bg-emerald-500/10 text-emerald-400 border-emerald-400/20 shadow-[0_0_10px_rgba(52,211,153,0.05)]",
+                                task.type.color === "yellow" && "bg-yellow-500/10 text-yellow-400 border-yellow-400/20 shadow-[0_0_10px_rgba(250,204,21,0.05)]",
+                                task.type.color === "purple" && "bg-purple-500/10 text-purple-400 border-purple-400/20 shadow-[0_0_10px_rgba(192,132,252,0.05)]",
+                                task.type.color === "blue" && "bg-blue-500/10 text-blue-400 border-blue-400/20 shadow-[0_0_10px_rgba(96,165,250,0.05)]",
+                                task.type.color === "grey" && "bg-neutral-500/10 text-neutral-400 border-neutral-400/20",
                               )}
                             >
-                              {tag.label}
+                              <div className={cn(
+                                "w-1.5 h-1.5 rounded-full animate-pulse",
+                                task.type.color === "green" && "bg-emerald-400",
+                                task.type.color === "yellow" && "bg-yellow-400",
+                                task.type.color === "purple" && "bg-purple-400",
+                                task.type.color === "blue" && "bg-blue-400",
+                                task.type.color === "grey" && "bg-neutral-400",
+                              )} />
+                              {task.type.label}
                             </div>
-                          ))
                         ) : (
-                          <span className="text-[10px] text-primary/10">—</span>
+                          <span className="text-[10px] text-primary/10 tracking-widest px-2">—</span>
                         )}
                       </div>
                 <div className="flex items-center gap-1.5 ml-2">

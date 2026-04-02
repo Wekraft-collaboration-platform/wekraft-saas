@@ -273,22 +273,27 @@ export const TableTab = ({ tasks }: TableTabProps) => {
                     </TableCell>
                     <TableCell className="px-4 border-r border-neutral-700">
                       <div className="flex items-center gap-1.5 flex-wrap">
-                        {task.type && (task.type as any[]).length > 0 ? (
-                          (task.type as any[]).map((tag, i: number) => (
+                        {task.type ? (
                             <div 
-                              key={i} 
                               className={cn(
-                                "flex items-center gap-1 px-2 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider",
-                                tag.color === "green" && "bg-emerald-500/10 text-emerald-400 border border-emerald-400/20",
-                                tag.color === "yellow" && "bg-yellow-500/10 text-yellow-400 border border-yellow-400/20",
-                                tag.color === "purple" && "bg-purple-500/10 text-purple-400 border border-purple-400/20",
-                                tag.color === "blue" && "bg-blue-500/10 text-blue-400 border border-blue-400/20",
-                                tag.color === "grey" && "bg-neutral-500/10 text-neutral-400 border border-neutral-400/20",
+                                "flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border",
+                                task.type.color === "green" && "bg-emerald-500/10 text-emerald-400 border-emerald-400/20",
+                                task.type.color === "yellow" && "bg-yellow-500/10 text-yellow-400 border-yellow-400/20",
+                                task.type.color === "purple" && "bg-purple-500/10 text-purple-400 border-purple-400/20",
+                                task.type.color === "blue" && "bg-blue-500/10 text-blue-400 border-blue-400/20",
+                                task.type.color === "grey" && "bg-neutral-500/10 text-neutral-400 border-neutral-400/20",
                               )}
                             >
-                              {tag.label}
+                              <div className={cn(
+                                "w-1 h-1 rounded-full",
+                                task.type.color === "green" && "bg-emerald-400",
+                                task.type.color === "yellow" && "bg-yellow-400",
+                                task.type.color === "purple" && "bg-purple-400",
+                                task.type.color === "blue" && "bg-blue-400",
+                                task.type.color === "grey" && "bg-neutral-400",
+                              )} />
+                              {task.type.label}
                             </div>
-                          ))
                         ) : (
                           <span className="text-[10px] text-primary/10">—</span>
                         )}

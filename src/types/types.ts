@@ -47,7 +47,7 @@ export interface Task {
   title: string;
   description?: string;
   estimation: { startDate: number; endDate: number };
-  type?: Tag[];
+  type?: Tag;
   assignedTo?: { name: string; avatar?: string; userId: Id<"users"> }[];
   priority?: string;
   status: string;
