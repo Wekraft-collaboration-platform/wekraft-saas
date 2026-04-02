@@ -130,8 +130,7 @@ export const PROJECT_STATUS = [
 export const TABS = [
   { id: "List", label: "List", icon: List },
   { id: "Table", label: "Table", icon: Table },
-  { id: "Issues", label: "Issues", icon: Bug },
-  { id: "Sprint", label: "Sprint", icon: Hourglass },
+  { id: "Kanban", label: "Kanban", icon: Kanban },
 ];
 
 export const statusIcons: Record<string, React.ReactNode> = {
