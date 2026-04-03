@@ -173,7 +173,7 @@ export default function ProjectSidebar() {
         <SidebarMenuButton
           asChild
           data-active={isActive(`/dashboard/my-projects/${slug}/inbox`)}
-          className="group relative overflow-hidden"
+          className="group relative overflow-hidden mb-1.5"
         >
           <Button
             className="cursor-pointer text-xs"
@@ -258,13 +258,13 @@ export default function ProjectSidebar() {
         </SidebarMenu>
 
         {/* MANAGE PROJECT */}
-        <div className="flex items-center justify-center gap-2 mt-4 group-data-[collapsible=icon]:hidden">
+        <div className="flex items-center justify-center gap-2 mt-2 group-data-[collapsible=icon]:hidden">
           <hr className="w-12 border border-accent" />
           <p className="text-sm text-center">Manage Project</p>
           <hr className="w-12 border border-accent" />
         </div>
 
-        <SidebarMenu className="flex flex-col space-y-1">
+        <SidebarMenu className="flex flex-col space-y-1.5">
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
@@ -296,7 +296,7 @@ export default function ProjectSidebar() {
           </SidebarMenuItem>
         </SidebarMenu>
 
-        <SidebarMenu className="flex flex-col space-y-1  ">
+        <SidebarMenu className="flex flex-col space-y-1.5">
           {/*  PROJECT MANAGE COLLAPSIBLE */}
           <Collapsible defaultOpen className="group/collapsible">
             <SidebarMenuItem>
@@ -313,7 +313,7 @@ export default function ProjectSidebar() {
                 </SidebarMenuButton>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <SidebarMenuSub className="border-l border-dashed ml-[21px] pl-3 gap-0.5">
+                <SidebarMenuSub className="border-l border-dashed border-accent ml-[21px] pl-3 gap-1.5">
                   {collapsibleItems.map((item) => {
                     const href = `/dashboard/my-projects/${slug}/${item.path}`;
                     const active = isActive(href);
@@ -333,7 +333,7 @@ export default function ProjectSidebar() {
                                 "h-4 w-4 shrink-0 transition-colors",
                                 active
                                   ? "text-foreground"
-                                  : "text-muted-foreground",
+                                  : "text-muted-foreground!",
                               )}
                             />
                             <span
@@ -459,28 +459,7 @@ export default function ProjectSidebar() {
 
       {/* ───────── FOOTER ───────── */}
       <SidebarFooter className="border-t border-accent px-2 group-data-[collapsible=icon]:hidden">
-        {/* ==========Help========== */}
-        {/* <SidebarMenuButton
-          data-active={isActive("/dashboard/help")}
-          className="group relative overflow-hidden"
-        >
-          <div className="relative z-10 flex items-center gap-3 px-1 w-full text-sm text-primary">
-            <MessageCircleQuestionMark className="h-4 w-4" />
-            <span className="group-data-[collapsible=icon]:hidden">
-              Help
-            </span>
-
-            <span
-              className="
-              pointer-events-none absolute inset-0 -z-10
-              opacity-0 transition-opacity
-              group-data-[active=true]:opacity-100
-              bg-gradient-to-r from-blue-600/20 via-blue-600/5 to-transparent
-            "
-            />
-          </div>
-        </SidebarMenuButton> */}
-
+       
         {/* =======USER PLAN========= */}
         <div className="my-2 border p-3 rounded-md bg-linear-to-br from-card via-card to-blue-600/70">
           <div className="flex items-center gap-2">

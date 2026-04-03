@@ -19,7 +19,10 @@ import { CreateTaskDialog } from "@/modules/workspace/CreateTaskDialog";
 import { TABS } from "@/lib/static-store";
 import { ListTab } from "@/modules/workspace/ListTab";
 import { TableTab } from "@/modules/workspace/TableTab";
+import { KanbanTask } from "@/modules/workspace/KanbanTask";
 import { PageTransition } from "@/components/PageTransition";
+
+
 
 const users = [
   { name: "Ritesh", img: "https://i.pravatar.cc/40?img=1" },
@@ -134,10 +137,16 @@ const TaskPage = () => {
       </div>
 
       {/* BODY PART */}
-      <div className="mt-6">
+      <div className="mt-6 max-w-full">
         {activeTab === "List" && <ListTab tasks={tasks || []} />}
         {activeTab === "Table" && <TableTab tasks={tasks || []} />}
+        {activeTab === "Kanban" && (
+          <div className="w-full">
+             <KanbanTask tasks={tasks || []} />
+          </div>
+        )}
       </div>
+
     </PageTransition>
   );
 };
