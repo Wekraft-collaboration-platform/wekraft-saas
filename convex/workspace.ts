@@ -131,3 +131,26 @@ export const getComments = query({
       .collect();
   },
 });
+
+
+export const updateTaskStatus = mutation({
+  args: {
+    taskId: v.id("tasks"),
+    status: v.union(
+      v.literal("not started"),
+      v.literal("inprogress"),
+      v.literal("reviewing"),
+      v.literal("testing"),
+      v.literal("completed"),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    await ctx.db.patch(args.taskId, {
+      status: args.status,
+      updatedAt: Date.now(),
+    });
+  },
+});

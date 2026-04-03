@@ -56,3 +56,21 @@ export interface Task {
   createdAt: number;
   updatedAt: number;
 }
+
+// Kanban
+export type Status =
+  | "not started"
+  | "inprogress"
+  | "reviewing"
+  | "testing"
+  | "completed"
+
+
+export const COLUMNS: { id: Status; label: string; color: string }[] = [
+  { id: "not started", label: "Not Started", color: "bg-slate-400"   },
+  { id: "inprogress", label: "In Progress", color: "bg-amber-400"    },
+  { id: "reviewing",   label: "Reviewing",   color: "bg-blue-400"  },
+  { id: "testing",     label: "Testing",     color: "bg-indigo-400"  },
+  { id: "completed",   label: "Completed",   color: "bg-green-400"   },
+]
+
