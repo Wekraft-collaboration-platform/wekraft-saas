@@ -41,9 +41,10 @@ const TaskPage = () => {
   const project = useQuery(api.project.getProjectBySlug, { slug });
   const projectName = project?.projectName;
   
-  const tasks = useQuery(api.workspace.getTasks, { 
-    projectId: project?._id as Id<"projects"> 
-  });
+  const tasks = useQuery(
+    api.workspace.getTasks,
+    project?._id ? { projectId: project._id as Id<"projects"> } : "skip",
+  );
 
   if (project === undefined || project === null)
     return (

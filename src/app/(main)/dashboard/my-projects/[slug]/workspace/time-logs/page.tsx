@@ -24,14 +24,16 @@ const TimeLogsPage = () => {
   const slug = params.slug as string;
 
   const project = useQuery(api.project.getProjectBySlug, { slug });
-  const tasks = useQuery(api.workspace.getTimelineTasks, {
-    projectId: project?._id as any,
-  });
+  const tasks = useQuery(
+    api.workspace.getTimelineTasks,
+    project?._id ? { projectId: project._id as Id<"projects"> } : "skip",
+  );
   const projectId = project?._id;
 
-  const projectDetails = useQuery(api.projectDetails.getProjectDetails, {
-    projectId: projectId as Id<"projects">,
-  });
+  const projectDetails = useQuery(
+    api.projectDetails.getProjectDetails,
+    projectId ? { projectId: projectId as Id<"projects"> } : "skip",
+  );
 
   if (project === undefined || projectDetails === undefined) {
     return (

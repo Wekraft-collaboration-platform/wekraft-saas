@@ -26,9 +26,10 @@ const ProjectWorkspace = () => {
   const repoId = project?.repositoryId;
   const projectId = project?._id;
 
-  const projectDetails = useQuery(api.projectDetails.getProjectDetails, {
-    projectId: projectId as Id<"projects">,
-  });
+  const projectDetails = useQuery(
+    api.projectDetails.getProjectDetails,
+    projectId ? { projectId: projectId as Id<"projects"> } : "skip",
+  );
 
   const updateDeadline = useMutation(api.projectDetails.updateTargetDate);
 
