@@ -20,13 +20,13 @@ import {
 
 import '@xyflow/react/dist/style.css';
 import { FolderNode } from './action';
-import { Folder, MoveRight, Network, Plus, Minus, ChevronRight } from 'lucide-react';
+import { Folder, MoveRight, Network, Plus, Minus, ChevronRight, FileCode } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // --- Custom Node Component ---
 const FolderNodeComponent = (props: NodeProps) => {
-    const data = props.data as { label: string; level: number; isExpanded: boolean };
-    const { label, isExpanded, level } = data;
+    const data = props.data as { label: string; level: number; isExpanded: boolean; folderCount?: number; fileCount?: number };
+    const { label, isExpanded, level, folderCount, fileCount } = data;
     const isRoot = level === 0;
     
     return (
@@ -56,7 +56,16 @@ const FolderNodeComponent = (props: NodeProps) => {
                             "text-[14px] tracking-tight truncate",
                             isRoot ? "font-bold text-white" : "font-medium text-zinc-200 group-hover:text-white"
                         )} title={label}>{label}</span>
-                        {isRoot && <span className="text-[10px] text-blue-400/70 font-bold uppercase tracking-widest mt-0.5">Root Hub</span>}
+                        <div className="flex items-center gap-2.5 mt-2">
+                             <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-zinc-900/50 border border-white/10 shadow-inner">
+                                <Folder size={11} className="text-amber-400" />
+                                <span className="text-[10px] font-bold text-zinc-200">{folderCount ?? 0}</span>
+                             </div>
+                             <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-zinc-900/50 border border-white/10 shadow-inner">
+                                <FileCode size={11} className="text-blue-400" />
+                                <span className="text-[10px] font-bold text-zinc-200">{fileCount ?? 0}</span>
+                             </div>
+                        </div>
                     </div>
 
                     {!isRoot && (
@@ -181,7 +190,9 @@ const HeatmapFlowInner = ({ structure }: HeatmapFlowProps) => {
             data: { 
                 label: node.name, 
                 level,
-                isExpanded
+                isExpanded,
+                folderCount: node.folderCount,
+                fileCount: node.fileCount
             },
             position: { x, y },
         });

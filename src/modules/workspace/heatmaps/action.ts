@@ -59,9 +59,6 @@ export async function getRepoStructure(
     const accessToken = await getGithubAccessToken();
     const octokit = new Octokit({ auth: accessToken });
 
-    // We use the recursive tree API to get the entire structure in one call.
-    // 'main' or 'master' should be dynamic ideally, but usually 'main' is default.
-    // We'll first get the default branch.
     const { data: repoData } = await octokit.rest.repos.get({ owner, repo });
     const defaultBranch = repoData.default_branch;
 
