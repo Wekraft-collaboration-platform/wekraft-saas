@@ -145,7 +145,8 @@ export default function ProjectSidebar() {
     <Sidebar collapsible="icon" className="">
       {/* ───────── HEADER ───────── */}
       <SidebarHeader className="border-b ">
-        <div className="flex items-center justify-between gap-4 px-3 py-2!">
+        <div className="flex items-center justify-between gap-4 px-3 py-1!">
+
           <Image
             src="/logo.svg"
             alt="Logo"
@@ -168,7 +169,8 @@ export default function ProjectSidebar() {
       </SidebarHeader>
 
       {/* ───────── CONTENT ───────── */}
-      <SidebarContent className="px-2 py-4">
+      <SidebarContent className="px-2 py-2">
+
         {/* INBOX */}
         <SidebarMenuButton
           asChild
@@ -211,9 +213,10 @@ export default function ProjectSidebar() {
                 >
                   <div className="relative z-10 flex items-center gap-3 px-1 w-full text-sm">
                     <Stars className={cn(
-                      "h-4.5 w-4.5 transition-colors",
+                      "h-5.5 w-5.5 transition-colors",
                       isActiveExact("/dashboard/ai") ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
                     )} />
+
                     <span className={cn(
                       "group-data-[collapsible=icon]:hidden transition-colors",
                       isActiveExact("/dashboard/ai") ? "text-foreground font-medium" : "text-muted-foreground group-hover:text-foreground"
@@ -280,9 +283,10 @@ export default function ProjectSidebar() {
                   isActiveExact(`/dashboard/my-projects/${slug}/workspace`) ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
                 )} />
                 <span className={cn(
-                  "text-sm font-medium transition-colors",
+                  "text-sm font-medium transition-colors group-data-[collapsible=icon]:hidden",
                   isActiveExact(`/dashboard/my-projects/${slug}/workspace`) ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
                 )}>Workspace</span>
+
                 <span
                   className="
             pointer-events-none absolute inset-0 -z-10
@@ -307,8 +311,9 @@ export default function ProjectSidebar() {
                 >
                   <div className="relative z-10 flex items-center gap-3 w-full">
                     <ListTree className="h-5 w-5" />
-                    <span className="text-sm font-medium">Manage</span>
-                    <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90" />
+                    <span className="text-sm font-medium group-data-[collapsible=icon]:hidden">Manage</span>
+                    <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]:hidden" />
+
                   </div>
                 </SidebarMenuButton>
               </CollapsibleTrigger>

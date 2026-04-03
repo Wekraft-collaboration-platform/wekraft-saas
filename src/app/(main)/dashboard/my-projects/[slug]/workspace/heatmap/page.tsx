@@ -8,10 +8,14 @@ import { Id } from "../../../../../../../../convex/_generated/dataModel";
 import { useQuery } from "convex/react";
 import { api } from "../../../../../../../../convex/_generated/api";
 import { HeatmapPanel } from "@/modules/workspace/heatmaps/HeatmapPanel";
+import { FolderNode } from "@/modules/workspace/heatmaps/action";
+
 
 const HeatmapPage = () => {
   const { open: sidebarOpen, setOpen: setSidebarOpen } = useSidebar();
   const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [structure, setStructure] = useState<FolderNode | null>(null);
+
   const params = useParams();
   const slug = params.slug as string;
 
@@ -39,15 +43,19 @@ const HeatmapPage = () => {
       <HeatmapPanel
         isOpen={isPanelOpen}
         repoId={repoId}
+        structure={structure}
+        setStructure={setStructure}
         onToggle={(open) => {
           setIsPanelOpen(open);
           if (open) setSidebarOpen(false);
         }}
       />
-      {/* REACT FLOW  */}
-      <div className="flex-1 pl-8 pr- pt-0 pb-5 overflow-hidden">
-        <HeatmapFlow />
-      </div>
+      {/* REACT FLOW (DISABLED FOR NOW) */}
+      {/* <div className="flex-1 pl-8 pr- pt-0 pb-5 overflow-hidden">
+        <HeatmapFlow structure={structure} />
+      </div> */}
+
+
     </div>
   );
 };

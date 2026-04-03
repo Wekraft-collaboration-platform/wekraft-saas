@@ -8,15 +8,17 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { dark, neobrutalism } from "@clerk/ui/themes";
 import { Toaster } from "sonner";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
-  subsets: ["latin"],
-});
+// Temporarily using system fonts to bypass Turbopack build error
+// const geistSans = Geist({
+//   variable: "--font-geist-sans",
+//   subsets: ["latin"],
+// });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
+// const geistMono = Geist_Mono({
+//   variable: "--font-geist-mono",
+//   subsets: ["latin"],
+// });
+
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -31,8 +33,9 @@ export default function RootLayout({
   return (
     <html lang="en" className="" suppressHydrationWarning>
       <body
-        className={`${geistSans.variable} ${geistMono.variable} antialiased`}
+        className={`antialiased font-sans`}
       >
+
         <ClerkProvider
           appearance={{
             theme: dark,
