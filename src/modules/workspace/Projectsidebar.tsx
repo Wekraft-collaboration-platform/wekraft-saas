@@ -59,7 +59,8 @@ import {
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
-import { useParams, usePathname } from "next/navigation";
+import { useParams, usePathname, useRouter } from "next/navigation";
+
 import { useQuery } from "convex/react";
 import { Doc, Id } from "../../../convex/_generated/dataModel";
 import { api } from "../../../convex/_generated/api";
@@ -123,6 +124,9 @@ export default function ProjectSidebar() {
   const pathname = usePathname();
   const params = useParams();
   const slug = params.slug as string;
+  const router = useRouter();
+
+
 
   const user: Doc<"users"> | undefined | null = useQuery(
     api.user.getCurrentUser,
@@ -147,13 +151,16 @@ export default function ProjectSidebar() {
       <SidebarHeader className="border-b ">
         <div className="flex items-center justify-between gap-4 px-3 py-1!">
 
-          <Image
-            src="/logo.svg"
-            alt="Logo"
-            width={28}
-            height={28}
-            className="cursor-pointer"
-          />
+          <Link href="/dashboard" className="flex items-center">
+            <Image
+              src="/logo.svg"
+              alt="Logo"
+              width={28}
+              height={28}
+              className="cursor-pointer"
+            />
+          </Link>
+
           <h1 className="font-semibold text-lg truncate group-data-[collapsible=icon]:hidden">
             {project?.projectName}
           </h1>
@@ -174,9 +181,11 @@ export default function ProjectSidebar() {
         {/* INBOX */}
         <SidebarMenuButton
           asChild
+          tooltip="Inbox"
           data-active={isActive(`/dashboard/my-projects/${slug}/inbox`)}
-          className="group relative overflow-hidden mb-1.5"
+          className="group relative overflow-hidden mb-1.5 cursor-pointer"
         >
+
           <Button
             className="cursor-pointer text-xs"
             size="sm"
@@ -208,19 +217,32 @@ export default function ProjectSidebar() {
             <Popover>
               <PopoverTrigger asChild>
                 <SidebarMenuButton
+                  asChild
+                  tooltip="AI Assistant"
                   data-active={isActiveExact("/dashboard/ai")}
-                  className="group relative overflow-hidden"
+                  className="group relative overflow-hidden cursor-pointer"
                 >
-                  <div className="relative z-10 flex items-center gap-3 px-1 w-full text-sm">
-                    <Stars className={cn(
-                      "h-5.5 w-5.5 transition-colors",
-                      isActiveExact("/dashboard/ai") ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
-                    )} />
+                  <Link
+                    href="/dashboard/ai"
+                    className="relative z-10 flex items-center gap-3 px-1 w-full text-sm"
+                  >
+                    <Stars
+                      className={cn(
+                        "h-5.5 w-5.5 transition-colors",
+                        isActiveExact("/dashboard/ai")
+                          ? "text-foreground"
+                          : "text-muted-foreground group-hover:text-foreground",
+                      )}
+                    />
 
-                    <span className={cn(
-                      "group-data-[collapsible=icon]:hidden transition-colors",
-                      isActiveExact("/dashboard/ai") ? "text-foreground font-medium" : "text-muted-foreground group-hover:text-foreground"
-                    )}>
+                    <span
+                      className={cn(
+                        "group-data-[collapsible=icon]:hidden transition-colors",
+                        isActiveExact("/dashboard/ai")
+                          ? "text-foreground font-medium"
+                          : "text-muted-foreground group-hover:text-foreground",
+                      )}
+                    >
                       AI Assistant
                     </span>
                     <ChevronRight className="h-4 w-4 ml-auto group-data-[collapsible=icon]:hidden text-muted-foreground" />
@@ -233,8 +255,9 @@ export default function ProjectSidebar() {
                   bg-linear-to-l from-blue-600 dark:from-blue-600/70 via-blue-600/20 to-transparent!
                 "
                     />
-                  </div>
+                  </Link>
                 </SidebarMenuButton>
+
               </PopoverTrigger>
 
               <PopoverContent side="right" className="w-64 p-2">
@@ -271,9 +294,11 @@ export default function ProjectSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
+              tooltip="Workspace"
               data-active={isActiveExact(`/dashboard/my-projects/${slug}/workspace`)}
-              className="group relative overflow-hidden"
+              className="group relative overflow-hidden cursor-pointer"
             >
+
               <Link
                 href={`/dashboard/my-projects/${slug}/workspace`}
                 className="relative z-10 flex items-center gap-3 px-3 py-2"
@@ -306,16 +331,24 @@ export default function ProjectSidebar() {
             <SidebarMenuItem>
               <CollapsibleTrigger asChild>
                 <SidebarMenuButton
-                  tooltip="Workspace"
-                  className="group relative overflow-hidden group-data-[collapsible=icon]:bg-transparent!"
+                  asChild
+                  tooltip="Manage Projects"
+                  className="group relative overflow-hidden group-data-[collapsible=icon]:bg-transparent! cursor-pointer"
+                  onClick={() => router.push(`/dashboard/my-projects/${slug}/workspace/tasks`)}
                 >
-                  <div className="relative z-10 flex items-center gap-3 w-full">
-                    <ListTree className="h-5 w-5" />
-                    <span className="text-sm font-medium group-data-[collapsible=icon]:hidden">Manage</span>
-                    <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]:hidden" />
 
-                  </div>
+                  <Link
+                    href={`/dashboard/my-projects/${slug}/workspace/tasks`}
+                    className="relative z-10 flex items-center gap-3 w-full"
+                  >
+                    <ListTree className="h-5 w-5" />
+                    <span className="text-sm font-medium group-data-[collapsible=icon]:hidden">
+                      Manage
+                    </span>
+                    <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]:hidden" />
+                  </Link>
                 </SidebarMenuButton>
+
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <SidebarMenuSub className="border-l border-dashed border-accent ml-[21px] pl-3 gap-1.5">
@@ -380,9 +413,11 @@ export default function ProjectSidebar() {
                 <SidebarMenuButton
                   key={item.path}
                   asChild
+                  tooltip={item.label}
                   data-active={isActive(href)}
-                  className="group relative overflow-hidden"
+                  className="group relative overflow-hidden cursor-pointer"
                 >
+
                   <Link
                     href={href}
                     className="relative z-10 flex items-center gap-3 px-2 py-2"
@@ -426,8 +461,10 @@ export default function ProjectSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
-              className="group relative overflow-hidden"
+              tooltip="Help and Support"
+              className="group relative overflow-hidden cursor-pointer"
             >
+
               <Link
                 href={`/dashboard/my-projects/${slug}/help`}
                 className="relative z-10 flex items-center gap-3 px-2 py-2"
@@ -444,8 +481,10 @@ export default function ProjectSidebar() {
           <SidebarMenuItem>
             <SidebarMenuButton
               asChild
-              className="group relative overflow-hidden"
+              tooltip="Delete Project"
+              className="group relative overflow-hidden cursor-pointer"
             >
+
               <Link
                 href={`/dashboard/my-projects/${slug}/settings/delete`}
                 className="relative z-10 flex items-center gap-3 px-2 py-2"
