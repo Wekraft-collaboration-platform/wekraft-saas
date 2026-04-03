@@ -20,7 +20,7 @@ import {
 
 import '@xyflow/react/dist/style.css';
 import { FolderNode } from './action';
-import { Folder, MoveRight, Network, Plus, Minus } from 'lucide-react';
+import { Folder, MoveRight, Network, Plus, Minus, ChevronRight } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 // --- Custom Node Component ---
@@ -31,32 +31,43 @@ const FolderNodeComponent = (props: NodeProps) => {
     
     return (
         <div className={cn(
-            "px-6 py-3.5 rounded-xl border transition-all duration-300 min-w-[200px] flex items-center gap-4 cursor-pointer select-none relative group",
+            "px-6 py-4 rounded-2xl border transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] min-w-[220px] flex items-center gap-4 cursor-pointer select-none relative group",
             isRoot 
-                ? "bg-[#0D0D0D] bg-gradient-to-r from-transparent via-blue-600/10 to-blue-600/70 border-blue-500/20 text-white shadow-xl shadow-blue-900/10 hover:scale-105" 
-                : "bg-[#0D0D0D] border-zinc-900 hover:border-zinc-500 text-zinc-100 shadow-xl hover:bg-[#121212]",
-            isExpanded && !isRoot && "ring-1 ring-white/10 border-white/60 bg-[#161616]"
+                ? "bg-[#0A0A0A] bg-gradient-to-br from-blue-600/15 via-transparent to-blue-600/5 border-blue-500/30 text-white shadow-[0_20px_50px_rgba(0,0,0,0.4)] hover:scale-[1.02] hover:-translate-y-1 hover:border-blue-400" 
+                : "bg-[#0D0D0D]/90 backdrop-blur-md border-white/10 hover:border-white/25 text-zinc-100 shadow-[0_10px_30px_rgba(0,0,0,0.3)] hover:bg-[#111111] hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.98]",
+            isExpanded && !isRoot && "ring-1 ring-white/10 border-white/50 bg-[#121212]"
         )}>
             {/* Connection Points */}
             <Handle type="target" position={Position.Left} className="w-1 h-1 !bg-current !border-none !opacity-0" />
             
                 <div className="flex items-center gap-4 w-full">
                     {isRoot ? (
-                        <div className="p-1.5 bg-white/5 rounded-md border border-white/5 shrink-0">
-                            <Network size={16} className="text-white" />
+                        <div className="p-2 bg-blue-600/10 rounded-lg border border-blue-500/20 shrink-0 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
+                            <Network size={18} className="text-blue-400" />
                         </div>
                     ) : (
-                        <div className="p-2 bg-zinc-900/50 rounded-md border border-white/5 shrink-0">
-                            <Folder size={16} className="text-zinc-400 group-hover:text-zinc-200" />
+                        <div className="p-2.5 bg-zinc-900/80 rounded-lg border border-white/5 shrink-0 group-hover:bg-zinc-800/80 transition-colors shadow-inner">
+                            <Folder size={16} className={cn("transition-colors", isExpanded ? "text-white" : "text-zinc-500 group-hover:text-zinc-300")} />
                         </div>
                     )}
                     
-                    <div className="flex items-center flex-1 truncate">
+                    <div className="flex flex-col flex-1 truncate">
                         <span className={cn(
-                            "text-[14px] font-medium tracking-wide truncate",
-                            isRoot ? "font-bold" : "font-medium"
+                            "text-[14px] tracking-tight truncate",
+                            isRoot ? "font-bold text-white" : "font-medium text-zinc-200 group-hover:text-white"
                         )} title={label}>{label}</span>
+                        {isRoot && <span className="text-[10px] text-blue-400/70 font-bold uppercase tracking-widest mt-0.5">Root Hub</span>}
                     </div>
+
+                    {!isRoot && (
+                        <ChevronRight 
+                            size={14} 
+                            className={cn(
+                                "text-zinc-600 transition-all duration-300",
+                                isExpanded ? "rotate-90 text-white" : "group-hover:text-zinc-400"
+                            )} 
+                        />
+                    )}
                 </div>
 
             <Handle type="source" position={Position.Right} className="w-1 h-1 !bg-current !border-none !opacity-0" />
