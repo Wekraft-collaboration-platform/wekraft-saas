@@ -86,18 +86,21 @@ const FolderTree = ({
 }) => {
 
     const isExpanded = expandedPaths.has(node.path);
-    const hasChildren = Object.keys(node.children).length > 0;
+    const hasChildren = Object.keys(node.children).length > 0 || (node.files && node.files.length > 0);
+
 
     return (
         <div className="flex flex-col">
             <div 
                 className={cn(
-                    "flex items-center gap-2 py-1.5 px-2 rounded-md hover:bg-accent/50 cursor-pointer transition-colors text-sm group",
-                    level === 0 && "font-semibold bg-accent/30 mb-1"
+                    "flex items-center gap-2 py-1 px-2 mb-0.5 rounded-sm hover:bg-accent/40 cursor-pointer transition-colors text-[13px] group relative",
+                    level === 0 && "font-bold bg-accent/20 mb-2 border border-border/10",
+                    isExpanded && level !== 0 && "bg-accent/5"
                 )}
-                style={{ paddingLeft: `${Math.max(level * 12, 8)}px` }}
+                style={{ paddingLeft: `${(level * 16) + 8}px` }}
                 onClick={() => togglePath(node.path)}
             >
+
                 {hasChildren ? (
                     isExpanded ? <ChevronDown size={14} className="text-muted-foreground" /> : <ChevronRight size={14} className="text-muted-foreground" />
                 ) : (
@@ -133,9 +136,15 @@ const FolderTree = ({
                         initial={{ height: 0, opacity: 0 }}
                         animate={{ height: "auto", opacity: 1 }}
                         exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2, ease: "easeInOut" }}
-                        className="overflow-hidden relative ml-[11px] border-l border-white/10 pl-2"
+                        transition={{ duration: 0.15, ease: "easeOut" }}
+                        className="overflow-hidden relative"
                     >
+                        {/* Vertical Guide Line */}
+                        <div 
+                            className="absolute left-[15px] top-0 bottom-0 w-[1px] bg-border/20 z-0" 
+                            style={{ left: `${(level * 16) + 15}px` }}
+                        />
+
 
                         {Object.values(node.children || {})
                             .sort((a, b) => a.name.localeCompare(b.name))
@@ -151,23 +160,25 @@ const FolderTree = ({
                         }
                         
                         {/* Render Files */}
-                        {(node.files || [])
-                            .sort((a, b) => a.localeCompare(b))
-                            .map(fileName => {
-                                const { icon } = getFileIcon(fileName);
-                                return (
-                                    <div 
-                                        key={`${node.path}/${fileName}`}
-                                        className="flex items-center gap-2 py-1 px-2 rounded-md text-[13px] text-muted-foreground/80 hover:bg-accent/30 transition-colors group"
-                                    >
-                                        <div className="w-3.5 h-3.5 flex items-center justify-center">
-                                            {icon}
+                            {(node.files || [])
+                                .sort((a, b) => a.localeCompare(b))
+                                .map(fileName => {
+                                    const { icon } = getFileIcon(fileName);
+                                    return (
+                                        <div 
+                                            key={`${node.path}/${fileName}`}
+                                            className="flex items-center gap-2 py-1 px-2 mb-0.5 rounded-sm text-[13px] text-muted-foreground/80 hover:bg-accent/30 hover:text-foreground cursor-pointer transition-colors group relative"
+                                            style={{ paddingLeft: `${((level + 1) * 16) + 12}px` }}
+                                        >
+                                            <div className="w-4 h-4 flex items-center justify-center shrink-0">
+                                                {icon}
+                                            </div>
+                                            <span className="truncate flex-1">{fileName}</span>
                                         </div>
-                                        <span className="truncate group-hover:text-foreground transition-colors">{fileName}</span>
-                                    </div>
-                                );
-                            })
-                        }
+                                    );
+                                })
+                            }
+
                     </motion.div>
 
 
@@ -181,7 +192,8 @@ export const HeatmapPanel = memo(
   ({ isOpen, onToggle, repoId, structure, setStructure }: HeatmapPanelProps) => {
     const { setOpen: setSidebarOpen } = useSidebar();
     const [isLoading, setIsLoading] = useState(false);
-    const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set([""]));
+    const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set());
+
     const [lastUpdated, setLastUpdated] = useState<number | null>(null);
 
     const repository = useQuery(api.repo.getRepositoryById, { repoId });
@@ -328,7 +340,7 @@ export const HeatmapPanel = memo(
                         {lastUpdated && (
                             <p className="text-[10px] text-muted-foreground mt-3 flex items-center gap-1">
                                 <Info size={10} />
-                                Updated {new Date(lastUpdated).toLocaleTimeString()}
+                               Last Updated at {new Date(lastUpdated).toLocaleTimeString()}
                             </p>
                         )}
                     </div>
