@@ -243,48 +243,51 @@ const HeatmapFlowInner = ({ structure }: HeatmapFlowProps) => {
            </div>
         </Panel>
         
-        {/* Premium Legend & Controls Layout */}
-        <Panel position="top-left" className="mt-8 ml-8 flex items-start gap-4">
-            <div className="bg-[#050505]/95 backdrop-blur-xl p-8 rounded-[2rem] border border-white/10 space-y-6 shadow-2xl">
-                <h4 className="text-[12px] font-black uppercase tracking-[0.3em] text-white flex items-center gap-3">
-                    <div className="w-1 h-4 bg-white rounded-full" />
-                    Network Map
-                </h4>
-                <div className="flex flex-col gap-4">
-                    <div className="flex items-center gap-4 text-zinc-400">
-                        <div className="w-5 h-5 rounded-full bg-gradient-to-r from-zinc-900 via-blue-600/20 to-blue-600/80 border border-blue-500/20 shadow-sm" />
-                        <span className="text-[13px] font-medium leading-none">Root Project</span>
+        {/* Premium Integrated Legend & Navigation Controls (Compact Version) */}
+        <Panel position="top-left" className="mt-5 ml-5 flex items-stretch gap-2.5 select-none scale-85 origin-top-left xl:scale-90">
+            {/* Main Legend Card */}
+            <div className="bg-[#050505]/80 backdrop-blur-2xl px-5 py-4 rounded-[2rem] border border-white/10 space-y-4 shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
+                <div className="flex items-center gap-2.5">
+                    <div className="w-1 h-3 bg-blue-500 rounded-full shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
+                    <h4 className="text-[10px] font-black uppercase tracking-[0.2em] text-white/90">
+                        Network Map
+                    </h4>
+                </div>
+                <div className="flex flex-col gap-3">
+                    <div className="flex items-center gap-3.5 group/item cursor-help">
+                        <div className="w-3.5 h-3.5 rounded-full bg-gradient-to-br from-blue-600/20 via-blue-500/40 to-blue-400/80 border border-blue-400/30 shadow-[inset_0_0_10px_rgba(59,130,246,0.2)]" />
+                        <span className="text-[11px] font-medium text-zinc-400 group-hover/item:text-zinc-200 transition-colors">Root Project</span>
                     </div>
-                    <div className="flex items-center gap-4 text-zinc-400">
-                        <div className="w-5 h-5 rounded-full border-2 border-white/10 bg-zinc-900" />
-                        <span className="text-[13px] font-medium leading-none">Directory Module</span>
+                    <div className="flex items-center gap-3.5 group/item cursor-help">
+                        <div className="w-3.5 h-3.5 rounded-full border border-white/10 bg-zinc-900/50 shadow-inner group-hover/item:border-white/30 transition-colors" />
+                        <span className="text-[11px] font-medium text-zinc-500 group-hover/item:text-zinc-300 transition-colors">Directory Folders</span>
                     </div>
                 </div>
             </div>
 
-            {/* Compact Vertical Controls to the right of Legend */}
-            <div className="bg-[#050505]/90 backdrop-blur-xl p-1.5 rounded-2xl border border-white/10 flex flex-col gap-1 shadow-2xl">
+            {/* Docked Control Strip */}
+            <div className="bg-[#050505]/80 backdrop-blur-2xl p-1 rounded-[1.5rem] border border-white/10 flex flex-col gap-0.5 shadow-2xl justify-center">
                 <button 
-                onClick={() => fitView({ duration: 800, padding: 0.8 })}
-                className="p-2.5 bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white rounded-xl transition-all duration-200 group"
-                title="Reset View"
+                  onClick={() => fitView({ duration: 800, padding: 0.8 })}
+                  className="p-2.5 hover:bg-white/5 text-zinc-500 hover:text-white rounded-xl transition-all duration-300 group/btn"
+                  title="Reset View"
                 >
-                <Network size={16} className="group-hover:scale-110 transition-transform" />
+                  <Network size={14} className="group-hover/btn:scale-110 group-active/btn:scale-95 transition-transform" />
                 </button>
-                <div className="h-px bg-white/5 mx-2" />
+                <div className="h-px bg-white/5 mx-2.5" />
                 <button 
-                onClick={() => zoomIn({ duration: 300 })}
-                className="p-2.5 bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white rounded-xl transition-all duration-200 group"
-                title="Zoom In"
+                  onClick={() => zoomIn({ duration: 300 })}
+                  className="p-2.5 hover:bg-white/5 text-zinc-500 hover:text-white rounded-xl transition-all duration-200 group/btn"
+                  title="Zoom In"
                 >
-                <Plus size={16} className="group-hover:scale-125 transition-transform" />
+                  <Plus size={14} className="group-hover/btn:scale-110 group-active/btn:scale-95 transition-transform" />
                 </button>
                 <button 
-                onClick={() => zoomOut({ duration: 300 })}
-                className="p-2.5 bg-white/5 hover:bg-white/10 text-zinc-400 hover:text-white rounded-xl transition-all duration-200 group"
-                title="Zoom Out"
+                  onClick={() => zoomOut({ duration: 300 })}
+                  className="p-2.5 hover:bg-white/5 text-zinc-500 hover:text-white rounded-xl transition-all duration-200 group/btn"
+                  title="Zoom Out"
                 >
-                <Minus size={16} className="group-hover:scale-125 transition-transform" />
+                  <Minus size={14} className="group-hover/btn:scale-110 group-active/btn:scale-95 transition-transform" />
                 </button>
             </div>
         </Panel>
