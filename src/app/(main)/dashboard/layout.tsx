@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Separator } from "@/components/ui/separator";
 import { DashboardBreadcrumbs } from "@/modules/dashboard/components/HeaderCrumbs";
+import { CommunitySearchBar } from "@/modules/dashboard/components/SearchBar";
 
 export default function Layout({
   children,
@@ -52,7 +53,9 @@ export default function Layout({
                 />
                 <DashboardBreadcrumbs />
               </div>
-              <div>{/* <CommunitySearchBar /> */}</div>
+              <div>
+                <CommunitySearchBar />
+              </div>
               <div className="">
                 <UserButton />
               </div>
