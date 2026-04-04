@@ -314,9 +314,9 @@ export const HeatmapPanel = memo(
                   size="icon-sm"
                   onClick={() => loadStructure(true)}
                   disabled={isLoading}
-                  className={cn("h-8 w-8", isLoading && "animate-spin")}
+                  className={cn("h-8 w-8")}
                 >
-                  <RefreshCw size={14} />
+                  <RefreshCw size={14} className={cn(isLoading && "animate-spin")} />
                 </Button>
               </div>
 
