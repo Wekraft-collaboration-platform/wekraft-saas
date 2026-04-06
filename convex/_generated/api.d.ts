@@ -9,10 +9,12 @@
  */
 
 import type * as calendar from "../calendar.js";
+import type * as files from "../files.js";
 import type * as pricing from "../pricing.js";
 import type * as project from "../project.js";
 import type * as projectDetails from "../projectDetails.js";
 import type * as repo from "../repo.js";
+import type * as signals from "../signals.js";
 import type * as user from "../user.js";
 import type * as workspace from "../workspace.js";
 
@@ -24,10 +26,12 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   calendar: typeof calendar;
+  files: typeof files;
   pricing: typeof pricing;
   project: typeof project;
   projectDetails: typeof projectDetails;
   repo: typeof repo;
+  signals: typeof signals;
   user: typeof user;
   workspace: typeof workspace;
 }>;

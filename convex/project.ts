@@ -371,8 +371,18 @@ export const getProjectBySlug = query({
         .unique()
       : null;
 
-    // Security: Only return if public OR the user is the owner
-    if (project.isPublic || (user && project.ownerId === user._id)) {
+    let isMember = false;
+    if (user) {
+      const member = await ctx.db
+        .query("projectMembers")
+        .withIndex("by_project", (q) => q.eq("projectId", project._id))
+        .filter((q) => q.eq(q.field("userId"), user._id))
+        .unique();
+      isMember = !!member;
+    }
+
+    // Security: Only return if public OR the user is the owner OR a project member
+    if (project.isPublic || (user && project.ownerId === user._id) || isMember) {
       return project;
     }
 
