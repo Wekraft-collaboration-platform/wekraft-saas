@@ -32,29 +32,29 @@ async function checkMembership(ctx: any, projectId: Id<"projects">) {
 
 // Send a real-time signal (called from Next.js API route)
 export const sendSignal = mutation({
-  args: { type: v.string(), channelId: v.string(), payload: v.any() },
-  handler: async (ctx, { type, channelId, payload }) => {
+  args: { type: v.string(), projectId: v.string(), payload: v.any() },
+  handler: async (ctx, { type, projectId, payload }) => {
     // Only authorized members can send signals
     // Note: The API route should setAuth with the user's token
-    const isMember = await checkMembership(ctx, channelId as Id<"projects">);
+    const isMember = await checkMembership(ctx, projectId as Id<"projects">);
     if (!isMember) throw new Error("Unauthorized");
 
     const expiresAt = Date.now() + 30_000; // expires in 30 seconds
-    await ctx.db.insert("signals", { type, channelId, payload, expiresAt });
+    await ctx.db.insert("signals", { type, projectId, payload, expiresAt });
   },
 });
 
-// Watch a channel — frontend subscribes to this
-export const watchChannel = query({
-  args: { channelId: v.string() },
-  handler: async (ctx, { channelId }) => {
+// Watch a project — frontend subscribes to this
+export const watchProject = query({
+  args: { projectId: v.string() },
+  handler: async (ctx, { projectId }) => {
     // Security: Only members can watch signals for this project
-    const isMember = await checkMembership(ctx, channelId as Id<"projects">);
+    const isMember = await checkMembership(ctx, projectId as Id<"projects">);
     if (!isMember) return [];
 
     return ctx.db
       .query("signals")
-      .withIndex("by_channel", (q) => q.eq("channelId", channelId))
+      .withIndex("by_project", (q) => q.eq("projectId", projectId))
       .order("desc")
       .take(20);
   },

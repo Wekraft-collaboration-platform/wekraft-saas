@@ -1,22 +1,10 @@
 import { sql } from "drizzle-orm";
 import { text, integer, sqliteTable } from "drizzle-orm/sqlite-core";
 
-// Channels — team chat rooms
-export const channels = sqliteTable("channels", {
-  id: text("id").primaryKey(),
-  name: text("name").notNull(),
-  description: text("description"),
-  projectId: text("project_id").notNull(), // Swapped workspaceId -> projectId to match Convex project schema
-  createdBy: text("created_by").notNull(), // Clerk userId
-  createdAt: integer("created_at")
-    .notNull()
-    .default(sql`(unixepoch())`),
-});
-
 // Messages — 60-day retention
 export const messages = sqliteTable("messages", {
   id: text("id").primaryKey(),
-  channelId: text("channel_id").notNull(),
+  projectId: text("project_id").notNull(),
   senderId: text("sender_id").notNull(), // Clerk userId
   text: text("text"),
   type: text("type").default("text"), // text | poll | task_link
@@ -63,7 +51,7 @@ export const mentions = sqliteTable("mentions", {
 // Polls
 export const polls = sqliteTable("polls", {
   id: text("id").primaryKey(),
-  channelId: text("channel_id").notNull(),
+  projectId: text("project_id").notNull(),
   messageId: text("message_id").notNull(),
   question: text("question").notNull(),
   createdBy: text("created_by").notNull(),

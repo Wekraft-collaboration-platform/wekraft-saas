@@ -1,32 +1,56 @@
 "use client";
 
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
+import { useTeamspaceChat } from "@/hooks/useTeamspaceChat";
+
+interface Message {
+  id: string;
+  senderId: string;
+  projectId: string;
+  text: string;
+  type: string;
+  createdAt: number;
+}
 
 interface TeamspaceContextType {
   workspaceId: string | null;
   setWorkspaceId: (id: string | null) => void;
-  activeChannelId: string | null;
-  setActiveChannelId: (id: string | null) => void;
-  activeThreadMessageId: string | null; // If open, we slide in the right sidebar
+  activeProjectId: string | null;
+  setActiveProjectId: (id: string | null) => void;
+  activeThreadMessageId: string | null;
   setActiveThreadMessageId: (id: string | null) => void;
+  
+  // Chat Data (Persisted in layout)
+  messages: Message[];
+  isLoadingHistory: boolean;
+  sendMessage: (args: { text: string; type?: string }) => Promise<any>;
+  isSending: boolean;
 }
 
 const TeamspaceContext = createContext<TeamspaceContextType | undefined>(undefined);
 
 export function TeamspaceProvider({ children }: { children: ReactNode }) {
   const [workspaceId, setWorkspaceId] = useState<string | null>(null);
-  const [activeChannelId, setActiveChannelId] = useState<string | null>(null);
+  const [activeProjectId, setActiveProjectId] = useState<string | null>(null);
   const [activeThreadMessageId, setActiveThreadMessageId] = useState<string | null>(null);
+
+  // Background Chat Sync
+  // This starts loading history and connects to signals as soon as activeProjectId is set
+  const chat = useTeamspaceChat(activeProjectId);
 
   return (
     <TeamspaceContext.Provider
       value={{
         workspaceId,
         setWorkspaceId,
-        activeChannelId,
-        setActiveChannelId,
+        activeProjectId,
+        setActiveProjectId,
         activeThreadMessageId,
         setActiveThreadMessageId,
+        messages: chat.messages,
+        isLoadingHistory: chat.isLoadingHistory,
+        sendMessage: chat.sendMessage,
+        isSending: chat.isSending,
       }}
     >
       {children}

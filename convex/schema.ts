@@ -199,10 +199,10 @@ export default defineSchema({
   // Signals — Real-time pub/sub layer for Teamspace chat
   signals: defineTable({
     type: v.string(), // 'new_message' | 'new_poll' | 'typing' | 'reaction'
-    channelId: v.string(),
+    projectId: v.string(),
     payload: v.any(), // full message content piggybacked
     expiresAt: v.number(), // unix timestamp — for cleanup
   })
-    .index("by_channel", ["channelId"])
+    .index("by_project", ["projectId"])
     .index("by_expiry", ["expiresAt"]),
 });

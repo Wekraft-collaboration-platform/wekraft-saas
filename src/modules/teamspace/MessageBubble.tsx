@@ -10,19 +10,29 @@ interface MessageBubbleProps {
   message: {
     id: string;
     senderId: string;
+    senderName?: string;
+    senderImage?: string;
     text: string;
     createdAt: number;
   };
 }
 
 export function MessageBubble({ message }: MessageBubbleProps) {
-  const avatarFallback = message.senderId.slice(0, 2).toUpperCase();
-  const timestamp = format(new Date(message.createdAt), "h:mm a");
+  const avatarFallback = (message.senderName || message.senderId).slice(0, 2).toUpperCase();
+  // Defensive: Handle missing or invalid createdAt
+  // SQLite unixepoch() returns seconds, JS Date expects milliseconds
+  const dateValue = message.createdAt 
+    ? (message.createdAt < 10000000000 ? message.createdAt * 1000 : message.createdAt)
+    : Date.now();
+  
+  const dateObj = new Date(dateValue);
+  const isValidDate = !isNaN(dateObj.getTime());
+  const timestamp = isValidDate ? format(dateObj, "h:mm a") : "Just now";
 
   return (
     <div className="group flex gap-4 hover:bg-muted/40 px-4 py-2 transition-colors relative">
       <Avatar className="h-10 w-10 shrink-0 rounded-lg overflow-hidden border border-border/10 shadow-sm mt-1">
-        <AvatarImage src={`https://avatar.vercel.sh/${message.senderId}`} />
+        <AvatarImage src={message.senderImage || `https://avatar.vercel.sh/${message.senderId}`} />
         <AvatarFallback className="rounded-lg bg-primary/10 text-primary text-xs font-bold">
           {avatarFallback}
         </AvatarFallback>
@@ -31,7 +41,7 @@ export function MessageBubble({ message }: MessageBubbleProps) {
       <div className="flex flex-col flex-1 min-w-0">
         <div className="flex items-center gap-2 mb-1">
           <span className="font-bold text-[15px] leading-tight hover:underline cursor-pointer decoration-2 underline-offset-2">
-            User {message.senderId.substring(5, 10)} 
+            {message.senderName || `User ${message.senderId.substring(5, 10)}`}
           </span>
           <span className="text-[11px] font-medium text-muted-foreground/60">
             {timestamp}

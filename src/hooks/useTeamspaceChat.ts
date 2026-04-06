@@ -8,27 +8,29 @@ import { api } from "../../convex/_generated/api";
 type Message = {
   id: string;
   senderId: string;
-  channelId: string;
+  senderName?: string;
+  senderImage?: string;
+  projectId: string;
   text: string;
   type: string;
   createdAt: number;
 };
 
-export function useTeamspaceChat(channelId: string | null) {
+export function useTeamspaceChat(projectId: string | null) {
   const queryClient = useQueryClient();
   const historicalIdsRef = useRef<Set<string>>(new Set());
 
   // 1. Fetch History from Turso via React Query
-  // This runs once when the channel is opened to get the last 50 messages
+  // This runs once when the project is opened to get the last 50 messages
   const { data: historicalMessages = [], isLoading, isFetching } = useReactQuery<Message[]>({
-    queryKey: ["teamspace", "messages", channelId],
+    queryKey: ["teamspace", "messages", projectId],
     queryFn: async () => {
-      if (!channelId) return [];
-      const res = await fetch(`/api/teamspace/messages?channelId=${channelId}`);
+      if (!projectId) return [];
+      const res = await fetch(`/api/teamspace/messages?projectId=${projectId}`);
       if (!res.ok) throw new Error("Failed to fetch history");
       return res.json();
     },
-    enabled: !!channelId,
+    enabled: !!projectId,
     staleTime: Infinity, 
   });
 
@@ -38,8 +40,8 @@ export function useTeamspaceChat(channelId: string | null) {
   }, [historicalMessages]);
 
   // 2. Subscribe to Real-Time Signals from Convex
-  const signals = useConvexQuery(api.signals.watchChannel, 
-    channelId ? { channelId } : "skip"
+  const signals = useConvexQuery(api.signals.watchProject, 
+    projectId ? { projectId } : "skip"
   );
 
   // 3. Merge Strategy
@@ -77,18 +79,18 @@ export function useTeamspaceChat(channelId: string | null) {
     return [...historicalMessages, ...liveMessages].sort((a, b) => a.createdAt - b.createdAt);
   }, [historicalMessages, liveMessages]);
 
-  // Reset live messages when channel changes
+  // Reset live messages when project changes
   useEffect(() => {
     setLiveMessages([]);
-  }, [channelId]);
+  }, [projectId]);
 
   // 4. Send Message Mutation
   const sendMessage = useMutation({
     mutationFn: async ({ text, type = "text" }: { text: string; type?: string }) => {
-      if (!channelId) throw new Error("No channel selected");
+      if (!projectId) throw new Error("No project selected");
       const res = await fetch("/api/teamspace/messages", {
         method: "POST",
-        body: JSON.stringify({ channelId, text, type }),
+        body: JSON.stringify({ projectId, text, type }),
       });
       if (!res.ok) throw new Error("Failed to send");
       return res.json();
@@ -101,9 +103,9 @@ export function useTeamspaceChat(channelId: string | null) {
 
   return {
     messages: mergedMessages,
-    // Only show loading when channelId exists AND fetch is in progress
+    // Only show loading when projectId exists AND fetch is in progress
     // Without this, disabled queries (enabled:false) falsely report isLoading=true in TanStack v5
-    isLoadingHistory: !!channelId && (isLoading || isFetching),
+    isLoadingHistory: !!projectId && (isLoading || isFetching),
     sendMessage: sendMessage.mutateAsync,
     isSending: sendMessage.isPending,
   };

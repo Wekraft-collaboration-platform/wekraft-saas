@@ -44,9 +44,6 @@ export function TeamspaceHeader({ title, memberCount = 1 }: TeamspaceHeaderProps
             className="h-8 w-48 bg-muted/40 hover:bg-muted/60 focus:bg-background border-none rounded-md pl-7 text-xs transition-all focus:ring-1 focus:ring-ring outline-none"
           />
         </div>
-        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground">
-          <Bell className="h-4 w-4" />
-        </Button>
       </div>
     </header>
   );

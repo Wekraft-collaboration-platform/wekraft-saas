@@ -17,9 +17,7 @@ export default function TeamspacePage({
 }) {
   return (
     <div className="h-full flex flex-col">
-      <TeamspaceProvider>
-        <TeamspacePageInner params={params} />
-      </TeamspaceProvider>
+      <TeamspacePageInner params={params} />
     </div>
   );
 }
@@ -29,16 +27,15 @@ function TeamspacePageInner({
 }: {
   params: Promise<{ slug: string }>;
 }) {
-  const { setActiveChannelId } = useTeamspace();
+  const { setActiveProjectId } = useTeamspace();
   const { slug } = use(params);
   const project = useConvexQuery(api.project.getProjectBySlug, { slug });
 
   useEffect(() => {
     if (project?._id) {
-      setActiveChannelId(project._id);
+      setActiveProjectId(project._id);
     }
-    return () => setActiveChannelId(null);
-  }, [project?._id, setActiveChannelId]);
+  }, [project?._id, setActiveProjectId]);
 
   const { messages, isLoadingHistory } = useTeamspaceChat(project?._id ?? null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -65,7 +62,7 @@ function TeamspacePageInner({
         ref={scrollRef}
         className="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-border/40 hover:scrollbar-thumb-border/60"
       >
-        <div className="flex flex-col min-h-full">
+        <div className="flex flex-col h-full">
            {messages.length === 0 && !isLoadingHistory && (
             <div className="flex-1 flex flex-col items-start justify-end p-8 max-w-4xl mx-auto w-full pb-12">
                <div className="h-20 w-20 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 shadow-inner">
@@ -87,11 +84,14 @@ function TeamspacePageInner({
           )}
 
           {isLoadingHistory && messages.length === 0 && (
-            <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground/60 animate-pulse py-12">
-               <div className="flex flex-col items-center gap-3">
-                  <div className="h-6 w-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
-                  Initializing Teamspace...
-               </div>
+            <div className="flex-1 flex flex-col items-start justify-end p-8 max-w-4xl mx-auto w-full pb-12">
+              <div className="h-20 w-20 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 shadow-inner">
+                <MessageSquare className="h-10 w-10 text-primary opacity-40" />
+              </div>
+              <div className="h-9 w-72 rounded-lg bg-muted/60 animate-pulse mb-3" />
+              <div className="h-4 w-96 rounded-md bg-muted/40 animate-pulse mb-2" />
+              <div className="h-4 w-80 rounded-md bg-muted/40 animate-pulse mb-8" />
+              <div className="h-7 w-36 rounded-full bg-muted/40 animate-pulse" />
             </div>
           )}
 
