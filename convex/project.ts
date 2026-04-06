@@ -417,3 +417,38 @@ export const getUnlinkedProjects = query({
     return projects.filter((p) => !p.repositoryId && !p.repoName);
   },
 });
+
+// ============================================
+// VERIFY PROJECT MEMBERSHIP
+// ============================================
+export const isProjectMember = query({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return false;
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) return false;
+
+    const project = await ctx.db.get(args.projectId);
+    if (!project) return false;
+
+    // Check if user is owner
+    if (project.ownerId === user._id) return true;
+
+    // Check membership
+    const member = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .filter((q) => q.eq(q.field("userId"), user._id))
+      .unique();
+
+    return !!member;
+  },
+});

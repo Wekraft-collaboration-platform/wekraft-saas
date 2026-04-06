@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useMemo } from "react";
+import { useState, useEffect, useMemo, useRef } from "react";
 import { useQuery as useReactQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useQuery as useConvexQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
@@ -16,10 +16,11 @@ type Message = {
 
 export function useTeamspaceChat(channelId: string | null) {
   const queryClient = useQueryClient();
+  const historicalIdsRef = useRef<Set<string>>(new Set());
 
   // 1. Fetch History from Turso via React Query
   // This runs once when the channel is opened to get the last 50 messages
-  const { data: historicalMessages = [], isLoading } = useReactQuery<Message[]>({
+  const { data: historicalMessages = [], isLoading, isFetching } = useReactQuery<Message[]>({
     queryKey: ["teamspace", "messages", channelId],
     queryFn: async () => {
       if (!channelId) return [];
@@ -28,9 +29,13 @@ export function useTeamspaceChat(channelId: string | null) {
       return res.json();
     },
     enabled: !!channelId,
-    // We don't want to refetch constantly because Convex handles incoming updates
     staleTime: Infinity, 
   });
+
+  // Update ref when historicalMessages changes
+  useEffect(() => {
+    historicalIdsRef.current = new Set(historicalMessages.map((m) => m.id));
+  }, [historicalMessages]);
 
   // 2. Subscribe to Real-Time Signals from Convex
   const signals = useConvexQuery(api.signals.watchChannel, 
@@ -51,11 +56,10 @@ export function useTeamspaceChat(channelId: string | null) {
       .reverse(); // Reverse if convex returns newest first
 
     // We only want messages that aren't already in historical data
-    // (This dedupes the edge case where a message is both in history and active signals cache)
     setLiveMessages((prev) => {
       // Find uniquely new messages
       const newM = incomingMessages.filter(
-        (im) => !historicalMessages.find((hm) => hm.id === im.id)
+        (im) => !historicalIdsRef.current.has(im.id)
       );
       
       // Also dedupe against ourselves (prev)
@@ -63,9 +67,10 @@ export function useTeamspaceChat(channelId: string | null) {
         (nm) => !prev.find((pm) => pm.id === nm.id)
       );
 
+      if (trulyNew.length === 0) return prev;
       return [...prev, ...trulyNew];
     });
-  }, [signals, historicalMessages]);
+  }, [signals]);
 
   // Combine them into one unified list for the UI
   const mergedMessages = useMemo(() => {
@@ -96,7 +101,9 @@ export function useTeamspaceChat(channelId: string | null) {
 
   return {
     messages: mergedMessages,
-    isLoadingHistory: isLoading,
+    // Only show loading when channelId exists AND fetch is in progress
+    // Without this, disabled queries (enabled:false) falsely report isLoading=true in TanStack v5
+    isLoadingHistory: !!channelId && (isLoading || isFetching),
     sendMessage: sendMessage.mutateAsync,
     isSending: sendMessage.isPending,
   };

@@ -1,27 +1,46 @@
 "use client";
 
 import { use, useEffect, useRef } from "react";
-import { useTeamspace } from "@/providers/TeamspaceProvider";
+import { TeamspaceProvider, useTeamspace } from "@/providers/TeamspaceProvider";
 import { MessageSquare } from "lucide-react";
 import { useTeamspaceChat } from "@/hooks/useTeamspaceChat";
 import { ChatInput } from "@/modules/teamspace/ChatInput";
 import { MessageBubble } from "@/modules/teamspace/MessageBubble";
+import { useQuery as useConvexQuery } from "convex/react";
+import { api } from "../../../../../../../../convex/_generated/api";
+import { TeamspaceHeader } from "@/modules/teamspace/TeamspaceHeader";
 
 export default function TeamspacePage({
   params,
 }: {
   params: Promise<{ slug: string }>;
 }) {
+  return (
+    <div className="h-full flex flex-col">
+      <TeamspaceProvider>
+        <TeamspacePageInner params={params} />
+      </TeamspaceProvider>
+    </div>
+  );
+}
+
+function TeamspacePageInner({
+  params,
+}: {
+  params: Promise<{ slug: string }>;
+}) {
   const { setActiveChannelId } = useTeamspace();
   const { slug } = use(params);
-  const projectId = slug;
+  const project = useConvexQuery(api.project.getProjectBySlug, { slug });
 
   useEffect(() => {
-    setActiveChannelId(projectId);
+    if (project?._id) {
+      setActiveChannelId(project._id);
+    }
     return () => setActiveChannelId(null);
-  }, [projectId, setActiveChannelId]);
+  }, [project?._id, setActiveChannelId]);
 
-  const { messages, isLoadingHistory } = useTeamspaceChat(projectId);
+  const { messages, isLoadingHistory } = useTeamspaceChat(project?._id ?? null);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   // Auto-scroll to bottom when messages length changes
@@ -32,38 +51,62 @@ export default function TeamspacePage({
   }, [messages.length]);
 
   return (
-    <div className="flex flex-col h-full bg-background relative">
-      <div className="h-14 border-b flex items-center px-4 shrink-0 shadow-sm z-10 text-muted-foreground bg-background/95 backdrop-blur">
-        <MessageSquare className="h-5 w-5 mr-2" />
-        <h3 className="font-semibold text-foreground">Project Teamspace</h3>
+    <div className="flex flex-col h-full bg-background relative overflow-hidden">
+      {/* Header section - Locked */}
+      <div className="flex-none">
+        <TeamspaceHeader 
+          title={project?.projectName || "Teamspace"} 
+          memberCount={1} 
+        />
       </div>
       
-      {/* Messages List Area */}
+      {/* Messages Area - Dynamic & Scrollable */}
       <div 
         ref={scrollRef}
-        className="flex-1 overflow-y-auto p-4 flex flex-col pt-8"
+        className="flex-1 min-h-0 overflow-y-auto scrollbar-thin scrollbar-thumb-border/40 hover:scrollbar-thumb-border/60"
       >
-        {messages.length === 0 && !isLoadingHistory && (
-          <div className="flex flex-col items-center justify-center h-full text-muted-foreground mt-auto mb-auto">
-             <MessageSquare className="h-12 w-12 opacity-20 mb-4" />
-             <p>This is the start of the Teamspace.</p>
-             <p className="text-sm">Send a message to get things going!</p>
+        <div className="flex flex-col min-h-full">
+           {messages.length === 0 && !isLoadingHistory && (
+            <div className="flex-1 flex flex-col items-start justify-end p-8 max-w-4xl mx-auto w-full pb-12">
+               <div className="h-20 w-20 rounded-2xl bg-primary/10 flex items-center justify-center mb-6 shadow-inner">
+                  <MessageSquare className="h-10 w-10 text-primary opacity-80" />
+               </div>
+               <h1 className="text-4xl font-bold tracking-tight mb-2">Welcome to your Teamspace</h1>
+               <p className="text-lg text-muted-foreground max-w-2xl leading-relaxed">
+                  This is the heart of <strong>{project?.projectName}</strong>. 
+                  Share updates, collaborate on logic, and keep your team in sync. 
+                  Everything sent here is archived and searchable.
+               </p>
+               <div className="mt-8 flex gap-3">
+                  <div className="px-3 py-1.5 rounded-full bg-muted/60 text-xs font-semibold border border-border/50 text-muted-foreground flex items-center gap-2">
+                     <span className="h-1.5 w-1.5 rounded-full bg-green-500 animate-pulse" />
+                     Real-time sync active
+                  </div>
+               </div>
+            </div>
+          )}
+
+          {isLoadingHistory && messages.length === 0 && (
+            <div className="flex-1 flex items-center justify-center text-sm text-muted-foreground/60 animate-pulse py-12">
+               <div className="flex flex-col items-center gap-3">
+                  <div className="h-6 w-6 border-2 border-primary/30 border-t-primary rounded-full animate-spin" />
+                  Initializing Teamspace...
+               </div>
+            </div>
+          )}
+
+          <div className="py-6 flex flex-col justify-end">
+            <div className="max-w-screen-xl mx-auto w-full px-4">
+              {messages.map((message) => (
+                 <MessageBubble key={message.id} message={message} />
+              ))}
+            </div>
           </div>
-        )}
-
-        {isLoadingHistory && messages.length === 0 && (
-          <div className="text-center text-sm text-muted-foreground my-8">Loading chat history...</div>
-        )}
-
-        <div className="space-y-4 max-w-4xl mx-auto w-full">
-          {messages.map((message) => (
-             <MessageBubble key={message.id} message={message} />
-          ))}
         </div>
       </div>
       
-      {/* Input Area */}
-      <div className="p-4 bg-background shrink-0 pb-6 max-w-4xl mx-auto w-full">
+      {/* Input Area - Locked Footor */}
+      <div className="flex-none bg-background border-t border-border/50 pt-3 pb-1 shadow-[0_-4px_12px_rgba(0,0,0,0.05)] z-10">
         <ChatInput />
       </div>
     </div>
