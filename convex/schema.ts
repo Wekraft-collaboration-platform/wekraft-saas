@@ -106,13 +106,34 @@ export default defineSchema({
     userId: v.id("users"),
     userName: v.string(),
     userImage: v.optional(v.string()),
-    AccessRole: v.optional(v.union(v.literal("admin"), v.literal("member"))),
+    AccessRole: v.optional(v.union(v.literal("admin"), v.literal("member"), v.literal('viewer'))),
     joinedAt: v.optional(v.number()),
     leftAt: v.optional(v.number()),
   })
     .index("by_project", ["projectId"])
     .index("by_user", ["userId"])
     .index("by_access_role", ["AccessRole"]),
+
+
+  // --------------------------------------------------------
+  projectJoinRequests: defineTable({
+    projectId: v.id("projects"),
+    userId: v.id("users"),
+    userName: v.string(), 
+    userImage: v.optional(v.string()), 
+    message: v.optional(v.string()), 
+    source: v.union(v.literal("invited"), v.literal("manual")),
+    status: v.union(
+      v.literal("pending"),
+      v.literal("accepted"),
+      v.literal("rejected"),
+    ),
+    createdAt: v.number(),
+    updatedAt: v.number(), 
+  })
+    .index("by_project", ["projectId"])
+    .index("by_user", ["userId"])
+    .index("by_status", ["status"]),
 
   // ------------------------------------------------------------
   tasks: defineTable({

@@ -8,13 +8,13 @@ import { useConvexAuth } from "convex/react";
 import Image from "next/image";
 import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
-import { 
-  Rocket, 
-  Users, 
-  ShieldAlert, 
-  CheckCircle2, 
+import {
+  Rocket,
+  Users,
+  ShieldAlert,
+  CheckCircle2,
   ArrowRight,
-  LogIn
+  LogIn,
 } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
@@ -25,153 +25,154 @@ export default function InvitePage() {
   const router = useRouter();
   const inviteCode = params.id as string;
   const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
-  
-  const project = useQuery(api.project.getProjectByInviteCode, { 
-    inviteCode 
+
+  const project = useQuery(api.project.getProjectByInviteCode, {
+    inviteCode,
   });
 
   const isLoading = project === undefined || isAuthLoading;
 
   return (
-    <div className="min-h-screen bg-background text-foreground flex flex-col relative overflow-hidden">
-      {/* BACKGROUND DECORATION */}
-      <div className="absolute top-0 left-0 w-full h-full pointer-events-none opacity-[0.03] dark:opacity-[0.07]">
-        <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] bg-primary rounded-full blur-[120px]" />
-        <div className="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-500 rounded-full blur-[120px]" />
-      </div>
-
+    <div className="h-screen bg-black text-foreground flex flex-col relative overflow-hidden">
       {/* HEADER */}
-      <header className="p-6 md:p-10 flex items-center justify-between z-10">
+      <header className="p-8 flex items-center justify-between z-10">
         <Link href="/" className="flex items-center gap-2.5 group">
-          <div className="w-10 h-10 bg-primary/10 rounded-xl flex items-center justify-center group-hover:scale-105 transition-transform duration-200">
-            <Image
-              src="/logo.svg"
-              alt="logo"
-              width={26}
-              height={26}
-              className="rounded-sm"
-            />
-          </div>
-          <span className="text-xl font-bold tracking-tight text-primary">WeKraft</span>
+          <Image
+            src="/logo.svg"
+            alt="logo"
+            width={26}
+            height={26}
+            className="rounded-sm"
+          />
+
+          <span className="text-xl font-bold tracking-tight text-primary">
+            WeKraft
+          </span>
         </Link>
       </header>
 
       {/* CONTENT */}
       <main className="flex-1 flex items-center justify-center p-6 z-10">
         <motion.div
-           initial={{ opacity: 0, y: 20 }}
-           animate={{ opacity: 1, y: 0 }}
-           transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
-           className="w-full max-w-[420px]"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
+          className="w-full max-w-[420px]"
         >
-           <div className="bg-sidebar border border-accent/20 shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-3xl overflow-hidden">
-             {isLoading ? (
-               <div className="p-10 space-y-6">
-                 <div className="flex justify-center">
-                    <Skeleton className="w-20 h-20 rounded-full" />
-                 </div>
-                 <div className="space-y-3 text-center">
-                    <Skeleton className="h-6 w-3/4 mx-auto" />
-                    <Skeleton className="h-4 w-1/2 mx-auto" />
-                 </div>
-                 <Skeleton className="h-12 w-full rounded-xl" />
-               </div>
-             ) : !project ? (
-               <div className="p-10 text-center space-y-6">
-                  <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto">
-                    <ShieldAlert className="w-10 h-10 text-red-500" />
+          <div className="bg-sidebar border border-accent shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-3xl overflow-hidden">
+            {isLoading ? (
+              <div className="p-10 space-y-6">
+                <div className="flex justify-center">
+                  <Skeleton className="w-20 h-20 rounded-full" />
+                </div>
+                <div className="space-y-3 text-center">
+                  <Skeleton className="h-6 w-3/4 mx-auto" />
+                  <Skeleton className="h-4 w-1/2 mx-auto" />
+                </div>
+                <Skeleton className="h-12 w-full rounded-xl" />
+              </div>
+            ) : !project ? (
+              <div className="p-10 text-center space-y-6">
+                <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto">
+                  <ShieldAlert className="w-10 h-10 text-red-500" />
+                </div>
+                <div className="space-y-2">
+                  <h2 className="text-2xl font-bold">Invalid Invite</h2>
+                  <p className="text-muted-foreground text-sm">
+                    This invite link has expired or is no longer valid.
+                  </p>
+                </div>
+                <Link href="/dashboard" className="block">
+                  <Button className="w-full h-12 rounded-xl">
+                    Go to Dashboard
+                  </Button>
+                </Link>
+              </div>
+            ) : (
+              <div className="flex flex-col">
+                <div className="p-8 md:p-10 text-center space-y-6">
+                  {/* OWNER AVATAR */}
+                  <div className="relative mx-auto w-20 h-20">
+                    <Image
+                      src={project.ownerImage || "/avatar-fallback.png"}
+                      alt={project.ownerName}
+                      fill
+                      className="rounded-xl object-cover ring-4 ring-background border-2 border-accent/10"
+                    />
+                    <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-primary rounded-full flex items-center justify-center shadow-lg border-2 border-background">
+                      <Users className="w-4 h-4 text-primary-foreground" />
+                    </div>
                   </div>
-                  <div className="space-y-2">
-                    <h2 className="text-2xl font-bold">Invalid Invite</h2>
-                    <p className="text-muted-foreground text-sm">
-                      This invite link has expired or is no longer valid.
+
+                  <div className="space-y-3">
+                    <h2 className="text-xl font-bold tracking-tight">
+                      Project Invitation
+                    </h2>
+                    <p className="text-muted-foreground text-sm leading-relaxed">
+                      you are invited to join & collaborate on
+                      <span className="block mt-1 font-bold text-lg text-foreground">
+                        "{project.projectName}"
+                      </span>
                     </p>
                   </div>
-                  <Link href="/dashboard" className="block">
-                    <Button className="w-full h-12 rounded-xl">Go to Dashboard</Button>
-                  </Link>
-               </div>
-             ) : (
-               <div className="flex flex-col">
-                 <div className="p-8 md:p-10 text-center space-y-6">
-                    {/* OWNER AVATAR */}
-                    <div className="relative mx-auto w-24 h-24">
-                       <Image 
-                         src={project.ownerImage || "/avatar-fallback.png"}
-                         alt={project.ownerName}
-                         fill
-                         className="rounded-2xl object-cover ring-4 ring-background border-2 border-accent/10"
-                       />
-                       <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-primary rounded-full flex items-center justify-center shadow-lg border-2 border-background">
-                          <Users className="w-5 h-5 text-primary-foreground" />
-                       </div>
+
+                  {/* STATUS INDICATORS */}
+                  <div className="flex flex-col gap-3 py-2">
+                    <div className="flex items-center gap-3 p-3 bg-accent/30 rounded-xl border border-accent">
+                      <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
+                      <p className="text-[13px] text-left text-muted-foreground font-medium">
+                        Valid invitation detected
+                      </p>
                     </div>
 
-                    <div className="space-y-3">
-                       <h2 className="text-2xl font-bold tracking-tight">Project Invitation</h2>
-                       <p className="text-muted-foreground text-sm leading-relaxed">
-                         <span className="font-semibold text-primary">{project.ownerName}</span> has invited you to collaborate on 
-                         <span className="block mt-1 font-bold text-lg text-foreground">"{project.projectName}"</span>
-                       </p>
-                    </div>
+                    {isAuthenticated ? (
+                      <div className="flex items-center gap-3 p-3 bg-blue-500/5 rounded-xl border border-blue-500/10">
+                        <CheckCircle2 className="w-5 h-5 text-blue-500 shrink-0" />
+                        <p className="text-[13px] text-left text-muted-foreground font-medium">
+                          Session authenticated
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="flex items-center gap-3 p-3 bg-yellow-500/5 rounded-xl border border-yellow-500/10">
+                        <LogIn className="w-5 h-5 text-yellow-500 shrink-0" />
+                        <p className="text-[13px] text-left text-muted-foreground font-medium">
+                          Login required to join
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                </div>
 
-                    {/* STATUS INDICATORS */}
-                    <div className="flex flex-col gap-3 py-2">
-                       <div className="flex items-center gap-3 p-3 bg-accent/5 rounded-xl border border-accent/10">
-                          <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
-                          <p className="text-[13px] text-left text-muted-foreground font-medium">Valid invitation detected</p>
-                       </div>
-                       
-                       {isAuthenticated ? (
-                         <div className="flex items-center gap-3 p-3 bg-blue-500/5 rounded-xl border border-blue-500/10">
-                            <CheckCircle2 className="w-5 h-5 text-blue-500 shrink-0" />
-                            <p className="text-[13px] text-left text-muted-foreground font-medium">Session authenticated</p>
-                         </div>
-                       ) : (
-                         <div className="flex items-center gap-3 p-3 bg-yellow-500/5 rounded-xl border border-yellow-500/10">
-                            <LogIn className="w-5 h-5 text-yellow-500 shrink-0" />
-                            <p className="text-[13px] text-left text-muted-foreground font-medium">Login required to join</p>
-                         </div>
-                       )}
-                    </div>
-                 </div>
-
-                 {/* ACTION BAR */}
-                 <div className="p-4 bg-accent/5 border-t border-accent/10">
-                   {isAuthenticated ? (
-                     <Button 
-                       className="w-full h-12 rounded-xl text-sm font-semibold group relative overflow-hidden"
-                       onClick={() => router.push(`/dashboard/my-projects/${project.slug}`)}
-                     >
-                       <span className="relative z-10 flex items-center gap-2">
-                         Accept & Join <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                       </span>
-                     </Button>
-                   ) : (
-                     <Button 
-                       className="w-full h-12 rounded-xl text-sm font-semibold group"
-                       onClick={() => router.push("/sign-in")}
-                     >
-                       <span className="flex items-center gap-2">
-                         Login to Continue <ArrowRight className="w-4 h-4" />
-                       </span>
-                     </Button>
-                   )}
-                 </div>
-               </div>
-             )}
-           </div>
-           
-           <p className="text-center mt-6 text-xs text-muted-foreground font-medium uppercase tracking-[0.2em] opacity-40">
-              SECURE COLLABORATION BY WEKRAFT
-           </p>
+                {/* ACTION BAR */}
+                <div className="p-4 bg-accent/5 border-t border-accent/10">
+                  {isAuthenticated ? (
+                    <Button
+                      className="w-full h-10 rounded-lg text-sm group relative overflow-hidden"
+                      onClick={() =>
+                        router.push(`/dashboard/my-projects/${project.slug}`)
+                      }
+                    >
+                      <span className="relative z-10 flex items-center gap-2">
+                        Accept & Join{" "}
+                        <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
+                      </span>
+                    </Button>
+                  ) : (
+                    <Button
+                      className="w-full h-12 rounded-xl text-sm font-semibold group"
+                      onClick={() => router.push("/sign-in")}
+                    >
+                      <span className="flex items-center gap-2">
+                        Login to Continue <ArrowRight className="w-4 h-4" />
+                      </span>
+                    </Button>
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
         </motion.div>
       </main>
-
-      {/* FOOTER DECORATION */}
-      <footer className="p-10 flex justify-center opacity-30 pointer-events-none">
-         <Rocket className="w-8 h-8 text-primary animate-pulse" />
-      </footer>
     </div>
   );
 }
