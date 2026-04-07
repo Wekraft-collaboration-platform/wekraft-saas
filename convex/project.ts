@@ -407,3 +407,28 @@ export const getUnlinkedProjects = query({
     return projects.filter((p) => !p.repositoryId && !p.repoName);
   },
 });
+
+// ====================================
+// GET PROJECT BY INVITE CODE
+// ====================================
+export const getProjectByInviteCode = query({
+  args: { inviteCode: v.string() },
+  handler: async (ctx, args) => {
+    const project = await ctx.db
+      .query("projects")
+      .withIndex("by_invite_link", (q) => q.eq("inviteLink", args.inviteCode))
+      .unique();
+
+    if (!project) return null;
+
+    return {
+      _id: project._id,
+      projectName: project.projectName,
+      ownerName: project.ownerName,
+      ownerImage: project.ownerImage,
+      description: project.description,
+      isPublic: project.isPublic,
+      slug: project.slug,
+    };
+  },
+});

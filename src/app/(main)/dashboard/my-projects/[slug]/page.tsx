@@ -7,19 +7,21 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "convex/react";
 import {
   ChevronLeft,
+  ExternalLink,
   Link2,
   LucideExternalLink,
   LucideLayers3,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
-import React from "react";
+import { InviteDialog } from "@/modules/project/inviteDilogag";
 
 const ProjectPage = () => {
   const params = useParams();
   const slug = params.slug as string;
 
   const project = useQuery(api.project.getProjectBySlug, { slug });
+  const projectInviteLink = project?.inviteLink;
   const user = useQuery(api.user.getCurrentUser);
 
   if (project === undefined) {
@@ -69,6 +71,16 @@ const ProjectPage = () => {
           </Link>
         </div>
       </header>
+
+      {/* Body */}
+      <InviteDialog 
+        inviteLink={projectInviteLink} 
+        trigger={
+          <Button className="px-5! text-xs cursor-pointer" size="sm">
+            Invite <ExternalLink className="ml-2 w-3.5 h-3.5" />
+          </Button>
+        } 
+      />
     </div>
   );
 };

@@ -10,7 +10,17 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Rocket, Wrench, ChevronUp, ArrowUp, UserSearch, Check, Search } from "lucide-react";
+import {
+  Rocket,
+  Wrench,
+  ChevronUp,
+  ArrowUp,
+  UserSearch,
+  Check,
+  Search,
+  SendHorizonal,
+  Send,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { toast } from "sonner";
@@ -43,11 +53,7 @@ const MODES = [
     label: "Discover Products",
     shortLabel: "Discover",
     icon: Wrench,
-    placeholders: [
-      "AI healthcare projects",
-      "AI native saas",
-      "Web3 projects",
-    ],
+    placeholders: ["AI healthcare projects", "AI native saas", "Web3 projects"],
   },
 ];
 
@@ -64,14 +70,13 @@ export function CommunitySearchBar() {
       return;
     }
     router.push(
-      `/dashboard/community?query=${encodeURIComponent(query)}&mode=${mode.id}`
+      `/dashboard/community?query=${encodeURIComponent(query)}&mode=${mode.id}`,
     );
   };
 
   return (
     <div className="w-[580px] mx-auto">
       <div className="flex items-center gap-2 rounded-md bg-accent/10 dark:bg-[#111113] border border-border/40 px-4 py-1 focus-within:border-border/70 transition-colors">
-        
         {/* QUERY INPUT */}
         <div className="relative flex-1 min-w-0">
           <Input
@@ -99,6 +104,15 @@ export function CommunitySearchBar() {
         {/* DIVIDER */}
         <div className="w-px h-6 bg-accent shrink-0" />
 
+        {/* SEND BUTTON */}
+        <Button
+          size="icon-sm"
+          variant={"outline"}
+          onClick={handleQuery}
+          className=" shrink-0 h-8"
+        >
+          <Send className="" />
+        </Button>
         {/* MODE POPOVER */}
         <Popover open={open} onOpenChange={setOpen}>
           <PopoverTrigger asChild>
@@ -110,7 +124,7 @@ export function CommunitySearchBar() {
                 "bg-accent/20 border border-border/40 text-muted-foreground",
                 "hover:bg-accent/40 hover:text-foreground hover:border-border/60",
                 "transition-all flex-shrink-0",
-                open && "bg-accent/40 text-foreground border-border/60"
+                open && "bg-accent/40 text-foreground border-border/60",
               )}
             >
               <ActiveIcon className="h-3.5 w-3.5" />
@@ -118,7 +132,7 @@ export function CommunitySearchBar() {
               <ChevronUp
                 className={cn(
                   "h-3 w-3 opacity-50 transition-transform",
-                  !open && "rotate-180"
+                  !open && "rotate-180",
                 )}
               />
             </Button>
@@ -137,15 +151,18 @@ export function CommunitySearchBar() {
                 return (
                   <button
                     key={m.id}
-                    onClick={() => { setMode(m); setOpen(false); }}
+                    onClick={() => {
+                      setMode(m);
+                      setOpen(false);
+                    }}
                     className={cn(
                       "flex w-full items-center gap-2.5 rounded-md tracking-tight px-3 py-2.5 text-sm transition-colors",
                       active
                         ? "bg-accent/50 text-foreground"
-                        : "text-muted-foreground hover:bg-accent/30 hover:text-foreground"
+                        : "text-muted-foreground hover:bg-accent/30 hover:text-foreground",
                     )}
                   >
-                    <Icon className="h-3.5 w-3.5 flex-shrink-0" />
+                    <Icon className="h-3.5 w-3.5 shrink-0" />
                     <span className="flex-1 text-left">{m.label}</span>
                     {active && (
                       <motion.div
@@ -162,16 +179,6 @@ export function CommunitySearchBar() {
             </div>
           </PopoverContent>
         </Popover>
-
-        {/* SEND BUTTON */}
-        <Button
-          size="icon-sm"
-          variant={'outline'}
-          onClick={handleQuery}
-          className=" flex-shrink-0"
-        >
-          <ArrowUp className="h-3 w-3" />
-        </Button>
       </div>
     </div>
   );
