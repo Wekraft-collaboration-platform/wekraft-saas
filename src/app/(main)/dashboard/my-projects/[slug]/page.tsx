@@ -6,15 +6,24 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useQuery } from "convex/react";
 import {
+  ArrowUpRight,
   ChevronLeft,
   ExternalLink,
+  Globe,
+  GlobeLock,
+  ImageIcon,
   Link2,
+  Loader2,
   LucideExternalLink,
   LucideLayers3,
+  UploadCloud,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { InviteDialog } from "@/modules/project/inviteDilogag";
+import { Badge } from "@/components/ui/badge";
+import { useState } from "react";
+import Image from "next/image";
 
 const ProjectPage = () => {
   const params = useParams();
@@ -23,6 +32,8 @@ const ProjectPage = () => {
   const project = useQuery(api.project.getProjectBySlug, { slug });
   const projectInviteLink = project?.inviteLink;
   const user = useQuery(api.user.getCurrentUser);
+
+  const [isUploading, setIsUploading] = useState(false);
 
   if (project === undefined) {
     return <ProjectSkeleton />;
@@ -39,7 +50,7 @@ const ProjectPage = () => {
     );
   }
   return (
-    <div className="w-full h-full animate-in fade-in duration-700 p-6 2xl:p-10 2xl:py-7">
+    <div className="w-full min-h-screen animate-in fade-in duration-700 p-6">
       <header className="flex justify-between items-center mb-6">
         <div className="flex flex-col space-y-1.5">
           <h1 className="text-3xl font-bold flex items-center gap-2">
@@ -72,17 +83,87 @@ const ProjectPage = () => {
         </div>
       </header>
 
-      {/* Body */}
-      <InviteDialog 
-        inviteLink={projectInviteLink} 
-        trigger={
-          <Button className="px-5! text-xs cursor-pointer" size="sm">
-            Invite <ExternalLink className="ml-2 w-3.5 h-3.5" />
-          </Button>
-        } 
-      />
+      {/* ----------------------------------------------- */}
+      <div className="w-[1080px] h-[260px] mx-auto bg-primary/10 rounded-lg overflow-hidden mb-5 relative group border border-border">
+        {project.thumbnailUrl ? (
+          <Image
+            src={project.thumbnailUrl}
+            alt="Project Thumbnail"
+            fill
+            className="object-cover"
+            unoptimized
+          />
+        ) : (
+          <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+            <ImageIcon className="w-10 h-10 mb-2 opacity-50" />
+            <p>No thumbnail uploaded</p>
+          </div>
+        )}
 
-      
+        {/* Overlay for upload */}
+        <div
+          className={`absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
+            isUploading ? "opacity-100" : ""
+          }`}
+        >
+          {isUploading ? (
+            <div className="flex flex-col items-center text-white">
+              <Loader2 className="w-8 h-8 animate-spin mb-2" />
+              <p>Uploading...</p>
+            </div>
+          ) : (
+            <label className="cursor-pointer flex flex-col items-center text-white">
+              <UploadCloud className="w-10 h-10 mb-2" />
+              <span className="font-semibold">Click to Upload Thumbnail</span>
+              <span className="text-xs text-white/70 mt-1">
+                1080 x 260 Recommended (Max 1MB)
+              </span>
+              <input
+                type="file"
+                accept="image/*"
+                className="hidden"
+                // onChange={handleFileChange}
+              />
+            </label>
+          )}
+        </div>
+      </div>
+
+      <div className="w-full flex items-center justify-between mb-5">
+        <Button
+          className="px-4! text-xs cursor-pointer"
+          size="sm"
+          variant={"outline"}
+        >
+          View Public Page <ArrowUpRight className="ml-2 w-3.5 h-3.5" />
+        </Button>
+
+        <div className="flex items-center gap-5">
+          <Badge variant={"secondary"} className="px-4! py-1 text-xs">
+            {project?.isPublic ? (
+              <span className="flex items-center gap-2">
+                <Globe className="w-4 h-4 text-blue-500" /> Public
+              </span>
+            ) : (
+              <span className="flex items-center gap-2">
+                <GlobeLock className="w-4 h-4 text-muted-foreground" /> Private
+              </span>
+            )}
+          </Badge>
+
+          <InviteDialog
+            inviteLink={projectInviteLink}
+            trigger={
+              <Button
+                className="px-5! h-7! rounded-md text-xs cursor-pointer bg-blue-500 text-white hover:bg-blue-600"
+                size="sm"
+              >
+                Invite <ExternalLink className="ml-2 w-3.5 h-3.5" />
+              </Button>
+            }
+          />
+        </div>
+      </div>
     </div>
   );
 };

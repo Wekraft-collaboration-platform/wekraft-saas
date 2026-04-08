@@ -95,12 +95,7 @@ export default function InvitePage() {
 
       {/* CONTENT */}
       <main className="flex-1 flex items-center justify-center p-6 z-10">
-        <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.5, ease: [0.23, 1, 0.32, 1] }}
-          className="w-full max-w-[420px]"
-        >
+        <div className="w-full max-w-[420px]">
           <div className="bg-sidebar border border-accent shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-3xl overflow-hidden">
             {isLoading ? (
               <div className="p-10 space-y-6">
@@ -266,7 +261,7 @@ export default function InvitePage() {
               </div>
             )}
           </div>
-        </motion.div>
+        </div>
       </main>
     </div>
   );

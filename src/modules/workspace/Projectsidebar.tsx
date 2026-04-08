@@ -84,11 +84,6 @@ const workspaceMenu = [
     icon: PlaneTakeoff,
   },
   {
-    label: "Review Agent",
-    path: "workspace/review-agent",
-    icon: Activity,
-  },
-  {
     label: "Heatmap",
     path: "workspace/heatmap",
     icon: Network,

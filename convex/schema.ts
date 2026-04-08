@@ -76,7 +76,7 @@ export default defineSchema({
     ownerId: v.id("users"),
     ownerName: v.string(),
     ownerImage: v.string(),
-    about: v.optional(v.string()),
+    // about: v.optional(v.string()),
     projectUpvotes: v.number(),
     inviteLink: v.optional(v.string()),
     projectWorkStatus: v.optional(
