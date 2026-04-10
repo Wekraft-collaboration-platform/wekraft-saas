@@ -191,6 +191,62 @@ export default defineSchema({
     .index("by_task_user", ["taskId", "userId"]),
 
     // ----------------------------------------------------
+
+    issues: defineTable({
+      title: v.string(),
+      description: v.optional(v.string()),
+      environment : v.optional(v.union(v.literal("local"),v.literal("dev"), v.literal("staging"), v.literal("production"))),
+      severity: v.optional(v.union(v.literal("critical"), v.literal("medium"), v.literal("low"))),
+      due_date:v.optional(v.number()), // for tracking
+      status: v.union(
+        v.literal("not opened"),
+        v.literal("opened"),
+        v.literal("in review"),
+        v.literal("reopened"),
+        v.literal("closed"),
+      ),
+      type: v.union(
+        v.literal("manual"),
+        v.literal("github")
+      ),
+      githubIssueUrl: v.optional(v.string()), // if its from github.
+      taskId: v.optional(v.id("tasks")), // if its from task.
+      projectId: v.id("projects"),
+      createdByUserId: v.id("users"),
+      IssueAssignee: v.optional(
+        v.array(
+          v.object({
+            userId: v.id("users"),
+            name: v.string(),
+            avatar: v.optional(v.string()),
+          }),
+        ),
+      ),
+      createdAt: v.number(),
+      updatedAt: v.number(),
+      
+    })
+    .index("by_project", ["projectId"])
+    .index("by_creator", ["createdByUserId"])
+    .index("by_task", ["taskId"])
+    .index("by_status", ["status"])
+    .index("by_severity", ["severity"])
+    .index("by_environment", ["environment"]),
+    // ---------------------------------------------------
+    issueComments: defineTable({
+      issueId: v.id("issues"),
+      userId: v.id("users"),
+      userName: v.string(),
+      userImage: v.optional(v.string()),
+      comment: v.string(),
+      createdAt: v.number(),
+      updatedAt: v.number(),
+    })
+    .index("by_issue", ["issueId"])
+    .index("by_user", ["userId"])
+    .index("by_issue_user", ["issueId", "userId"]),
+
+    // -----------------------------------------------------
     projectDetails: defineTable({
       projectId: v.id("projects"),
       repoId: v.optional(v.id("repositories")), // optional if project has connected repo.

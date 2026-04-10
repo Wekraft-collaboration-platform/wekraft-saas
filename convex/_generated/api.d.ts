@@ -9,6 +9,7 @@
  */
 
 import type * as calendar from "../calendar.js";
+import type * as issue from "../issue.js";
 import type * as pricing from "../pricing.js";
 import type * as project from "../project.js";
 import type * as projectDetails from "../projectDetails.js";
@@ -24,6 +25,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   calendar: typeof calendar;
+  issue: typeof issue;
   pricing: typeof pricing;
   project: typeof project;
   projectDetails: typeof projectDetails;
