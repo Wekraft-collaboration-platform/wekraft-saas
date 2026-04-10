@@ -16,6 +16,10 @@ import {
   Loader2,
   Copy,
   UserRoundCog,
+  Lightbulb,
+  Code2,
+  Rocket,
+  TrendingUp,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -48,6 +52,18 @@ const variants = {
   }),
 };
 
+const STATUS_CONFIG: Record<
+  string,
+  { icon: React.ElementType; label: string }
+> = {
+  ideation: { icon: Lightbulb, label: "Ideation" },
+  validation: { icon: Search, label: "Validation" },
+  development: { icon: Code2, label: "Development" },
+  beta: { icon: Rocket, label: "Beta" },
+  production: { icon: Globe, label: "Production" },
+  scaling: { icon: TrendingUp, label: "Scaling" },
+};
+
 export function MultiStepOnboarding() {
   const [currentStep, setCurrentStep] = useState(1);
   const [direction, setDirection] = useState(0);
@@ -66,10 +82,11 @@ export function MultiStepOnboarding() {
   // Step 2
   const [username, setUsername] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
+  const [usernameError, setUsernameError] = useState<string | null>(null);
 
   // Step 3
   const [projectName, setProjectName] = useState("");
-  const [isPublic, setIsPublic] = useState(true);
+  const [isPublic, setIsPublic] = useState(true); // default always true.
   const [projectStatus, setProjectStatus] = useState("");
   const [generatedInviteLink, setGeneratedInviteLink] = useState("");
 
@@ -89,6 +106,12 @@ export function MultiStepOnboarding() {
       }
 
       if (currentStep === 2) {
+        if (usernameError) {
+          toast.error(usernameError);
+          setIsLoading(false);
+          return;
+        }
+
         if (!username || !selectedRole) {
           toast.error("Please provide a username and select a role");
           setIsLoading(false);
@@ -174,11 +197,11 @@ export function MultiStepOnboarding() {
         src="/bg-footer.jpg"
         alt="bg-image"
         fill
-        className="absolute w-full h-full object-cover opacity-25"
+        className="absolute w-full h-full object-cover opacity-20"
         priority
       />
 
-      <div className="absolute -top-1/3 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[500px] bg-blue-500/45 blur-[200px] rounded-full pointer-events-none opacity-50" />
+      <div className="absolute -top-1/3 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[500px] bg-blue-500/55 transform-gpu blur-[200px] rounded-full pointer-events-none opacity-50" />
 
       {/* Progress Header */}
       <div className="flex items-center gap-3 absolute top-8">
@@ -207,8 +230,8 @@ export function MultiStepOnboarding() {
       </div>
 
       {/* BODY  */}
-      <main className="w-full h-auto max-h-[520px] max-w-2xl  bg-linear-to-b from-neutral-100/40 to-transparent rounded-2xl overflow-hidden font-sans">
-        <div className="p-5">
+      <main className="w-full h-full flex flex-col max-h-[500px] max-w-2xl  bg-linear-to-b from-neutral-100/20 to-transparent rounded-2xl overflow-hidden font-sans">
+        <div className="p-5 h-full flex flex-col">
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={currentStep}
@@ -222,16 +245,13 @@ export function MultiStepOnboarding() {
               {/* ── STEP 1 : your Main purpose of using wekraft (SKIP) ── */}
               {currentStep === 1 && (
                 <div className="space-y-5 relative">
-                  <div className="text-center space-y-2 mb-5">
-                    <h2 className="text-2xl font-semibold tracking-tight text-white ">
+                  <div className="text-center space-y-1 mb-5">
+                    <h2 className="text-xl font-semibold tracking-tight text-white ">
                       What brings you to WeKraft{" "}
                       <HandHeart className="w-6 h-6 inline ml-2 text-white" />
                     </h2>
                     <p className="text-white/70 text-sm">
                       Pick one or more — helps us tailor your experience{" "}
-                      <span className="text-white relative font-inter ">
-                        (Optional)
-                      </span>
                     </p>
                   </div>
 
@@ -243,7 +263,7 @@ export function MultiStepOnboarding() {
                           key={p.id}
                           onClick={() => togglePurpose(p.id)}
                           className={cn(
-                            "relative flex items-start gap-3 p-4 rounded-xl border text-left transition-all duration-200 group overflow-hidden",
+                            "relative flex items-start gap-3 p-3 rounded-xl border text-left transition-all duration-200 group overflow-hidden",
                             selected
                               ? `bg-linear-to-br from-white/30 to-white/10 shadow-[0_0_20px_rgba(255,255,255,0.06)]`
                               : "bg-white/5 border-white/10 hover:bg-white/[0.08] hover:border-white/20",
@@ -252,16 +272,16 @@ export function MultiStepOnboarding() {
                           {/* Icon bubble */}
                           <div
                             className={cn(
-                              "shrink-0 w-9 h-9 rounded-lg flex items-center justify-center transition-all duration-200",
+                              "shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200",
                               selected
-                                ? `${p.glow} border ${p.border}`
-                                : "bg-white/5 border-white/10 group-hover:scale-105",
+                                ? `bg-white/70 text-black border ${p.border}`
+                                : "bg-white/15 border-white/10 group-hover:scale-105",
                             )}
                           >
                             <p.icon
                               className={cn(
                                 "w-4 h-4",
-                                selected ? p.accent : "text-white",
+                                selected ? "text-neutral-800" : "text-white",
                               )}
                             />
                           </div>
@@ -312,14 +332,14 @@ export function MultiStepOnboarding() {
               {/* ── STEP 2 : Update User Name and Occupation ── */}
               {currentStep === 2 && (
                 <div className="space-y-4 relative">
-                  <div className="text-center space-y-2 mb-3">
-                    <h2 className="text-2xl font-semibold tracking-tight text-white ">
+                  <div className="text-center space-y-1 mb-3">
+                    <h2 className="text-xl font-semibold tracking-tight text-white ">
                       Let’s set up your identity
                       <UserRoundCog className="w-6 h-6 inline ml-2 text-white" />
                     </h2>
-                    <p className="text-neutral-300 text-sm px-12 text-center">
-                      Choose a unique name & your role — this is how people will
-                      find you, connect, and build with you.
+                    <p className="text-white/70 text-sm px-8 text-center">
+                      Choose unique name & Occupation — this is how people will
+                      find you & build with you.
                     </p>
                   </div>
 
@@ -329,14 +349,15 @@ export function MultiStepOnboarding() {
                     roles={ROLES}
                     selectedRole={selectedRole}
                     onRoleSelect={setSelectedRole}
+                    onValidationError={setUsernameError}
                   />
                 </div>
               )}
               {/* --- STEP 3 : CREATE FIRST PROJECT */}
               {currentStep === 3 && (
                 <div className="space-y-5 relative">
-                  <div className="text-center space-y-2 mb-5">
-                    <h2 className="text-2xl font-semibold tracking-tight text-white flex items-center justify-center gap-2">
+                  <div className="text-center space-y-1 mb-5">
+                    <h2 className="text-xl font-semibold tracking-tight text-white flex items-center justify-center gap-2">
                       Create your first project
                       <FolderGit className="w-6 h-6 " />
                     </h2>
@@ -356,7 +377,7 @@ export function MultiStepOnboarding() {
                       <Input
                         id="projectName"
                         placeholder={"Acme saas"}
-                        className="bg-white/20! border border-white/30! text-white placeholder:text-neutral-300"
+                        className="bg-white/10! border border-white/30! text-white placeholder:text-neutral-300"
                         value={projectName}
                         onChange={(e) => setProjectName(e.target.value)}
                       />
@@ -369,34 +390,48 @@ export function MultiStepOnboarding() {
                           (will help the community to know about your project.)
                         </span>
                       </Label>
-                      <div className="grid grid-cols-3 gap-x-8 gap-y-3">
+                      <div className="grid grid-cols-3 gap-3">
                         {PROJECT_STATUS.map((status) => {
                           const isSelected = projectStatus === status;
+                          const config = STATUS_CONFIG[status] || {
+                            icon: FolderGit,
+                            label: status,
+                          };
 
                           return (
                             <button
                               key={status}
                               onClick={() => setProjectStatus(status)}
                               className={cn(
-                                "relative px-5 py-2 rounded-lg border text-xs transition-all duration-300 capitalize overflow-hidden group cursor-pointer",
+                                "relative flex flex-col items-start gap-4 p-4 rounded-lg border text-left transition-all duration-300 overflow-hidden group h-20",
                                 isSelected
-                                  ? "bg-white/20 border-white text-white opacity-100 scale-[1.02] shadow-[0_0_20px_rgba(255,255,255,0.05)]"
-                                  : "bg-white/10 border-white/30 text-neutral-300 hover:bg-white/10 hover:border-white/20 hover:text-white",
+                                  ? "bg-white/15 border-white text-white shadow-[0_0_20px_rgba(255,255,255,0.05)]"
+                                  : "bg-white/5 border-white/10 text-neutral-400 hover:bg-white/5 hover:border-white/20 hover:text-white",
                               )}
                             >
+                              <config.icon
+                                className={cn(
+                                  "w-5 h-5 transition-colors shrink-0",
+                                  isSelected
+                                    ? "text-white"
+                                    : "text-neutral-200",
+                                )}
+                              />
                               <span
                                 className={cn(
-                                  "relative z-10 transition-colors duration-300",
-                                  isSelected ? "font-medium" : "font-medium",
+                                  "text-sm tracking-tight",
+                                  isSelected
+                                    ? "text-white"
+                                    : "text-neutral-300",
                                 )}
                               >
-                                {status}
+                                {config.label}
                               </span>
 
                               {isSelected && (
                                 <motion.div
                                   layoutId="status-active-glow"
-                                  className="absolute inset-0 bg-white/5"
+                                  className="absolute inset-0 bg-white/[0.02]"
                                   initial={false}
                                   transition={{
                                     type: "spring",
@@ -408,61 +443,6 @@ export function MultiStepOnboarding() {
                             </button>
                           );
                         })}
-                      </div>
-                    </div>
-
-                    <div className="space-y-3 pt-2">
-                      <Label className="text-sm text-white">Visibility</Label>
-                      <div className="grid grid-cols-2 gap-3">
-                        <div
-                          onClick={() => setIsPublic(true)}
-                          className={cn(
-                            "cursor-pointer p-2 rounded-xl border flex items-center gap-3 transition-all",
-                            isPublic
-                              ? "bg-white/10 border-white text-white"
-                              : "bg-white/5 border-white/5 text-muted-foreground hover:bg-white/10",
-                          )}
-                        >
-                          <div
-                            className={cn(
-                              "p-2 rounded-full",
-                              isPublic ? "bg-white text-black" : "bg-white/10",
-                            )}
-                          >
-                            <Globe className="w-4 h-4" />
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="text-sm font-medium">Public</span>
-                            <span className="text-[11px] ">
-                              Community can see and collab
-                            </span>
-                          </div>
-                        </div>
-
-                        <div
-                          onClick={() => setIsPublic(false)}
-                          className={cn(
-                            "cursor-pointer p-2 rounded-xl border flex items-center gap-3 transition-all",
-                            !isPublic
-                              ? "bg-white/20 border-white text-white"
-                              : "bg-white/5 border-white/5 text-muted-foreground hover:bg-white/10",
-                          )}
-                        >
-                          <div
-                            className={cn(
-                              "p-2 rounded-full",
-                              !isPublic ? "bg-white text-black" : "bg-white/10",
-                            )}
-                          >
-                            <Lock className="w-4 h-4" />
-                          </div>
-                          <div className="flex flex-col">
-                            <span className="text-sm font-medium">Private</span>
-                            <span className="text-[11px] ">
-                              Only Invited one can see & collab.
-                            </span>
-                          </div>
-                        </div>
                       </div>
                     </div>
                   </div>
@@ -611,7 +591,7 @@ export function MultiStepOnboarding() {
           </AnimatePresence>
 
           {/* Action Footer */}
-          <div className="flex items-center justify-between mt-10 pt-4 border-t border-white/10">
+          <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/10">
             <Button
               variant="outline"
               onClick={handleBack}

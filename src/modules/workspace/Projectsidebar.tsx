@@ -23,16 +23,8 @@ import {
 import { cn } from "@/lib/utils";
 
 import {
-  CheckSquare,
-  Clock,
-  Activity,
-  Settings,
-  ArrowLeft,
   ChevronsUpDown,
-  Github,
-  ChevronLeft,
   ChevronRight,
-  Store,
   Layers,
   PenTool,
   ClipboardList,
@@ -121,8 +113,6 @@ export default function ProjectSidebar() {
   const slug = params.slug as string;
   const router = useRouter();
 
-
-
   const user: Doc<"users"> | undefined | null = useQuery(
     api.user.getCurrentUser,
   );
@@ -145,7 +135,6 @@ export default function ProjectSidebar() {
       {/* ───────── HEADER ───────── */}
       <SidebarHeader className="border-b ">
         <div className="flex items-center justify-between gap-4 px-3 py-1!">
-
           <Link href="/dashboard" className="flex items-center">
             <Image
               src="/logo.svg"
@@ -172,7 +161,6 @@ export default function ProjectSidebar() {
 
       {/* ───────── CONTENT ───────── */}
       <SidebarContent className="px-2 py-5">
-
         {/* INBOX */}
         <SidebarMenuButton
           asChild
@@ -180,7 +168,6 @@ export default function ProjectSidebar() {
           isActive={isActive(`/dashboard/my-projects/${slug}/inbox`)}
           className="group relative overflow-hidden mb-1.5 cursor-pointer"
         >
-
           <Button
             className="cursor-pointer text-xs"
             size="sm"
@@ -226,7 +213,7 @@ export default function ProjectSidebar() {
                         "h-5.5 w-5.5 transition-colors",
                         isActiveExact("/dashboard/ai")
                           ? "text-foreground"
-                          : "text-muted-foreground group-hover:text-foreground",
+                          : "text-foreground ",
                       )}
                     />
 
@@ -235,12 +222,12 @@ export default function ProjectSidebar() {
                         "group-data-[collapsible=icon]:hidden transition-colors",
                         isActiveExact("/dashboard/ai")
                           ? "text-foreground font-medium"
-                          : "text-muted-foreground group-hover:text-foreground",
+                          : "text-foreground",
                       )}
                     >
                       AI Assistant
                     </span>
-                    <ChevronRight className="h-4 w-4 ml-auto group-data-[collapsible=icon]:hidden text-muted-foreground" />
+                    <ChevronRight className="h-4 w-4 ml-auto group-data-[collapsible=icon]:hidden text-primary!" />
 
                     <span
                       className="
@@ -252,7 +239,6 @@ export default function ProjectSidebar() {
                     />
                   </Link>
                 </SidebarMenuButton>
-
               </PopoverTrigger>
 
               <PopoverContent side="right" className="w-64 p-2">
@@ -290,22 +276,33 @@ export default function ProjectSidebar() {
             <SidebarMenuButton
               asChild
               tooltip="Workspace"
-              isActive={isActiveExact(`/dashboard/my-projects/${slug}/workspace`)}
+              isActive={isActiveExact(
+                `/dashboard/my-projects/${slug}/workspace`,
+              )}
               className="group relative overflow-hidden cursor-pointer"
             >
-
               <Link
                 href={`/dashboard/my-projects/${slug}/workspace`}
                 className="relative z-10 flex items-center gap-3 px-3 py-2"
               >
-                <Layers className={cn(
-                  "h-5 w-5 transition-colors",
-                  isActiveExact(`/dashboard/my-projects/${slug}/workspace`) ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
-                )} />
-                <span className={cn(
-                  "text-sm font-medium transition-colors group-data-[collapsible=icon]:hidden",
-                  isActiveExact(`/dashboard/my-projects/${slug}/workspace`) ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
-                )}>Workspace</span>
+                <Layers
+                  className={cn(
+                    "h-5 w-5 transition-colors",
+                    isActiveExact(`/dashboard/my-projects/${slug}/workspace`)
+                      ? "text-foreground"
+                      : "text-foreground",
+                  )}
+                />
+                <span
+                  className={cn(
+                    "text-sm font-medium transition-colors group-data-[collapsible=icon]:hidden",
+                    isActiveExact(`/dashboard/my-projects/${slug}/workspace`)
+                      ? "text-foreground"
+                      : "text-foreground",
+                  )}
+                >
+                  Workspace
+                </span>
 
                 <span
                   className="
@@ -329,9 +326,12 @@ export default function ProjectSidebar() {
                   asChild
                   tooltip="Manage Projects"
                   className="group relative overflow-hidden group-data-[collapsible=icon]:bg-transparent! cursor-pointer"
-                  onClick={() => router.push(`/dashboard/my-projects/${slug}/workspace/tasks`)}
+                  onClick={() =>
+                    router.push(
+                      `/dashboard/my-projects/${slug}/workspace/tasks`,
+                    )
+                  }
                 >
-
                   <Link
                     href={`/dashboard/my-projects/${slug}/workspace/tasks`}
                     className="relative z-10 flex items-center gap-3 w-full"
@@ -343,7 +343,6 @@ export default function ProjectSidebar() {
                     <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]:hidden" />
                   </Link>
                 </SidebarMenuButton>
-
               </CollapsibleTrigger>
               <CollapsibleContent>
                 <SidebarMenuSub className="border-l border-dashed border-accent ml-[21px] pl-3 gap-1.5">
@@ -412,7 +411,6 @@ export default function ProjectSidebar() {
                   isActive={isActive(href)}
                   className="group relative overflow-hidden cursor-pointer"
                 >
-
                   <Link
                     href={href}
                     className="relative z-10 flex items-center gap-3 px-2 py-2"
@@ -420,9 +418,7 @@ export default function ProjectSidebar() {
                     <Icon
                       className={cn(
                         "h-5 w-5 transition-colors",
-                        isActive(href)
-                          ? "text-foreground"
-                          : "text-muted-foreground group-hover:text-foreground",
+                        isActive(href) ? "text-foreground" : "text-foreground",
                       )}
                     />
                     <span
@@ -430,7 +426,7 @@ export default function ProjectSidebar() {
                         "text-sm group-data-[collapsible=icon]:hidden transition-colors",
                         isActive(href)
                           ? "text-foreground font-medium"
-                          : "text-muted-foreground group-hover:text-foreground",
+                          : "text-foreground",
                       )}
                     >
                       {item.label}
@@ -451,7 +447,7 @@ export default function ProjectSidebar() {
           })}
 
           <SidebarSeparator className="my-2" />
-          
+
           {/* HELP & SUPPORT */}
           <SidebarMenuItem>
             <SidebarMenuButton
@@ -459,7 +455,6 @@ export default function ProjectSidebar() {
               tooltip="Help and Support"
               className="group relative overflow-hidden cursor-pointer"
             >
-
               <Link
                 href={`/dashboard/my-projects/${slug}/help`}
                 className="relative z-10 flex items-center gap-3 px-2 py-2"
@@ -479,7 +474,6 @@ export default function ProjectSidebar() {
               tooltip="Delete Project"
               className="group relative overflow-hidden cursor-pointer"
             >
-
               <Link
                 href={`/dashboard/my-projects/${slug}/settings/delete`}
                 className="relative z-10 flex items-center gap-3 px-2 py-2"
@@ -491,14 +485,11 @@ export default function ProjectSidebar() {
               </Link>
             </SidebarMenuButton>
           </SidebarMenuItem>
-
-       
         </SidebarMenu>
       </SidebarContent>
 
       {/* ───────── FOOTER ───────── */}
       <SidebarFooter className="border-t border-accent px-2 group-data-[collapsible=icon]:hidden">
-       
         {/* =======USER PLAN========= */}
         <div className="my-2 border p-3 rounded-md bg-linear-to-br from-card via-card to-blue-600/70">
           <div className="flex items-center gap-2">

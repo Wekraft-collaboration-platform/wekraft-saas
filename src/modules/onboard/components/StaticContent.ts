@@ -47,9 +47,9 @@ export const PURPOSES = [
     glow: "bg-white/5",
   },
   {
-    id: "opensource",
-    label: "Open Source",
-    description: "Contribute to projects & help the community",
+    id: "discover",
+    label: "Discover",
+    description: "Explore projects and find your next opportunity",
     icon: GitMerge,
     color: "from-white/10 to-transparent",
     accent: "text-white",

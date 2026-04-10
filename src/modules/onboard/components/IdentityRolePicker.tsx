@@ -5,6 +5,7 @@ import { Check, Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { IdentityPicker } from "./IdentityPicker";
 import { cn } from "@/lib/utils";
 
 type IdentityRolePickerProps = {
@@ -13,6 +14,7 @@ type IdentityRolePickerProps = {
   roles: string[];
   selectedRole: string;
   onRoleSelect: (role: string) => void;
+  onValidationError: (error: string | null) => void;
 };
 
 export function IdentityRolePicker({
@@ -21,6 +23,7 @@ export function IdentityRolePicker({
   roles,
   selectedRole,
   onRoleSelect,
+  onValidationError,
 }: IdentityRolePickerProps) {
   const [roleSearch, setRoleSearch] = useState("");
 
@@ -49,66 +52,61 @@ export function IdentityRolePicker({
 
   return (
     <div className="space-y-3">
-      <div className="space-y-1.5">
-        <Label htmlFor="username" className="text-sm text-white">
-          Username
-        </Label>
-        <Input
-          id="username"
-          placeholder="Enter your username"
-          className="bg-white/20! border border-white/30! text-white placeholder:text-neutral-300"
-          value={username}
-          onChange={(e) => onUsernameChange(e.target.value)}
-        />
-      </div>
+      <IdentityPicker
+        value={username}
+        onChange={onUsernameChange}
+        onValidationError={onValidationError}
+      />
 
-      <div className="space-y-2">
-        <Label htmlFor="role-search" className="text-sm text-white">
-          Role
+      <div className="">
+        <Label htmlFor="role-search" className="text-sm text-white mb-1.5">
+          Occupation
         </Label>
 
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-white" />
-          <Input
-            id="role-search"
-            placeholder="Search role..."
-            className="pl-9 bg-white/20! border border-white/30! text-white placeholder:text-neutral-300"
-            value={roleSearch}
-            onChange={(e) => setRoleSearch(e.target.value)}
-          />
-        </div>
-
-        {/* Compact height so the Step footer remains visible */}
-        <ScrollArea className="h-40 rounded-xl border border-white/40 bg-white/10 px-4 py-4">
-          <div className="space-y-2">
-            {filteredRoles.length > 0 ? (
-              filteredRoles.map((role, idx) => {
-                const isSelected = role === selectedRole;
-
-                return (
-                  <button
-                    key={`${role}-${idx}`}
-                    type="button"
-                    onClick={() => onRoleSelect(role)}
-                    className={cn(
-                      "w-full flex items-center justify-between rounded-lg border px-3 py-1.5 text-left text-xs font-medium capitalize transition-all",
-                      isSelected
-                        ? "bg-white/40 border-white/70 text-white"
-                        : "bg-white/10 border-white/10 text-neutral-300 hover:bg-white/10 hover:border-white/20",
-                    )}
-                  >
-                    <span>{role}</span>
-                    {isSelected && <Check className="size-4 text-white p-1 bg-blue-500 rounded-full" />}
-                  </button>
-                );
-              })
-            ) : (
-              <div className="flex h-28 items-center justify-center rounded-lg border border-dashed border-white/10 text-sm text-white/60">
-                No roles found for "{roleSearch}"
-              </div>
-            )}
+        <div className="border border-white/30! rounded-xl overflow-hidden">
+          <div className="relative">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-white" />
+            <Input
+              id="role-search"
+              placeholder="Search role..."
+              className="pl-9 bg-white/10! h-10 rounded-none border-b border-white/30!  text-white placeholder:text-neutral-300"
+              value={roleSearch}
+              onChange={(e) => setRoleSearch(e.target.value)}
+            />
           </div>
-        </ScrollArea>
+          <ScrollArea className="h-[140px] px-5 py-3 bg-white/5  scrollbar-hide">
+            <div className="space-y-2">
+              {filteredRoles.length > 0 ? (
+                filteredRoles.map((role, idx) => {
+                  const isSelected = role === selectedRole;
+
+                  return (
+                    <button
+                      key={`${role}-${idx}`}
+                      type="button"
+                      onClick={() => onRoleSelect(role)}
+                      className={cn(
+                        "w-full flex items-center justify-between rounded-lg border px-3 py-2.5 text-left text-xs tracking-wide font-medium capitalize transition-all",
+                        isSelected
+                          ? "bg-white/30 border-white/70 text-white"
+                          : "bg-white/5 border-white/30 text-neutral-300 hover:bg-white/10 hover:border-white/20",
+                      )}
+                    >
+                      <span>{role}</span>
+                      {isSelected && (
+                        <Check className="size-4 text-white p-1 bg-blue-500 rounded-full" />
+                      )}
+                    </button>
+                  );
+                })
+              ) : (
+                <div className="flex h-28 items-center justify-center rounded-lg border border-dashed border-white/10 text-sm text-white/60">
+                  No roles found for "{roleSearch}"
+                </div>
+              )}
+            </div>
+          </ScrollArea>
+        </div>
       </div>
     </div>
   );
