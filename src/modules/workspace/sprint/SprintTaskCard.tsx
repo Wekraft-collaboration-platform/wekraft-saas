@@ -5,14 +5,12 @@ import { motion } from "framer-motion";
 import { Doc } from "../../../../convex/_generated/dataModel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
-  MoreHorizontal,
   Flag,
   Hourglass,
   CheckCircle2,
   Calendar,
   ChevronDown,
-  Info,
-  ExternalLink
+  Info
 } from "lucide-react";
 import {
   Dialog,
@@ -88,14 +86,14 @@ export const SprintTaskCard = ({ task, variant = "standard" }: SprintTaskCardPro
               variant === "slim" ? "gap-2.5" : "gap-3.5"
             )}
           >
-            <div className="flex items-center gap-2.5 shrink-0">
+            <div className="flex items-center shrink-0">
               {/* Status Icon */}
-              <div className="w-4 h-4 flex items-center justify-center shrink-0">
+              <div className="w-3.5 h-full flex items-center justify-center shrink-0">
                 {isCompleted ? (
                   <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
                 ) : (
                   <div 
-                    className="w-2.5 h-2.5 rounded-full" 
+                    className="w-[3px] h-6 rounded-full" 
                     style={{ backgroundColor: typeColor }}
                   />
                 )}
@@ -158,14 +156,7 @@ export const SprintTaskCard = ({ task, variant = "standard" }: SprintTaskCardPro
                 </h2>
               </div>
               
-              <div className="flex gap-2">
-                <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl border-border/50 hover:bg-muted transition-colors">
-                  <ExternalLink className="w-4 h-4 text-muted-foreground" />
-                </Button>
-                <Button variant="outline" size="icon" className="h-9 w-9 rounded-xl border-border/50 hover:bg-muted transition-colors">
-                  <MoreHorizontal className="w-4 h-4 text-muted-foreground" />
-                </Button>
-              </div>
+
             </div>
 
             {/* Main Details Grid */}
@@ -201,7 +192,7 @@ export const SprintTaskCard = ({ task, variant = "standard" }: SprintTaskCardPro
                       <span className="text-[13px] font-bold text-foreground capitalize">
                         {priority}
                       </span>
-                      <div className="w-2 h-2 rounded-full" style={{ backgroundColor: typeColor }} />
+                      <div className="w-1 h-3 rounded-full" style={{ backgroundColor: typeColor }} />
                     </div>
                   </div>
 
