@@ -39,21 +39,18 @@ export const SprintBoard = ({ tasks, issues }: SprintBoardProps) => {
       id: "backlog", 
       title: "Backlog", 
       tasks: [...backlogTasks, ...backlogIssues],
-      variant: "standard" as const,
       color: "border-t-red-500"
     },
     { 
       id: "current", 
       title: "Current", 
       tasks: [...currentTasks, ...currentIssues],
-      variant: "standard" as const,
       color: "border-t-blue-500"
     },
     { 
       id: "complete", 
-      title: "Complete", 
+      title: "Completed", 
       tasks: [...completedTasks, ...completedIssues],
-      variant: "slim" as const,
       color: "border-t-green-500"
     },
   ];
@@ -104,7 +101,7 @@ export const SprintBoard = ({ tasks, issues }: SprintBoardProps) => {
             className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide"
           >
             {col.tasks.map((task) => (
-              <SprintTaskCard key={task._id} task={task} variant={col.variant} />
+              <SprintTaskCard key={task._id} task={task} />
             ))}
             
             {col.tasks.length === 0 && (

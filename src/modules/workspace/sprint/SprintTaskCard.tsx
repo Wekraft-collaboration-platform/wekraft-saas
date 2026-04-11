@@ -25,10 +25,9 @@ import { format } from "date-fns";
 
 interface SprintTaskCardProps {
   task: Doc<"tasks"> | Doc<"issues">;
-  variant?: "standard" | "slim";
 }
 
-export const SprintTaskCard = ({ task, variant = "standard" }: SprintTaskCardProps) => {
+export const SprintTaskCard = ({ task }: SprintTaskCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const isIssue = "severity" in task;
   
@@ -72,8 +71,7 @@ export const SprintTaskCard = ({ task, variant = "standard" }: SprintTaskCardPro
           onMouseEnter={() => setIsHovered(true)}
           onMouseLeave={() => setIsHovered(false)}
           className={cn(
-            "relative bg-card border transition-all duration-200 cursor-pointer overflow-hidden flex flex-col w-full",
-            variant === "slim" ? "h-9 rounded-md" : "h-11 rounded-xl",
+            "relative bg-card border transition-all duration-200 cursor-pointer overflow-hidden flex flex-col w-full h-11 rounded-xl",
             isHovered 
               ? "border-primary/40 shadow-md translate-y-[-1px]" 
               : "border-border shadow-sm hover:border-border/80"
@@ -81,10 +79,7 @@ export const SprintTaskCard = ({ task, variant = "standard" }: SprintTaskCardPro
         >
           {/* Compact View */}
           <div 
-            className={cn(
-              "flex items-center h-full px-3",
-              variant === "slim" ? "gap-2.5" : "gap-3.5"
-            )}
+            className="flex items-center h-full px-3 gap-3.5"
           >
             <div className="flex items-center shrink-0">
               {/* Status Icon */}
@@ -102,8 +97,7 @@ export const SprintTaskCard = ({ task, variant = "standard" }: SprintTaskCardPro
             
             {/* Title */}
             <span className={cn(
-              "font-medium transition-all flex-1 truncate",
-              variant === "slim" ? "text-xs" : "text-[13px]",
+              "font-medium transition-all flex-1 truncate text-[13px]",
               isCompleted ? "text-muted-foreground/40 line-through" : "text-foreground/90"
             )}>
               {task.title}

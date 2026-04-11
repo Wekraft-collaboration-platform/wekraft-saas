@@ -134,7 +134,7 @@ export const SprintAnalytics = ({ tasks }: SprintAnalyticsProps) => {
           />
           {/* Complete Pie */}
           <FocusPie 
-            title="Complete" 
+            title="Completed" 
             total={focusData.completed.total} 
             data={focusData.completed.data} 
           />
@@ -144,7 +144,7 @@ export const SprintAnalytics = ({ tasks }: SprintAnalyticsProps) => {
       {/* TEAM CADENCE */}
       <div className="bg-card/50 rounded-2xl p-6 border border-border/40 shadow-sm backdrop-blur-xs flex flex-col">
         <h2 className="text-xl font-semibold tracking-tight mb-8">
-          Team Inflection <span className="text-muted-foreground/60 font-normal ml-2 text-sm">(Complete)</span>
+          Team Inflection <span className="text-muted-foreground/60 font-normal ml-2 text-sm">(Completed)</span>
         </h2>
         <div className="h-[220px] w-full mt-auto">
           <ChartContainer config={chartConfig} className="h-full w-full">
