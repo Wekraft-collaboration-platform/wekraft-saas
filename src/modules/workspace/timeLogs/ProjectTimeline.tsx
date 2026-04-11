@@ -114,7 +114,7 @@ const DAY_COL_MIN_PX = 14;
 const TRACK_MIN_PX = 900;
 const WEEK_COL_MIN_PX = 92;
 
-// WEEKLY FUNCTION
+// -------------------WEEKLY FUNCTION---------------------------
 function TimelineWeekAxis({
   config,
   tasks,
@@ -138,13 +138,13 @@ function TimelineWeekAxis({
 
   const naturalWidth = weeks.length * WEEK_COL_MIN_PX;
   const trackWidth = Math.max(TRACK_MIN_PX, naturalWidth);
-  const columnWidth = trackWidth / Math.max(1, weeks.length);
+  const columnWidthPercentage = 100 / Math.max(1, weeks.length);
 
   return (
     <div className="w-full min-w-0 overflow-x-auto">
       <div
-        className="relative flex h-full min-h-[360px] max-h-[400px]  w-full min-w-[900px] max-w-[900px]"
-        style={{ width: trackWidth }}
+        className="relative flex h-full min-h-[460px] max-h-[500px] w-full"
+        style={{ width: `max(${trackWidth}px, 100%)` }}
         aria-label="Timeline weeks"
       >
         {weeks.map((weekStart, i) => {
@@ -171,7 +171,7 @@ function TimelineWeekAxis({
           return (
             <div
               key={weekStart.toISOString()}
-              style={{ width: columnWidth }}
+              style={{ width: `${columnWidthPercentage}%` }}
               className={cn(
                 "relative shrink-0 border-l border-border/40 first:border-l-0",
                 weekend && "bg-muted/10",
@@ -254,12 +254,14 @@ function TimelineWeekAxis({
             const durationDays = differenceInDays(displayEnd, displayStart) + 1;
             const actualDurationDays = differenceInDays(end, start) + 1;
 
-            const left = (startOffsetDays / 7) * columnWidth;
-            const width = (durationDays / 7) * columnWidth + 30;
+            const totalGridDays = weeks.length * 7;
+            const left = `${(startOffsetDays / totalGridDays) * 100}%`;
+            const width = `calc(${(durationDays / totalGridDays) * 100}% + 30px)`;
 
             // Width thresholds for UI
-            const isWide = width >= 180;
-            const isMed = width >= 80;
+            const baseWidth = (durationDays / totalGridDays) * trackWidth;
+            const isWide = baseWidth >= 180;
+            const isMed = baseWidth >= 80;
 
             const assignees = task.assignedTo ?? [];
 
@@ -354,7 +356,7 @@ function TimelineWeekAxis({
   );
 }
 
-// DAILY FUNCTION
+// -------------------DAILY FUNCTION--------------------------
 function TimelineDayAxis({
   config,
   tasks,
@@ -378,13 +380,13 @@ function TimelineDayAxis({
   const colMinWidth = dayInterval === 2 ? 22 : dayInterval === 3 ? 18 : 14;
   const naturalWidth = days.length * colMinWidth;
   const trackWidth = Math.max(TRACK_MIN_PX, naturalWidth);
-  const columnWidth = trackWidth / days.length;
+  const columnWidthPercentage = 100 / days.length;
 
   return (
     <div className="w-full min-w-0 overflow-x-auto dark:bg-card">
       <div
-        className="relative flex h-full min-h-[360px] max-h-[400px]  w-full min-w-[900px] max-w-[900px]"
-        style={{ width: trackWidth }}
+        className="relative flex h-full min-h-[460px] max-h-[500px] w-full"
+        style={{ width: `max(${trackWidth}px, 100%)` }}
         aria-label={`Timeline from ${format(days[0]!, "PPP")} to ${format(days[days.length - 1]!, "PPP")}, one column per day`}
       >
         {days.map((day, i) => {
@@ -403,7 +405,7 @@ function TimelineDayAxis({
           return (
             <div
               key={day.toISOString()}
-              style={{ width: columnWidth }}
+              style={{ width: `${columnWidthPercentage}%` }}
               className={cn(
                 "relative shrink-0 border-l border-border/40 first:border-l-0",
                 weekend && "bg-muted/10",
@@ -457,7 +459,7 @@ function TimelineDayAxis({
         })}
 
         {/* Task Slabs */}
-        <div className="absolute top-[70px] left-0 right-0 z-50 flex flex-col gap-2.5 p-2 px-1 pointer-events-none">
+        <div className="absolute top-[75px] left-1 right-0 z-50 flex flex-col gap-2.5 p-2 px-1 pointer-events-none">
           {tasks?.map((task) => {
             const start = startOfDay(new Date(task.estimation.startDate));
             const end = startOfDay(new Date(task.estimation.endDate));
@@ -478,12 +480,13 @@ function TimelineDayAxis({
             );
             const actualDurationDays = differenceInDays(end, start) + 1;
 
-            const left = startOffsetDays * columnWidth;
-            const width = Math.max(durationDays * columnWidth, 90);
+            const left = `${(startOffsetDays / days.length) * 100}%`;
+            const width = `max(${(durationDays / days.length) * 100}%, 90px)`;
 
             // Width thresholds
-            const isWide = width >= 180; // show icon + avatars + title + duration
-            const isMed = width >= 90; // show title + duration only
+            const baseWidth = (durationDays / days.length) * trackWidth;
+            const isWide = baseWidth >= 180; // show icon + avatars + title + duration
+            const isMed = baseWidth >= 90; // show title + duration only
 
             const assignees = task.assignedTo ?? [];
 
@@ -649,6 +652,7 @@ export const ProjectTimeline = ({
     return taskStatus === currentFilter;
   });
 
+  // MAIN TIMELINE COMPONENT
   return (
     <div className="w-full bg-sidebar border rounded-lg overflow-hidden shadow-sm ">
       {config.availableViews.length > 0 && (
@@ -663,7 +667,6 @@ export const ProjectTimeline = ({
             </span>
           </div>
           {/* EXTRA SETTINGS */}
-
           <div className="flex items-center gap-4">
             {/* Red — hard overdue (end date already passed) */}
             <div className="flex items-center gap-2">
@@ -815,7 +818,7 @@ export const ProjectTimeline = ({
         </div>
       )}
 
-      <div className=" p-4">
+      <div className="p-4">
         {activeView === "day" ? (
           <TimelineDayAxis
             config={config}
@@ -834,6 +837,24 @@ export const ProjectTimeline = ({
             {activeView} view — coming soon
           </div>
         )}
+      </div>
+
+      {/* FOOTER - BOUNDARY INFO */}
+      <div className="flex items-center justify-between px-5 py-3 border-t bg-muted/10 text-[11px] font-medium text-muted-foreground/80">
+        <div className="flex items-center gap-2">
+          <Calendar className="w-3.5 h-3.5 text-muted-foreground -mt-0.5" />
+          <span className="font-medium tracking-wider">Project Start:</span>
+          <span className="text-foreground">
+            {format(config.startDate, "MMM d, yyyy")}
+          </span>
+        </div>
+        <div className="flex items-center gap-2">
+          <div className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_8px_rgba(239,68,68,0.4)]" />
+          <span className="font-medium tracking-wider">Deadline:</span>
+          <span className="text-foreground">
+            {format(config.deadlineDate, "MMM d, yyyy")}
+          </span>
+        </div>
       </div>
     </div>
   );

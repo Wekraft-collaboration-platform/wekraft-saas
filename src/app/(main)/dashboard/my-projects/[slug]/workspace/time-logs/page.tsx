@@ -61,12 +61,15 @@ const TimeLogsPage = () => {
       <div className="my-6">
         {projectDetails?.targetDate ? (
           <div className="h-full">
-            <div className="h-[180px] ">
-              <p>saved to displaydeadline charts later...</p>
-              <p>
-                Timelogs tracker below will only diaplay tasks that are going to
-                hit deadline or already late.
-              </p>
+            <div className="h-[200px] grid grid-cols-3 mb-8">
+              <div className="border"></div>
+              <div className="border">
+                <p>
+                  Timelogs tracker below will only diaplay tasks that are going
+                  to hit deadline or already late.
+                </p>
+              </div>
+              <div className="border"></div>
             </div>
 
             <ProjectTimeline
