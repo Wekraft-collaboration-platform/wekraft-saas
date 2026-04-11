@@ -71,8 +71,7 @@ export const SprintBoard = ({ tasks, issues }: SprintBoardProps) => {
     <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 items-start h-full min-h-[600px] overflow-hidden">
       {columns.map((col) => (
         <div key={col.id} className={cn(
-          "flex flex-col h-full min-w-0 bg-muted/20 rounded-xl border border-border/50 overflow-hidden shadow-2xs border-t-2",
-          col.color
+          "flex flex-col h-full min-w-0 bg-muted/20 rounded-xl border border-border/50 overflow-hidden shadow-2xs",
         )}>
           {/* Column Header */}
           <div className="flex items-center gap-3 p-3 border-b bg-background/50 backdrop-blur-sm sticky top-0 z-10">
