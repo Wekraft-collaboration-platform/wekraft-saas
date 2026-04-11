@@ -1,0 +1,69 @@
+# Sprint Management Page Implementation Plan
+
+This plan outlines the creation of a modern, highly polished **Sprint Management** page for the Wekraft platform, mirroring the provided UI inspiration while maintaining the platform's established aesthetic.
+
+## User Review Required
+
+> [!IMPORTANT]
+> The Sprint page will be added to the Project Workspace under the `/workspace/sprint` route.
+> We will use **Recharts** for the analytics section (Team Focus and Team Cadence).
+> The task cards will be custom-built to match the requested UI, including the specialized layout for "Complete" tasks.
+
+## Proposed Changes
+
+### 1. Analytics & Overview (Team Focus & Team Cadence)
+
+#### [NEW] [SprintAnalytics.tsx](file:///e:/wekraft-saas/src/modules/workspace/sprint/SprintAnalytics.tsx)
+- Implementation of the "Team Focus" section with three Pie Charts:
+  - **Backlog**: Distribution of tasks not yet started.
+  - **Current**: Distribution of tasks in progress, review, or testing.
+  - **Complete**: Distribution of completed tasks.
+- Implementation of the "Team Cadence" section:
+  - A stacked bar chart showing task completion/activity over the last 7 days.
+- Use of the platform's OKLCH color variables for chart segments.
+
+### 2. Sprint Board (Task Columns)
+
+#### [NEW] [SprintBoard.tsx](file:///e:/wekraft-saas/src/modules/workspace/sprint/SprintBoard.tsx)
+- A 3-column layout: **Backlog**, **Current**, and **Complete**.
+- Each column will have:
+  - A header with "Priority" dropdown and sort options.
+  - A list of task cards with staggered entry animations.
+
+#### [NEW] [SprintTaskCard.tsx](file:///e:/wekraft-saas/src/modules/workspace/sprint/SprintTaskCard.tsx)
+- **Standard Card** (for Backlog & Current):
+  - User avatar and status text (e.g., "Graham B. has yet to start").
+  - Content block with custom background color (light green for users, light red for issues).
+  - Visible task ID and metadata icons (members, comments).
+- **Slim Card** (for Complete):
+  - List-item style with avatar, description snippet, and checkmark status.
+- Integration of **Emil's Design Engineering** principles:
+  - `scale(0.97)` on press.
+  - Smooth transitions using custom cubic-bezier curves.
+  - Hover effects with hardware acceleration.
+
+### 3. Page Assembly
+
+#### [NEW] [page.tsx](file:///e:/wekraft-saas/src/app/(main)/dashboard/my-projects/[slug]/workspace/sprint/page.tsx)
+- The main entry point for the Sprint page.
+- Fetches project tasks and issues using Convex queries (`api.workspace.getTasks`, `api.issue.getIssues`).
+- Orchesrates the `SprintAnalytics` and `SprintBoard` components.
+
+### 4. Sidebar Link
+
+#### [MODIFY] [Projectsidebar.tsx](file:///e:/wekraft-saas/src/modules/workspace/Projectsidebar.tsx)
+- Ensure the Sprint link is active and points to the correct route. (Already exists, but needs verification of the `isActive` logic).
+
+---
+
+## Verification Plan
+
+### Automated Tests
+- N/A (Manual visual verification is primary for UI polish).
+
+### Manual Verification
+1.  **Layout**: Compare the final page layout with the provided image.
+2.  **Data Integration**: verify that actual tasks from the database appear in the columns.
+3.  **Responsiveness**: Test the page on different screen sizes to ensure the columns stack or scroll correctly.
+4.  **Polish**: Verify animations (staggered entry, scale-on-press) feel snappy and "premium".
+5.  **Dark Mode**: Ensure the UI looks great in both light and dark themes using the platform's color system.
