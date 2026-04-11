@@ -34,7 +34,7 @@ export const SprintDetailSheet = ({
   isOpen,
   onClose,
 }: SprintDetailSheetProps) => {
-  const isIssue = item && "severity" in item;
+  const isIssue = !!(item && "severity" in item);
 
   const creator = useQuery(
     api.user.getUserById,
@@ -62,9 +62,9 @@ export const SprintDetailSheet = ({
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="sm:max-w-md w-full p-0 border-l border-border bg-card text-card-foreground flex flex-col shadow-2xl transition-all duration-300">
+      <SheetContent className="sm:max-w-md w-full h-full p-0 border-l border-border bg-card text-card-foreground flex flex-col shadow-2xl transition-all duration-300">
         {/* Wekraft Platform Header */}
-        <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 bg-background/50 backdrop-blur-md sticky top-0 z-10">
+        <div className="flex items-center justify-between px-6 py-4 border-b border-border/50 bg-background/50 backdrop-blur-md sticky top-0 z-20">
           <div className="flex items-center gap-3">
              <div className={cn(
                "p-2 rounded-lg",
@@ -88,8 +88,8 @@ export const SprintDetailSheet = ({
           </div>
         </div>
 
-        <ScrollArea className="flex-1">
-          <div className="px-6 py-8 space-y-8">
+        <ScrollArea className="flex-1 w-full h-full">
+          <div className="px-6 py-8 space-y-8 pb-20">
             {/* Title & Status */}
             <div className="space-y-4">
               <h1 className="text-xl font-bold tracking-tight text-foreground/90 leading-tight outline-none">
@@ -114,15 +114,22 @@ export const SprintDetailSheet = ({
                 <h3 className="text-[10px] font-bold uppercase tracking-wider">Description</h3>
               </div>
               <div className={cn(
-                "rounded-xl border border-border/40 group hover:border-border/80 transition-all",
-                item.description ? "p-4 bg-muted/5" : "p-3 bg-muted/20"
+                "rounded-xl border border-border/40 group hover:border-border/80 transition-all overflow-hidden",
+                item.description ? "bg-muted/5" : "bg-muted/20"
               )}>
-                <p className={cn(
-                  "text-[13px] leading-relaxed whitespace-pre-wrap",
-                  item.description ? "text-foreground/80" : "text-muted-foreground/40 italic"
+                <ScrollArea className={cn(
+                   "w-full",
+                   item.description ? "max-h-[250px]" : "h-auto"
                 )}>
-                  {item.description || "No description provided."}
-                </p>
+                  <div className="p-4">
+                    <p className={cn(
+                      "text-[13px] leading-relaxed whitespace-pre-wrap",
+                      item.description ? "text-foreground/80" : "text-muted-foreground/40 italic"
+                    )}>
+                      {item.description || "No description provided."}
+                    </p>
+                  </div>
+                </ScrollArea>
               </div>
             </div>
 
@@ -151,7 +158,7 @@ export const SprintDetailSheet = ({
                 <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/60">Reporter</span>
                 <div className="flex items-center gap-2">
                    <Avatar className="h-6 w-6 shadow-sm">
-                      <AvatarImage src={creator?.avatarUrl} />
+                      <AvatarImage src={creator?.avatarUrl || undefined} />
                       <AvatarFallback className="text-[8px] bg-muted">{creator?.name?.[0] || "?"}</AvatarFallback>
                    </Avatar>
                    <span className="text-[12px] font-medium text-foreground/80">{creator?.name || "..."}</span>
