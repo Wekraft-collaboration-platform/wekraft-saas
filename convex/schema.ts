@@ -167,6 +167,7 @@ export default defineSchema({
     linkWithCodebase: v.optional(v.string()),
     projectId: v.id("projects"),
     createdByUserId: v.id("users"),
+    sprintId: v.optional(v.id("sprints")),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
@@ -174,6 +175,7 @@ export default defineSchema({
     .index("by_creator", ["createdByUserId"])
     .index("by_status", ["status"])
     .index("by_priority", ["priority"])
+    .index("by_sprint", ["sprintId"])
     .index("by_project_status", ["projectId", "status"]),
     
     // --------------------------------------------------
@@ -214,6 +216,7 @@ export default defineSchema({
       taskId: v.optional(v.id("tasks")), // if its from task.
       projectId: v.id("projects"),
       createdByUserId: v.id("users"),
+      sprintId: v.optional(v.id("sprints")),
       IssueAssignee: v.optional(
         v.array(
           v.object({
@@ -230,6 +233,7 @@ export default defineSchema({
     .index("by_project", ["projectId"])
     .index("by_creator", ["createdByUserId"])
     .index("by_task", ["taskId"])
+    .index("by_sprint", ["sprintId"])
     .index("by_status", ["status"])
     .index("by_severity", ["severity"])
     .index("by_environment", ["environment"]),
@@ -247,7 +251,36 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_issue_user", ["issueId", "userId"]),
 
-    // -----------------------------------------------------
+  // -----------------------------------------------------
+  sprints: defineTable({
+    name: v.string(),
+    description: v.optional(v.string()),
+    status: v.union(v.literal("active"), v.literal("completed"), v.literal("planned")),
+    projectId: v.id("projects"),
+    createdByUserId: v.optional(v.id("users")),
+    startDate: v.number(),
+    endDate: v.number(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_project", ["projectId"])
+    .index("by_status", ["status"])
+    .index("by_creator", ["createdByUserId"]),
+
+  sprintComments: defineTable({
+    sprintId: v.id("sprints"),
+    userId: v.id("users"),
+    userName: v.string(),
+    userImage: v.optional(v.string()),
+    comment: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_sprint", ["sprintId"])
+    .index("by_user", ["userId"])
+    .index("by_sprint_user", ["sprintId", "userId"]),
+
+  // -----------------------------------------------------
     projectDetails: defineTable({
       projectId: v.id("projects"),
       repoId: v.optional(v.id("repositories")), // optional if project has connected repo.

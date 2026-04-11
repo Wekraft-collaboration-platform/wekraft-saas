@@ -25,12 +25,12 @@ export const SprintComments = ({ itemId, isIssue }: SprintCommentsProps) => {
   const [commentText, setCommentText] = useState("");
 
   const comments = useQuery(
-    isIssue ? api.issue.getIssueComments : api.workspace.getComments,
+    isIssue ? api.comment.getIssueComments : api.comment.getTaskComments,
     isIssue ? { issueId: itemId as Id<"issues"> } : { taskId: itemId as Id<"tasks"> }
   );
 
-  const addTaskComment = useMutation(api.workspace.createComment);
-  const addIssueComment = useMutation(api.issue.createIssueComment);
+  const addTaskComment = useMutation(api.comment.createTaskComment);
+  const addIssueComment = useMutation(api.comment.createIssueComment);
 
   const handleSendComment = async () => {
     if (!commentText.trim()) return;

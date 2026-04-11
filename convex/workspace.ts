@@ -88,49 +88,6 @@ export const getTimelineTasks = query({
   },
 });
 
-// --------------------------------------------
-export const createComment = mutation({
-  args: {
-    taskId: v.id("tasks"),
-    comment: v.string(),
-  },
-  handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
-
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_token", (q) => q.eq("clerkToken", identity.tokenIdentifier))
-      .unique();
-
-    if (!user) throw new Error("User not found");
-
-    const commentId = await ctx.db.insert("taskComments", {
-      taskId: args.taskId,
-      userId: user._id,
-      userName: user.name || "Anonymous",
-      userImage: user.avatarUrl,
-      comment: args.comment,
-      createdAt: Date.now(),
-      updatedAt: Date.now(),
-    });
-
-    return commentId;
-  },
-});
-
-export const getComments = query({
-  args: {
-    taskId: v.id("tasks"),
-  },
-  handler: async (ctx, args) => {
-    return await ctx.db
-      .query("taskComments")
-      .withIndex("by_task", (q) => q.eq("taskId", args.taskId))
-      .order("desc")
-      .collect();
-  },
-});
 
 
 export const updateTaskStatus = mutation({

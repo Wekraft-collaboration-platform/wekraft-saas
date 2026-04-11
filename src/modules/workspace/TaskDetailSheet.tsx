@@ -65,10 +65,10 @@ export const TaskDetailSheet = ({
   const currentTask = task || cachedTask;
 
   const comments = useQuery(
-    api.workspace.getComments,
+    api.comment.getTaskComments,
     currentTask ? { taskId: currentTask._id } : "skip",
   );
-  const createComment = useMutation(api.workspace.createComment);
+  const createComment = useMutation(api.comment.createTaskComment);
 
   const creator = useQuery(
     api.user.getUserById,
@@ -81,10 +81,10 @@ export const TaskDetailSheet = ({
     priorityConfig[currentTask.priority || "none"] || priorityConfig.none;
 
   const handleSendComment = async () => {
-    if (!commentText.trim()) return;
+    if (!commentText.trim() || !currentTask) return;
     try {
       await createComment({
-        taskId: task._id,
+        taskId: currentTask._id,
         comment: commentText.trim(),
       });
       setCommentText("");
