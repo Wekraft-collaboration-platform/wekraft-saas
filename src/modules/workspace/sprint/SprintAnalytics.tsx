@@ -60,13 +60,14 @@ export const SprintAnalytics = ({ tasks }: SprintAnalyticsProps) => {
     const getPriorityDistribution = (taskList: Doc<"tasks">[]) => {
       const total = taskList.length;
       if (total === 0) {
-        return [{ name: "No Data", value: 1, fill: "var(--muted-foreground)", opacity: 0.1 }];
+        return [{ name: "No Data", value: 1, fill: "#334155", opacity: 0.4, stroke: "rgba(255,255,255,0.05)" }];
       }
 
       return [
         { name: "High", value: taskList.filter((t) => t.priority === "high").length, fill: "#ef4444" },   // Red
         { name: "Medium", value: taskList.filter((t) => t.priority === "medium").length, fill: "#22c55e" }, // Green
         { name: "Low", value: taskList.filter((t) => t.priority === "low").length, fill: "#eab308" },    // Yellow
+        { name: "None", value: taskList.filter((t) => !t.priority).length, fill: "#64748b" },    // Slate
       ].filter(segment => segment.value > 0);
     };
 
@@ -112,6 +113,10 @@ export const SprintAnalytics = ({ tasks }: SprintAnalyticsProps) => {
                 <div className="w-2 h-2 rounded-full bg-[#eab308]" />
                 <span className="text-[10px] text-muted-foreground font-medium uppercase">Low</span>
              </div>
+             <div className="flex items-center gap-1.5">
+                <div className="w-2 h-2 rounded-full bg-[#64748b]" />
+                <span className="text-[10px] text-muted-foreground font-medium uppercase">None</span>
+             </div>
           </div>
         </div>
         <div className="flex justify-around items-end gap-4 h-[220px] mt-auto">
@@ -139,7 +144,7 @@ export const SprintAnalytics = ({ tasks }: SprintAnalyticsProps) => {
       {/* TEAM CADENCE */}
       <div className="bg-card/50 rounded-2xl p-6 border border-border/40 shadow-sm backdrop-blur-xs flex flex-col">
         <h2 className="text-xl font-semibold tracking-tight mb-8">
-          Team Cadence <span className="text-muted-foreground/60 font-normal ml-2 text-sm">(Complete)</span>
+          Team Inflection <span className="text-muted-foreground/60 font-normal ml-2 text-sm">(Complete)</span>
         </h2>
         <div className="h-[220px] w-full mt-auto">
           <ChartContainer config={chartConfig} className="h-full w-full">
@@ -194,7 +199,7 @@ const FocusPie = ({ title, total, data }: { title: string; total: number; data: 
               data={data}
               innerRadius={35}
               outerRadius={55}
-              paddingAngle={2}
+              paddingAngle={data[0]?.name === "No Data" ? 0 : 2}
               dataKey="value"
               stroke="none"
               animationDuration={1000}
@@ -205,6 +210,8 @@ const FocusPie = ({ title, total, data }: { title: string; total: number; data: 
                   key={`cell-${index}`} 
                   fill={entry.fill} 
                   fillOpacity={entry.opacity ?? 1} 
+                  stroke={entry.stroke ?? "none"}
+                  strokeWidth={1}
                 />
               ))}
             </Pie>
