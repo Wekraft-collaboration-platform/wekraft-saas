@@ -4,7 +4,9 @@ import { useState } from "react";
 import { Doc } from "../../../../convex/_generated/dataModel";
 import { 
   CheckCircle2,
-  Calendar
+  Calendar,
+  Bug,
+  ClipboardList
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -25,8 +27,8 @@ export const SprintTaskCard = ({ task, onClick }: SprintTaskCardProps) => {
   const priorityColors: Record<string, string> = {
     critical: "#e74c3c", // Red
     high: "#e74c3c",     // Red
-    medium: "#27ae60",   // Green
-    low: "#f1c40f",      // Yellow/Amber
+    medium: "#f1c40f",   // Yellow/Amber
+    low: "#27ae60",      // Green
     normal: "#95a5a6",   // Gray
     none: "#95a5a6",     // Gray
   };
@@ -57,38 +59,45 @@ export const SprintTaskCard = ({ task, onClick }: SprintTaskCardProps) => {
     >
       {/* Compact View */}
       <div 
-        className="flex items-center h-full px-3 gap-3.5"
+        className="flex items-center h-full px-3 gap-3"
       >
         <div className="flex items-center shrink-0">
-          {/* Status Icon */}
-          <div className="w-3.5 h-full flex items-center justify-center shrink-0">
-            {isCompleted ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-            ) : (
-              <div 
-                className="w-[3px] h-6 rounded-full" 
-                style={{ backgroundColor: typeColor }}
-              />
-            )}
+          {/* Status/Priority Indicator */}
+          <div className="flex items-center gap-2">
+            <div 
+              className="w-[3px] h-6 rounded-full shrink-0" 
+              style={{ backgroundColor: typeColor }}
+            />
+            <div className={cn(
+               "p-1 rounded-md",
+               isIssue ? "bg-red-500/10 text-red-500" : "bg-blue-500/10 text-blue-500"
+            )}>
+               {isIssue ? <Bug size={14} /> : <ClipboardList size={14} />}
+            </div>
           </div>
         </div>
         
         {/* Title */}
         <span className={cn(
-          "font-medium transition-all flex-1 truncate text-[13px]",
-          isCompleted ? "text-muted-foreground/40 line-through" : "text-foreground/90"
+          "font-medium transition-all flex-1 truncate text-[12px]",
+          isCompleted ? "text-muted-foreground/40 line-through" : "text-foreground/90",
+          isIssue && !isCompleted ? "font-bold tracking-tight" : ""
         )}>
           {task.title}
         </span>
         
         {/* Timeline View */}
         <div className={cn(
-          "flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0",
+          "flex items-center gap-1.5 px-2 py-0.5 rounded-md text-[9px] font-bold uppercase tracking-wider shrink-0",
           "bg-muted/50 text-muted-foreground/60"
         )}>
-          <Calendar className="w-3 h-3 opacity-60" />
+          <Calendar className="w-2.5 h-2.5 opacity-60" />
           {timelineLabel}
         </div>
+
+        {isCompleted && (
+           <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 shrink-0" />
+        )}
       </div>
     </div>
   );
