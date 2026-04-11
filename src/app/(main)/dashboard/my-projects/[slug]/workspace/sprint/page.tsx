@@ -5,9 +5,8 @@ import { useQuery } from "convex/react";
 import { api } from "../../../../../../../../convex/_generated/api";
 import { Id } from "../../../../../../../../convex/_generated/dataModel";
 import { PageTransition } from "@/components/PageTransition";
-import { SprintAnalytics } from "@/modules/workspace/sprint/SprintAnalytics";
 import { SprintBoard } from "@/modules/workspace/sprint/SprintBoard";
-import { FastForward, Users, Search, Filter } from "lucide-react";
+import { FastForward, Search, Filter } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -60,11 +59,6 @@ const SprintPage = () => {
 
         </div>
       </header>
-
-      {/* Analytics Section */}
-      <div className="min-h-0">
-         <SprintAnalytics tasks={tasks || []} />
-      </div>
 
       {/* Board Section */}
       <section className="flex-1 min-h-0">

@@ -197,3 +197,52 @@ export const updateIssue = mutation({
     return issueId;
   },
 });
+
+// =============================
+// 5. CREATE ISSUE COMMENT
+// =============================
+export const createIssueComment = mutation({
+  args: {
+    issueId: v.id("issues"),
+    comment: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthenticated");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("clerkToken", identity.tokenIdentifier))
+      .unique();
+
+    if (!user) throw new Error("User not found");
+
+    const commentId = await ctx.db.insert("issueComments", {
+      issueId: args.issueId,
+      userId: user._id,
+      userName: user.name || "Anonymous",
+      userImage: user.avatarUrl,
+      comment: args.comment,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+
+    return commentId;
+  },
+});
+
+// =============================
+// 6. GET ISSUE COMMENTS
+// =============================
+export const getIssueComments = query({
+  args: {
+    issueId: v.id("issues"),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("issueComments")
+      .withIndex("by_issue", (q) => q.eq("issueId", args.issueId))
+      .order("desc")
+      .collect();
+  },
+});

@@ -3,6 +3,8 @@
 import { motion } from "framer-motion";
 import { Doc } from "../../../../convex/_generated/dataModel";
 import { SprintTaskCard } from "./SprintTaskCard";
+import { SprintDetailSheet } from "./SprintDetailSheet";
+import { useState } from "react";
 import { 
   ArrowUpDown, 
   ChevronDown, 
@@ -25,6 +27,8 @@ interface SprintBoardProps {
 }
 
 export const SprintBoard = ({ tasks, issues }: SprintBoardProps) => {
+  const [selectedItem, setSelectedItem] = useState<Doc<"tasks"> | Doc<"issues"> | null>(null);
+
   // Group tasks
   const backlogTasks = tasks.filter((t) => t.status === "not started");
   const currentTasks = tasks.filter((t) => ["inprogress", "reviewing", "testing"].includes(t.status));
@@ -101,7 +105,11 @@ export const SprintBoard = ({ tasks, issues }: SprintBoardProps) => {
             className="flex-1 overflow-y-auto p-4 space-y-3 scrollbar-hide"
           >
             {col.tasks.map((task) => (
-              <SprintTaskCard key={task._id} task={task} />
+              <SprintTaskCard 
+                key={task._id} 
+                task={task} 
+                onClick={() => setSelectedItem(task)}
+              />
             ))}
             
             {col.tasks.length === 0 && (
@@ -113,6 +121,12 @@ export const SprintBoard = ({ tasks, issues }: SprintBoardProps) => {
           </motion.div>
         </div>
       ))}
+
+      <SprintDetailSheet 
+        item={selectedItem}
+        isOpen={!!selectedItem}
+        onClose={() => setSelectedItem(null)}
+      />
     </div>
   );
 };
