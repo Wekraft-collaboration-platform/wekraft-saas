@@ -65,6 +65,14 @@ export const SprintTaskCard = ({ task, variant = "standard" }: SprintTaskCardPro
   const creationDate = format(new Date(task.createdAt), "MMM d, yyyy");
   const dueDate = estimation ? format(new Date(estimation.endDate), "MMM d") : null;
 
+  const timelineLabel = isIssue 
+    ? (task as Doc<"issues">).due_date 
+      ? `${format(new Date(task.createdAt), "MMM d")} - ${format(new Date((task as Doc<"issues">).due_date!), "MMM d")}`
+      : format(new Date(task.createdAt), "MMM d")
+    : (task as Doc<"tasks">).estimation
+      ? `${format(new Date((task as Doc<"tasks">).estimation.startDate), "MMM d")} - ${format(new Date((task as Doc<"tasks">).estimation.endDate), "MMM d")}`
+      : format(new Date(task.createdAt), "MMM d");
+
   return (
     <LayoutGroup>
       <motion.div
@@ -76,8 +84,8 @@ export const SprintTaskCard = ({ task, variant = "standard" }: SprintTaskCardPro
           isHovered 
             ? "rounded-2xl p-6 shadow-xl z-20" 
             : cn(
-                "shadow-sm hover:border-border/80",
-                variant === "slim" ? "rounded-md p-2" : "rounded-xl p-3"
+                "shadow-sm hover:border-border/80 h-10 px-3 flex flex-col justify-center",
+                variant === "slim" ? "rounded-md" : "rounded-xl"
               )
         )}
         style={{
@@ -95,15 +103,20 @@ export const SprintTaskCard = ({ task, variant = "standard" }: SprintTaskCardPro
               variant === "slim" ? "gap-3" : "gap-4"
             )}
           >
-            {/* Priority Vertical Bar / Checkmark */}
-            {isCompleted ? (
-              <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
-            ) : (
+            <div className="flex items-center gap-3 h-full shrink-0">
+              {/* Priority Vertical Bar */}
               <div 
-                className="w-1.5 h-full rounded-full shrink-0" 
+                className="w-1 rounded-full shrink-0 self-stretch" 
                 style={{ backgroundColor: typeColor }}
               />
-            )}
+
+              {/* Status Icon Spot - Constant width to maintain title alignment */}
+              <div className="w-4 flex items-center justify-center shrink-0">
+                {isCompleted && (
+                  <CheckCircle2 className="w-4 h-4 text-emerald-500 shrink-0" />
+                )}
+              </div>
+            </div>
             
             {/* Title */}
             <span className={cn(
@@ -114,12 +127,13 @@ export const SprintTaskCard = ({ task, variant = "standard" }: SprintTaskCardPro
               {task.title}
             </span>
             
-            {/* Priority Badge */}
+            {/* Timeline View instead of Priority Badge */}
             <div className={cn(
-              "px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider shrink-0",
-              isCompleted ? "bg-emerald-500/10 text-emerald-600/70" : "bg-muted/80 text-muted-foreground"
+              "flex items-center gap-1.5 px-2 py-1 rounded-md text-[10px] font-bold uppercase tracking-wider shrink-0",
+              "bg-muted/50 text-muted-foreground/70"
             )}>
-              {priority}
+              <Calendar className="w-3 h-3 opacity-60" />
+              {timelineLabel}
             </div>
           </motion.div>
         )}
