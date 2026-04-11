@@ -141,6 +141,14 @@ export const statusIcons: Record<string, React.ReactNode> = {
   completed: <CircleCheckBig className="w-3.5 h-3.5 text-green-500" />,
 };
 
+export const KANBAN_COLUMN_ICONS: Record<string, React.ReactNode> = {
+  "not started": <Ellipsis className="w-4 h-4 text-white" />,
+  inprogress: <Loader className="w-4 h-4 text-white" />,
+  reviewing: <ScanSearch className="w-4 h-4 text-white" />,
+  testing: <BugPlay className="w-4 h-4 text-white" />,
+  completed: <CircleCheckBig className="w-4 h-4 text-white" />,
+};
+
 export const statusColors: Record<string, string> = {
   "not started": "bg-slate-500/10 text-slate-500 border-slate-500/20",
   inprogress: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",

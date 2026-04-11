@@ -117,7 +117,10 @@ export const TableTab = ({ tasks }: TableTabProps) => {
 
   return (
     <div className="relative border-none flex flex-col">
-      <div className="overflow-auto custom-scrollbar flex-1">
+      <div
+        className="overflow-auto custom-scrollbar flex-1"
+        style={{ minHeight: "calc(100vh - 320px)" }}
+      >
         <Table>
           <TableHeader className="bg-neutral-900  z-10 ">
             <TableRow className="hover:bg-transparent border-none">
