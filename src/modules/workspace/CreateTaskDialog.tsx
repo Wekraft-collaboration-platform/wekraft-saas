@@ -54,6 +54,7 @@ interface CreateTaskDialogProps {
   projectId: Id<"projects">; // From Convex
   repoFullName?: string; // owner/repo
   trigger: React.ReactNode;
+  defaultSprintId?: Id<"sprints">;
 }
 
 export const CreateTaskDialog = ({
@@ -61,6 +62,7 @@ export const CreateTaskDialog = ({
   projectId,
   repoFullName,
   trigger,
+  defaultSprintId,
 }: CreateTaskDialogProps) => {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
@@ -106,6 +108,7 @@ export const CreateTaskDialog = ({
         type: tag ? tag : undefined,
         projectId,
         linkWithCodebase: selectedPath || undefined,
+        sprintId: defaultSprintId,
       });
       toast.success("Task created successfully");
       setOpen(false);

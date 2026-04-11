@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useParams } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "../../../../../../../../convex/_generated/api";
@@ -7,18 +8,26 @@ import { Id } from "../../../../../../../../convex/_generated/dataModel";
 import { PageTransition } from "@/components/PageTransition";
 import { SprintAnalytics } from "@/modules/workspace/sprint/SprintAnalytics";
 import { SprintBoard } from "@/modules/workspace/sprint/SprintBoard";
-import { FastForward, Users, Search, Filter } from "lucide-react";
+import { SprintBacklog } from "@/modules/workspace/sprint/SprintBacklog";
+import { FastForward, Search, Filter, LayoutGrid, ListTodo } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 
 const SprintPage = () => {
   const params = useParams();
   const slug = params.slug as string;
+  const [activeTab, setActiveTab] = useState("board");
 
   const project = useQuery(api.project.getProjectBySlug, { slug });
   
+  const sprints = useQuery(
+    api.sprints.listSprints,
+    project?._id ? { projectId: project._id as Id<"projects"> } : "skip"
+  );
+
   const tasks = useQuery(
     api.workspace.getTimelineTasks,
     project?._id ? { projectId: project._id as Id<"projects"> } : "skip"
@@ -29,9 +38,20 @@ const SprintPage = () => {
     project?._id ? { projectId: project._id as Id<"projects"> } : "skip"
   );
 
-  if (!project) {
+  if (!project || !sprints || !tasks || !issues) {
     return <SprintLoadingSkeleton />;
   }
+
+  const activeSprint = sprints.find(s => s.status === "active") || null;
+  const plannedSprints = sprints.filter(s => s.status === "planned");
+  
+  // Filter tasks for the active board
+  const boardTasks = tasks.filter(t => t.sprintId === activeSprint?._id);
+  const boardIssues = issues.filter(i => i.sprintId === activeSprint?._id);
+
+  // Filter tasks for the backlog
+  const backlogTasks = tasks.filter(t => !t.sprintId);
+  const backlogIssues = issues.filter(i => !i.sprintId);
 
   return (
     <PageTransition className="w-full h-full p-6 2xl:p-8 space-y-8 bg-background/50">
@@ -49,27 +69,60 @@ const SprintPage = () => {
               <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground group-focus-within:text-primary transition-colors" />
               <Input 
                  placeholder="Search sprint..." 
-                 className="pl-9 w-[240px] h-10 bg-muted/20 border-none transition-all focus:bg-background focus:ring-1 focus:ring-primary shadow-2xs"
+                 className="pl-9 w-[240px] h-10 bg-muted/20 border-none transition-all focus:bg-background focus:ring-1 focus:ring-primary shadow-2xs text-xs"
               />
            </div>
            
-           <Button variant="outline" size="icon" className="h-10 w-10 shrink-0">
+           <Button variant="outline" size="icon" className="h-10 w-10 shrink-0 border-border/40">
               <Filter className="w-4 h-4" />
            </Button>
-
-
         </div>
       </header>
 
-      {/* Analytics Section */}
-      <div className="min-h-0">
-         <SprintAnalytics tasks={tasks || []} />
-      </div>
+      <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full space-y-8">
+        <div className="flex items-center justify-between border-b border-border/40 pb-1">
+           <TabsList className="bg-transparent h-auto p-0 gap-8 rounded-none">
+              <TabsTrigger 
+                value="board" 
+                className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-1 pb-4 pt-0 transition-all font-bold gap-2 text-muted-foreground"
+              >
+                <LayoutGrid className="w-4 h-4" />
+                Active Sprint
+              </TabsTrigger>
+              <TabsTrigger 
+                 value="backlog" 
+                 className="data-[state=active]:bg-transparent data-[state=active]:shadow-none data-[state=active]:text-primary data-[state=active]:border-b-2 data-[state=active]:border-primary rounded-none px-1 pb-4 pt-0 transition-all font-bold gap-2 text-muted-foreground"
+              >
+                <ListTodo className="w-4 h-4" />
+                Backlog
+              </TabsTrigger>
+           </TabsList>
+        </div>
 
-      {/* Board Section */}
-      <section className="flex-1 min-h-0">
-         <SprintBoard tasks={tasks || []} issues={issues || []} />
-      </section>
+        <TabsContent value="board" className="mt-0 space-y-8 animate-in fade-in duration-500">
+           {/* Analytics only on board for active sprint context */}
+           <div className="min-h-0">
+              <SprintAnalytics tasks={boardTasks} />
+           </div>
+
+           <section className="flex-1 min-h-0">
+              <SprintBoard 
+                sprint={activeSprint}
+                tasks={boardTasks} 
+                issues={boardIssues} 
+              />
+           </section>
+        </TabsContent>
+
+        <TabsContent value="backlog" className="mt-0 animate-in fade-in slide-in-from-bottom-4 duration-500">
+           <SprintBacklog 
+              projectId={project._id}
+              sprints={plannedSprints}
+              allTasks={tasks}
+              allIssues={issues}
+           />
+        </TabsContent>
+      </Tabs>
     </PageTransition>
   );
 };

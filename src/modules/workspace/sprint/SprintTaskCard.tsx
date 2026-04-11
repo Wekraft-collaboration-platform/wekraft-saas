@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
-import { Doc } from "../../../../convex/_generated/dataModel";
+import { Doc, Id } from "../../../../convex/_generated/dataModel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { 
   Flag,
@@ -10,7 +10,8 @@ import {
   CheckCircle2,
   Calendar,
   ChevronDown,
-  Info
+  Info,
+  MoreVertical
 } from "lucide-react";
 import {
   Dialog,
@@ -21,13 +22,21 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Separator } from "@/components/ui/separator";
 import { cn } from "@/lib/utils";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { format } from "date-fns";
 
 interface SprintTaskCardProps {
   task: Doc<"tasks"> | Doc<"issues">;
+  availableSprints?: Doc<"sprints">[];
+  onMoveToSprint?: (sprintId: Id<"sprints"> | undefined) => void;
 }
 
-export const SprintTaskCard = ({ task }: SprintTaskCardProps) => {
+export const SprintTaskCard = ({ task, availableSprints, onMoveToSprint }: SprintTaskCardProps) => {
   const [isHovered, setIsHovered] = useState(false);
   const isIssue = "severity" in task;
   
@@ -111,6 +120,41 @@ export const SprintTaskCard = ({ task }: SprintTaskCardProps) => {
               <Calendar className="w-3 h-3 opacity-60" />
               {timelineLabel}
             </div>
+
+            {/* Move Action (Optional) */}
+            {availableSprints && (
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                   <Button variant="ghost" size="icon" className="w-8 h-8 opacity-0 group-hover:opacity-100 transition-opacity rounded-lg ml-1 shrink-0">
+                      <MoreVertical className="w-4 h-4" />
+                   </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-48 rounded-xl border-border/40 shadow-xl">
+                   <div className="px-2 py-1.5 text-[10px] font-bold text-muted-foreground uppercase tracking-widest">Move to</div>
+                   {availableSprints.map((s) => (
+                      <DropdownMenuItem 
+                        key={s._id} 
+                        className={cn("text-[13px] font-medium py-2.5", task.sprintId === s._id && "bg-primary/5 text-primary")}
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          onMoveToSprint?.(s._id);
+                        }}
+                      >
+                        {s.name}
+                      </DropdownMenuItem>
+                   ))}
+                   <DropdownMenuItem 
+                      className={cn("text-[13px] font-medium py-2.5", !task.sprintId && "bg-primary/5 text-primary")}
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        onMoveToSprint?.(undefined);
+                      }}
+                    >
+                      Backlog
+                   </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
       </DialogTrigger>

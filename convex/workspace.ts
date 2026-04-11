@@ -34,6 +34,7 @@ export const createTask = mutation({
     }),
     linkWithCodebase: v.optional(v.string()),
     projectId: v.id("projects"),
+    sprintId: v.optional(v.id("sprints")),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
