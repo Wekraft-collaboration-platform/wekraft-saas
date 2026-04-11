@@ -52,7 +52,7 @@ import {
 } from "@/components/ui/table";
 import { Task } from "@/types/types";
 import { SortPopover } from "@/lib/static-store";
-
+import Image from "next/image";
 
 const priorityIcons: Record<string, React.ReactNode> = {
   none: <Minus className="w-3.5 h-3.5" />,
@@ -102,15 +102,17 @@ const SortOption = ({ label, icon, onClick, isActive }: SortOptionProps) => (
     onClick={onClick}
     className={cn(
       "flex items-center gap-3 w-full px-3 py-2 text-[11px] font-medium transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800/50 rounded-lg group",
-      isActive ? "text-primary bg-primary/5" : "text-muted-foreground"
+      isActive ? "text-primary bg-primary/5" : "text-muted-foreground",
     )}
   >
-    {icon && <div className="shrink-0 transition-transform group-hover:scale-110">{icon}</div>}
+    {icon && (
+      <div className="shrink-0 transition-transform group-hover:scale-110">
+        {icon}
+      </div>
+    )}
     <span>{label}</span>
   </button>
 );
-
-
 
 interface TaskGroupProps {
   title: string;
@@ -181,18 +183,32 @@ const TaskGroup = ({
                 <TableHead className="px-4 text-xs text-primary font-medium capitalize tracking-widest shrink-0 border-r border-b border-neutral-800">
                   <div className="flex items-center justify-center gap-2 overflow-hidden">
                     <div className="flex items-center gap-2">
-                       <Hourglass className="w-4.5 h-4.5" /> Duration
+                      <Hourglass className="w-4.5 h-4.5" /> Duration
                     </div>
                     <SortPopover
                       title="Sort Duration"
                       icon={Calendar}
-                      trigger={<ChevronsUpDown className="w-3.5 h-3.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer shrink-0" />}
+                      trigger={
+                        <ChevronsUpDown className="w-3.5 h-3.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer shrink-0" />
+                      }
                     >
-                      <SortOption label="Upcoming First" icon={<ArrowUpNarrowWide className="w-3 h-3" />} />
-                      <SortOption label="Latest First" icon={<ArrowDownWideNarrow className="w-3 h-3" />} />
+                      <SortOption
+                        label="Upcoming First"
+                        icon={<ArrowUpNarrowWide className="w-3 h-3" />}
+                      />
+                      <SortOption
+                        label="Latest First"
+                        icon={<ArrowDownWideNarrow className="w-3 h-3" />}
+                      />
                       <Separator className="my-1.5 opacity-50" />
-                      <SortOption label="Shortest Duration" icon={<ArrowUpNarrowWide className="w-3 h-3" />} />
-                      <SortOption label="Longest Duration" icon={<ArrowDownWideNarrow className="w-3 h-3" />} />
+                      <SortOption
+                        label="Shortest Duration"
+                        icon={<ArrowUpNarrowWide className="w-3 h-3" />}
+                      />
+                      <SortOption
+                        label="Longest Duration"
+                        icon={<ArrowDownWideNarrow className="w-3 h-3" />}
+                      />
                     </SortPopover>
                   </div>
                 </TableHead>
@@ -204,10 +220,18 @@ const TaskGroup = ({
                     <SortPopover
                       title="Filter & Sort"
                       icon={Tag}
-                      trigger={<ChevronsUpDown className="w-3.5 h-3.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer shrink-0" />}
+                      trigger={
+                        <ChevronsUpDown className="w-3.5 h-3.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer shrink-0" />
+                      }
                     >
-                      <SortOption label="Sort A-Z" icon={<ArrowUpNarrowWide className="w-3 h-3" />} />
-                      <SortOption label="Filter by Type" icon={<CircleDot className="w-3 h-3" />} />
+                      <SortOption
+                        label="Sort A-Z"
+                        icon={<ArrowUpNarrowWide className="w-3 h-3" />}
+                      />
+                      <SortOption
+                        label="Filter by Type"
+                        icon={<CircleDot className="w-3 h-3" />}
+                      />
                     </SortPopover>
                   </div>
                 </TableHead>
@@ -219,15 +243,24 @@ const TaskGroup = ({
                 <TableHead className="px-4 text-xs text-primary font-medium  capitalize tracking-widest shrink-0 border-b border-neutral-800">
                   <div className="flex items-center justify-between gap-2 overflow-hidden">
                     <div className="flex items-center gap-2">
-                      <ChartNoAxesColumnIncreasing className="w-4.5 h-4.5" /> Priority
+                      <ChartNoAxesColumnIncreasing className="w-4.5 h-4.5" />{" "}
+                      Priority
                     </div>
                     <SortPopover
                       title="Sort Priority"
                       icon={ChartNoAxesColumnIncreasing}
-                      trigger={<ChevronsUpDown className="w-3.5 h-3.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer shrink-0" />}
+                      trigger={
+                        <ChevronsUpDown className="w-3.5 h-3.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer shrink-0" />
+                      }
                     >
-                      <SortOption label="High to Low" icon={<ArrowUpNarrowWide className="w-3 h-3" />} />
-                      <SortOption label="Low to High" icon={<ArrowDownWideNarrow className="w-3 h-3" />} />
+                      <SortOption
+                        label="High to Low"
+                        icon={<ArrowUpNarrowWide className="w-3 h-3" />}
+                      />
+                      <SortOption
+                        label="Low to High"
+                        icon={<ArrowDownWideNarrow className="w-3 h-3" />}
+                      />
                     </SortPopover>
                   </div>
                 </TableHead>
@@ -239,11 +272,17 @@ const TaskGroup = ({
                 <TableRow className="hover:bg-transparent border-none">
                   <TableCell
                     colSpan={8}
-                    className="py-12 text-center text-sm text-muted-foreground"
+                    className="py-14 text-center text-sm text-muted-foreground"
                   >
-                    <div className="flex items-center justify-center gap-2 opacity-50">
-                      <Ghost className="w-7 h-7" />
-                      <span className="text-base">
+                    <div className="flex items-center justify-center gap-2">
+                      <Image
+                        src="/pat103.svg"
+                        alt="Empty Workspace"
+                        width={80}
+                        height={80}
+                        className="opacity-80"
+                      />
+                      <span className="text-base text-primary/70">
                         No tasks under {title.toLowerCase()}
                       </span>
                     </div>
@@ -256,7 +295,10 @@ const TaskGroup = ({
                     className="group border-none hover:bg-muted/40 transition-all duration-200 cursor-pointer"
                     onClick={() => onTaskClick(task)}
                   >
-                    <TableCell className="px-4 py-4" onClick={(e) => e.stopPropagation()}>
+                    <TableCell
+                      className="px-4 py-4"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <Checkbox className="rounded border-muted-foreground/30 data-[state=checked]:bg-primary" />
                     </TableCell>
 
@@ -284,28 +326,35 @@ const TaskGroup = ({
                       </div>
                     </TableCell>
                     <TableCell className="p-2.5 whitespace-nowrap border-r border-b border-neutral-800">
-                     <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                      <div className="flex items-center justify-center gap-1.5 flex-wrap">
                         {task.type ? (
-                            <div 
+                          <div
+                            className={cn(
+                              "flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold border",
+                              task.type.color === "green" &&
+                                "bg-emerald-500/10 text-emerald-400 border-emerald-400/20",
+                              task.type.color === "yellow" &&
+                                "bg-yellow-500/10 text-yellow-400 border-yellow-400/20",
+                              task.type.color === "purple" &&
+                                "bg-purple-500/10 text-purple-400 border-purple-400/20",
+                              task.type.color === "blue" &&
+                                "bg-blue-500/10 text-blue-400 border-blue-400/20",
+                              task.type.color === "grey" &&
+                                "bg-neutral-500/10 text-neutral-400 border-neutral-400/20",
+                            )}
+                          >
+                            <div
                               className={cn(
-                                "flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold border",
-                                task.type.color === "green" && "bg-emerald-500/10 text-emerald-400 border-emerald-400/20",
-                                task.type.color === "yellow" && "bg-yellow-500/10 text-yellow-400 border-yellow-400/20",
-                                task.type.color === "purple" && "bg-purple-500/10 text-purple-400 border-purple-400/20",
-                                task.type.color === "blue" && "bg-blue-500/10 text-blue-400 border-blue-400/20",
-                                task.type.color === "grey" && "bg-neutral-500/10 text-neutral-400 border-neutral-400/20",
-                              )}
-                            >
-                              <div className={cn(
                                 "w-1 h-1 rounded-full",
                                 task.type.color === "green" && "bg-emerald-400",
                                 task.type.color === "yellow" && "bg-yellow-400",
                                 task.type.color === "purple" && "bg-purple-400",
                                 task.type.color === "blue" && "bg-blue-400",
                                 task.type.color === "grey" && "bg-neutral-400",
-                              )} />
-                              {task.type.label}
-                            </div>
+                              )}
+                            />
+                            {task.type.label}
+                          </div>
                         ) : (
                           <span className="text-[10px] text-primary/10">—</span>
                         )}
@@ -335,8 +384,11 @@ const TaskGroup = ({
                     <TableCell className="p-2.5 border-b border-neutral-800 whitespace-nowrap">
                       <PriorityBadge priority={task.priority} />
                     </TableCell>
-                    
-                    <TableCell className="p-2.5 text-right" onClick={(e) => e.stopPropagation()}>
+
+                    <TableCell
+                      className="p-2.5 text-right"
+                      onClick={(e) => e.stopPropagation()}
+                    >
                       <DropdownMenu>
                         <DropdownMenuTrigger asChild>
                           <Button

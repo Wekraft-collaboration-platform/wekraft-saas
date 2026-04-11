@@ -1,4 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "../../../../../convex/_generated/api";
+
+const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 export async function POST(req: NextRequest) {
   try {
@@ -7,6 +11,14 @@ export async function POST(req: NextRequest) {
     console.log("----------------EVENT --->", event);
 
     if (event === "ping") {
+      console.log("=================PING EVENT RECEIVED=================");
+      const githubId = body.repository?.id;
+      if (githubId) {
+        await convex.mutation(api.repo.setWebhookConnected, {
+          githubId: BigInt(githubId),
+        });
+        console.log(`✅ Webhook status updated for repo ${githubId}`);
+      }
       return NextResponse.json({ message: "pong" }, { status: 200 });
     }
     // ===============================

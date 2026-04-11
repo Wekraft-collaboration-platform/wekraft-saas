@@ -118,7 +118,7 @@ export const createWebhook = async (
 
   const fullWebhookUrl = `${webhookUrl}/api/webhooks/github`;
 
-  try {
+ 
     const token = await getGithubAccessToken();
     const octokit = new Octokit({ auth: token });
 
@@ -148,13 +148,6 @@ export const createWebhook = async (
     });
 
     return { success: true };
-  } catch (error) {
-    return {
-      success: false,
-      error:
-        error instanceof Error ? error.message : "Failed to create webhook",
-    };
-  }
 };
 // ===============================
 // GETTING THE USER CONTRIBUTIONS.

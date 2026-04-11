@@ -507,3 +507,158 @@ export const createJoinRequest = mutation({
     return requestId;
   },
 });
+
+// ====================================
+// GET PROJECT PERMISSIONS
+// ====================================
+export const getProjectPermissions = query({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return { isOwner: false, isAdmin: false, isMember: false, isViewer: false, isPower: false };
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) return { isOwner: false, isAdmin: false, isMember: false, isViewer: false, isPower: false };
+
+    const project = await ctx.db.get(args.projectId);
+    if (!project) return { isOwner: false, isAdmin: false, isMember: false, isViewer: false, isPower: false };
+
+    const isOwner = project.ownerId === user._id;
+
+    const membership = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .filter((q) => q.eq(q.field("userId"), user._id))
+      .unique();
+
+    const isAdmin = membership?.AccessRole === "admin";
+    const isMember = membership?.AccessRole === "member";
+    const isViewer = membership?.AccessRole === "viewer";
+    const isPower = isOwner || isAdmin;
+
+    return {
+      isOwner,
+      isAdmin,
+      isMember,
+      isViewer,
+      isPower,
+      role: isOwner ? "owner" : (membership?.AccessRole || null),
+    };
+  },
+});
+
+// ====================================
+// GET JOIN REQUESTS
+// ====================================
+export const getProjectJoinRequests = query({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) return [];
+
+    const project = await ctx.db.get(args.projectId);
+    if (!project) return [];
+
+    const membership = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .filter((q) => q.eq(q.field("userId"), user._id))
+      .unique();
+
+    const isPower = project.ownerId === user._id || membership?.AccessRole === "admin";
+
+    if (!isPower) {
+      throw new Error("Unauthorized to view join requests");
+    }
+
+    return await ctx.db
+      .query("projectJoinRequests")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .filter((q) => q.eq(q.field("status"), "pending"))
+      .collect();
+  },
+});
+
+// ====================================
+// HANDLE JOIN REQUEST (ACCEPT/REJECT)
+// ====================================
+export const handleJoinRequest = mutation({
+  args: {
+    requestId: v.id("projectJoinRequests"),
+    action: v.union(v.literal("accepted"), v.literal("rejected")),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthenticated");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) throw new Error("User not found");
+
+    const request = await ctx.db.get(args.requestId);
+    if (!request) throw new Error("Request not found");
+
+    const project = await ctx.db.get(request.projectId);
+    if (!project) throw new Error("Project not found");
+
+    const membership = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_project", (q) => q.eq("projectId", request.projectId))
+      .filter((q) => q.eq(q.field("userId"), user._id))
+      .unique();
+
+    const isPower = project.ownerId === user._id || membership?.AccessRole === "admin";
+
+    if (!isPower) {
+      throw new Error("Unauthorized to handle join requests");
+    }
+
+    if (args.action === "accepted") {
+      // Add to projectMembers
+      const existingMember = await ctx.db
+        .query("projectMembers")
+        .withIndex("by_project", (q) => q.eq("projectId", request.projectId))
+        .filter((q) => q.eq(q.field("userId"), request.userId))
+        .unique();
+
+      if (!existingMember) {
+        const joiner = await ctx.db.get(request.userId);
+        await ctx.db.insert("projectMembers", {
+          projectId: request.projectId,
+          userId: request.userId,
+          userName: request.userName,
+          userImage: request.userImage,
+          AccessRole: "member",
+          joinedAt: Date.now(),
+        });
+      }
+    }
+
+    await ctx.db.patch(args.requestId, {
+      status: args.action,
+      updatedAt: Date.now(),
+    });
+
+    return { success: true };
+  },
+});

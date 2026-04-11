@@ -16,7 +16,9 @@ import {
   Loader2,
   LucideExternalLink,
   LucideLayers3,
+  Settings2,
   UploadCloud,
+  UserPlus,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
@@ -24,16 +26,20 @@ import { InviteDialog } from "@/modules/project/inviteDilogag";
 import { Badge } from "@/components/ui/badge";
 import { useState } from "react";
 import Image from "next/image";
+import { ProjectJoinRequests } from "@/modules/project/project-join-requests";
+import { useRouter } from "next/navigation";
 
 const ProjectPage = () => {
   const params = useParams();
   const slug = params.slug as string;
+  const router = useRouter();
 
   const project = useQuery(api.project.getProjectBySlug, { slug });
   const projectInviteLink = project?.inviteLink;
   const user = useQuery(api.user.getCurrentUser);
 
   const [isUploading, setIsUploading] = useState(false);
+  const [homeTab, setHomeTab] = useState("settings");
 
   if (project === undefined) {
     return <ProjectSkeleton />;
@@ -51,17 +57,32 @@ const ProjectPage = () => {
   }
   return (
     <div className="w-full min-h-screen animate-in fade-in duration-700 p-6">
-      <header className="flex justify-between items-center mb-6">
+      <header className="flex justify-between items-center mb-5">
         <div className="flex flex-col space-y-1.5">
           <h1 className="text-3xl font-bold flex items-center gap-2">
             <LucideLayers3 className="w-6 h-6 text-primary" />{" "}
             {project.projectName}
           </h1>
-          <Link href={""}>
+          {project?.repoFullName && project?.repositoryId ? (
+            <Link href={`/dashboard/my-projects/${project?.slug}/workspace`}>
+              <p className="text-muted-foreground text-sm cursor-pointer hover:text-primary/90">
+                <Link2 className="inline w-5 h-5" /> {project.repoFullName}
+              </p>
+            </Link>
+          ) : (
             <p className="text-muted-foreground text-sm cursor-pointer hover:text-primary/90">
-              <Link2 className="inline w-5 h-5" /> {project.repoFullName}
+              No repository connected{" "}
+              <span
+                className="text-primary hover:underline"
+                onClick={() => {
+                  router.push(`/dashboard/repositories`);
+                }}
+              >
+                Click here to connect{" "}
+                <ExternalLink className="inline w-3 h-3 ml-0.5 -mt-1" />
+              </span>
             </p>
-          </Link>
+          )}
         </div>
         <div className="flex gap-5">
           <Link href={`/dashboard/`}>
@@ -129,7 +150,7 @@ const ProjectPage = () => {
         </div>
       </div>
 
-      <div className="w-full flex items-center justify-between mb-5">
+      <div className="w-full flex items-center justify-between mb-8">
         <Button
           className="px-4! text-xs cursor-pointer"
           size="sm"
@@ -162,6 +183,59 @@ const ProjectPage = () => {
               </Button>
             }
           />
+        </div>
+      </div>
+
+      {/* ---------------------------------------------------- */}
+      {/* PARENT CONTAINER LEFT SIDE TABS || RIGHT SIDE PROJECT INFO */}
+      <div className="flex">
+        {/* LEFT SIDE 3 TABS */}
+        <div className="w-[65%] border-r border-accent h-full">
+          {/* TABS */}
+          <div className="flex gap-6  px-4 border-b border-accent pb-4">
+            <Button
+              size="sm"
+              className="rounded-full px-4! text-[10px]"
+              variant={homeTab === "settings" ? "default" : "outline"}
+              onClick={() => setHomeTab("settings")}
+            >
+              Settings <Settings2 />
+            </Button>
+
+            <Button
+              size="sm"
+              className="rounded-full px-4! text-[10px]"
+              variant={homeTab === "requests" ? "default" : "outline"}
+              onClick={() => setHomeTab("requests")}
+            >
+              Requests <UserPlus />
+            </Button>
+
+            <Button
+              size="sm"
+              className="rounded-full px-4! text-[10px]"
+              variant={homeTab === "community" ? "default" : "outline"}
+              onClick={() => setHomeTab("community")}
+            >
+              Community <Globe />
+            </Button>
+          </div>
+
+          <div className="px-4">
+            {homeTab === "settings" && (
+              <div className="py-10 text-center text-muted-foreground text-sm">
+                Project settings coming soon...
+              </div>
+            )}
+            {homeTab === "requests" && (
+              <ProjectJoinRequests projectId={project._id} />
+            )}
+            {homeTab === "community" && (
+              <div className="py-10 text-center text-muted-foreground text-sm">
+                Community features coming soon...
+              </div>
+            )}
+          </div>
         </div>
       </div>
     </div>

@@ -95,7 +95,8 @@ const ShowRepo = ({
       );
 
       if (!result.success) {
-        throw new Error(result.error ?? "Webhook creation failed");
+        console.warn("Webhook creation failed (silent):", result.error);
+        // Continue anyway - we'll update connection status when we get a ping
       }
 
       await conectAndUpdateRepoMutation({

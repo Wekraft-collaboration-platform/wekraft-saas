@@ -57,6 +57,32 @@ export const getCurrentUser = query({
     return user ?? null;
   },
 });
+
+export const checkUsernameAvailability = query({
+  args: { name: v.string() },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    const currentUser = identity
+      ? await ctx.db
+          .query("users")
+          .withIndex("by_token", (q) =>
+            q.eq("clerkToken", identity.tokenIdentifier),
+          )
+          .unique()
+      : null;
+
+    const existingUser = await ctx.db
+      .query("users")
+      .withIndex("by_name", (q) => q.eq("name", args.name))
+      .unique();
+
+    if (existingUser && currentUser && existingUser._id === currentUser._id) {
+      return true; // It's them, so it's available
+    }
+
+    return !existingUser;
+  },
+});
 // ================================
 // UPDATE USER SKILL
 // ================================
@@ -156,6 +182,10 @@ export const updateUserIdentity = mutation({
       .unique();
 
     if (!currentUser) throw new Error("User not found");
+
+    if (args.name.length < 3 || args.name.length > 20) {
+      throw new Error("Username must be between 3 and 20 characters");
+    }
 
     // Check if name is already taken by a diff user
     const existingUserWithName = await ctx.db

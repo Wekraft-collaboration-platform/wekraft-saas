@@ -36,6 +36,8 @@ import {
   ArrowUpNarrowWide,
   ArrowDownWideNarrow,
   Clock,
+  Plus,
+  FileCodeCorner,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -53,6 +55,7 @@ import {
   statusIcons,
 } from "@/lib/static-store";
 import { Separator } from "@/components/ui/separator";
+import Image from "next/image";
 
 interface SortOptionProps {
   label: string;
@@ -113,7 +116,7 @@ export const TableTab = ({ tasks }: TableTabProps) => {
   };
 
   return (
-    <div className="relative border-none flex flex-col min-h-[500px]">
+    <div className="relative border-none flex flex-col">
       <div className="overflow-auto custom-scrollbar flex-1">
         <Table>
           <TableHeader className="bg-neutral-900  z-10 ">
@@ -216,11 +219,40 @@ export const TableTab = ({ tasks }: TableTabProps) => {
             {tasks.length === 0 ? (
               <TableRow className="">
                 <TableCell colSpan={8} className="h-[400px] text-center">
-                  <div className="flex flex-col items-center justify-center space-y-2 opacity-40">
-                    <TableIcon size={48} />
-                    <p className="text-base font-medium  text-primary/80">
+                  <div className="flex flex-col items-start justify-center space-y-1.5 p-4 w-[360px] mx-auto">
+                    <Image
+                      src="/pat101.svg"
+                      alt="Empty Workspace"
+                      width={100}
+                      height={100}
+                      className="opacity-80"
+                    />
+                    <p className="text-base font-medium  text-primary">
                       Empty Workspace
                     </p>
+                    <p className="text-muted-foreground text-wrap text-left">
+                      Create your First Task with your teammates and start
+                      managing your project in a right way.
+                    </p>
+
+                    <div className="flex items-center gap-4 mt-2">
+                      <Button
+                        variant="default"
+                        size="sm"
+                        className="rounded-full text-[11px]"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Add Task
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full text-[11px]"
+                      >
+                        Check Docs
+                        <FileCodeCorner className="w-4 h-4" />
+                      </Button>
+                    </div>
                   </div>
                 </TableCell>
               </TableRow>
@@ -267,32 +299,41 @@ export const TableTab = ({ tasks }: TableTabProps) => {
                           {format(task.estimation.endDate, "MMM d")}
                         </span>
                       ) : (
-                        <span className="opacity-20 italic flex justify-center">No timeline</span>
+                        <span className="opacity-20 italic flex justify-center">
+                          No timeline
+                        </span>
                       )}
                     </TableCell>
                     <TableCell className="px-4 border-r border-b border-neutral-700">
                       <div className="flex items-center justify-center gap-1.5 flex-wrap">
                         {task.type ? (
-                            <div 
+                          <div
+                            className={cn(
+                              "flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border",
+                              task.type.color === "green" &&
+                                "bg-emerald-500/10 text-emerald-400 border-emerald-400/20",
+                              task.type.color === "yellow" &&
+                                "bg-yellow-500/10 text-yellow-400 border-yellow-400/20",
+                              task.type.color === "purple" &&
+                                "bg-purple-500/10 text-purple-400 border-purple-400/20",
+                              task.type.color === "blue" &&
+                                "bg-blue-500/10 text-blue-400 border-blue-400/20",
+                              task.type.color === "grey" &&
+                                "bg-neutral-500/10 text-neutral-400 border-neutral-400/20",
+                            )}
+                          >
+                            <div
                               className={cn(
-                                "flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border",
-                                task.type.color === "green" && "bg-emerald-500/10 text-emerald-400 border-emerald-400/20",
-                                task.type.color === "yellow" && "bg-yellow-500/10 text-yellow-400 border-yellow-400/20",
-                                task.type.color === "purple" && "bg-purple-500/10 text-purple-400 border-purple-400/20",
-                                task.type.color === "blue" && "bg-blue-500/10 text-blue-400 border-blue-400/20",
-                                task.type.color === "grey" && "bg-neutral-500/10 text-neutral-400 border-neutral-400/20",
-                              )}
-                            >
-                              <div className={cn(
                                 "w-1 h-1 rounded-full",
                                 task.type.color === "green" && "bg-emerald-400",
                                 task.type.color === "yellow" && "bg-yellow-400",
                                 task.type.color === "purple" && "bg-purple-400",
                                 task.type.color === "blue" && "bg-blue-400",
                                 task.type.color === "grey" && "bg-neutral-400",
-                              )} />
-                              {task.type.label}
-                            </div>
+                              )}
+                            />
+                            {task.type.label}
+                          </div>
                         ) : (
                           <span className="text-[10px] text-primary/10">—</span>
                         )}

@@ -49,6 +49,7 @@ export const connectRepository = mutation({
         repoUrl: args.repoUrl,
         userId: user._id,
         language: args.language,
+        isWebhookConnected: false,
         createdAt: Date.now(),
         updatedAt: Date.now(),
       });
@@ -112,6 +113,23 @@ export const getRepositoryById = query({
   handler: async (ctx, args) => {
     if (!args.repoId) return null;
     return await ctx.db.get(args.repoId);
+  },
+});
+
+export const setWebhookConnected = mutation({
+  args: { githubId: v.int64() },
+  handler: async (ctx, args) => {
+    const repo = await ctx.db
+      .query("repositories")
+      .withIndex("by_github_id", (q) => q.eq("githubId", args.githubId))
+      .unique();
+
+    if (repo) {
+      await ctx.db.patch(repo._id, {
+        isWebhookConnected: true,
+        updatedAt: Date.now(),
+      });
+    }
   },
 });
 
