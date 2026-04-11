@@ -84,7 +84,7 @@ export const TaskDetailSheet = ({
     if (!commentText.trim()) return;
     try {
       await createComment({
-        taskId: currentTask._id,
+        taskId: task._id,
         comment: commentText.trim(),
       });
       setCommentText("");

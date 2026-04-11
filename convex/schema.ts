@@ -166,7 +166,6 @@ export default defineSchema({
     isBlocked: v.optional(v.boolean()), // due to this task is marked as issue
     linkWithCodebase: v.optional(v.string()),
     projectId: v.id("projects"),
-    sprintId: v.optional(v.id("sprints")),
     createdByUserId: v.id("users"),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -175,8 +174,7 @@ export default defineSchema({
     .index("by_creator", ["createdByUserId"])
     .index("by_status", ["status"])
     .index("by_priority", ["priority"])
-    .index("by_project_status", ["projectId", "status"])
-    .index("by_sprint", ["sprintId"]),
+    .index("by_project_status", ["projectId", "status"]),
     
     // --------------------------------------------------
     taskComments: defineTable({
@@ -215,7 +213,6 @@ export default defineSchema({
       githubIssueUrl: v.optional(v.string()), // if its from github.
       taskId: v.optional(v.id("tasks")), // if its from task.
       projectId: v.id("projects"),
-      sprintId: v.optional(v.id("sprints")),
       createdByUserId: v.id("users"),
       IssueAssignee: v.optional(
         v.array(
@@ -235,8 +232,7 @@ export default defineSchema({
     .index("by_task", ["taskId"])
     .index("by_status", ["status"])
     .index("by_severity", ["severity"])
-    .index("by_environment", ["environment"])
-    .index("by_sprint", ["sprintId"]),
+    .index("by_environment", ["environment"]),
     // ---------------------------------------------------
     issueComments: defineTable({
       issueId: v.id("issues"),
@@ -277,21 +273,4 @@ export default defineSchema({
   })
     .index("by_project", ["projectId"])
     .index("by_creator", ["creatorId"]),
-
-  sprints: defineTable({
-    projectId: v.id("projects"),
-    name: v.string(),
-    goal: v.optional(v.string()),
-    startDate: v.optional(v.number()),
-    endDate: v.optional(v.number()),
-    status: v.union(
-      v.literal("planned"),
-      v.literal("active"),
-      v.literal("completed")
-    ),
-    createdAt: v.number(),
-    updatedAt: v.number(),
-  })
-    .index("by_project", ["projectId"])
-    .index("by_status", ["status"]),
 });

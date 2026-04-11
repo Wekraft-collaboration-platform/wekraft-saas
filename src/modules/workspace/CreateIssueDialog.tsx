@@ -49,7 +49,6 @@ interface CreateIssueDialogProps {
   projectId: Id<"projects">;
   repoFullName?: string;
   trigger: React.ReactNode;
-  defaultSprintId?: Id<"sprints">;
 }
 
 const severityIcons: Record<string, React.ReactNode> = {
@@ -78,7 +77,6 @@ export const CreateIssueDialog = ({
   projectId,
   repoFullName,
   trigger,
-  defaultSprintId,
 }: CreateIssueDialogProps) => {
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState("");
@@ -116,7 +114,6 @@ export const CreateIssueDialog = ({
         type: "user-created",
         projectId,
         fileLinked: selectedPath || undefined,
-        sprintId: defaultSprintId,
       });
       toast.success("Issue created successfully");
       setOpen(false);

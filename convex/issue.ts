@@ -37,7 +37,6 @@ export const createIssue = mutation({
     fileLinked: v.optional(v.string()),
     taskId: v.optional(v.id("tasks")),
     projectId: v.id("projects"),
-    sprintId: v.optional(v.id("sprints")),
     IssueAssignee: v.optional(
       v.array(
         v.object({
