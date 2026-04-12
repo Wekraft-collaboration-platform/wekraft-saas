@@ -7,7 +7,7 @@ import {
   SheetHeader,
   SheetTitle,
 } from "@/components/ui/sheet";
-import { Bot, Send, Sparkles } from "lucide-react";
+import { Bot, MessagesSquare, Send, Settings2, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -39,50 +39,57 @@ export function AiAssistantSheet({
 
   return (
     <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-[500px]! flex flex-col p-0 gap-0">
-        <SheetHeader className="p-4 border-b bg-muted/30">
-          <div className="flex items-center gap-2">
-            <div className="h-8 w-8 rounded-lg bg-primary/10 flex items-center justify-center text-primary">
-              <Bot className="h-5 w-5" />
-            </div>
-            <div>
-              <SheetTitle className="text-base">Wekraft AI</SheetTitle>
-              <div className="flex items-center gap-2 mt-0.5">
-                <Badge
-                  variant="outline"
-                  className="text-[10px] h-4 py-0 font-normal border-primary/20 bg-primary/5 text-primary"
-                >
-                  Pro Feature
-                </Badge>
-              </div>
+      <SheetContent
+        side="right"
+        className="w-[500px]! flex flex-col p-0 gap-0 h-full"
+      >
+        <SheetHeader className="px-4 py-5 border-b bg-card ">
+          <div className="flex items-center justify-between pr-10 gap-5">
+            <SheetTitle className="text-lg font-pop font-semibold">
+              Roxo AI
+            </SheetTitle>
+            <div className="flex items-center gap-4">
+              <Button size="sm" variant="outline" className="text-[10px]">
+                Config <Settings2 className="h-3 w-3" />
+              </Button>
+              <Button size="sm" variant="outline" className="text-[10px]">
+                Visit space <MessagesSquare className="h-3 w-3" />
+              </Button>
             </div>
           </div>
         </SheetHeader>
 
-        <ScrollArea className="flex-1 p-4">
-          <div className="space-y-4"></div>
+        <ScrollArea className="flex-1 p-4 h-full">
+          {/* --------Empty Space-------- */}
+          <div className="flex flex-col items-center justify-center h-full">
+            this is empty state
+          </div>
         </ScrollArea>
 
-        <div className="p-4 border-t bg-background">
+        {/* ---------FOOGTER--------- */}
+        <div className="px-4 py-6 bg-linear-to-b from-transparent to-blue-500/15">
           <div className="relative">
             <Input
               placeholder="Ask anything..."
               value={input}
               onChange={(e) => setInput(e.target.value)}
               onKeyDown={(e) => e.key === "Enter"}
-              className="pr-10"
+              className="h-12 rounded-xl bg-neutral-950!"
             />
             <Button
               size="icon"
-              variant="ghost"
-              className="absolute right-1 top-1 h-8 w-8"
+              variant="outline"
+              className="absolute right-2 top-2 h-8 w-8"
               // onClick={}
             >
               <Send className="h-4 w-4" />
             </Button>
           </div>
           <p className="text-[10px] text-center text-muted-foreground mt-2">
-            AI can make mistakes. Verify important information.
+            Roxo is personal PM agent.{" "}
+            <span className="text-blue-500 cursor-pointer">
+              Click to configure
+            </span>
           </p>
         </div>
       </SheetContent>
