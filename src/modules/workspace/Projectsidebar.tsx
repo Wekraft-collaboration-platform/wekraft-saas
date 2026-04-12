@@ -48,6 +48,7 @@ import {
   ListTree,
   Trash2,
   User2,
+  FolderEdit,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
@@ -63,6 +64,10 @@ import {
 } from "@/components/ui/popover";
 import Image from "next/image";
 import { Button } from "@/components/ui/button";
+import { AiAssistantSheet } from "../ai/AiAssistantSheet";
+import { Kbd } from "@/components/ui/kbd";
+import { Badge } from "@/components/ui/badge";
+import { Separator } from "@/components/ui/separator";
 
 const workspaceMenu = [
   {
@@ -112,6 +117,7 @@ export default function ProjectSidebar() {
   const params = useParams();
   const slug = params.slug as string;
   const router = useRouter();
+  const [assistantOpen, setAssistantOpen] = useState(false);
 
   const user: Doc<"users"> | undefined | null = useQuery(
     api.user.getCurrentUser,
@@ -204,10 +210,7 @@ export default function ProjectSidebar() {
                   isActive={isActiveExact("/dashboard/ai")}
                   className="group relative overflow-hidden cursor-pointer"
                 >
-                  <Link
-                    href="/dashboard/ai"
-                    className="relative z-10 flex items-center gap-3 px-1 w-full text-sm"
-                  >
+                  <div className="relative z-10 flex items-center gap-3 px-3 w-full text-sm">
                     <Stars
                       className={cn(
                         "h-5.5 w-5.5 transition-colors",
@@ -237,27 +240,62 @@ export default function ProjectSidebar() {
                   bg-linear-to-l from-blue-600 dark:from-blue-600/70 via-blue-600/20 to-transparent!
                 "
                     />
-                  </Link>
+                  </div>
                 </SidebarMenuButton>
               </PopoverTrigger>
 
-              <PopoverContent side="right" className="w-64 p-2">
-                <div className="flex flex-col gap-1">
-                  <Link
-                    href="/dashboard/ai/notion"
-                    className="flex items-center gap-2 rounded px-2 py-1 text-sm hover:bg-accent"
-                  >
-                    <Link2 className="h-4 w-4" />
-                    Connect to Notion
-                  </Link>
+              <PopoverContent side="right" className="w-68 p-1">
+                <div className="flex flex-col">
+                  <div className="flex items-center justify-between px-2 py-2">
+                    <span className="text-xs font-medium text-muted-foreground">
+                      AI Actions
+                    </span>
+                    <div className="flex items-center gap-1 group">
+                      <Kbd className="bg-muted/50 font-sans text-[10px] px-1.5 py-0">
+                        Ctrl
+                      </Kbd>
+                      <span className="text-[10px] text-muted-foreground">
+                        +
+                      </span>
+                      <Kbd className="bg-muted/50 font-sans text-[10px] px-1.5 py-0">
+                        K
+                      </Kbd>
+                    </div>
+                  </div>
 
-                  <Link
-                    href="/dashboard/ai/project"
-                    className="flex items-center gap-2 rounded px-2 py-1 text-sm hover:bg-accent"
-                  >
-                    <FileText className="h-4 w-4" />
-                    Get Project Details
-                  </Link>
+                  <Separator className="mb-1" />
+
+                  <div className="p-1 flex flex-col gap-0.5">
+                    <p
+                      onClick={() => setAssistantOpen(true)}
+                      className="flex items-center justify-between gap-2 cursor-pointer rounded-sm px-2 py-2 text-xs hover:bg-accent transition-colors group/item"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Bot className="h-4 w-4 text-primary" />
+                        <span>Ask AI assistant</span>
+                      </div>
+                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground group-hover/item:translate-x-0.5 transition-transform" />
+                    </p>
+
+                    <Link
+                      href={`/dashboard/my-projects/${slug}/workspace/ai`}
+                      className="flex items-center justify-between gap-2 rounded-sm px-2 py-2 text-xs hover:bg-accent transition-colors group/item"
+                    >
+                      <div className="flex items-center gap-2">
+                        <Link2 className="h-4 w-4 text-muted-foreground" />
+                        <span>Open full Chatspace</span>
+                      </div>
+                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground group-hover/item:translate-x-0.5 transition-transform" />
+                    </Link>
+
+                    <p className="flex items-center justify-between gap-2 cursor-pointer rounded-sm px-2 py-2 text-xs hover:bg-accent transition-colors group/item">
+                      <div className="flex items-center gap-2">
+                        <FolderEdit className="h-4 w-4" />
+                        <span>Review bottlenecks</span>
+                      </div>
+                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground group-hover/item:translate-x-0.5 transition-transform" />
+                    </p>
+                  </div>
                 </div>
               </PopoverContent>
             </Popover>
@@ -512,6 +550,7 @@ export default function ProjectSidebar() {
           </Button>
         </div>
       </SidebarFooter>
+      <AiAssistantSheet open={assistantOpen} onOpenChange={setAssistantOpen} />
     </Sidebar>
   );
 }
