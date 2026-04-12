@@ -69,7 +69,7 @@ export function IdentityRolePicker({
             <Input
               id="role-search"
               placeholder="Search role..."
-              className="pl-9 bg-white/10! h-10 rounded-none border-b border-white/30!  text-white placeholder:text-neutral-300"
+              className="pl-9 bg-neutral-800! h-10 rounded-none border-b border-white/30!  text-white placeholder:text-neutral-300"
               value={roleSearch}
               onChange={(e) => setRoleSearch(e.target.value)}
             />
