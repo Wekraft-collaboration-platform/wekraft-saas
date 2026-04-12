@@ -5,48 +5,56 @@ import { HumanMessage } from "@langchain/core/messages";
 export async function POST(req: NextRequest) {
   try {
     const body = await req.json();
-    const { message, threadId = "default-thread" } = body;
+    const { messages, message, threadId = "default-thread", command } = body;
 
-    if (!message) {
-      return NextResponse.json(
-        { error: "Message is required" },
-        { status: 400 }
-      );
+    // Support standard { messages: [...] } from useStream
+    // or { message: "..." } from test script
+    let payload;
+    if (command) {
+      // Used for resuming from an interrupt (e.g. HITL)
+      const { Command } = await import("@langchain/langgraph");
+      payload = new Command(command);
+    } else {
+      payload = { messages: messages ?? [new HumanMessage(message)] };
     }
 
     const config = { configurable: { thread_id: threadId } };
 
-    // Standard invocation of the main network logic.
-    const result = await roxo.invoke(
-      { messages: [new HumanMessage(message)] },
-      config
-    );
+    // Create a ReadableStream from roxo.streamEvents
+    const stream = new ReadableStream({
+      async start(controller) {
+        try {
+          const streamEvents = roxo.streamEvents(payload, {
+            ...config,
+            version: "v2",
+          });
 
-    const lastMsg = result.messages?.at(-1);
-    const content =
-      typeof lastMsg?.content === "string"
-        ? lastMsg.content
-        : JSON.stringify(lastMsg?.content ?? "no output");
+          for await (const event of streamEvents) {
+            // Stream the raw event directly to the frontend in ndjson (Newline Delimited JSON) format
+            controller.enqueue(
+              new TextEncoder().encode(JSON.stringify(event) + "\n"),
+            );
+          }
+        } catch (e) {
+          console.error("Stream generation error:", e);
+        } finally {
+          controller.close();
+        }
+      },
+    });
 
-    // Fetch the pending interrupts to know if user review is needed
-    // e.g. for `add_task_to_sprint` human-in-the-loop tool calling.
-    const state = await roxo.getState(config);
-    const pendingInterrupts = (state?.tasks ?? [])
-      .flatMap((t: any) => t.interrupts ?? [])
-      .map((i: any) => i.value);
-
-    // Provide the clean JSON data back out. Later this can be adapted
-    // to Langchain event streaming by Vercel AI SDK.
-    return NextResponse.json({
-      content,
-      interrupts: pendingInterrupts,
-      threadId,
+    return new Response(stream, {
+      headers: {
+        "Content-Type": "text/event-stream",
+        "Cache-Control": "no-cache",
+        Connection: "keep-alive",
+      },
     });
   } catch (error: any) {
     console.error("AI Route Error:", error);
     return NextResponse.json(
       { error: "Failed to process chat message", details: error.message },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

@@ -16,7 +16,7 @@ import {
 // ─────────────────────────────────────────────────────────────────────────────
 
 const model = new ChatOpenAI({
-  model: "gpt-4o-mini", // Update to a standard default model if you wish
+  model: "gpt-4.1-nano",
   temperature: 0,
   streaming: true,
 });
@@ -24,7 +24,7 @@ const model = new ChatOpenAI({
 export const projectBasicsSubagent = createAgent({
   model,
   tools: [getTasks, getSprints],
-  systemPrompt: `You are the Project Basics Intel subagent for WEkraft.
+  systemPrompt: `You are the Project Basics Intel subagent for Wekraft.
 Your job: gather and summarize task and sprint data only.
 Never modify anything. Be concise and data-driven.
 Highlight: blocked tasks, unassigned tasks, sprint progress.`,
@@ -33,7 +33,7 @@ Highlight: blocked tasks, unassigned tasks, sprint progress.`,
 export const insightsSubagent = createAgent({
   model,
   tools: [getProjectDetails, getDeadlineVelocity],
-  systemPrompt: `You are the Insights Intel subagent for WEkraft.
+  systemPrompt: `You are the Insights Intel subagent for Wekraft.
 Your job: analyze project health — deadlines, milestones, and velocity trends.
 Never modify anything. Give actionable insights. Flag risks clearly.`,
 });
@@ -134,7 +134,7 @@ export const roxo = createAgent({
   model,
   tools: [askProjectBasics, askInsights, addTaskToSprint],
   checkpointer,
-  systemPrompt: `You are ROXO, the AI PM agent for WEkraft.
+  systemPrompt: `You are ROXO, the AI PM agent for Wekraft.
 
 ARCHITECTURE:
 - ask_project_basics  → read-only subagent (tasks, sprints)

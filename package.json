@@ -24,6 +24,7 @@
     "@langchain/core": "^1.1.39",
     "@langchain/langgraph": "^1.2.8",
     "@langchain/openai": "^1.4.4",
+    "@langchain/react": "^0.3.3",
     "@tanstack/react-query": "^5.90.21",
     "@tanstack/react-query-devtools": "^5.91.3",
     "@uiw/react-md-editor": "^4.0.11",
