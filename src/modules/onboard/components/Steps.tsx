@@ -193,15 +193,35 @@ export function MultiStepOnboarding() {
 
   return (
     <div className="dark flex flex-col items-center justify-center h-screen p-4 pt-10 relative text-foreground overflow-hidden">
-      <Image
+      {/* <Image
         src="/bg-footer.jpg"
         alt="bg-image"
         fill
         className="absolute w-full h-full object-cover opacity-20"
         priority
+      /> */}
+      <div className="noise-bg" />
+
+      <Image
+        src="/pat102.svg"
+        alt="bg-image"
+        width={200}
+        height={200}
+        className="absolute bottom-10 right-5 opacity-40"
+        priority
       />
 
-      <div className="absolute -top-1/3 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[500px] bg-blue-500/55 transform-gpu blur-[200px] rounded-full pointer-events-none opacity-50" />
+      <Image
+        src="/pat101.svg"
+        alt="bg-image"
+        width={200}
+        height={200}
+        className="absolute bottom-10 left-14 opacity-40"
+        priority
+      />
+
+      {/* <div className="absolute -top-1/3 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[500px] bg-blue-500/55 transform-gpu blur-[200px] rounded-full pointer-events-none opacity-50" /> */}
+      {/* <div className="absolute -bottom-1/3 left-1/2 -translate-x-1/2 w-full max-w-2xl h-[500px] bg-neutral-200/15 transform-gpu blur-[200px] rounded-full pointer-events-none opacity-50" /> */}
 
       {/* Progress Header */}
       <div className="flex items-center gap-3 absolute top-8">
@@ -230,7 +250,7 @@ export function MultiStepOnboarding() {
       </div>
 
       {/* BODY  */}
-      <main className="w-full h-full flex flex-col max-h-[500px] max-w-2xl  bg-linear-to-b from-neutral-100/20 to-transparent rounded-2xl overflow-hidden font-sans">
+      <main className="w-full relative h-full flex flex-col max-h-[500px]  max-w-2xl  bg-linear-to-b from-neutral-900 to-neutral-900 border border-neutral-600 rounded-xl overflow-hidden font-sans">
         <div className="p-5 h-full flex flex-col">
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
@@ -266,7 +286,7 @@ export function MultiStepOnboarding() {
                             "relative flex items-start gap-3 p-3 rounded-xl border text-left transition-all duration-200 group overflow-hidden",
                             selected
                               ? `bg-linear-to-br from-white/30 to-white/10 shadow-[0_0_20px_rgba(255,255,255,0.06)]`
-                              : "bg-white/5 border-white/10 hover:bg-white/[0.08] hover:border-white/20",
+                              : "bg-neutral-800 border-white/10 hover:bg-white/[0.08] hover:border-white/20",
                           )}
                         >
                           {/* Icon bubble */}

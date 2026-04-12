@@ -143,7 +143,7 @@ function TimelineWeekAxis({
   return (
     <div className="w-full min-w-0 overflow-x-auto">
       <div
-        className="relative flex h-full min-h-[460px] max-h-[500px] w-full"
+        className="relative flex h-full min-h-[440px] max-h-[500px] w-full"
         style={{ width: `max(${trackWidth}px, 100%)` }}
         aria-label="Timeline weeks"
       >
@@ -385,7 +385,7 @@ function TimelineDayAxis({
   return (
     <div className="w-full min-w-0 overflow-x-auto dark:bg-card">
       <div
-        className="relative flex h-full min-h-[460px] max-h-[500px] w-full"
+        className="relative flex h-full min-h-[440px] max-h-[500px] w-full"
         style={{ width: `max(${trackWidth}px, 100%)` }}
         aria-label={`Timeline from ${format(days[0]!, "PPP")} to ${format(days[days.length - 1]!, "PPP")}, one column per day`}
       >

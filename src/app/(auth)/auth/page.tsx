@@ -1,4 +1,10 @@
-import { Ghost, Github, LucideGithub, LucideMail } from "lucide-react";
+import {
+  Ghost,
+  GhostIcon,
+  Github,
+  LucideGithub,
+  LucideMail,
+} from "lucide-react";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 
@@ -9,122 +15,133 @@ import { SignInButton, SignUpButton } from "@clerk/nextjs";
 
 export default async function LoginPage() {
   return (
-    <div className="h-screen bg-black text-white selection:bg-white selection:text-black font-sans dark">
-      <main className="relative h-full flex flex-col items-center justify-center px-6 overflow-hidden">
-        {/* Background Effects */}
-        <div className="absolute inset-0 z-0">
-          <div className="absolute top-0 left-0 w-full h-full bg-[linear-gradient(to_right,#80808012_1px,transparent_1px),linear-gradient(to_bottom,#80808012_1px,transparent_1px)] bg-size-[36px_36px]" />
-          <div className="absolute -top-40 left-95 w-full max-w-[720px] h-[500px] bg-blue-500/30 blur-[160px] rounded-full pointer-events-none" />
-        </div>
+    <div className="h-screen bg-black text-white selection:bg-white selection:text-black font-sans dark p-5">
+      {/* Main Container */}
+      <div className="flex h-full">
+        {/* LEFT SIDE */}
+        <div className="border border-border/40 relative overflow-hidden w-[65%] h-full rounded-lg p-8">
+          <div className="absolute z-10 -top-20 left-1/2 -translate-x-1/2 w-full max-w-[560px] h-[300px] bg-blue-500/25 blur-[160px] rounded-full pointer-events-none" />
+          <div className="absolute z-10 -bottom-10 left-1/2 -translate-x-1/2 w-full h-[200px] bg-black blur-[160px] rounded-full pointer-events-none" />
+          <Image
+            src="/bg-footer.jpg"
+            alt="Background"
+            fill
+            className="object-cover z-0 opacity-30"
+          />
+          <div className="flex items-center gap-2 z-20 relative">
+            <Image src="/logo.svg" alt="Logo" width={35} height={35} />
+            <h1 className="text-xl font-semibold font-pop">WeKraft</h1>
+          </div>
 
-        <div className="max-w-6xl w-full z-10 grid lg:grid-cols-2 gap-12 items-center justify-center h-full relative">
-          <div className="space-y-14">
-            <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-white/10 bg-white/5 text-[11px] font-medium text-neutral-400 tracking-wider uppercase">
-              <span className="size-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(96,165,250,0.8)]" />
-              New Era of Collaboration
-            </div>
-            {/* main text */}
-            <div className="space-y-6">
-              <h1 className="text-5xl md:text-[60px] font-semibold  tracking-normal leading-[1.05] font-pop">
-                The Platform for <br />
-                <span className="text-transparent bg-clip-text bg-linear-to-b from-white to-neutral-500  font-sans font-bold">
-                  Modern Collaboration.
-                </span>
+          <div className="absolute bottom-10 z-20">
+            <h1 className=" text-6xl font-semibold tracking-tight font-pop bg-linear-to-r from-white to-neutral-800 text-transparent bg-clip-text">
+              AI-Native
+            </h1>
+            <h1 className=" text-6xl font-semibold tracking-tight font-pop bg-linear-to-r from-white to-neutral-800 text-transparent bg-clip-text">
+              Execution Platform for
+            </h1>
+            <h1 className=" text-6xl leading-snug -mt-1 font-semibold tracking-wide font-pop bg-linear-to-r from-white to-neutral-800 text-transparent bg-clip-text">
+              Builders and Startups
+            </h1>
+          </div>
+        </div>
+        {/* RIGHT SIDE */}
+        <div className="w-[35%] h-full flex flex-col justify-center items-center px-12 relative overflow-hidden bg-black">
+          {/* Header */}
+          <div className="flex flex-col items-center gap-5 mb-12 relative z-10">
+            <div className="flex items-center gap-3">
+              <Image src="/logo.svg" alt="Logo" width={40} height={40} />
+
+              <h1 className="text-3xl font-bold font-pop tracking-tight text-white">
+                WeKraft
               </h1>
-              <p className="text-base text-neutral-400 leading-relaxed max-w-md">
-                WeKraft turns your GitHub activity into actionable insights.
-                From collaboration To Project Management — Build together
-                frictionless.
+            </div>
+            <div className="text-center space-y-1">
+              <p className="text-sm font-medium text-neutral-400 tracking-wide uppercase">
+                Building the future together
+              </p>
+              <div className="h-px w-28 bg-linear-to-r from-transparent via-neutral-700 to-transparent mx-auto" />
+            </div>
+          </div>
+
+          {/* Auth Card/Options */}
+          <div className="w-full max-w-sm space-y-8 relative z-10">
+            <div className="space-y-2 text-center">
+              <h2 className="text-2xl font-semibold tracking-tight text-white">
+                Welcome back
+              </h2>
+              <p className="text-sm text-neutral-500">
+                Sign in to manage your AI-native projects
               </p>
             </div>
 
-            <div className="h-[120px] flex items-center">
-              <DesignCarousel />
+            <div className="space-y-3.5">
+              <SignInButton>
+                <Button
+                  variant="outline"
+                  className="w-full h-9 bg-neutral-900/50 border-neutral-800 hover:bg-neutral-800 hover:border-neutral-700 transition-all duration-300 gap-3 text-white rounded-lg group cursor-pointer shadow-sm relative overflow-hidden"
+                >
+                  <div className="absolute inset-0 bg-linear-to-r from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
+                  <LucideGithub className="w-5 h-5 transition-transform group-hover:scale-110" />
+                  <span className="text-xs font-medium tracking-tight">
+                    Continue with GitHub
+                  </span>
+                </Button>
+              </SignInButton>
+
+              <div className="relative py-2">
+                <div className="absolute inset-0 flex items-center">
+                  <span className="w-full border-t border-neutral-800/50" />
+                </div>
+                <div className="relative flex justify-center text-xs uppercase">
+                  <span className="bg-black px-3 text-neutral-600 font-medium tracking-widest">
+                    OR
+                  </span>
+                </div>
+              </div>
+
+              <Button
+                variant="outline"
+                className="w-full h-9 bg-neutral-900/50 border-neutral-800 hover:bg-neutral-800 hover:border-neutral-700 transition-all duration-300 gap-3 text-white rounded-lg group cursor-pointer shadow-sm relative overflow-hidden"
+              >
+                <GhostIcon className="w-5 h-5 transition-transform group-hover:scale-110" />
+                <span className="text-xs font-medium tracking-tight">
+                  Continue as Guest
+                </span>
+              </Button>
             </div>
           </div>
 
-          <div className="flex justify-center lg:justify-end ">
-            {/* CARD LOGIN */}
-            <div className="w-full max-w-[400px] space-y-8">
-              <div className="p-10 rounded-lg  bg-linear-to-b from-black via-black/60  to-transparent   relative group">
-                <div className="absolute -inset-px bg-linear-to-b to-transparent rounded-lg -z-10 from-white/20 transition-all duration-500" />
-
-                <div className="space-y-6 text-center">
-                  <div className="flex items-center justify-center">
-                    <Image src="/logo.svg" alt="Logo" width={40} height={40} />
-                  </div>
-                  <div className="space-y-3">
-                    <h2 className="text-3xl font-semibold tracking-tight">
-                      Welcome Back
-                    </h2>
-                    <p className="text-[13px] text-neutral-300">
-                      Access your dashboard, manage repositories and collaborate
-                      with your team.
-                    </p>
-                  </div>
-
-                  <div className="space-y-3">
-                    <SignInButton>
-                      <Button className="w-full h-9 bg-white text-black hover:bg-neutral-200 text-sm font-medium flex items-center justify-center gap-3 transition-all rounded-lg">
-                        <Image
-                          src="/github.png"
-                          alt="Github"
-                          width={25}
-                          height={25}
-                        />
-                        Continue with GitHub
-                      </Button>
-                    </SignInButton>
-
-                    <h4 className="text-[11px] text-neutral-400 mt-4">
-                      ALTERNATIVE
-                    </h4>
-
-                    <SignUpButton>
-                      <Button
-                        variant={"ghost"}
-                        className="w-full cursor-pointer text-sm text-neutral-300"
-                      >
-                        <LucideMail className="size-4" />
-                        Continue with Email
-                      </Button>
-                    </SignUpButton>
-                  </div>
-
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <span className="w-full border-t border-white/20" />
-                    </div>
-                    <div className="relative flex justify-center text-[10px] uppercase tracking-widest">
-                      <span className="bg-black/50 px-3 text-neutral-400">
-                        Secure & Fast
-                      </span>
-                    </div>
-                  </div>
-
-                  <p className="text-[11px] text-neutral-500 leading-relaxed text-balance">
-                    By joining, you agree to WeKraft
-                    <Link
-                      href="#"
-                      className="text-neutral-300 hover:text-white underline underline-offset-4 mx-1"
-                    >
-                      Terms
-                    </Link>
-                    and
-                    <Link
-                      href="#"
-                      className="text-neutral-300 hover:text-white underline underline-offset-4 mx-1"
-                    >
-                      Privacy Policy
-                    </Link>
-                    .
-                  </p>
-                </div>
+          {/* Footer Items */}
+          <div className="absolute bottom-10 left-0 right-0 px-12">
+            <div className="flex flex-col items-center gap-6">
+              <div className="flex items-center gap-8">
+                <Link
+                  href="/terms"
+                  className="text-[11px] font-medium text-neutral-600 hover:text-neutral-300 transition-colors tracking-wider uppercase"
+                >
+                  Terms
+                </Link>
+                <Link
+                  href="/privacy"
+                  className="text-[11px] font-medium text-neutral-600 hover:text-neutral-300 transition-colors tracking-wider uppercase"
+                >
+                  Privacy
+                </Link>
+                <Link
+                  href="/support"
+                  className="text-[11px] font-medium text-neutral-600 hover:text-neutral-300 transition-colors tracking-wider uppercase"
+                >
+                  Support
+                </Link>
               </div>
+              <p className="text-[10px] text-neutral-700 font-medium tracking-widest uppercase">
+                © 2024 WeKraft Labs
+              </p>
             </div>
           </div>
         </div>
-      </main>
+      </div>
     </div>
   );
 }
