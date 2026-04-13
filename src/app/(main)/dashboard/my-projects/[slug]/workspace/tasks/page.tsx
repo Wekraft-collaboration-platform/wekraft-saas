@@ -5,13 +5,7 @@ import { useState } from "react";
 import { Id } from "../../../../../../../../convex/_generated/dataModel";
 import { api } from "../../../../../../../../convex/_generated/api";
 import { useQuery } from "convex/react";
-import {
-  UserPlus,
-  Search,
-  Filter,
-  Plus,
-  Layers3,
-} from "lucide-react";
+import { UserPlus, Search, Filter, Plus, Layers3 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -21,8 +15,6 @@ import { ListTab } from "@/modules/workspace/ListTab";
 import { TableTab } from "@/modules/workspace/TableTab";
 import { KanbanTask } from "@/modules/workspace/KanbanTask";
 import { PageTransition } from "@/components/PageTransition";
-
-
 
 const users = [
   { name: "Ritesh", img: "https://i.pravatar.cc/40?img=1" },
@@ -40,7 +32,7 @@ const TaskPage = () => {
   const currentUser = useQuery(api.user.getCurrentUser);
   const project = useQuery(api.project.getProjectBySlug, { slug });
   const projectName = project?.projectName;
-  
+
   const tasks = useQuery(
     api.workspace.getTasks,
     project?._id ? { projectId: project._id as Id<"projects"> } : "skip",
@@ -57,7 +49,7 @@ const TaskPage = () => {
     <PageTransition className="w-full h-full p-6 2xl:p-8">
       <header className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">
-        <Layers3 className="w-6 h-6 ml-1 text-primary inline" />  {projectName} 
+          <Layers3 className="w-6 h-6 ml-1 text-primary inline" /> {projectName}
         </h1>
 
         <div className="flex items-center gap-5">
@@ -97,7 +89,7 @@ const TaskPage = () => {
                 key={tab.id}
                 variant={isActive ? "ghost" : "ghost"}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 transition pb-2 -mb-px ${
+                className={`flex items-center gap-2 transition pb-2 -mb-px text-base ${
                   isActive
                     ? "text-foreground border-b-2 border-b-primary! rounded-none rounded-t-md"
                     : "hover:text-foreground border-b-2 border-transparent"
@@ -143,15 +135,12 @@ const TaskPage = () => {
         {activeTab === "Table" && <TableTab tasks={tasks || []} />}
         {activeTab === "Kanban" && (
           <div className="w-full">
-             <KanbanTask tasks={tasks || []} />
+            <KanbanTask tasks={tasks || []} />
           </div>
         )}
       </div>
-
     </PageTransition>
   );
 };
-
-
 
 export default TaskPage;

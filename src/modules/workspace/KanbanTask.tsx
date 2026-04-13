@@ -38,6 +38,9 @@ import {
   GripVertical,
   Plus,
   FileCodeCorner,
+  ArrowDownNarrowWideIcon,
+  ChevronsRightLeft,
+  SeparatorVertical,
 } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -59,6 +62,21 @@ export const KanbanTask = ({ tasks }: KanbanTaskProps) => {
   const [selectedTaskForSheet, setSelectedTaskForSheet] = useState<Task | null>(
     null,
   );
+  const [collapsedColumns, setCollapsedColumns] = useState<Set<string>>(
+    new Set(),
+  );
+
+  const toggleColumn = (columnId: string) => {
+    setCollapsedColumns((prev) => {
+      const next = new Set(prev);
+      if (next.has(columnId)) {
+        next.delete(columnId);
+      } else {
+        next.add(columnId);
+      }
+      return next;
+    });
+  };
 
   const sensors = useSensors(
     useSensor(PointerSensor, {
@@ -170,6 +188,8 @@ export const KanbanTask = ({ tasks }: KanbanTaskProps) => {
               column={column}
               tasks={tasks.filter((t) => t.status === column.id)}
               onTaskClick={setSelectedTaskForSheet}
+              isCollapsed={collapsedColumns.has(column.id)}
+              onToggle={() => toggleColumn(column.id)}
             />
           ))}
           <DragOverlay>
@@ -195,9 +215,17 @@ interface ColumnProps {
   column: (typeof COLUMNS)[0];
   tasks: Task[];
   onTaskClick: (task: Task) => void;
+  isCollapsed: boolean;
+  onToggle: () => void;
 }
 
-const Column = ({ column, tasks, onTaskClick }: ColumnProps) => {
+const Column = ({
+  column,
+  tasks,
+  onTaskClick,
+  isCollapsed,
+  onToggle,
+}: ColumnProps) => {
   const { setNodeRef } = useSortable({
     id: column.id,
     data: {
@@ -207,35 +235,72 @@ const Column = ({ column, tasks, onTaskClick }: ColumnProps) => {
   });
 
   return (
-    <div className="flex flex-col min-w-[320px] w-[320px] bg-sidebar rounded-lg border border-border overflow-hidden shadow-sm h-fit min-h-[560px] max-h-[calc(100vh-320px)]">
+    <div
+      className={cn(
+        "flex flex-col transition-all duration-500 ease-in-out bg-sidebar rounded-lg border border-border overflow-hidden shadow-sm h-fit min-h-[560px] max-h-[calc(100vh-320px)]",
+        isCollapsed ? "min-w-[60px] w-[60px]" : "min-w-[320px] w-[320px]",
+      )}
+    >
       <div
         className={cn(
-          "p-2 flex items-center justify-between border-b  backdrop-blur-md sticky top-0 z-10 bg-card",
+          "p-2 flex border-b backdrop-blur-md sticky top-0 z-10 bg-card transition-all duration-300",
+          isCollapsed
+            ? "flex-col items-center gap-4 h-full border-b-0"
+            : "items-center justify-between",
         )}
       >
-        <div className="flex items-center gap-2.5">
-          {KANBAN_COLUMN_ICONS[column.id]}
-          <h3 className="font-semibold text-sm tracking-tight capitalize text-primary">
+        <div
+          className={cn(
+            "flex items-center gap-2.5",
+            isCollapsed && "flex-col mt-2",
+          )}
+        >
+          {!isCollapsed && KANBAN_COLUMN_ICONS[column.id]}
+          <h3
+            className={cn(
+              "font-semibold tracking-tight capitalize text-primary transition-all duration-300",
+              isCollapsed
+                ? "[writing-mode:vertical-lr] rotate-180 text-lg py-4"
+                : "text-base",
+            )}
+          >
             {column.label}
           </h3>
           <Badge
             variant="secondary"
-            className="bg-primary/5 text-primary/60 text-[10px] font-bold h-5 px-1.5 border-none"
+            className="bg-primary/5 text-primary/60 text-[10px] font-bold h-5 w-5 rounded-full border-none flex items-center justify-center p-0"
           >
             {tasks.length}
           </Badge>
         </div>
-        <button
-          aria-label="Column menu"
-          className="text-muted-foreground/50 hover:text-primary transition-colors p-1.5 rounded-lg hover:bg-primary/5"
+
+        <div
+          className={cn("flex items-center gap-3", isCollapsed && "order-first")}
         >
-          <MoreHorizontal className="w-4 h-4" />
-        </button>
+          {!isCollapsed && (
+            <button
+              aria-label="Column menu"
+              className="text-primary transition-colors p-1.5 rounded-lg hover:bg-primary/5"
+            >
+              <ArrowDownNarrowWideIcon className="w-5 h-5" />
+            </button>
+          )}
+          <button
+            onClick={onToggle}
+            aria-label="Column menu"
+            className="text-primary transition-colors p-1.5 rounded-lg hover:bg-primary/5"
+          >
+            <SeparatorVertical className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       <div
         ref={setNodeRef}
-        className="flex-1 p-3.5 flex flex-col gap-3.5 overflow-y-auto custom-scrollbar"
+        className={cn(
+          "flex-1 p-3.5 flex flex-col gap-3.5 overflow-y-auto custom-scrollbar transition-opacity duration-300",
+          isCollapsed ? "opacity-0 invisible h-0 p-0" : "opacity-100 visible",
+        )}
       >
         <SortableContext
           items={tasks.map((t) => t._id)}
@@ -250,7 +315,7 @@ const Column = ({ column, tasks, onTaskClick }: ColumnProps) => {
           ))}
         </SortableContext>
 
-        {tasks.length === 0 && (
+        {!isCollapsed && tasks.length === 0 && (
           <div className="flex-1 flex items-center justify-center border-2 border-dashed border-primary/5 rounded-2xl min-h-[120px] text-primary/20 italic text-[11px] font-medium tracking-wide">
             Drop tasks here
           </div>

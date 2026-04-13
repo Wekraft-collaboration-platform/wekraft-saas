@@ -133,12 +133,12 @@ export const TableTab = ({ tasks }: TableTabProps) => {
                   className="rounded border-neutral-500 data-[state=checked]:bg-primary"
                 />
               </TableHead>
-              <TableHead className="text-xs font-medium text-primary px-4 min-w-[180px]  border-r border-neutral-700">
+              <TableHead className="text-[15px] text-primary font-medium px-4 min-w-[180px]  border-r border-neutral-700">
                 <div className="flex items-center gap-2">
                   <FolderPen className="w-4.5 h-4.5" /> Task Name
                 </div>
               </TableHead>
-              <TableHead className="text-xs text-primary font-medium  px-4 border-r border-neutral-700">
+              <TableHead className="text-[15px] text-primary font-medium  px-4 border-r border-neutral-700">
                 <div className="flex items-center justify-between gap-2 overflow-hidden">
                   <div className="flex items-center gap-2">
                     <ChartPie className="w-4.5 h-4.5" /> Status
@@ -146,7 +146,7 @@ export const TableTab = ({ tasks }: TableTabProps) => {
                   <ChevronsUpDown className="w-4.5 h-4.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer shrink-0" />
                 </div>
               </TableHead>
-              <TableHead className="text-xs text-primary font-medium  px-4  border-r  border-neutral-700">
+              <TableHead className="text-[15px] text-primary font-medium  px-4  border-r  border-neutral-700">
                 <div className="flex items-center justify-center gap-2 overflow-hidden">
                   <div className="flex items-center gap-2">
                     <Hourglass className="w-4.5 h-4.5" /> Duration
@@ -178,7 +178,7 @@ export const TableTab = ({ tasks }: TableTabProps) => {
                   </SortPopover>
                 </div>
               </TableHead>
-              <TableHead className="text-xs text-primary font-medium  px-4  border-r  border-neutral-700">
+              <TableHead className="text-[15px] text-primary font-medium  px-4  border-r  border-neutral-700">
                 <div className="flex items-center justify-center gap-2 overflow-hidden">
                   <div className="flex items-center gap-2">
                     <Box className="w-4.5 h-4.5" /> Tags
@@ -186,12 +186,12 @@ export const TableTab = ({ tasks }: TableTabProps) => {
                   <ChevronsUpDown className="w-4.5 h-4.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer shrink-0" />
                 </div>
               </TableHead>
-              <TableHead className="text-xs text-primary font-medium px-4  border-r  border-neutral-700">
+              <TableHead className="text-[15px] text-primary font-medium px-4  border-r  border-neutral-700">
                 <div className="flex items-center gap-2">
                   <Users className="w-4.5 h-4.5" /> Assigned
                 </div>
               </TableHead>
-              <TableHead className="text-xs text-primary font-medium px-4 text-center border-r border-neutral-700">
+              <TableHead className="text-[15px] text-primary font-medium px-4 text-center border-r border-neutral-700">
                 <div className="flex items-center justify-between gap-2 overflow-hidden">
                   <div className="flex items-center gap-2 justify-center">
                     <ChartNoAxesColumnIncreasing className="w-4.5 h-4.5" />{" "}
@@ -282,7 +282,7 @@ export const TableTab = ({ tasks }: TableTabProps) => {
                         className="rounded border-neutral-800 data-[state=checked]:bg-primary"
                       />
                     </TableCell>
-                    <TableCell className="px-4 font-medium border-r border-b border-neutral-700 text-[13px] text-primary/70 group-hover:text-primary transition-colors">
+                    <TableCell className="px-4 font-medium border-r border-b border-neutral-700 text-base text-primary/70 group-hover:text-primary transition-colors">
                       {task.title}
                     </TableCell>
                     <TableCell className="px-4 border-r border-b border-neutral-700">
