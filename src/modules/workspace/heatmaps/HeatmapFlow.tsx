@@ -21,14 +21,13 @@ import {
 import "@xyflow/react/dist/style.css";
 import { FolderNode } from "./action";
 import {
-  Folder,
   MoveRight,
   Network,
   Plus,
   Minus,
   ChevronRight,
-  FileCode,
 } from "lucide-react";
+import { FileIcon as FileSymbol, FolderIcon as FolderSymbol, DefaultFolderOpenedIcon as FolderOpenSymbol } from "@react-symbols/icons/utils";
 import { cn } from "@/lib/utils";
 
 // --- Custom Node Component ---
@@ -69,15 +68,16 @@ const FolderNodeComponent = (props: NodeProps) => {
           </div>
         ) : (
           <div className="p-2.5 bg-zinc-900/80 rounded-lg border border-white/5 shrink-0 group-hover:bg-zinc-800/80 transition-colors shadow-inner">
-            <Folder
-              size={16}
-              className={cn(
-                "transition-colors",
-                isExpanded
-                  ? "text-white"
-                  : "text-zinc-500 group-hover:text-zinc-300",
+            <div className="w-5 h-5 flex items-center justify-center">
+              {isExpanded ? (
+                <FolderOpenSymbol className="w-full h-full" />
+              ) : (
+                <FolderSymbol
+                  folderName={label}
+                  className="w-full h-full"
+                />
               )}
-            />
+            </div>
           </div>
         )}
 
@@ -95,13 +95,17 @@ const FolderNodeComponent = (props: NodeProps) => {
           </span>
           <div className="flex items-center gap-2.5 mt-2">
             <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-zinc-900/50 border border-white/10 shadow-inner">
-              <Folder size={11} className="text-amber-400" />
+              <div className="w-3 h-3">
+                <FolderSymbol folderName="folder" className="w-full h-full" />
+              </div>
               <span className="text-[10px] font-bold text-zinc-200">
                 {folderCount ?? 0}
               </span>
             </div>
             <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-zinc-900/50 border border-white/10 shadow-inner">
-              <FileCode size={11} className="text-blue-400" />
+              <div className="w-3 h-3">
+                <FileSymbol fileName="index.js" className="w-full h-full" />
+              </div>
               <span className="text-[10px] font-bold text-zinc-200">
                 {fileCount ?? 0}
               </span>

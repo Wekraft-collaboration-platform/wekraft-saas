@@ -5,25 +5,12 @@ import {
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Folder,
-  FolderOpen,
-  GitBranch,
   Network,
   RefreshCw,
-  FileCode,
-  File,
-  FileJson,
-  FileText,
-  FileBadge,
-  Terminal,
-  Settings,
   Info,
-  Type,
-  Atom,
-  Brackets,
   Package,
 } from "lucide-react";
-
+import { FileIcon as FileSymbol, FolderIcon as FolderSymbol, DefaultFolderOpenedIcon as FolderOpenSymbol } from "@react-symbols/icons/utils";
 import { memo, useEffect, useState, useCallback } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -43,57 +30,6 @@ interface HeatmapPanelProps {
   structure: FolderNode | null;
   setStructure: (structure: FolderNode | null) => void;
 }
-
-const getFileIcon = (fileName: string) => {
-  const ext = fileName.split(".").pop()?.toLowerCase();
-
-  switch (ext) {
-    case "tsx":
-    case "jsx":
-      return {
-        icon: <Atom size={14} className="text-blue-400 shrink-0" />,
-        color: "text-blue-400",
-      };
-    case "ts":
-    case "js":
-      return {
-        icon: <Brackets size={14} className="text-blue-500 shrink-0" />,
-        color: "text-blue-500",
-      };
-
-    case "json":
-      return {
-        icon: <FileJson size={14} className="text-yellow-500" />,
-        color: "text-yellow-500",
-      };
-    case "css":
-      return {
-        icon: (
-          <div className="text-[10px] font-bold text-blue-300 border border-blue-300/50 rounded-[2px] w-3.5 h-3.5 flex items-center justify-center shrink-0">
-            #
-          </div>
-        ),
-        color: "text-blue-300",
-      };
-    case "md":
-      return {
-        icon: <FileText size={14} className="text-blue-400" />,
-        color: "text-blue-400",
-      };
-    case "svg":
-    case "png":
-    case "jpg":
-      return {
-        icon: <FileBadge size={14} className="text-purple-400" />,
-        color: "text-purple-400",
-      };
-    default:
-      return {
-        icon: <File size={14} className="text-muted-foreground/60" />,
-        color: "text-muted-foreground/60",
-      };
-  }
-};
 
 const FolderTree = ({
   node,
@@ -132,13 +68,19 @@ const FolderTree = ({
           <span className="w-[14px]" />
         )}
 
-        {level === 0 ? (
-          <Package size={16} className="text-primary shrink-0" />
-        ) : isExpanded ? (
-          <FolderOpen size={16} className="text-blue-400/70 shrink-0" />
-        ) : (
-          <Folder size={16} className="text-blue-400/60 shrink-0" />
-        )}
+        <div className="w-4 h-4 flex items-center justify-center shrink-0">
+          {level === 0 ? (
+            <Package size={16} className="text-primary shrink-0" />
+          ) : isExpanded ? (
+            <FolderOpenSymbol width={16} height={16} />
+          ) : (
+            <FolderSymbol 
+              folderName={node.name} 
+              width={16}
+              height={16}
+            />
+          )}
+        </div>
 
         <span className="truncate flex-1">{node.name}</span>
 
@@ -185,7 +127,6 @@ const FolderTree = ({
             {(node.files || [])
               .sort((a, b) => a.localeCompare(b))
               .map((fileName) => {
-                const { icon } = getFileIcon(fileName);
                 return (
                   <div
                     key={`${node.path}/${fileName}`}
@@ -193,7 +134,7 @@ const FolderTree = ({
                     style={{ paddingLeft: `${(level + 1) * 16 + 12}px` }}
                   >
                     <div className="w-4 h-4 flex items-center justify-center shrink-0">
-                      {icon}
+                      <FileSymbol fileName={fileName} className="w-full h-full" />
                     </div>
                     <span className="truncate flex-1">{fileName}</span>
                   </div>
