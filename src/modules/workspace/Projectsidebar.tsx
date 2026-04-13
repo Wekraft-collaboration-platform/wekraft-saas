@@ -49,6 +49,9 @@ import {
   Trash2,
   User2,
   FolderEdit,
+  MessageSquare,
+  MessagesSquare,
+  MessageCircleWarning,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
@@ -248,7 +251,7 @@ export default function ProjectSidebar() {
                 <div className="flex flex-col">
                   <div className="flex items-center justify-between px-2 py-2">
                     <span className="text-xs font-medium text-muted-foreground">
-                      AI Actions
+                      Toggle AI Assistant
                     </span>
                     <div className="flex items-center gap-1 group">
                       <Kbd className="bg-muted/50 font-sans text-[10px] px-1.5 py-0">
@@ -266,27 +269,26 @@ export default function ProjectSidebar() {
                   <Separator className="mb-1" />
 
                   <div className="p-1 flex flex-col gap-0.5">
-                    <p
-                      onClick={() => setAssistantOpen(true)}
-                      className="flex items-center justify-between gap-2 cursor-pointer rounded-sm px-2 py-2 text-xs hover:bg-accent transition-colors group/item"
-                    >
-                      <div className="flex items-center gap-2">
-                        <Bot className="h-4 w-4 text-primary" />
-                        <span>Ask AI assistant</span>
-                      </div>
-                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground group-hover/item:translate-x-0.5 transition-transform" />
-                    </p>
-
                     <Link
                       href={`/dashboard/my-projects/${slug}/workspace/ai`}
                       className="flex items-center justify-between gap-2 rounded-sm px-2 py-2 text-xs hover:bg-accent transition-colors group/item"
                     >
                       <div className="flex items-center gap-2">
-                        <Link2 className="h-4 w-4 text-muted-foreground" />
+                        <MessagesSquare className="h-4 w-4" />
                         <span>Open full Chatspace</span>
                       </div>
                       <ChevronRight className="h-3.5 w-3.5 text-muted-foreground group-hover/item:translate-x-0.5 transition-transform" />
                     </Link>
+                    <p
+                      onClick={() => setAssistantOpen(true)}
+                      className="flex items-center justify-between gap-2 cursor-pointer rounded-sm px-2 py-2 text-xs hover:bg-accent transition-colors group/item"
+                    >
+                      <div className="flex items-center gap-2">
+                        <MessageCircleWarning className="h-4 w-4 text-primary" />
+                        <span>Ask AI assistant</span>
+                      </div>
+                      <ChevronRight className="h-3.5 w-3.5 text-muted-foreground group-hover/item:translate-x-0.5 transition-transform" />
+                    </p>
 
                     <p className="flex items-center justify-between gap-2 cursor-pointer rounded-sm px-2 py-2 text-xs hover:bg-accent transition-colors group/item">
                       <div className="flex items-center gap-2">
