@@ -107,7 +107,9 @@ export default defineSchema({
     userId: v.id("users"),
     userName: v.string(),
     userImage: v.optional(v.string()),
-    AccessRole: v.optional(v.union(v.literal("admin"), v.literal("member"), v.literal('viewer'))),
+    AccessRole: v.optional(
+      v.union(v.literal("admin"), v.literal("member"), v.literal("viewer")),
+    ),
     joinedAt: v.optional(v.number()),
     leftAt: v.optional(v.number()),
   })
@@ -115,14 +117,13 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_access_role", ["AccessRole"]),
 
-
   // --------------------------------------------------------
   projectJoinRequests: defineTable({
     projectId: v.id("projects"),
     userId: v.id("users"),
-    userName: v.string(), 
-    userImage: v.optional(v.string()), 
-    message: v.optional(v.string()), 
+    userName: v.string(),
+    userImage: v.optional(v.string()),
+    message: v.optional(v.string()),
     source: v.union(v.literal("invited"), v.literal("manual")),
     status: v.union(
       v.literal("pending"),
@@ -130,7 +131,7 @@ export default defineSchema({
       v.literal("rejected"),
     ),
     createdAt: v.number(),
-    updatedAt: v.number(), 
+    updatedAt: v.number(),
   })
     .index("by_project", ["projectId"])
     .index("by_user", ["userId"])
@@ -141,7 +142,9 @@ export default defineSchema({
     title: v.string(),
     description: v.optional(v.string()),
     type: v.optional(v.object({ label: v.string(), color: v.string() })), // Custom tag like {label: "dashboard", color: "blue"}
-    priority: v.optional(v.union(v.literal("high"), v.literal("medium"), v.literal("low"))),
+    priority: v.optional(
+      v.union(v.literal("high"), v.literal("medium"), v.literal("low")),
+    ),
     assignedTo: v.optional(
       v.array(
         v.object({
@@ -175,85 +178,93 @@ export default defineSchema({
     .index("by_status", ["status"])
     .index("by_priority", ["priority"])
     .index("by_project_status", ["projectId", "status"]),
-    
-    // --------------------------------------------------
-    taskComments: defineTable({
-      taskId: v.id("tasks"),
-      userId: v.id("users"),
-      userName: v.string(),
-      userImage: v.optional(v.string()),
-      comment: v.string(),
-      createdAt: v.number(),
-      updatedAt: v.number(),
-    })
+
+  // --------------------------------------------------
+  taskComments: defineTable({
+    taskId: v.id("tasks"),
+    userId: v.id("users"),
+    userName: v.string(),
+    userImage: v.optional(v.string()),
+    comment: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
     .index("by_task", ["taskId"])
     .index("by_user", ["userId"])
     .index("by_task_user", ["taskId", "userId"]),
-    // ----------------------------------------------------
+  // ----------------------------------------------------
 
-    issues: defineTable({
-      title: v.string(),
-      description: v.optional(v.string()),
-      fileLinked: v.optional(v.string()),
-      environment : v.optional(v.union(v.literal("local"),v.literal("dev"), v.literal("staging"), v.literal("production"))),
-      severity: v.optional(v.union(v.literal("critical"), v.literal("medium"), v.literal("low"))),
-      due_date:v.optional(v.number()), // for tracking
-      status: v.union(
-        v.literal("not opened"),
-        v.literal("opened"),
-        v.literal("in review"),
-        v.literal("reopened"),
-        v.literal("closed"),
+  issues: defineTable({
+    title: v.string(),
+    description: v.optional(v.string()),
+    fileLinked: v.optional(v.string()),
+    environment: v.optional(
+      v.union(
+        v.literal("local"),
+        v.literal("dev"),
+        v.literal("staging"),
+        v.literal("production"),
       ),
-      type: v.union(
-        v.literal("user-created"),
-        v.literal("task-issue"),
-        v.literal("github")
+    ),
+    severity: v.optional(
+      v.union(v.literal("critical"), v.literal("medium"), v.literal("low")),
+    ),
+    due_date: v.optional(v.number()), // for tracking
+    status: v.union(
+      v.literal("not opened"),
+      v.literal("opened"),
+      v.literal("in review"),
+      v.literal("reopened"),
+      v.literal("closed"),
+    ),
+    type: v.union(
+      v.literal("user-created"),
+      v.literal("task-issue"),
+      v.literal("github"),
+    ),
+    githubIssueUrl: v.optional(v.string()), // if its from github.
+    taskId: v.optional(v.id("tasks")), // if its from task.
+    projectId: v.id("projects"),
+    createdByUserId: v.id("users"),
+    IssueAssignee: v.optional(
+      v.array(
+        v.object({
+          userId: v.id("users"),
+          name: v.string(),
+          avatar: v.optional(v.string()),
+        }),
       ),
-      githubIssueUrl: v.optional(v.string()), // if its from github.
-      taskId: v.optional(v.id("tasks")), // if its from task.
-      projectId: v.id("projects"),
-      createdByUserId: v.id("users"),
-      IssueAssignee: v.optional(
-        v.array(
-          v.object({
-            userId: v.id("users"),
-            name: v.string(),
-            avatar: v.optional(v.string()),
-          }),
-        ),
-      ),
-      createdAt: v.number(),
-      updatedAt: v.number(),
-      
-    })
+    ),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
     .index("by_project", ["projectId"])
     .index("by_creator", ["createdByUserId"])
     .index("by_task", ["taskId"])
     .index("by_status", ["status"])
     .index("by_severity", ["severity"])
     .index("by_environment", ["environment"]),
-    // ---------------------------------------------------
-    issueComments: defineTable({
-      issueId: v.id("issues"),
-      userId: v.id("users"),
-      userName: v.string(),
-      userImage: v.optional(v.string()),
-      comment: v.string(),
-      createdAt: v.number(),
-      updatedAt: v.number(),
-    })
+  // ---------------------------------------------------
+  issueComments: defineTable({
+    issueId: v.id("issues"),
+    userId: v.id("users"),
+    userName: v.string(),
+    userImage: v.optional(v.string()),
+    comment: v.string(),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
     .index("by_issue", ["issueId"])
     .index("by_user", ["userId"])
     .index("by_issue_user", ["issueId", "userId"]),
 
-    // -----------------------------------------------------
-    projectDetails: defineTable({
-      projectId: v.id("projects"),
-      repoId: v.optional(v.id("repositories")), // optional if project has connected repo.
-      targetDate: v.optional(v.number()),
-      // healthscore to:do
-    })
+  // -----------------------------------------------------
+  projectDetails: defineTable({
+    projectId: v.id("projects"),
+    repoId: v.optional(v.id("repositories")), // optional if project has connected repo.
+    targetDate: v.optional(v.number()),
+    // healthscore to:do
+  })
     .index("by_project", ["projectId"])
     .index("by_repo", ["repoId"]),
 
@@ -263,7 +274,11 @@ export default defineSchema({
     creatorId: v.id("users"),
     title: v.string(),
     description: v.optional(v.string()),
-    type: v.union(v.literal("event"), v.literal("milestone"), v.literal("comment")),
+    type: v.union(
+      v.literal("event"),
+      v.literal("milestone"),
+      v.literal("comment"),
+    ),
     start: v.number(),
     end: v.number(),
     allDay: v.boolean(),
@@ -273,4 +288,29 @@ export default defineSchema({
   })
     .index("by_project", ["projectId"])
     .index("by_creator", ["creatorId"]),
+
+  // --------------------------------------------------------
+  sprints: defineTable({
+    projectId: v.id("projects"),
+    creatorId: v.id("users"),
+    // tasks: v.optional(v.array(v.id("tasks"))),
+    // issues: v.optional(v.array(v.id("issues"))),
+    duration: v.object({
+      startDate: v.number(),
+      endDate: v.number(),
+    }),
+    sprintName: v.string(),
+    sprintGoal: v.string(),
+    status: v.union(
+      v.literal("planned"),
+      v.literal("active"),
+      v.literal("completed"),
+    ),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_project", ["projectId"])
+    .index("by_creator", ["creatorId"])
+    .index("by_status", ["status"])
+    .index("by_project_status", ["projectId", "status"]),
 });
