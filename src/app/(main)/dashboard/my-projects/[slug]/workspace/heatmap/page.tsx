@@ -55,6 +55,7 @@ const HeatmapPage = () => {
         isOpen={isPanelOpen}
         repoId={repoId}
         structure={structure}
+        issuePaths={issuePaths}
         setStructure={setStructure}
         onToggle={(open) => {
           setIsPanelOpen(open);

@@ -11,7 +11,7 @@ import {
   Package,
 } from "lucide-react";
 import { FileIcon as FileSymbol, FolderIcon as FolderSymbol, DefaultFolderOpenedIcon as FolderOpenSymbol } from "@react-symbols/icons/utils";
-import { memo, useEffect, useState, useCallback } from "react";
+import { memo, useEffect, useState, useCallback, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "convex/react";
@@ -28,49 +28,97 @@ interface HeatmapPanelProps {
   onToggle: (open: boolean) => void;
   repoId?: Id<"repositories">;
   structure: FolderNode | null;
+  issuePaths?: string[];
   setStructure: (structure: FolderNode | null) => void;
 }
+
+// Helper to filter the tree for issues
+const pruneTreeForIssues = (node: FolderNode, issuePaths: string[]): FolderNode | null => {
+  const isPathInIssues = (path: string) => issuePaths.some(ip => ip === path || ip.startsWith(path + "/"));
+  
+  // 1. Filter files in this node
+  const filteredFiles = node.files.filter(fileName => {
+    const filePath = node.path ? `${node.path}/${fileName}` : fileName;
+    return issuePaths.includes(filePath);
+  });
+
+  // 2. Filter children recursively
+  const filteredChildren: Record<string, FolderNode> = {};
+  Object.entries(node.children).forEach(([name, child]) => {
+    const prunedChild = pruneTreeForIssues(child, issuePaths);
+    if (prunedChild) {
+      filteredChildren[name] = prunedChild;
+    }
+  });
+
+  // 3. If this folder has issue-files or issue-subfolders, keep it
+  if (filteredFiles.length > 0 || Object.keys(filteredChildren).length > 0) {
+    return {
+      ...node,
+      files: filteredFiles,
+      children: filteredChildren,
+      // Total count here might be misleading, but we'll show what's left
+      totalFileCount: filteredFiles.length + Object.values(filteredChildren).reduce((acc, c) => acc + c.totalFileCount, 0)
+    };
+  }
+
+  return null;
+};
 
 const FolderTree = ({
   node,
   level = 0,
   expandedPaths,
   togglePath,
+  issuePaths = [],
+  isIssueView = false,
 }: {
   node: FolderNode;
   level?: number;
   expandedPaths: Set<string>;
   togglePath: (path: string) => void;
+  issuePaths?: string[];
+  isIssueView?: boolean;
 }) => {
   const isExpanded = expandedPaths.has(node.path);
   const hasChildren =
     Object.keys(node.children).length > 0 ||
     (node.files && node.files.length > 0);
 
+  const containsIssue = (path: string) => issuePaths.some(ip => ip === path || ip.startsWith(path + "/"));
+  const hasIssue = containsIssue(node.path);
+  const hasIssueChild = Object.values(node.children).some(child => containsIssue(child.path));
+  const isActiveFolder = isIssueView && hasIssue && (!isExpanded || !hasIssueChild);
+
   return (
     <div className="flex flex-col">
       <div
         className={cn(
-          "flex items-center gap-2 py-1 px-2 mb-0.5 rounded-sm hover:bg-accent/40 cursor-pointer transition-colors text-[13px] group relative",
-          level === 0 && "font-bold bg-accent/20 mb-2 border border-border/10",
+          "flex items-center gap-2 py-1.5 px-2 mb-0.5 rounded-md hover:bg-accent/40 cursor-pointer transition-all text-[13px] group relative border border-transparent",
+          level === 0 && !isIssueView && "font-bold bg-accent/20 mb-2 border border-border/10",
+          level === 0 && isIssueView && "font-bold bg-accent/20 mb-2 border border-border/10",
+          isActiveFolder && "border-red-500/40 bg-red-500/5",
           isExpanded && level !== 0 && "bg-accent/5",
         )}
+
         style={{ paddingLeft: `${level * 16 + 8}px` }}
         onClick={() => togglePath(node.path)}
       >
         {hasChildren ? (
           isExpanded ? (
-            <ChevronDown size={14} className="text-muted-foreground" />
+            <ChevronDown size={14} className="transition-transform text-muted-foreground" />
           ) : (
-            <ChevronRight size={14} className="text-muted-foreground" />
+            <ChevronRight size={14} className="transition-transform text-muted-foreground" />
           )
         ) : (
           <span className="w-[14px]" />
         )}
 
         <div className="w-4 h-4 flex items-center justify-center shrink-0">
-          {level === 0 ? (
+          {level === 0 && !isIssueView ? (
             <Package size={16} className="text-primary shrink-0" />
+          ) : level === 0 && isIssueView ? (
+            <Network size={16} className="text-primary shrink-0" />
           ) : isExpanded ? (
             <FolderOpenSymbol width={16} height={16} />
           ) : (
@@ -82,16 +130,18 @@ const FolderTree = ({
           )}
         </div>
 
-        <span className="truncate flex-1">{node.name}</span>
+        <span className={cn("truncate flex-1", isIssueView && "font-medium")}>{node.name}</span>
 
         <div
           className={cn(
             "flex items-center gap-2 transition-opacity",
-            level === 0 ? "opacity-100" : "opacity-0 group-hover:opacity-100",
+            level === 0 || isIssueView ? "opacity-100" : "opacity-0 group-hover:opacity-100",
           )}
         >
-          <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-mono">
-            {node.totalFileCount} files
+          <span className={cn(
+            "text-[9px] px-1.5 py-0.5 rounded-full font-mono uppercase tracking-tighter bg-primary/10 text-primary"
+          )}>
+            {node.totalFileCount} {isIssueView ? "Issues" : "Files"}
           </span>
         </div>
       </div>
@@ -107,7 +157,9 @@ const FolderTree = ({
           >
             {/* Vertical Guide Line */}
             <div
-              className="absolute left-[15px] top-0 bottom-0 w-[1px] bg-border/20 z-0"
+              className={cn(
+                "absolute left-[15px] top-0 bottom-0 w-[1px] z-0 bg-border/20"
+              )}
               style={{ left: `${level * 16 + 15}px` }}
             />
 
@@ -120,6 +172,8 @@ const FolderTree = ({
                   level={level + 1}
                   expandedPaths={expandedPaths}
                   togglePath={togglePath}
+                  issuePaths={issuePaths}
+                  isIssueView={isIssueView}
                 />
               ))}
 
@@ -127,16 +181,24 @@ const FolderTree = ({
             {(node.files || [])
               .sort((a, b) => a.localeCompare(b))
               .map((fileName) => {
+                const filePath = node.path ? `${node.path}/${fileName}` : fileName;
+                const fileHasIssue = issuePaths.includes(filePath);
                 return (
                   <div
-                    key={`${node.path}/${fileName}`}
-                    className="flex items-center gap-2 py-1 px-2 mb-0.5 rounded-sm text-[13px] text-muted-foreground/80 hover:bg-accent/30 hover:text-foreground cursor-pointer transition-colors group relative"
+                    key={filePath}
+                    className={cn(
+                      "flex items-center gap-2 py-1 px-2 mb-0.5 rounded-sm text-[13px] hover:bg-accent/30 hover:text-foreground cursor-pointer transition-colors group relative",
+                      fileHasIssue ? "text-red-400" : "text-muted-foreground/80"
+                    )}
                     style={{ paddingLeft: `${(level + 1) * 16 + 12}px` }}
                   >
                     <div className="w-4 h-4 flex items-center justify-center shrink-0">
                       <FileSymbol fileName={fileName} className="w-full h-full" />
                     </div>
                     <span className="truncate flex-1">{fileName}</span>
+                    {fileHasIssue && (
+                      <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                    )}
                   </div>
                 );
               })}
@@ -153,15 +215,37 @@ export const HeatmapPanel = memo(
     onToggle,
     repoId,
     structure,
+    issuePaths = [],
     setStructure,
   }: HeatmapPanelProps) => {
     const { setOpen: setSidebarOpen } = useSidebar();
     const [isLoading, setIsLoading] = useState(false);
     const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set());
+    
+    // Track expanded paths for the issue tree separately
+    const [issueExpandedPaths, setIssueExpandedPaths] = useState<Set<string>>(new Set());
 
     const [lastUpdated, setLastUpdated] = useState<number | null>(null);
 
     const repository = useQuery(api.repo.getRepositoryById, { repoId });
+
+    const issueTree = useMemo(() => {
+      if (!structure || issuePaths.length === 0) return null;
+      return pruneTreeForIssues(structure, issuePaths);
+    }, [structure, issuePaths]);
+
+    // Automatically expand issue tree when it changes
+    useEffect(() => {
+      if (issueTree) {
+        const paths = new Set<string>();
+        const collectPaths = (node: FolderNode) => {
+          paths.add(node.path);
+          Object.values(node.children).forEach(collectPaths);
+        };
+        collectPaths(issueTree);
+        setIssueExpandedPaths(paths);
+      }
+    }, [issueTree]);
 
     const loadStructure = useCallback(
       async (force = false) => {
@@ -215,6 +299,16 @@ export const HeatmapPanel = memo(
         next.add(path);
       }
       setExpandedPaths(next);
+    };
+
+    const toggleIssuePath = (path: string) => {
+      const next = new Set(issueExpandedPaths);
+      if (next.has(path)) {
+        next.delete(path);
+      } else {
+        next.add(path);
+      }
+      setIssueExpandedPaths(next);
     };
 
     const handleToggle = () => {
@@ -274,10 +368,32 @@ export const HeatmapPanel = memo(
 
             {/* BODY */}
             <div className="flex-1 overflow-y-auto custom-scrollbar">
-              <div className="p-4 space-y-6">
-                {/* Folder Tree */}
-                <div className="space-y-1">
-                  <div className="flex items-center justify-between mb-3 px-1">
+              <div className="p-4 space-y-8">
+                {/* 🔴 ISSUES SECTION (Only shown if issues exist) */}
+                {issueTree && (
+                  <div className="space-y-4">
+                    <div className="flex items-center justify-between px-1">
+                      <span className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] flex items-center gap-2">
+                        <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
+                        Active Issues
+                      </span>
+                    </div>
+
+                    <div className="border border-border/20 rounded-xl p-1 bg-accent/5">
+                      <FolderTree
+                        node={issueTree}
+                        expandedPaths={issueExpandedPaths}
+                        togglePath={toggleIssuePath}
+                        issuePaths={issuePaths}
+                        isIssueView={true}
+                      />
+                    </div>
+                  </div>
+                )}
+
+                {/* 📂 FULL DIRECTORY STRUCTURE */}
+                <div className="space-y-4">
+                  <div className="flex items-center justify-between px-1">
                     <span className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.2em]">
                       Directory Structure
                     </span>
@@ -301,6 +417,7 @@ export const HeatmapPanel = memo(
                         node={structure}
                         expandedPaths={expandedPaths}
                         togglePath={togglePath}
+                        issuePaths={issuePaths}
                       />
                     </div>
                   ) : (
