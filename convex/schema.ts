@@ -293,8 +293,8 @@ export default defineSchema({
   sprints: defineTable({
     projectId: v.id("projects"),
     creatorId: v.id("users"),
-    // tasks: v.optional(v.array(v.id("tasks"))),
-    // issues: v.optional(v.array(v.id("issues"))),
+    // tasks: v.optional(v.array(v.id("tasks"))), // except completed
+    // issues: v.optional(v.array(v.id("issues"))), // except closed
     duration: v.object({
       startDate: v.number(),
       endDate: v.number(),

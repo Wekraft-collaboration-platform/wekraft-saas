@@ -377,4 +377,83 @@
     pointer-events: none;
     background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
   }
+
+  /* View Transitions API Animations */
+  ::view-transition-group(*) {
+    animation-duration: 400ms;
+  }
+
+  ::view-transition-group(.morph) {
+    animation-duration: 400ms;
+  }
+
+  ::view-transition-image-pair(.morph) {
+    animation-name: via-blur;
+  }
+
+  @keyframes via-blur {
+    30% { filter: blur(3px); }
+  }
+
+  ::view-transition-old(.slide-down) {
+    animation: 200ms ease-out both fade reverse, 200ms ease-out both slide-y reverse;
+  }
+
+  ::view-transition-new(.slide-up) {
+    animation: 300ms ease-in 150ms both fade, 400ms ease-in both slide-y;
+  }
+
+  @keyframes fade {
+    from { opacity: 0; filter: blur(3px); }
+    to { opacity: 1; filter: blur(0); }
+  }
+
+  @keyframes slide-y {
+    from { transform: translateY(10px); }
+    to { transform: translateY(0); }
+  }
+
+  ::view-transition-old(.nav-forward) {
+    --slide-offset: -60px;
+    animation: 150ms ease-in both fade reverse, 400ms ease-in-out both slide reverse;
+  }
+  ::view-transition-new(.nav-forward) {
+    --slide-offset: 60px;
+    animation: 210ms ease-out 150ms both fade, 400ms ease-in-out both slide;
+  }
+
+  ::view-transition-old(.nav-back) {
+    --slide-offset: 60px;
+    animation: 150ms ease-in both fade reverse, 400ms ease-in-out both slide reverse;
+  }
+  ::view-transition-new(.nav-back) {
+    --slide-offset: -60px;
+    animation: 210ms ease-out 150ms both fade, 400ms ease-in-out both slide;
+  }
+
+  @keyframes slide {
+    from { translate: var(--slide-offset); }
+    to { translate: 0; }
+  }
+
+  /* Anchoring Header if needed */
+  ::view-transition-group(site-header) {
+    animation: none;
+    z-index: 100;
+  }
+  ::view-transition-old(site-header) {
+    display: none;
+  }
+  ::view-transition-new(site-header) {
+    animation: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(*),
+    ::view-transition-new(*),
+    ::view-transition-group(*) {
+      animation-duration: 0s !important;
+      animation-delay: 0s !important;
+    }
+  }
 }

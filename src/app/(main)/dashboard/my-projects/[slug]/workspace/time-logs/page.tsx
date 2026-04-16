@@ -15,7 +15,7 @@ import { useParams } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "../../../../../../../../convex/_generated/api";
 import { Id } from "../../../../../../../../convex/_generated/dataModel";
-import { PageTransition } from "@/components/PageTransition";
+
 import { SetTargetDateDialog } from "@/modules/workspace/SetTargetDateDialog";
 import { Button } from "@/components/ui/button";
 import { ProjectTimeline } from "@/modules/workspace/timeLogs/ProjectTimeline";
@@ -91,7 +91,7 @@ const TimeLogsPage = () => {
   }
 
   return (
-    <PageTransition className="w-full h-full p-6 2xl:p-8">
+    <div className="w-full h-full p-6 2xl:p-8">
       <header>
         <h1 className="text-2xl font-semibold">
           <ChartNoAxesGantt className="w-6 h-6 ml-1 text-primary inline" /> Time
@@ -168,7 +168,7 @@ const TimeLogsPage = () => {
         projectId={project._id}
         projectName={project.projectName}
       />
-    </PageTransition>
+    </div>
   );
 };
 

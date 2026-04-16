@@ -8,17 +8,7 @@ import { ClerkProvider } from "@clerk/nextjs";
 import { dark, neobrutalism } from "@clerk/ui/themes";
 import { Toaster } from "sonner";
 
-// Temporarily using system fonts to bypass Turbopack build error
-// const geistSans = Geist({
-//   variable: "--font-geist-sans",
-//   subsets: ["latin"],
-// });
-
-// const geistMono = Geist_Mono({
-//   variable: "--font-geist-mono",
-//   subsets: ["latin"],
-// });
-
+import { ViewTransition } from "react";
 
 export const metadata: Metadata = {
   title: "Create Next App",
@@ -32,10 +22,7 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en" className="" suppressHydrationWarning>
-      <body
-        className={`antialiased font-sans`}
-      >
-
+      <body className={`antialiased font-sans`}>
         <ClerkProvider
           appearance={{
             theme: dark,
@@ -49,7 +36,9 @@ export default function RootLayout({
               disableTransitionOnChange
             >
               <ConvexClientProvider>
-                <main>{children}</main>
+                <main>
+                  <ViewTransition>{children}</ViewTransition>
+                </main>
               </ConvexClientProvider>
 
               <Toaster position="top-right" />

@@ -14,7 +14,7 @@ import { TABS } from "@/lib/static-store";
 import { ListTab } from "@/modules/workspace/ListTab";
 import { TableTab } from "@/modules/workspace/TableTab";
 import { KanbanTask } from "@/modules/workspace/KanbanTask";
-import { PageTransition } from "@/components/PageTransition";
+
 
 const users = [
   { name: "Ritesh", img: "https://i.pravatar.cc/40?img=1" },
@@ -46,7 +46,7 @@ const TaskPage = () => {
     );
 
   return (
-    <PageTransition className="w-full h-full p-6 2xl:p-8">
+    <div className="w-full h-full p-6 2xl:p-8">
       <header className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">
           <Layers3 className="w-6 h-6 ml-1 text-primary inline" /> {projectName}
@@ -139,7 +139,7 @@ const TaskPage = () => {
           </div>
         )}
       </div>
-    </PageTransition>
+    </div>
   );
 };
 

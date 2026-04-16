@@ -238,15 +238,17 @@ const Column = ({
     <div
       className={cn(
         "flex flex-col transition-all duration-500 ease-in-out bg-sidebar rounded-lg border border-border overflow-hidden shadow-sm h-fit min-h-[560px] max-h-[calc(100vh-320px)]",
-        isCollapsed ? "min-w-[60px] w-[60px]" : "min-w-[320px] w-[320px]",
+        isCollapsed
+          ? "min-w-[60px] w-[60px] bg-sidebar border-none shadow-none"
+          : "min-w-[320px] w-[320px]",
       )}
     >
       <div
         className={cn(
-          "p-2 flex border-b backdrop-blur-md sticky top-0 z-10 bg-card transition-all duration-300",
+          "p-2 flex border-b sticky top-0 z-10 transition-all duration-300",
           isCollapsed
-            ? "flex-col items-center gap-4 h-full border-b-0"
-            : "items-center justify-between",
+            ? "flex-col items-center gap-4 h-full border-b-0 bg-transparent"
+            : "items-center justify-between bg-card backdrop-blur-md",
         )}
       >
         <div
@@ -275,7 +277,10 @@ const Column = ({
         </div>
 
         <div
-          className={cn("flex items-center gap-3", isCollapsed && "order-first")}
+          className={cn(
+            "flex items-center gap-3",
+            isCollapsed && "order-first",
+          )}
         >
           {!isCollapsed && (
             <button

@@ -1,5 +1,5 @@
 "use client";
-import { PageTransition } from "@/components/PageTransition";
+
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "convex/react";
@@ -31,7 +31,7 @@ const IssuesPage = () => {
   const project = useQuery(api.project.getProjectBySlug, { slug });
   const projectName = project?.projectName;
   return (
-    <PageTransition className="w-full h-full p-6 2xl:p-8">
+    <div className="w-full h-full p-6 2xl:p-8">
       <header className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">
           <Bug className="w-6 h-6 ml-1 -mt-0.5 text-primary inline" /> Issues
@@ -137,7 +137,7 @@ const IssuesPage = () => {
           </div>
         </div>
       </main>
-    </PageTransition>
+    </div>
   );
 };
 
