@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useState, startTransition, ViewTransition } from "react";
 import { Id } from "../../../../../../../../convex/_generated/dataModel";
 import { api } from "../../../../../../../../convex/_generated/api";
 import { useQuery } from "convex/react";
@@ -14,7 +14,6 @@ import { TABS } from "@/lib/static-store";
 import { ListTab } from "@/modules/workspace/ListTab";
 import { TableTab } from "@/modules/workspace/TableTab";
 import { KanbanTask } from "@/modules/workspace/KanbanTask";
-
 
 const users = [
   { name: "Ritesh", img: "https://i.pravatar.cc/40?img=1" },
@@ -88,7 +87,11 @@ const TaskPage = () => {
               <Button
                 key={tab.id}
                 variant={isActive ? "ghost" : "ghost"}
-                onClick={() => setActiveTab(tab.id)}
+                onClick={() => {
+                  startTransition(() => {
+                    setActiveTab(tab.id);
+                  });
+                }}
                 className={`flex items-center gap-2 transition pb-2 -mb-px text-base ${
                   isActive
                     ? "text-foreground border-b-2 border-b-primary! rounded-none rounded-t-md"
@@ -131,13 +134,17 @@ const TaskPage = () => {
 
       {/* BODY PART */}
       <div className="mt-6 max-w-full">
-        {activeTab === "List" && <ListTab tasks={tasks || []} />}
-        {activeTab === "Table" && <TableTab tasks={tasks || []} />}
-        {activeTab === "Kanban" && (
-          <div className="w-full">
-            <KanbanTask tasks={tasks || []} />
-          </div>
-        )}
+        <ViewTransition key={activeTab} name="tab-content">
+          <>
+            {activeTab === "List" && <ListTab tasks={tasks || []} />}
+            {activeTab === "Table" && <TableTab tasks={tasks || []} />}
+            {activeTab === "Kanban" && (
+              <div className="w-full">
+                <KanbanTask tasks={tasks || []} />
+              </div>
+            )}
+          </>
+        </ViewTransition>
       </div>
     </div>
   );
