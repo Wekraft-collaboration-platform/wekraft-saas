@@ -49,14 +49,38 @@ import { cn } from "@/lib/utils";
 import { TaskDetailSheet } from "./TaskDetailSheet";
 import { toast } from "sonner";
 import { useSidebar } from "@/components/ui/sidebar";
+import { Id } from "../../../convex/_generated/dataModel";
 
 interface KanbanTaskProps {
   tasks: Task[];
+  projectId: Id<"projects">;
+  taskLimit: number;
 }
 
-export const KanbanTask = ({ tasks }: KanbanTaskProps) => {
+export const KanbanTask = ({ tasks, projectId, taskLimit }: KanbanTaskProps) => {
   const { open: sidebarOpen } = useSidebar();
-  const updateStatus = useMutation(api.workspace.updateTaskStatus);
+
+  // Optimistic UI — instantly updates the kanban on drag-drop
+  const updateStatus = useMutation(api.workspace.updateTaskStatus)
+    .withOptimisticUpdate((localStore, args) => {
+      const currentTasks = localStore.getQuery(api.workspace.getTasks, {
+        projectId,
+        limit: taskLimit,
+      });
+
+      if (currentTasks !== undefined) {
+        const updated = currentTasks.map((task) =>
+          task._id === args.taskId
+            ? { ...task, status: args.status, updatedAt: Date.now() }
+            : task,
+        );
+        localStore.setQuery(
+          api.workspace.getTasks,
+          { projectId, limit: taskLimit },
+          updated,
+        );
+      }
+    });
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [selectedTaskForSheet, setSelectedTaskForSheet] = useState<Task | null>(

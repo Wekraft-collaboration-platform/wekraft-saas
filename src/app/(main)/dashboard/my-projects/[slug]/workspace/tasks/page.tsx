@@ -147,7 +147,11 @@ const TaskPage = () => {
             )}
             {activeTab === "Kanban" && (
               <div className="w-full">
-                <KanbanTask tasks={tasks || []} />
+                <KanbanTask
+                  tasks={tasks || []}
+                  projectId={project._id as Id<"projects">}
+                  taskLimit={taskLimit}
+                />
               </div>
             )}
           </>
