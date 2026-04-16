@@ -21,14 +21,13 @@ import {
 import "@xyflow/react/dist/style.css";
 import { FolderNode } from "./action";
 import {
-  Folder,
   MoveRight,
   Network,
   Plus,
   Minus,
   ChevronRight,
-  FileCode,
 } from "lucide-react";
+import { FileIcon as FileSymbol, FolderIcon as FolderSymbol, DefaultFolderOpenedIcon as FolderOpenSymbol } from "@react-symbols/icons/utils";
 import { cn } from "@/lib/utils";
 
 // --- Custom Node Component ---
@@ -39,8 +38,9 @@ const FolderNodeComponent = (props: NodeProps) => {
     isExpanded: boolean;
     folderCount?: number;
     fileCount?: number;
+    hasIssue?: boolean;
   };
-  const { label, isExpanded, level, folderCount, fileCount } = data;
+  const { label, isExpanded, level, folderCount, fileCount, hasIssue } = data;
   const isRoot = level === 0;
 
   return (
@@ -53,6 +53,7 @@ const FolderNodeComponent = (props: NodeProps) => {
         isExpanded &&
           !isRoot &&
           "ring-1 ring-white/10 border-white/50 bg-[#121212]",
+        hasIssue && "border-red-500/60 shadow-[0_0_20px_rgba(239,68,68,0.3)] ring-1 ring-red-500/40",
       )}
     >
       {/* Connection Points */}
@@ -64,20 +65,27 @@ const FolderNodeComponent = (props: NodeProps) => {
 
       <div className="flex items-center gap-4 w-full">
         {isRoot ? (
-          <div className="p-2 bg-blue-600/10 rounded-lg border border-blue-500/20 shrink-0 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)]">
-            <Network size={18} className="text-blue-400" />
+          <div className={cn(
+            "p-2 rounded-lg border shrink-0 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] transition-colors",
+            hasIssue ? "bg-red-500/10 border-red-500/20" : "bg-blue-600/10 border-blue-500/20"
+          )}>
+            <Network size={18} className={cn(hasIssue ? "text-red-400" : "text-blue-400")} />
           </div>
         ) : (
-          <div className="p-2.5 bg-zinc-900/80 rounded-lg border border-white/5 shrink-0 group-hover:bg-zinc-800/80 transition-colors shadow-inner">
-            <Folder
-              size={16}
-              className={cn(
-                "transition-colors",
-                isExpanded
-                  ? "text-white"
-                  : "text-zinc-500 group-hover:text-zinc-300",
+          <div className={cn(
+            "p-2.5 bg-zinc-900/80 rounded-lg border border-white/5 shrink-0 group-hover:bg-zinc-800/80 transition-colors shadow-inner",
+            hasIssue && "border-red-500/30 bg-red-500/5"
+          )}>
+            <div className="w-5 h-5 flex items-center justify-center">
+              {isExpanded ? (
+                <FolderOpenSymbol className="w-full h-full" />
+              ) : (
+                <FolderSymbol
+                  folderName={label}
+                  className="w-full h-full"
+                />
               )}
-            />
+            </div>
           </div>
         )}
 
@@ -88,6 +96,7 @@ const FolderNodeComponent = (props: NodeProps) => {
               isRoot
                 ? "font-bold text-white"
                 : "font-medium text-zinc-200 group-hover:text-white",
+              hasIssue && "text-red-200"
             )}
             title={label}
           >
@@ -95,13 +104,17 @@ const FolderNodeComponent = (props: NodeProps) => {
           </span>
           <div className="flex items-center gap-2.5 mt-2">
             <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-zinc-900/50 border border-white/10 shadow-inner">
-              <Folder size={11} className="text-amber-400" />
+              <div className="w-3 h-3">
+                <FolderSymbol folderName="folder" className="w-full h-full" />
+              </div>
               <span className="text-[10px] font-bold text-zinc-200">
                 {folderCount ?? 0}
               </span>
             </div>
             <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-zinc-900/50 border border-white/10 shadow-inner">
-              <FileCode size={11} className="text-blue-400" />
+              <div className="w-3 h-3">
+                <FileSymbol fileName="index.js" className="w-full h-full" />
+              </div>
               <span className="text-[10px] font-bold text-zinc-200">
                 {fileCount ?? 0}
               </span>
@@ -115,10 +128,12 @@ const FolderNodeComponent = (props: NodeProps) => {
             className={cn(
               "text-zinc-600 transition-all duration-300",
               isExpanded ? "rotate-90 text-white" : "group-hover:text-zinc-400",
+              hasIssue && "text-red-400/70"
             )}
           />
         )}
       </div>
+
 
       <Handle
         type="source"
@@ -135,12 +150,18 @@ const nodeTypes = {
 
 interface HeatmapFlowProps {
   structure: FolderNode | null;
+  issuePaths?: string[];
 }
 
-const HeatmapFlowInner = ({ structure }: HeatmapFlowProps) => {
+const HeatmapFlowInner = ({ structure, issuePaths = [] }: HeatmapFlowProps) => {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const { fitView, zoomIn, zoomOut } = useReactFlow();
+
+  // Helper to check if a path contains issues
+  const containsIssue = useCallback((path: string) => {
+    return issuePaths.some(ip => ip === path || ip.startsWith(path + "/"));
+  }, [issuePaths]);
 
   // Track expanded paths for toggleable layers
   const [expandedPaths, setExpandedPaths] = useState<Set<string>>(
@@ -224,6 +245,17 @@ const HeatmapFlowInner = ({ structure }: HeatmapFlowProps) => {
       positionedCount[level] = currentIdx + 1;
 
       const isExpanded = expandedPaths.has(id);
+      
+      // Logic for "Last subfolder" coloring:
+      // A node has an issue if it or its descendants are in issuePaths
+      const nodeHasIssue = containsIssue(node.path || "");
+      
+      // It should be RED if:
+      // 1. It has an issue
+      // 2. AND (it's not expanded OR none of its children have an issue)
+      // This ensures the "deepest" visible folder in the issue path is the one that's red.
+      const hasIssueChild = Object.values(node.children).some(child => containsIssue(child.path));
+      const shouldBeRed = nodeHasIssue && (!isExpanded || !hasIssueChild);
 
       // Vertical Centering Logic:
       // Offset y by half of the total height at this level
@@ -240,6 +272,7 @@ const HeatmapFlowInner = ({ structure }: HeatmapFlowProps) => {
           isExpanded,
           folderCount: node.folderCount,
           fileCount: node.fileCount,
+          hasIssue: shouldBeRed,
         },
         position: { x, y },
       });
@@ -252,7 +285,7 @@ const HeatmapFlowInner = ({ structure }: HeatmapFlowProps) => {
           type: "smoothstep",
           animated: true,
           style: {
-            stroke: "rgba(59, 130, 246, 0.5)",
+            stroke: nodeHasIssue && !expandedPaths.has(id) ? "rgba(239, 68, 68, 0.5)" : "rgba(59, 130, 246, 0.5)",
             strokeWidth: 2,
           },
           pathOptions: {
@@ -272,6 +305,7 @@ const HeatmapFlowInner = ({ structure }: HeatmapFlowProps) => {
 
     traverse(structure, 0);
 
+
     setNodes(newNodes);
     setEdges(newEdges);
 
@@ -283,7 +317,7 @@ const HeatmapFlowInner = ({ structure }: HeatmapFlowProps) => {
         duration: 1000,
       });
     }, 50);
-  }, [structure, expandedPaths, setNodes, setEdges, fitView]);
+  }, [structure, expandedPaths, issuePaths, setNodes, setEdges, fitView, containsIssue]);
 
   return (
     <div className="w-full h-full bg-[#030303] overflow-hidden relative">
@@ -310,14 +344,7 @@ const HeatmapFlowInner = ({ structure }: HeatmapFlowProps) => {
           color="rgba(220, 213, 213, 0.41)"
         />
 
-        {/* <Panel position="top-right" className="bg-[#080808]/80 backdrop-blur-md px-4 py-2 rounded-xl border border-white/10 text-[11px] text-zinc-400 font-mono shadow-xl flex items-center gap-3">
-           <div className="flex items-center gap-1.5">
-             <div className="w-2 h-2 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.5)] animate-pulse" />
-             <span className="text-white/90">Architecture Flow</span>
-           </div>
-        </Panel> */}
-
-        {/* Premium Integrated Legend & Navigation Controls (Compact Version) */}
+        {/* Premium Integrated Legend \u0026 Navigation Controls (Compact Version) */}
         <Panel
           position="top-left"
           className="mt-5 ml-5 flex items-stretch gap-2.5 select-none scale-90 origin-top-left xl:scale-100"
@@ -362,10 +389,11 @@ const HeatmapFlowInner = ({ structure }: HeatmapFlowProps) => {
   );
 };
 
-export const HeatmapFlow = ({ structure }: HeatmapFlowProps) => {
+export const HeatmapFlow = ({ structure, issuePaths }: HeatmapFlowProps) => {
   return (
     <ReactFlowProvider>
-      <HeatmapFlowInner structure={structure} />
+      <HeatmapFlowInner structure={structure} issuePaths={issuePaths} />
     </ReactFlowProvider>
   );
 };
+
