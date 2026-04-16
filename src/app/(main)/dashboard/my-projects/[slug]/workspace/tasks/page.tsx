@@ -27,6 +27,7 @@ const TaskPage = () => {
   const slug = params.slug as string;
 
   const [activeTab, setActiveTab] = useState("List");
+  const [taskLimit, setTaskLimit] = useState(10);
 
   const currentUser = useQuery(api.user.getCurrentUser);
   const project = useQuery(api.project.getProjectBySlug, { slug });
@@ -34,8 +35,12 @@ const TaskPage = () => {
 
   const tasks = useQuery(
     api.workspace.getTasks,
-    project?._id ? { projectId: project._id as Id<"projects"> } : "skip",
+    project?._id
+      ? { projectId: project._id as Id<"projects">, limit: taskLimit }
+      : "skip",
   );
+
+  const hasMoreTasks = tasks && tasks.length >= taskLimit;
 
   if (project === undefined || project === null)
     return (
@@ -137,7 +142,9 @@ const TaskPage = () => {
         <ViewTransition key={activeTab} name="tab-content">
           <>
             {activeTab === "List" && <ListTab tasks={tasks || []} />}
-            {activeTab === "Table" && <TableTab tasks={tasks || []} />}
+            {activeTab === "Table" && (
+              <TableTab tasks={tasks || []} onLoadMore={() => setTaskLimit((p) => p + 10)} hasMore={!!hasMoreTasks} />
+            )}
             {activeTab === "Kanban" && (
               <div className="w-full">
                 <KanbanTask tasks={tasks || []} />
@@ -145,6 +152,25 @@ const TaskPage = () => {
             )}
           </>
         </ViewTransition>
+
+        {/* Load More — only for List & Kanban */}
+        {activeTab !== "Table" && hasMoreTasks && (
+          <div className="flex justify-center mt-8 pb-6">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setTaskLimit((prev) => prev + 10)}
+              className="rounded-full px-8 text-xs"
+            >
+              Load More
+            </Button>
+          </div>
+        )}
+        {activeTab !== "Table" && tasks && tasks.length > 0 && !hasMoreTasks && (
+          <p className="text-center mt-8 pb-6 text-xs text-muted-foreground italic">
+            No more tasks to load.
+          </p>
+        )}
       </div>
     </div>
   );

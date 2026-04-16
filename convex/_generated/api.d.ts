@@ -14,6 +14,7 @@ import type * as pricing from "../pricing.js";
 import type * as project from "../project.js";
 import type * as projectDetails from "../projectDetails.js";
 import type * as repo from "../repo.js";
+import type * as sprint from "../sprint.js";
 import type * as user from "../user.js";
 import type * as workspace from "../workspace.js";
 
@@ -30,6 +31,7 @@ declare const fullApi: ApiFromModules<{
   project: typeof project;
   projectDetails: typeof projectDetails;
   repo: typeof repo;
+  sprint: typeof sprint;
   user: typeof user;
   workspace: typeof workspace;
 }>;

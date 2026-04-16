@@ -91,7 +91,7 @@ const TimeLogsPage = () => {
   }
 
   return (
-    <div className="w-full h-full p-6 2xl:p-8">
+    <div className="w-full h-full p-6">
       <header>
         <h1 className="text-2xl font-semibold">
           <ChartNoAxesGantt className="w-6 h-6 ml-1 text-primary inline" /> Time
@@ -101,7 +101,7 @@ const TimeLogsPage = () => {
       <div className="my-6">
         {projectDetails?.targetDate ? (
           <div className="h-full">
-            <div className="h-[240px] grid grid-cols-3 mb-6 gap-8">
+            <div className="h-[250px] grid grid-cols-3 mb-6 gap-8">
               <div className="border"></div>
               <div className="border">
                 <p>

@@ -145,7 +145,7 @@ const TaskGroup = ({
             )}
           />
           <div className={cn("w-1 h-5 rounded-full", accentColor)} />
-          <h2 className="text-base font-bold tracking-tight flex items-center gap-2">
+          <h2 className="text-base tracking-tight flex items-center gap-2">
             {title}
             <span className="text-[10px] font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
               {tasks.length}

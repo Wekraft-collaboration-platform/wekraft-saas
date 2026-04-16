@@ -170,6 +170,8 @@ export default defineSchema({
     linkWithCodebase: v.optional(v.string()),
     projectId: v.id("projects"),
     createdByUserId: v.id("users"),
+
+    sprintId: v.optional(v.id("sprints")), // exluded completed Tasks
     createdAt: v.number(),
     updatedAt: v.number(),
   })
@@ -235,6 +237,7 @@ export default defineSchema({
         }),
       ),
     ),
+    sprintId: v.optional(v.id("sprints")), // exluded closed issues
     createdAt: v.number(),
     updatedAt: v.number(),
   })
@@ -293,8 +296,6 @@ export default defineSchema({
   sprints: defineTable({
     projectId: v.id("projects"),
     creatorId: v.id("users"),
-    // tasks: v.optional(v.array(v.id("tasks"))), // except completed
-    // issues: v.optional(v.array(v.id("issues"))), // except closed
     duration: v.object({
       startDate: v.number(),
       endDate: v.number(),

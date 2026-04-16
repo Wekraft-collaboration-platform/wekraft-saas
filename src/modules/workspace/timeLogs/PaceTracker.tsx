@@ -46,7 +46,7 @@ export const PaceTracker = ({
   // Amber (Yellow): You're slipping. There is a small gap (0-15%) between time spent and work done.
   // Rose (Red): Critical danger. The gap is >15%, meaning the deadline is severely at risk.
 
-  const isReady = totalTasks >= 1 && daysConsumed >= 4;
+  const isReady = totalTasks >= 7 && daysConsumed >= 5;
   let state = "empty";
   if (isReady) state = "ready";
   else if (totalTasks > 0) state = "growing";
@@ -122,19 +122,12 @@ export const PaceTracker = ({
 
   return (
     <div className="h-full w-full border border-neutral-800 rounded-xl bg-neutral-950/50 p-4 flex flex-col justify-between relative overflow-hidden">
-      {/* Decorative Blur */}
-      {gap > 15 && (
-        <div className="absolute -top-10 -right-10 w-32 h-32 bg-rose-500/5 blur-[50px] rounded-full pointer-events-none" />
-      )}
-
       {/* HEADER */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <div
-              className={cn("p-1.5 rounded-lg border", bgColors[statusMode])}
-            >
-              <Activity className={cn("w-3.5 h-3.5", textColors[statusMode])} />
+            <div className={cn("p-1.5 rounded-md border bg-muted/50")}>
+              <Activity className={cn("w-3.5 h-3.5 text-primary")} />
             </div>
             <h3 className="text-[13px] font-semibold tracking-tight text-white/90">
               Pace Tracker
@@ -143,24 +136,20 @@ export const PaceTracker = ({
           {isBehind ? (
             <div
               className={cn(
-                "px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 border",
-                bgColors[statusMode],
-                textColors[statusMode],
+                "px-3 py-1.5 rounded-sm text-[10px] flex items-center gap-1 border bg-muted/50 text-rose-500",
               )}
             >
               <AlertCircle className="w-3 h-3" />
-              {gap.toFixed(0)}% BEHIND
+              {gap.toFixed(0)}% Behind
             </div>
           ) : (
             <div
               className={cn(
-                "px-2 py-0.5 rounded-full text-[10px] font-bold flex items-center gap-1 border",
-                bgColors.emerald,
-                textColors.emerald,
+                "px-3 py-1.5 rounded-sm text-[10px] flex items-center gap-1 border bg-muted/50 text-green-600",
               )}
             >
               <ArrowUpRight className="w-3 h-3" />
-              AHEAD
+              Ahead
             </div>
           )}
         </div>
@@ -169,13 +158,13 @@ export const PaceTracker = ({
         <div className="space-y-3">
           {/* TASK BAR */}
           <div className="space-y-1.5">
-            <div className="flex justify-between text-[10px] font-medium text-neutral-500 uppercase tracking-widest">
+            <div className="flex justify-between text-[10px] font-medium text-primary/70 uppercase tracking-widest">
               <span>Task Progress</span>
               <span className={cn(textColors[statusMode])}>
                 {taskCompletedPct.toFixed(0)}%
               </span>
             </div>
-            <div className="flex gap-[2px] h-3.5 w-full">
+            <div className="flex gap-[2px] h-6 w-full">
               {Array.from({ length: totalBlocks }).map((_, i) => (
                 <div
                   key={`task-${i}`}
@@ -192,13 +181,13 @@ export const PaceTracker = ({
 
           {/* TIME BAR */}
           <div className="space-y-1.5">
-            <div className="flex justify-between text-[10px] font-medium text-neutral-500 uppercase tracking-widest">
+            <div className="flex justify-between text-[10px] font-medium text-primary/70 uppercase tracking-widest">
               <span>Time Consumed</span>
               <span className="text-blue-400">
                 {timeConsumedPct.toFixed(0)}%
               </span>
             </div>
-            <div className="flex gap-[2px] h-3.5 w-full">
+            <div className="flex gap-[2px] h-6 w-full">
               {Array.from({ length: totalBlocks }).map((_, i) => (
                 <div
                   key={`time-${i}`}
@@ -217,48 +206,52 @@ export const PaceTracker = ({
 
       {/* STATS FOOTER */}
       <div className="mt-3">
-        {gap > 15 && (
-          <div className="mb-2 px-3 py-1.5 rounded border border-rose-500/20 bg-rose-500/10 text-rose-400 text-[11px] font-medium flex items-center gap-2 tracking-wide">
+        {gap > 50 ? (
+          <div className="mb-2 px-3 py-2 rounded border border-rose-500/10 bg-rose-500/10 text-muted-foreground text-[11px] font-medium flex items-center gap-2 tracking-wide">
             <div className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-px" />
-            {gap.toFixed(0)}% gap — speed up or deadline moves
+            {gap.toFixed(0)}% gap — speed up.{" "}
+            <span className="underline underline-offset-2 text-primary">
+              Ask KAYA to optimize
+            </span>
+          </div>
+        ) : (
+          <div className="grid grid-cols-4 gap-1.5">
+            <div className="bg-neutral-900/80 rounded-lg p-2 border border-neutral-800 max-h-[48px] flex flex-col justify-center transition-all hover:bg-neutral-800">
+              <div className="text-lg font-bold text-white tracking-tight leading-none mb-0.5">
+                {Math.ceil(daysRemaining)}
+              </div>
+              <div className="text-[9px] text-neutral-500 tracking-wider">
+                Days left
+              </div>
+            </div>
+            <div className="bg-neutral-900/80 rounded-lg p-2 border border-neutral-800 max-h-[48px] flex flex-col justify-center transition-all hover:bg-neutral-800">
+              <div className="text-lg font-bold text-primary tracking-tight leading-none mb-0.5">
+                {tasksRemaining}
+              </div>
+              <div className="text-[9px] text-neutral-500 tracking-wider">
+                Tasks left
+              </div>
+            </div>
+            <div className="bg-neutral-900/80 rounded-lg p-2 border border-neutral-800 max-h-[48px] flex flex-col justify-center transition-all hover:bg-neutral-800">
+              <div className="text-lg font-bold text-primary tracking-tight leading-none mb-0.5 flex items-baseline">
+                {needPerDay}
+                <span className="text-[10px] ml-0.5 font-semibold">/day</span>
+              </div>
+              <div className="text-[9px] text-neutral-500 tracking-wider">
+                Need rate
+              </div>
+            </div>
+            <div className="bg-neutral-900/80 rounded-lg p-2 border border-neutral-800 max-h-[48px] flex flex-col justify-center transition-all hover:bg-neutral-800">
+              <div className="text-lg font-bold text-primary tracking-tight leading-none mb-0.5 flex items-baseline">
+                {currentPace}
+                <span className="text-[10px] ml-0.5 font-semibold">/day</span>
+              </div>
+              <div className="text-[9px] text-neutral-500 tracking-wider">
+                Pace rate
+              </div>
+            </div>
           </div>
         )}
-        <div className="grid grid-cols-4 gap-1.5">
-          <div className="bg-neutral-900/80 rounded-lg p-2 border border-neutral-800 max-h-[48px] flex flex-col justify-center transition-all hover:bg-neutral-800">
-            <div className="text-lg font-bold text-white tracking-tight leading-none mb-0.5">
-              {Math.ceil(daysRemaining)}
-            </div>
-            <div className="text-[9px] text-neutral-500 tracking-wider">
-              Days left
-            </div>
-          </div>
-          <div className="bg-neutral-900/80 rounded-lg p-2 border border-neutral-800 max-h-[48px] flex flex-col justify-center transition-all hover:bg-neutral-800">
-            <div className="text-lg font-bold text-white tracking-tight leading-none mb-0.5">
-              {tasksRemaining}
-            </div>
-            <div className="text-[9px] text-neutral-500 tracking-wider">
-              Tasks left
-            </div>
-          </div>
-          <div className="bg-neutral-900/80 rounded-lg p-2 border border-neutral-800 max-h-[48px] flex flex-col justify-center transition-all hover:bg-neutral-800">
-            <div className="text-lg font-bold text-rose-400 tracking-tight leading-none mb-0.5 flex items-baseline">
-              {needPerDay}
-              <span className="text-[10px] ml-0.5 font-semibold">/d</span>
-            </div>
-            <div className="text-[9px] text-neutral-500 tracking-wider">
-              Need rate
-            </div>
-          </div>
-          <div className="bg-neutral-900/80 rounded-lg p-2 border border-neutral-800 max-h-[48px] flex flex-col justify-center transition-all hover:bg-neutral-800">
-            <div className="text-lg font-bold text-blue-400 tracking-tight leading-none mb-0.5 flex items-baseline">
-              {currentPace}
-              <span className="text-[10px] ml-0.5 font-semibold">/d</span>
-            </div>
-            <div className="text-[9px] text-neutral-500 tracking-wider">
-              Pace rate
-            </div>
-          </div>
-        </div>
       </div>
     </div>
   );
