@@ -21,12 +21,12 @@ export default async function LoginPage() {
         {/* LEFT SIDE */}
         <div className="border border-border/40 relative overflow-hidden w-[65%] h-full rounded-lg p-8">
           <div className="absolute z-10 -top-20 left-1/2 -translate-x-1/2 w-full max-w-[560px] h-[300px] bg-blue-500/25 blur-[160px] rounded-full pointer-events-none" />
-          <div className="absolute z-10 -bottom-10 left-1/2 -translate-x-1/2 w-full h-[200px] bg-black blur-[160px] rounded-full pointer-events-none" />
+          <div className="absolute z-10 -bottom-10 left-1/2 -translate-x-1/2 w-full h-[160px] bg-black blur-[160px] rounded-full pointer-events-none" />
           <Image
             src="/bg-footer.jpg"
             alt="Background"
             fill
-            className="object-cover z-0 opacity-30"
+            className="object-cover z-0 opacity-50"
           />
           <div className="flex items-center gap-2 z-20 relative">
             <Image src="/logo.svg" alt="Logo" width={35} height={35} />
@@ -118,25 +118,25 @@ export default async function LoginPage() {
               <div className="flex items-center gap-8">
                 <Link
                   href="/terms"
-                  className="text-[11px] font-medium text-neutral-600 hover:text-neutral-300 transition-colors tracking-wider uppercase"
+                  className="text-[11px] font-medium text-neutral-400 hover:text-neutral-300 transition-colors tracking-wider uppercase"
                 >
                   Terms
                 </Link>
                 <Link
                   href="/privacy"
-                  className="text-[11px] font-medium text-neutral-600 hover:text-neutral-300 transition-colors tracking-wider uppercase"
+                  className="text-[11px] font-medium text-neutral-400 hover:text-neutral-300 transition-colors tracking-wider uppercase"
                 >
                   Privacy
                 </Link>
                 <Link
                   href="/support"
-                  className="text-[11px] font-medium text-neutral-600 hover:text-neutral-300 transition-colors tracking-wider uppercase"
+                  className="text-[11px] font-medium text-neutral-400 hover:text-neutral-300 transition-colors tracking-wider uppercase"
                 >
                   Support
                 </Link>
               </div>
-              <p className="text-[10px] text-neutral-700 font-medium tracking-widest uppercase">
-                © 2024 WeKraft Labs
+              <p className="text-[10px] text-neutral-400 font-medium tracking-widest uppercase">
+                © 2026 WeKraft 
               </p>
             </div>
           </div>
