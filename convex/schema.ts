@@ -179,7 +179,8 @@ export default defineSchema({
     .index("by_creator", ["createdByUserId"])
     .index("by_status", ["status"])
     .index("by_priority", ["priority"])
-    .index("by_project_status", ["projectId", "status"]),
+    .index("by_project_status", ["projectId", "status"])
+    .index("by_sprint", ["sprintId"]),
 
   // --------------------------------------------------
   taskComments: defineTable({
@@ -246,7 +247,8 @@ export default defineSchema({
     .index("by_task", ["taskId"])
     .index("by_status", ["status"])
     .index("by_severity", ["severity"])
-    .index("by_environment", ["environment"]),
+    .index("by_environment", ["environment"])
+    .index("by_sprint", ["sprintId"]),
   // ---------------------------------------------------
   issueComments: defineTable({
     issueId: v.id("issues"),
