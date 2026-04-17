@@ -83,6 +83,8 @@ const SortOption = ({ label, icon, onClick, isActive }: SortOptionProps) => (
 
 interface TableTabProps {
   tasks: Task[];
+  onLoadMore: () => void;
+  hasMore: boolean;
 }
 
 const PriorityBadge = ({ priority = "none" }: { priority?: string }) => {
@@ -93,7 +95,27 @@ const PriorityBadge = ({ priority = "none" }: { priority?: string }) => {
   );
 };
 
-export const TableTab = ({ tasks }: TableTabProps) => {
+const PAGE_SIZE = 10;
+
+export const TableTab = ({ tasks, onLoadMore, hasMore }: TableTabProps) => {
+  const [page, setPage] = useState(0);
+
+  // Client-side pagination: slice the loaded tasks
+  const totalPages = Math.ceil(tasks.length / PAGE_SIZE);
+  const paginatedTasks = tasks.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+
+  const canGoNext = page < totalPages - 1 || hasMore;
+  const canGoPrev = page > 0;
+
+  const handleNext = () => {
+    if (page < totalPages - 1) {
+      setPage((p) => p + 1);
+    } else if (hasMore) {
+      // At the last page of loaded data, but more exists — load more & advance
+      onLoadMore();
+      setPage((p) => p + 1);
+    }
+  };
   const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
   const [selectedTaskForSheet, setSelectedTaskForSheet] = useState<Task | null>(
     null,
@@ -127,18 +149,18 @@ export const TableTab = ({ tasks }: TableTabProps) => {
               <TableHead className="w-[50px] px-6 py-4">
                 <Checkbox
                   checked={
-                    selectedTasks.length === tasks.length && tasks.length > 0
+                    selectedTasks.length === paginatedTasks.length && paginatedTasks.length > 0
                   }
                   onCheckedChange={toggleAll}
                   className="rounded border-neutral-500 data-[state=checked]:bg-primary"
                 />
               </TableHead>
-              <TableHead className="text-xs font-medium text-primary px-4 min-w-[180px]  border-r border-neutral-700">
+              <TableHead className="text-[15px] text-primary font-medium px-4 min-w-[180px]  border-r border-neutral-700">
                 <div className="flex items-center gap-2">
                   <FolderPen className="w-4.5 h-4.5" /> Task Name
                 </div>
               </TableHead>
-              <TableHead className="text-xs text-primary font-medium  px-4 border-r border-neutral-700">
+              <TableHead className="text-[15px] text-primary font-medium  px-4 border-r border-neutral-700">
                 <div className="flex items-center justify-between gap-2 overflow-hidden">
                   <div className="flex items-center gap-2">
                     <ChartPie className="w-4.5 h-4.5" /> Status
@@ -146,7 +168,7 @@ export const TableTab = ({ tasks }: TableTabProps) => {
                   <ChevronsUpDown className="w-4.5 h-4.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer shrink-0" />
                 </div>
               </TableHead>
-              <TableHead className="text-xs text-primary font-medium  px-4  border-r  border-neutral-700">
+              <TableHead className="text-[15px] text-primary font-medium  px-4  border-r  border-neutral-700">
                 <div className="flex items-center justify-center gap-2 overflow-hidden">
                   <div className="flex items-center gap-2">
                     <Hourglass className="w-4.5 h-4.5" /> Duration
@@ -178,7 +200,7 @@ export const TableTab = ({ tasks }: TableTabProps) => {
                   </SortPopover>
                 </div>
               </TableHead>
-              <TableHead className="text-xs text-primary font-medium  px-4  border-r  border-neutral-700">
+              <TableHead className="text-[15px] text-primary font-medium  px-4  border-r  border-neutral-700">
                 <div className="flex items-center justify-center gap-2 overflow-hidden">
                   <div className="flex items-center gap-2">
                     <Box className="w-4.5 h-4.5" /> Tags
@@ -186,12 +208,12 @@ export const TableTab = ({ tasks }: TableTabProps) => {
                   <ChevronsUpDown className="w-4.5 h-4.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer shrink-0" />
                 </div>
               </TableHead>
-              <TableHead className="text-xs text-primary font-medium px-4  border-r  border-neutral-700">
+              <TableHead className="text-[15px] text-primary font-medium px-4  border-r  border-neutral-700">
                 <div className="flex items-center gap-2">
                   <Users className="w-4.5 h-4.5" /> Assigned
                 </div>
               </TableHead>
-              <TableHead className="text-xs text-primary font-medium px-4 text-center border-r border-neutral-700">
+              <TableHead className="text-[15px] text-primary font-medium px-4 text-center border-r border-neutral-700">
                 <div className="flex items-center justify-between gap-2 overflow-hidden">
                   <div className="flex items-center gap-2 justify-center">
                     <ChartNoAxesColumnIncreasing className="w-4.5 h-4.5" />{" "}
@@ -219,7 +241,7 @@ export const TableTab = ({ tasks }: TableTabProps) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {tasks.length === 0 ? (
+            {paginatedTasks.length === 0 ? (
               <TableRow className="">
                 <TableCell colSpan={8} className="h-[400px] text-center">
                   <div className="flex flex-col items-start justify-center space-y-1.5 p-4 w-[360px] mx-auto">
@@ -260,7 +282,7 @@ export const TableTab = ({ tasks }: TableTabProps) => {
                 </TableCell>
               </TableRow>
             ) : (
-              tasks.map((task) => {
+              paginatedTasks.map((task) => {
                 const isSelected = selectedTasks.includes(task._id);
 
                 return (
@@ -282,7 +304,7 @@ export const TableTab = ({ tasks }: TableTabProps) => {
                         className="rounded border-neutral-800 data-[state=checked]:bg-primary"
                       />
                     </TableCell>
-                    <TableCell className="px-4 font-medium border-r border-b border-neutral-700 text-[13px] text-primary/70 group-hover:text-primary transition-colors">
+                    <TableCell className="px-4 font-medium border-r border-b border-neutral-700 text-base text-primary/70 group-hover:text-primary transition-colors">
                       {task.title}
                     </TableCell>
                     <TableCell className="px-4 border-r border-b border-neutral-700">
@@ -431,13 +453,15 @@ export const TableTab = ({ tasks }: TableTabProps) => {
       {/* Simple Pagination */}
       <div className="flex items-center justify-between px-6 py-4 border-t border-neutral-800/60">
         <div className="text-xs font-medium text-muted-foreground tracking-wider">
-          Showing {tasks.length} Results
+          Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, tasks.length)} of {tasks.length}{hasMore ? "+" : ""} Results
         </div>
 
         <div className="flex items-center gap-2">
           <Button
             variant="outline"
             size="sm"
+            disabled={!canGoPrev}
+            onClick={() => setPage((p) => p - 1)}
             className="h-7 px-3 text-[10px] font-semibold bg-transparent border-neutral-800 text-primary transition-all disabled:opacity-20"
           >
             <ChevronLeft size={12} className="mr-1" /> Previous
@@ -448,12 +472,14 @@ export const TableTab = ({ tasks }: TableTabProps) => {
               size="sm"
               className="h-7 w-7 text-[10px] font-bold p-0 bg-primary/10 text-primary border border-primary/20 rounded-md"
             >
-              1
+              {page + 1}
             </Button>
           </div>
           <Button
             variant="outline"
             size="sm"
+            disabled={!canGoNext}
+            onClick={handleNext}
             className="h-7 px-3 text-[10px] font-semibold bg-transparent border-neutral-800 text-primary transition-all disabled:opacity-20"
           >
             Next <ChevronRight size={12} className="ml-1" />

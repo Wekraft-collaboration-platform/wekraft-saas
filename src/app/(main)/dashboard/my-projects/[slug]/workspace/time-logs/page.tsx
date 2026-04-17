@@ -15,11 +15,12 @@ import { useParams } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "../../../../../../../../convex/_generated/api";
 import { Id } from "../../../../../../../../convex/_generated/dataModel";
-import { PageTransition } from "@/components/PageTransition";
+
 import { SetTargetDateDialog } from "@/modules/workspace/SetTargetDateDialog";
 import { Button } from "@/components/ui/button";
 import { ProjectTimeline } from "@/modules/workspace/timeLogs/ProjectTimeline";
 import { PaceTracker } from "@/modules/workspace/timeLogs/PaceTracker";
+import { DelayDebt } from "@/modules/workspace/timeLogs/DelayDebt";
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -91,7 +92,7 @@ const TimeLogsPage = () => {
   }
 
   return (
-    <PageTransition className="w-full h-full p-6 2xl:p-8">
+    <div className="w-full h-full p-6">
       <header>
         <h1 className="text-2xl font-semibold">
           <ChartNoAxesGantt className="w-6 h-6 ml-1 text-primary inline" /> Time
@@ -101,14 +102,9 @@ const TimeLogsPage = () => {
       <div className="my-6">
         {projectDetails?.targetDate ? (
           <div className="h-full">
-            <div className="h-[240px] grid grid-cols-3 mb-6 gap-8">
+            <div className="h-[250px] grid grid-cols-3 mb-6 gap-8">
               <div className="border"></div>
-              <div className="border">
-                <p>
-                  Timelogs tracker below will only diaplay tasks that are going
-                  to hit deadline or already late.
-                </p>
-              </div>
+              <DelayDebt tasks={tasks as any} projectId={project._id} />
               <PaceTracker
                 tasks={tasks as any}
                 createdAt={project.createdAt}
@@ -168,7 +164,7 @@ const TimeLogsPage = () => {
         projectId={project._id}
         projectName={project.projectName}
       />
-    </PageTransition>
+    </div>
   );
 };
 

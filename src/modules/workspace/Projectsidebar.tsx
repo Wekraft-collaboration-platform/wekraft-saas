@@ -142,7 +142,7 @@ export default function ProjectSidebar() {
   return (
     <Sidebar collapsible="icon" className="">
       {/* ───────── HEADER ───────── */}
-      <SidebarHeader className="border-b ">
+      <SidebarHeader className="border-b " style={{ viewTransitionName: 'site-header' }}>
         <div className="flex items-center justify-between gap-4 px-3 py-1!">
           <Link href="/dashboard" className="flex items-center">
             <Image
@@ -323,6 +323,8 @@ export default function ProjectSidebar() {
             >
               <Link
                 href={`/dashboard/my-projects/${slug}/workspace`}
+                // @ts-ignore
+                transitionTypes={["nav-forward"]}
                 className="relative z-10 flex items-center gap-3 px-3 py-2"
               >
                 <Layers

@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { toast } from "sonner";
-import { PageTransition } from "@/components/PageTransition";
+
 
 const ProjectWorkspace = () => {
   const params = useParams();
@@ -52,7 +52,7 @@ const ProjectWorkspace = () => {
   };
 
   return (
-    <PageTransition className="p-6">
+    <div className="p-6">
       <header className="flex items-start justify-between">
         <div className="space-y-2">
           <div className="flex items-center gap-2 mb-2">
@@ -126,7 +126,7 @@ const ProjectWorkspace = () => {
         <p>project language breakdown and heatl score here for free</p>
         <p>other performance metrics here for paid</p>
       </div>
-    </PageTransition>
+    </div>
   );
 };
 

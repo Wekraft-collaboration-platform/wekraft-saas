@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useState } from "react";
+import { useState, startTransition, ViewTransition } from "react";
 import { Id } from "../../../../../../../../convex/_generated/dataModel";
 import { api } from "../../../../../../../../convex/_generated/api";
 import { useQuery } from "convex/react";
@@ -11,6 +11,8 @@ import {
   Filter,
   Plus,
   Layers3,
+  Sparkle,
+  Sparkles,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,9 +22,6 @@ import { TABS } from "@/lib/static-store";
 import { ListTab } from "@/modules/workspace/ListTab";
 import { TableTab } from "@/modules/workspace/TableTab";
 import { KanbanTask } from "@/modules/workspace/KanbanTask";
-import { PageTransition } from "@/components/PageTransition";
-
-
 
 const users = [
   { name: "Ritesh", img: "https://i.pravatar.cc/40?img=1" },
@@ -36,15 +35,20 @@ const TaskPage = () => {
   const slug = params.slug as string;
 
   const [activeTab, setActiveTab] = useState("List");
+  const [taskLimit, setTaskLimit] = useState(10);
 
   const currentUser = useQuery(api.user.getCurrentUser);
   const project = useQuery(api.project.getProjectBySlug, { slug });
   const projectName = project?.projectName;
-  
+
   const tasks = useQuery(
     api.workspace.getTasks,
-    project?._id ? { projectId: project._id as Id<"projects"> } : "skip",
+    project?._id
+      ? { projectId: project._id as Id<"projects">, limit: taskLimit }
+      : "skip",
   );
+
+  const hasMoreTasks = tasks && tasks.length >= taskLimit;
 
   if (project === undefined || project === null)
     return (
@@ -54,10 +58,10 @@ const TaskPage = () => {
     );
 
   return (
-    <PageTransition className="w-full h-full p-6 2xl:p-8">
+    <div className="w-full h-full p-6 2xl:p-8">
       <header className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">
-        <Layers3 className="w-6 h-6 ml-1 text-primary inline" />  {projectName} 
+          <Layers3 className="w-6 h-6 ml-1 text-primary inline" /> {projectName}
         </h1>
 
         <div className="flex items-center gap-5">
@@ -96,8 +100,12 @@ const TaskPage = () => {
               <Button
                 key={tab.id}
                 variant={isActive ? "ghost" : "ghost"}
-                onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 transition pb-2 -mb-px ${
+                onClick={() => {
+                  startTransition(() => {
+                    setActiveTab(tab.id);
+                  });
+                }}
+                className={`flex items-center gap-2 transition pb-2 -mb-px text-base ${
                   isActive
                     ? "text-foreground border-b-2 border-b-primary! rounded-none rounded-t-md"
                     : "hover:text-foreground border-b-2 border-transparent"
@@ -116,12 +124,21 @@ const TaskPage = () => {
             <Input
               type="text"
               placeholder="Search ..."
-              className="pl-9 h-9 w-[200px] border-muted"
+              className="pl-9 h-9 w-[240px] border-muted"
             />
           </div>
           <Button variant="outline" size="sm" className="h-9 text-xs">
             <Filter className="w-5 h-5 mr-2" />
             Filter
+          </Button>
+          {/* AI button */}
+          <Button
+            size="sm"
+            variant={"outline"}
+            className="bg-linear-to-t from-blue-600/30 via-blue-600/10 to-transparent text-xs cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            Ask Kaya
           </Button>
           <CreateTaskDialog
             projectName={projectName || "Project"}
@@ -139,19 +156,52 @@ const TaskPage = () => {
 
       {/* BODY PART */}
       <div className="mt-6 max-w-full">
-        {activeTab === "List" && <ListTab tasks={tasks || []} />}
-        {activeTab === "Table" && <TableTab tasks={tasks || []} />}
-        {activeTab === "Kanban" && (
-          <div className="w-full">
-             <KanbanTask tasks={tasks || []} />
+        <ViewTransition key={activeTab} name="tab-content">
+          <>
+            {activeTab === "List" && <ListTab tasks={tasks || []} />}
+            {activeTab === "Table" && (
+              <TableTab
+                tasks={tasks || []}
+                onLoadMore={() => setTaskLimit((p) => p + 10)}
+                hasMore={!!hasMoreTasks}
+              />
+            )}
+            {activeTab === "Kanban" && (
+              <div className="w-full">
+                <KanbanTask
+                  tasks={tasks || []}
+                  projectId={project._id as Id<"projects">}
+                  taskLimit={taskLimit}
+                />
+              </div>
+            )}
+          </>
+        </ViewTransition>
+
+        {/* Load More — only for List & Kanban */}
+        {activeTab !== "Table" && hasMoreTasks && (
+          <div className="flex justify-center mt-8 pb-6">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setTaskLimit((prev) => prev + 10)}
+              className="rounded-full px-8 text-xs"
+            >
+              Load More
+            </Button>
           </div>
         )}
+        {activeTab !== "Table" &&
+          tasks &&
+          tasks.length > 0 &&
+          !hasMoreTasks && (
+            <p className="text-center mt-8 pb-6 text-xs text-muted-foreground italic">
+              No more tasks to load.
+            </p>
+          )}
       </div>
-
-    </PageTransition>
+    </div>
   );
 };
-
-
 
 export default TaskPage;

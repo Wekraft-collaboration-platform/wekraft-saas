@@ -662,3 +662,14 @@ export const handleJoinRequest = mutation({
     return { success: true };
   },
 });
+
+export const getProjectDetails = query({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("projectDetails")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .unique();
+  },
+});
+

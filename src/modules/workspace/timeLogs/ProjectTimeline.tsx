@@ -36,7 +36,7 @@ import { statusIcons, priorityIcons } from "@/lib/static-store";
 import { Task } from "@/types/types";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Calendar, User } from "lucide-react";
-import { Layer } from "recharts";
+import { ViewTransition } from "react";
 
 /** Major tick + label every N days (all slabs, day view). */
 export const TIMELINE_DAY_TICK_INTERVAL = 3;

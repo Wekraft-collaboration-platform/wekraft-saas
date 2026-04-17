@@ -1,8 +1,6 @@
 import { v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
-
-
 // =======================================
 // CREATING TASK WITH NO ISSUE INITIAL
 // =======================================
@@ -11,7 +9,9 @@ export const createTask = mutation({
     title: v.string(),
     description: v.optional(v.string()),
     type: v.optional(v.object({ label: v.string(), color: v.string() })), // Custom tag
-    priority: v.optional(v.union(v.literal("high"), v.literal("medium"), v.literal("low"))),
+    priority: v.optional(
+      v.union(v.literal("high"), v.literal("medium"), v.literal("low")),
+    ),
     assignedTo: v.optional(
       v.array(
         v.object({
@@ -41,7 +41,9 @@ export const createTask = mutation({
 
     const user = await ctx.db
       .query("users")
-      .withIndex("by_token", (q) => q.eq("clerkToken", identity.tokenIdentifier))
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
       .unique();
 
     if (!user) throw new Error("User not found");
@@ -58,17 +60,20 @@ export const createTask = mutation({
   },
 });
 
-// ---------------------------------------
+//=======================================
+// GETTING TASKS WITH PAGINATION
+//=======================================
 export const getTasks = query({
   args: {
     projectId: v.id("projects"),
+    limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     return await ctx.db
       .query("tasks")
       .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
       .filter((q) => q.neq(q.field("status"), "issue"))
-      .take(10);
+      .take(args.limit ?? 10);
   },
 });
 
@@ -81,7 +86,7 @@ export const getTimelineTasks = query({
     const tasks = await ctx.db
       .query("tasks")
       .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
-      .filter((q) => q.neq(q.field("status"), "issue"))
+      // .filter((q) => q.neq(q.field("status"), "issue"))
       .collect();
 
     return tasks;
@@ -100,7 +105,9 @@ export const createComment = mutation({
 
     const user = await ctx.db
       .query("users")
-      .withIndex("by_token", (q) => q.eq("clerkToken", identity.tokenIdentifier))
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
       .unique();
 
     if (!user) throw new Error("User not found");
@@ -132,7 +139,9 @@ export const getComments = query({
   },
 });
 
-
+// =============================================
+// KANBAN STATUS UPDATES...
+// =============================================
 export const updateTaskStatus = mutation({
   args: {
     taskId: v.id("tasks"),

@@ -76,7 +76,7 @@ export function CommunitySearchBar() {
 
   return (
     <div className="w-[580px] mx-auto">
-      <div className="flex items-center gap-2 rounded-md bg-accent/10 dark:bg-[#111113] border border-border/40 px-4 py-1 focus-within:border-border/70 transition-colors">
+      <div className="flex items-center gap-2 rounded-md bg-accent/10 dark:bg-[#111113] border border-border/70 px-4 py-1 focus-within:border-border/70 transition-colors">
         {/* QUERY INPUT */}
         <div className="relative flex-1 min-w-0">
           <Input

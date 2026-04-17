@@ -145,7 +145,7 @@ const TaskGroup = ({
             )}
           />
           <div className={cn("w-1 h-5 rounded-full", accentColor)} />
-          <h2 className="text-sm font-bold tracking-tight flex items-center gap-2">
+          <h2 className="text-base tracking-tight flex items-center gap-2">
             {title}
             <span className="text-[10px] font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
               {tasks.length}
@@ -170,17 +170,17 @@ const TaskGroup = ({
                 <TableHead className="w-[50px] px-4">
                   <Checkbox className="rounded border-muted-foreground/30 data-[state=checked]:bg-primary" />
                 </TableHead>
-                <TableHead className="px-4 text-xs font-medium text-primary capitalize tracking-widest min-w-[200px]  border-r border-b border-neutral-800">
+                <TableHead className="px-4 text-sm font-medium text-primary capitalize tracking-widest min-w-[200px]  border-r border-b border-neutral-800">
                   <div className="flex items-center gap-2">
                     <FolderPen className="w-4.5 h-4.5" /> Task Name
                   </div>
                 </TableHead>
-                <TableHead className="px-4 text-xs font-medium capitalize tracking-widest min-w-[300px] border-r border-b border-neutral-800">
+                <TableHead className="px-4 text-sm font-medium capitalize tracking-widest min-w-[300px] border-r border-b border-neutral-800">
                   <div className="flex items-center gap-2">
                     <TextQuote className="w-4.5 h-4.5" /> Description
                   </div>
                 </TableHead>
-                <TableHead className="px-4 text-xs text-primary font-medium capitalize tracking-widest shrink-0 border-r border-b border-neutral-800">
+                <TableHead className="px-4 text-sm text-primary font-medium capitalize tracking-widest shrink-0 border-r border-b border-neutral-800">
                   <div className="flex items-center justify-center gap-2 overflow-hidden">
                     <div className="flex items-center gap-2">
                       <Hourglass className="w-4.5 h-4.5" /> Duration
@@ -212,7 +212,7 @@ const TaskGroup = ({
                     </SortPopover>
                   </div>
                 </TableHead>
-                <TableHead className="px-4 text-xs text-primary font-medium capitalize tracking-widest shrink-0 border-r border-b border-neutral-800 min-w-[120px]">
+                <TableHead className="px-4 text-sm text-primary font-medium capitalize tracking-widest shrink-0 border-r border-b border-neutral-800 min-w-[120px]">
                   <div className="flex items-center justify-center gap-2 overflow-hidden">
                     <div className="flex items-center gap-2">
                       <Box className="w-4.5 h-4.5" /> Tags
@@ -235,12 +235,12 @@ const TaskGroup = ({
                     </SortPopover>
                   </div>
                 </TableHead>
-                <TableHead className="px-4 text-xs text-primary font-medium  capitalize tracking-widest shrink-0 border-r border-b border-neutral-800">
+                <TableHead className="px-4 text-sm text-primary font-medium  capitalize tracking-widest shrink-0 border-r border-b border-neutral-800">
                   <div className="flex items-center gap-2">
                     <Users className="w-4.5 h-4.5" /> Assigned
                   </div>
                 </TableHead>
-                <TableHead className="px-4 text-xs text-primary font-medium  capitalize tracking-widest shrink-0 border-b border-neutral-800">
+                <TableHead className="px-4 text-sm text-primary font-medium  capitalize tracking-widest shrink-0 border-b border-neutral-800">
                   <div className="flex items-center justify-between gap-2 overflow-hidden">
                     <div className="flex items-center gap-2">
                       <ChartNoAxesColumnIncreasing className="w-4.5 h-4.5" />{" "}
