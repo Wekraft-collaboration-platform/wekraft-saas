@@ -17,6 +17,7 @@ import {
   FastForward,
   FileCodeCorner,
   FastForwardIcon,
+  Sparkles,
 } from "lucide-react";
 import { CreateSprintDialog } from "@/modules/workspace/CreateSprintDialog";
 import Image from "next/image";
@@ -123,16 +124,28 @@ const SprintPage = () => {
             Manage your project sprints and track progress effectively.
           </p>
         </div>
-        <CreateSprintDialog
-          projectId={project._id as Id<"projects">}
-          projectName={project.projectName || "Project"}
-          trigger={
-            <Button size="sm" className="shadow-sm text-xs">
-              <Plus className="w-4 h-4 mr-2" />
-              New Sprint
-            </Button>
-          }
-        />
+
+        <div className="flex items-center gap-5">
+          {/* AI button */}
+          <Button
+            size="sm"
+            variant={"outline"}
+            className="bg-linear-to-t from-blue-600/30 via-blue-600/10 to-transparent text-xs cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            Manage Sprints
+          </Button>
+          <CreateSprintDialog
+            projectId={project._id as Id<"projects">}
+            projectName={project.projectName || "Project"}
+            trigger={
+              <Button size="sm" className="shadow-sm text-xs">
+                <Plus className="w-4 h-4 mr-2" />
+                New Sprint
+              </Button>
+            }
+          />
+        </div>
       </header>
 
       {sprints?.length === 0 ? (

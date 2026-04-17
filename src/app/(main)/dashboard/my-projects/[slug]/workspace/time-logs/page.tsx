@@ -20,6 +20,7 @@ import { SetTargetDateDialog } from "@/modules/workspace/SetTargetDateDialog";
 import { Button } from "@/components/ui/button";
 import { ProjectTimeline } from "@/modules/workspace/timeLogs/ProjectTimeline";
 import { PaceTracker } from "@/modules/workspace/timeLogs/PaceTracker";
+import { DelayDebt } from "@/modules/workspace/timeLogs/DelayDebt";
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -103,12 +104,7 @@ const TimeLogsPage = () => {
           <div className="h-full">
             <div className="h-[250px] grid grid-cols-3 mb-6 gap-8">
               <div className="border"></div>
-              <div className="border">
-                <p>
-                  Timelogs tracker below will only diaplay tasks that are going
-                  to hit deadline or already late.
-                </p>
-              </div>
+              <DelayDebt tasks={tasks as any} projectId={project._id} />
               <PaceTracker
                 tasks={tasks as any}
                 createdAt={project.createdAt}

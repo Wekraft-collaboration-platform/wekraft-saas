@@ -5,7 +5,15 @@ import { useState, startTransition, ViewTransition } from "react";
 import { Id } from "../../../../../../../../convex/_generated/dataModel";
 import { api } from "../../../../../../../../convex/_generated/api";
 import { useQuery } from "convex/react";
-import { UserPlus, Search, Filter, Plus, Layers3 } from "lucide-react";
+import {
+  UserPlus,
+  Search,
+  Filter,
+  Plus,
+  Layers3,
+  Sparkle,
+  Sparkles,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -116,12 +124,21 @@ const TaskPage = () => {
             <Input
               type="text"
               placeholder="Search ..."
-              className="pl-9 h-9 w-[200px] border-muted"
+              className="pl-9 h-9 w-[240px] border-muted"
             />
           </div>
           <Button variant="outline" size="sm" className="h-9 text-xs">
             <Filter className="w-5 h-5 mr-2" />
             Filter
+          </Button>
+          {/* AI button */}
+          <Button
+            size="sm"
+            variant={"outline"}
+            className="bg-linear-to-t from-blue-600/30 via-blue-600/10 to-transparent text-xs cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            Ask Kaya
           </Button>
           <CreateTaskDialog
             projectName={projectName || "Project"}
@@ -143,7 +160,11 @@ const TaskPage = () => {
           <>
             {activeTab === "List" && <ListTab tasks={tasks || []} />}
             {activeTab === "Table" && (
-              <TableTab tasks={tasks || []} onLoadMore={() => setTaskLimit((p) => p + 10)} hasMore={!!hasMoreTasks} />
+              <TableTab
+                tasks={tasks || []}
+                onLoadMore={() => setTaskLimit((p) => p + 10)}
+                hasMore={!!hasMoreTasks}
+              />
             )}
             {activeTab === "Kanban" && (
               <div className="w-full">
@@ -170,11 +191,14 @@ const TaskPage = () => {
             </Button>
           </div>
         )}
-        {activeTab !== "Table" && tasks && tasks.length > 0 && !hasMoreTasks && (
-          <p className="text-center mt-8 pb-6 text-xs text-muted-foreground italic">
-            No more tasks to load.
-          </p>
-        )}
+        {activeTab !== "Table" &&
+          tasks &&
+          tasks.length > 0 &&
+          !hasMoreTasks && (
+            <p className="text-center mt-8 pb-6 text-xs text-muted-foreground italic">
+              No more tasks to load.
+            </p>
+          )}
       </div>
     </div>
   );

@@ -58,8 +58,7 @@ export function AiAssistantSheet({
         <SheetHeader className="px-4 py-5 border-b bg-card ">
           <div className="flex items-center justify-between pr-10 gap-5">
             <SheetTitle className="flex items-center gap-2 text-lg font-pop font-semibold">
-              <Bot className="w-5 h-5 text-blue-500" />
-              Roxo AI
+              Kaya AI
             </SheetTitle>
             <div className="flex items-center gap-4">
               <Button size="sm" variant="outline" className="text-[10px]">
@@ -75,7 +74,7 @@ export function AiAssistantSheet({
         <ScrollArea className="flex-1 p-4 h-full"></ScrollArea>
 
         {/* ---------FOOTER--------- */}
-        <div className="px-4 py-6 bg-linear-to-b from-transparent to-blue-500/15">
+        <div className="px-4 py-6 bg-linear-to-b from-transparent to-blue-500/20">
           <div className="relative">
             <Input
               placeholder="Ask anything..."
@@ -98,7 +97,7 @@ export function AiAssistantSheet({
             </Button>
           </div>
           <p className="text-[10px] text-center text-muted-foreground mt-2">
-            Roxo is personal PM agent.{" "}
+            Kaya is personal PM agent.{" "}
             <span className="text-blue-500 cursor-pointer">
               Click to configure
             </span>

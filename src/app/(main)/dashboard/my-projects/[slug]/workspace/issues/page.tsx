@@ -9,6 +9,7 @@ import {
   Filter,
   Layers3,
   Search,
+  Sparkles,
   UserPlus,
 } from "lucide-react";
 import React from "react";
@@ -62,33 +63,45 @@ const IssuesPage = () => {
         </div>
       </header>
 
-      <div className="flex items-center w-full justify-end gap-3 mt-6 border-b border-accent pb-2">
-        <div className="relative">
-          <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-          <Input
-            type="text"
-            placeholder="Search ..."
-            className="pl-9 h-9 w-[300px] border-muted"
-          />
+      <div className="flex items-center w-full justify-between gap-3 mt-6 border-b border-accent pb-2">
+        <div className="">
+          <Button
+            size="sm"
+            variant={"outline"}
+            className="bg-linear-to-t from-blue-600/30 via-blue-600/10 to-transparent text-xs cursor-pointer"
+          >
+            <Sparkles className="w-4 h-4 mr-2" />
+            Manage Issues
+          </Button>
         </div>
-        <Button variant="outline" size="sm" className="h-9 text-xs">
-          <Filter className="w-5 h-5 mr-2" />
-          Filters
-        </Button>
 
-        {project && (
-          <CreateIssueDialog
-            projectId={project._id}
-            projectName={projectName}
-            repoFullName={project.repoFullName}
-            trigger={
-              <Button size="sm" className="text-xs">
-                New Issue
-                <Bug className="w-5 h-5 mr-2" />
-              </Button>
-            }
-          />
-        )}
+        <div className="flex items-center gap-3">
+          <div className="relative">
+            <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+            <Input
+              type="text"
+              placeholder="Search ..."
+              className="pl-9 h-9 w-[300px] border-muted"
+            />
+          </div>
+          <Button variant="outline" size="sm" className="h-9 text-xs">
+            <Filter className="w-5 h-5 mr-2" />
+            Filters
+          </Button>
+          {project && (
+            <CreateIssueDialog
+              projectId={project._id}
+              projectName={projectName}
+              repoFullName={project.repoFullName}
+              trigger={
+                <Button size="sm" className="text-xs">
+                  New Issue
+                  <Bug className="w-5 h-5 mr-2" />
+                </Button>
+              }
+            />
+          )}
+        </div>
       </div>
 
       {/* BODY */}
