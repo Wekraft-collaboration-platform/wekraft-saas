@@ -206,7 +206,7 @@ export const PaceTracker = ({
 
       {/* STATS FOOTER */}
       <div className="mt-3">
-        {gap > 50 ? (
+        {gap > 15 ? (
           <div className="mb-2 px-3 py-2 rounded border border-rose-500/10 bg-rose-500/10 text-muted-foreground text-[11px] font-medium flex items-center gap-2 tracking-wide">
             <div className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-px" />
             {gap.toFixed(0)}% gap — speed up.{" "}
