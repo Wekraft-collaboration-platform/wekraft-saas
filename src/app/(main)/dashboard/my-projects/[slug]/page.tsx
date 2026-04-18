@@ -19,7 +19,15 @@ import {
   Settings2,
   UploadCloud,
   UserPlus,
+  Calendar,
+  Clock,
+  Users,
 } from "lucide-react";
+
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Separator } from "@/components/ui/separator";
+import { format } from "date-fns";
+
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { InviteDialog } from "@/modules/project/inviteDilogag";
@@ -29,6 +37,7 @@ import Image from "next/image";
 import { ProjectJoinRequests } from "@/modules/project/project-join-requests";
 import { useRouter } from "next/navigation";
 import SettingTab from "@/modules/project/SettingsTab";
+import ProjectInfo from "@/modules/project/ProjectInfo";
 
 const ProjectPage = () => {
   const params = useParams();
@@ -38,6 +47,9 @@ const ProjectPage = () => {
   const project = useQuery(api.project.getProjectBySlug, { slug });
   const projectInviteLink = project?.inviteLink;
   const user = useQuery(api.user.getCurrentUser);
+  const members = useQuery(api.project.getProjectMembers, {
+    projectId: project?._id as Id<"projects">,
+  });
 
   const [isUploading, setIsUploading] = useState(false);
   const [homeTab, setHomeTab] = useState("settings");
@@ -243,6 +255,11 @@ const ProjectPage = () => {
               </div>
             )}
           </div>
+        </div>
+
+        {/* RIGHT SIDE , Info */}
+        <div className="w-[30%] h-full pl-6">
+          <ProjectInfo project={project as any} members={members} />
         </div>
       </div>
     </div>
