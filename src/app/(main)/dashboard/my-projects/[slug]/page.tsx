@@ -209,7 +209,7 @@ const ProjectPage = () => {
       {/* PARENT CONTAINER LEFT SIDE TABS || RIGHT SIDE PROJECT INFO */}
       <div className="flex">
         {/* LEFT SIDE 3 TABS */}
-        <div className="w-[65%] border-r border-accent h-full">
+        <div className="w-[65%] h-full">
           {/* TABS */}
           <div className="flex items-center justify-center gap-6  px-4 border-b border-accent pb-4">
             <Button
@@ -256,7 +256,7 @@ const ProjectPage = () => {
             )}
           </div>
         </div>
-
+        <Separator orientation="vertical" className="h-100!" />
         {/* RIGHT SIDE , Info */}
         <div className="w-[30%] h-full pl-6">
           <ProjectInfo project={project as any} members={members} />

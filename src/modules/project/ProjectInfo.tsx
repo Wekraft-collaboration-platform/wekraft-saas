@@ -131,7 +131,7 @@ const ProjectInfo = ({ project, members }: ProjectInfoProps) => {
           {members
             ?.filter((m) => m.userId !== project.ownerId)
             .map((member) => (
-              <div key={member._id} className="flex items-center gap-4 group">
+              <div key={member._id} className="flex items-center gap-2 group">
                 <Avatar className="w-10 h-10 border border-border p-0.5">
                   <AvatarImage
                     src={member.userImage}
@@ -141,14 +141,14 @@ const ProjectInfo = ({ project, members }: ProjectInfoProps) => {
                     {member.userName?.charAt(0)}
                   </AvatarFallback>
                 </Avatar>
-                <div className="flex flex-col">
+                <div className="flex gap-4">
                   <p className="text-sm font-medium group-hover:text-primary transition-colors">
                     {member.userName}
                   </p>
                   <div className="flex mt-0.5">
                     <Badge
                       variant="outline"
-                      className="text-[9px] h-4 px-1.5 py-0 uppercase font-bold tracking-tighter border-muted-foreground/30 text-muted-foreground"
+                      className="text-[10px] h-5 px-2 capitalize font-medium py-1 bg-accent/30 border-border text-muted-foreground"
                     >
                       {member.AccessRole || "Member"}
                     </Badge>

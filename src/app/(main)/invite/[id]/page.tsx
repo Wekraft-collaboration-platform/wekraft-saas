@@ -64,7 +64,7 @@ export default function InvitePage() {
       toast.success("Join request sent successfully!");
       setIsOpen(false);
       // Wait a bit before redirecting so user sees the toast
-      router.push("/dashboard");
+      // router.push("/dashboard");
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to send join request",
