@@ -34,6 +34,7 @@ import {
   GitBranchPlus,
   Github,
   GithubIcon,
+  Layers3,
   LayoutDashboard,
   Link2,
   LogOutIcon,
@@ -90,7 +91,7 @@ export const AppSidebar = () => {
   );
 
   const ownerProjects = useQuery(api.project.getUserProjects);
-  // const teamProjects = future todo
+  const teamProjects = useQuery(api.project.getJoinedProjects);
 
   useEffect(() => {
     setMounted(true);
@@ -210,7 +211,7 @@ export const AppSidebar = () => {
             </PopoverContent>
           </Popover>
           {/* 3 */}
-           <SidebarMenuButton
+          <SidebarMenuButton
             asChild
             data-active={isActive("/dashboard/repositories")}
             className="group relative overflow-hidden"
@@ -232,7 +233,7 @@ export const AppSidebar = () => {
             </Link>
           </SidebarMenuButton>
           {/* 4 */}
-           <div className="px-1 my-2 group-data-[collapsible=icon]:hidden">
+          <div className="px-1 my-2 group-data-[collapsible=icon]:hidden">
             <div className="flex items-center justify-center gap-2">
               <span className="w-10 h-px bg-muted-foreground/30"></span>
               <h3 className="mb-2 text-sm font-medium text-muted-foreground capitalize text-center">
@@ -283,10 +284,7 @@ export const AppSidebar = () => {
                                   project.members
                                     .slice(0, 3)
                                     .map((member, idx) => (
-                                      <Avatar
-                                        key={idx}
-                                        className="h-5 w-5 border-2 border-background ring-1 ring-slate-100 dark:ring-slate-800"
-                                      >
+                                      <Avatar key={idx} className="h-5 w-5">
                                         <AvatarImage src={member.userImage} />
                                         <AvatarFallback className="text-[8px]">
                                           {member.userName
@@ -296,7 +294,15 @@ export const AppSidebar = () => {
                                       </Avatar>
                                     ))
                                 ) : (
-                                  <></>
+                                  <>
+                                    <Button
+                                      className="text-[10px] cursor-pointer"
+                                      size="xs"
+                                      variant="ghost"
+                                    >
+                                      Invite +
+                                    </Button>
+                                  </>
                                 )}
                               </div>
                             </Link>
@@ -306,11 +312,11 @@ export const AppSidebar = () => {
                           size="sm"
                           variant="outline"
                           asChild
-                          className="text-xs mt-2 h-8 w-full cursor-pointer"
+                          className="text-[10px] mt-2 h-7 w-full cursor-pointer"
                         >
                           <Link href="/dashboard/my-projects">
-                            <Plus className="h-4 w-4 mr-1" />
-                            Create Project
+                            <Layers3 className="h-4 w-4 mr-1" />
+                            View All Projects
                           </Link>
                         </Button>
                       </>
@@ -320,15 +326,84 @@ export const AppSidebar = () => {
 
                 {/* TEAM PROJECTS */}
                 <TabsContent value="team" className="m-0 p-2">
-                  <div className="flex h-full flex-col items-center justify-center gap-2 text-center">
-                    <Users className="h-5 w-5 text-muted-foreground" />
-                    <p className="text-xs text-muted-foreground">
-                      No team projects
-                    </p>
-                    <Button size="sm" variant="outline">
-                      <Plus className="h-4 w-4 mr-1" />
-                      Collab Now
-                    </Button>
+                  <div className="flex flex-col gap-2 ">
+                    {teamProjects === undefined ? (
+                      <div className="flex flex-col gap-2">
+                        <Skeleton className="h-9 w-full rounded-md" />
+                        <Skeleton className="h-9 w-full rounded-md" />
+                        <Skeleton className="h-9 w-full rounded-md" />
+                      </div>
+                    ) : teamProjects.length === 0 ? (
+                      <div className="flex h-full flex-col items-center justify-center gap-2 text-center py-4">
+                        <Users className="h-5 w-5 text-muted-foreground" />
+                        <p className="text-xs text-muted-foreground">
+                          No team projects
+                        </p>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          asChild
+                          className="text-[10px] mt-2 h-7 w-full cursor-pointer"
+                        >
+                          <Link href="/dashboard/community?mode=discover">
+                            <Layers3 className="h-4 w-4 mr-1" />
+                            Discover Projects
+                          </Link>
+                        </Button>
+                      </div>
+                    ) : (
+                      <>
+                        <div className="flex flex-col gap-1">
+                          {teamProjects.map((project) => (
+                            <Link
+                              key={project._id}
+                              href={`/dashboard/my-projects/${project.slug}`}
+                              className="flex items-center justify-between gap-2 p-1 rounded-md hover:bg-accent/40 cursor-pointer transition-all border border-transparent hover:border-sidebar-border"
+                            >
+                              <div className="flex items-center gap-2 max-w-[130px]">
+                                <FolderCode className="h-3 w-3 text-primary shrink-0" />
+                                <span className="text-xs font-medium truncate">
+                                  {project.projectName}
+                                </span>
+                              </div>
+
+                              <div className="flex -space-x-1.5 overflow-hidden">
+                                {project.members &&
+                                project.members.length > 0 ? (
+                                  project.members
+                                    .slice(0, 3)
+                                    .map((member, idx) => (
+                                      <Avatar key={idx} className="h-5 w-5">
+                                        <AvatarImage src={member.userImage} />
+                                        <AvatarFallback className="text-[8px]">
+                                          {member.userName
+                                            .substring(0, 1)
+                                            .toUpperCase()}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                    ))
+                                ) : (
+                                  <span className="text-[10px] text-muted-foreground">
+                                    {project.totalMembers}
+                                  </span>
+                                )}
+                              </div>
+                            </Link>
+                          ))}
+                        </div>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          asChild
+                          className="text-[10px] mt-2 h-7 w-full cursor-pointer"
+                        >
+                          <Link href="/dashboard/my-projects">
+                            <Layers3 className="h-4 w-4 mr-1" />
+                            View All Projects
+                          </Link>
+                        </Button>
+                      </>
+                    )}
                   </div>
                 </TabsContent>
               </div>
@@ -405,20 +480,27 @@ export const AppSidebar = () => {
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter className="border-t border-accent px-2 py-2 group-data-[collapsible=icon]:hidden">
-          {/* =======USER PLAN========= */}
-                <div className="my-2 border p-3 rounded-md bg-linear-to-br from-card via-card to-blue-600/70">
-                  <div className="flex items-center gap-2">
-                    <div className="h-7 w-7 rounded-full bg-blue-600/20 flex items-center justify-center">
-                      <Clover className="h-4 w-4 text-primary" />
-                    </div>
-                    <div className="flex flex-col">
-                      <h3 className="text-sm font-medium">Current Plan</h3>
-                      <p className="text-xs text-muted-foreground">Free</p>
-                    </div>
-                  </div>
-                   <p className="text-xs text-muted-foreground text-left my-1.5">Upgrade to Pro to unlock AI to boost productivity.</p>
-                   <Button className="text-[10px] cursor-pointer w-full my-1.5 font-medium" size='xs'>Upgrade to Pro</Button>
-                </div>
+        {/* =======USER PLAN========= */}
+        <div className="my-2 border p-3 rounded-md bg-linear-to-br from-card via-card to-blue-600/70">
+          <div className="flex items-center gap-2">
+            <div className="h-7 w-7 rounded-full bg-blue-600/20 flex items-center justify-center">
+              <Clover className="h-4 w-4 text-primary" />
+            </div>
+            <div className="flex flex-col">
+              <h3 className="text-sm font-medium">Current Plan</h3>
+              <p className="text-xs text-muted-foreground">Free</p>
+            </div>
+          </div>
+          <p className="text-xs text-muted-foreground text-left my-1.5">
+            Upgrade to Pro to unlock AI to boost productivity.
+          </p>
+          <Button
+            className="text-[10px] cursor-pointer w-full my-1.5 font-medium"
+            size="xs"
+          >
+            Upgrade to Pro
+          </Button>
+        </div>
       </SidebarFooter>
     </Sidebar>
   );
