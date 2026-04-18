@@ -28,6 +28,7 @@ import { useState } from "react";
 import Image from "next/image";
 import { ProjectJoinRequests } from "@/modules/project/project-join-requests";
 import { useRouter } from "next/navigation";
+import SettingTab from "@/modules/project/SettingsTab";
 
 const ProjectPage = () => {
   const params = useParams();
@@ -59,10 +60,27 @@ const ProjectPage = () => {
     <div className="w-full min-h-screen animate-in fade-in duration-700 p-6">
       <header className="flex justify-between items-center mb-5">
         <div className="flex flex-col space-y-1.5">
-          <h1 className="text-3xl font-bold flex items-center gap-2">
-            <LucideLayers3 className="w-6 h-6 text-primary" />{" "}
-            {project.projectName}
-          </h1>
+          <div className="flex items-center gap-5">
+            <h1 className="text-3xl font-bold flex items-center gap-2">
+              <LucideLayers3 className="w-6 h-6 text-primary" />{" "}
+              {project.projectName}
+            </h1>
+            <Badge
+              variant={"outline"}
+              className="px-3! py-0.5 text-[10px] bg-transparent"
+            >
+              {project?.isPublic ? (
+                <span className="flex items-center gap-2">
+                  <Globe className="w-3 h-3 text-blue-500" /> Public
+                </span>
+              ) : (
+                <span className="flex items-center gap-2">
+                  <GlobeLock className="w-3 h-3 text-muted-foreground" />{" "}
+                  Private
+                </span>
+              )}
+            </Badge>
+          </div>
           {project?.repoFullName && project?.repositoryId ? (
             <Link href={`/dashboard/my-projects/${project?.slug}/workspace`}>
               <p className="text-muted-foreground text-sm cursor-pointer hover:text-primary/90">
@@ -105,6 +123,7 @@ const ProjectPage = () => {
       </header>
 
       {/* ----------------------------------------------- */}
+      {/* -------------------AWS SETUP HERE ------------- */}
       <div className="w-[1080px] h-[260px] mx-auto bg-primary/10 rounded-lg overflow-hidden mb-5 relative group border border-border">
         {project.thumbnailUrl ? (
           <Image
@@ -150,28 +169,9 @@ const ProjectPage = () => {
         </div>
       </div>
 
-      <div className="w-full flex items-center justify-between mb-8">
-        <Button
-          className="px-4! text-xs cursor-pointer"
-          size="sm"
-          variant={"outline"}
-        >
-          View Public Page <ArrowUpRight className="ml-2 w-3.5 h-3.5" />
-        </Button>
-
+      {/* ---------------------TABS / SETTINGS BELOW---------------- */}
+      <div className="w-full flex items-center justify-end mb-6">
         <div className="flex items-center gap-5">
-          <Badge variant={"secondary"} className="px-4! py-1 text-xs">
-            {project?.isPublic ? (
-              <span className="flex items-center gap-2">
-                <Globe className="w-4 h-4 text-blue-500" /> Public
-              </span>
-            ) : (
-              <span className="flex items-center gap-2">
-                <GlobeLock className="w-4 h-4 text-muted-foreground" /> Private
-              </span>
-            )}
-          </Badge>
-
           <InviteDialog
             inviteLink={projectInviteLink}
             trigger={
@@ -182,7 +182,14 @@ const ProjectPage = () => {
                 Invite <ExternalLink className="ml-2 w-3.5 h-3.5" />
               </Button>
             }
-          />
+          />{" "}
+          <Button
+            className="px-3! text-xs cursor-pointer"
+            size="sm"
+            variant={"outline"}
+          >
+            View Public Page <ArrowUpRight className="ml-2 w-3.5 h-3.5" />
+          </Button>
         </div>
       </div>
 
@@ -192,7 +199,7 @@ const ProjectPage = () => {
         {/* LEFT SIDE 3 TABS */}
         <div className="w-[65%] border-r border-accent h-full">
           {/* TABS */}
-          <div className="flex gap-6  px-4 border-b border-accent pb-4">
+          <div className="flex items-center justify-center gap-6  px-4 border-b border-accent pb-4">
             <Button
               size="sm"
               className="rounded-full px-4! text-[10px]"
@@ -223,8 +230,8 @@ const ProjectPage = () => {
 
           <div className="px-4">
             {homeTab === "settings" && (
-              <div className="py-10 text-center text-muted-foreground text-sm">
-                Project settings coming soon...
+              <div className="py-10">
+                <SettingTab project={project as any} />
               </div>
             )}
             {homeTab === "requests" && (
