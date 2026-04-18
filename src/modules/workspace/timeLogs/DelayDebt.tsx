@@ -62,7 +62,7 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
     return (
       <div className="h-full w-full border border-neutral-800 rounded-xl bg-neutral-900/20 p-5 flex flex-col items-center justify-center text-center space-y-3">
         <div>
-          <h3 className="text-sm font-semibold text-rose-500/80">Delay Debt</h3>
+          <h3 className="text-sm font-semibold text-primary/80">Delay Debt</h3>
           <p className="text-[11px] text-muted-foreground mt-1 max-w-[220px] leading-relaxed">
             Not enough data yet. Add at least 5 tasks with due dates to unlock
             Delay Debt tracking.
@@ -72,7 +72,8 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
     );
   }
 
-  const currentOverdueList = activeTab === "tasks" ? overdueTasks : overdueIssues;
+  const currentOverdueList =
+    activeTab === "tasks" ? overdueTasks : overdueIssues;
   const currentOverdueCount = currentOverdueList.length;
 
   const totalDaysOverdueForTab = currentOverdueList.reduce(
@@ -84,12 +85,10 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
   const worstOffenders = currentOverdueList.slice(0, 5);
   const hiddenOffendersCount = Math.max(0, currentOverdueCount - 5);
 
-  // Subtle color logic - minimal usage
+  // Simple color logic - primary usage
   let badgeColor = "text-muted-foreground border-neutral-800 bg-neutral-900/50";
-  if (currentOverdueCount > 0 && currentOverdueCount <= 3) {
-    badgeColor = "text-amber-500 border-amber-500/20 bg-amber-500/5";
-  } else if (currentOverdueCount > 3) {
-    badgeColor = "text-rose-500 border-rose-500/20 bg-rose-500/5";
+  if (currentOverdueCount > 0) {
+    badgeColor = "text-primary border-primary/20 bg-primary/5";
   }
 
   return (
@@ -97,7 +96,9 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
       {/* HEADER: Title & Compact Tabs */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <Hourglass className="w-3.5 h-3.5 text-rose-500/80" />
+          <div className={cn("p-1.5 rounded-md border bg-muted/50")}>
+            <Hourglass className={cn("w-3 h-3! text-primary")} />
+          </div>
           <h3 className="text-[13px] font-bold tracking-tight text-white/90">
             Delay Debt
           </h3>
@@ -134,8 +135,7 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
         <div className="bg-neutral-900/40 rounded-lg p-2 border border-neutral-800/60">
           <div
             className={cn(
-              "text-xl font-bold tracking-tight leading-none mb-1",
-              totalDaysOverdueForTab > 0 ? "text-rose-500" : "text-neutral-400",
+              "text-xl font-bold tracking-tight leading-none mb-1 text-primary",
             )}
           >
             {Math.ceil(totalDaysOverdueForTab)}
@@ -147,8 +147,7 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
         <div className="bg-neutral-900/40 rounded-lg p-2 border border-neutral-800/60 relative">
           <div
             className={cn(
-              "text-xl font-bold tracking-tight leading-none mb-1",
-              currentOverdueCount > 0 ? "text-amber-500" : "text-neutral-400",
+              "text-xl font-bold tracking-tight leading-none mb-1 text-primary",
             )}
           >
             {currentOverdueCount}
@@ -156,19 +155,16 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
           <div className="text-[9px] text-neutral-500 uppercase tracking-widest font-semibold">
             Total {activeTab}
           </div>
-          {currentOverdueCount > 0 && (
-            <div className="absolute top-2 right-2 w-1 h-1 rounded-full bg-amber-500" />
-          )}
         </div>
       </div>
 
       {/* WORST OFFENDERS: Clean List */}
       <div className="flex-1 overflow-hidden flex flex-col pt-1">
-        <div className="mb-2.5 text-[10px] font-bold text-neutral-500 uppercase tracking-[0.15em] flex items-center justify-between">
+        <div className="mb-2.5 text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em] flex items-center justify-between">
           <span>Worst offenders</span>
           <div
             className={cn(
-              "px-1.5 py-0.5 rounded text-[9px] border font-bold",
+              "px-2 py-0.5 rounded text-[9px] border font-bold",
               badgeColor,
             )}
           >
@@ -197,8 +193,7 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
                     <div className="h-[1px] w-4 bg-neutral-800 group-hover:bg-neutral-700" />
                     <span
                       className={cn(
-                        "text-[10px] font-bold min-w-[30px] text-right",
-                        isSevere ? "text-rose-500" : "text-amber-500",
+                        "text-[10px] font-bold min-w-[30px] text-right text-primary",
                       )}
                     >
                       -{days}d

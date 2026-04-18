@@ -206,7 +206,7 @@ export const PaceTracker = ({
 
       {/* STATS FOOTER */}
       <div className="mt-3">
-        {gap > 15 ? (
+        {gap > 30 ? (
           <div className="mb-2 px-3 py-2 rounded border border-rose-500/10 bg-rose-500/10 text-muted-foreground text-[11px] font-medium flex items-center gap-2 tracking-wide">
             <div className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-px" />
             {gap.toFixed(0)}% gap — speed up.{" "}
@@ -217,7 +217,7 @@ export const PaceTracker = ({
         ) : (
           <div className="grid grid-cols-4 gap-1.5">
             <div className="bg-neutral-900/80 rounded-lg p-2 border border-neutral-800 max-h-[48px] flex flex-col justify-center transition-all hover:bg-neutral-800">
-              <div className="text-lg font-bold text-white tracking-tight leading-none mb-0.5">
+              <div className="text-base font-bold text-white tracking-tight leading-none mb-0.5">
                 {Math.ceil(daysRemaining)}
               </div>
               <div className="text-[9px] text-neutral-500 tracking-wider">
@@ -225,7 +225,7 @@ export const PaceTracker = ({
               </div>
             </div>
             <div className="bg-neutral-900/80 rounded-lg p-2 border border-neutral-800 max-h-[48px] flex flex-col justify-center transition-all hover:bg-neutral-800">
-              <div className="text-lg font-bold text-primary tracking-tight leading-none mb-0.5">
+              <div className="text-base font-bold text-primary tracking-tight leading-none mb-0.5">
                 {tasksRemaining}
               </div>
               <div className="text-[9px] text-neutral-500 tracking-wider">
@@ -233,7 +233,7 @@ export const PaceTracker = ({
               </div>
             </div>
             <div className="bg-neutral-900/80 rounded-lg p-2 border border-neutral-800 max-h-[48px] flex flex-col justify-center transition-all hover:bg-neutral-800">
-              <div className="text-lg font-bold text-primary tracking-tight leading-none mb-0.5 flex items-baseline">
+              <div className="text-base font-bold text-primary tracking-tight leading-none mb-0.5 flex items-baseline">
                 {needPerDay}
                 <span className="text-[10px] ml-0.5 font-semibold">/day</span>
               </div>
@@ -242,7 +242,7 @@ export const PaceTracker = ({
               </div>
             </div>
             <div className="bg-neutral-900/80 rounded-lg p-2 border border-neutral-800 max-h-[48px] flex flex-col justify-center transition-all hover:bg-neutral-800">
-              <div className="text-lg font-bold text-primary tracking-tight leading-none mb-0.5 flex items-baseline">
+              <div className="text-base font-bold text-primary tracking-tight leading-none mb-0.5 flex items-baseline">
                 {currentPace}
                 <span className="text-[10px] ml-0.5 font-semibold">/day</span>
               </div>
