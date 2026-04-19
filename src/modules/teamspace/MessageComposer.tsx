@@ -24,9 +24,10 @@ interface Props {
   onClearReply?: () => void;
   onSend: (content: string) => Promise<void>;
   disabled?: boolean;
+  isAnnouncement?: boolean;
 }
 
-export function MessageComposer({ channelName, replyingTo, onClearReply, onSend, disabled }: Props) {
+export function MessageComposer({ channelName, replyingTo, onClearReply, onSend, disabled, isAnnouncement }: Props) {
   const [content, setContent] = useState("");
   const [sending, setSending] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -57,6 +58,10 @@ export function MessageComposer({ channelName, replyingTo, onClearReply, onSend,
     textareaRef.current?.focus();
   };
 
+  const placeholder = disabled && isAnnouncement
+    ? "Only project owners can send messages in this channel"
+    : `Message #${channelName}`;
+
   return (
     <div className="px-4 pb-6 pt-0 shrink-0">
       {/* Reply context banner */}
@@ -75,14 +80,15 @@ export function MessageComposer({ channelName, replyingTo, onClearReply, onSend,
       {/* Input row */}
       <div
         className={cn(
-          "flex items-center gap-2 rounded-lg bg-accent/40 px-4 py-2 transition-shadow",
-          disabled && "opacity-50 pointer-events-none"
+          "flex items-center gap-2 rounded-lg bg-accent/40 px-4 py-2 transition-all duration-200",
+          disabled && "opacity-70 bg-secondary/30"
         )}
       >
         {/* Plus attachment icon */}
         <button
           type="button"
-          className="h-6 w-6 rounded-full bg-muted-foreground/30 flex items-center justify-center shrink-0 hover:bg-muted-foreground/50 transition-colors"
+          disabled={disabled}
+          className="h-6 w-6 rounded-full bg-muted-foreground/30 flex items-center justify-center shrink-0 hover:bg-muted-foreground/50 transition-colors disabled:opacity-50"
         >
           <Plus className="h-4 w-4 text-foreground/80" />
         </button>
@@ -93,8 +99,9 @@ export function MessageComposer({ channelName, replyingTo, onClearReply, onSend,
           value={content}
           onChange={(e) => setContent(e.target.value)}
           onKeyDown={handleKeyDown}
-          placeholder={`Message #${channelName}`}
-          className="flex-1 border-0 shadow-none focus-visible:ring-0 resize-none bg-transparent min-h-[24px] max-h-[50vh] py-1 text-[15px] placeholder:text-muted-foreground/60 leading-normal scrollbar-hide"
+          placeholder={placeholder}
+          disabled={disabled}
+          className="flex-1 border-0 shadow-none focus-visible:ring-0 resize-none bg-transparent min-h-[24px] max-h-[50vh] py-1 text-[15px] placeholder:text-muted-foreground/60 leading-normal scrollbar-hide disabled:cursor-not-allowed"
           rows={1}
           style={{ height: "auto" }}
           onInput={(e) => {
@@ -106,20 +113,20 @@ export function MessageComposer({ channelName, replyingTo, onClearReply, onSend,
 
         {/* Right utility icons */}
         <div className="flex items-center gap-2.5 shrink-0 pr-1">
-          <button className="text-muted-foreground/80 hover:text-foreground transition-colors">
+          <button disabled={disabled} className="text-muted-foreground/80 hover:text-foreground transition-colors disabled:opacity-50">
             <Gift className="h-[18px] w-[18px]" />
           </button>
-          <button className="text-muted-foreground/80 hover:text-foreground transition-colors">
+          <button disabled={disabled} className="text-muted-foreground/80 hover:text-foreground transition-colors disabled:opacity-50">
             <FileImage className="h-[18px] w-[18px]" />
           </button>
-          <button className="text-muted-foreground/80 hover:text-foreground transition-colors">
+          <button disabled={disabled} className="text-muted-foreground/80 hover:text-foreground transition-colors disabled:opacity-50">
             <Sticker className="h-[18px] w-[18px]" />
           </button>
           
           {/* Emoji picker */}
           <Popover>
             <PopoverTrigger asChild>
-              <button className="text-muted-foreground/80 hover:text-foreground transition-colors">
+              <button disabled={disabled} className="text-muted-foreground/80 hover:text-foreground transition-colors disabled:opacity-50">
                 <SmilePlus className="h-[18px] w-[18px]" />
               </button>
             </PopoverTrigger>

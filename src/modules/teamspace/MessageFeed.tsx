@@ -27,6 +27,7 @@ interface Props {
   currentUserName: string;
   currentUserImage: string | null;
   projectId: string;
+  isOwner: boolean;
   onToggleMembers: () => void;
 }
 
@@ -50,6 +51,7 @@ export function MessageFeed({
   currentUserName,
   currentUserImage,
   projectId,
+  isOwner,
   onToggleMembers,
 }: Props) {
 
@@ -88,6 +90,7 @@ export function MessageFeed({
   };
 
   const isAnnouncement = channel?.type === "announcement";
+  const canSend = !isAnnouncement || isOwner;
 
   // Group messages by date for date dividers
   const withDividers: Array<Message | { type: "divider"; date: number }> = [];
@@ -274,7 +277,8 @@ export function MessageFeed({
         replyingTo={replyingTo}
         onClearReply={() => setReplyingTo(null)}
         onSend={handleSend}
-        disabled={isAnnouncement}
+        disabled={!canSend}
+        isAnnouncement={isAnnouncement}
       />
     </div>
   );
