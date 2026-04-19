@@ -5,8 +5,20 @@ import { useQuery } from "convex/react";
 import { api } from "../../../../../../../../convex/_generated/api";
 import { TeamspaceView } from "@/modules/teamspace/TeamspaceView";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useSidebar } from "@/components/ui/sidebar";
+import { useEffect, useRef } from "react";
 
 export default function TeamspacePage() {
+  const { setOpen: setSidebarOpen } = useSidebar();
+  const didInit = useRef(false);
+
+  useEffect(() => {
+    if (!didInit.current) {
+      setSidebarOpen(false);
+      didInit.current = true;
+    }
+  }, [setSidebarOpen]);
+
   const params = useParams();
   const slug = params.slug as string;
 
