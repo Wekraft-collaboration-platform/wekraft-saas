@@ -37,7 +37,7 @@ function DateDivider({ timestamp }: { timestamp: number }) {
   const label = isToday(d) ? "Today" : isYesterday(d) ? "Yesterday" : format(d, "MMMM d, yyyy");
   return (
     <div className="flex items-center mt-4 mb-2 mx-4 relative group">
-      <div className="flex-1 h-[1px] bg-border/40 group-hover:bg-border/60 transition-colors" />
+      <div className="flex-1 h-[1px] bg-border/80 group-hover:bg-border/90 transition-colors" />
       <span className="absolute left-1/2 -translate-x-1/2 bg-background px-2 text-[11px] font-semibold text-muted-foreground/80 lowercase">
         {label}
       </span>
@@ -118,7 +118,7 @@ export function MessageFeed({
   return (
     <div className="flex flex-col flex-1 min-w-0 h-full overflow-hidden relative">
       {/* Channel header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border/40 flex-none bg-background/95 backdrop-blur shadow-sm z-10">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border/80 flex-none bg-background/95 backdrop-blur shadow-sm z-10">
         <div className="flex items-center gap-2 min-w-0">
           <ChannelIcon className="h-5 w-5 text-muted-foreground shrink-0 opacity-70" />
           <h2 className="font-bold text-[15px] leading-none text-foreground truncate">{channel.name}</h2>
@@ -127,7 +127,7 @@ export function MessageFeed({
           )}
           {channel.description && (
             <>
-              <div className="h-4 w-[1px] bg-border/60 mx-2" />
+              <div className="h-4 w-[1px] bg-border/90 mx-2" />
               <p className="text-[13px] text-muted-foreground truncate">{channel.description}</p>
             </>
           )}

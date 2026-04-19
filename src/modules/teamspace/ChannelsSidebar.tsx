@@ -80,9 +80,9 @@ export function ChannelsSidebar({
   };
 
   return (
-    <div className="flex flex-col h-full w-60 border-r bg-sidebar shrink-0">
+    <div className="flex flex-col h-full w-60 border-r border-border/80 bg-background shrink-0">
       {/* Server Header */}
-      <div className="flex items-center justify-center px-4 py-3.5 border-b border-border/50 shadow-sm cursor-pointer hover:bg-accent/30 transition-colors">
+      <div className="flex items-center justify-center px-4 py-3.5 border-b border-border/80 shadow-sm cursor-pointer hover:bg-accent/30 transition-colors">
         <h2 className="font-bold text-xl leading-tight truncate px-0.5">Team space</h2>
       </div>
 
@@ -91,7 +91,7 @@ export function ChannelsSidebar({
         <Button
           onClick={() => setCreateOpen(true)}
           variant="outline"
-          className="w-full flex items-center justify-center gap-3 px-3 h-10 bg-accent/20 hover:bg-accent/40 border-border/40 text-foreground group transition-all duration-200 relative overflow-hidden shadow-sm"
+          className="w-full flex items-center justify-center gap-3 px-3 h-10 bg-accent/20 hover:bg-accent/40 border-border/80 text-foreground group transition-all duration-200 relative overflow-hidden shadow-sm"
         >
           <div className="bg-accent/50 p-1 rounded-md group-hover:bg-accent group-hover:scale-105 transition-all">
             <Plus className="h-4 w-4" />
@@ -149,7 +149,7 @@ export function ChannelsSidebar({
       </ScrollArea>
 
       {/* Bottom Profile Section */}
-      <div className="flex items-center gap-2 p-2 bg-accent/20 border-t shrink-0">
+      <div className="flex items-center gap-2 p-2 bg-accent/20 border-t border-border/80 shrink-0">
         <button className="flex items-center gap-2 flex-1 min-w-0 hover:bg-accent/40 rounded-md p-1 -ml-1 transition-colors">
           <div className="h-8 w-8 rounded-full bg-accent/50 overflow-hidden shrink-0 flex items-center justify-center">
             {currentUserImage ? (

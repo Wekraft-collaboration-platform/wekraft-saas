@@ -35,7 +35,7 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
   const currentUserImage = user?.avatarUrl ?? null;
 
   return (
-    <div className="flex h-[calc(100vh-76px)] overflow-hidden bg-background">
+    <div className="flex h-[calc(100vh-76px)] overflow-hidden bg-sidebar">
       {/* Left: Channels */}
       <ChannelsSidebar
         channels={channels}

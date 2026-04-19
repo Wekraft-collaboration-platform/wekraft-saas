@@ -73,9 +73,9 @@ export function MembersPanel({ projectId, channelId }: Props) {
   const offline = members?.filter((m) => !onlineIds.has(m.userId)) ?? [];
 
   return (
-    <div className="flex flex-col h-full w-48 border-l bg-sidebar shrink-0">
+    <div className="flex flex-col h-full w-48 border-l border-border/80 bg-black shrink-0">
       {/* Header */}
-      <div className="flex items-center gap-2 px-3 py-3 border-b">
+      <div className="flex items-center gap-2 px-3 py-3 border-b border-border/80">
         <Users className="h-3.5 w-3.5 text-muted-foreground" />
         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
           Members
@@ -146,7 +146,7 @@ function MemberRow({
         </Avatar>
         <span
           className={cn(
-            "absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-sidebar",
+            "absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-black",
             online ? "bg-emerald-500" : "bg-muted-foreground/40"
           )}
         />
