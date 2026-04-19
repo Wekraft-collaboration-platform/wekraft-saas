@@ -8,7 +8,7 @@ import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { getRepoTree, type TreeNode } from "./function/index";
 import { Tree, Folder, File, type TreeViewElement } from "@/components/ui/file-tree";
-import { ScrollArea } from "@/components/ui/scroll-area";
+
 
 interface GetRepoStructureProps {
   repoFullName?: string;
