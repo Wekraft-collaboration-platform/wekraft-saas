@@ -35,7 +35,7 @@ function getAblyClient(): Ably.Realtime {
   return ablyClient;
 }
 
-export function useMessages(channelId: string | null, threadParentId?: string) {
+export function useMessages(channelId: string | null, projectId: string, threadParentId?: string) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
@@ -153,8 +153,7 @@ export function useMessages(channelId: string | null, threadParentId?: string) {
     async (content: string, userName: string, userImage: string | null, parentId?: string) => {
       if (!channelId || !content.trim()) return;
 
-      // Get projectId from first message or from context
-      const projectId = messages[0]?.project_id ?? "";
+
 
       await fetch("/api/teamspace/messages", {
         method: "POST",
@@ -169,7 +168,7 @@ export function useMessages(channelId: string | null, threadParentId?: string) {
         }),
       });
     },
-    [channelId, messages]
+    [channelId, projectId]
   );
 
   const editMessage = useCallback(async (messageId: string, content: string) => {
