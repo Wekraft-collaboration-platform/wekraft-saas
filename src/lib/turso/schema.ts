@@ -1,4 +1,4 @@
-import { turso } from "./turso";
+import { turso } from "./client";
 
 /**
  * Runs CREATE TABLE IF NOT EXISTS for all teamspace tables.

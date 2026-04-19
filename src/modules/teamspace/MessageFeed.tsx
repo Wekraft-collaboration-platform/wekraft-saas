@@ -170,7 +170,7 @@ export function MessageFeed({
           <div className="relative">
             <input 
               type="text" 
-              placeholder={`Search ${channel.name}`}
+              placeholder={`Search chat`}
               className="bg-black w-48 text-xs px-2.5 py-1.5 pr-7 rounded-sm border focus:outline-none focus:ring-1 focus:ring-ring placeholder-muted-foreground/70"
             />
             <Search className="h-3.5 w-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground/70" />

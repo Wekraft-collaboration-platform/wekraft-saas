@@ -1,7 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
-import { turso } from "@/lib/turso";
-import { initTeamspaceDB } from "@/lib/teamspace-db";
+import { turso, initTeamspaceDB } from "@/lib/turso";
 import Ably from "ably";
 import { randomUUID } from "crypto";
 
