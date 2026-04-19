@@ -47,9 +47,6 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
           setActiveChannel(ch);
         }}
         onCreate={createChannel}
-        currentUserId={currentUserId}
-        currentUserName={currentUserName}
-        currentUserImage={currentUserImage}
       />
 
       {/* Center: Message feed */}

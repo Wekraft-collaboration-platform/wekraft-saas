@@ -118,19 +118,24 @@ export function MessageFeed({
   return (
     <div className="flex flex-col flex-1 min-w-0 h-full overflow-hidden relative">
       {/* Channel header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border/80 flex-none bg-background/95 backdrop-blur shadow-sm z-10">
-        <div className="flex items-center gap-2 min-w-0">
-          <ChannelIcon className="h-5 w-5 text-muted-foreground shrink-0 opacity-70" />
-          <h2 className="font-bold text-[15px] leading-none text-foreground truncate">{channel.name}</h2>
-          {isAnnouncement && (
-            <Lock className="h-3.5 w-3.5 text-amber-500/70 ml-1" />
-          )}
-          {channel.description && (
-            <>
-              <div className="h-4 w-[1px] bg-border/90 mx-2" />
-              <p className="text-[13px] text-muted-foreground truncate">{channel.description}</p>
-            </>
-          )}
+      <div className="flex items-center justify-between px-4 py-2 border-b border-border/80 flex-none bg-background/95 backdrop-blur shadow-sm z-10">
+        <div className="flex items-center gap-3 min-w-0">
+          <div className="bg-accent/40 p-1.5 rounded-md shrink-0">
+            <ChannelIcon className="h-4 w-4 text-muted-foreground opacity-80" />
+          </div>
+          <div className="flex flex-col min-w-0">
+            <div className="flex items-center gap-1.5">
+              <h2 className="font-bold text-[15px] leading-tight text-foreground truncate">{channel.name}</h2>
+              {isAnnouncement && (
+                <Lock className="h-3.5 w-3.5 text-amber-500/70" />
+              )}
+            </div>
+            {channel.description && (
+              <p className="text-[11px] text-muted-foreground/70 truncate leading-tight mt-0.5">
+                {channel.description}
+              </p>
+            )}
+          </div>
         </div>
 
         <div className="flex items-center gap-4 ml-4 shrink-0">
