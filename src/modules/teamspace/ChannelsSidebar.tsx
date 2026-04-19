@@ -7,19 +7,40 @@ import { CreateChannelDialog } from "./CreateChannelDialog";
 import { EditChannelDialog } from "./EditChannelDialog";
 import { DeleteChannelDialog } from "./DeleteChannelDialog";
 import { cn } from "@/lib/utils";
-import { Hash, Megaphone, Plus, Lock, ChevronDown, Settings, Edit2, Trash2 } from "lucide-react";
+import {
+  Hash,
+  Megaphone,
+  Plus,
+  Lock,
+  ChevronDown,
+  Settings,
+  Edit2,
+  Trash2,
+  PlaneTakeoff,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
+import { useProjectPermissions } from "@/hooks/use-project-permissions";
+import { Id } from "../../../convex/_generated/dataModel";
+
 interface Props {
+  projectId: string;
   channels: Channel[];
   loading: boolean;
   activeChannelId: string | null;
-  isOwner: boolean;
   onSelect: (channel: Channel) => void;
-  onCreate: (name: string, description: string, type: "text" | "announcement") => Promise<Channel | undefined>;
-  onUpdate: (channelId: string, name: string, description: string) => Promise<boolean>;
+  onCreate: (
+    name: string,
+    description: string,
+    type: "text" | "announcement",
+  ) => Promise<Channel | undefined>;
+  onUpdate: (
+    channelId: string,
+    name: string,
+    description: string,
+  ) => Promise<boolean>;
   onDelete: (channelId: string) => Promise<boolean>;
 }
 
@@ -29,16 +50,19 @@ const channelColors: Record<string, string> = {
   announcement: "text-amber-500",
 };
 
-export function ChannelsSidebar({ 
-  channels, 
-  loading, 
-  activeChannelId, 
-  isOwner,
-  onSelect, 
+export function ChannelsSidebar({
+  projectId,
+  channels,
+  loading,
+  activeChannelId,
+  onSelect,
   onCreate,
   onUpdate,
   onDelete,
 }: Props) {
+  const { isOwner, isPower } = useProjectPermissions(
+    projectId as Id<"projects">,
+  );
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
@@ -48,8 +72,10 @@ export function ChannelsSidebar({
     return channelColors[name.toLowerCase()] ?? "text-blue-500";
   };
 
-  const announcementChannels = channels.filter(c => c.type === "announcement");
-  const chatChannels = channels.filter(c => c.type !== "announcement");
+  const announcementChannels = channels.filter(
+    (c) => c.type === "announcement",
+  );
+  const chatChannels = channels.filter((c) => c.type !== "announcement");
 
   const renderChannel = (channel: Channel) => {
     const isActive = channel.id === activeChannelId;
@@ -65,7 +91,7 @@ export function ChannelsSidebar({
             "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[14px] font-medium transition-all duration-300 relative overflow-hidden",
             isActive
               ? "bg-accent/60 text-foreground shadow-sm"
-              : "text-muted-foreground hover:bg-accent/30 hover:text-foreground"
+              : "text-muted-foreground hover:bg-accent/30 hover:text-foreground",
           )}
         >
           {/* Active indicator */}
@@ -80,11 +106,13 @@ export function ChannelsSidebar({
           <Icon
             className={cn(
               "h-[18px] w-[18px] shrink-0 transition-colors duration-300",
-              isActive ? color : "text-muted-foreground/50 group-hover/item:" + color
+              isActive
+                ? color
+                : "text-muted-foreground/50 group-hover/item:" + color,
             )}
           />
           <span className="truncate leading-tight">{channel.name}</span>
-          
+
           {/* Hover actions */}
           {isOwner && !channel.is_default && (
             <div className="ml-auto flex items-center gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity z-20">
@@ -114,11 +142,6 @@ export function ChannelsSidebar({
           {channel.type === "announcement" && !isOwner && (
             <Lock className="h-3 w-3 ml-auto shrink-0 opacity-40 group-hover/item:opacity-70 transition-opacity" />
           )}
-          
-          {/* Hover highlight */}
-          {!isActive && (
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover/item:opacity-100 transition-opacity duration-500 pointer-events-none" />
-          )}
         </button>
       </li>
     );
@@ -128,28 +151,28 @@ export function ChannelsSidebar({
     <div className="flex flex-col h-full w-60 border-r border-border/80 bg-background shrink-0">
       {/* Server Header */}
       <div className="flex items-center justify-center px-4 py-3.5 border-b border-border/80 shadow-sm cursor-pointer hover:bg-accent/30 transition-colors">
-        <h2 className="font-bold text-xl leading-tight truncate px-0.5">Team space</h2>
+        <h2 className="font-semibold text-xl leading-tight truncate px-0.5">
+          <PlaneTakeoff className="h-6 w-6 -mt-0.5 mr-2 inline" /> Team space
+        </h2>
       </div>
 
       {/* Create Channel Action */}
-      {isOwner && (
-        <div className="px-3 pt-4 pb-2">
-          <motion.button
-            onClick={() => setCreateOpen(true)}
-            whileHover={{ scale: 1.02, y: -1 }}
-            whileTap={{ scale: 0.98 }}
-            className="w-full flex items-center justify-center gap-3 px-3 h-11 bg-primary/10 hover:bg-primary/15 border border-primary/20 hover:border-primary/40 text-foreground group transition-all duration-300 relative overflow-hidden rounded-xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.1)]"
-          >
-            <div className="bg-primary/20 p-1.5 rounded-lg group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-300">
-              <Plus className="h-4 w-4 text-primary" />
-            </div>
-            <span className="text-sm font-semibold tracking-tight">Create Channel</span>
-            
-            {/* Subtle glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-          </motion.button>
-        </div>
-      )}
+      <div className="px-3 pt-4 pb-2">
+        <motion.button
+          onClick={() => setCreateOpen(true)}
+          // whileHover={{ scale: 1, y: -1 }}
+          disabled={!isPower}
+          className="w-full flex items-center justify-center gap-3 px-3 h-9 bg-muted hover:bg-accent/30 border border-primary/20 hover:border-primary/40 text-foreground group transition-all duration-300 relative overflow-hidden rounded"
+        >
+          <div className="bg-primary/20 p-1 rounded group-hover:bg-primary/30">
+            <Plus className="h-4 w-4 text-primary" />
+          </div>
+          <span className="text-xs tracking-tight">Create Channel</span>
+
+          {/* Subtle glow effect */}
+          <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+        </motion.button>
+      </div>
 
       {/* Channel List */}
       <ScrollArea className="flex-1">
@@ -167,8 +190,8 @@ export function ChannelsSidebar({
                 <div>
                   <div className="flex items-center justify-between px-2 pt-2 pb-1 group">
                     <div className="flex items-center gap-1 cursor-pointer">
-                      <ChevronDown className="h-3 w-3 text-muted-foreground/80 shrink-0" />
-                      <h3 className="text-xs font-semibold text-muted-foreground/80 hover:text-foreground uppercase tracking-wider select-none">
+                      <ChevronDown className="h-4 w-4  shrink-0" />
+                      <h3 className="text-sm capitalize select-none">
                         Announcements
                       </h3>
                     </div>
@@ -183,8 +206,8 @@ export function ChannelsSidebar({
               <div>
                 <div className="flex items-center justify-between px-2 pt-2 pb-1 group">
                   <div className="flex items-center gap-1 cursor-pointer">
-                    <ChevronDown className="h-3 w-3 text-muted-foreground/80 shrink-0" />
-                    <h3 className="text-xs font-semibold text-muted-foreground/80 hover:text-foreground uppercase tracking-wider select-none">
+                    <ChevronDown className="h-4s w-4  shrink-0" />
+                    <h3 className="text-sm capitalize select-none">
                       Community Chat
                     </h3>
                   </div>
@@ -200,25 +223,24 @@ export function ChannelsSidebar({
 
       {/* Bottom Setting Section */}
       <div className="relative overflow-hidden bg-sidebar/60 border-t border-border/60 shrink-0">
-        <div className="noise-bg opacity-[0.02]" />
         <div className="p-3 relative z-10">
-          <motion.button 
-            whileHover={{ scale: 1.02, backgroundColor: "var(--color-accent-60)" }}
+          <motion.button
+            whileHover={{
+              scale: 1.02,
+              backgroundColor: "var(--color-accent-60)",
+            }}
             whileTap={{ scale: 0.98 }}
-            className="flex items-center justify-center gap-2.5 w-full py-2.5 rounded-xl border border-border/40 bg-accent/20 hover:bg-accent/40 hover:border-border/80 hover:shadow-[0_0_20px_rgba(0,0,0,0.2)] transition-all duration-300 group relative overflow-hidden"
+            className="flex items-center justify-center gap-2.5 w-full py-2 rounded border border-border/40 bg-accent/20 hover:bg-accent/40 hover:border-border/80 hover:shadow-[0_0_20px_rgba(0,0,0,0.2)] transition-all duration-300 group relative overflow-hidden"
           >
-            {/* Glossy overlay */}
-            <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-white/5 to-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
-            
-            <motion.div 
+            <motion.div
               animate={{ rotate: 0 }}
               whileHover={{ rotate: 90 }}
               transition={{ type: "spring", stiffness: 200, damping: 15 }}
             >
               <Settings className="h-[18px] w-[18px] text-muted-foreground group-hover:text-foreground transition-colors" />
             </motion.div>
-            
-            <span className="text-sm font-semibold tracking-wide text-muted-foreground group-hover:text-foreground transition-colors">
+
+            <span className="text-sm tracking-wide text-muted-foreground transition-colors">
               Setting
             </span>
           </motion.button>
