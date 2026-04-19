@@ -57,6 +57,7 @@ export function MessageFeed({
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const isAutoScrolling = useRef(false);
   const [atBottom, setAtBottom] = useState(true);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
 
@@ -73,16 +74,38 @@ export function MessageFeed({
 
   // Auto-scroll to bottom on new messages (only if already at bottom)
   useEffect(() => {
-    if (atBottom) {
+    if (atBottom && messages.length > 0) {
+      isAutoScrolling.current = true;
       bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+      
+      // Reset auto-scrolling flag after a delay to allow the smooth scroll to complete
+      const timer = setTimeout(() => {
+        isAutoScrolling.current = false;
+      }, 1000);
+      return () => clearTimeout(timer);
     }
-  }, [messages.length, atBottom]);
+  }, [messages.length]); // Only depend on message length changes
 
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
+    if (isAutoScrolling.current) return;
+    
     const el = e.currentTarget;
     const distFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
-    setAtBottom(distFromBottom < 60);
+    // Using a slightly more strict threshold and ensuring we don't flicker
+    setAtBottom(distFromBottom < 20);
   }, []);
+
+  // Sync scroll state when content changes (e.g. after loading or channel switch)
+  useEffect(() => {
+    if (scrollRef.current) {
+      const el = scrollRef.current;
+      const isScrollable = el.scrollHeight > el.clientHeight;
+      const distFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
+      
+      // If not scrollable or near bottom, set atBottom to true
+      setAtBottom(!isScrollable || distFromBottom < 20);
+    }
+  }, [messages.length, loading, channel?.id]);
 
   const handleSend = async (content: string) => {
     await sendMessage(content, currentUserId, currentUserName, currentUserImage, replyingTo?.id);
@@ -254,28 +277,6 @@ export function MessageFeed({
         )}
       </div>
 
-      {/* Jump to bottom FAB */}
-      <AnimatePresence>
-        {!atBottom && (
-          <motion.div
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: 10 }}
-            className="absolute bottom-20 right-4"
-          >
-            <Button
-              size="sm"
-              variant="secondary"
-              className="shadow-lg h-8 gap-1.5"
-              onClick={() => bottomRef.current?.scrollIntoView({ behavior: "smooth" })}
-            >
-              <ArrowDown className="h-3.5 w-3.5" />
-              Jump to bottom
-            </Button>
-          </motion.div>
-        )}
-      </AnimatePresence>
-
       {/* Composer */}
       <MessageComposer
         channelName={channel.name}
@@ -285,6 +286,33 @@ export function MessageFeed({
         disabled={!canSend}
         isAnnouncement={isAnnouncement}
       />
+
+      {/* Jump to bottom FAB */}
+      <AnimatePresence>
+        {!atBottom && messages.length > 0 && (
+          <motion.div
+            initial={{ opacity: 0, scale: 0.9, y: 10 }}
+            animate={{ opacity: 1, scale: 1, y: 0 }}
+            exit={{ opacity: 0, scale: 0.9, y: 10 }}
+            className="absolute bottom-[110px] right-6 z-50 pointer-events-none"
+          >
+            <Button
+              size="sm"
+              variant="secondary"
+              className="shadow-2xl h-10 rounded-full px-5 gap-2.5 bg-background/95 backdrop-blur-md border border-border/80 hover:bg-accent hover:border-border transition-all pointer-events-auto active:scale-95 group"
+              onClick={() => {
+                bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+                setAtBottom(true);
+              }}
+            >
+              <div className="bg-primary/20 p-1 rounded-full group-hover:bg-primary/30 transition-colors">
+                <ArrowDown className="h-4 w-4 text-primary" />
+              </div>
+              <span className="text-[13px] font-medium tracking-tight">Jump to bottom</span>
+            </Button>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
