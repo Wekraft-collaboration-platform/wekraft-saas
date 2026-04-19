@@ -13,6 +13,13 @@ import { Hash, Megaphone, ChevronUp, ArrowDown, Lock, Search, Bell, Pin, Users, 
 import { cn } from "@/lib/utils";
 import { format, isToday, isYesterday } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+
 
 interface Props {
   channel: Channel | null;
@@ -20,7 +27,9 @@ interface Props {
   currentUserName: string;
   currentUserImage: string | null;
   projectId: string;
+  onToggleMembers: () => void;
 }
+
 
 function DateDivider({ timestamp }: { timestamp: number }) {
   const d = new Date(timestamp);
@@ -41,7 +50,9 @@ export function MessageFeed({
   currentUserName,
   currentUserImage,
   projectId,
+  onToggleMembers,
 }: Props) {
+
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
   const [atBottom, setAtBottom] = useState(true);
@@ -120,24 +131,44 @@ export function MessageFeed({
         </div>
 
         <div className="flex items-center gap-4 ml-4 shrink-0">
-          <div className="flex items-center gap-3 text-muted-foreground">
-            <Bell className="h-5 w-5 hover:text-foreground cursor-pointer transition-colors" />
-            <Pin className="h-5 w-5 hover:text-foreground cursor-pointer transition-colors" />
-            <Users className="h-5 w-5 hover:text-foreground cursor-pointer transition-colors" />
-          </div>
+          <TooltipProvider delayDuration={400}>
+            <div className="flex items-center gap-3 text-muted-foreground">
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Bell className="h-5 w-5 hover:text-foreground cursor-pointer transition-colors" />
+                </TooltipTrigger>
+                <TooltipContent>Notifications</TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Pin className="h-5 w-5 hover:text-foreground cursor-pointer transition-colors" />
+                </TooltipTrigger>
+                <TooltipContent>Pinned Messages</TooltipContent>
+              </Tooltip>
+
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Users 
+                    className="h-5 w-5 hover:text-foreground cursor-pointer transition-colors" 
+                    onClick={onToggleMembers}
+                  />
+                </TooltipTrigger>
+                <TooltipContent>Show Member List</TooltipContent>
+              </Tooltip>
+            </div>
+          </TooltipProvider>
+
           <div className="relative group">
             <input 
               type="text" 
-              placeholder="Search" 
+              placeholder={`Search ${channel.name}`}
               className="bg-accent/40 w-36 group-hover:w-48 transition-all duration-200 text-xs px-2.5 py-1.5 pr-7 rounded-sm border-none focus:outline-none focus:ring-1 focus:ring-ring placeholder-muted-foreground/70"
             />
             <Search className="h-3.5 w-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground/70" />
           </div>
-          <div className="flex items-center gap-3 text-muted-foreground">
-            <Inbox className="h-5 w-5 hover:text-foreground cursor-pointer transition-colors" />
-            <HelpCircle className="h-5 w-5 hover:text-foreground cursor-pointer transition-colors" />
-          </div>
         </div>
+
       </div>
 
       {/* Messages area */}

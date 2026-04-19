@@ -21,6 +21,8 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
 
   const { channels, loading, createChannel } = useChannels(projectId);
   const [activeChannel, setActiveChannel] = useState<Channel | null>(null);
+  const [showMembers, setShowMembers] = useState(false);
+
 
   // Auto-select default channel once loaded
   const resolvedChannel =
@@ -53,10 +55,15 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
         currentUserName={currentUserName}
         currentUserImage={currentUserImage}
         projectId={projectId}
+        onToggleMembers={() => setShowMembers((prev) => !prev)}
       />
 
+
       {/* Right: Members panel */}
-      <MembersPanel projectId={projectId} channelId={resolvedChannel?.id ?? null} />
+      {showMembers && (
+        <MembersPanel projectId={projectId} channelId={resolvedChannel?.id ?? null} />
+      )}
+
     </div>
   );
 }
