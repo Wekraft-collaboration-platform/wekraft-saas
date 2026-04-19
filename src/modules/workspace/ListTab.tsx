@@ -362,11 +362,11 @@ const TaskGroup = ({
                     </TableCell>
                     <TableCell className="p-2.5 border-r border-b border-neutral-800">
                       {task.assignedTo && task.assignedTo.length > 0 ? (
-                        <div className="flex -space-x-2">
+                        <div className="flex items-center justify-center -space-x-2">
                           {task.assignedTo.map((person, i) => (
                             <Avatar
                               key={i}
-                              className="w-7 h-7 border-2 border-background shadow-sm hover:z-10 transition-transform hover:scale-110"
+                              className="w-7 h-7 border-2 border-primary/50 shadow-sm hover:z-10 transition-transform hover:scale-110"
                             >
                               <AvatarImage src={person.avatar} />
                               <AvatarFallback className="text-[10px] bg-primary text-primary-foreground">
@@ -377,11 +377,14 @@ const TaskGroup = ({
                         </div>
                       ) : (
                         <div className="flex items-center justify-center w-full">
-                          <Minus className="w-3.5 h-3.5 " />
+                          <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+                            <Minus className="w-3.5 h-3.5" />
+                            Unassigned
+                          </p>
                         </div>
                       )}
                     </TableCell>
-                    <TableCell className="p-2.5 border-b border-neutral-800 whitespace-nowrap">
+                    <TableCell className="p-2.5 border-b border-neutral-800 text-muted-foreground whitespace-nowrap">
                       <PriorityBadge priority={task.priority} />
                     </TableCell>
 

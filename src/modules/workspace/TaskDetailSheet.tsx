@@ -20,6 +20,7 @@ import {
   TextQuote,
   MessagesSquare,
   GitBranch,
+  FastForward,
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -27,12 +28,18 @@ import { Separator } from "@/components/ui/separator";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Input } from "@/components/ui/input";
-import { Send } from "lucide-react";
+import { Send, User, Check } from "lucide-react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { toast } from "sonner";
 import { Task } from "@/types/types";
 import { priorityIcons2, statusColors, statusIcons } from "@/lib/static-store";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface TaskDetailSheetProps {
   task: Task | null;
@@ -75,6 +82,13 @@ export const TaskDetailSheet = ({
     currentTask ? { userId: currentTask.createdByUserId as any } : "skip",
   );
 
+  const members = useQuery(
+    api.project.getProjectMembers,
+    currentTask ? { projectId: currentTask.projectId } : "skip",
+  );
+
+  const updateAssignees = useMutation(api.workspace.updateTaskAssignees);
+
   if (!currentTask) return null;
 
   const priority =
@@ -93,18 +107,49 @@ export const TaskDetailSheet = ({
     }
   };
 
+  const handleAssignMember = async (member: any, isSelected: boolean) => {
+    if (!currentTask) return;
+
+    let newAssignees = currentTask.assignedTo || [];
+    if (isSelected) {
+      newAssignees = newAssignees.filter((m) => m.userId !== member.userId);
+    } else {
+      newAssignees = [
+        ...newAssignees,
+        {
+          userId: member.userId,
+          name: member.userName,
+          avatar: member.userImage,
+        },
+      ];
+    }
+
+    try {
+      await updateAssignees({
+        taskId: currentTask._id,
+        assignedTo: newAssignees,
+      });
+      toast.success("Assignees updated");
+    } catch (error) {
+      toast.error("Failed to update assignees");
+    }
+  };
+
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="sm:max-w-lg w-full p-0 border-l border-neutral-800 bg-sidebar">
         <div className="flex flex-col h-full">
           {/* Top Actions */}
-          <div className="flex items-center justify-between px-6 py-3 border-b border-neutral-800/50">
-            <div className="flex items-center gap-2">
-              <Button variant="outline" size="sm" className="text-[10px]">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-accent">
+            <div className="flex items-center gap-3">
+              <Button variant="default" size="sm" className="text-[10px]">
                 <Edit2 size={12} /> Edit Task
               </Button>
               <Button variant="outline" size="sm" className="text-[10px]">
                 <Bug size={12} /> Mark as Issue
+              </Button>
+              <Button variant="outline" size="sm" className="text-[10px]">
+                <FastForward size={12} /> Add to Sprint
               </Button>
             </div>
           </div>
@@ -213,26 +258,74 @@ export const TaskDetailSheet = ({
                     <Users size={14} /> Assignee
                   </div>
                   <div className="flex items-center gap-2">
-                    <div className="flex -space-x-2">
-                      {currentTask.assignedTo?.map((person, i) => (
-                        <Avatar
-                          key={i}
-                          className="w-7 h-7 border-2 border-neutral-900"
-                        >
-                          <AvatarImage src={person.avatar} />
-                          <AvatarFallback className="text-[10px] bg-neutral-800 text-neutral-400">
-                            {person.name[0]}
-                          </AvatarFallback>
-                        </Avatar>
-                      ))}
-                    </div>
-                    <Button
-                      variant="outline"
-                      size="sm"
-                      className="h-6 px-2 text-[10px] bg-neutral-800/30 border-neutral-700/50 text-neutral-400 hover:text-white rounded-lg gap-1"
-                    >
-                      <Plus size={10} /> Invite
-                    </Button>
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <div className="cursor-pointer">
+                          {currentTask.assignedTo &&
+                          currentTask.assignedTo.length > 0 ? (
+                            <div className="flex -space-x-2">
+                              {currentTask.assignedTo.map((person, i) => (
+                                <Avatar
+                                  key={i}
+                                  className="w-7 h-7 border-2 border-neutral-900"
+                                >
+                                  <AvatarImage src={person.avatar} />
+                                  <AvatarFallback className="text-[10px] bg-neutral-800 text-neutral-400">
+                                    {person.name[0]}
+                                  </AvatarFallback>
+                                </Avatar>
+                              ))}
+                            </div>
+                          ) : (
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="h-6 px-2 text-[10px] bg-neutral-800/30 border-neutral-700/50 text-neutral-400 hover:text-white rounded-lg gap-1"
+                            >
+                              <Plus size={10} /> Unassigned
+                            </Button>
+                          )}
+                        </div>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent className="bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200 w-48">
+                        <div className="text-xs text-center font-medium p-2 border-b border-accent">
+                          Assign Members
+                        </div>
+                        {members?.map((member) => {
+                          const isSelected = currentTask.assignedTo?.some(
+                            (m) => m.userId === member.userId,
+                          );
+                          return (
+                            <DropdownMenuItem
+                              key={member.userId}
+                              onSelect={(e) => {
+                                e.preventDefault();
+                                handleAssignMember(member, !!isSelected);
+                              }}
+                              className="flex items-center gap-2 cursor-pointer"
+                            >
+                              <Avatar className="h-5 w-5">
+                                <AvatarImage src={member.userImage} />
+                                <AvatarFallback className="text-[8px]">
+                                  {member.userName[0]}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span
+                                className={cn(
+                                  "text-xs",
+                                  isSelected && "text-blue-500 font-bold",
+                                )}
+                              >
+                                {member.userName}
+                              </span>
+                              {isSelected && (
+                                <Check className="w-3 h-3 ml-auto text-blue-500" />
+                              )}
+                            </DropdownMenuItem>
+                          );
+                        })}
+                      </DropdownMenuContent>
+                    </DropdownMenu>
                   </div>
                 </div>
 
