@@ -115,7 +115,7 @@ export function MessageFeed({
   return (
     <div className="flex flex-col flex-1 min-w-0 h-full overflow-hidden relative">
       {/* Channel header */}
-      <div className="flex items-center justify-between px-4 py-3 border-b border-border/40 shrink-0 bg-background/95 backdrop-blur shadow-sm z-10">
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border/40 flex-none bg-background/95 backdrop-blur shadow-sm z-10">
         <div className="flex items-center gap-2 min-w-0">
           <ChannelIcon className="h-5 w-5 text-muted-foreground shrink-0 opacity-70" />
           <h2 className="font-bold text-[15px] leading-none text-foreground truncate">{channel.name}</h2>
