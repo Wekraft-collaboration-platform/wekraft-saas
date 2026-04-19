@@ -45,9 +45,8 @@ export function ChannelsSidebar({
   return (
     <div className="flex flex-col h-full w-60 border-r bg-sidebar shrink-0">
       {/* Server Header */}
-      <div className="flex items-center justify-between px-4 py-3.5 border-b border-border/50 shadow-sm cursor-pointer hover:bg-accent/30 transition-colors">
-        <h2 className="font-bold text-[15px] leading-tight truncate px-0.5">3 BHK Duplex</h2>
-        <ChevronDown className="h-4 w-4 shrink-0 opacity-70" />
+      <div className="flex items-center justify-center px-4 py-3.5 border-b border-border/50 shadow-sm cursor-pointer hover:bg-accent/30 transition-colors">
+        <h2 className="font-bold text-xl leading-tight truncate px-0.5">Team space</h2>
       </div>
 
       {/* Channel List */}
