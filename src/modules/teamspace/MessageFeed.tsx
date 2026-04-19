@@ -71,7 +71,7 @@ export function MessageFeed({
   }, []);
 
   const handleSend = async (content: string) => {
-    await sendMessage(content, currentUserName, currentUserImage, replyingTo?.id);
+    await sendMessage(content, currentUserId, currentUserName, currentUserImage, replyingTo?.id);
     setReplyingTo(null);
   };
 

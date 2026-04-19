@@ -76,7 +76,7 @@ export function useMessages(channelId: string | null, projectId: string, threadP
     const ch = ably.channels.get(`teamspace:${channelId}`);
     subscriptionRef.current = ch;
 
-    ch.subscribe("message.new", (msg) => {
+    const onNewMsg = (msg: Ably.Message) => {
       const newMsg = msg.data as Message;
       // Only add if not already present and matches thread context
       const isThread = !!threadParentId;
@@ -101,21 +101,21 @@ export function useMessages(channelId: string | null, projectId: string, threadP
           )
         );
       }
-    });
+    };
 
-    ch.subscribe("message.edited", (msg) => {
+    const onEditedMsg = (msg: Ably.Message) => {
       const { id, content, edited_at } = msg.data;
       setMessages((prev) =>
         prev.map((m) => (m.id === id ? { ...m, content, edited_at } : m))
       );
-    });
+    };
 
-    ch.subscribe("message.deleted", (msg) => {
+    const onDeletedMsg = (msg: Ably.Message) => {
       const { id } = msg.data;
       setMessages((prev) => prev.filter((m) => m.id !== id));
-    });
+    };
 
-    ch.subscribe("reaction.updated", (msg) => {
+    const onReactionUpdated = (msg: Ably.Message) => {
       const { messageId, userId, emoji, action } = msg.data;
       setMessages((prev) =>
         prev.map((m) => {
@@ -142,33 +142,71 @@ export function useMessages(channelId: string | null, projectId: string, threadP
           return { ...m, reactions };
         })
       );
-    });
+    };
+
+    ch.subscribe("message.new", onNewMsg);
+    ch.subscribe("message.edited", onEditedMsg);
+    ch.subscribe("message.deleted", onDeletedMsg);
+    ch.subscribe("reaction.updated", onReactionUpdated);
 
     fetchMessages();
 
     return () => {
-      ch.unsubscribe();
+      ch.unsubscribe("message.new", onNewMsg);
+      ch.unsubscribe("message.edited", onEditedMsg);
+      ch.unsubscribe("message.deleted", onDeletedMsg);
+      ch.unsubscribe("reaction.updated", onReactionUpdated);
     };
   }, [channelId, threadParentId, fetchMessages]);
 
   const sendMessage = useCallback(
-    async (content: string, userName: string, userImage: string | null, parentId?: string) => {
+    async (content: string, userId: string, userName: string, userImage: string | null, parentId?: string) => {
       if (!channelId || !content.trim()) return;
 
+      const optimisticId = crypto.randomUUID();
+      
+      // Optimistic update
+      const tmpMsg: Message = {
+        id: optimisticId,
+        channel_id: channelId,
+        project_id: projectId,
+        user_id: userId, 
+        user_name: userName,
+        user_image: userImage,
+        content: content.trim(),
+        thread_parent_id: parentId ?? null,
+        created_at: Date.now(),
+        edited_at: null,
+        reactions: [],
+      };
+      
+      setMessages((prev) => [...prev, tmpMsg]);
 
-
-      await fetch("/api/teamspace/messages", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          channelId,
-          projectId,
-          content,
-          userName,
-          userImage,
-          threadParentId: parentId ?? null,
-        }),
-      });
+      try {
+        const res = await fetch("/api/teamspace/messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: optimisticId,
+            channelId,
+            projectId,
+            content,
+            userName,
+            userImage,
+            threadParentId: parentId ?? null,
+          }),
+        });
+        const json = await res.json();
+        
+        // If Ably already delivered it, the IDs will match and it will naturally merge or ignore duplicates.
+        // We can just ensure the state has the final message Object.
+        if (json.message) {
+          setMessages((prev) => prev.map((m) => (m.id === optimisticId ? json.message : m)));
+        }
+      } catch (err) {
+        // Remove optimistic if failed
+        setMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+      }
     },
     [channelId, projectId]
   );
