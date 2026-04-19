@@ -8,7 +8,6 @@ import { useChannels } from "./hooks/useChannels";
 import { ChannelsSidebar } from "./ChannelsSidebar";
 import { MessageFeed } from "./MessageFeed";
 import { MembersPanel } from "./MembersPanel";
-import { ThreadPanel } from "./ThreadPanel";
 import { Channel } from "./hooks/useChannels";
 import { Message } from "./hooks/useMessages";
 
@@ -22,15 +21,10 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
 
   const { channels, loading, createChannel } = useChannels(projectId);
   const [activeChannel, setActiveChannel] = useState<Channel | null>(null);
-  const [threadMessage, setThreadMessage] = useState<Message | null>(null);
 
   // Auto-select default channel once loaded
   const resolvedChannel =
     activeChannel ?? channels.find((c) => c.is_default === 1) ?? channels[0] ?? null;
-
-  const handleReply = (message: Message) => {
-    setThreadMessage(message);
-  };
 
   const currentUserId = user?._id ?? "";
   const currentUserName = user?.name ?? user?.githubUsername ?? "User";
@@ -45,7 +39,6 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
         activeChannelId={resolvedChannel?.id ?? null}
         onSelect={(ch) => {
           setActiveChannel(ch);
-          setThreadMessage(null);
         }}
         onCreate={createChannel}
       />
@@ -57,24 +50,10 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
         currentUserName={currentUserName}
         currentUserImage={currentUserImage}
         projectId={projectId}
-        onReply={handleReply}
       />
 
-      {/* Right: Thread panel (slides in) OR Members panel */}
-      {threadMessage ? (
-        <ThreadPanel
-          parentMessage={threadMessage}
-          channelId={resolvedChannel?.id ?? null}
-          channelName={resolvedChannel?.name ?? ""}
-          currentUserId={currentUserId}
-          currentUserName={currentUserName}
-          currentUserImage={currentUserImage}
-          projectId={projectId}
-          onClose={() => setThreadMessage(null)}
-        />
-      ) : (
-        <MembersPanel projectId={projectId} channelId={resolvedChannel?.id ?? null} />
-      )}
+      {/* Right: Members panel */}
+      <MembersPanel projectId={projectId} channelId={resolvedChannel?.id ?? null} />
     </div>
   );
 }

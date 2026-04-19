@@ -21,6 +21,8 @@ export interface Message {
   created_at: number;
   reactions: Reaction[];
   reply_count?: number;
+  parent_user_name?: string | null;
+  parent_content?: string | null;
 }
 
 let ablyClient: Ably.Realtime | null = null;
@@ -80,7 +82,7 @@ export function useMessages(channelId: string | null, projectId: string, threadP
       const isThread = !!threadParentId;
       const belongsHere = isThread
         ? newMsg.thread_parent_id === threadParentId
-        : !newMsg.thread_parent_id;
+        : true; // All messages (including replies) show in main feed
 
       if (belongsHere) {
         setMessages((prev) => {

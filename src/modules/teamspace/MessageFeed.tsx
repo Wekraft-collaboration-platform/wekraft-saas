@@ -20,7 +20,6 @@ interface Props {
   currentUserName: string;
   currentUserImage: string | null;
   projectId: string;
-  onReply: (message: Message) => void;
 }
 
 function DateDivider({ timestamp }: { timestamp: number }) {
@@ -41,7 +40,6 @@ export function MessageFeed({
   currentUserName,
   currentUserImage,
   projectId,
-  onReply,
 }: Props) {
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -184,7 +182,6 @@ export function MessageFeed({
                   currentUserId={currentUserId}
                   onReply={(m) => {
                     setReplyingTo(m);
-                    onReply(m);
                   }}
                   onEdit={editMessage}
                   onDelete={deleteMessage}

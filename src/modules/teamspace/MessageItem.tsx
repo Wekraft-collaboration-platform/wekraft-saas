@@ -119,6 +119,16 @@ export function MessageItem({
           </div>
         )}
 
+        {/* Quoted message block */}
+        {message.thread_parent_id && (message.parent_content || message.parent_user_name) && (
+          <div className="mb-1 rounded p-2 bg-accent/30 border-l-4 border-l-blue-500 text-xs">
+            <div className="font-semibold text-blue-500 mb-0.5">{message.parent_user_name ?? "Unknown"}</div>
+            <div className="text-muted-foreground line-clamp-3">
+              {message.parent_content ?? "Message not found"}
+            </div>
+          </div>
+        )}
+
         {/* Message content / edit box */}
         {editing ? (
           <div className="mt-1">
@@ -179,16 +189,7 @@ export function MessageItem({
           </div>
         )}
 
-        {/* Thread reply count */}
-        {(message.reply_count ?? 0) > 0 && (
-          <button
-            onClick={() => onReply(message)}
-            className="mt-1 flex items-center gap-1 text-xs text-blue-500 hover:underline"
-          >
-            <Reply className="h-3 w-3" />
-            {message.reply_count} {message.reply_count === 1 ? "reply" : "replies"}
-          </button>
-        )}
+
       </div>
 
       {/* Action toolbar (appears on hover) */}

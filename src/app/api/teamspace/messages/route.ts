@@ -40,19 +40,23 @@ export async function GET(req: NextRequest) {
          ORDER BY m.created_at ASC LIMIT ?`;
     args = cursor ? [threadParentId, Number(cursor), limit] : [threadParentId, limit];
   } else {
-    // Top-level messages (no thread_parent_id)
+    // Top-level messages (no thread_parent_id filter)
     sql = cursor
       ? `SELECT m.*, 
            (SELECT COUNT(*) FROM ts_reactions r WHERE r.message_id = m.id) as reaction_count,
-           (SELECT COUNT(*) FROM ts_messages t WHERE t.thread_parent_id = m.id) as reply_count
+           (SELECT COUNT(*) FROM ts_messages t WHERE t.thread_parent_id = m.id) as reply_count,
+           p.user_name as parent_user_name, p.content as parent_content
          FROM ts_messages m
-         WHERE m.channel_id = ? AND m.thread_parent_id IS NULL AND m.created_at < ?
+         LEFT JOIN ts_messages p ON m.thread_parent_id = p.id
+         WHERE m.channel_id = ? AND m.created_at < ?
          ORDER BY m.created_at DESC LIMIT ?`
       : `SELECT m.*, 
            (SELECT COUNT(*) FROM ts_reactions r WHERE r.message_id = m.id) as reaction_count,
-           (SELECT COUNT(*) FROM ts_messages t WHERE t.thread_parent_id = m.id) as reply_count
+           (SELECT COUNT(*) FROM ts_messages t WHERE t.thread_parent_id = m.id) as reply_count,
+           p.user_name as parent_user_name, p.content as parent_content
          FROM ts_messages m
-         WHERE m.channel_id = ? AND m.thread_parent_id IS NULL
+         LEFT JOIN ts_messages p ON m.thread_parent_id = p.id
+         WHERE m.channel_id = ?
          ORDER BY m.created_at DESC LIMIT ?`;
     args = cursor ? [channelId, Number(cursor), limit] : [channelId, limit];
   }
@@ -127,6 +131,20 @@ export async function POST(req: NextRequest) {
     ],
   });
 
+  let parent_user_name = null;
+  let parent_content = null;
+
+  if (threadParentId) {
+    const parentRes = await turso.execute({
+      sql: `SELECT user_name, content FROM ts_messages WHERE id = ?`,
+      args: [threadParentId],
+    });
+    if (parentRes.rows.length > 0) {
+      parent_user_name = parentRes.rows[0].user_name as string;
+      parent_content = parentRes.rows[0].content as string;
+    }
+  }
+
   const message = {
     id,
     channel_id: channelId,
@@ -136,6 +154,8 @@ export async function POST(req: NextRequest) {
     user_image: userImage ?? null,
     content: content.trim(),
     thread_parent_id: threadParentId ?? null,
+    parent_user_name,
+    parent_content,
     created_at: now,
     edited_at: null,
     reactions: [],
