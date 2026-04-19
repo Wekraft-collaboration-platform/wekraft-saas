@@ -149,7 +149,8 @@ export const TableTab = ({ tasks, onLoadMore, hasMore }: TableTabProps) => {
               <TableHead className="w-[50px] px-6 py-4">
                 <Checkbox
                   checked={
-                    selectedTasks.length === paginatedTasks.length && paginatedTasks.length > 0
+                    selectedTasks.length === paginatedTasks.length &&
+                    paginatedTasks.length > 0
                   }
                   onCheckedChange={toggleAll}
                   className="rounded border-neutral-500 data-[state=checked]:bg-primary"
@@ -360,29 +361,37 @@ export const TableTab = ({ tasks, onLoadMore, hasMore }: TableTabProps) => {
                             {task.type.label}
                           </div>
                         ) : (
-                          <span className="text-[10px] text-primary/10">—</span>
+                          <span className="text-[10px] text-muted-foreground">
+                            —
+                          </span>
                         )}
                       </div>
                     </TableCell>
                     <TableCell className="px-4 border-r border-b border-neutral-700">
-                      <div className="flex -space-x-1.5">
-                        {task.assignedTo?.map((person, i) => (
-                          <Avatar
-                            key={i}
-                            className="w-6 h-6 border-2 border-background shadow-sm"
-                          >
-                            <AvatarImage
-                              src={person.avatar}
-                              className="grayscale brightness-90 hover:grayscale-0 transition-all"
-                            />
-                            <AvatarFallback className="text-[9px] bg-neutral-800 text-primary/40 font-bold uppercase">
-                              {person.name[0]}
-                            </AvatarFallback>
-                          </Avatar>
-                        ))}
-                      </div>
+                      {task.assignedTo && task.assignedTo.length > 0 ? (
+                        <div className="flex items-center justify-center -space-x-1">
+                          {task.assignedTo.map((person, i) => (
+                            <Avatar
+                              key={i}
+                              className="w-7 h-7 border-2 border-background shadow-sm"
+                            >
+                              <AvatarImage src={person.avatar} className="" />
+                              <AvatarFallback className="text-[9px] bg-neutral-800 text-primary/40 font-bold uppercase">
+                                {person.name[0]}
+                              </AvatarFallback>
+                            </Avatar>
+                          ))}
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center w-full">
+                          <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+                            <Minus className="w-3.5 h-3.5" />
+                            Unassigned
+                          </p>
+                        </div>
+                      )}
                     </TableCell>
-                    <TableCell className="px-4 border-r border-b border-neutral-700">
+                    <TableCell className="px-4 border-r border-b text-muted-foreground border-neutral-700">
                       <PriorityBadge priority={task.priority} />
                     </TableCell>
                     <TableCell
@@ -453,7 +462,9 @@ export const TableTab = ({ tasks, onLoadMore, hasMore }: TableTabProps) => {
       {/* Simple Pagination */}
       <div className="flex items-center justify-between px-6 py-4 border-t border-neutral-800/60">
         <div className="text-xs font-medium text-muted-foreground tracking-wider">
-          Showing {page * PAGE_SIZE + 1}–{Math.min((page + 1) * PAGE_SIZE, tasks.length)} of {tasks.length}{hasMore ? "+" : ""} Results
+          Showing {page * PAGE_SIZE + 1}–
+          {Math.min((page + 1) * PAGE_SIZE, tasks.length)} of {tasks.length}
+          {hasMore ? "+" : ""} Results
         </div>
 
         <div className="flex items-center gap-2">

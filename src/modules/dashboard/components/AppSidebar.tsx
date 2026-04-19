@@ -278,13 +278,16 @@ export const AppSidebar = () => {
                                 </span>
                               </div>
 
-                              <div className="flex -space-x-1.5 overflow-hidden">
+                              <div className="flex -space-x-0.5 overflow-hidden">
                                 {project.members &&
                                 project.members.length > 0 ? (
                                   project.members
                                     .slice(0, 3)
                                     .map((member, idx) => (
-                                      <Avatar key={idx} className="h-5 w-5">
+                                      <Avatar
+                                        key={idx}
+                                        className="h-5.5 w-5.5 border border-primary/70"
+                                      >
                                         <AvatarImage src={member.userImage} />
                                         <AvatarFallback className="text-[8px]">
                                           {member.userName

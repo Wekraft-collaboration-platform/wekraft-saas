@@ -163,3 +163,28 @@ export const updateTaskStatus = mutation({
     });
   },
 });
+
+// =============================================
+// TASK ASSIGNEES UPDATES...
+// =============================================
+export const updateTaskAssignees = mutation({
+  args: {
+    taskId: v.id("tasks"),
+    assignedTo: v.array(
+      v.object({
+        userId: v.id("users"),
+        name: v.string(),
+        avatar: v.optional(v.string()),
+      }),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    await ctx.db.patch(args.taskId, {
+      assignedTo: args.assignedTo,
+      updatedAt: Date.now(),
+    });
+  },
+});
