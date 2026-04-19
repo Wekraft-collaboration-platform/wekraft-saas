@@ -9,7 +9,7 @@ import { Channel } from "./hooks/useChannels";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Hash, Megaphone, ChevronUp, ArrowDown, Lock } from "lucide-react";
+import { Hash, Megaphone, ChevronUp, ArrowDown, Lock, Search, Bell, Pin, Users, Inbox, HelpCircle } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format, isToday, isYesterday } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
@@ -26,10 +26,11 @@ function DateDivider({ timestamp }: { timestamp: number }) {
   const d = new Date(timestamp);
   const label = isToday(d) ? "Today" : isYesterday(d) ? "Yesterday" : format(d, "MMMM d, yyyy");
   return (
-    <div className="flex items-center gap-3 px-4 my-3">
-      <div className="flex-1 h-px bg-border" />
-      <span className="text-[11px] font-medium text-muted-foreground px-2">{label}</span>
-      <div className="flex-1 h-px bg-border" />
+    <div className="flex items-center mt-4 mb-2 mx-4 relative group">
+      <div className="flex-1 h-[1px] bg-border/40 group-hover:bg-border/60 transition-colors" />
+      <span className="absolute left-1/2 -translate-x-1/2 bg-background px-2 text-[11px] font-semibold text-muted-foreground/80 lowercase">
+        {label}
+      </span>
     </div>
   );
 }
@@ -103,20 +104,40 @@ export function MessageFeed({
   return (
     <div className="flex flex-col flex-1 min-w-0 h-full overflow-hidden relative">
       {/* Channel header */}
-      <div className="flex items-center gap-3 px-4 py-3 border-b shrink-0 bg-background/80 backdrop-blur-sm">
-        <ChannelIcon className="h-4 w-4 text-muted-foreground shrink-0" />
-        <div>
-          <h2 className="font-semibold text-sm leading-none">{channel.name}</h2>
+      <div className="flex items-center justify-between px-4 py-3 border-b border-border/40 shrink-0 bg-background/95 backdrop-blur shadow-sm z-10">
+        <div className="flex items-center gap-2 min-w-0">
+          <ChannelIcon className="h-5 w-5 text-muted-foreground shrink-0 opacity-70" />
+          <h2 className="font-bold text-[15px] leading-none text-foreground truncate">{channel.name}</h2>
+          {isAnnouncement && (
+            <Lock className="h-3.5 w-3.5 text-amber-500/70 ml-1" />
+          )}
           {channel.description && (
-            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-1">{channel.description}</p>
+            <>
+              <div className="h-4 w-[1px] bg-border/60 mx-2" />
+              <p className="text-[13px] text-muted-foreground truncate">{channel.description}</p>
+            </>
           )}
         </div>
-        {isAnnouncement && (
-          <div className="ml-auto flex items-center gap-1 text-xs text-amber-500 bg-amber-500/10 border border-amber-500/20 px-2 py-0.5 rounded-full">
-            <Lock className="h-3 w-3" />
-            Announcements only
+
+        <div className="flex items-center gap-4 ml-4 shrink-0">
+          <div className="flex items-center gap-3 text-muted-foreground">
+            <Bell className="h-5 w-5 hover:text-foreground cursor-pointer transition-colors" />
+            <Pin className="h-5 w-5 hover:text-foreground cursor-pointer transition-colors" />
+            <Users className="h-5 w-5 hover:text-foreground cursor-pointer transition-colors" />
           </div>
-        )}
+          <div className="relative group">
+            <input 
+              type="text" 
+              placeholder="Search" 
+              className="bg-accent/40 w-36 group-hover:w-48 transition-all duration-200 text-xs px-2.5 py-1.5 pr-7 rounded-sm border-none focus:outline-none focus:ring-1 focus:ring-ring placeholder-muted-foreground/70"
+            />
+            <Search className="h-3.5 w-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground/70" />
+          </div>
+          <div className="flex items-center gap-3 text-muted-foreground">
+            <Inbox className="h-5 w-5 hover:text-foreground cursor-pointer transition-colors" />
+            <HelpCircle className="h-5 w-5 hover:text-foreground cursor-pointer transition-colors" />
+          </div>
+        </div>
       </div>
 
       {/* Messages area */}

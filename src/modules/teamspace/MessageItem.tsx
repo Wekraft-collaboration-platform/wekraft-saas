@@ -94,16 +94,16 @@ export function MessageItem({
       onMouseLeave={() => setHovered(false)}
     >
       {/* Avatar / Spacer */}
-      <div className="w-8 shrink-0 mt-0.5">
+      <div className="w-10 shrink-0 mt-0.5">
         {!isGrouped ? (
-          <Avatar className="h-8 w-8">
+          <Avatar className="h-10 w-10 cursor-pointer hover:opacity-90 transition-opacity">
             <AvatarImage src={message.user_image ?? undefined} />
-            <AvatarFallback className="text-xs">
+            <AvatarFallback className="text-sm">
               {message.user_name.substring(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
         ) : (
-          <span className="opacity-0 group-hover:opacity-60 text-[10px] text-muted-foreground select-none leading-none pt-1 block text-right">
+          <span className="opacity-0 group-hover:opacity-100 text-[11px] text-muted-foreground select-none pt-1.5 block text-center w-full">
             {format(new Date(message.created_at), "h:mm")}
           </span>
         )}
@@ -113,17 +113,20 @@ export function MessageItem({
       <div className="flex-1 min-w-0">
         {/* Header (only when not grouped) */}
         {!isGrouped && (
-          <div className="flex items-baseline gap-2 mb-0.5">
-            <span className="text-sm font-semibold leading-none">{message.user_name}</span>
-            <span className="text-[10px] text-muted-foreground">{formatTime(message.created_at)}</span>
+          <div className="flex items-baseline gap-2 mb-1">
+            <span className="font-semibold text-[15px] hover:underline cursor-pointer leading-tight">{message.user_name}</span>
+            <span className="text-[11px] text-muted-foreground">{formatTime(message.created_at)}</span>
           </div>
         )}
 
         {/* Quoted message block */}
         {message.thread_parent_id && (message.parent_content || message.parent_user_name) && (
-          <div className="mb-1 rounded p-2 bg-accent/30 border-l-4 border-l-blue-500 text-xs">
-            <div className="font-semibold text-blue-500 mb-0.5">{message.parent_user_name ?? "Unknown"}</div>
-            <div className="text-muted-foreground line-clamp-3">
+          <div className="mb-1 rounded p-2 bg-accent/20 border-l-4 border-l-blue-500/80 text-xs flex items-center gap-1.5 w-max max-w-full">
+            {message.parent_user_image && (
+              <img src={message.parent_user_image} alt="" className="w-4 h-4 rounded-full object-cover shrink-0" />
+            )}
+            <div className="font-semibold opacity-80 shrink-0">@{message.parent_user_name ?? "Unknown"}</div>
+            <div className="text-muted-foreground truncate max-w-[300px]">
               {message.parent_content ?? "Message not found"}
             </div>
           </div>
@@ -136,7 +139,7 @@ export function MessageItem({
               value={editContent}
               onChange={(e) => setEditContent(e.target.value)}
               onKeyDown={handleKeyDown}
-              className="text-sm min-h-[60px] resize-none"
+              className="text-[15px] min-h-[60px] resize-none"
               autoFocus
             />
             <div className="flex items-center gap-1.5 mt-1.5">
@@ -157,10 +160,10 @@ export function MessageItem({
             </div>
           </div>
         ) : (
-          <p className="text-sm leading-relaxed break-words whitespace-pre-wrap">
+          <p className="text-[15px] leading-[1.375rem] text-foreground/90 break-words whitespace-pre-wrap">
             {message.content}
             {message.edited_at && (
-              <span className="text-[10px] text-muted-foreground ml-1">(edited)</span>
+              <span className="text-[10px] text-muted-foreground ml-1.5 select-none">(edited)</span>
             )}
           </p>
         )}

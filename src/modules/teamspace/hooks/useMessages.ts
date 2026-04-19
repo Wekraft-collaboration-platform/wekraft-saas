@@ -22,6 +22,7 @@ export interface Message {
   reactions: Reaction[];
   reply_count?: number;
   parent_user_name?: string | null;
+  parent_user_image?: string | null;
   parent_content?: string | null;
 }
 
