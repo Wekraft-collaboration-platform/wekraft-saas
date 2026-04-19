@@ -4,8 +4,10 @@ import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Channel } from "./hooks/useChannels";
 import { CreateChannelDialog } from "./CreateChannelDialog";
+import { EditChannelDialog } from "./EditChannelDialog";
+import { DeleteChannelDialog } from "./DeleteChannelDialog";
 import { cn } from "@/lib/utils";
-import { Hash, Megaphone, Plus, Lock, ChevronDown, Settings } from "lucide-react";
+import { Hash, Megaphone, Plus, Lock, ChevronDown, Settings, Edit2, Trash2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -17,6 +19,8 @@ interface Props {
   isOwner: boolean;
   onSelect: (channel: Channel) => void;
   onCreate: (name: string, description: string, type: "text" | "announcement") => Promise<Channel | undefined>;
+  onUpdate: (channelId: string, name: string, description: string) => Promise<boolean>;
+  onDelete: (channelId: string) => Promise<boolean>;
 }
 
 const channelColors: Record<string, string> = {
@@ -32,8 +36,13 @@ export function ChannelsSidebar({
   isOwner,
   onSelect, 
   onCreate,
+  onUpdate,
+  onDelete,
 }: Props) {
   const [createOpen, setCreateOpen] = useState(false);
+  const [editOpen, setEditOpen] = useState(false);
+  const [deleteOpen, setDeleteOpen] = useState(false);
+  const [targetChannel, setTargetChannel] = useState<Channel | null>(null);
 
   const getChannelColor = (name: string) => {
     return channelColors[name.toLowerCase()] ?? "text-blue-500";
@@ -76,13 +85,39 @@ export function ChannelsSidebar({
           />
           <span className="truncate leading-tight">{channel.name}</span>
           
-          {channel.type === "announcement" && (
+          {/* Hover actions */}
+          {isOwner && !channel.is_default && (
+            <div className="ml-auto flex items-center gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity z-20">
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setTargetChannel(channel);
+                  setEditOpen(true);
+                }}
+                className="p-1 hover:bg-accent rounded-md text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <Edit2 className="h-3.5 w-3.5" />
+              </button>
+              <button
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setTargetChannel(channel);
+                  setDeleteOpen(true);
+                }}
+                className="p-1 hover:bg-destructive/10 rounded-md text-muted-foreground hover:text-destructive transition-colors"
+              >
+                <Trash2 className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          )}
+
+          {channel.type === "announcement" && !isOwner && (
             <Lock className="h-3 w-3 ml-auto shrink-0 opacity-40 group-hover/item:opacity-70 transition-opacity" />
           )}
           
           {/* Hover highlight */}
           {!isActive && (
-            <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover/item:opacity-100 transition-opacity duration-500" />
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/5 to-transparent opacity-0 group-hover/item:opacity-100 transition-opacity duration-500 pointer-events-none" />
           )}
         </button>
       </li>
@@ -97,22 +132,24 @@ export function ChannelsSidebar({
       </div>
 
       {/* Create Channel Action */}
-      <div className="px-3 pt-4 pb-2">
-        <motion.button
-          onClick={() => setCreateOpen(true)}
-          whileHover={{ scale: 1.02, y: -1 }}
-          whileTap={{ scale: 0.98 }}
-          className="w-full flex items-center justify-center gap-3 px-3 h-11 bg-primary/10 hover:bg-primary/15 border border-primary/20 hover:border-primary/40 text-foreground group transition-all duration-300 relative overflow-hidden rounded-xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.1)]"
-        >
-          <div className="bg-primary/20 p-1.5 rounded-lg group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-300">
-            <Plus className="h-4 w-4 text-primary" />
-          </div>
-          <span className="text-sm font-semibold tracking-tight">Create Channel</span>
-          
-          {/* Subtle glow effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-        </motion.button>
-      </div>
+      {isOwner && (
+        <div className="px-3 pt-4 pb-2">
+          <motion.button
+            onClick={() => setCreateOpen(true)}
+            whileHover={{ scale: 1.02, y: -1 }}
+            whileTap={{ scale: 0.98 }}
+            className="w-full flex items-center justify-center gap-3 px-3 h-11 bg-primary/10 hover:bg-primary/15 border border-primary/20 hover:border-primary/40 text-foreground group transition-all duration-300 relative overflow-hidden rounded-xl shadow-[0_2px_10px_-4px_rgba(0,0,0,0.1)]"
+          >
+            <div className="bg-primary/20 p-1.5 rounded-lg group-hover:bg-primary/30 group-hover:scale-110 transition-all duration-300">
+              <Plus className="h-4 w-4 text-primary" />
+            </div>
+            <span className="text-sm font-semibold tracking-tight">Create Channel</span>
+            
+            {/* Subtle glow effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+          </motion.button>
+        </div>
+      )}
 
       {/* Channel List */}
       <ScrollArea className="flex-1">
@@ -192,6 +229,24 @@ export function ChannelsSidebar({
         open={createOpen}
         onOpenChange={setCreateOpen}
         onCreate={onCreate}
+      />
+
+      <EditChannelDialog
+        open={editOpen}
+        onOpenChange={setEditOpen}
+        onUpdate={onUpdate}
+        channel={targetChannel}
+      />
+
+      <DeleteChannelDialog
+        open={deleteOpen}
+        onOpenChange={setDeleteOpen}
+        onConfirm={async () => {
+          if (targetChannel) {
+            await onDelete(targetChannel.id);
+          }
+        }}
+        channel={targetChannel}
       />
     </div>
   );

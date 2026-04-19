@@ -58,6 +58,22 @@ export const getCurrentUser = query({
   },
 });
 
+export const getUserByClerkToken = query({
+  args: { clerkToken: v.string() },
+  handler: async (ctx, args) => {
+    // Try exact match first
+    const exact = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("clerkToken", args.clerkToken))
+      .unique();
+    if (exact) return exact;
+
+    // Try finding by suffix if it's just the Clerk user_id
+    const all = await ctx.db.query("users").collect();
+    return all.find(u => u.clerkToken === args.clerkToken || u.clerkToken.endsWith(`|${args.clerkToken}`)) ?? null;
+  },
+});
+
 export const checkUsernameAvailability = query({
   args: { name: v.string() },
   handler: async (ctx, args) => {

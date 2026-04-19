@@ -20,7 +20,7 @@ interface Props {
 export function TeamspaceView({ projectSlug, projectId }: Props) {
   const user = useQuery(api.user.getCurrentUser);
 
-  const { channels, loading, createChannel } = useChannels(projectId);
+  const { channels, loading, createChannel, updateChannel, deleteChannel } = useChannels(projectId);
   const permissions = useQuery(api.project.getProjectPermissions, { projectId: projectId as Id<"projects"> });
   const [activeChannel, setActiveChannel] = useState<Channel | null>(null);
   const [showMembers, setShowMembers] = useState(false);
@@ -47,6 +47,8 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
           setActiveChannel(ch);
         }}
         onCreate={createChannel}
+        onUpdate={updateChannel}
+        onDelete={deleteChannel}
       />
 
       {/* Center: Message feed */}

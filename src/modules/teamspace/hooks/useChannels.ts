@@ -52,5 +52,44 @@ export function useChannels(projectId: string) {
     [projectId]
   );
 
-  return { channels, loading, createChannel, refetch: fetchChannels };
+  const updateChannel = useCallback(
+    async (channelId: string, name: string, description: string) => {
+      const res = await fetch(`/api/teamspace/channels/${channelId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, description }),
+      });
+      if (res.ok) {
+        setChannels((prev) =>
+          prev.map((c) => (c.id === channelId ? { ...c, name, description } : c))
+        );
+        return true;
+      }
+      return false;
+    },
+    []
+  );
+
+  const deleteChannel = useCallback(
+    async (channelId: string) => {
+      const res = await fetch(`/api/teamspace/channels/${channelId}`, {
+        method: "DELETE",
+      });
+      if (res.ok) {
+        setChannels((prev) => prev.filter((c) => c.id !== channelId));
+        return true;
+      }
+      return false;
+    },
+    []
+  );
+
+  return { 
+    channels, 
+    loading, 
+    createChannel, 
+    updateChannel, 
+    deleteChannel, 
+    refetch: fetchChannels 
+  };
 }
