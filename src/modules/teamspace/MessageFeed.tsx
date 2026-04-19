@@ -162,11 +162,11 @@ export function MessageFeed({
             </div>
           </TooltipProvider>
 
-          <div className="relative group">
+          <div className="relative">
             <input 
               type="text" 
               placeholder={`Search ${channel.name}`}
-              className="bg-accent/40 w-36 group-hover:w-48 transition-all duration-200 text-xs px-2.5 py-1.5 pr-7 rounded-sm border-none focus:outline-none focus:ring-1 focus:ring-ring placeholder-muted-foreground/70"
+              className="bg-black w-48 text-xs px-2.5 py-1.5 pr-7 rounded-sm border focus:outline-none focus:ring-1 focus:ring-ring placeholder-muted-foreground/70"
             />
             <Search className="h-3.5 w-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground/70" />
           </div>

@@ -10,6 +10,7 @@ import { MessageFeed } from "./MessageFeed";
 import { MembersPanel } from "./MembersPanel";
 import { Channel } from "./hooks/useChannels";
 import { Message } from "./hooks/useMessages";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Props {
   projectSlug: string;
@@ -64,9 +65,19 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
 
 
       {/* Right: Members panel */}
-      {showMembers && (
-        <MembersPanel projectId={projectId} channelId={resolvedChannel?.id ?? null} />
-      )}
+      <AnimatePresence>
+        {showMembers && (
+          <motion.div
+            initial={{ width: 0, opacity: 0 }}
+            animate={{ width: 192, opacity: 1 }}
+            exit={{ width: 0, opacity: 0 }}
+            transition={{ type: "spring", stiffness: 350, damping: 30 }}
+            className="overflow-hidden bg-black border-l border-border/80 h-full shrink-0"
+          >
+            <MembersPanel projectId={projectId} channelId={resolvedChannel?.id ?? null} />
+          </motion.div>
+        )}
+      </AnimatePresence>
 
     </div>
   );

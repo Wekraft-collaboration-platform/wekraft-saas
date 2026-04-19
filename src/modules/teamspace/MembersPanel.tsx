@@ -73,7 +73,7 @@ export function MembersPanel({ projectId, channelId }: Props) {
   const offline = members?.filter((m) => !onlineIds.has(m.userId)) ?? [];
 
   return (
-    <div className="flex flex-col h-full w-48 border-l border-border/80 bg-black shrink-0">
+    <div className="flex flex-col h-full w-full">
       {/* Header */}
       <div className="flex items-center gap-2 px-3 py-3 border-b border-border/80">
         <Users className="h-3.5 w-3.5 text-muted-foreground" />
