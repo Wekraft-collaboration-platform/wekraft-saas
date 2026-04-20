@@ -161,7 +161,10 @@ export function AiAssistantSheet({
       case "kaya":
       case "tools": {
         // ── Calendar HITL interrupt card ──
-        const interrupt = checkpoint.interruptValue as InterruptValue | undefined;
+
+        const interrupt = checkpoint.interruptValue as
+          | InterruptValue
+          | undefined;
         if (interrupt?.tool === "create_calendar_event") {
           const isCompleted =
             appCheckpoints.indexOf(checkpoint) < appCheckpoints.length - 1;

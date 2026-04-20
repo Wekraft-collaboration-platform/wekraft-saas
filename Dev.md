@@ -38,3 +38,9 @@ Think of InMemorySaver as short-term (within session) and Mem0 as long-term (acr
 20/4/2026, 6:16:37 pm [CONVEX H(POST /createCalendarEvent)] [LOG] '[createCalendarEvent] created id:' 'k1706z65pdahy3rf7dwsct3xmd857s10'
 
 event created but no tool ui seen on ui and agent asksed 3 times and after approval - stream ended...
+
+
+Your UI handleResume is not resuming the graph correctly.
+The approval card stays visible because the final checkpoint (after the ToolMessage) is never emitted.
+The graph itself is now correct and clean.
+The bug is in your resume handler / backend endpoint.
