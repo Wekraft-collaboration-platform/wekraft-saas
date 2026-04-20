@@ -23,24 +23,17 @@ Think of InMemorySaver as short-term (within session) and Mem0 as long-term (acr
 } -> sended by frontend.
 
 
+### Sprint
+1. What the Cards Show (Your Real Data)
+Sprint Progress: Directly reads stats.completedItems vs stats.totalItems from your Convex query. As you mark things done, that progress bar will fill up.
+Open Bugs: Filters your current sprint issues on the fly to count any bug that isn't closed.
+Burn Rate: Displays the stats.burnRate from your backend, calculating the mathematical pace of items completed per day.
+2. The Timeline (Burndown Chart)
+Right now, the "Timeline" chart is a sleek placeholder. It uses CSS to draw dynamic fake bars just to mimic Linear's famous "Burndown" aesthetic. To make it real, we would eventually need to tweak the backend to return an array of "items remaining per day", then we could plot real backend data onto those bars!
+
+
+
+
 
 
 ### errors
-20/4/2026, 6:16:37 pm [CONVEX H(POST /createCalendarEvent)] [LOG] '[createCalendarEvent] received:' {
-  projectId: 'j97b275yse9v1gkabn7gtcxyf584prt7',
-  title: 'Client Meet',
-  description: '',
-  type: 'event',
-  start: 1776709800000,
-  end: 1776709800000,
-  allDay: true
-}
-20/4/2026, 6:16:37 pm [CONVEX H(POST /createCalendarEvent)] [LOG] '[createCalendarEvent] created id:' 'k1706z65pdahy3rf7dwsct3xmd857s10'
-
-event created but no tool ui seen on ui and agent asksed 3 times and after approval - stream ended...
-
-
-Your UI handleResume is not resuming the graph correctly.
-The approval card stays visible because the final checkpoint (after the ToolMessage) is never emitted.
-The graph itself is now correct and clean.
-The bug is in your resume handler / backend endpoint.

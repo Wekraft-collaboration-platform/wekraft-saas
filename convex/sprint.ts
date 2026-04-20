@@ -81,6 +81,21 @@ export const getSprintById = query({
   },
 });
 
+export const getSprintByName = query({
+  args: { 
+    projectId: v.id("projects"),
+    sprintName: v.string() 
+  },
+  handler: async (ctx, args) => {
+    const sprints = await ctx.db
+      .query("sprints")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .filter((q) => q.eq(q.field("sprintName"), args.sprintName))
+      .collect();
+    return sprints[0] || null;
+  },
+});
+
 // ==========================================
 // SPRINT TASKS & ISSUES QUERIES
 // ==========================================
@@ -280,7 +295,18 @@ export const createSprint = mutation({
     const user = await getAuthUser(ctx);
     if (!user) throw new Error("Unauthorized");
 
-    // Validation 1: end date must be after start date
+    // Validation 1: Sprint name must be unique within the project
+    const existingSprints = await ctx.db
+      .query("sprints")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .filter((q) => q.eq(q.field("sprintName"), args.sprintName))
+      .collect();
+
+    if (existingSprints.length > 0) {
+      throw new Error("A sprint with this name already exists in this project.");
+    }
+
+    // Validation 2: end date must be after start date
     if (args.duration.endDate <= args.duration.startDate) {
       throw new Error("End date must be after start date.");
     }
@@ -436,6 +462,18 @@ export const updateSprint = mutation({
     // Completed sprints cannot be edited
     if (sprint.status === "completed") {
       throw new Error("Completed sprints cannot be edited.");
+    }
+
+    if (args.sprintName !== undefined && args.sprintName !== sprint.sprintName) {
+      const existingSprints = await ctx.db
+        .query("sprints")
+        .withIndex("by_project", (q) => q.eq("projectId", sprint.projectId))
+        .filter((q) => q.eq(q.field("sprintName"), args.sprintName))
+        .collect();
+
+      if (existingSprints.length > 0) {
+        throw new Error("A sprint with this name already exists in this project.");
+      }
     }
 
     const { sprintId, ...patch } = args;

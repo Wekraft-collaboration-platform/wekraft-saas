@@ -33,6 +33,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 
 const SprintPage = () => {
   const params = useParams();
@@ -50,12 +51,65 @@ const SprintPage = () => {
 
   if (!project || sprints === undefined) {
     return (
-      <div className="h-screen w-full flex items-center justify-center">
-        <div className="flex flex-col items-center gap-2">
-          <div className="w-8 h-8 border-4 border-primary border-t-transparent rounded-full animate-spin" />
-          <p className="text-sm font-medium text-muted-foreground">
-            Loading Sprints...
-          </p>
+      <div className="p-6 space-y-6">
+        {/* Header */}
+        <div className="flex items-center justify-between">
+          <div className="space-y-2">
+            <Skeleton className="h-6 w-40" />
+            <Skeleton className="h-4 w-72" />
+          </div>
+
+          <div className="flex gap-2">
+            <Skeleton className="h-9 w-32 rounded-md" />
+            <Skeleton className="h-9 w-28 rounded-md" />
+          </div>
+        </div>
+
+        {/* Search + Filter */}
+        <div className="flex gap-3">
+          <Skeleton className="h-10 flex-1 rounded-md" />
+          <Skeleton className="h-10 w-40 rounded-md" />
+        </div>
+
+        {/* Sprint Card */}
+        <div className="rounded-xl border p-5 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Skeleton className="w-12 h-12 rounded-lg" />
+
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-32" />
+              <Skeleton className="h-4 w-48" />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="text-right space-y-2">
+              <Skeleton className="h-4 w-16 ml-auto" />
+              <Skeleton className="h-5 w-10 ml-auto" />
+            </div>
+
+            <Skeleton className="w-8 h-8 rounded-full" />
+          </div>
+        </div>
+
+        <div className="rounded-xl border p-5 flex items-center justify-between">
+          <div className="flex items-center gap-4">
+            <Skeleton className="w-12 h-12 rounded-lg" />
+
+            <div className="space-y-2">
+              <Skeleton className="h-5 w-32" />
+              <Skeleton className="h-4 w-48" />
+            </div>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="text-right space-y-2">
+              <Skeleton className="h-4 w-16 ml-auto" />
+              <Skeleton className="h-5 w-10 ml-auto" />
+            </div>
+
+            <Skeleton className="w-8 h-8 rounded-full" />
+          </div>
         </div>
       </div>
     );
@@ -193,7 +247,7 @@ const SprintPage = () => {
           </div>
         </div>
       ) : (
-        <div className="space-y-6">
+        <div className="space-y-6 max-w-[88%] mx-auto">
           {/* Filters Bar */}
           <div className="flex flex-col sm:flex-row items-center gap-3">
             <div className="relative w-full sm:flex-1">
@@ -230,7 +284,7 @@ const SprintPage = () => {
                 key={sprint._id}
                 onClick={() =>
                   router.push(
-                    `/dashboard/my-projects/${slug}/workspace/sprint/${sprint._id}`,
+                    `/dashboard/my-projects/${slug}/workspace/sprint/${encodeURIComponent(sprint.sprintName)}`,
                   )
                 }
                 className="group relative overflow-hidden bg-background border rounded-2xl hover:border-primary/40 hover:shadow-md transition-all duration-200 cursor-pointer"
