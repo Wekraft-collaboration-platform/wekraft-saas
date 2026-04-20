@@ -15,14 +15,13 @@ interface EventDetailDialogProps {
 const typeLabels: Record<string, { label: string; color: string }> = {
   event:     { label: "Event",     color: "#c4b5fd" },
   milestone: { label: "Milestone", color: "#bae6fd" },
-  comment:   { label: "Comment",   color: "#ffffff" },
 };
 
 export default function EventDetailDialog({ open, onOpenChange, eventData, onEdit }: EventDetailDialogProps) {
   if (!eventData) return null;
 
   const typeInfo = typeLabels[eventData.type] || typeLabels.event;
-  const color = eventData.type === "comment" ? "#ffffff" : (eventData.color || typeInfo.color);
+  const color = eventData.color || typeInfo.color;
 
   const formatDate = (d: any) => {
     if (!d) return "—";

@@ -43,7 +43,6 @@ const tabs = [
   { name: "All Scheduled", icon: <CalendarDays className="w-4 h-4 mr-2" /> },
   { name: "Events", icon: <TicketCheck className="w-4 h-4 mr-2" /> },
   { name: "Milestones", icon: <Milestone className="w-4 h-4 mr-2" /> },
-  { name: "Comments", icon: <MessageSquare className="w-4 h-4 mr-2" /> },
 ];
 
 interface CalendarHeaderProps {

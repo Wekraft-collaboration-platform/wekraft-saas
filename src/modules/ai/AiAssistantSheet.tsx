@@ -31,6 +31,10 @@ import { useLangGraphAgent } from "@/modules/ai/langGraphAgent/useLangGraphAgent
 import { AppCheckpoint, GraphNode } from "@/modules/ai/langGraphAgent/types";
 import { api } from "../../../convex/_generated/api";
 import { useQuery } from "convex/react";
+import { useParams } from "next/navigation";
+import { CalendarApprovalCard } from "@/modules/ai/CalendarApprovalCard";
+import { CalendarEventInterrupt } from "@/modules/ai/AgentTypes";
+import { ToolCallCard } from "@/modules/ai/ToolCard";
 
 interface AiAssistantSheetProps {
   open: boolean;
@@ -44,6 +48,14 @@ export function AiAssistantSheet({
   const [threadId] = useState(() => crypto.randomUUID());
   const currentUser = useQuery(api.user.getCurrentUser);
   const userId = currentUser?._id;
+
+  const params = useParams();
+  const slug = params?.slug as string;
+  const project = useQuery(
+    api.project.getProjectBySlug,
+    slug ? { slug } : "skip",
+  );
+  const projectId = project?._id;
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -122,12 +134,24 @@ export function AiAssistantSheet({
       thread_id: threadId,
       state: {
         user_id: userId, // added user_id here...
+        project_id: projectId, // added project_id here...
         messages: [{ type: "user", content }],
       },
     });
     setInputValue("");
   };
 
+  // ── Resume handler ──
+  const handleResume = (value: ResumeValue) => {
+    resume({
+      thread_id: threadId,
+      user_id: userId,
+      project_id: projectId,
+      resume: value,
+    });
+  };
+
+  // ── Node renderer ──
   const renderNode = (
     checkpoint: AppCheckpoint<AgentState, InterruptValue>,
     node: GraphNode<AgentState>,
@@ -135,7 +159,36 @@ export function AiAssistantSheet({
     switch (node.name) {
       case "__start__":
       case "kaya":
+      case "tools": {
+        // ── Calendar HITL interrupt card ──
+        const interrupt = checkpoint.interruptValue as InterruptValue | undefined;
+        if (interrupt?.tool === "create_calendar_event") {
+          const isCompleted =
+            appCheckpoints.indexOf(checkpoint) < appCheckpoints.length - 1;
+          return (
+            <CalendarApprovalCard
+              interruptValue={interrupt as CalendarEventInterrupt}
+              isCompleted={isCompleted}
+              onResume={handleResume}
+            />
+          );
+        }
+
+        // ── Tool call in-flight (LLM decided to call a tool, waiting) ──
+        const lastMsg = node.state.messages?.at(-1);
+        if (lastMsg?.tool_calls?.length && node.name === "kaya") {
+          return (
+            <div className="space-y-1">
+              {lastMsg.tool_calls.map((tc: any) => (
+                <ToolCallCard key={tc.id} toolName={tc.name} />
+              ))}
+            </div>
+          );
+        }
+
+        // ── Normal chatbot message ──
         return <ChatbotNode nodeState={node.state} />;
+      }
       default:
         return null;
     }
