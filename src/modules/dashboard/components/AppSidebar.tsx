@@ -268,7 +268,7 @@ export const AppSidebar = () => {
                           {ownerProjects.map((project) => (
                             <Link
                               key={project._id}
-                              href={`/dashboard/my-projects/${project.slug}`}
+                              href={`/dashboard/my-projects/${project.slug}/workspace`}
                               className="flex items-center justify-between gap-2 p-1 rounded-md hover:bg-accent/40 cursor-pointer transition-all border border-transparent hover:border-sidebar-border"
                             >
                               <div className="flex items-center gap-2 max-w-[130px]">

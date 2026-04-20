@@ -4,7 +4,7 @@ import { WithMessages } from "./langGraphAgent/types";
  * Kaya agent state — maps directly to KayaState in graph.py
  */
 export interface AgentState extends WithMessages {
-  user_id: string;
+  user_id?: string;
   thread_id: string;
 }
 

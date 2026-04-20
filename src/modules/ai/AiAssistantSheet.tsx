@@ -29,6 +29,8 @@ import {
 } from "@/modules/ai/AgentTypes";
 import { useLangGraphAgent } from "@/modules/ai/langGraphAgent/useLangGraphAgent";
 import { AppCheckpoint, GraphNode } from "@/modules/ai/langGraphAgent/types";
+import { api } from "../../../convex/_generated/api";
+import { useQuery } from "convex/react";
 
 interface AiAssistantSheetProps {
   open: boolean;
@@ -40,6 +42,8 @@ export function AiAssistantSheet({
   onOpenChange,
 }: AiAssistantSheetProps) {
   const [threadId] = useState(() => crypto.randomUUID());
+  const currentUser = useQuery(api.user.getCurrentUser);
+  const userId = currentUser?._id;
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
@@ -116,7 +120,10 @@ export function AiAssistantSheet({
     setRestoreError(false);
     run({
       thread_id: threadId,
-      state: { messages: [{ type: "user", content }] },
+      state: {
+        user_id: userId, // added user_id here...
+        messages: [{ type: "user", content }],
+      },
     });
     setInputValue("");
   };
@@ -145,9 +152,16 @@ export function AiAssistantSheet({
         {/* HEADER */}
         <SheetHeader className="px-4 py-5 border-b bg-card">
           <div className="flex items-center justify-between pr-10 gap-5">
-            <SheetTitle className="flex items-center gap-2 text-lg font-pop font-semibold">
-              Kaya AI
-            </SheetTitle>
+            <div className="flex flex-col items-start">
+              <SheetTitle className="flex items-center gap-2 text-lg font-pop font-semibold">
+                Kaya AI
+              </SheetTitle>
+              {threadId && (
+                <p className="text-[9px] text-muted-foreground font-mono tracking-tight truncate max-w-[160px]">
+                  <span className="text-primary">Session:</span> {threadId}
+                </p>
+              )}
+            </div>
             <div className="flex items-center gap-4">
               {/* If messages */}
               {appCheckpoints.length > 0 && (
@@ -259,7 +273,7 @@ export function AiAssistantSheet({
                 if (e.key === "Enter") sendMessage(inputValue);
               }}
               disabled={isDisabled}
-              className="h-12 rounded-xl !bg-neutral-950 pr-24"
+              className="h-12 rounded-xl bg-sidebar pr-24"
             />
             {status === "running" ? (
               <Button

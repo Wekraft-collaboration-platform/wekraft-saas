@@ -57,7 +57,7 @@ export function ChatbotNode({ nodeState }: ChatbotNodeProps) {
                     </Avatar>
                   )}
                 </div>
-                <span className="text-xs capitalize font-bold  tracking-[0.2em] text-neutral-500">
+                <span className="text-xs capitalize font-semibold text-primary/70">
                   {isAI ? "KAYA" : user?.name || "YOU"}
                 </span>
               </div>
