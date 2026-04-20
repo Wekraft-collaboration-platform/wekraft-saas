@@ -6,7 +6,7 @@ export const createEvent = mutation({
     projectId: v.id("projects"),
     title: v.string(),
     description: v.optional(v.string()),
-    type: v.union(v.literal("event"), v.literal("milestone"), v.literal("comment")),
+    type: v.union(v.literal("event"), v.literal("milestone")),
     start: v.number(),
     end: v.number(),
     allDay: v.boolean(),
@@ -21,7 +21,9 @@ export const createEvent = mutation({
     // Get the user from our db using clerkToken
     const user = await ctx.db
       .query("users")
-      .withIndex("by_token", (q) => q.eq("clerkToken", identity.tokenIdentifier))
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
       .first();
 
     if (!user) {
@@ -51,8 +53,8 @@ export const getEvents = query({
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) {
-        // Return empty if not auth instead of error, so UI can just show empty states cleanly if needed
-        return [];
+      // Return empty if not auth instead of error, so UI can just show empty states cleanly if needed
+      return [];
     }
 
     const events = await ctx.db
@@ -69,7 +71,7 @@ export const updateEvent = mutation({
     id: v.id("calendarEvents"),
     title: v.optional(v.string()),
     description: v.optional(v.string()),
-    type: v.optional(v.union(v.literal("event"), v.literal("milestone"), v.literal("comment"))),
+    type: v.optional(v.union(v.literal("event"), v.literal("milestone"))),
     start: v.optional(v.number()),
     end: v.optional(v.number()),
     allDay: v.optional(v.boolean()),
@@ -82,7 +84,7 @@ export const updateEvent = mutation({
     }
 
     const { id, ...updates } = args;
-    
+
     await ctx.db.patch(id, {
       ...updates,
       updatedAt: Date.now(),

@@ -282,7 +282,6 @@ export default defineSchema({
     type: v.union(
       v.literal("event"),
       v.literal("milestone"),
-      v.literal("comment"),
     ),
     start: v.number(),
     end: v.number(),

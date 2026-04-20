@@ -18,17 +18,31 @@ import {
   TicketCheck,
   UserPlus,
 } from "lucide-react";
-import { format, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays, isSameDay, isSameMonth, startOfWeek } from "date-fns";
+import {
+  format,
+  addMonths,
+  subMonths,
+  addWeeks,
+  subWeeks,
+  addDays,
+  subDays,
+  isSameDay,
+  isSameMonth,
+  startOfWeek,
+} from "date-fns";
 import { useState } from "react";
 
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 
 const tabs = [
   { name: "All Scheduled", icon: <CalendarDays className="w-4 h-4 mr-2" /> },
   { name: "Events", icon: <TicketCheck className="w-4 h-4 mr-2" /> },
   { name: "Milestones", icon: <Milestone className="w-4 h-4 mr-2" /> },
-  { name: "Comments", icon: <MessageSquare className="w-4 h-4 mr-2" /> },
 ];
 
 interface CalendarHeaderProps {
@@ -59,18 +73,25 @@ export default function CalendarHeader({
   const [isCalendarOpen, setIsCalendarOpen] = useState(false);
 
   return (
-    <div className="flex flex-col bg-background border-b border-border">
-      <style dangerouslySetInnerHTML={{ __html: `
+    <div className="flex flex-col ">
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         button, 
         .flex.space-x-1 button, 
         .flex.items-center.bg-muted\\/50 button {
           cursor: pointer !important;
         }
-      `}} />
+      `,
+        }}
+      />
       {/* Top Banner section */}
       <div className="flex items-center justify-between mb-6">
         <div>
-          <h1 className="text-2xl font-semibold"><LucideCalendar className="w-6 h-6 mr-2 inline"/>Project Calendar</h1>
+          <h1 className="text-2xl font-semibold">
+            <LucideCalendar className="w-6 h-6 mr-2 -mt-1 inline" />
+            Project Calendar
+          </h1>
           <p className="text-sm text-muted-foreground mt-1.5 font-medium">
             Stay Organized and On Track with Your Personalized Calendar
           </p>
@@ -81,15 +102,15 @@ export default function CalendarHeader({
       </div>
 
       {/* Tabs and Actions Row */}
-      <div className="flex items-center justify-between px-6 border-b border-border/40">
+      <div className="flex items-center justify-between px-6 border-b border-accent">
         <div className="flex space-x-1">
           {tabs.map((tab) => (
             <button
               key={tab.name}
               onClick={() => setActiveTab(tab.name)}
-              className={`flex items-center px-4 py-3.5 text-sm font-semibold transition-all border-b-2 mb-[-1px] relative active:scale-[0.98] ${
+              className={`flex items-center px-4 py-3.5 text-sm transition-all border-b-1 mb-[-1px] relative active:scale-[0.98] ${
                 activeTab === tab.name
-                  ? "border-primary text-foreground"
+                  ? "border-primary/70 text-foreground"
                   : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
               }`}
             >
@@ -105,22 +126,27 @@ export default function CalendarHeader({
             <Input
               type="search"
               placeholder="Search..."
-              className="w-52 pl-9 h-9.5 bg-muted/40 border-border/60 rounded-lg placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-primary/40 ring-offset-background"
+              className="w-[260px] pl-9 h-9.5 bg-muted border-border rounded-lg placeholder:text-muted-foreground/50 focus-visible:ring-1 focus-visible:ring-primary/40 ring-offset-background"
             />
           </div>
-          <Button size="sm" onClick={onNewEvent} className="h-9.5 px-5 bg-zinc-800 text-zinc-100 font-semibold hover:bg-zinc-700 rounded-lg border border-zinc-700/60 active:scale-95 transition-transform">
+          <Button size="sm" onClick={onNewEvent} className="py-2 px-5 text-xs">
             <Plus className="w-4 h-4 mr-1.5" strokeWidth={2.5} /> New
           </Button>
         </div>
       </div>
 
-  
       {(() => {
-        const isTodayInRange = (currentView === "dayGridMonth" && isSameMonth(currentDate, new Date())) || 
-                              (currentView === "timeGridWeek" && isSameDay(startOfWeek(currentDate, { weekStartsOn: 1 }), startOfWeek(new Date(), { weekStartsOn: 1 })));
-        
+        const isTodayInRange =
+          (currentView === "dayGridMonth" &&
+            isSameMonth(currentDate, new Date())) ||
+          (currentView === "timeGridWeek" &&
+            isSameDay(
+              startOfWeek(currentDate, { weekStartsOn: 1 }),
+              startOfWeek(new Date(), { weekStartsOn: 1 }),
+            ));
+
         return (
-          <div className="flex items-center justify-between px-6 py-4.5 bg-muted/20">
+          <div className="flex items-center justify-between px-6 py-4.5">
             <div className="flex items-center gap-5">
               <button
                 onClick={handleToday}
@@ -128,7 +154,6 @@ export default function CalendarHeader({
               >
                 {format(new Date(), "EEEE, MMMM d")}
               </button>
-
             </div>
 
             <div className="flex items-center gap-5">
@@ -151,7 +176,7 @@ export default function CalendarHeader({
                 </Button>
               </div>
 
-              <div className="flex items-center bg-muted/30 p-1 rounded-lg border border-border/30">
+              <div className="flex items-center bg-muted p-1 rounded-lg border border-border">
                 <button
                   onClick={() => setCurrentView("timeGridWeek")}
                   className={`px-4 py-1.5 rounded-md text-xs font-semibold transition-all duration-150 ${
@@ -177,14 +202,14 @@ export default function CalendarHeader({
               {/* Date Picker Trigger Wrapper */}
               <Popover open={isCalendarOpen} onOpenChange={setIsCalendarOpen}>
                 <PopoverTrigger asChild>
-                  <button className="flex items-center text-sm font-semibold text-foreground/80 border border-border/60 rounded-lg px-4 h-9 bg-background hover:bg-muted hover:border-border transition-all active:scale-95 group">
+                  <button className="flex items-center text-sm  text-foreground/80 border border-border rounded-lg px-4 h-9 bg-card  hover:border-border transition-all active:scale-95 group">
                     <CalendarIcon className="w-4 h-4 mr-3 text-muted-foreground group-hover:text-foreground/70 transition-colors" />
                     <span className="group-hover:text-foreground transition-colors">
                       {currentView === "timeGridWeek"
                         ? (() => {
                             // Monday-start week range (matching firstDay=1)
                             const day = currentDate.getDay();
-                            const diff = (day === 0 ? -6 : 1 - day); // offset to get Monday
+                            const diff = day === 0 ? -6 : 1 - day; // offset to get Monday
                             const weekStart = addDays(currentDate, diff);
                             const weekEnd = addDays(weekStart, 6);
                             return `${format(weekStart, "d MMM")} – ${format(weekEnd, "d MMM yyyy")}`;
@@ -193,7 +218,10 @@ export default function CalendarHeader({
                     </span>
                   </button>
                 </PopoverTrigger>
-                <PopoverContent className="w-auto p-0 bg-background border-border shadow-2xl rounded-xl overflow-hidden" align="end">
+                <PopoverContent
+                  className="w-auto p-0 bg-background border-border shadow-2xl rounded-xl overflow-hidden"
+                  align="end"
+                >
                   <Calendar
                     mode="single"
                     selected={currentDate}

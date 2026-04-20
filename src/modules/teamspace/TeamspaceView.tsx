@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
-import { Id } from "../../../convex/_generated/dataModel";
 import { useChannels } from "./hooks/useChannels";
 import { ChannelsSidebar } from "./ChannelsSidebar";
 import { MessageFeed } from "./MessageFeed";
@@ -21,11 +20,8 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
   const user = useQuery(api.user.getCurrentUser);
 
   const { channels, loading, createChannel, updateChannel, deleteChannel } = useChannels(projectId);
-  const permissions = useQuery(api.project.getProjectPermissions, { projectId: projectId as Id<"projects"> });
   const [activeChannel, setActiveChannel] = useState<Channel | null>(null);
   const [showMembers, setShowMembers] = useState(false);
-
-  const isOwner = permissions?.isOwner ?? false;
 
   // Auto-select default channel once loaded
   const resolvedChannel =
@@ -39,10 +35,10 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
     <div className="flex h-[calc(100vh-76px)] overflow-hidden bg-sidebar">
       {/* Left: Channels */}
       <ChannelsSidebar
+        projectId={projectId}
         channels={channels}
         loading={loading}
         activeChannelId={resolvedChannel?.id ?? null}
-        isOwner={isOwner}
         onSelect={(ch) => {
           setActiveChannel(ch);
         }}
@@ -58,7 +54,6 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
         currentUserName={currentUserName}
         currentUserImage={currentUserImage}
         projectId={projectId}
-        isOwner={isOwner}
         onToggleMembers={() => setShowMembers((prev) => !prev)}
       />
 

@@ -21,13 +21,16 @@ import {
 } from "@/components/ui/tooltip";
 
 
+import { useProjectPermissions } from "@/hooks/use-project-permissions";
+import { Id } from "../../../convex/_generated/dataModel";
+
+
 interface Props {
   channel: Channel | null;
   currentUserId: string;
   currentUserName: string;
   currentUserImage: string | null;
   projectId: string;
-  isOwner: boolean;
   onToggleMembers: () => void;
 }
 
@@ -51,9 +54,9 @@ export function MessageFeed({
   currentUserName,
   currentUserImage,
   projectId,
-  isOwner,
   onToggleMembers,
 }: Props) {
+  const { isOwner } = useProjectPermissions(projectId as Id<"projects">);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);

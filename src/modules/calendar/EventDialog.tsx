@@ -33,7 +33,7 @@ export default function EventDialog({ open, onOpenChange, projectId, initialData
   const [isLoading, setIsLoading] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [type, setType] = useState<"event" | "milestone" | "comment">("event");
+  const [type, setType] = useState<"event" | "milestone">("event");
   const [startDate, setStartDate] = useState("");
   const [startTime, setStartTime] = useState("09:00");
   const [endDate, setEndDate] = useState("");
@@ -78,7 +78,6 @@ export default function EventDialog({ open, onOpenChange, projectId, initialData
     try {
       const startDateTime = new Date(`${startDate}T${startTime}`).getTime();
       const endDateTime = new Date(`${endDate}T${endTime}`).getTime();
-      const isComment = type === "comment";
 
       if (initialData?.id) {
         await updateEvent({
@@ -88,7 +87,7 @@ export default function EventDialog({ open, onOpenChange, projectId, initialData
           type,
           start: startDateTime,
           end: endDateTime,
-          allDay: isComment || (startTime === "00:00" && endTime === "23:59"),
+          allDay: startTime === "00:00" && endTime === "23:59",
           color,
         });
       } else {
@@ -99,7 +98,7 @@ export default function EventDialog({ open, onOpenChange, projectId, initialData
           type,
           start: startDateTime,
           end: endDateTime,
-          allDay: isComment,
+          allDay: startTime === "00:00" && endTime === "23:59",
           color,
         });
       }
@@ -151,15 +150,6 @@ export default function EventDialog({ open, onOpenChange, projectId, initialData
             >
               Milestone
             </button>
-            <button
-              type="button"
-              onClick={() => setType("comment")}
-              className={`flex-1 text-sm py-1.5 rounded font-medium transition-colors ${
-                type === "comment" ? "bg-zinc-700 text-zinc-100 shadow-sm" : "text-zinc-500 hover:text-zinc-300"
-              }`}
-            >
-              Comment
-            </button>
           </div>
 
           <div className="space-y-4 pt-2">
@@ -169,13 +159,12 @@ export default function EventDialog({ open, onOpenChange, projectId, initialData
                 id="title"
                 value={title}
                 onChange={(e: any) => setTitle(e.target.value)}
-                placeholder={type === "comment" ? "Quick note..." : "Add title"}
+                placeholder="Add title"
                 required
                 className="bg-zinc-900 border-zinc-700 text-zinc-100 placeholder:text-zinc-600"
               />
             </div>
 
-            {type !== "comment" && (
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-zinc-400">Start</Label>
@@ -188,17 +177,6 @@ export default function EventDialog({ open, onOpenChange, projectId, initialData
                   <Input type="time" value={endTime} onChange={(e: any) => setEndTime(e.target.value)} required className="bg-zinc-900 border-zinc-700 text-zinc-300" />
                 </div>
               </div>
-            )}
-
-            {type === "comment" && (
-              <div className="space-y-2">
-                <Label className="text-zinc-400">Date</Label>
-                <Input type="date" value={startDate} onChange={(e: any) => {
-                  setStartDate(e.target.value);
-                  setEndDate(e.target.value);
-                }} required className="bg-zinc-900 border-zinc-700 text-zinc-300" />
-              </div>
-            )}
 
             <div className="space-y-2">
               <Label className="text-zinc-400">Description</Label>
@@ -210,7 +188,6 @@ export default function EventDialog({ open, onOpenChange, projectId, initialData
               />
             </div>
 
-            {type !== "comment" && (
               <div className="space-y-2">
                 <Label className="text-zinc-400">Color</Label>
                 <div className="flex gap-2">
@@ -226,7 +203,6 @@ export default function EventDialog({ open, onOpenChange, projectId, initialData
                   ))}
                 </div>
               </div>
-            )}
           </div>
 
           <div className="flex justify-between pt-4 pb-2 border-t border-zinc-800">
