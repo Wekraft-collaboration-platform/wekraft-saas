@@ -59,7 +59,9 @@ export default function CalendarView({
     // Use saved color or type default; comments always white
     const color = isComment
       ? "#ffffff"
-      : (event.extendedProps.color || typeColors[event.extendedProps.type as string] || typeColors.event);
+      : event.extendedProps.color ||
+        typeColors[event.extendedProps.type as string] ||
+        typeColors.event;
 
     const eventData = {
       id: event.id,
@@ -74,21 +76,43 @@ export default function CalendarView({
 
     if (isComment) {
       return (
-        <div className="relative flex items-center gap-1.5 overflow-hidden p-1.5 w-full rounded-lg border border-white/10 shadow-sm bg-white/5 group">
-          <svg className="w-3 h-3 flex-shrink-0 text-white/60" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2.5} d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z" />
-          </svg>
-          <span className="text-[11px] truncate font-medium text-white/80 group-hover:opacity-0 transition-opacity">{event.title}</span>
+        <div className="relative flex items-center gap-1.5 overflow-hidden p-1.5 w-full rounded-lg  group">
+          {/* <svg
+            className="w-3 h-3 flex-shrink-0 text-white/60"
+            fill="none"
+            viewBox="0 0 24 24"
+            stroke="currentColor"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2.5}
+              d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"
+            />
+          </svg> */}
+          <span className="text-[11px] truncate font-medium text-white/80 group-hover:opacity-0 transition-opacity">
+            {event.title}
+          </span>
           {/* Hover action overlay */}
           <div className="absolute inset-0 flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity bg-zinc-900/80 rounded-lg">
             <button
-              onClick={(e) => { e.stopPropagation(); onEventView(eventData); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onEventView(eventData);
+              }}
               className="text-[10px] font-semibold px-2 py-0.5 rounded bg-white/10 text-white hover:bg-white/20 transition-colors"
-            >View</button>
+            >
+              View
+            </button>
             <button
-              onClick={(e) => { e.stopPropagation(); onEventEdit(eventData); }}
+              onClick={(e) => {
+                e.stopPropagation();
+                onEventEdit(eventData);
+              }}
               className="text-[10px] font-semibold px-2 py-0.5 rounded bg-white/10 text-white hover:bg-white/20 transition-colors"
-            >Edit</button>
+            >
+              Edit
+            </button>
           </div>
         </div>
       );
@@ -100,33 +124,64 @@ export default function CalendarView({
         style={{ borderLeftColor: color, backgroundColor: `${color}18` }}
       >
         {eventInfo.timeText && (
-          <div className="text-[10px] font-semibold mb-1 flex items-center justify-between tracking-tight" style={{ color: `${color}cc` }}>
+          <div
+            className="text-[10px] font-semibold mb-1 flex items-center justify-between tracking-tight"
+            style={{ color: `${color}cc` }}
+          >
             {eventInfo.timeText}
-            <div className="w-1.5 h-1.5 rounded-full" style={{ backgroundColor: color }} />
+            <div
+              className="w-1.5 h-1.5 rounded-full"
+              style={{ backgroundColor: color }}
+            />
           </div>
         )}
-        <div className="text-[11.5px] font-bold leading-tight line-clamp-2 group-hover:opacity-0 transition-opacity" style={{ color }}>
+        <div
+          className="text-[11.5px] font-bold leading-tight line-clamp-2 group-hover:opacity-0 transition-opacity"
+          style={{ color }}
+        >
           {event.title}
         </div>
         {description && (
-          <div className="text-[10px] mt-1 leading-snug line-clamp-2 opacity-70 group-hover:opacity-0 transition-opacity" style={{ color }}>
+          <div
+            className="text-[10px] mt-1 leading-snug line-clamp-2 opacity-70 group-hover:opacity-0 transition-opacity"
+            style={{ color }}
+          >
             {description}
           </div>
         )}
         {/* Hover action overlay */}
-        <div className="absolute inset-0 flex items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity rounded-r-lg"
+        <div
+          className="absolute inset-0 flex items-center justify-center gap-1.5 opacity-0 group-hover:opacity-100 transition-opacity rounded-r-lg"
           style={{ backgroundColor: `${color}22` }}
         >
           <button
-            onClick={(e) => { e.stopPropagation(); onEventView(eventData); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEventView(eventData);
+            }}
             className="text-[10px] font-bold px-2.5 py-1 rounded-md transition-colors"
-            style={{ backgroundColor: `${color}30`, color, border: `1px solid ${color}50` }}
-          >View</button>
+            style={{
+              backgroundColor: `${color}30`,
+              color,
+              border: `1px solid ${color}50`,
+            }}
+          >
+            View
+          </button>
           <button
-            onClick={(e) => { e.stopPropagation(); onEventEdit(eventData); }}
+            onClick={(e) => {
+              e.stopPropagation();
+              onEventEdit(eventData);
+            }}
             className="text-[10px] font-bold px-2.5 py-1 rounded-md transition-colors"
-            style={{ backgroundColor: `${color}50`, color, border: `1px solid ${color}80` }}
-          >Edit</button>
+            style={{
+              backgroundColor: `${color}50`,
+              color,
+              border: `1px solid ${color}80`,
+            }}
+          >
+            Edit
+          </button>
         </div>
       </div>
     );
@@ -150,7 +205,9 @@ export default function CalendarView({
 
   return (
     <div className="relative h-full w-full p-6 bg-background select-none">
-      <style dangerouslySetInnerHTML={{ __html: `
+      <style
+        dangerouslySetInnerHTML={{
+          __html: `
         .fc-header-toolbar { display: none !important; }
         
         /* Dark Theme Variables */
@@ -287,7 +344,9 @@ export default function CalendarView({
         .fc-scroller::-webkit-scrollbar-thumb:hover {
           background: #3f3f46 !important; /* zinc-700 */
         }
-      `}} />
+      `,
+        }}
+      />
 
       <div className="h-fit overflow-visible rounded-2xl border border-zinc-800/70 shadow-[0_4px_16px_rgb(0,0,0,0.3)] bg-zinc-950">
         <FullCalendar
@@ -297,12 +356,15 @@ export default function CalendarView({
           initialDate={currentDate}
           headerToolbar={false}
           allDayText=""
-          height={currentView === 'dayGridMonth' ? 'auto' : '800px'}
+          height={currentView === "dayGridMonth" ? "auto" : "800px"}
           firstDay={1}
           dayHeaderContent={(arg) => {
             // Show "Apr 1", "Mar 31" in week view col headers
             const d = arg.date;
-            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' });
+            return d.toLocaleDateString("en-US", {
+              month: "short",
+              day: "numeric",
+            });
           }}
           slotMinTime="00:00:00"
           slotMaxTime="24:00:00"
@@ -316,7 +378,7 @@ export default function CalendarView({
           editable={false}
           selectable={true}
           dayMaxEvents={true}
-          dayHeaderFormat={{ day: 'numeric' }}
+          dayHeaderFormat={{ day: "numeric" }}
         />
       </div>
     </div>

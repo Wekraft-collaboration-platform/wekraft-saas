@@ -53,9 +53,9 @@ export default function Layout({
                 />
                 <DashboardBreadcrumbs />
               </div>
-              <div>
+              {/* <div>
                 <CommunitySearchBar />
-              </div>
+              </div> */}
               <div className="">
                 <UserButton />
               </div>

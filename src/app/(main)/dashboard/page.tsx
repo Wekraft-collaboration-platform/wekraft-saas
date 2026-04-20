@@ -230,14 +230,15 @@ export default function DashboardPage() {
           >
             Stats <ChartNoAxesColumn className="h-5 w-5 inline ml-1" />
           </Button>
-          <Button
+          {/* Community feature disabled for now */}
+          {/* <Button
             size="sm"
             className="px-10"
             variant={activeTab === "discover" ? "default" : "outline"}
             onClick={() => setActiveTab("discover")}
           >
             Discover <FolderSearch className="h-5 w-5 inline ml-1" />
-          </Button>
+          </Button> */}
           <Button
             size="sm"
             variant={activeTab === "projects" ? "default" : "outline"}
@@ -320,13 +321,21 @@ export default function DashboardPage() {
                   </p>
                 </div>
                 <div className="flex items-center gap-3">
-                   <Button size="sm" variant={'outline'} className="gap-2 text-xs">
+                  <Button
+                    size="sm"
+                    variant={"outline"}
+                    className="gap-2 text-xs"
+                  >
                     <Layers3 className="h-4 w-4" /> View All Projects
                   </Button>
-                  <Button size="sm" variant={'outline'} className="gap-2 text-xs">
+                  <Button
+                    size="sm"
+                    variant={"outline"}
+                    className="gap-2 text-xs"
+                  >
                     <SlidersHorizontal className="h-4 w-4" /> Filter
                   </Button>
-                  <CreateProjectDialog 
+                  <CreateProjectDialog
                     trigger={
                       <Button size="sm" className="gap-2 text-xs">
                         <Plus className="h-4 w-4" /> New Project

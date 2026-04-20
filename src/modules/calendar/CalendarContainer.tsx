@@ -4,10 +4,20 @@ import { useQuery } from "convex/react";
 import { useParams } from "next/navigation";
 import { useState, useRef, useEffect } from "react";
 import { api } from "../../../convex/_generated/api";
-import { format, addMonths, subMonths, addWeeks, subWeeks, addDays, subDays } from "date-fns";
+import {
+  format,
+  addMonths,
+  subMonths,
+  addWeeks,
+  subWeeks,
+  addDays,
+  subDays,
+} from "date-fns";
 import CalendarHeader from "@/modules/calendar/CalendarHeader";
 import dynamic from "next/dynamic";
-const CalendarView = dynamic(() => import("@/modules/calendar/CalendarView"), { ssr: false });
+const CalendarView = dynamic(() => import("@/modules/calendar/CalendarView"), {
+  ssr: false,
+});
 import EventDialog from "@/modules/calendar/EventDialog";
 import EventDetailDialog from "@/modules/calendar/EventDetailDialog";
 import { Loader2 } from "lucide-react";
@@ -18,15 +28,15 @@ export default function CalendarContainer() {
   const slug = params.slug as string;
 
   const project = useQuery(api.project.getProjectBySlug, { slug });
-  
+
   // Wait until we have the project to query events
   const events = useQuery(
     api.calendar.getEvents,
-    project?._id ? { projectId: project._id } : "skip" 
+    project?._id ? { projectId: project._id } : "skip",
   );
 
   const [activeTab, setActiveTab] = useState("All Scheduled");
-  const [currentView, setCurrentView] = useState("timeGridWeek");
+  const [currentView, setCurrentView] = useState("dayGridMonth");
   const [currentDate, setCurrentDate] = useState(new Date());
   const calendarRef = useRef<any>(null);
 
@@ -68,7 +78,7 @@ export default function CalendarContainer() {
     const handleKeyDown = (e: KeyboardEvent) => {
       // Don't navigate if the user is typing in an input
       if (
-        document.activeElement?.tagName === "INPUT" || 
+        document.activeElement?.tagName === "INPUT" ||
         document.activeElement?.tagName === "TEXTAREA"
       ) {
         return;
