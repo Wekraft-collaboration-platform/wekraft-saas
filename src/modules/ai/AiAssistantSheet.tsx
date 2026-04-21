@@ -35,6 +35,7 @@ import { useParams } from "next/navigation";
 import { CalendarApprovalCard } from "@/modules/ai/CalendarApprovalCard";
 import { CalendarEventInterrupt } from "@/modules/ai/AgentTypes";
 import { ToolCallCard } from "@/modules/ai/ToolCard";
+import Image from "next/image";
 
 interface AiAssistantSheetProps {
   open: boolean;
@@ -157,7 +158,6 @@ export function AiAssistantSheet({
     node: GraphNode<AgentState>,
   ): React.ReactNode => {
     switch (node.name) {
-      // ── Kaya + calendar HITL ───────────────────────────────────────────────
       case "__start__":
       case "kaya":
       case "tools": {
@@ -194,12 +194,12 @@ export function AiAssistantSheet({
         return <ChatbotNode nodeState={node.state} />;
       }
 
-      // ── Analyst entry (seeds state, nothing to show) ───────────────────────
+      // ── Analyst entry
       case "project_analyst": {
         return null;
       }
 
-      // ── Analyst think — show which tool it's about to call ────────────────
+      // ── Analyst think
       case "analyst_think": {
         const lastMsg = node.state.messages?.at(-1);
 
@@ -209,14 +209,10 @@ export function AiAssistantSheet({
             <div className="space-y-1">
               {lastMsg.tool_calls.map((tc: any) => (
                 <ToolCallCard key={tc.id} toolName={tc.name} />
-                // "Project analyst called → Fetching tasks"
-                // "Project analyst called → Fetching issues"
               ))}
             </div>
           );
         }
-
-        // No tool calls = final answer produced, analyst_done handles it
         return null;
       }
 
@@ -237,14 +233,17 @@ export function AiAssistantSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-[500px] flex flex-col p-0 gap-0 h-full focus-visible:ring-0 focus:ring-0 outline-none"
+        className="w-[500px] flex flex-col p-0 gap-0 h-full focus-visible:ring-0 focus:ring-0 outline-none overflow-hidden"
       >
         {/* HEADER */}
         <SheetHeader className="px-4 py-5 border-b bg-card">
           <div className="flex items-center justify-between pr-10 gap-5">
             <div className="flex flex-col items-start">
-              <SheetTitle className="flex items-center gap-2 text-lg font-pop font-semibold">
-                Kaya AI
+              <SheetTitle className="flex items-center gap-2 text-lg font-pop font-semibold mb-1">
+                <Image src="/kaya.svg" alt="Kaya AI" width={24} height={24} />
+                <span className="text-xl font-semibold tracking-tight text-primary font-pop">
+                  Kaya
+                </span>
               </SheetTitle>
               {threadId && (
                 <p className="text-[9px] text-muted-foreground font-mono tracking-tight truncate max-w-[160px]">
@@ -352,7 +351,14 @@ export function AiAssistantSheet({
         </div>
 
         {/* FOOTER */}
-        <div className="px-4 py-6 bg-linear-to-b from-transparent to-blue-500/20">
+        <div className="px-4 py-6 relative">
+          <div
+            className="absolute -top-20 -left-1/2 w-300 h-100 rounded-full opacity-25"
+            style={{
+              background: "radial-gradient(ellipse, #f9a8d4, transparent 70%)",
+              filter: "blur(60px)",
+            }}
+          />
           <div className="relative">
             <Input
               ref={inputRef}

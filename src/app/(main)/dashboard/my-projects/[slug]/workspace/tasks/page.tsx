@@ -22,6 +22,7 @@ import { TABS } from "@/lib/static-store";
 import { ListTab } from "@/modules/workspace/ListTab";
 import { TableTab } from "@/modules/workspace/TableTab";
 import { KanbanTask } from "@/modules/workspace/KanbanTask";
+import Image from "next/image";
 
 const users = [
   { name: "Ritesh", img: "https://i.pravatar.cc/40?img=1" },
@@ -135,9 +136,9 @@ const TaskPage = () => {
           <Button
             size="sm"
             variant={"outline"}
-            className="bg-linear-to-t from-blue-600/30 via-blue-600/10 to-transparent text-xs cursor-pointer"
+            className="bg-linear-to-t from-indigo-600/30 via-purple-600/10 to-transparent text-xs cursor-pointer"
           >
-            <Sparkles className="w-4 h-4 mr-2" />
+            <Image src="/kaya.svg" alt="Kaya AI" width={18} height={18} />
             Ask Kaya
           </Button>
           <CreateTaskDialog
