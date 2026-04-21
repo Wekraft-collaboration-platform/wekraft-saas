@@ -4,8 +4,7 @@ import { internal } from "./_generated/api";
 
 const http = httpRouter();
 
-// ── existing routes stay here ──
-
+// create calendar event
 http.route({
   path: "/createCalendarEvent",
   method: "POST",
@@ -34,6 +33,63 @@ http.route({
     console.log("[createCalendarEvent] created id:", id);
 
     return new Response(JSON.stringify({ id }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }),
+});
+
+// get project tasks
+http.route({
+  path: "/getProjectTasks",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const body = await request.json();
+
+    if (!body.projectId) {
+      return new Response(JSON.stringify({ error: "projectId is required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const tasks = await ctx.runQuery(internal.agentTools.getProjectTasks, {
+      projectId: body.projectId,
+      ...(body.status && { status: body.status }),
+      ...(body.priority && { priority: body.priority }),
+      ...(body.sprintId && { sprintId: body.sprintId }),
+    });
+
+    return new Response(JSON.stringify({ tasks }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }),
+});
+
+// get project issues
+http.route({
+  path: "/getProjectIssues",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const body = await request.json();
+
+    if (!body.projectId) {
+      return new Response(JSON.stringify({ error: "projectId is required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const issues = await ctx.runQuery(internal.agentTools.getProjectIssues, {
+      projectId: body.projectId,
+      ...(body.status && { status: body.status }),
+      ...(body.severity && { severity: body.severity }),
+      ...(body.environment && { environment: body.environment }),
+      ...(body.sprintId && { sprintId: body.sprintId }),
+    });
+
+    return new Response(JSON.stringify({ issues }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });

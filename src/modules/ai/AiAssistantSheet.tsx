@@ -157,14 +157,15 @@ export function AiAssistantSheet({
     node: GraphNode<AgentState>,
   ): React.ReactNode => {
     switch (node.name) {
+      // ── Kaya + calendar HITL ───────────────────────────────────────────────
       case "__start__":
       case "kaya":
       case "tools": {
-        // ── Calendar HITL interrupt card ──
-
         const interrupt = checkpoint.interruptValue as
           | InterruptValue
           | undefined;
+
+        // Calendar HITL interrupt card
         if (interrupt?.tool === "create_calendar_event") {
           const isCompleted =
             appCheckpoints.indexOf(checkpoint) < appCheckpoints.length - 1;
@@ -177,7 +178,7 @@ export function AiAssistantSheet({
           );
         }
 
-        // ── Tool call in-flight (LLM decided to call a tool, waiting) ──
+        // Tool call in-flight from Kaya (ask_project_analyst or create_calendar_event)
         const lastMsg = node.state.messages?.at(-1);
         if (lastMsg?.tool_calls?.length && node.name === "kaya") {
           return (
@@ -189,9 +190,42 @@ export function AiAssistantSheet({
           );
         }
 
-        // ── Normal chatbot message ──
+        // Normal chatbot message
         return <ChatbotNode nodeState={node.state} />;
       }
+
+      // ── Analyst entry (seeds state, nothing to show) ───────────────────────
+      case "project_analyst": {
+        return null;
+      }
+
+      // ── Analyst think — show which tool it's about to call ────────────────
+      case "analyst_think": {
+        const lastMsg = node.state.messages?.at(-1);
+
+        // Mid ReAct loop: analyst decided to call a tool
+        if (lastMsg?.tool_calls?.length) {
+          return (
+            <div className="space-y-1">
+              {lastMsg.tool_calls.map((tc: any) => (
+                <ToolCallCard key={tc.id} toolName={tc.name} />
+                // "Project analyst called → Fetching tasks"
+                // "Project analyst called → Fetching issues"
+              ))}
+            </div>
+          );
+        }
+
+        // No tool calls = final answer produced, analyst_done handles it
+        return null;
+      }
+
+      // ── Internal plumbing — nothing to render ─────────────────────────────
+      case "analyst_tools":
+      case "analyst_done": {
+        return null;
+      }
+
       default:
         return null;
     }
@@ -247,7 +281,7 @@ export function AiAssistantSheet({
                 key={checkpoint.checkpointConfig.configurable.checkpoint_id}
                 className="text-red-500 py-2 text-xs px-4"
               >
-                [ERROR]
+                Error occured by Agent. LLm sometimes give malformed response.
               </div>
             ) : (
               checkpoint.nodes.map((node, i) => {
