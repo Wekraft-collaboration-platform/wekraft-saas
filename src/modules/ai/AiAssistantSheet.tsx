@@ -351,14 +351,7 @@ export function AiAssistantSheet({
         </div>
 
         {/* FOOTER */}
-        <div className="px-4 py-6 relative">
-          <div
-            className="absolute -top-20 -left-1/2 w-300 h-100 rounded-full opacity-25"
-            style={{
-              background: "radial-gradient(ellipse, #f9a8d4, transparent 70%)",
-              filter: "blur(60px)",
-            }}
-          />
+        <div className="px-4 py-6 bg-linear-to-b from-transparent via-indigo-200/10 to-purple-400/30">
           <div className="relative">
             <Input
               ref={inputRef}
