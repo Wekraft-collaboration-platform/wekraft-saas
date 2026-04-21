@@ -2,6 +2,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useMessages } from "./hooks/useMessages";
+import { toast } from "sonner";
 import { MessageItem } from "./MessageItem";
 import { MessageComposer } from "./MessageComposer";
 import { Message } from "./hooks/useMessages";
@@ -63,6 +64,23 @@ export function MessageFeed({
   const isAutoScrolling = useRef(false);
   const [atBottom, setAtBottom] = useState(true);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+  const [pinnedMessageIds, setPinnedMessageIds] = useState<Set<string>>(new Set());
+
+  const handlePin = useCallback((messageId: string, pin: boolean) => {
+    // toast MUST be outside the setState updater — React Strict Mode
+    // double-invokes updaters in dev, which would fire the toast twice.
+    setPinnedMessageIds((prev) => {
+      const next = new Set(prev);
+      if (pin) next.add(messageId);
+      else next.delete(messageId);
+      return next;
+    });
+    if (pin) {
+      toast.success("Message pinned", { duration: 2000 });
+    } else {
+      toast("Message unpinned", { duration: 2000 });
+    }
+  }, []);
 
   const {
     messages,
@@ -266,12 +284,14 @@ export function MessageFeed({
                   message={msg}
                   isGrouped={!!isGrouped}
                   currentUserId={currentUserId}
+                  isPinned={pinnedMessageIds.has(msg.id)}
                   onReply={(m) => {
                     setReplyingTo(m);
                   }}
                   onEdit={editMessage}
                   onDelete={deleteMessage}
                   onReact={toggleReaction}
+                  onPin={handlePin}
                 />
               );
             })}
