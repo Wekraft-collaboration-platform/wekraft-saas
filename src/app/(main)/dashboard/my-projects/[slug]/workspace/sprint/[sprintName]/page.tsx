@@ -25,6 +25,8 @@ import {
   Calendar,
   Bug,
   Circle,
+  Clock,
+  Flag,
 } from "lucide-react";
 
 const SprintDetailPage = () => {
@@ -171,7 +173,7 @@ const SprintDetailPage = () => {
       </Link>
 
       {/* Sprint Header */}
-      <div className="flex flex-col md:flex-row md:items-start justify-between gap-6 mb-8">
+      <div className="flex flex-row md:items-start justify-between gap-6  mb-3">
         <div>
           <div className="flex items-center gap-3 mb-3">
             <h1 className="text-3xl font-semibold tracking-tight">
@@ -195,14 +197,9 @@ const SprintDetailPage = () => {
               </span>
             </div>
 
-            <div className="flex items-center gap-2">
-              <Target className="w-4 h-4 opacity-70" />
-              <span>{sprint.sprintGoal}</span>
-            </div>
-
             {sprint.status === "active" && (
-              <div className="flex items-center gap-2 text-amber-500/90 bg-amber-500/10 px-2 py-0.5 rounded-md text-xs">
-                ⏳ {daysRemaining} days remaining
+              <div className="flex items-center gap-2 text-primary bg-sidebar border border-primary/20 px-2 py-1 rounded-md text-xs">
+                <Clock className="w-4 h-4" /> {daysRemaining} days remaining
               </div>
             )}
           </div>
@@ -247,10 +244,17 @@ const SprintDetailPage = () => {
         </div>
       </div>
 
+      <div className="flex items-center gap-2 mb-5">
+        <Flag className="w-4 h-4 opacity-70" />
+        <span className="text-sm font-medium text-foreground">
+          {sprint.sprintGoal}
+        </span>
+      </div>
+
       {/* Top Cards Grid */}
       {stats && (
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-10">
-          <div className="lg:col-span-2 border border-border/40 bg-card/40 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+          <div className="lg:col-span-2 border border-border bg-accent/30 rounded-md p-4 flex flex-col justify-between shadow-xs">
             <div className="flex justify-between items-start mb-6">
               <div>
                 <h3 className="text-sm font-medium text-foreground">
@@ -272,19 +276,7 @@ const SprintDetailPage = () => {
             </div>
           </div>
 
-          <div className="border border-border/40 bg-card/40 rounded-xl p-5 flex flex-col justify-between shadow-xs">
-            <div className="flex items-center gap-2 text-muted-foreground mb-4">
-              <Bug className="w-4 h-4" />
-              <h3 className="text-sm font-medium">Open Bugs</h3>
-            </div>
-            <div className="flex items-end gap-2">
-              <span className="text-3xl font-semibold tracking-tight">
-                {openIssuesCount}
-              </span>
-            </div>
-          </div>
-
-          <div className="border border-border/40 bg-card/40 rounded-xl p-5 flex flex-col justify-between shadow-xs">
+          <div className="border border-border bg-accent/30 rounded-md p-4 flex flex-col justify-between shadow-xs">
             <div className="flex items-center gap-2 text-muted-foreground mb-4">
               <Zap className="w-4 h-4" />
               <h3 className="text-sm font-medium">Burn Rate</h3>
@@ -346,7 +338,7 @@ const SprintDetailPage = () => {
                 tasks.map((task) => (
                   <div
                     key={task._id}
-                    className="group flex flex-col sm:flex-row sm:items-center justify-between py-3 border-b border-border/30 hover:bg-muted/30 px-3 -mx-3 rounded-lg transition-colors gap-3"
+                    className={`flex flex-col sm:flex-row sm:items-center justify-between py-3 border-b border-border/30 px-3 -mx-3 rounded-lg transition-colors gap-3 ${sprint.status !== "completed" ? "group hover:bg-muted/30" : "opacity-80"}`}
                   >
                     <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
                       <div className="mt-0.5 sm:mt-0 shrink-0 text-muted-foreground">
@@ -409,7 +401,7 @@ const SprintDetailPage = () => {
 
                       {/* Actions */}
                       <div className="w-6 flex justify-end">
-                        {isOwner && sprint.status !== "completed" ? (
+                        {isOwner && sprint.status !== "completed" && (
                           <Button
                             variant="ghost"
                             size="icon"
@@ -418,8 +410,6 @@ const SprintDetailPage = () => {
                           >
                             ×
                           </Button>
-                        ) : (
-                          <div className="w-6 h-6" />
                         )}
                       </div>
                     </div>
@@ -502,7 +492,7 @@ const SprintDetailPage = () => {
                 issues.map((issue) => (
                   <div
                     key={issue._id}
-                    className="group flex flex-col sm:flex-row sm:items-center justify-between py-3 border-b border-border/30 hover:bg-muted/30 px-3 -mx-3 rounded-lg transition-colors gap-3"
+                    className={`flex flex-col sm:flex-row sm:items-center justify-between py-3 border-b border-border/30 px-3 -mx-3 rounded-lg transition-colors gap-3 ${sprint.status !== "completed" ? "group hover:bg-muted/30" : "opacity-80"}`}
                   >
                     <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
                       <div className="mt-0.5 sm:mt-0 shrink-0 text-muted-foreground">
@@ -560,7 +550,7 @@ const SprintDetailPage = () => {
 
                       {/* Actions */}
                       <div className="w-6 flex justify-end">
-                        {isOwner && sprint.status !== "completed" ? (
+                        {isOwner && sprint.status !== "completed" && (
                           <Button
                             variant="ghost"
                             size="icon"
@@ -569,8 +559,6 @@ const SprintDetailPage = () => {
                           >
                             ×
                           </Button>
-                        ) : (
-                          <div className="w-6 h-6" />
                         )}
                       </div>
                     </div>

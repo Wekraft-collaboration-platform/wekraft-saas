@@ -279,10 +279,7 @@ export default defineSchema({
     creatorId: v.id("users"),
     title: v.string(),
     description: v.optional(v.string()),
-    type: v.union(
-      v.literal("event"),
-      v.literal("milestone"),
-    ),
+    type: v.union(v.literal("event"), v.literal("milestone")),
     start: v.number(),
     end: v.number(),
     allDay: v.boolean(),
@@ -308,6 +305,16 @@ export default defineSchema({
       v.literal("active"),
       v.literal("completed"),
     ),
+    taskIds: v.optional(v.array(v.id("tasks"))), // to track history of tasks added to this sprint
+    issueIds: v.optional(v.array(v.id("issues"))), // to track history of issues added to this sprint
+    finalStats: v.optional(
+      v.object({
+        completedTasks: v.number(),
+        totalTasks: v.number(),
+        closedIssues: v.number(),
+        totalIssues: v.number(),
+      }),
+    ), // store current stats of sprint when sprint is marked as completed
     createdAt: v.number(),
     updatedAt: v.number(),
   })

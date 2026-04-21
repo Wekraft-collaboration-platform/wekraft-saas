@@ -18,6 +18,7 @@ import {
   FileCodeCorner,
   FastForwardIcon,
   Sparkles,
+  MoveRight,
 } from "lucide-react";
 import { CreateSprintDialog } from "@/modules/workspace/CreateSprintDialog";
 import Image from "next/image";
@@ -254,7 +255,7 @@ const SprintPage = () => {
               <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
               <Input
                 placeholder="Search by sprint name..."
-                className="pl-9 bg-muted/30 focus-visible:bg-background transition-colors"
+                className="pl-9 bg-muted/30 focus-visible:bg-background transition-colors border border-border"
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
               />
@@ -278,7 +279,7 @@ const SprintPage = () => {
           </div>
 
           {/* Sprints List */}
-          <div className="grid gap-4">
+          <div className="grid gap-4 mt-10">
             {filteredSprints?.map((sprint) => (
               <div
                 key={sprint._id}
@@ -287,40 +288,46 @@ const SprintPage = () => {
                     `/dashboard/my-projects/${slug}/workspace/sprint/${encodeURIComponent(sprint.sprintName)}`,
                   )
                 }
-                className="group relative overflow-hidden bg-background border rounded-2xl hover:border-primary/40 hover:shadow-md transition-all duration-200 cursor-pointer"
+                className="group relative overflow-hidden bg-sidebar border border-border rounded-md transition-all duration-200 cursor-pointer"
               >
                 <div className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex items-start md:items-center gap-4">
                     <div
-                      className={`p-3 rounded-xl bg-opacity-10 ${
+                      className={`p-2 rounded-md bg-opacity-10 ${
                         sprint.status === "active"
-                          ? "bg-emerald-500"
+                          ? "bg-emerald-500/30"
                           : sprint.status === "planned"
-                            ? "bg-amber-500"
-                            : "bg-blue-500"
+                            ? "bg-amber-500/30"
+                            : "bg-blue-500/30"
                       }`}
                     >
-                      {getStatusIcon(sprint.status)}
+                      <FastForward className="w-5 h-5" />
                     </div>
 
                     <div className="space-y-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <h3 className="font-semibold text-[17px] group-hover:text-primary transition-colors">
+                      <div className="flex items-center gap-4 flex-wrap">
+                        <h3 className="font-semibold text-base group-hover:text-primary transition-colors">
                           {sprint.sprintName}
                         </h3>
-                        {getStatusBadge(sprint.status)}
+                        <Badge
+                          variant="outline"
+                          className="capitalize px-3 py-1"
+                        >
+                          {sprint.status}
+                        </Badge>
                       </div>
-                      <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex flex-wrap items-center gap-6 text-sm text-muted-foreground">
                         <div className="flex items-center gap-1.5">
                           <Calendar className="w-3.5 h-3.5" />
                           <span>
-                            {format(sprint.duration.startDate, "MMM d")} -{" "}
+                            {format(sprint.duration.startDate, "MMM d")}
+                            <MoveRight className="w-3.5 h-3.5 inline mx-1.5" />
                             {format(sprint.duration.endDate, "MMM d, yyyy")}
                           </span>
                         </div>
                         <div className="flex items-center gap-3">
                           <div className="flex items-center gap-1.5 opacity-80">
-                            <span className="w-1.5 h-1.5 rounded-full bg-primary" />
+                            <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
                             <span>{sprint.totalTasks || 0} tasks</span>
                           </div>
                           <div className="flex items-center gap-1.5 opacity-80">
@@ -338,9 +345,14 @@ const SprintPage = () => {
                         Progress
                       </p>
                       <p className="text-sm font-semibold">
-                        {sprint.totalTasks > 0
+                        {(sprint.totalTasks || 0) + (sprint.totalIssues || 0) >
+                        0
                           ? Math.round(
-                              (sprint.completedTasks / sprint.totalTasks) * 100,
+                              (((sprint.completedTasks || 0) +
+                                (sprint.closedIssues || 0)) /
+                                ((sprint.totalTasks || 0) +
+                                  (sprint.totalIssues || 0))) *
+                                100,
                             )
                           : 0}
                         %
@@ -354,22 +366,6 @@ const SprintPage = () => {
                       <ChevronRight className="w-5 h-5" />
                     </Button>
                   </div>
-                </div>
-
-                {/* Visual Progress Bar at bottom */}
-                <div className="absolute bottom-0 left-0 h-0.5 bg-muted w-full">
-                  <div
-                    className={`h-full transition-all duration-500 ${
-                      sprint.status === "active"
-                        ? "bg-emerald-500"
-                        : sprint.status === "planned"
-                          ? "bg-amber-500"
-                          : "bg-blue-500"
-                    }`}
-                    style={{
-                      width: `${sprint.totalTasks > 0 ? (sprint.completedTasks / sprint.totalTasks) * 100 : 0}%`,
-                    }}
-                  />
                 </div>
               </div>
             ))}

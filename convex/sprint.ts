@@ -19,6 +19,10 @@ async function getAuthUser(ctx: any) {
 // QUERIES
 // ==========================================
 
+//==================
+// getSprintsByProject: Fetches all sprints for a specific project with computed stats.
+// used in: Sprints list page
+//==================
 export const getSprintsByProject = query({
   args: { projectId: v.id("projects") },
   handler: async (ctx, args) => {
@@ -31,15 +35,42 @@ export const getSprintsByProject = query({
     // For each sprint, compute task/issue counts
     const sprintsWithStats = await Promise.all(
       sprints.map(async (sprint) => {
-        const tasks = await ctx.db
-          .query("tasks")
-          .withIndex("by_sprint", (q) => q.eq("sprintId", sprint._id))
-          .collect();
+        // Use historical IDs if available, otherwise fallback to current assignments
+        let tasks = [];
+        if (sprint.taskIds) {
+          const taskResults = await Promise.all(
+            sprint.taskIds.map((id) => ctx.db.get(id)),
+          );
+          tasks = taskResults.filter((t): t is any => t !== null);
+        } else {
+          tasks = await ctx.db
+            .query("tasks")
+            .withIndex("by_sprint", (q) => q.eq("sprintId", sprint._id))
+            .collect();
+        }
 
-        const issues = await ctx.db
-          .query("issues")
-          .withIndex("by_sprint", (q) => q.eq("sprintId", sprint._id))
-          .collect();
+        let issues = [];
+        if (sprint.issueIds) {
+          const issueResults = await Promise.all(
+            sprint.issueIds.map((id) => ctx.db.get(id)),
+          );
+          issues = issueResults.filter((i): i is any => i !== null);
+        } else {
+          issues = await ctx.db
+            .query("issues")
+            .withIndex("by_sprint", (q) => q.eq("sprintId", sprint._id))
+            .collect();
+        }
+
+        if (sprint.status === "completed" && sprint.finalStats) {
+          return {
+            ...sprint,
+            totalTasks: sprint.finalStats.totalTasks,
+            completedTasks: sprint.finalStats.completedTasks,
+            totalIssues: sprint.finalStats.totalIssues,
+            closedIssues: sprint.finalStats.closedIssues,
+          };
+        }
 
         const completedTasks = tasks.filter(
           (t) => t.status === "completed",
@@ -62,6 +93,10 @@ export const getSprintsByProject = query({
   },
 });
 
+//==================
+// getActiveSprint: Fetches the currently active sprint for a project.
+// used in: Project dashboard, navigation
+//==================
 export const getActiveSprint = query({
   args: { projectId: v.id("projects") },
   handler: async (ctx, args) => {
@@ -74,6 +109,10 @@ export const getActiveSprint = query({
   },
 });
 
+//==================
+// getSprintById: Fetches a sprint record by its unique ID.
+// used in: Generic sprint lookups
+//==================
 export const getSprintById = query({
   args: { sprintId: v.id("sprints") },
   handler: async (ctx, args) => {
@@ -81,6 +120,10 @@ export const getSprintById = query({
   },
 });
 
+//==================
+// getSprintByName: Fetches a sprint by its name within a project.
+// used in: Sprint detail page routing
+//==================
 export const getSprintByName = query({
   args: { 
     projectId: v.id("projects"),
@@ -100,9 +143,23 @@ export const getSprintByName = query({
 // SPRINT TASKS & ISSUES QUERIES
 // ==========================================
 
+//==================
+// getSprintTasks: Fetches all tasks associated with a sprint (historically or currently).
+// used in: Sprint detail page tasks tab
+//==================
 export const getSprintTasks = query({
   args: { sprintId: v.id("sprints") },
   handler: async (ctx, args) => {
+    const sprint = await ctx.db.get(args.sprintId);
+    if (!sprint) return [];
+
+    if (sprint.taskIds) {
+      const taskResults = await Promise.all(
+        sprint.taskIds.map((id) => ctx.db.get(id)),
+      );
+      return taskResults.filter((t): t is any => t !== null);
+    }
+
     return await ctx.db
       .query("tasks")
       .withIndex("by_sprint", (q) => q.eq("sprintId", args.sprintId))
@@ -110,9 +167,23 @@ export const getSprintTasks = query({
   },
 });
 
+//==================
+// getSprintIssues: Fetches all issues associated with a sprint (historically or currently).
+// used in: Sprint detail page issues tab
+//==================
 export const getSprintIssues = query({
   args: { sprintId: v.id("sprints") },
   handler: async (ctx, args) => {
+    const sprint = await ctx.db.get(args.sprintId);
+    if (!sprint) return [];
+
+    if (sprint.issueIds) {
+      const issueResults = await Promise.all(
+        sprint.issueIds.map((id) => ctx.db.get(id)),
+      );
+      return issueResults.filter((i): i is any => i !== null);
+    }
+
     return await ctx.db
       .query("issues")
       .withIndex("by_sprint", (q) => q.eq("sprintId", args.sprintId))
@@ -124,21 +195,41 @@ export const getSprintIssues = query({
 // SPRINT STATS (computed)
 // ==========================================
 
+//==================
+// getSprintStats: Computes detailed performance metrics for a sprint.
+// used in: Sprint detail page dashboard
+//==================
 export const getSprintStats = query({
   args: { sprintId: v.id("sprints") },
   handler: async (ctx, args) => {
     const sprint = await ctx.db.get(args.sprintId);
     if (!sprint) return null;
 
-    const tasks = await ctx.db
-      .query("tasks")
-      .withIndex("by_sprint", (q) => q.eq("sprintId", args.sprintId))
-      .collect();
+    let tasks = [];
+    if (sprint.taskIds) {
+      const taskResults = await Promise.all(
+        sprint.taskIds.map((id) => ctx.db.get(id)),
+      );
+      tasks = taskResults.filter((t): t is any => t !== null);
+    } else {
+      tasks = await ctx.db
+        .query("tasks")
+        .withIndex("by_sprint", (q) => q.eq("sprintId", args.sprintId))
+        .collect();
+    }
 
-    const issues = await ctx.db
-      .query("issues")
-      .withIndex("by_sprint", (q) => q.eq("sprintId", args.sprintId))
-      .collect();
+    let issues = [];
+    if (sprint.issueIds) {
+      const issueResults = await Promise.all(
+        sprint.issueIds.map((id) => ctx.db.get(id)),
+      );
+      issues = issueResults.filter((i): i is any => i !== null);
+    } else {
+      issues = await ctx.db
+        .query("issues")
+        .withIndex("by_sprint", (q) => q.eq("sprintId", args.sprintId))
+        .collect();
+    }
 
     const completedTasks = tasks.filter((t) => t.status === "completed").length;
     const closedIssues = issues.filter((i) => i.status === "closed").length;
@@ -146,8 +237,31 @@ export const getSprintStats = query({
 
     const totalItems = tasks.length + issues.length;
     const completedItems = completedTasks + closedIssues;
+
+    // Use frozen stats for completed sprints if available
+    const finalTotalTasks =
+      sprint.status === "completed" && sprint.finalStats
+        ? sprint.finalStats.totalTasks
+        : tasks.length;
+    const finalCompletedTasks =
+      sprint.status === "completed" && sprint.finalStats
+        ? sprint.finalStats.completedTasks
+        : completedTasks;
+    const finalTotalIssues =
+      sprint.status === "completed" && sprint.finalStats
+        ? sprint.finalStats.totalIssues
+        : issues.length;
+    const finalClosedIssues =
+      sprint.status === "completed" && sprint.finalStats
+        ? sprint.finalStats.closedIssues
+        : closedIssues;
+
+    const finalTotalItems = finalTotalTasks + finalTotalIssues;
+    const finalCompletedItems = finalCompletedTasks + finalClosedIssues;
     const completionPercent =
-      totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+      finalTotalItems > 0
+        ? Math.round((finalCompletedItems / finalTotalItems) * 100)
+        : 0;
 
     // Days elapsed and remaining
     const now = Date.now();
@@ -228,13 +342,13 @@ export const getSprintStats = query({
     }
 
     return {
-      totalTasks: tasks.length,
-      completedTasks,
-      totalIssues: issues.length,
-      closedIssues,
+      totalTasks: finalTotalTasks,
+      completedTasks: finalCompletedTasks,
+      totalIssues: finalTotalIssues,
+      closedIssues: finalClosedIssues,
       blockedTasks,
-      totalItems,
-      completedItems,
+      totalItems: finalTotalItems,
+      completedItems: finalCompletedItems,
       completionPercent,
       daysElapsed,
       daysRemaining,
@@ -251,6 +365,10 @@ export const getSprintStats = query({
 // BACKLOG QUERIES (tasks/issues not in any sprint)
 // ==========================================
 
+//==================
+// getBacklogTasks: Fetches tasks in a project that are not assigned to any sprint.
+// used in: Backlog management, sprint planning
+//==================
 export const getBacklogTasks = query({
   args: { projectId: v.id("projects") },
   handler: async (ctx, args) => {
@@ -264,6 +382,10 @@ export const getBacklogTasks = query({
   },
 });
 
+//==================
+// getBacklogIssues: Fetches issues in a project that are not assigned to any sprint.
+// used in: Backlog management, sprint planning
+//==================
 export const getBacklogIssues = query({
   args: { projectId: v.id("projects") },
   handler: async (ctx, args) => {
@@ -281,6 +403,10 @@ export const getBacklogIssues = query({
 // MUTATIONS
 // ==========================================
 
+//==================
+// createSprint: Initializes a new sprint record for a project.
+// used in: Create Sprint dialog
+//==================
 export const createSprint = mutation({
   args: {
     projectId: v.id("projects"),
@@ -339,12 +465,18 @@ export const createSprint = mutation({
       sprintGoal: args.sprintGoal,
       duration: args.duration,
       status: "planned",
+      taskIds: [],
+      issueIds: [],
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
   },
 });
 
+//==================
+// startSprint: Activates a planned sprint.
+// used in: Sprint detail page actions
+//==================
 export const startSprint = mutation({
   args: { sprintId: v.id("sprints") },
   handler: async (ctx, args) => {
@@ -379,6 +511,10 @@ export const startSprint = mutation({
   },
 });
 
+//==================
+// completeSprint: Finalizes an active sprint, freezes stats, and moves incomplete items.
+// used in: Sprint detail page actions
+//==================
 export const completeSprint = mutation({
   args: { sprintId: v.id("sprints") },
   handler: async (ctx, args) => {
@@ -397,9 +533,45 @@ export const completeSprint = mutation({
       throw new Error("Only the sprint creator can complete a sprint.");
     }
 
-    // Mark sprint as completed
+    // Calculate final stats before completion
+    let historicalTasks = [];
+    if (sprint.taskIds) {
+      const taskResults = await Promise.all(
+        sprint.taskIds.map((id) => ctx.db.get(id)),
+      );
+      historicalTasks = taskResults.filter((t): t is any => t !== null);
+    } else {
+      historicalTasks = await ctx.db
+        .query("tasks")
+        .withIndex("by_sprint", (q) => q.eq("sprintId", args.sprintId))
+        .collect();
+    }
+
+    let historicalIssues = [];
+    if (sprint.issueIds) {
+      const issueResults = await Promise.all(
+        sprint.issueIds.map((id) => ctx.db.get(id)),
+      );
+      historicalIssues = issueResults.filter((i): i is any => i !== null);
+    } else {
+      historicalIssues = await ctx.db
+        .query("issues")
+        .withIndex("by_sprint", (q) => q.eq("sprintId", args.sprintId))
+        .collect();
+    }
+
+    const completedTasksCount = historicalTasks.filter((t) => t.status === "completed").length;
+    const closedIssuesCount = historicalIssues.filter((i) => i.status === "closed").length;
+
+    // Mark sprint as completed and store final stats
     await ctx.db.patch(args.sprintId, {
       status: "completed",
+      finalStats: {
+        totalTasks: historicalTasks.length,
+        completedTasks: completedTasksCount,
+        totalIssues: historicalIssues.length,
+        closedIssues: closedIssuesCount,
+      },
       updatedAt: Date.now(),
     });
 
@@ -435,6 +607,10 @@ export const completeSprint = mutation({
   },
 });
 
+//==================
+// updateSprint: Updates metadata for a planned or active sprint.
+// used in: Edit Sprint dialog
+//==================
 export const updateSprint = mutation({
   args: {
     sprintId: v.id("sprints"),
@@ -488,6 +664,10 @@ export const updateSprint = mutation({
 // ASSIGN TASKS / ISSUES TO SPRINT
 // ==========================================
 
+//==================
+// assignTaskToSprint: Links a task to a sprint and updates historical tracking.
+// used in: Backlog management, sprint detail planning
+//==================
 export const assignTaskToSprint = mutation({
   args: {
     taskId: v.id("tasks"),
@@ -515,6 +695,25 @@ export const assignTaskToSprint = mutation({
       }
     }
 
+    // Update historical tracking in sprints
+    if (task.sprintId && task.sprintId !== args.sprintId) {
+      const oldSprint = await ctx.db.get(task.sprintId);
+      if (oldSprint) {
+        const newTaskIds = (oldSprint.taskIds || []).filter((id) => id !== task._id);
+        await ctx.db.patch(task.sprintId, { taskIds: newTaskIds });
+      }
+    }
+
+    if (args.sprintId && task.sprintId !== args.sprintId) {
+      const newSprint = await ctx.db.get(args.sprintId);
+      if (newSprint) {
+        const newTaskIds = [...(newSprint.taskIds || []), task._id];
+        await ctx.db.patch(args.sprintId, {
+          taskIds: Array.from(new Set(newTaskIds)),
+        });
+      }
+    }
+
     await ctx.db.patch(args.taskId, {
       sprintId: args.sprintId,
       updatedAt: Date.now(),
@@ -522,6 +721,10 @@ export const assignTaskToSprint = mutation({
   },
 });
 
+//==================
+// assignIssueToSprint: Links an issue to a sprint and updates historical tracking.
+// used in: Backlog management, sprint detail planning
+//==================
 export const assignIssueToSprint = mutation({
   args: {
     issueId: v.id("issues"),
@@ -545,6 +748,25 @@ export const assignIssueToSprint = mutation({
         throw new Error(
           "Cannot move issues out of an active sprint unless you are the owner.",
         );
+      }
+    }
+
+    // Update historical tracking in sprints
+    if (issue.sprintId && issue.sprintId !== args.sprintId) {
+      const oldSprint = await ctx.db.get(issue.sprintId);
+      if (oldSprint) {
+        const newIssueIds = (oldSprint.issueIds || []).filter((id) => id !== issue._id);
+        await ctx.db.patch(issue.sprintId, { issueIds: newIssueIds });
+      }
+    }
+
+    if (args.sprintId && issue.sprintId !== args.sprintId) {
+      const newSprint = await ctx.db.get(args.sprintId);
+      if (newSprint) {
+        const newIssueIds = [...(newSprint.issueIds || []), issue._id];
+        await ctx.db.patch(args.sprintId, {
+          issueIds: Array.from(new Set(newIssueIds)),
+        });
       }
     }
 
