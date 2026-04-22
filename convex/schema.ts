@@ -171,7 +171,7 @@ export default defineSchema({
     projectId: v.id("projects"),
     createdByUserId: v.id("users"),
 
-    sprintId: v.optional(v.id("sprints")), // exluded completed Tasks
+    sprintId: v.optional(v.id("sprints")),
     createdAt: v.number(),
     updatedAt: v.number(),
   })

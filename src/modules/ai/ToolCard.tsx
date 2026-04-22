@@ -1,4 +1,4 @@
-// src/modules/ai/ToolCallCard.tsx
+// src/modules/ai/ToolCard.tsx
 "use client";
 
 import { MoveRight } from "lucide-react";
@@ -8,7 +8,7 @@ const TOOL_META: Record<
   string,
   { label: string; caller: string; colorClass: string }
 > = {
-  // Kaya's own tools
+  // ── Kaya's own tools ──────────────────────────────────────────────────────
   create_calendar_event: {
     label: "Creating calendar event",
     caller: "Kaya",
@@ -17,19 +17,34 @@ const TOOL_META: Record<
   ask_project_analyst: {
     label: "Agent project analyst",
     caller: "Kaya",
-    colorClass: "bg-amber-600/20 text-primary/80 ",
+    colorClass: "bg-amber-600/20 text-primary/80",
+  },
+  create_sprint: {
+    label: "Creating sprint",
+    caller: "Kaya",
+    colorClass: "bg-teal-600/30 text-primary/80",
+  },
+  add_items_to_sprint: {
+    label: "Waiting for task selection",
+    caller: "Kaya",
+    colorClass: "bg-blue-600/20 text-primary/80",
   },
 
-  // Project analyst's tools
+  // ── Project analyst's tools ───────────────────────────────────────────────
   get_project_tasks: {
     label: "Fetching tasks",
     caller: "Project analyst",
-    colorClass: "bg-teal-600/20 text-primary/80 ",
+    colorClass: "bg-teal-600/20 text-primary/80",
   },
   get_project_issues: {
     label: "Fetching issues",
     caller: "Project analyst",
-    colorClass: "bg-teal-600/20 text-primary/80 ",
+    colorClass: "bg-teal-600/20 text-primary/80",
+  },
+  get_sprint_planner_context: {
+    label: "Checking sprint context",
+    caller: "Project analyst",
+    colorClass: "bg-pink-600/40 text-primary/80",
   },
 };
 
@@ -54,27 +69,9 @@ export function ToolCallCard({ toolName }: ToolCallCardProps) {
           meta.colorClass,
         )}
       >
-        {/* animated pulse dot */}
         <span className="w-1.5 h-1.5 rounded-full bg-current opacity-70 animate-pulse" />
         <span>{meta.label}</span>
       </div>
     </div>
   );
 }
-
-// New entries in TOOL_META:
-// get_sprint_planner_context: {
-//     label: "Checking sprint context",
-//     caller: "Project analyst",
-//     colorClass: "bg-orange-50 text-orange-800 dark:bg-orange-950 dark:text-orange-200",
-// },
-// create_sprint: {
-//     label: "Creating sprint",
-//     caller: "Kaya",
-//     colorClass: "bg-green-50 text-green-800 dark:bg-green-950 dark:text-green-200",
-// },
-// add_items_to_sprint: {
-//     label: "Adding items to sprint",
-//     caller: "Kaya",
-//     colorClass: "bg-green-50 text-green-800 dark:bg-green-950 dark:text-green-200",
-// },

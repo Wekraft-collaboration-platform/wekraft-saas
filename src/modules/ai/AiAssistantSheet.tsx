@@ -35,6 +35,7 @@ import { useParams } from "next/navigation";
 import { CalendarApprovalCard } from "@/modules/ai/CalendarApprovalCard";
 import { CalendarEventInterrupt } from "@/modules/ai/AgentTypes";
 import { ToolCallCard } from "@/modules/ai/ToolCard";
+import { SprintItemSelectionCard } from "@/modules/ai/SprintItemSelectionCard";
 import Image from "next/image";
 
 interface AiAssistantSheetProps {
@@ -160,12 +161,13 @@ export function AiAssistantSheet({
     switch (node.name) {
       case "__start__":
       case "kaya":
-      case "tools": {
+      case "tools":
+      case "sprint_add_items": {
         const interrupt = checkpoint.interruptValue as
           | InterruptValue
           | undefined;
 
-        // Calendar HITL interrupt card
+        // ── Calendar HITL ──
         if (interrupt?.tool === "create_calendar_event") {
           const isCompleted =
             appCheckpoints.indexOf(checkpoint) < appCheckpoints.length - 1;
@@ -178,7 +180,21 @@ export function AiAssistantSheet({
           );
         }
 
-        // Tool call in-flight from Kaya (ask_project_analyst or create_calendar_event)
+        // ── Sprint item selection HITL ──
+        if (interrupt?.tool === "add_items_to_sprint") {
+          const isCompleted =
+            appCheckpoints.indexOf(checkpoint) < appCheckpoints.length - 1;
+          return (
+            <SprintItemSelectionCard
+              projectId={projectId as any}
+              sprintId={interrupt.sprint_id}
+              isCompleted={isCompleted}
+              onResume={(value) => handleResume(value)}
+            />
+          );
+        }
+
+        // ── Kaya tool call in-flight ──
         const lastMsg = node.state.messages?.at(-1);
         if (lastMsg?.tool_calls?.length && node.name === "kaya") {
           return (
@@ -190,20 +206,34 @@ export function AiAssistantSheet({
           );
         }
 
-        // Normal chatbot message
-        return <ChatbotNode nodeState={node.state} />;
+        // ── Normal chatbot message ──
+        if (node.name === "kaya") return <ChatbotNode nodeState={node.state} />;
+        return null;
       }
 
-      // ── Analyst entry
+      // ── Analyst entry — nothing to render ────────────────────────────────
       case "project_analyst": {
         return null;
       }
 
-      // ── Analyst think
+      // ── Analyst think — show tool calls in flight ─────────────────────────
       case "analyst_think": {
         const lastMsg = node.state.messages?.at(-1);
+        if (lastMsg?.tool_calls?.length) {
+          return (
+            <div className="space-y-1">
+              {lastMsg.tool_calls.map((tc: any) => (
+                <ToolCallCard key={tc.id} toolName={tc.name} />
+              ))}
+            </div>
+          );
+        }
+        return null;
+      }
 
-        // Mid ReAct loop: analyst decided to call a tool
+      // ── Sprint write node — show tool call card while running ─────────────
+      case "sprint_create": {
+        const lastMsg = node.state.messages?.at(-1);
         if (lastMsg?.tool_calls?.length) {
           return (
             <div className="space-y-1">

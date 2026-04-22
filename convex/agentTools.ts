@@ -244,6 +244,8 @@ export const createSprint = internalMutation({
       sprintGoal: args.sprintGoal,
       duration: { startDate: args.startDate, endDate: args.endDate },
       status: "planned",
+      taskIds: [],
+      issueIds: [],
       createdAt: now,
       updatedAt: now,
     });
@@ -262,9 +264,19 @@ export const addItemsToSprint = internalMutation({
     const sprint = await ctx.db.get(args.sprintId);
     if (!sprint) throw new Error(`Sprint not found: ${args.sprintId}`);
 
+    // Update historical tracking array on the sprint
+    const existingTaskIds = sprint.taskIds || [];
+    const newTaskIds = Array.from(new Set([...existingTaskIds, ...args.taskIds]));
+
+    await ctx.db.patch(args.sprintId, {
+      taskIds: newTaskIds,
+      updatedAt: Date.now(),
+    });
+
+    // Update sprintId on each task for live view
     for (const taskId of args.taskIds) {
       const task = await ctx.db.get(taskId);
-      if (!task) throw new Error(`Task not found: ${taskId}`);
+      if (!task) continue;
 
       await ctx.db.patch(taskId, {
         sprintId: args.sprintId,

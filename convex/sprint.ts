@@ -437,13 +437,6 @@ export const createSprint = mutation({
       throw new Error("End date must be after start date.");
     }
 
-    // Validation 2: start date cannot be in the past (start of today)
-    const startOfToday = new Date();
-    startOfToday.setHours(0, 0, 0, 0);
-    if (args.duration.startDate < startOfToday.getTime()) {
-      throw new Error("Sprint start date cannot be in the past.");
-    }
-
     // Validation 3: end date should not exceed project deadline (if set)
     const projectDetails = await ctx.db
       .query("projectDetails")

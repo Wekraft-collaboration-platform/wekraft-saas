@@ -79,8 +79,7 @@ export function CalendarApprovalCard({
         )}
         <p
           className={cn(
-            "px-2 py-0.5 rounded border uppercase text-[9px] tracking-wide",
-            typeColor,
+            "px-2 py-0.5 rounded border uppercase text-[9px] tracking-wide bg-blue-500/40",
           )}
         >
           {preview.type}
