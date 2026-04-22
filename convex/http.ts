@@ -96,4 +96,102 @@ http.route({
   }),
 });
 
+// get prject sprint planner context
+http.route({
+  path: "/getSprintPlannerContext",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const body = await request.json();
+
+    if (!body.projectId) {
+      return new Response(JSON.stringify({ error: "projectId is required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const sprintPlannerContext = await ctx.runQuery(
+      internal.agentTools.getSprintPlannerContext,
+      {
+        projectId: body.projectId,
+      },
+    );
+
+    return new Response(JSON.stringify({ sprintPlannerContext }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }),
+});
+
+// create sprint
+http.route({
+  path: "/createSprint",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const body = await request.json();
+
+    if (
+      !body.projectId ||
+      !body.sprintName ||
+      !body.sprintGoal ||
+      !body.startDate ||
+      !body.endDate
+    ) {
+      return new Response(
+        JSON.stringify({
+          error:
+            "projectId, sprintName, sprintGoal, startDate, endDate are required",
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    const sprint = await ctx.runMutation(internal.agentTools.createSprint, {
+      projectId: body.projectId,
+      sprintName: body.sprintName,
+      sprintGoal: body.sprintGoal,
+      startDate: body.startDate,
+      endDate: body.endDate,
+    });
+
+    return new Response(JSON.stringify({ sprint }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }),
+});
+
+// add items to sprint
+http.route({
+  path: "/addItemsToSprint",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const body = await request.json();
+
+    if (!body.sprintId || !body.taskIds) {
+      return new Response(
+        JSON.stringify({ error: "sprintId and taskIds are required" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    const result = await ctx.runMutation(internal.agentTools.addItemsToSprint, {
+      sprintId: body.sprintId,
+      taskIds: body.taskIds,
+    });
+
+    return new Response(JSON.stringify({ result }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }),
+});
+
 export default http;

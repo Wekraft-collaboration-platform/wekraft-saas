@@ -61,3 +61,20 @@ export function ToolCallCard({ toolName }: ToolCallCardProps) {
     </div>
   );
 }
+
+// New entries in TOOL_META:
+// get_sprint_planner_context: {
+//     label: "Checking sprint context",
+//     caller: "Project analyst",
+//     colorClass: "bg-orange-50 text-orange-800 dark:bg-orange-950 dark:text-orange-200",
+// },
+// create_sprint: {
+//     label: "Creating sprint",
+//     caller: "Kaya",
+//     colorClass: "bg-green-50 text-green-800 dark:bg-green-950 dark:text-green-200",
+// },
+// add_items_to_sprint: {
+//     label: "Adding items to sprint",
+//     caller: "Kaya",
+//     colorClass: "bg-green-50 text-green-800 dark:bg-green-950 dark:text-green-200",
+// },
