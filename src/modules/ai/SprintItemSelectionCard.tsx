@@ -67,10 +67,17 @@ export function SprintItemSelectionCard({
 }: SprintItemSelectionCardProps) {
   const [selected, setSelected] = useState<Set<string>>(new Set());
 
-  const tasks = useQuery(
+  const backlogTasks = useQuery(
     api.sprint.getBacklogTasks,
-    projectId ? { projectId } : "skip",
+    projectId && !isCompleted ? { projectId } : "skip",
   );
+
+  const sprintTasks = useQuery(
+    api.sprint.getSprintTasks,
+    isCompleted ? { sprintId: sprintId as any } : "skip",
+  );
+
+  const tasks = isCompleted ? sprintTasks : backlogTasks;
 
   const toggle = (id: string) =>
     setSelected((prev) => {
@@ -138,7 +145,7 @@ export function SprintItemSelectionCard({
       <div className="divide-y divide-neutral-800/60 h-[160px]  overflow-y-auto">
         {tasks && tasks.length > 0 ? (
           tasks.map((task) => {
-            const isSelected = selected.has(task._id);
+            const isSelected = isCompleted ? true : selected.has(task._id);
             return (
               <button
                 key={task._id}
@@ -168,7 +175,7 @@ export function SprintItemSelectionCard({
                   </span>
                   {task.assignedTo && task.assignedTo.length > 0 && (
                     <AvatarGroup className="shrink-0">
-                      {task.assignedTo.map((assignee) => (
+                      {task.assignedTo.map((assignee: any) => (
                         <Avatar
                           key={assignee.userId}
                           className="w-4 h-4 border border-card"

@@ -37,25 +37,4 @@ Right now, the "Timeline" chart is a sleek placeholder. It uses CSS to draw dyna
 
 
 ### errors
-[get_project_tasks] ✓ 8 tasks returned:
-  · [reviewing] ui design of time logs — priority=None blocked=False
-  · [inprogress] heatmaps functions — priority=None blocked=False
-  · [reviewing] sprint view — priority=None blocked=False
-  · [inprogress] issues ui  — priority=None blocked=False
-  · [completed] payment gateway — priority=None blocked=False
-  · [not started] hooks fixes — priority=None blocked=False
-  · [not started] redis  — priority=None blocked=False
-  · [not started] deployment — priority=medium blocked=False
-
-
-
-
-  Here are all the tasks in your project:
-
-Agent reponds with 
-You have three tasks assigned in the project:
-
-"heatmaps functions" (in progress)
-"hooks fixes" (not started)
-"deployment" (not started, medium priority)
-Would you like help prioritizing or breaking down any of these tasks?
+When tasks are added , on ui card , default ones are only showed !!
