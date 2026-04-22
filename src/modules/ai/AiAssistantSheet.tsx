@@ -43,6 +43,53 @@ interface AiAssistantSheetProps {
   onOpenChange: (open: boolean) => void;
 }
 
+const KayaLoader = () => (
+  <svg
+    viewBox="0 0 100 100"
+    width="34"
+    height="34"
+    xmlns="http://www.w3.org/2000/svg"
+    className="shrink-0"
+  >
+    <defs>
+      <linearGradient id="orb-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#9B8FF5" />
+        <stop offset="50%" stopColor="#C084F5" />
+        <stop offset="100%" stopColor="#F472B6" />
+      </linearGradient>
+    </defs>
+
+    <style>{`
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+    @keyframes morph {
+      0%, 100% { rx: 26px; ry: 26px; }
+      50%      { rx: 4px;  ry: 4px;  }
+    }
+    .spin-group {
+      animation: spin 2.4s linear infinite;
+      transform-origin: center;
+    }
+    .morph-rect { animation: morph 2.4s ease-in-out infinite; }
+  `}</style>
+
+    <g className="spin-group">
+      <rect
+        className="morph-rect"
+        fill="url(#orb-grad)"
+        x="24"
+        y="24"
+        width="52"
+        height="52"
+        rx="26"
+        ry="26"
+      />
+    </g>
+  </svg>
+);
+
 export function AiAssistantSheet({
   open,
   onOpenChange,
@@ -292,9 +339,6 @@ export function AiAssistantSheet({
                   new <MessageSquare className="h-3! w-3!" />
                 </Button>
               )}
-              {/* <Button size="icon-sm" variant="outline" className="text-[10px]">
-                <Settings2 className="h-3! w-3!" />
-              </Button> */}
               <Button size="sm" variant="default" className="text-[10px]">
                 Visit space <MessagesSquare className="h-3 w-3" />
               </Button>
@@ -304,6 +348,29 @@ export function AiAssistantSheet({
 
         {/* MESSAGES */}
         <div ref={containerRef} className="flex-1 overflow-y-auto">
+          {appCheckpoints.length === 0 && !restoring && (
+            <div className="h-full flex flex-col items-center justify-center p-8 text-center animate-in fade-in zoom-in duration-500">
+              <div className="relative mb-6">
+                <Image
+                  src="/kaya.svg"
+                  alt="Kaya AI"
+                  width={60}
+                  height={60}
+                  className="relative drop-shadow-2xl"
+                />
+              </div>
+              <h3 className="text-lg font-pop font-semibold text-primary mb-1 tracking-tight">
+                Hello, I&apos;m Kaya
+              </h3>
+              <p className="text-sm text-muted-foreground max-w-[240px] leading-relaxed">
+                Start with asking ,{" "}
+                <span className="font-pop text-primary">
+                  &quot;What's happening in my project&quot;
+                </span>
+              </p>
+            </div>
+          )}
+
           {appCheckpoints.map((checkpoint, cpIndex) =>
             checkpoint.error ? (
               <div
@@ -346,13 +413,13 @@ export function AiAssistantSheet({
 
           {status === "running" && !restoring && (
             <div className="flex gap-2 items-center py-3 px-4 text-neutral-500">
-              <Spinner className="w-3 h-3" />
+              <KayaLoader />
               <div className="flex items-center gap-1.5">
-                <span className="text-[10px] uppercase tracking-tighter">
+                <span className="text-[10px] uppercase tracking-wide">
                   Kaya is thinking...
                 </span>
                 {thinkingTime > 0 && (
-                  <span className="text-[8px] tabular-nums  text-neutral-400">
+                  <span className="text-[9px] tabular-nums  text-neutral-400">
                     {thinkingTime}s
                   </span>
                 )}
