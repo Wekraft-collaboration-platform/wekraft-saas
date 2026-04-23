@@ -70,7 +70,7 @@ function formatTime(ts: number) {
   return format(d, "MMM d, h:mm a");
 }
 
-function Highlight({ text, term }: { text: string; term?: string }) {
+function Highlight({ text, term, messageId }: { text: string; term?: string; messageId?: string }) {
   if (!term || !term.trim()) return <>{text}</>;
   const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
   const parts = text.split(regex);
@@ -78,7 +78,11 @@ function Highlight({ text, term }: { text: string; term?: string }) {
     <>
       {parts.map((part, i) =>
         regex.test(part) ? (
-          <span key={i} className="bg-yellow-400/40 dark:bg-yellow-500/40 text-foreground rounded-sm px-0.5 ring-1 ring-yellow-500/20">
+          <span 
+            key={i} 
+            id={messageId ? `search-match-${messageId}` : undefined}
+            className="bg-yellow-400/40 dark:bg-yellow-500/40 text-foreground rounded-sm px-0.5 ring-1 ring-yellow-500/20 scroll-mt-20"
+          >
             {part}
           </span>
         ) : (
@@ -261,7 +265,7 @@ export function MessageItem({
             </div>
           ) : (
             <p className="text-[15px] leading-[1.375rem] text-foreground/90 break-words whitespace-pre-wrap">
-              <Highlight text={message.content} term={highlightTerm} />
+              <Highlight text={message.content} term={highlightTerm} messageId={message.id} />
               {message.edited_at && (
                 <span className="text-[10px] text-muted-foreground ml-1.5 select-none">(edited)</span>
               )}

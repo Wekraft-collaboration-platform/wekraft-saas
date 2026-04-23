@@ -9,6 +9,7 @@ export async function GET(req: NextRequest) {
 
   const query = req.nextUrl.searchParams.get("q");
   const projectId = req.nextUrl.searchParams.get("projectId");
+  const channelId = req.nextUrl.searchParams.get("channelId");
 
   if (!query || !projectId) {
     return NextResponse.json({ error: "query and projectId required" }, { status: 400 });
@@ -23,8 +24,18 @@ export async function GET(req: NextRequest) {
   try {
     // Search using FTS5 MATCH query
     // snippet(table, column_index, start, end, ellipsis, tokens)
-    const result = await turso.execute({
-      sql: `
+    const sql = channelId 
+      ? `
+        SELECT 
+          m.*, 
+          snippet(ts_messages_fts, 2, '<b>', '</b>', '...', 32) as match_snippet
+        FROM ts_messages m
+        JOIN ts_messages_fts ON m.id = ts_messages_fts.message_id
+        WHERE ts_messages_fts.project_id = ? AND m.channel_id = ? AND ts_messages_fts MATCH ?
+        ORDER BY m.created_at DESC
+        LIMIT 20
+      `
+      : `
         SELECT 
           m.*, 
           snippet(ts_messages_fts, 2, '<b>', '</b>', '...', 32) as match_snippet
@@ -33,8 +44,13 @@ export async function GET(req: NextRequest) {
         WHERE ts_messages_fts.project_id = ? AND ts_messages_fts MATCH ?
         ORDER BY m.created_at DESC
         LIMIT 20
-      `,
-      args: [projectId, `${query}*`], 
+      `;
+
+    const args = channelId ? [projectId, channelId, `${query}*`] : [projectId, `${query}*`];
+
+    const result = await turso.execute({
+      sql,
+      args, 
     });
 
     return NextResponse.json({ 

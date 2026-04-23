@@ -118,42 +118,64 @@ export function MessageFeed({
     const timer = setTimeout(async () => {
       setIsSearching(true);
       try {
-        const res = await fetch(`/api/teamspace/search?projectId=${projectId}&q=${encodeURIComponent(searchQuery)}`);
+        const params = new URLSearchParams({ 
+          projectId, 
+          q: searchQuery,
+          channelId: channel?.id || "" 
+        });
+        const res = await fetch(`/api/teamspace/search?${params}`);
+        if (!res.ok) throw new Error("Search request failed");
+        
         const data = await res.json();
-        const ids = data.results.map((r: any) => r.id);
-        setSearchResults(ids);
-        if (ids.length > 0) {
-          setCurrentSearchIndex(0);
-          jumpToMessage(ids[0]);
+        if (data.results) {
+          const ids = data.results.map((r: any) => String(r.id || r._id));
+          setSearchResults(ids);
+          if (ids.length > 0) {
+            // Start at the first result (index 0)
+            setCurrentSearchIndex(0);
+            jumpToMessage(ids[0]);
+          }
+        } else {
+          setSearchResults([]);
         }
       } catch (err) {
         console.error("Search failed:", err);
       } finally {
         setIsSearching(false);
       }
-    }, 500);
+    }, 400);
 
     return () => clearTimeout(timer);
-  }, [searchQuery, projectId]);
+  }, [searchQuery, projectId, channel?.id]);
 
   const jumpToMessage = (messageId: string) => {
-    const el = document.getElementById(`message-${messageId}`);
-    if (el) {
-      el.scrollIntoView({ behavior: "smooth", block: "center" });
-      el.classList.add("bg-yellow-500/20");
-      el.classList.add("ring-2");
-      el.classList.add("ring-yellow-500/50");
-      setTimeout(() => {
-        el.classList.remove("bg-yellow-500/20");
-        el.classList.remove("ring-2");
-        el.classList.remove("ring-yellow-500/50");
-      }, 2000);
-    }
+    // Add a small delay to ensure React has finished rendering any highlight changes
+    setTimeout(() => {
+      // Try to find the specific word match first for precise scrolling
+      const wordEl = document.getElementById(`search-match-${messageId}`);
+      const messageEl = document.getElementById(`message-${messageId}`);
+      
+      const targetEl = wordEl || messageEl;
+
+      if (targetEl) {
+        targetEl.scrollIntoView({ behavior: "smooth", block: "center" });
+        
+        // Always highlight the whole message container for context
+        if (messageEl) {
+          messageEl.classList.add("ring-2", "ring-primary", "bg-primary/20", "transition-all", "duration-500", "z-20");
+          setTimeout(() => {
+            messageEl.classList.remove("ring-2", "ring-primary", "bg-primary/20", "z-20");
+          }, 3000);
+        }
+      } else {
+        console.warn(`Message element not found for ID: ${messageId}. It might not be loaded in the current feed window.`);
+      }
+    }, 100);
   };
 
   const handleNextMatch = () => {
     if (searchResults.length === 0) return;
-    // Go to NEWER message (decrement index)
+    // Go to NEWER message (decrement index towards 0 if 0 is newest, or cyclic)
     const nextIdx = (currentSearchIndex - 1 + searchResults.length) % searchResults.length;
     setCurrentSearchIndex(nextIdx);
     jumpToMessage(searchResults[nextIdx]);
@@ -161,7 +183,7 @@ export function MessageFeed({
 
   const handlePrevMatch = () => {
     if (searchResults.length === 0) return;
-    // Go to OLDER message (increment index)
+    // Go to OLDER message (increment index away from 0)
     const prevIdx = (currentSearchIndex + 1) % searchResults.length;
     setCurrentSearchIndex(prevIdx);
     jumpToMessage(searchResults[prevIdx]);
@@ -169,25 +191,35 @@ export function MessageFeed({
 
   // Keyboard shortcuts for search
   useEffect(() => {
-    if (searchResults.length === 0) return;
     const handleKeys = (e: KeyboardEvent) => {
-      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
-        if (e.key === "Enter" && !e.shiftKey) {
-          e.preventDefault();
-          handleNextMatch();
-        } else if (e.key === "Enter" && e.shiftKey) {
-          e.preventDefault();
-          handlePrevMatch();
-        } else if (e.key === "ArrowUp") {
-          e.preventDefault();
-          handlePrevMatch();
-        } else if (e.key === "ArrowDown") {
-          e.preventDefault();
-          handleNextMatch();
-        }
-      }
       if (e.key === "Escape") {
         setSearchQuery("");
+        return;
+      }
+
+      if (searchResults.length === 0) return;
+
+      const isSearchInput = e.target instanceof HTMLInputElement && e.target.placeholder === "Search chat";
+      const isOtherInput = (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) && !isSearchInput;
+      
+      if (isOtherInput) return;
+
+      if (e.key === "Enter" && !e.shiftKey) {
+        if (isSearchInput) {
+          e.preventDefault();
+          handlePrevMatch(); // ENTER usually goes to OLDER match (UP)
+        }
+      } else if (e.key === "Enter" && e.shiftKey) {
+        if (isSearchInput) {
+          e.preventDefault();
+          handleNextMatch(); // SHIFT+ENTER goes to NEWER match (DOWN)
+        }
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        handlePrevMatch();
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        handleNextMatch();
       }
     };
     window.addEventListener("keydown", handleKeys);
