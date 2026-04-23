@@ -64,7 +64,7 @@ function DateDivider({ timestamp }: { timestamp: number }) {
   return (
     <div className="flex items-center mt-4 mb-2 mx-4 relative group">
       <div className="flex-1 h-[1px] bg-border/80 group-hover:bg-border/90 transition-colors" />
-      <span className="absolute left-1/2 -translate-x-1/2 bg-background px-2 text-[11px] font-semibold text-muted-foreground/80 lowercase">
+      <span className="absolute left-1/2 -translate-x-1/2 bg-background px-2 text-[11px] font-semibold text-muted-foreground/80 capitalize">
         {label}
       </span>
     </div>
@@ -314,20 +314,20 @@ export function MessageFeed({
   return (
     <div className="flex flex-col flex-1 min-w-0 h-full overflow-hidden relative">
       {/* Channel header */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-border/80 flex-none bg-background/95 backdrop-blur shadow-sm z-10">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="bg-accent/40 p-1.5 rounded-md shrink-0">
-            <ChannelIcon className="h-4 w-4 text-muted-foreground opacity-80" />
+      <div className="flex items-center justify-between px-6 h-14 border-b border-border/80 flex-none bg-background/95 backdrop-blur shadow-sm z-10">
+        <div className="flex items-center gap-3.5 min-w-0">
+          <div className="bg-primary/10 p-1.5 rounded-lg shrink-0 border border-primary/20">
+            <ChannelIcon className="h-5 w-5 text-primary" />
           </div>
           <div className="flex flex-col min-w-0">
-            <div className="flex items-center gap-1.5">
-              <h2 className="font-bold text-[15px] leading-tight text-foreground truncate">{channel.name}</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="font-bold text-xl leading-tight text-foreground truncate tracking-tight capitalize">{channel.name}</h2>
               {isAnnouncement && (
-                <Lock className="h-3.5 w-3.5 text-amber-500/70" />
+                <Lock className="h-4 w-4 text-amber-500/70" />
               )}
             </div>
             {channel.description && (
-              <p className="text-[11px] text-muted-foreground/70 truncate leading-tight mt-0.5">
+              <p className="text-[11px] text-muted-foreground/50 truncate leading-tight mt-0.5 font-medium first-letter:uppercase">
                 {channel.description}
               </p>
             )}
