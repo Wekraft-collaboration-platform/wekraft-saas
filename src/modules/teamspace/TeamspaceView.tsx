@@ -1,3 +1,19 @@
+/**
+ * TeamspaceView.tsx
+ * 
+ * Main entry point for the Teamspace module. 
+ * Provides a Slack-like interface with a channels sidebar, message feed, and members panel.
+ * 
+ * Features:
+ * - Layout management for Channels, Messaging, and Members.
+ * - Integration with Clerk for authentication and Convex for user profile data.
+ * - Real-time channel selection and responsiveness.
+ * 
+ * Flow:
+ * 1. Fetches user data via Convex.
+ * 2. Manages active channel state.
+ * 3. Coordinates layout between sidebar, feed, and panels.
+ */
 "use client";
 
 import { useState } from "react";

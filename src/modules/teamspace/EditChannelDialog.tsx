@@ -1,3 +1,12 @@
+/**
+ * EditChannelDialog.tsx
+ * 
+ * Dialog component for editing an existing channel's properties (name, description).
+ * 
+ * Integration:
+ * - Calls the `onUpdate` callback passed from `ChannelsSidebar`.
+ * - Populates the form with existing channel data.
+ */
 "use client";
 
 import { useEffect, useState } from "react";

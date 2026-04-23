@@ -1,3 +1,27 @@
+/**
+ * useMessages.ts
+ * 
+ * The primary engine for real-time messaging in the Teamspace module.
+ * 
+ * Architecture:
+ * - Real-time: Powered by Ably (Pub/Sub).
+ * - Caching: Multi-layered (In-memory cache -> IndexedDB -> Server).
+ * - Prefetching: Messages are prefetched on channel hover for near-instant load.
+ * - Optimistic Updates: Local state is updated immediately before server confirmation.
+ * 
+ * Features:
+ * - Real-time message reception (new, updated, deleted).
+ * - Reaction synchronization.
+ * - Threading support (via `threadParentId`).
+ * - Infinite scrolling with cursor-based pagination.
+ * - Offline support (persisted via IndexedDB).
+ * 
+ * Flow:
+ * 1. Checks memory cache for immediate display.
+ * 2. Loads from IndexedDB for persistence.
+ * 3. Fetches fresh data from `/api/teamspace/messages`.
+ * 4. Subscribes to Ably channels for live updates.
+ */
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";

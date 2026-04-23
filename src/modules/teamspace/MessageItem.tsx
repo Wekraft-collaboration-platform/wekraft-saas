@@ -1,3 +1,20 @@
+/**
+ * MessageItem.tsx
+ * 
+ * Component for rendering individual messages in a feed or thread.
+ * 
+ * Features:
+ * - Displays user info, content, and timestamp.
+ * - Supports message grouping (collapsed view for consecutive messages from the same user).
+ * - Real-time reactions (add/remove).
+ * - Inline message editing and deletion.
+ * - Quoted reply blocks for context.
+ * - Pinned message indicators.
+ * - Interaction toolbar for quick actions (React, Reply, Edit, Pin, Delete, Copy).
+ * 
+ * Integration:
+ * - Communicates actions back to parent components via callbacks (`onReact`, `onReply`, etc.).
+ */
 "use client";
 
 import { useState } from "react";
