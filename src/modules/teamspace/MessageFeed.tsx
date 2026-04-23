@@ -28,9 +28,10 @@ import { Channel } from "./hooks/useChannels";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Hash, Megaphone, ChevronUp, ChevronDown, ArrowDown, Lock, Search, Bell, Pin, Users, Inbox, HelpCircle, X, ArrowLeft } from "lucide-react";
+import { Hash, Megaphone, ChevronUp, ChevronDown, ArrowDown, Lock, Search, Bell, Pin, Users, Inbox, HelpCircle, X, ArrowLeft, PinOff } from "lucide-react";
 import { format, isToday, isYesterday } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 import {
   Tooltip,
   TooltipContent,
@@ -43,12 +44,8 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { PinOff } from "lucide-react";
-
-
 import { useProjectPermissions } from "@/hooks/use-project-permissions";
 import { Id } from "../../../convex/_generated/dataModel";
-import { cn } from "@/lib/utils";
 
 
 interface Props {
@@ -149,28 +146,34 @@ export function MessageFeed({
   }, [searchQuery, projectId, channel?.id]);
 
   const jumpToMessage = (messageId: string) => {
-    // Add a small delay to ensure React has finished rendering any highlight changes
-    setTimeout(() => {
-      // Try to find the specific word match first for precise scrolling
+    // Attempt multiple times to handle cases where the DOM might be updating
+    const attemptScroll = (count = 0) => {
       const wordEl = document.getElementById(`search-match-${messageId}`);
       const messageEl = document.getElementById(`message-${messageId}`);
-      
-      const targetEl = wordEl || messageEl;
+      const target = wordEl || messageEl;
 
-      if (targetEl) {
-        targetEl.scrollIntoView({ behavior: "smooth", block: "center" });
-        
-        // Always highlight the whole message container for context
-        if (messageEl) {
-          messageEl.classList.add("ring-2", "ring-primary", "bg-primary/20", "transition-all", "duration-500", "z-20");
+      if (target) {
+        document.querySelectorAll(".search-highlight-pulse").forEach(el => {
+          el.classList.remove("search-highlight-pulse", "ring-2", "ring-primary/40", "bg-primary/5");
+        });
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+        // Add a visual pulse to the message container
+        const container = messageEl || (wordEl?.closest('[id^="message-"]') as HTMLElement);
+        if (container) {
+          container.classList.add("search-highlight-pulse", "ring-2", "ring-primary/40", "bg-primary/5", "transition-all", "duration-500");
           setTimeout(() => {
-            messageEl.classList.remove("ring-2", "ring-primary", "bg-primary/20", "z-20");
-          }, 3000);
+            container.classList.remove("ring-2", "ring-primary/40", "bg-primary/5", "search-highlight-pulse");
+          }, 1500);
         }
+      } else if (count < 5) {
+        // If not found, try again in 150ms (useful if message was just loaded)
+        setTimeout(() => attemptScroll(count + 1), 150);
       } else {
-        console.warn(`Message element not found for ID: ${messageId}. It might not be loaded in the current feed window.`);
+        console.warn(`Message ${messageId} not found in current view.`);
       }
-    }, 100);
+    };
+
+    attemptScroll();
   };
 
   const handleNextMatch = () => {
@@ -389,8 +392,7 @@ export function MessageFeed({
                               key={msg.id} 
                               className="group relative bg-accent/5 border border-border/20 rounded-xl p-3.5 hover:bg-accent/10 transition-all duration-200 cursor-pointer"
                               onClick={() => {
-                                const el = document.getElementById(`message-${msg.id}`);
-                                el?.scrollIntoView({ behavior: "smooth", block: "center" });
+                                jumpToMessage(msg.id);
                               }}
                             >
                               <div className="flex gap-3">
@@ -470,46 +472,44 @@ export function MessageFeed({
               
               <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center">
                 {searchQuery ? (
-                  <div className="flex items-center gap-1 bg-background/50 backdrop-blur-sm rounded-lg px-2 py-1 border border-border/50 shadow-sm animate-in fade-in zoom-in duration-200">
+                  <div className="flex items-center gap-1.5 bg-background/80 backdrop-blur-md rounded-xl px-2.5 py-1.5 border border-border/60 shadow-lg animate-in fade-in zoom-in duration-300">
                     {searchResults.length > 0 && (
-                      <span className="text-[10px] font-bold text-muted-foreground px-1.5 tabular-nums border-r border-border/50 mr-1">
+                      <span className="text-[11px] font-black text-primary/80 px-2 tabular-nums border-r border-border/50 mr-1.5">
                         {currentSearchIndex + 1}/{searchResults.length}
                       </span>
                     )}
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
-                        handlePrevMatch();
+                        handlePrevMatch(); // UP -> Older
                       }}
                       title="Previous (ArrowUp)"
-                      className="p-1 hover:bg-accent rounded-md text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                      className="p-1.5 hover:bg-primary/10 rounded-lg text-muted-foreground hover:text-primary transition-all active:scale-90 cursor-pointer"
                     >
-                      <ChevronUp className="h-4 w-4" />
+                      <ChevronUp className="h-4.5 w-4.5 stroke-[2.5]" />
                     </button>
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
-                        handleNextMatch();
+                        handleNextMatch(); // DOWN -> Newer
                       }}
                       title="Next (ArrowDown)"
-                      className="p-1 hover:bg-accent rounded-md text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                      className="p-1.5 hover:bg-primary/10 rounded-lg text-muted-foreground hover:text-primary transition-all active:scale-90 cursor-pointer"
                     >
-                      <ChevronDown className="h-4 w-4" />
+                      <ChevronDown className="h-4.5 w-4.5 stroke-[2.5]" />
                     </button>
                     <button 
                       onClick={(e) => {
                         e.stopPropagation();
                         setSearchQuery("");
                       }}
-                      className="p-1 hover:bg-accent rounded-md text-muted-foreground hover:text-red-500 transition-colors ml-0.5 cursor-pointer"
+                      className="p-1.5 hover:bg-red-500/10 rounded-lg text-muted-foreground hover:text-red-500 transition-all active:scale-90 cursor-pointer ml-1"
                     >
-                      <X className="h-4 w-4" />
+                      <X className="h-4.5 w-4.5" />
                     </button>
                   </div>
                 ) : (
-                  <div className="pr-2">
-                    <Search className="h-3.5 w-3.5 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
-                  </div>
+                  <Search className="h-4 w-4 mr-3 text-muted-foreground/40 group-hover:text-primary/60 transition-colors" />
                 )}
               </div>
             </div>

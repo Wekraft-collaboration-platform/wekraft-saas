@@ -79,14 +79,14 @@ function Highlight({ text, term, messageId }: { text: string; term?: string; mes
       {parts.map((part, i) =>
         regex.test(part) ? (
           <span 
-            key={i} 
+            key={`match-${i}`} 
             id={messageId ? `search-match-${messageId}` : undefined}
             className="bg-yellow-400/40 dark:bg-yellow-500/40 text-foreground rounded-sm px-0.5 ring-1 ring-yellow-500/20 scroll-mt-20"
           >
             {part}
           </span>
         ) : (
-          part
+          <span key={`text-${i}`}>{part}</span>
         )
       )}
     </>
