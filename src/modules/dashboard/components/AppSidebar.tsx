@@ -104,7 +104,7 @@ export const AppSidebar = () => {
   return (
     <Sidebar collapsible="icon" className="">
       <SidebarHeader className="border-b ">
-        <div className="flex items-center justify-center gap-3 px-3 py-3">
+        <div className="flex items-center justify-center gap-3 px-3 py-3 group-data-[collapsible=icon]:px-0">
           <Image
             src="/logo.svg"
             alt="Logo"
@@ -142,7 +142,7 @@ export const AppSidebar = () => {
           </div>
         )}
       </SidebarHeader>
-      <SidebarContent className="flex flex-col px-3 py-5 relative overflow-y-scroll scroll-smooth">
+      <SidebarContent className="flex flex-col px-3 py-5 relative overflow-y-scroll scroll-smooth group-data-[collapsible=icon]:px-0">
         <SidebarMenu className="flex flex-col gap-2">
           {/* 1 */}
           <SidebarMenuButton
@@ -152,7 +152,7 @@ export const AppSidebar = () => {
           >
             <Link
               href="/dashboard"
-              className="relative z-10 flex items-center gap-3 px-3 py-2 dark:data-[active=true]:text-white data-[active=true]:text-gray-700"
+              className="relative z-10 flex items-center gap-3 px-3 py-2 dark:data-[active=true]:text-white data-[active=true]:text-gray-700 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
             >
               <LucideLayoutDashboard className="h-5 w-5" />
               <span className="text-sm">Dashboard</span>
@@ -173,10 +173,10 @@ export const AppSidebar = () => {
                 data-active={isActive("/dashboard/community")}
                 className="group relative overflow-hidden"
               >
-                <div className="relative z-10 flex items-center gap-3 w-full">
+                <div className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
                   <Users className="h-5 w-5" />
-                  <span className="text-sm">Community</span>
-                  <ChevronRight className="h-4 w-4 ml-auto" />
+                  <span className="text-sm group-data-[collapsible=icon]:hidden">Community</span>
+                  <ChevronRight className="h-4 w-4 ml-auto group-data-[collapsible=icon]:hidden" />
                   <span className="" />
                 </div>
               </SidebarMenuButton>
@@ -218,7 +218,7 @@ export const AppSidebar = () => {
           >
             <Link
               href="/dashboard/repositories"
-              className="relative z-10 flex items-center gap-3 px-2 py-2 dark:data-[active=true]:text-white data-[active=true]:text-gray-700"
+              className="relative z-10 flex items-center gap-3 px-2 py-2 dark:data-[active=true]:text-white data-[active=true]:text-gray-700 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
             >
               <GitBranchPlus className="h-5 w-5" />
               <span className="text-sm">Repositories</span>
@@ -430,7 +430,7 @@ export const AppSidebar = () => {
           >
             <Link
               href="/dashboard/my-profile"
-              className="relative z-10 flex items-center gap-3 px-3 py-2 dark:data-[active=true]:text-white data-[active=true]:text-gray-700"
+              className="relative z-10 flex items-center gap-3 px-3 py-2 dark:data-[active=true]:text-white data-[active=true]:text-gray-700 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
             >
               <User2 className="h-5 w-5" />
               <span className="text-sm">My Profile</span>
@@ -454,10 +454,10 @@ export const AppSidebar = () => {
               <PopoverTrigger asChild>
                 <button
                   type="button"
-                  className="relative z-10 flex w-full items-center gap-3 px-3 py-2 text-primary"
+                  className="relative z-10 flex w-full items-center gap-3 px-3 py-2 text-primary group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0"
                 >
                   <Palette className="h-5 w-5" />
-                  <span className="text-sm">Theme</span>
+                  <span className="text-sm group-data-[collapsible=icon]:hidden">Theme</span>
 
                   {/* Active gradient */}
                   <span
