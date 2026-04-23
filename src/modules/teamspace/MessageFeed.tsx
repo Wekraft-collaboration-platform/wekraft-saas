@@ -128,6 +128,20 @@ export function MessageFeed({
     }
   }, [messages.length, loading, channel?.id]);
 
+  // Initial scroll to bottom on first load of a channel
+  const hasInitialScrolled = useRef(false);
+  useEffect(() => {
+    hasInitialScrolled.current = false;
+  }, [channel?.id]);
+
+  useEffect(() => {
+    if (!loading && messages.length > 0 && !hasInitialScrolled.current) {
+      bottomRef.current?.scrollIntoView({ behavior: "auto" });
+      setAtBottom(true);
+      hasInitialScrolled.current = true;
+    }
+  }, [loading, messages.length]);
+
   const handleSend = async (content: string) => {
     await sendMessage(content, currentUserId, currentUserName, currentUserImage, replyingTo?.id);
     setReplyingTo(null);

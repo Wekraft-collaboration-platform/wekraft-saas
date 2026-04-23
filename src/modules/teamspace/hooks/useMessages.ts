@@ -213,19 +213,51 @@ export function useMessages(channelId: string | null, projectId: string, current
     [channelId, projectId]
   );
 
-  const editMessage = useCallback(async (messageId: string, content: string) => {
-    await fetch(`/api/teamspace/messages/${messageId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content }),
-    });
-  }, []);
+  const editMessage = useCallback(
+    async (messageId: string, content: string) => {
+      const previousMessages = [...messages];
 
-  const deleteMessage = useCallback(async (messageId: string) => {
-    await fetch(`/api/teamspace/messages/${messageId}`, {
-      method: "DELETE",
-    });
-  }, []);
+      // Optimistic Update
+      setMessages((prev) =>
+        prev.map((m) => (m.id === messageId ? { ...m, content: content.trim(), edited_at: Date.now() } : m))
+      );
+
+      try {
+        const res = await fetch(`/api/teamspace/messages/${messageId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content }),
+        });
+        if (!res.ok) throw new Error("Failed to edit message");
+      } catch (err) {
+        console.error("Edit message sync error:", err);
+        setMessages(previousMessages);
+        toast.error("Failed to edit message. Please try again.");
+      }
+    },
+    [messages]
+  );
+
+  const deleteMessage = useCallback(
+    async (messageId: string) => {
+      const previousMessages = [...messages];
+
+      // Optimistic Update
+      setMessages((prev) => prev.filter((m) => m.id !== messageId));
+
+      try {
+        const res = await fetch(`/api/teamspace/messages/${messageId}`, {
+          method: "DELETE",
+        });
+        if (!res.ok) throw new Error("Failed to delete message");
+      } catch (err) {
+        console.error("Delete message sync error:", err);
+        setMessages(previousMessages);
+        toast.error("Failed to delete message. Please try again.");
+      }
+    },
+    [messages]
+  );
 
   const toggleReaction = useCallback(
     async (messageId: string, emoji: string, hasReacted: boolean) => {
