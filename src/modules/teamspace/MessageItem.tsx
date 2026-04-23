@@ -238,14 +238,17 @@ export function MessageItem({
                     key={r.emoji}
                     onClick={() => onReact(message.id, r.emoji, hasReacted)}
                     className={cn(
-                      "flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border transition-colors",
+                      "flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border transition-all active:scale-95",
                       hasReacted
-                        ? "bg-blue-600/20 border-blue-600/40 text-foreground"
-                        : "bg-accent/50 border-border hover:bg-accent"
+                        ? "bg-blue-500/15 border-blue-500/50 text-blue-500 font-semibold shadow-sm shadow-blue-500/10"
+                        : "bg-accent/50 border-border hover:bg-accent/80 hover:border-border/80 text-muted-foreground"
                     )}
+                    title={r.userIds.length > 0 ? `${r.userIds.length} reaction${r.userIds.length > 1 ? "s" : ""}` : undefined}
                   >
-                    {r.emoji}
-                    <span className="font-medium">{r.userIds.length}</span>
+                    <span className={cn(hasReacted ? "scale-110" : "scale-100", "transition-transform")}>
+                      {r.emoji}
+                    </span>
+                    <span className="tabular-nums">{r.userIds.length}</span>
                   </button>
                 );
               })}
@@ -263,22 +266,27 @@ export function MessageItem({
                   <SmilePlus className="h-3.5 w-3.5" />
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-auto p-2" side="top">
+              <PopoverContent className="w-auto p-2" side="top" align="center">
                 <div className="flex gap-1">
-                  {QUICK_EMOJIS.map((emoji) => (
-                    <button
-                      key={emoji}
-                      onClick={() => {
-                        const hasReacted = message.reactions
-                          .find((r) => r.emoji === emoji)
-                          ?.userIds.includes(currentUserId) ?? false;
-                        onReact(message.id, emoji, hasReacted);
-                      }}
-                      className="text-lg hover:scale-110 transition-transform"
-                    >
-                      {emoji}
-                    </button>
-                  ))}
+                  {QUICK_EMOJIS.map((emoji) => {
+                    const hasReacted = message.reactions
+                      .find((r) => r.emoji === emoji)
+                      ?.userIds.includes(currentUserId) ?? false;
+                    return (
+                      <button
+                        key={emoji}
+                        onClick={() => onReact(message.id, emoji, hasReacted)}
+                        className={cn(
+                          "text-lg p-1.5 rounded-md transition-all hover:scale-125 active:scale-90",
+                          hasReacted 
+                            ? "bg-blue-500/20 ring-1 ring-blue-500/30" 
+                            : "hover:bg-accent"
+                        )}
+                      >
+                        {emoji}
+                      </button>
+                    );
+                  })}
                 </div>
               </PopoverContent>
             </Popover>

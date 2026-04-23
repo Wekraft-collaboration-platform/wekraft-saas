@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Ably from "ably";
+import { toast } from "sonner";
 
 export interface Reaction {
   emoji: string;
@@ -38,11 +39,15 @@ function getAblyClient(): Ably.Realtime {
   return ablyClient;
 }
 
-export function useMessages(channelId: string | null, projectId: string, threadParentId?: string) {
+export function useMessages(channelId: string | null, projectId: string, currentUserId: string, threadParentId?: string) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const subscriptionRef = useRef<Ably.RealtimeChannel | null>(null);
+
+  // ... (previous useEffect and fetchMessages remain same, but check currentUserId in dependencies if needed)
+  // Actually, I'll just show the whole modified block for clarity if possible, 
+  // but let's be precise.
 
   // Fetch initial history
   const fetchMessages = useCallback(
@@ -79,11 +84,8 @@ export function useMessages(channelId: string | null, projectId: string, threadP
 
     const onNewMsg = (msg: Ably.Message) => {
       const newMsg = msg.data as Message;
-      // Only add if not already present and matches thread context
       const isThread = !!threadParentId;
-      const belongsHere = isThread
-        ? newMsg.thread_parent_id === threadParentId
-        : true; // All messages (including replies) show in main feed
+      const belongsHere = isThread ? newMsg.thread_parent_id === threadParentId : true;
 
       if (belongsHere) {
         setMessages((prev) => {
@@ -92,7 +94,6 @@ export function useMessages(channelId: string | null, projectId: string, threadP
         });
       }
 
-      // Bump reply_count on parent if we're in main feed and a thread reply came in
       if (!isThread && newMsg.thread_parent_id) {
         setMessages((prev) =>
           prev.map((m) =>
@@ -122,16 +123,23 @@ export function useMessages(channelId: string | null, projectId: string, threadP
         prev.map((m) => {
           if (m.id !== messageId) return m;
           let reactions = [...m.reactions];
-          const existing = reactions.find((r) => r.emoji === emoji);
           if (action === "add") {
+            // WhatsApp style: Ensure user is removed from ALL other emojis first 
+            // (in case we didn't get the 'remove' event yet or for sync consistency)
+            reactions = reactions
+              .map((r) => ({
+                ...r,
+                userIds: r.userIds.filter((id) => id !== userId),
+              }))
+              .filter((r) => r.userIds.length > 0);
+
+            const existing = reactions.find((r) => r.emoji === emoji);
             if (existing) {
-              if (!existing.userIds.includes(userId)) {
-                reactions = reactions.map((r) =>
-                  r.emoji === emoji ? { ...r, userIds: [...r.userIds, userId] } : r
-                );
-              }
+              reactions = reactions.map((r) =>
+                r.emoji === emoji ? { ...r, userIds: [...r.userIds, userId] } : r
+              );
             } else {
-              reactions = [...reactions, { emoji, userIds: [userId] }];
+              reactions.push({ emoji, userIds: [userId] });
             }
           } else {
             reactions = reactions
@@ -165,13 +173,11 @@ export function useMessages(channelId: string | null, projectId: string, threadP
       if (!channelId || !content.trim()) return;
 
       const optimisticId = crypto.randomUUID();
-      
-      // Optimistic update
       const tmpMsg: Message = {
         id: optimisticId,
         channel_id: channelId,
         project_id: projectId,
-        user_id: userId, 
+        user_id: userId,
         user_name: userName,
         user_image: userImage,
         content: content.trim(),
@@ -180,7 +186,6 @@ export function useMessages(channelId: string | null, projectId: string, threadP
         edited_at: null,
         reactions: [],
       };
-      
       setMessages((prev) => [...prev, tmpMsg]);
 
       try {
@@ -198,14 +203,10 @@ export function useMessages(channelId: string | null, projectId: string, threadP
           }),
         });
         const json = await res.json();
-        
-        // If Ably already delivered it, the IDs will match and it will naturally merge or ignore duplicates.
-        // We can just ensure the state has the final message Object.
         if (json.message) {
           setMessages((prev) => prev.map((m) => (m.id === optimisticId ? json.message : m)));
         }
       } catch (err) {
-        // Remove optimistic if failed
         setMessages((prev) => prev.filter((m) => m.id !== optimisticId));
       }
     },
@@ -228,13 +229,57 @@ export function useMessages(channelId: string | null, projectId: string, threadP
 
   const toggleReaction = useCallback(
     async (messageId: string, emoji: string, hasReacted: boolean) => {
-      await fetch("/api/teamspace/reactions", {
-        method: hasReacted ? "DELETE" : "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messageId, emoji }),
-      });
+      const previousMessages = [...messages];
+
+      // 1. Optimistic Update
+      setMessages((prev) =>
+        prev.map((m) => {
+          if (m.id !== messageId) return m;
+
+          let reactions = [...m.reactions];
+
+          // 1. WhatsApp style: Remove any existing reaction by this user on this message
+          reactions = reactions
+            .map((r) => ({
+              ...r,
+              userIds: r.userIds.filter((u) => u !== currentUserId),
+            }))
+            .filter((r) => r.userIds.length > 0);
+
+          // 2. If we're ADDING (and it wasn't already this emoji), add it
+          if (!hasReacted) {
+            const existingIdx = reactions.findIndex((r) => r.emoji === emoji);
+            if (existingIdx > -1) {
+              reactions[existingIdx] = {
+                ...reactions[existingIdx],
+                userIds: [...reactions[existingIdx].userIds, currentUserId],
+              };
+            } else {
+              reactions.push({ emoji, userIds: [currentUserId] });
+            }
+          }
+
+          return { ...m, reactions };
+        })
+      );
+
+      try {
+        const response = await fetch("/api/teamspace/reactions", {
+          method: hasReacted ? "DELETE" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ messageId, emoji }),
+        });
+
+        if (!response.ok) {
+          throw new Error("Failed to update reaction on server");
+        }
+      } catch (error) {
+        console.error("Reaction sync error:", error);
+        // Rollback on failure
+        setMessages(previousMessages);
+      }
     },
-    []
+    [currentUserId, messages]
   );
 
   const loadMore = useCallback(() => {

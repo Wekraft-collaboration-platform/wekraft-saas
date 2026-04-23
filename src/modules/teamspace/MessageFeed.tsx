@@ -91,7 +91,7 @@ export function MessageFeed({
     deleteMessage,
     toggleReaction,
     loadMore,
-  } = useMessages(channel?.id ?? null, projectId);
+  } = useMessages(channel?.id ?? null, projectId, currentUserId);
 
   // Auto-scroll to bottom on new messages (only if already at bottom)
   useEffect(() => {
