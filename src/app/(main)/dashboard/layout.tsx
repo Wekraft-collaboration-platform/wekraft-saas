@@ -44,7 +44,7 @@ export default function Layout({
         <SidebarProvider defaultOpen={true}>
           {sidebar}
           <SidebarInset>
-            <header className="flex justify-between h-19 py-1 flex-none items-center border-b px-4 bg-background/80 backdrop-blur-xl">
+            <header className="flex justify-between h-14 py-1 flex-none items-center border-b px-4 bg-background/80 backdrop-blur-xl">
               <div className="flex items-center gap-2">
                 <SidebarTrigger className="-ml-1 cursor-pointer hover:scale-105 transition-all duration-200" />
                 <Separator
@@ -56,8 +56,14 @@ export default function Layout({
               {/* <div>
                 <CommunitySearchBar />
               </div> */}
-              <div className="">
-                <UserButton />
+              <div className="flex items-center">
+                <UserButton 
+                  appearance={{
+                    elements: {
+                      userButtonAvatarBox: "h-9 w-9"
+                    }
+                  }}
+                />
               </div>
             </header>
             <main className="flex-1 overflow-auto">{children}</main>
