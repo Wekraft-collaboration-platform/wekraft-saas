@@ -27,16 +27,36 @@ export interface SprintItemSelectionInterrupt {
   message?: string;
 }
 
+// ── Report scheduler setup HITL interrupt payload ─────────────────────────
+export interface SchedulerSetupInterrupt {
+  tool: "setup_report_scheduler";
+  message: string;
+  existing_data?: {
+    name: string;
+    frequencyDays: number;
+    reportType: "sprints" | "project";
+    isActive: boolean;
+  };
+}
+
 // ── Union of all possible interrupt values ─────────────────────────────────
 export type InterruptValue =
   | CalendarEventInterrupt
-  | SprintItemSelectionInterrupt;
+  | SprintItemSelectionInterrupt
+  | SchedulerSetupInterrupt;
 
 // ── Resume values the frontend can send back ───────────────────────────────
 export type ResumeValue =
   | { action: "cancel" }
   | { action: "approve"; edits?: Partial<CalendarEventInterrupt["preview"]> }
-  | { task_ids: string[] };
+  | { task_ids: string[] }
+  | {
+      // action: "submit";
+      name: string;
+      frequencyDays: number;
+      reportType: "sprints" | "project";
+      isActive: boolean;
+    };
 
 export type KayaCustomEvent =
   | { type: "status"; message: string }

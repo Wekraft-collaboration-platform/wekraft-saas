@@ -322,4 +322,22 @@ export default defineSchema({
     .index("by_creator", ["creatorId"])
     .index("by_status", ["status"])
     .index("by_project_status", ["projectId", "status"]),
+
+  // -------------------------------------------------------
+  // For each project only 1 scheduler. User can make it active , update or delete.
+  schedulers: defineTable({
+    projectId: v.id("projects"),
+    name: v.string(),
+    frequencyDays: v.number(), // min 3 days
+    reportType: v.union(v.literal("sprints"), v.literal("project")), // currently 2 types , later more....
+    // recipientEmail: v.string(),
+    isActive: v.boolean(), // default false , only true by kaya or team
+    lastRunAt: v.optional(v.number()), // timestamp (Unix ms)
+    nextRunAt: v.number(),
+    createdBy: v.id("users"),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_project", ["projectId", "isActive", "nextRunAt"])
+    .index("by_nextRun", ["nextRunAt", "isActive"]),
 });
