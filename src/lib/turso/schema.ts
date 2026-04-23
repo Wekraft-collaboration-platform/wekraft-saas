@@ -33,6 +33,7 @@ export async function initTeamspaceDB() {
       user_image       TEXT,
       content          TEXT NOT NULL,
       thread_parent_id TEXT,
+      is_pinned        INTEGER NOT NULL DEFAULT 0,
       edited_at        INTEGER,
       created_at       INTEGER NOT NULL,
       FOREIGN KEY (channel_id) REFERENCES ts_channels(id) ON DELETE CASCADE

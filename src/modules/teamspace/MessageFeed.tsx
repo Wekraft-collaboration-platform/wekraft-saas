@@ -20,6 +20,12 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { PinOff } from "lucide-react";
 
 
 import { useProjectPermissions } from "@/hooks/use-project-permissions";
@@ -64,24 +70,6 @@ export function MessageFeed({
   const isAutoScrolling = useRef(false);
   const [atBottom, setAtBottom] = useState(true);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
-  const [pinnedMessageIds, setPinnedMessageIds] = useState<Set<string>>(new Set());
-
-  const handlePin = useCallback((messageId: string, pin: boolean) => {
-    // toast MUST be outside the setState updater — React Strict Mode
-    // double-invokes updaters in dev, which would fire the toast twice.
-    setPinnedMessageIds((prev) => {
-      const next = new Set(prev);
-      if (pin) next.add(messageId);
-      else next.delete(messageId);
-      return next;
-    });
-    if (pin) {
-      toast.success("Message pinned", { duration: 2000 });
-    } else {
-      toast("Message unpinned", { duration: 2000 });
-    }
-  }, []);
-
   const {
     messages,
     loading,
@@ -89,9 +77,12 @@ export function MessageFeed({
     sendMessage,
     editMessage,
     deleteMessage,
+    togglePin,
     toggleReaction,
     loadMore,
   } = useMessages(channel?.id ?? null, projectId, currentUserId);
+
+  const pinnedMessages = messages.filter((m) => m.is_pinned === 1);
 
   // Auto-scroll to bottom on new messages (only if already at bottom)
   useEffect(() => {
@@ -205,13 +196,88 @@ export function MessageFeed({
                 </TooltipTrigger>
                 <TooltipContent>Notifications</TooltipContent>
               </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Pin className="h-5 w-5 hover:text-foreground cursor-pointer transition-colors" />
-                </TooltipTrigger>
-                <TooltipContent>Pinned Messages</TooltipContent>
-              </Tooltip>
+              <Popover>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <PopoverTrigger asChild>
+                      <button className="focus:outline-none relative group">
+                        <Pin className="h-5 w-5 hover:text-foreground cursor-pointer transition-colors" />
+                        {pinnedMessages.length > 0 && (
+                          <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-blue-500 text-[8px] font-bold text-white shadow-sm ring-1 ring-background">
+                            {pinnedMessages.length}
+                          </span>
+                        )}
+                      </button>
+                    </PopoverTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>Pinned Messages</TooltipContent>
+                </Tooltip>
+                <PopoverContent className="w-80 p-0 shadow-xl border-border/50 overflow-hidden" align="end" sideOffset={12}>
+                  <div className="flex items-center justify-between px-3 py-2 bg-accent/30 border-b border-border/50">
+                    <div className="flex items-center gap-2">
+                      <Pin className="h-3.5 w-3.5 text-blue-500" />
+                      <span className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground">Pinned Messages</span>
+                    </div>
+                    <span className="text-[10px] text-muted-foreground/60">{pinnedMessages.length} pinned</span>
+                  </div>
+                  <ScrollArea className="h-[350px]">
+                    {pinnedMessages.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-12 px-4 text-center">
+                        <div className="bg-accent/50 p-3 rounded-full mb-3">
+                          <Pin className="h-6 w-6 text-muted-foreground/40" />
+                        </div>
+                        <p className="text-sm font-medium text-foreground/80">No pins yet</p>
+                        <p className="text-xs text-muted-foreground/60 mt-1 max-w-[180px]">
+                          Pin important messages to find them easily later.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="p-2 space-y-2">
+                        {pinnedMessages
+                          .slice()
+                          .reverse()
+                          .map((msg) => (
+                            <div 
+                              key={msg.id} 
+                              className="group relative bg-accent/20 border border-border/40 rounded-lg p-2.5 hover:bg-accent/40 hover:border-border/60 transition-all cursor-pointer overflow-hidden"
+                              onClick={() => {
+                                const el = document.getElementById(`message-${msg.id}`);
+                                el?.scrollIntoView({ behavior: "smooth", block: "center" });
+                              }}
+                            >
+                              <div className="flex items-center gap-2 mb-1.5">
+                                <div className="h-5 w-5 rounded-md bg-blue-500/10 flex items-center justify-center">
+                                  <Pin className="h-2.5 w-2.5 text-blue-500" />
+                                </div>
+                                <span className="text-[11px] font-semibold truncate flex-1">{msg.user_name}</span>
+                                <span className="text-[9px] text-muted-foreground/50">
+                                  {format(new Date(msg.created_at), "MMM d")}
+                                </span>
+                              </div>
+                              <p className="text-xs text-foreground/90 line-clamp-3 leading-normal pl-0.5">
+                                {msg.content}
+                              </p>
+                              
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  togglePin(msg.id, false);
+                                }}
+                                className="absolute top-2 right-2 p-1.5 rounded-md bg-background/50 border border-border/50 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all cursor-pointer"
+                                title="Unpin"
+                              >
+                                <PinOff className="h-3 w-3" />
+                              </button>
+                            </div>
+                          ))}
+                      </div>
+                    )}
+                  </ScrollArea>
+                  <div className="p-2 bg-accent/20 border-t border-border/50 text-center">
+                    <p className="text-[10px] text-muted-foreground/60">Pins are visible to everyone in the channel</p>
+                  </div>
+                </PopoverContent>
+              </Popover>
 
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -298,7 +364,7 @@ export function MessageFeed({
                   message={msg}
                   isGrouped={!!isGrouped}
                   currentUserId={currentUserId}
-                  isPinned={pinnedMessageIds.has(msg.id)}
+                  isPinned={msg.is_pinned === 1}
                   canModerateAll={isPower}
                   onReply={(m) => {
                     setReplyingTo(m);
@@ -306,7 +372,7 @@ export function MessageFeed({
                   onEdit={editMessage}
                   onDelete={deleteMessage}
                   onReact={toggleReaction}
-                  onPin={handlePin}
+                  onPin={togglePin}
                 />
               );
             })}

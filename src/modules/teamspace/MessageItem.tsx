@@ -136,17 +136,18 @@ export function MessageItem({
     <>
       {/* ── Pinned banner ─────────────────────────────────── */}
       {isPinned && (
-        <div className="flex items-center gap-1.5 mx-4 mb-0.5 mt-1 text-[11px] text-amber-500/80 font-medium select-none">
-          <Pin className="h-3 w-3 fill-amber-500/60" />
-          Pinned message
+        <div className="flex items-center gap-1.5 mx-4 mb-0.5 mt-1 text-[10px] text-blue-500/80 font-bold select-none uppercase tracking-wider">
+          <Pin className="h-2.5 w-2.5" />
+          pinned
         </div>
       )}
 
       <div
+        id={`message-${message.id}`}
         className={cn(
           "group flex gap-3 px-4 py-0.5 hover:bg-accent/30 rounded-md transition-colors relative",
           isGrouped ? "mt-0" : "mt-3",
-          isPinned && "bg-amber-500/5 border-l-2 border-l-amber-500/40 rounded-l-none"
+          isPinned && "border-l-2 border-l-blue-500 rounded-l-none"
         )}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}

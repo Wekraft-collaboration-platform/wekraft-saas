@@ -18,6 +18,7 @@ export interface Message {
   user_image: string | null;
   content: string;
   thread_parent_id: string | null;
+  is_pinned?: number;
   edited_at: number | null;
   created_at: number;
   reactions: Reaction[];
@@ -105,10 +106,17 @@ export function useMessages(channelId: string | null, projectId: string, current
       }
     };
 
-    const onEditedMsg = (msg: Ably.Message) => {
-      const { id, content, edited_at } = msg.data;
+    const onUpdatedMsg = (msg: Ably.Message) => {
+      const { id, content, is_pinned, edited_at } = msg.data;
       setMessages((prev) =>
-        prev.map((m) => (m.id === id ? { ...m, content, edited_at } : m))
+        prev.map((m) => {
+          if (m.id !== id) return m;
+          const next = { ...m };
+          if (content !== undefined) next.content = content;
+          if (is_pinned !== undefined) next.is_pinned = is_pinned ? 1 : 0;
+          if (edited_at !== undefined) next.edited_at = edited_at;
+          return next;
+        })
       );
     };
 
@@ -154,7 +162,7 @@ export function useMessages(channelId: string | null, projectId: string, current
     };
 
     ch.subscribe("message.new", onNewMsg);
-    ch.subscribe("message.edited", onEditedMsg);
+    ch.subscribe("message.updated", onUpdatedMsg);
     ch.subscribe("message.deleted", onDeletedMsg);
     ch.subscribe("reaction.updated", onReactionUpdated);
 
@@ -162,9 +170,10 @@ export function useMessages(channelId: string | null, projectId: string, current
 
     return () => {
       ch.unsubscribe("message.new", onNewMsg);
-      ch.unsubscribe("message.edited", onEditedMsg);
+      ch.unsubscribe("message.updated", onUpdatedMsg);
       ch.unsubscribe("message.deleted", onDeletedMsg);
       ch.unsubscribe("reaction.updated", onReactionUpdated);
+      subscriptionRef.current = null;
     };
   }, [channelId, threadParentId, fetchMessages]);
 
@@ -259,6 +268,31 @@ export function useMessages(channelId: string | null, projectId: string, current
     [messages]
   );
 
+  const togglePin = useCallback(
+    async (messageId: string, pin: boolean) => {
+      const previousMessages = [...messages];
+
+      // Optimistic Update
+      setMessages((prev) =>
+        prev.map((m) => (m.id === messageId ? { ...m, is_pinned: pin ? 1 : 0 } : m))
+      );
+
+      try {
+        const res = await fetch(`/api/teamspace/messages/${messageId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ is_pinned: pin }),
+        });
+        if (!res.ok) throw new Error("Failed to update pin");
+      } catch (err) {
+        console.error("Pin sync error:", err);
+        setMessages(previousMessages);
+        toast.error("Failed to update pin status.");
+      }
+    },
+    [messages]
+  );
+
   const toggleReaction = useCallback(
     async (messageId: string, emoji: string, hasReacted: boolean) => {
       const previousMessages = [...messages];
@@ -325,6 +359,7 @@ export function useMessages(channelId: string | null, projectId: string, current
     sendMessage,
     editMessage,
     deleteMessage,
+    togglePin,
     toggleReaction,
     loadMore,
   };
