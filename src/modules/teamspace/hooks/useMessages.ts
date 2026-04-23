@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback } from "react";
 import Ably from "ably";
 import { toast } from "sonner";
+import { chatDb } from "@/lib/db";
 
 export interface Reaction {
   emoji: string;
@@ -44,7 +45,7 @@ function getAblyClient(): Ably.Realtime {
 const memoryCache: Record<string, { messages: Message[], nextCursor: string | null, timestamp: number }> = {};
 
 /**
- * Prefetches messages for a channel and stores them in the memory cache.
+ * Prefetches messages for a channel and stores them in the memory cache and IndexedDB.
  */
 export async function prefetchMessages(channelId: string, threadParentId?: string) {
   if (!channelId) return;
@@ -60,14 +61,17 @@ export async function prefetchMessages(channelId: string, threadParentId?: strin
     const res = await fetch(`/api/teamspace/messages?${params}`);
     const data = await res.json();
 
+    const incoming = data.messages ?? [];
+    const cursor = data.nextCursor ?? null;
+
     memoryCache[channelId] = {
-      messages: data.messages ?? [],
-      nextCursor: data.nextCursor ?? null,
+      messages: incoming,
+      nextCursor: cursor,
       timestamp: Date.now(),
     };
     
-    // Also warm up localStorage
-    localStorage.setItem(`chat_cache_${channelId}`, JSON.stringify(data.messages?.slice(0, 50) ?? []));
+    // Warm up IndexedDB
+    chatDb.set(channelId, incoming, cursor);
   } catch (e) {
     console.warn("Prefetch failed for", channelId, e);
   }
@@ -79,7 +83,7 @@ export function useMessages(channelId: string | null, projectId: string, current
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const subscriptionRef = useRef<Ably.RealtimeChannel | null>(null);
 
-  // Initial cache load (Synchronous)
+  // Initial cache load
   useEffect(() => {
     if (!channelId) {
       setMessages([]);
@@ -87,7 +91,7 @@ export function useMessages(channelId: string | null, projectId: string, current
       return;
     }
 
-    // 1. Check memory cache first (latest prefetched data)
+    // 1. Check memory cache first (latest prefetched data) - SYNCHRONOUS
     const mem = memoryCache[channelId];
     if (mem && Date.now() - mem.timestamp < 60000) {
       setMessages(mem.messages);
@@ -96,23 +100,25 @@ export function useMessages(channelId: string | null, projectId: string, current
       return;
     }
 
-    // 2. Check localStorage (persisted data)
-    try {
-      const local = localStorage.getItem(`chat_cache_${channelId}`);
-      if (local) {
-        const parsed = JSON.parse(local);
-        if (Array.isArray(parsed) && parsed.length > 0) {
-          setMessages(parsed);
+    // 2. Check IndexedDB (persisted data) - ASYNCHRONOUS
+    let isMounted = true;
+    const loadFromDb = async () => {
+      try {
+        const cached = await chatDb.get(channelId);
+        if (isMounted && cached && cached.messages.length > 0) {
+          // Only update if we haven't already loaded from network or memory
+          setMessages((prev) => prev.length === 0 ? cached.messages : prev);
+          setNextCursor((prev) => prev === null ? cached.nextCursor : prev);
           setLoading(false);
-          return;
         }
+      } catch (e) {
+        console.error("IndexedDB read error", e);
       }
-    } catch (e) {
-      console.error("Local cache read error", e);
-    }
+    };
 
-    // 3. Fallback to loading state if no cache
-    setLoading(true);
+    loadFromDb();
+    
+    return () => { isMounted = false; };
   }, [channelId]);
 
   // Fetch fresh data from server
@@ -133,22 +139,22 @@ export function useMessages(channelId: string | null, projectId: string, current
         const data = await res.json();
 
         const incoming: Message[] = data.messages ?? [];
+        const nextC = data.nextCursor ?? null;
         
         setMessages((prev) => {
           const combined = cursor ? [...incoming, ...prev] : incoming;
-          // De-duplicate if needed (though API should be clean)
           return combined;
         });
-        setNextCursor(data.nextCursor ?? null);
+        setNextCursor(nextC);
 
         // Update caches for initial load
         if (!cursor) {
           memoryCache[channelId] = {
             messages: incoming,
-            nextCursor: data.nextCursor ?? null,
+            nextCursor: nextC,
             timestamp: Date.now(),
           };
-          localStorage.setItem(`chat_cache_${channelId}`, JSON.stringify(incoming.slice(0, 50)));
+          chatDb.set(channelId, incoming, nextC);
         }
       } catch (e) {
         console.error("Failed to fetch messages", e);
