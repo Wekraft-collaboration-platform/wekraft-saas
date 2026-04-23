@@ -93,6 +93,7 @@ const IssuesPage = () => {
               projectId={project._id}
               projectName={projectName}
               repoFullName={project.repoFullName}
+              ownerClerkId={(project as any).ownerClerkId}
               trigger={
                 <Button size="sm" className="text-xs">
                   New Issue
@@ -127,6 +128,7 @@ const IssuesPage = () => {
                 projectId={project._id}
                 projectName={projectName}
                 repoFullName={project.repoFullName}
+                ownerClerkId={(project as any).ownerClerkId}
                 trigger={
                   <Button
                     variant="default"

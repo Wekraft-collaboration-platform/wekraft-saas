@@ -93,7 +93,6 @@ export function MessageFeed({
   const {
     messages,
     loading,
-    hasMore,
     typingUsers,
     sendMessage,
     setTypingStatus,
@@ -102,6 +101,7 @@ export function MessageFeed({
     togglePin,
     toggleReaction,
     loadMore,
+    hasMore,
   } = useMessages(channel?.id ?? null, projectId, currentUserId, currentUserName);
 
   // --- WHATSAPP-STYLE SEARCH LOGIC ---

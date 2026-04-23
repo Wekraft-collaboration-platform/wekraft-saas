@@ -385,7 +385,7 @@ const SprintDetailPage = () => {
                       {/* Assignees */}
                       <div className="flex items-center w-[60px] justify-end">
                         <div className="flex -space-x-1.5">
-                          {task.assignedTo?.map((person, i) => (
+                          {task.assignedTo?.map((person: any, i: number) => (
                             <Avatar
                               key={i}
                               className="w-6 h-6 border-2 border-background"
@@ -534,7 +534,7 @@ const SprintDetailPage = () => {
                       {/* Assignees */}
                       <div className="flex items-center w-[60px] justify-end">
                         <div className="flex -space-x-1.5">
-                          {issue.IssueAssignee?.map((person, i) => (
+                          {issue.IssueAssignee?.map((person: any, i: number) => (
                             <Avatar
                               key={i}
                               className="w-6 h-6 border-2 border-background"
@@ -714,7 +714,7 @@ const SprintDetailPage = () => {
             </h3>
             {stats && stats.teamMembers.length > 0 ? (
               <div className="space-y-4">
-                {stats.teamMembers.map((member) => (
+                {stats.teamMembers.map((member: any) => (
                   <div key={member.userId} className="flex items-center gap-3">
                     <Avatar className="w-7 h-7 ring-2 ring-background">
                       <AvatarImage src={member.avatar} />

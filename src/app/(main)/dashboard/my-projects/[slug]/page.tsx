@@ -124,13 +124,6 @@ const ProjectPage = () => {
               <ChevronLeft className="w-4 h-4 inline mr-2" /> Back
             </Button>
           </Link>
-
-          <Link href={`/dashboard/my-projects/${project?.slug}/workspace`}>
-            <Button size="sm" className="px-10 text-xs cursor-pointer">
-              <LucideExternalLink className="w-4 h-4 inline mr-2" /> Visit
-              workspace
-            </Button>
-          </Link>
         </div>
       </header>
 
@@ -212,6 +205,16 @@ const ProjectPage = () => {
         <div className="w-[65%] h-full">
           {/* TABS */}
           <div className="flex items-center justify-center gap-6  px-4 border-b border-accent pb-4">
+            <Link href={`/dashboard/my-projects/${project?.slug}/workspace`}>
+              <Button
+                size="sm"
+                className="rounded-full px-4! text-[10px]"
+                variant={"outline"}
+              >
+                Visit workspace <LucideExternalLink className="ml-2 w-3.5 h-3.5" />
+              </Button>
+            </Link>
+
             <Button
               size="sm"
               className="rounded-full px-4! text-[10px]"
