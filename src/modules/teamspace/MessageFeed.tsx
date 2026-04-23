@@ -21,7 +21,6 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useMessages } from "./hooks/useMessages";
-import { SearchOverlay } from "./SearchOverlay";
 import { MessageItem } from "./MessageItem";
 import { MessageComposer } from "./MessageComposer";
 import { Message } from "./hooks/useMessages";
@@ -30,7 +29,6 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Hash, Megaphone, ChevronUp, ChevronDown, ArrowDown, Lock, Search, Bell, Pin, Users, Inbox, HelpCircle, X, ArrowLeft } from "lucide-react";
-import { cn } from "@/lib/utils";
 import { format, isToday, isYesterday } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import {
@@ -50,6 +48,7 @@ import { PinOff } from "lucide-react";
 
 import { useProjectPermissions } from "@/hooks/use-project-permissions";
 import { Id } from "../../../convex/_generated/dataModel";
+import { cn } from "@/lib/utils";
 
 
 interface Props {
@@ -154,14 +153,16 @@ export function MessageFeed({
 
   const handleNextMatch = () => {
     if (searchResults.length === 0) return;
-    const nextIdx = (currentSearchIndex + 1) % searchResults.length;
+    // Go to NEWER message (decrement index)
+    const nextIdx = (currentSearchIndex - 1 + searchResults.length) % searchResults.length;
     setCurrentSearchIndex(nextIdx);
     jumpToMessage(searchResults[nextIdx]);
   };
 
   const handlePrevMatch = () => {
     if (searchResults.length === 0) return;
-    const prevIdx = (currentSearchIndex - 1 + searchResults.length) % searchResults.length;
+    // Go to OLDER message (increment index)
+    const prevIdx = (currentSearchIndex + 1) % searchResults.length;
     setCurrentSearchIndex(prevIdx);
     jumpToMessage(searchResults[prevIdx]);
   };
@@ -177,6 +178,12 @@ export function MessageFeed({
         } else if (e.key === "Enter" && e.shiftKey) {
           e.preventDefault();
           handlePrevMatch();
+        } else if (e.key === "ArrowUp") {
+          e.preventDefault();
+          handlePrevMatch();
+        } else if (e.key === "ArrowDown") {
+          e.preventDefault();
+          handleNextMatch();
         }
       }
       if (e.key === "Escape") {
@@ -416,67 +423,66 @@ export function MessageFeed({
             </div>
           </TooltipProvider>
 
-          <div className="relative flex items-center gap-2">
-            {searchQuery && (
-              <button 
-                onClick={() => setSearchQuery("")}
-                className="p-1.5 hover:bg-accent rounded-full text-muted-foreground transition-colors"
-              >
-                <ArrowLeft className="h-4 w-4" />
-              </button>
-            )}
-            <div className="relative group">
+          <div className="relative group flex items-center bg-accent/40 rounded-full border border-border/50 hover:bg-accent/60 transition-all overflow-hidden w-64 ring-primary/20 focus-within:ring-2">
+            <div className="relative flex-1 flex items-center">
               <input 
                 type="text" 
-                placeholder={`Search in #${channel.name}`}
+                placeholder="Search chat"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className={cn(
-                  "bg-accent/40 text-[11px] px-3 py-1.5 pr-8 rounded-full border border-border/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-accent/60 transition-all placeholder:text-muted-foreground/50",
-                  searchQuery ? "w-48 sm:w-64" : "w-48"
+                  "bg-transparent text-[11px] px-3 py-1.5 w-full focus:outline-none placeholder:text-muted-foreground/50",
+                  searchQuery ? "pr-[85px]" : "pr-8"
                 )}
               />
-              <Search className="h-3.5 w-3.5 absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
+              
+              <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center">
+                {searchQuery ? (
+                  <div className="flex items-center gap-1 bg-background/50 backdrop-blur-sm rounded-lg px-2 py-1 border border-border/50 shadow-sm animate-in fade-in zoom-in duration-200">
+                    {searchResults.length > 0 && (
+                      <span className="text-[10px] font-bold text-muted-foreground px-1.5 tabular-nums border-r border-border/50 mr-1">
+                        {currentSearchIndex + 1}/{searchResults.length}
+                      </span>
+                    )}
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handlePrevMatch();
+                      }}
+                      title="Previous (ArrowUp)"
+                      className="p-1 hover:bg-accent rounded-md text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                    >
+                      <ChevronUp className="h-4 w-4" />
+                    </button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleNextMatch();
+                      }}
+                      title="Next (ArrowDown)"
+                      className="p-1 hover:bg-accent rounded-md text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+                    >
+                      <ChevronDown className="h-4 w-4" />
+                    </button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSearchQuery("");
+                      }}
+                      className="p-1 hover:bg-accent rounded-md text-muted-foreground hover:text-red-500 transition-colors ml-0.5 cursor-pointer"
+                    >
+                      <X className="h-4 w-4" />
+                    </button>
+                  </div>
+                ) : (
+                  <div className="pr-2">
+                    <Search className="h-3.5 w-3.5 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
+                  </div>
+                )}
+              </div>
             </div>
-
-            {searchResults.length > 0 && (
-              <div className="flex items-center gap-0.5 bg-accent/40 rounded-full px-2 py-1 border border-border/50 shadow-sm">
-                <span className="text-[9px] font-bold text-muted-foreground px-1.5 tabular-nums">
-                  {currentSearchIndex + 1} / {searchResults.length}
-                </span>
-                <div className="w-[1px] h-3 bg-border/50 mx-0.5" />
-                <button 
-                  onClick={handlePrevMatch}
-                  title="Previous match (Shift+Enter)"
-                  className="p-1 hover:bg-accent rounded-full text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <ChevronUp className="h-3 w-3" />
-                </button>
-                <button 
-                  onClick={handleNextMatch}
-                  title="Next match (Enter)"
-                  className="p-1 hover:bg-accent rounded-full text-muted-foreground hover:text-foreground transition-colors"
-                >
-                  <ChevronDown className="h-3 w-3" />
-                </button>
-                <button 
-                  onClick={() => setSearchQuery("")}
-                  className="p-1 hover:bg-accent rounded-full text-muted-foreground hover:text-red-500 transition-colors"
-                >
-                  <X className="h-3 w-3" />
-                </button>
-              </div>
-            )}
-            
-            {isSearching && (
-              <div className="flex items-center gap-2 px-2">
-                <div className="animate-spin h-3 w-3 border-2 border-primary border-t-transparent rounded-full" />
-                <span className="text-[9px] font-medium text-muted-foreground animate-pulse">Searching...</span>
-              </div>
-            )}
           </div>
         </div>
-
       </div>
 
       {/* Messages area */}
