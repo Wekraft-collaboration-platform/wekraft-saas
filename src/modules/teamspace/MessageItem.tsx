@@ -57,6 +57,7 @@ interface Props {
   isGrouped: boolean;
   currentUserId: string;
   isPinned?: boolean;
+  canModerateAll?: boolean; // admin / owner — can delete anyone's message
   onReply: (message: Message) => void;
   onEdit: (messageId: string, content: string) => Promise<void>;
   onDelete: (messageId: string) => Promise<void>;
@@ -69,6 +70,7 @@ export function MessageItem({
   isGrouped,
   currentUserId,
   isPinned = false,
+  canModerateAll = false,
   onReply,
   onEdit,
   onDelete,
@@ -87,6 +89,8 @@ export function MessageItem({
   // Keep toolbar visible while any floating menu is open
   const showToolbar = (hovered || dropdownOpen || emojiOpen) && !editing;
   const isOwn = message.user_id === currentUserId;
+  // Can delete = own message OR admin/owner moderating
+  const canDelete = isOwn || canModerateAll;
 
   const handleSaveEdit = async () => {
     if (!editContent.trim() || editContent === message.content) {
@@ -324,19 +328,25 @@ export function MessageItem({
                   <>
                     <DropdownMenuSeparator />
 
-                    {/* Edit */}
+                    {/* Edit — only own messages */}
                     <DropdownMenuItem onClick={() => setEditing(true)}>
                       <Pencil className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
                       Edit Message
                     </DropdownMenuItem>
+                  </>
+                )}
 
-                    {/* Delete */}
+                {/* Delete — own message OR admin/owner moderating others */}
+                {canDelete && (
+                  <>
+                    {/* Separator only if edit section wasn't shown (i.e. moderating someone else's msg) */}
+                    {!isOwn && <DropdownMenuSeparator />}
                     <DropdownMenuItem
                       className="text-destructive focus:text-destructive focus:bg-destructive/10"
                       onClick={() => setDeleteDialogOpen(true)}
                     >
                       <Trash2 className="h-3.5 w-3.5 mr-2" />
-                      Delete Message
+                      {isOwn ? "Delete Message" : "Delete for Everyone"}
                     </DropdownMenuItem>
                   </>
                 )}

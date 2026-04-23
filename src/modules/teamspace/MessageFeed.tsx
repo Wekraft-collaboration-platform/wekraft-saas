@@ -57,7 +57,7 @@ export function MessageFeed({
   projectId,
   onToggleMembers,
 }: Props) {
-  const { isOwner } = useProjectPermissions(projectId as Id<"projects">);
+  const { isOwner, isPower } = useProjectPermissions(projectId as Id<"projects">);
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -285,6 +285,7 @@ export function MessageFeed({
                   isGrouped={!!isGrouped}
                   currentUserId={currentUserId}
                   isPinned={pinnedMessageIds.has(msg.id)}
+                  canModerateAll={isPower}
                   onReply={(m) => {
                     setReplyingTo(m);
                   }}
