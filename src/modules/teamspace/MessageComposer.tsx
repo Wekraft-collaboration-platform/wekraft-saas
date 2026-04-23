@@ -1,3 +1,18 @@
+/**
+ * MessageComposer.tsx
+ * 
+ * Rich text input component for sending messages in a channel or thread.
+ * 
+ * Features:
+ * - Auto-expanding textarea for multi-line messages.
+ * - Supports keyboard shortcuts (Enter to send, Shift+Enter for new line).
+ * - Displays reply context when replying to a specific message.
+ * - Integrated emoji picker and quick attachment placeholders.
+ * - Permission-aware (disables input for announcement channels if not owner).
+ * 
+ * Integration:
+ * - Triggers `onSend` callback with the message content.
+ */
 "use client";
 
 import { useState, useRef, useCallback, KeyboardEvent } from "react";

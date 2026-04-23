@@ -1,7 +1,33 @@
+/**
+ * useMessages.ts
+ * 
+ * The primary engine for real-time messaging in the Teamspace module.
+ * 
+ * Architecture:
+ * - Real-time: Powered by Ably (Pub/Sub).
+ * - Caching: Multi-layered (In-memory cache -> IndexedDB -> Server).
+ * - Prefetching: Messages are prefetched on channel hover for near-instant load.
+ * - Optimistic Updates: Local state is updated immediately before server confirmation.
+ * 
+ * Features:
+ * - Real-time message reception (new, updated, deleted).
+ * - Reaction synchronization.
+ * - Threading support (via `threadParentId`).
+ * - Infinite scrolling with cursor-based pagination.
+ * - Offline support (persisted via IndexedDB).
+ * 
+ * Flow:
+ * 1. Checks memory cache for immediate display.
+ * 2. Loads from IndexedDB for persistence.
+ * 3. Fetches fresh data from `/api/teamspace/messages`.
+ * 4. Subscribes to Ably channels for live updates.
+ */
 "use client";
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Ably from "ably";
+import { toast } from "sonner";
+import { chatDb } from "@/lib/db";
 
 export interface Reaction {
   emoji: string;
@@ -17,6 +43,7 @@ export interface Message {
   user_image: string | null;
   content: string;
   thread_parent_id: string | null;
+  is_pinned?: number;
   edited_at: number | null;
   created_at: number;
   reactions: Reaction[];
@@ -38,17 +65,95 @@ function getAblyClient(): Ably.Realtime {
   return ablyClient;
 }
 
-export function useMessages(channelId: string | null, projectId: string, threadParentId?: string) {
+// Global in-memory cache for ultra-fast prefetching and cross-component sync
+const memoryCache: Record<string, { messages: Message[], nextCursor: string | null, timestamp: number }> = {};
+
+/**
+ * Prefetches messages for a channel and stores them in the memory cache and IndexedDB.
+ */
+export async function prefetchMessages(channelId: string, threadParentId?: string) {
+  if (!channelId) return;
+  
+  // Skip if already prefetched recently (last 30 seconds)
+  const cached = memoryCache[channelId];
+  if (cached && Date.now() - cached.timestamp < 30000) return;
+
+  try {
+    const params = new URLSearchParams({ channelId, limit: "50" });
+    if (threadParentId) params.set("threadParentId", threadParentId);
+
+    const res = await fetch(`/api/teamspace/messages?${params}`);
+    const data = await res.json();
+
+    const incoming = data.messages ?? [];
+    const cursor = data.nextCursor ?? null;
+
+    memoryCache[channelId] = {
+      messages: incoming,
+      nextCursor: cursor,
+      timestamp: Date.now(),
+    };
+    
+    // Warm up IndexedDB
+    chatDb.set(channelId, incoming, cursor);
+  } catch (e) {
+    console.warn("Prefetch failed for", channelId, e);
+  }
+}
+
+export function useMessages(channelId: string | null, projectId: string, currentUserId: string, threadParentId?: string) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const subscriptionRef = useRef<Ably.RealtimeChannel | null>(null);
 
-  // Fetch initial history
+  // Initial cache load
+  useEffect(() => {
+    if (!channelId) {
+      setMessages([]);
+      setLoading(false);
+      return;
+    }
+
+    // 1. Check memory cache first (latest prefetched data) - SYNCHRONOUS
+    const mem = memoryCache[channelId];
+    if (mem && Date.now() - mem.timestamp < 60000) {
+      setMessages(mem.messages);
+      setNextCursor(mem.nextCursor);
+      setLoading(false);
+      return;
+    }
+
+    // 2. Check IndexedDB (persisted data) - ASYNCHRONOUS
+    let isMounted = true;
+    const loadFromDb = async () => {
+      try {
+        const cached = await chatDb.get(channelId);
+        if (isMounted && cached && cached.messages.length > 0) {
+          // Only update if we haven't already loaded from network or memory
+          setMessages((prev) => prev.length === 0 ? cached.messages : prev);
+          setNextCursor((prev) => prev === null ? cached.nextCursor : prev);
+          setLoading(false);
+        }
+      } catch (e) {
+        console.error("IndexedDB read error", e);
+      }
+    };
+
+    loadFromDb();
+    
+    return () => { isMounted = false; };
+  }, [channelId]);
+
+  // Fetch fresh data from server
   const fetchMessages = useCallback(
     async (cursor?: string) => {
       if (!channelId) return;
-      setLoading(true);
+      
+      // If we don't have a cursor (initial fetch), we might already have cached data
+      // but we still want to fetch fresh data in the background.
+      if (cursor) setLoading(true); 
+
       try {
         const params = new URLSearchParams({ channelId, limit: "50" });
         if (cursor) params.set("cursor", cursor);
@@ -58,8 +163,23 @@ export function useMessages(channelId: string | null, projectId: string, threadP
         const data = await res.json();
 
         const incoming: Message[] = data.messages ?? [];
-        setMessages((prev) => (cursor ? [...incoming, ...prev] : incoming));
-        setNextCursor(data.nextCursor ?? null);
+        const nextC = data.nextCursor ?? null;
+        
+        setMessages((prev) => {
+          const combined = cursor ? [...incoming, ...prev] : incoming;
+          return combined;
+        });
+        setNextCursor(nextC);
+
+        // Update caches for initial load
+        if (!cursor) {
+          memoryCache[channelId] = {
+            messages: incoming,
+            nextCursor: nextC,
+            timestamp: Date.now(),
+          };
+          chatDb.set(channelId, incoming, nextC);
+        }
       } catch (e) {
         console.error("Failed to fetch messages", e);
       } finally {
@@ -79,20 +199,19 @@ export function useMessages(channelId: string | null, projectId: string, threadP
 
     const onNewMsg = (msg: Ably.Message) => {
       const newMsg = msg.data as Message;
-      // Only add if not already present and matches thread context
       const isThread = !!threadParentId;
-      const belongsHere = isThread
-        ? newMsg.thread_parent_id === threadParentId
-        : true; // All messages (including replies) show in main feed
+      const belongsHere = isThread ? newMsg.thread_parent_id === threadParentId : true;
 
       if (belongsHere) {
         setMessages((prev) => {
           if (prev.find((m) => m.id === newMsg.id)) return prev;
-          return [...prev, newMsg];
+          const next = [...prev, newMsg];
+          // Update memory cache on new message
+          if (memoryCache[channelId]) memoryCache[channelId].messages = next;
+          return next;
         });
       }
 
-      // Bump reply_count on parent if we're in main feed and a thread reply came in
       if (!isThread && newMsg.thread_parent_id) {
         setMessages((prev) =>
           prev.map((m) =>
@@ -104,10 +223,17 @@ export function useMessages(channelId: string | null, projectId: string, threadP
       }
     };
 
-    const onEditedMsg = (msg: Ably.Message) => {
-      const { id, content, edited_at } = msg.data;
+    const onUpdatedMsg = (msg: Ably.Message) => {
+      const { id, content, is_pinned, edited_at } = msg.data;
       setMessages((prev) =>
-        prev.map((m) => (m.id === id ? { ...m, content, edited_at } : m))
+        prev.map((m) => {
+          if (m.id !== id) return m;
+          const next = { ...m };
+          if (content !== undefined) next.content = content;
+          if (is_pinned !== undefined) next.is_pinned = is_pinned ? 1 : 0;
+          if (edited_at !== undefined) next.edited_at = edited_at;
+          return next;
+        })
       );
     };
 
@@ -122,16 +248,21 @@ export function useMessages(channelId: string | null, projectId: string, threadP
         prev.map((m) => {
           if (m.id !== messageId) return m;
           let reactions = [...m.reactions];
-          const existing = reactions.find((r) => r.emoji === emoji);
           if (action === "add") {
+            reactions = reactions
+              .map((r) => ({
+                ...r,
+                userIds: r.userIds.filter((id) => id !== userId),
+              }))
+              .filter((r) => r.userIds.length > 0);
+
+            const existing = reactions.find((r) => r.emoji === emoji);
             if (existing) {
-              if (!existing.userIds.includes(userId)) {
-                reactions = reactions.map((r) =>
-                  r.emoji === emoji ? { ...r, userIds: [...r.userIds, userId] } : r
-                );
-              }
+              reactions = reactions.map((r) =>
+                r.emoji === emoji ? { ...r, userIds: [...r.userIds, userId] } : r
+              );
             } else {
-              reactions = [...reactions, { emoji, userIds: [userId] }];
+              reactions.push({ emoji, userIds: [userId] });
             }
           } else {
             reactions = reactions
@@ -146,7 +277,7 @@ export function useMessages(channelId: string | null, projectId: string, threadP
     };
 
     ch.subscribe("message.new", onNewMsg);
-    ch.subscribe("message.edited", onEditedMsg);
+    ch.subscribe("message.updated", onUpdatedMsg);
     ch.subscribe("message.deleted", onDeletedMsg);
     ch.subscribe("reaction.updated", onReactionUpdated);
 
@@ -154,9 +285,10 @@ export function useMessages(channelId: string | null, projectId: string, threadP
 
     return () => {
       ch.unsubscribe("message.new", onNewMsg);
-      ch.unsubscribe("message.edited", onEditedMsg);
+      ch.unsubscribe("message.updated", onUpdatedMsg);
       ch.unsubscribe("message.deleted", onDeletedMsg);
       ch.unsubscribe("reaction.updated", onReactionUpdated);
+      subscriptionRef.current = null;
     };
   }, [channelId, threadParentId, fetchMessages]);
 
@@ -165,13 +297,11 @@ export function useMessages(channelId: string | null, projectId: string, threadP
       if (!channelId || !content.trim()) return;
 
       const optimisticId = crypto.randomUUID();
-      
-      // Optimistic update
       const tmpMsg: Message = {
         id: optimisticId,
         channel_id: channelId,
         project_id: projectId,
-        user_id: userId, 
+        user_id: userId,
         user_name: userName,
         user_image: userImage,
         content: content.trim(),
@@ -180,7 +310,6 @@ export function useMessages(channelId: string | null, projectId: string, threadP
         edited_at: null,
         reactions: [],
       };
-      
       setMessages((prev) => [...prev, tmpMsg]);
 
       try {
@@ -198,43 +327,123 @@ export function useMessages(channelId: string | null, projectId: string, threadP
           }),
         });
         const json = await res.json();
-        
-        // If Ably already delivered it, the IDs will match and it will naturally merge or ignore duplicates.
-        // We can just ensure the state has the final message Object.
         if (json.message) {
           setMessages((prev) => prev.map((m) => (m.id === optimisticId ? json.message : m)));
         }
       } catch (err) {
-        // Remove optimistic if failed
         setMessages((prev) => prev.filter((m) => m.id !== optimisticId));
       }
     },
     [channelId, projectId]
   );
 
-  const editMessage = useCallback(async (messageId: string, content: string) => {
-    await fetch(`/api/teamspace/messages/${messageId}`, {
-      method: "PATCH",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ content }),
-    });
-  }, []);
+  const editMessage = useCallback(
+    async (messageId: string, content: string) => {
+      const previousMessages = [...messages];
+      setMessages((prev) =>
+        prev.map((m) => (m.id === messageId ? { ...m, content: content.trim(), edited_at: Date.now() } : m))
+      );
 
-  const deleteMessage = useCallback(async (messageId: string) => {
-    await fetch(`/api/teamspace/messages/${messageId}`, {
-      method: "DELETE",
-    });
-  }, []);
+      try {
+        const res = await fetch(`/api/teamspace/messages/${messageId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ content }),
+        });
+        if (!res.ok) throw new Error("Failed to edit message");
+      } catch (err) {
+        console.error("Edit message sync error:", err);
+        setMessages(previousMessages);
+        toast.error("Failed to edit message. Please try again.");
+      }
+    },
+    [messages]
+  );
+
+  const deleteMessage = useCallback(
+    async (messageId: string) => {
+      const previousMessages = [...messages];
+      setMessages((prev) => prev.filter((m) => m.id !== messageId));
+
+      try {
+        const res = await fetch(`/api/teamspace/messages/${messageId}`, {
+          method: "DELETE",
+        });
+        if (!res.ok) throw new Error("Failed to delete message");
+      } catch (err) {
+        console.error("Delete message sync error:", err);
+        setMessages(previousMessages);
+        toast.error("Failed to delete message. Please try again.");
+      }
+    },
+    [messages]
+  );
+
+  const togglePin = useCallback(
+    async (messageId: string, pin: boolean) => {
+      const previousMessages = [...messages];
+      setMessages((prev) =>
+        prev.map((m) => (m.id === messageId ? { ...m, is_pinned: pin ? 1 : 0 } : m))
+      );
+
+      try {
+        const res = await fetch(`/api/teamspace/messages/${messageId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ is_pinned: pin }),
+        });
+        if (!res.ok) throw new Error("Failed to update pin");
+      } catch (err) {
+        console.error("Pin sync error:", err);
+        setMessages(previousMessages);
+        toast.error("Failed to update pin status.");
+      }
+    },
+    [messages]
+  );
 
   const toggleReaction = useCallback(
     async (messageId: string, emoji: string, hasReacted: boolean) => {
-      await fetch("/api/teamspace/reactions", {
-        method: hasReacted ? "DELETE" : "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ messageId, emoji }),
-      });
+      const previousMessages = [...messages];
+      setMessages((prev) =>
+        prev.map((m) => {
+          if (m.id !== messageId) return m;
+          let reactions = [...m.reactions];
+          reactions = reactions
+            .map((r) => ({
+              ...r,
+              userIds: r.userIds.filter((u) => u !== currentUserId),
+            }))
+            .filter((r) => r.userIds.length > 0);
+
+          if (!hasReacted) {
+            const existingIdx = reactions.findIndex((r) => r.emoji === emoji);
+            if (existingIdx > -1) {
+              reactions[existingIdx] = {
+                ...reactions[existingIdx],
+                userIds: [...reactions[existingIdx].userIds, currentUserId],
+              };
+            } else {
+              reactions.push({ emoji, userIds: [currentUserId] });
+            }
+          }
+          return { ...m, reactions };
+        })
+      );
+
+      try {
+        const response = await fetch("/api/teamspace/reactions", {
+          method: hasReacted ? "DELETE" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ messageId, emoji, channelId }),
+        });
+        if (!response.ok) throw new Error("Failed to update reaction on server");
+      } catch (error) {
+        console.error("Reaction sync error:", error);
+        setMessages(previousMessages);
+      }
     },
-    []
+    [currentUserId, messages, channelId]
   );
 
   const loadMore = useCallback(() => {
@@ -248,6 +457,7 @@ export function useMessages(channelId: string | null, projectId: string, threadP
     sendMessage,
     editMessage,
     deleteMessage,
+    togglePin,
     toggleReaction,
     loadMore,
   };

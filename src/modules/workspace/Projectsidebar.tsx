@@ -181,6 +181,7 @@ export default function ProjectSidebar() {
           className="group relative overflow-hidden mb-1.5 cursor-pointer"
         >
           <Button
+            asChild
             className="cursor-pointer text-xs"
             size="sm"
             variant={"outline"}
@@ -319,8 +320,6 @@ export default function ProjectSidebar() {
             >
               <Link
                 href={`/dashboard/my-projects/${slug}/workspace`}
-                // @ts-ignore
-                transitionTypes={["nav-forward"]}
                 className="relative z-10 flex items-center gap-3 px-3 py-2"
               >
                 <Layers

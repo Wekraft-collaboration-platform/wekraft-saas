@@ -1,3 +1,18 @@
+/**
+ * useChannels.ts
+ * 
+ * Custom hook for managing channels within a teamspace.
+ * 
+ * Functions:
+ * - `fetchChannels`: Retrieves all channels for a project.
+ * - `createChannel`: Creates a new channel via API.
+ * - `updateChannel`: Updates channel name/description.
+ * - `deleteChannel`: Removes a channel.
+ * 
+ * Flow:
+ * - Uses standard fetch API to communicate with `/api/teamspace/channels`.
+ * - Manages local state for immediate UI updates (Optimistic-like updates).
+ */
 "use client";
 
 import { useState, useEffect, useCallback } from "react";

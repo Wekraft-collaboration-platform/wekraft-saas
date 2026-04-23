@@ -1,3 +1,15 @@
+/**
+ * DeleteChannelDialog.tsx
+ * 
+ * Confirmation dialog for deleting a channel.
+ * 
+ * Features:
+ * - Warning about permanent data loss.
+ * - Disables the default channel from being deleted (handled in parent).
+ * 
+ * Integration:
+ * - Calls the `onConfirm` callback passed from `ChannelsSidebar`.
+ */
 "use client";
 
 import { useState } from "react";

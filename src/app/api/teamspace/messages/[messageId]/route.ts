@@ -14,13 +14,13 @@ export async function PATCH(
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { messageId } = await params;
-  const { content } = await req.json();
+  const { content, is_pinned } = await req.json();
 
-  if (!content?.trim()) {
-    return NextResponse.json({ error: "content required" }, { status: 400 });
+  if (content === undefined && is_pinned === undefined) {
+    return NextResponse.json({ error: "content or is_pinned required" }, { status: 400 });
   }
 
-  // Ensure the message belongs to this user
+  // Ensure the message belongs to this user (for edits) or user is admin (for pins)
   const existing = await turso.execute({
     sql: "SELECT user_id, channel_id FROM ts_messages WHERE id = ?",
     args: [messageId],
@@ -29,23 +29,42 @@ export async function PATCH(
   if (existing.rows.length === 0) {
     return NextResponse.json({ error: "Message not found" }, { status: 404 });
   }
-  if (existing.rows[0].user_id !== userId) {
+
+  // For simplicity, allowing anyone to pin for now (or you can restrict to owner/admin)
+  const isEditing = content !== undefined;
+  if (isEditing && existing.rows[0].user_id !== userId) {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
   const now = Date.now();
+  const updates: string[] = [];
+  const args: any[] = [];
+
+  if (content !== undefined) {
+    updates.push("content = ?, edited_at = ?");
+    args.push(content.trim(), now);
+  }
+  if (is_pinned !== undefined) {
+    updates.push("is_pinned = ?");
+    args.push(is_pinned ? 1 : 0);
+  }
+
+  args.push(messageId);
+
   await turso.execute({
-    sql: "UPDATE ts_messages SET content = ?, edited_at = ? WHERE id = ?",
-    args: [content.trim(), now, messageId],
+    sql: `UPDATE ts_messages SET ${updates.join(", ")} WHERE id = ?`,
+    args,
   });
 
-  // Notify channel subscribers of the edit
+  // Notify channel subscribers
   const channelId = existing.rows[0].channel_id as string;
   const ablyChannel = ably.channels.get(`teamspace:${channelId}`);
-  await ablyChannel.publish("message.edited", {
+  
+  await ablyChannel.publish("message.updated", {
     id: messageId,
-    content: content.trim(),
-    edited_at: now,
+    content: content?.trim(),
+    is_pinned: is_pinned,
+    edited_at: content !== undefined ? now : undefined,
   });
 
   return NextResponse.json({ success: true });

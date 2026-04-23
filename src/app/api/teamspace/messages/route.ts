@@ -103,7 +103,7 @@ export async function POST(req: NextRequest) {
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const { channelId, projectId, content, threadParentId, userName, userImage } = body;
+  const { id: clientId, channelId, projectId, content, threadParentId, userName, userImage } = body;
 
   if (!channelId || !projectId || !content?.trim()) {
     return NextResponse.json({ error: "channelId, projectId, content required" }, { status: 400 });
@@ -111,7 +111,7 @@ export async function POST(req: NextRequest) {
 
   await initTeamspaceDB();
 
-  const id = randomUUID();
+  const id = clientId || randomUUID();
   const now = Date.now();
 
   await turso.execute({
