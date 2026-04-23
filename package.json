@@ -32,6 +32,7 @@
     "@tanstack/react-query-devtools": "^5.91.3",
     "@uiw/react-md-editor": "^4.0.11",
     "@upstash/redis": "^1.37.0",
+    "@vercel/analytics": "^2.0.1",
     "@xyflow/react": "^12.10.2",
     "ably": "^2.21.0",
     "class-variance-authority": "^0.7.1",

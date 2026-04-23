@@ -7,6 +7,7 @@ import { ConvexClientProvider } from "@/providers/ConvexClientProvider";
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark, neobrutalism } from "@clerk/ui/themes";
 import { Toaster } from "sonner";
+import { Analytics } from "@vercel/analytics/next";
 
 import { ViewTransition } from "react";
 
@@ -45,6 +46,7 @@ export default function RootLayout({
             </ThemeProvider>
           </QueryProvider>
         </ClerkProvider>
+        <Analytics />
       </body>
     </html>
   );
