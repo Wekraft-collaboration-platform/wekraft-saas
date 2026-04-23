@@ -4,7 +4,15 @@ import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { CalendarEventInterrupt, ResumeValue } from "@/modules/ai/AgentTypes";
 import { cn } from "@/lib/utils";
-import { Calendar, Clock, Tag, FileText } from "lucide-react";
+import {
+  Calendar,
+  Clock,
+  Tag,
+  FileText,
+  AlertCircle,
+  MoveRight,
+  CheckCheck,
+} from "lucide-react";
 
 interface CalendarApprovalCardProps {
   interruptValue: CalendarEventInterrupt;
@@ -50,81 +58,93 @@ export function CalendarApprovalCard({
   return (
     <div
       className={cn(
-        "my-3 mx-4 p-4 border rounded-lg font-mono text-[11px]",
+        "my-3 p-2 w-full max-w-[400px] mx-4 border rounded-md",
         isCompleted
-          ? "border-emerald-900 bg-emerald-900/5 opacity-75"
-          : "border-neutral-800 bg-card",
+          ? "border-border bg-sidebar/20 opacity-60"
+          : "border-border bg-sidebar",
       )}
     >
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
-        <span className="text-[9px] text-neutral-500 uppercase tracking-widest">
-          Calendar event · approval required
-        </span>
-        {isCompleted && (
-          <span className="text-[9px] bg-emerald-900/40 text-emerald-400 px-2 py-0.5 rounded border border-emerald-900">
-            saved
+        {isCompleted ? (
+          <span className="text-xs font-medium text-blue-500">
+            <CheckCheck className="w-3 h-3 inline mr-1" />{" "}
+            <span>Completed</span>
+          </span>
+        ) : (
+          <span className="text-xs font-medium text-blue-500">
+            <AlertCircle className="w-3 h-3 inline mr-1" />{" "}
+            <span>Approval Required</span>
           </span>
         )}
-      </div>
-
-      {/* Title */}
-      <p className="text-sm font-sans font-medium text-foreground mb-3 leading-snug">
-        {preview.title}
-      </p>
-
-      {/* Description */}
-      {preview.description && (
-        <p className="text-neutral-400 font-sans text-[11px] mb-3 leading-relaxed border-l border-neutral-800 pl-3">
-          {preview.description}
-        </p>
-      )}
-
-      {/* Meta row */}
-      <div className="flex flex-wrap gap-3 mb-4 text-neutral-500">
-        <span
+        <p
           className={cn(
-            "px-2 py-0.5 rounded border uppercase text-[9px] tracking-wide",
-            typeColor,
+            "px-2 py-0.5 rounded border uppercase text-[9px] tracking-wide bg-blue-500/40",
           )}
         >
           {preview.type}
-        </span>
+        </p>
+      </div>
+
+      {/* Title */}
+      <div className="flex items-center gap-6 mb-2">
+        <p className="text-sm font-sans capitalize font-medium text-foreground truncate leading-snug">
+          {preview.title}
+        </p>
+      </div>
+      {/* Description */}
+      {/* {preview.description && (
+        <p className="text-muted-foreground font-sans text-xs mb-3 leading-relaxed border-l border-neutral-800 pl-3">
+          {preview.description}
+        </p>
+      )} */}
+
+      <div className="flex flex-wrap text-xs  bg-accent/30 p-1 rounded-md mb-5">
         <span className="flex items-center gap-1">
-          <Calendar className="w-3 h-3" />
+          <div className="bg-card w-7 h-7 flex items-center justify-center rounded-md mr-2">
+            <Calendar className="w-3 h-3 " />
+          </div>
           {formatDate(preview.start)}
         </span>
         {preview.start !== preview.end && (
           <span className="flex items-center gap-1">
-            <span>→</span>
+            <span>
+              <MoveRight className="w-3 h-3 mx-2" />
+            </span>
             {formatDate(preview.end)}
           </span>
         )}
-        {preview.allDay && <span className="text-neutral-600">all day</span>}
       </div>
 
       {/* Actions */}
-      {!isCompleted && (
-        <div className="flex gap-3">
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={() => handleAction({ action: "cancel" })}
-            disabled={isLoading}
-            className="text-[10px] uppercase border border-neutral-800 rounded-md h-7 px-3 text-neutral-400 hover:text-neutral-200"
-          >
-            Cancel
-          </Button>
-          <Button
-            size="sm"
-            onClick={() => handleAction({ action: "approve" })}
-            disabled={isLoading}
-            className="text-[10px] uppercase bg-blue-900/20 text-blue-400 border border-blue-900 rounded-md h-7 px-4 hover:bg-blue-900/40"
-          >
-            {isLoading ? "Saving..." : "Confirm & Save"}
-          </Button>
-        </div>
-      )}
+      <div className="border-t border-border p-1.5">
+        {!isCompleted ? (
+          <div className="flex justify-end gap-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => handleAction({ action: "cancel" })}
+              disabled={isLoading}
+              className="text-[10px] h-7!"
+            >
+              Cancel
+            </Button>
+            <Button
+              size="sm"
+              variant={"default"}
+              onClick={() => handleAction({ action: "approve" })}
+              disabled={isLoading}
+              className="text-[10px] h-7! bg-blue-500 text-white hover:bg-blue-600"
+            >
+              {isLoading ? "Saving..." : "Confirm"}
+            </Button>
+          </div>
+        ) : (
+          <p className="text-xs text-muted-foreground text-right italic">
+            Event Action Completed
+          </p>
+        )}
+      </div>
     </div>
   );
 }

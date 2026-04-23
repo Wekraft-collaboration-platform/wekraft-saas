@@ -316,8 +316,8 @@ export function useLangGraphAgent<
       }
     }
 
-    // Create a new checkpoint except for the last checkpoint. Do not create a new checkpoint if there was an interruption in the last checkpoint.
-    if (checkpoint.next.length > 0 && !interruptionInLastCheckpoint) {
+    // Create a new checkpoint except for the last checkpoint.
+    if (checkpoint.next.length > 0) {
       const newCheckpoint = createAppCheckpoint(checkpoint);
       appCheckpoints.push(newCheckpoint);
       onCheckpointStart?.(newCheckpoint);

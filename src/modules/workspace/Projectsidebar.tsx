@@ -142,7 +142,10 @@ export default function ProjectSidebar() {
   return (
     <Sidebar collapsible="icon" className="">
       {/* ───────── HEADER ───────── */}
-      <SidebarHeader className="border-b " style={{ viewTransitionName: 'site-header' }}>
+      <SidebarHeader
+        className="border-b "
+        style={{ viewTransitionName: "site-header" }}
+      >
         <div className="flex items-center justify-between gap-4 px-3 py-1!">
           <Link href="/dashboard" className="flex items-center">
             <Image
@@ -215,14 +218,7 @@ export default function ProjectSidebar() {
                   className="group relative overflow-hidden cursor-pointer"
                 >
                   <div className="relative z-10 flex items-center gap-3 px-3 w-full text-sm">
-                    <Stars
-                      className={cn(
-                        "h-5.5 w-5.5 transition-colors",
-                        isActiveExact("/dashboard/ai")
-                          ? "text-foreground"
-                          : "text-foreground ",
-                      )}
-                    />
+                    <Image src="/kaya.svg" alt="Logo" width={24} height={24} />
 
                     <span
                       className={cn(

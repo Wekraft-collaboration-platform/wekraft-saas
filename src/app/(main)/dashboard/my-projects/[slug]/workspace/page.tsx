@@ -6,7 +6,13 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../../../../convex/_generated/api";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
-import { ChevronLeft, Home, CalendarIcon, Layers3, Activity } from "lucide-react";
+import {
+  ChevronLeft,
+  Home,
+  CalendarIcon,
+  Layers3,
+  Activity,
+} from "lucide-react";
 import { format } from "date-fns";
 import {
   Popover,
@@ -15,7 +21,6 @@ import {
 } from "@/components/ui/popover";
 import { Calendar } from "@/components/ui/calendar";
 import { toast } from "sonner";
-
 
 const ProjectWorkspace = () => {
   const params = useParams();
@@ -63,7 +68,7 @@ const ProjectWorkspace = () => {
             </p>
           </div>
           <h1 className="text-2xl font-semibold tracking-tighter">
-           <Activity className="w-6 h-6 mr-2 inline"/>   Activity Workspace
+            <Activity className="w-6 h-6 mr-2 inline" /> Activity Workspace
           </h1>
           <p className="text-sm text-muted-foreground max-w-lg leading-relaxed">
             Monitor project insights, track progress and team performance all in
@@ -82,50 +87,6 @@ const ProjectWorkspace = () => {
           </Button>
         </Link>
       </header>
-
-      {/*TEMP */}
-      <div className="my-10 space-y-2 border border-dashed text-muted-foreground text-xs">
-        <div className="text-sm flex items-center gap-4">
-          <div className="text-sm">
-            <span className="font-bold">Project Created:</span>{" "}
-            {project?._creationTime
-              ? format(project._creationTime, "PPP")
-              : "..."}
-          </div>
-          <span className="font-bold">Project Deadline:</span>
-          <span>
-            {projectDetails?.targetDate
-              ? format(projectDetails.targetDate, "PPP")
-              : "Not Set"}
-          </span>
-
-          <Popover>
-            <PopoverTrigger asChild>
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-7 text-xs cursor-pointer"
-              >
-                <CalendarIcon className="w-3 h-3 mr-2" /> Set Target Date
-              </Button>
-            </PopoverTrigger>
-            <PopoverContent className="w-auto p-0" align="start">
-              <Calendar
-                mode="single"
-                selected={
-                  projectDetails?.targetDate
-                    ? new Date(projectDetails.targetDate)
-                    : undefined
-                }
-                onSelect={handleDateSelect}
-                initialFocus
-              />
-            </PopoverContent>
-          </Popover>
-        </div>
-        <p>project language breakdown and heatl score here for free</p>
-        <p>other performance metrics here for paid</p>
-      </div>
     </div>
   );
 };
