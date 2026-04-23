@@ -145,6 +145,7 @@ const TaskPage = () => {
             projectName={projectName || "Project"}
             projectId={project._id}
             repoFullName={project.repoFullName}
+            ownerClerkId={(project as any).ownerClerkId}
             trigger={
               <Button size="sm" className="text-xs">
                 <Plus className="w-5 h-5 mr-2" />

@@ -55,6 +55,7 @@ interface CreateTaskDialogProps {
   projectName: string;
   projectId: Id<"projects">; // From Convex
   repoFullName?: string; // owner/repo
+  ownerClerkId?: string;
   trigger: React.ReactNode;
 }
 
@@ -62,6 +63,7 @@ export const CreateTaskDialog = ({
   projectName,
   projectId,
   repoFullName,
+  ownerClerkId,
   trigger,
 }: CreateTaskDialogProps) => {
   const [open, setOpen] = useState(false);
@@ -515,6 +517,7 @@ export const CreateTaskDialog = ({
                   repoFullName={repoFullName}
                   onSelect={setSelectedPath}
                   selectedPath={selectedPath}
+                  ownerClerkId={ownerClerkId}
                 />
               </PopoverContent>
             </Popover>

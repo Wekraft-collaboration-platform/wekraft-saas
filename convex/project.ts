@@ -372,9 +372,17 @@ export const getProjectBySlug = query({
           .unique()
       : null;
 
+    const owner = await ctx.db.get(project.ownerId);
+    const ownerClerkId = owner?.clerkToken.split("|").pop();
+
+    const projectWithOwner = {
+      ...project,
+      ownerClerkId,
+    };
+
     // Security: Only return if public OR user is the owner OR user is a member
     if (project.isPublic || (user && project.ownerId === user._id)) {
-      return project;
+      return projectWithOwner;
     }
 
     if (user) {
@@ -384,7 +392,7 @@ export const getProjectBySlug = query({
         .filter((q) => q.eq(q.field("userId"), user._id))
         .unique();
 
-      if (membership) return project;
+      if (membership) return projectWithOwner;
     }
 
     return null;

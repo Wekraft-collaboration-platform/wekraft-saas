@@ -14,12 +14,14 @@ interface GetRepoStructureProps {
   repoFullName?: string;
   onSelect: (path: string | null) => void;
   selectedPath: string | null;
+  ownerClerkId?: string;
 }
 
 export const GetRepoStructure = ({
   repoFullName,
   onSelect,
   selectedPath,
+  ownerClerkId,
 }: GetRepoStructureProps) => {
   const [elements, setElements] = useState<TreeViewElement[]>([]);
   const [loadingMap, setLoadingMap] = useState<Record<string, boolean>>({});
@@ -42,7 +44,7 @@ export const GetRepoStructure = ({
       if (!owner || !repo) return;
 
       setLoadingMap({ root: true });
-      const result = await getRepoTree(owner, repo, "");
+      const result = await getRepoTree(owner, repo, "", ownerClerkId);
       if (result.success) {
         setElements(result.data.map(mapToTreeElement));
       }
@@ -56,7 +58,7 @@ export const GetRepoStructure = ({
     const [owner, repo] = repoFullName!.split("/");
     
     setLoadingMap(prev => ({ ...prev, [path]: true }));
-    const result = await getRepoTree(owner, repo, path);
+    const result = await getRepoTree(owner, repo, path, ownerClerkId);
     
     if (result.success) {
       const children = result.data.map(mapToTreeElement);

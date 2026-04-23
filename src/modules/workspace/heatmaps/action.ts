@@ -27,7 +27,8 @@ const REFRESH_COOLDOWN = 5 * 60;
 export async function getRepoStructure(
   owner: string,
   repo: string,
-  forceRefresh: boolean = false
+  forceRefresh: boolean = false,
+  ownerClerkId?: string
 ): Promise<{ data: RepoStructure | null; error?: string; rateLimited?: boolean }> {
   try {
     const { userId } = await auth();
@@ -59,7 +60,7 @@ export async function getRepoStructure(
 
     // 3. Fetch from GitHub
     console.log(`[Heatmap] Fetching repo structure for ${owner}/${repo}...`);
-    const accessToken = await getGithubAccessToken();
+    const accessToken = await getGithubAccessToken(ownerClerkId);
     const octokit = new Octokit({ auth: accessToken });
 
     const { data: repoData } = await octokit.rest.repos.get({ owner, repo });

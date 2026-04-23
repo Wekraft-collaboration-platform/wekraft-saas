@@ -8,13 +8,19 @@ import pLimit from "p-limit";
 // ========================================
 // GETTING GITHUB ACCESS TOKEN FROM CLERK
 // ========================================
-export async function getGithubAccessToken() {
-  const { userId } = await auth();
-  if (!userId) {
-    throw new Error("Not authenticated");
+export async function getGithubAccessToken(userId?: string) {
+  let targetUserId = userId;
+
+  if (!targetUserId) {
+    const { userId: currentUserId } = await auth();
+    if (!currentUserId) {
+      throw new Error("Not authenticated");
+    }
+    targetUserId = currentUserId;
   }
+
   const client = await clerkClient();
-  const tokens = await client.users.getUserOauthAccessToken(userId, "github");
+  const tokens = await client.users.getUserOauthAccessToken(targetUserId, "github");
   const accessToken = tokens.data[0]?.token;
 
   return accessToken;

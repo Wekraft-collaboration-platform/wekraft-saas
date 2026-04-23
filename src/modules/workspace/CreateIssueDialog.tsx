@@ -48,6 +48,7 @@ interface CreateIssueDialogProps {
   projectName?: string;
   projectId: Id<"projects">;
   repoFullName?: string;
+  ownerClerkId?: string;
   trigger: React.ReactNode;
 }
 
@@ -76,6 +77,7 @@ export const CreateIssueDialog = ({
   projectName = "Project",
   projectId,
   repoFullName,
+  ownerClerkId,
   trigger,
 }: CreateIssueDialogProps) => {
   const [open, setOpen] = useState(false);
@@ -322,6 +324,7 @@ export const CreateIssueDialog = ({
                   repoFullName={repoFullName}
                   onSelect={setSelectedPath}
                   selectedPath={selectedPath}
+                  ownerClerkId={ownerClerkId}
                 />
               </PopoverContent>
             </Popover>
