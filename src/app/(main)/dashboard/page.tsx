@@ -94,13 +94,13 @@ export default function DashboardPage() {
           <CardContent>
             <div className="flex items-center justify-between -mt-1">
               <div className="flex flex-col">
-                <p className="text-2xl font-semibold">
+                <div className="text-2xl font-semibold">
                   {isLoading ? (
                     <Skeleton className="h-8 w-16" />
                   ) : (
                     (dashboardStats?.totalCommits ?? 0)
                   )}
-                </p>
+                </div>
                 <p className="text-sm text-muted-foreground">
                   Last Year commits
                 </p>
@@ -128,13 +128,13 @@ export default function DashboardPage() {
           <CardContent>
             <div className="flex items-center justify-between -mt-1">
               <div className="flex flex-col">
-                <p className="text-2xl font-semibold">
+                <div className="text-2xl font-semibold">
                   {isLoading ? (
                     <Skeleton className="h-8 w-16" />
                   ) : (
                     (dashboardStats?.totalPRs ?? 0)
                   )}
-                </p>
+                </div>
                 <p className="text-sm text-muted-foreground">Total PRs</p>
               </div>
               <Separator
@@ -142,13 +142,13 @@ export default function DashboardPage() {
                 className="mx-2 h-10! bg-accent"
               />
               <div className="flex flex-col">
-                <p className="text-2xl font-semibold">
+                <div className="text-2xl font-semibold">
                   {isLoading ? (
                     <Skeleton className="h-8 w-16" />
                   ) : (
                     (dashboardStats?.totalMergedPRs ?? 0)
                   )}
-                </p>
+                </div>
                 <p className="text-sm text-muted-foreground">Merged PRs</p>
               </div>
             </div>
@@ -172,7 +172,7 @@ export default function DashboardPage() {
             <div className="flex flex-col gap-4 -mt-2">
               <div className="flex items-center justify-between px-4">
                 <div className="flex flex-col space-y-1">
-                  <p className="text-3xl font-semibold flex items-baseline gap-1">
+                  <div className="text-3xl font-semibold flex items-baseline gap-1">
                     {isLoading ? (
                       <Skeleton className="h-9 w-16" />
                     ) : (
@@ -183,7 +183,7 @@ export default function DashboardPage() {
                         </span>
                       </>
                     )}
-                  </p>
+                  </div>
                 </div>
 
                 <Separator
@@ -192,7 +192,7 @@ export default function DashboardPage() {
                 />
 
                 <div className="flex flex-col space-y-1 text-right">
-                  <p className="text-3xl font-semibold flex items-baseline justify-end gap-1">
+                  <div className="text-3xl font-semibold flex items-baseline justify-end gap-1">
                     {isLoading ? (
                       <Skeleton className="h-9 w-16" />
                     ) : (
@@ -203,7 +203,7 @@ export default function DashboardPage() {
                         </span>
                       </>
                     )}
-                  </p>
+                  </div>
                 </div>
               </div>
             </div>
