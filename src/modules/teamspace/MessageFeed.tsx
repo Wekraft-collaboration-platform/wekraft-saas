@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useMessages } from "./hooks/useMessages";
-import { toast } from "sonner";
 import { MessageItem } from "./MessageItem";
 import { MessageComposer } from "./MessageComposer";
 import { Message } from "./hooks/useMessages";
@@ -275,10 +274,10 @@ export function MessageFeed({
                                   e.stopPropagation();
                                   togglePin(msg.id, false);
                                 }}
-                                className="absolute top-2.5 right-2.5 p-1.5 rounded-lg bg-background/50 border border-border/50 text-muted-foreground hover:text-red-500 hover:bg-red-500/10 opacity-0 group-hover:opacity-100 transition-all duration-200 shadow-sm"
-                                title="Unpin"
+                                className="absolute bottom-2 right-2 p-2 rounded-lg bg-background/60 border border-border/40 text-muted-foreground/50 hover:text-red-500 hover:bg-red-500/10 hover:border-red-500/20 opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-pointer shadow-sm backdrop-blur-sm"
+                                title="Unpin message"
                               >
-                                <PinOff className="h-3 w-3" />
+                                <PinOff className="h-3.5 w-3.5" />
                               </button>
                             </div>
                           ))}
