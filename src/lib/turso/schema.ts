@@ -10,6 +10,13 @@ let isDbInitialized = false;
 export async function initTeamspaceDB() {
   if (isDbInitialized) return;
 
+  // 1. Ensure migrations are applied (e.g. adding columns to existing tables)
+  try {
+    await turso.execute("ALTER TABLE ts_messages ADD COLUMN link_preview TEXT;");
+  } catch (e) {
+    // Column likely already exists
+  }
+
   await turso.executeMultiple(`
     CREATE TABLE IF NOT EXISTS ts_channels (
       id          TEXT PRIMARY KEY,
@@ -32,6 +39,7 @@ export async function initTeamspaceDB() {
       user_name        TEXT NOT NULL,
       user_image       TEXT,
       content          TEXT NOT NULL,
+      link_preview     TEXT, -- JSON metadata for unfurled links
       thread_parent_id TEXT,
       is_pinned        INTEGER NOT NULL DEFAULT 0,
       edited_at        INTEGER,
@@ -40,6 +48,28 @@ export async function initTeamspaceDB() {
     );
     CREATE INDEX IF NOT EXISTS idx_messages_channel ON ts_messages(channel_id, created_at);
     CREATE INDEX IF NOT EXISTS idx_messages_thread  ON ts_messages(thread_parent_id);
+
+    -- Full-Text Search Table
+    CREATE VIRTUAL TABLE IF NOT EXISTS ts_messages_fts USING fts5(
+      message_id,
+      project_id,
+      content,
+      tokenize='porter'
+    );
+
+    -- Sync Triggers for Search
+    CREATE TRIGGER IF NOT EXISTS ts_messages_ai AFTER INSERT ON ts_messages BEGIN
+      INSERT INTO ts_messages_fts(message_id, project_id, content)
+      VALUES (new.id, new.project_id, new.content);
+    END;
+
+    CREATE TRIGGER IF NOT EXISTS ts_messages_ad AFTER DELETE ON ts_messages BEGIN
+      DELETE FROM ts_messages_fts WHERE message_id = old.id;
+    END;
+
+    CREATE TRIGGER IF NOT EXISTS ts_messages_au AFTER UPDATE ON ts_messages BEGIN
+      UPDATE ts_messages_fts SET content = new.content WHERE message_id = old.id;
+    END;
 
     CREATE TABLE IF NOT EXISTS ts_reactions (
       id         TEXT PRIMARY KEY,

@@ -3,20 +3,29 @@ import { NextRequest, NextResponse } from "next/server";
 import { turso, initTeamspaceDB } from "@/lib/turso";
 import Ably from "ably";
 import { randomUUID } from "crypto";
+import { verifyProjectAccess } from "@/modules/teamspace/lib/auth";
+import { extractUrls, unfurlUrl } from "@/modules/teamspace/lib/unfurl";
 
 const ably = new Ably.Rest(process.env.ABLY_API_KEY!);
 
-// GET /api/teamspace/messages?channelId=xxx&cursor=xxx&limit=50
+// GET /api/teamspace/messages?channelId=xxx&projectId=xxx&cursor=xxx&limit=50
 export async function GET(req: NextRequest) {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const channelId = req.nextUrl.searchParams.get("channelId");
+  const projectId = req.nextUrl.searchParams.get("projectId");
   const cursor = req.nextUrl.searchParams.get("cursor"); // timestamp for pagination
   const threadParentId = req.nextUrl.searchParams.get("threadParentId");
   const limit = Math.min(Number(req.nextUrl.searchParams.get("limit") ?? 50), 100);
 
-  if (!channelId) return NextResponse.json({ error: "channelId required" }, { status: 400 });
+  if (!channelId || !projectId) {
+    return NextResponse.json({ error: "channelId and projectId required" }, { status: 400 });
+  }
+
+  // --- ACCESS CHECK ---
+  const access = await verifyProjectAccess(userId, projectId);
+  if ("error" in access) return NextResponse.json({ error: access.error }, { status: access.status });
 
   await initTeamspaceDB();
 
@@ -86,6 +95,7 @@ export async function GET(req: NextRequest) {
 
   const messages = result.rows.reverse().map((m) => ({
     ...m,
+    link_preview: m.link_preview ? JSON.parse(m.link_preview as string) : null,
     reactions: reactionsMap[m.id as string] ?? [],
   }));
 
@@ -103,28 +113,45 @@ export async function POST(req: NextRequest) {
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const { id: clientId, channelId, projectId, content, threadParentId, userName, userImage } = body;
+  const { id: clientId, channelId, projectId, content, threadParentId } = body;
 
   if (!channelId || !projectId || !content?.trim()) {
     return NextResponse.json({ error: "channelId, projectId, content required" }, { status: 400 });
   }
+
+  // --- ACCESS CHECK & SERVER-SIDE PROFILE ---
+  const access = await verifyProjectAccess(userId, projectId);
+  if ("error" in access) return NextResponse.json({ error: access.error }, { status: access.status });
+
+  const { user } = access;
 
   await initTeamspaceDB();
 
   const id = clientId || randomUUID();
   const now = Date.now();
 
+  // --- LINK UNFURLING ---
+  const urls = extractUrls(content);
+  let linkPreview = null;
+  if (urls.length > 0) {
+    const preview = await unfurlUrl(urls[0]);
+    if (preview) {
+      linkPreview = JSON.stringify(preview);
+    }
+  }
+
   await turso.execute({
-    sql: `INSERT INTO ts_messages (id, channel_id, project_id, user_id, user_name, user_image, content, thread_parent_id, created_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    sql: `INSERT INTO ts_messages (id, channel_id, project_id, user_id, user_name, user_image, content, link_preview, thread_parent_id, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       id,
       channelId,
       projectId,
       userId,
-      userName ?? "Unknown",
-      userImage ?? null,
+      user.name,
+      user.avatarUrl,
       content.trim(),
+      linkPreview,
       threadParentId ?? null,
       now,
     ],
@@ -149,9 +176,10 @@ export async function POST(req: NextRequest) {
     channel_id: channelId,
     project_id: projectId,
     user_id: userId,
-    user_name: userName ?? "Unknown",
-    user_image: userImage ?? null,
+    user_name: user.name,
+    user_image: user.avatarUrl,
     content: content.trim(),
+    link_preview: linkPreview ? JSON.parse(linkPreview) : null,
     thread_parent_id: threadParentId ?? null,
     parent_user_name,
     parent_content,
@@ -167,3 +195,4 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ message }, { status: 201 });
 }
+

@@ -28,10 +28,10 @@ import { Channel } from "./hooks/useChannels";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Hash, Megaphone, ChevronUp, ArrowDown, Lock, Search, Bell, Pin, Users, Inbox, HelpCircle } from "lucide-react";
-import { cn } from "@/lib/utils";
+import { Hash, Megaphone, ChevronUp, ChevronDown, ArrowDown, Lock, Search, Bell, Pin, Users, Inbox, HelpCircle, X, ArrowLeft, PinOff } from "lucide-react";
 import { format, isToday, isYesterday } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
+import { cn } from "@/lib/utils";
 import {
   Tooltip,
   TooltipContent,
@@ -44,9 +44,6 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { PinOff } from "lucide-react";
-
-
 import { useProjectPermissions } from "@/hooks/use-project-permissions";
 import { Id } from "../../../convex/_generated/dataModel";
 
@@ -67,7 +64,7 @@ function DateDivider({ timestamp }: { timestamp: number }) {
   return (
     <div className="flex items-center mt-4 mb-2 mx-4 relative group">
       <div className="flex-1 h-[1px] bg-border/80 group-hover:bg-border/90 transition-colors" />
-      <span className="absolute left-1/2 -translate-x-1/2 bg-background px-2 text-[11px] font-semibold text-muted-foreground/80 lowercase">
+      <span className="absolute left-1/2 -translate-x-1/2 bg-background px-2 text-[11px] font-semibold text-muted-foreground/80 capitalize">
         {label}
       </span>
     </div>
@@ -89,17 +86,148 @@ export function MessageFeed({
   const isAutoScrolling = useRef(false);
   const [atBottom, setAtBottom] = useState(true);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<string[]>([]);
+  const [currentSearchIndex, setCurrentSearchIndex] = useState(-1);
+  const [isSearching, setIsSearching] = useState(false);
   const {
     messages,
     loading,
     hasMore,
+    typingUsers,
     sendMessage,
+    setTypingStatus,
     editMessage,
     deleteMessage,
     togglePin,
     toggleReaction,
     loadMore,
-  } = useMessages(channel?.id ?? null, projectId, currentUserId);
+  } = useMessages(channel?.id ?? null, projectId, currentUserId, currentUserName);
+
+  // --- WHATSAPP-STYLE SEARCH LOGIC ---
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      setCurrentSearchIndex(-1);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const params = new URLSearchParams({ 
+          projectId, 
+          q: searchQuery,
+          channelId: channel?.id || "" 
+        });
+        const res = await fetch(`/api/teamspace/search?${params}`);
+        if (!res.ok) throw new Error("Search request failed");
+        
+        const data = await res.json();
+        if (data.results) {
+          const ids = data.results.map((r: any) => String(r.id || r._id));
+          setSearchResults(ids);
+          if (ids.length > 0) {
+            // Start at the first result (index 0)
+            setCurrentSearchIndex(0);
+            jumpToMessage(ids[0]);
+          }
+        } else {
+          setSearchResults([]);
+        }
+      } catch (err) {
+        console.error("Search failed:", err);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 400);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, projectId, channel?.id]);
+
+  const jumpToMessage = (messageId: string) => {
+    // Attempt multiple times to handle cases where the DOM might be updating
+    const attemptScroll = (count = 0) => {
+      const wordEl = document.getElementById(`search-match-${messageId}`);
+      const messageEl = document.getElementById(`message-${messageId}`);
+      const target = wordEl || messageEl;
+
+      if (target) {
+        document.querySelectorAll(".search-highlight-pulse").forEach(el => {
+          el.classList.remove("search-highlight-pulse", "ring-2", "ring-primary/40", "bg-primary/5");
+        });
+        target.scrollIntoView({ behavior: "smooth", block: "center" });
+        // Add a visual pulse to the message container
+        const container = messageEl || (wordEl?.closest('[id^="message-"]') as HTMLElement);
+        if (container) {
+          container.classList.add("search-highlight-pulse", "ring-2", "ring-primary/40", "bg-primary/5", "transition-all", "duration-500");
+          setTimeout(() => {
+            container.classList.remove("ring-2", "ring-primary/40", "bg-primary/5", "search-highlight-pulse");
+          }, 1500);
+        }
+      } else if (count < 5) {
+        // If not found, try again in 150ms (useful if message was just loaded)
+        setTimeout(() => attemptScroll(count + 1), 150);
+      } else {
+        console.warn(`Message ${messageId} not found in current view.`);
+      }
+    };
+
+    attemptScroll();
+  };
+
+  const handleNextMatch = () => {
+    if (searchResults.length === 0) return;
+    // Go to NEWER message (decrement index towards 0 if 0 is newest, or cyclic)
+    const nextIdx = (currentSearchIndex - 1 + searchResults.length) % searchResults.length;
+    setCurrentSearchIndex(nextIdx);
+    jumpToMessage(searchResults[nextIdx]);
+  };
+
+  const handlePrevMatch = () => {
+    if (searchResults.length === 0) return;
+    // Go to OLDER message (increment index away from 0)
+    const prevIdx = (currentSearchIndex + 1) % searchResults.length;
+    setCurrentSearchIndex(prevIdx);
+    jumpToMessage(searchResults[prevIdx]);
+  };
+
+  // Keyboard shortcuts for search
+  useEffect(() => {
+    const handleKeys = (e: KeyboardEvent) => {
+      if (e.key === "Escape") {
+        setSearchQuery("");
+        return;
+      }
+
+      if (searchResults.length === 0) return;
+
+      const isSearchInput = e.target instanceof HTMLInputElement && e.target.placeholder === "Search chat";
+      const isOtherInput = (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) && !isSearchInput;
+      
+      if (isOtherInput) return;
+
+      if (e.key === "Enter" && !e.shiftKey) {
+        if (isSearchInput) {
+          e.preventDefault();
+          handlePrevMatch(); // ENTER usually goes to OLDER match (UP)
+        }
+      } else if (e.key === "Enter" && e.shiftKey) {
+        if (isSearchInput) {
+          e.preventDefault();
+          handleNextMatch(); // SHIFT+ENTER goes to NEWER match (DOWN)
+        }
+      } else if (e.key === "ArrowUp") {
+        e.preventDefault();
+        handlePrevMatch();
+      } else if (e.key === "ArrowDown") {
+        e.preventDefault();
+        handleNextMatch();
+      }
+    };
+    window.addEventListener("keydown", handleKeys);
+    return () => window.removeEventListener("keydown", handleKeys);
+  }, [searchResults, currentSearchIndex]);
 
   const pinnedMessages = messages.filter((m) => m.is_pinned === 1);
 
@@ -186,20 +314,20 @@ export function MessageFeed({
   return (
     <div className="flex flex-col flex-1 min-w-0 h-full overflow-hidden relative">
       {/* Channel header */}
-      <div className="flex items-center justify-between px-4 py-2 border-b border-border/80 flex-none bg-background/95 backdrop-blur shadow-sm z-10">
-        <div className="flex items-center gap-3 min-w-0">
-          <div className="bg-accent/40 p-1.5 rounded-md shrink-0">
-            <ChannelIcon className="h-4 w-4 text-muted-foreground opacity-80" />
+      <div className="flex items-center justify-between px-6 h-14 border-b border-border/80 flex-none bg-background/95 backdrop-blur shadow-sm z-10">
+        <div className="flex items-center gap-3.5 min-w-0">
+          <div className="bg-primary/10 p-1.5 rounded-lg shrink-0 border border-primary/20">
+            <ChannelIcon className="h-5 w-5 text-primary" />
           </div>
           <div className="flex flex-col min-w-0">
-            <div className="flex items-center gap-1.5">
-              <h2 className="font-bold text-[15px] leading-tight text-foreground truncate">{channel.name}</h2>
+            <div className="flex items-center gap-2">
+              <h2 className="font-bold text-xl leading-tight text-foreground truncate tracking-tight capitalize">{channel.name}</h2>
               {isAnnouncement && (
-                <Lock className="h-3.5 w-3.5 text-amber-500/70" />
+                <Lock className="h-4 w-4 text-amber-500/70" />
               )}
             </div>
             {channel.description && (
-              <p className="text-[11px] text-muted-foreground/70 truncate leading-tight mt-0.5">
+              <p className="text-[11px] text-muted-foreground/50 truncate leading-tight mt-0.5 font-medium first-letter:uppercase">
                 {channel.description}
               </p>
             )}
@@ -264,8 +392,7 @@ export function MessageFeed({
                               key={msg.id} 
                               className="group relative bg-accent/5 border border-border/20 rounded-xl p-3.5 hover:bg-accent/10 transition-all duration-200 cursor-pointer"
                               onClick={() => {
-                                const el = document.getElementById(`message-${msg.id}`);
-                                el?.scrollIntoView({ behavior: "smooth", block: "center" });
+                                jumpToMessage(msg.id);
                               }}
                             >
                               <div className="flex gap-3">
@@ -330,16 +457,64 @@ export function MessageFeed({
             </div>
           </TooltipProvider>
 
-          <div className="relative group">
-            <input 
-              type="text" 
-              placeholder={`Search chat`}
-              className="bg-accent/40 w-48 text-[11px] px-3 py-1.5 pr-8 rounded-full border border-border/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-accent/60 transition-all placeholder:text-muted-foreground/50"
-            />
-            <Search className="h-3.5 w-3.5 absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
+          <div className="relative group flex items-center bg-accent/40 rounded-full border border-border/50 hover:bg-accent/60 transition-all overflow-hidden w-64 ring-primary/20 focus-within:ring-2">
+            <div className="relative flex-1 flex items-center">
+              <input 
+                type="text" 
+                placeholder="Search chat"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={cn(
+                  "bg-transparent text-[11px] px-3 py-1.5 w-full focus:outline-none placeholder:text-muted-foreground/50",
+                  searchQuery ? "pr-[85px]" : "pr-8"
+                )}
+              />
+              
+              <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center">
+                {searchQuery ? (
+                  <div className="flex items-center gap-1.5 bg-background/80 backdrop-blur-md rounded-xl px-2.5 py-1.5 border border-border/60 shadow-lg animate-in fade-in zoom-in duration-300">
+                    {searchResults.length > 0 && (
+                      <span className="text-[11px] font-black text-primary/80 px-2 tabular-nums border-r border-border/50 mr-1.5">
+                        {currentSearchIndex + 1}/{searchResults.length}
+                      </span>
+                    )}
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handlePrevMatch(); // UP -> Older
+                      }}
+                      title="Previous (ArrowUp)"
+                      className="p-1.5 hover:bg-primary/10 rounded-lg text-muted-foreground hover:text-primary transition-all active:scale-90 cursor-pointer"
+                    >
+                      <ChevronUp className="h-4.5 w-4.5 stroke-[2.5]" />
+                    </button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleNextMatch(); // DOWN -> Newer
+                      }}
+                      title="Next (ArrowDown)"
+                      className="p-1.5 hover:bg-primary/10 rounded-lg text-muted-foreground hover:text-primary transition-all active:scale-90 cursor-pointer"
+                    >
+                      <ChevronDown className="h-4.5 w-4.5 stroke-[2.5]" />
+                    </button>
+                    <button 
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setSearchQuery("");
+                      }}
+                      className="p-1.5 hover:bg-red-500/10 rounded-lg text-muted-foreground hover:text-red-500 transition-all active:scale-90 cursor-pointer ml-1"
+                    >
+                      <X className="h-4.5 w-4.5" />
+                    </button>
+                  </div>
+                ) : (
+                  <Search className="h-4 w-4 mr-3 text-muted-foreground/40 group-hover:text-primary/60 transition-colors" />
+                )}
+              </div>
+            </div>
           </div>
         </div>
-
       </div>
 
       {/* Messages area */}
@@ -412,6 +587,7 @@ export function MessageFeed({
                   onDelete={deleteMessage}
                   onReact={toggleReaction}
                   onPin={togglePin}
+                  highlightTerm={searchQuery}
                 />
               );
             })}
@@ -420,12 +596,38 @@ export function MessageFeed({
         )}
       </div>
 
+      {/* Typing indicator */}
+      <div className="h-6 px-6 mb-1">
+        <AnimatePresence>
+          {typingUsers.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 5 }}
+              className="flex items-center gap-2 text-muted-foreground"
+            >
+              <div className="flex gap-1">
+                <span className="h-1 w-1 bg-muted-foreground/50 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                <span className="h-1 w-1 bg-muted-foreground/50 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                <span className="h-1 w-1 bg-muted-foreground/50 rounded-full animate-bounce" />
+              </div>
+              <span className="text-[11px] italic font-medium">
+                {typingUsers.length <= 3 
+                  ? `${typingUsers.map(u => u.userName).join(", ")} ${typingUsers.length === 1 ? "is" : "are"} typing...`
+                  : "Several people are typing..."}
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
       {/* Composer */}
       <MessageComposer
         channelName={channel.name}
         replyingTo={replyingTo}
         onClearReply={() => setReplyingTo(null)}
         onSend={handleSend}
+        onTyping={setTypingStatus}
         disabled={!canSend}
         isAnnouncement={isAnnouncement}
       />

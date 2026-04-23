@@ -38,11 +38,12 @@ interface Props {
   replyingTo?: Message | null;
   onClearReply?: () => void;
   onSend: (content: string) => Promise<void>;
+  onTyping?: (isTyping: boolean) => void;
   disabled?: boolean;
   isAnnouncement?: boolean;
 }
 
-export function MessageComposer({ channelName, replyingTo, onClearReply, onSend, disabled, isAnnouncement }: Props) {
+export function MessageComposer({ channelName, replyingTo, onClearReply, onSend, onTyping, disabled, isAnnouncement }: Props) {
   const [content, setContent] = useState("");
   const [sending, setSending] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -112,7 +113,10 @@ export function MessageComposer({ channelName, replyingTo, onClearReply, onSend,
         <Textarea
           ref={textareaRef}
           value={content}
-          onChange={(e) => setContent(e.target.value)}
+          onChange={(e) => {
+            setContent(e.target.value);
+            onTyping?.(e.target.value.length > 0);
+          }}
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
