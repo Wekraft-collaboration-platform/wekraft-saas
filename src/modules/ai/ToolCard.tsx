@@ -29,6 +29,16 @@ const TOOL_META: Record<
     caller: "Kaya",
     colorClass: "bg-blue-600/20 text-primary/80",
   },
+  get_scheduler: {
+    label: "Checking scheduler",
+    caller: "Kaya",
+    colorClass: "bg-violet-600/20 text-primary/80",
+  },
+  setup_report_scheduler: {
+    label: "Setting up scheduler",
+    caller: "Kaya",
+    colorClass: "bg-violet-600/30 text-primary/80",
+  },
 
   // ── Project analyst's tools ───────────────────────────────────────────────
   get_project_tasks: {
