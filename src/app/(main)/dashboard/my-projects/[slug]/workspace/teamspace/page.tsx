@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "../../../../../../../../convex/_generated/api";
-import { TeamspaceView } from "@/modules/teamspace/TeamspaceView";
+import { TeamspaceView } from "@/modules/workspace/teamspace/TeamspaceView";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useEffect, useRef } from "react";

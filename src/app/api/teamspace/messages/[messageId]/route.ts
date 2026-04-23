@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { turso } from "@/lib/turso";
 import Ably from "ably";
-import { verifyProjectAccess } from "@/modules/teamspace/lib/auth";
+import { verifyProjectAccess } from "@/modules/workspace/teamspace/lib/auth";
 
 const ably = new Ably.Rest(process.env.ABLY_API_KEY!);
 
