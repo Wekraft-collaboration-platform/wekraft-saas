@@ -140,11 +140,11 @@ export default function ProjectSidebar() {
     return pathname === url;
   };
   return (
-    <Sidebar collapsible="icon" className="">
+    <Sidebar collapsible="icon" className="border-r-0">
       {/* ───────── HEADER ───────── */}
       <SidebarHeader
         style={{ viewTransitionName: "site-header" }}
-        className="h-14 justify-center"
+        className="h-14 justify-center flex-none border-b"
       >
         <div className="flex items-center justify-between gap-4 px-3 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
           <Link href="/dashboard" className="flex items-center">
@@ -170,7 +170,7 @@ export default function ProjectSidebar() {
           </Button>
         </div>
       </SidebarHeader>
-      <SidebarSeparator />
+
 
       {/* ───────── CONTENT ───────── */}
       <SidebarContent className="px-2 py-5 group-data-[collapsible=icon]:px-0">
