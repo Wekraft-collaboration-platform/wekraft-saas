@@ -40,21 +40,90 @@ function getAblyClient(): Ably.Realtime {
   return ablyClient;
 }
 
+// Global in-memory cache for ultra-fast prefetching and cross-component sync
+const memoryCache: Record<string, { messages: Message[], nextCursor: string | null, timestamp: number }> = {};
+
+/**
+ * Prefetches messages for a channel and stores them in the memory cache.
+ */
+export async function prefetchMessages(channelId: string, threadParentId?: string) {
+  if (!channelId) return;
+  
+  // Skip if already prefetched recently (last 30 seconds)
+  const cached = memoryCache[channelId];
+  if (cached && Date.now() - cached.timestamp < 30000) return;
+
+  try {
+    const params = new URLSearchParams({ channelId, limit: "50" });
+    if (threadParentId) params.set("threadParentId", threadParentId);
+
+    const res = await fetch(`/api/teamspace/messages?${params}`);
+    const data = await res.json();
+
+    memoryCache[channelId] = {
+      messages: data.messages ?? [],
+      nextCursor: data.nextCursor ?? null,
+      timestamp: Date.now(),
+    };
+    
+    // Also warm up localStorage
+    localStorage.setItem(`chat_cache_${channelId}`, JSON.stringify(data.messages?.slice(0, 50) ?? []));
+  } catch (e) {
+    console.warn("Prefetch failed for", channelId, e);
+  }
+}
+
 export function useMessages(channelId: string | null, projectId: string, currentUserId: string, threadParentId?: string) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
   const subscriptionRef = useRef<Ably.RealtimeChannel | null>(null);
 
-  // ... (previous useEffect and fetchMessages remain same, but check currentUserId in dependencies if needed)
-  // Actually, I'll just show the whole modified block for clarity if possible, 
-  // but let's be precise.
+  // Initial cache load (Synchronous)
+  useEffect(() => {
+    if (!channelId) {
+      setMessages([]);
+      setLoading(false);
+      return;
+    }
 
-  // Fetch initial history
+    // 1. Check memory cache first (latest prefetched data)
+    const mem = memoryCache[channelId];
+    if (mem && Date.now() - mem.timestamp < 60000) {
+      setMessages(mem.messages);
+      setNextCursor(mem.nextCursor);
+      setLoading(false);
+      return;
+    }
+
+    // 2. Check localStorage (persisted data)
+    try {
+      const local = localStorage.getItem(`chat_cache_${channelId}`);
+      if (local) {
+        const parsed = JSON.parse(local);
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setMessages(parsed);
+          setLoading(false);
+          return;
+        }
+      }
+    } catch (e) {
+      console.error("Local cache read error", e);
+    }
+
+    // 3. Fallback to loading state if no cache
+    setLoading(true);
+  }, [channelId]);
+
+  // Fetch fresh data from server
   const fetchMessages = useCallback(
     async (cursor?: string) => {
       if (!channelId) return;
-      setLoading(true);
+      
+      // If we don't have a cursor (initial fetch), we might already have cached data
+      // but we still want to fetch fresh data in the background.
+      if (cursor) setLoading(true); 
+
       try {
         const params = new URLSearchParams({ channelId, limit: "50" });
         if (cursor) params.set("cursor", cursor);
@@ -64,8 +133,23 @@ export function useMessages(channelId: string | null, projectId: string, current
         const data = await res.json();
 
         const incoming: Message[] = data.messages ?? [];
-        setMessages((prev) => (cursor ? [...incoming, ...prev] : incoming));
+        
+        setMessages((prev) => {
+          const combined = cursor ? [...incoming, ...prev] : incoming;
+          // De-duplicate if needed (though API should be clean)
+          return combined;
+        });
         setNextCursor(data.nextCursor ?? null);
+
+        // Update caches for initial load
+        if (!cursor) {
+          memoryCache[channelId] = {
+            messages: incoming,
+            nextCursor: data.nextCursor ?? null,
+            timestamp: Date.now(),
+          };
+          localStorage.setItem(`chat_cache_${channelId}`, JSON.stringify(incoming.slice(0, 50)));
+        }
       } catch (e) {
         console.error("Failed to fetch messages", e);
       } finally {
@@ -91,7 +175,10 @@ export function useMessages(channelId: string | null, projectId: string, current
       if (belongsHere) {
         setMessages((prev) => {
           if (prev.find((m) => m.id === newMsg.id)) return prev;
-          return [...prev, newMsg];
+          const next = [...prev, newMsg];
+          // Update memory cache on new message
+          if (memoryCache[channelId]) memoryCache[channelId].messages = next;
+          return next;
         });
       }
 
@@ -132,8 +219,6 @@ export function useMessages(channelId: string | null, projectId: string, current
           if (m.id !== messageId) return m;
           let reactions = [...m.reactions];
           if (action === "add") {
-            // WhatsApp style: Ensure user is removed from ALL other emojis first 
-            // (in case we didn't get the 'remove' event yet or for sync consistency)
             reactions = reactions
               .map((r) => ({
                 ...r,
@@ -225,8 +310,6 @@ export function useMessages(channelId: string | null, projectId: string, current
   const editMessage = useCallback(
     async (messageId: string, content: string) => {
       const previousMessages = [...messages];
-
-      // Optimistic Update
       setMessages((prev) =>
         prev.map((m) => (m.id === messageId ? { ...m, content: content.trim(), edited_at: Date.now() } : m))
       );
@@ -250,8 +333,6 @@ export function useMessages(channelId: string | null, projectId: string, current
   const deleteMessage = useCallback(
     async (messageId: string) => {
       const previousMessages = [...messages];
-
-      // Optimistic Update
       setMessages((prev) => prev.filter((m) => m.id !== messageId));
 
       try {
@@ -271,8 +352,6 @@ export function useMessages(channelId: string | null, projectId: string, current
   const togglePin = useCallback(
     async (messageId: string, pin: boolean) => {
       const previousMessages = [...messages];
-
-      // Optimistic Update
       setMessages((prev) =>
         prev.map((m) => (m.id === messageId ? { ...m, is_pinned: pin ? 1 : 0 } : m))
       );
@@ -296,15 +375,10 @@ export function useMessages(channelId: string | null, projectId: string, current
   const toggleReaction = useCallback(
     async (messageId: string, emoji: string, hasReacted: boolean) => {
       const previousMessages = [...messages];
-
-      // 1. Optimistic Update
       setMessages((prev) =>
         prev.map((m) => {
           if (m.id !== messageId) return m;
-
           let reactions = [...m.reactions];
-
-          // 1. WhatsApp style: Remove any existing reaction by this user on this message
           reactions = reactions
             .map((r) => ({
               ...r,
@@ -312,7 +386,6 @@ export function useMessages(channelId: string | null, projectId: string, current
             }))
             .filter((r) => r.userIds.length > 0);
 
-          // 2. If we're ADDING (and it wasn't already this emoji), add it
           if (!hasReacted) {
             const existingIdx = reactions.findIndex((r) => r.emoji === emoji);
             if (existingIdx > -1) {
@@ -324,7 +397,6 @@ export function useMessages(channelId: string | null, projectId: string, current
               reactions.push({ emoji, userIds: [currentUserId] });
             }
           }
-
           return { ...m, reactions };
         })
       );
@@ -335,17 +407,13 @@ export function useMessages(channelId: string | null, projectId: string, current
           headers: { "Content-Type": "application/json" },
           body: JSON.stringify({ messageId, emoji, channelId }),
         });
-
-        if (!response.ok) {
-          throw new Error("Failed to update reaction on server");
-        }
+        if (!response.ok) throw new Error("Failed to update reaction on server");
       } catch (error) {
         console.error("Reaction sync error:", error);
-        // Rollback on failure
         setMessages(previousMessages);
       }
     },
-    [currentUserId, messages]
+    [currentUserId, messages, channelId]
   );
 
   const loadMore = useCallback(() => {

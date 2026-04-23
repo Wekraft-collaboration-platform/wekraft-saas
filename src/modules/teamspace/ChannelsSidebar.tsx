@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Channel } from "./hooks/useChannels";
+import { prefetchMessages } from "./hooks/useMessages";
 import { CreateChannelDialog } from "./CreateChannelDialog";
 import { EditChannelDialog } from "./EditChannelDialog";
 import { DeleteChannelDialog } from "./DeleteChannelDialog";
@@ -92,6 +93,7 @@ export function ChannelsSidebar({
           tabIndex={0}
           id={`channel-${channel.id}`}
           onClick={() => onSelect(channel)}
+          onMouseEnter={() => prefetchMessages(channel.id)}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();

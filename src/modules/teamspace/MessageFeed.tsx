@@ -339,7 +339,7 @@ export function MessageFeed({
           </div>
         )}
 
-        {loading ? (
+        {loading && messages.length === 0 ? (
           <div className="px-4 space-y-4 py-4">
             {[...Array(5)].map((_, i) => (
               <div key={i} className="flex gap-3">
