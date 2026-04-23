@@ -40,7 +40,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 import { useProjectPermissions } from "@/hooks/use-project-permissions";
-import { Id } from "../../../convex/_generated/dataModel";
+import { Id } from "../../../../convex/_generated/dataModel";
 
 interface Props {
   projectId: string;

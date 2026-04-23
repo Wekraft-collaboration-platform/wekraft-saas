@@ -2,7 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { turso, initTeamspaceDB } from "@/lib/turso";
 import { randomUUID } from "crypto";
-import { verifyProjectAccess } from "@/modules/teamspace/lib/auth";
+import { verifyProjectAccess } from "@/modules/workspace/teamspace/lib/auth";
 
 // GET /api/teamspace/channels?projectId=xxx
 export async function GET(req: NextRequest) {

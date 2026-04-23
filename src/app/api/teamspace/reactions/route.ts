@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { turso, initTeamspaceDB } from "@/lib/turso";
 import Ably from "ably";
 import { randomUUID } from "crypto";
-import { verifyProjectAccess } from "@/modules/teamspace/lib/auth";
+import { verifyProjectAccess } from "@/modules/workspace/teamspace/lib/auth";
 
 const ably = new Ably.Rest(process.env.ABLY_API_KEY!);
 

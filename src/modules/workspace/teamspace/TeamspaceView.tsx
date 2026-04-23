@@ -18,7 +18,7 @@
 
 import { useState } from "react";
 import { useQuery } from "convex/react";
-import { api } from "../../../convex/_generated/api";
+import { api } from "../../../../convex/_generated/api";
 import { useChannels } from "./hooks/useChannels";
 import { ChannelsSidebar } from "./ChannelsSidebar";
 import { MessageFeed } from "./MessageFeed";

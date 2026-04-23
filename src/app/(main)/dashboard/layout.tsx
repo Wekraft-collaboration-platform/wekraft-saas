@@ -36,21 +36,17 @@ export default function Layout({
   }, [isStoreLoading, user, router]);
 
   return (
-    <div>
+    <div className="h-screen overflow-hidden">
       <Unauthenticated>
         <RedirectToSignIn />
       </Unauthenticated>
       <Authenticated>
         <SidebarProvider defaultOpen={true}>
           {sidebar}
-          <SidebarInset>
-            <header className="flex justify-between h-14 py-1 flex-none items-center border-b px-4 bg-background/80 backdrop-blur-xl">
+          <SidebarInset className="border-l">
+            <header className="flex justify-between h-14 py-1 flex-none items-center border-b px-4 bg-background/80 backdrop-blur-xl sticky top-0 z-50">
               <div className="flex items-center gap-2">
                 <SidebarTrigger className="-ml-1 cursor-pointer hover:scale-105 transition-all duration-200" />
-                <Separator
-                  orientation="vertical"
-                  className="mx-4 h-8! bg-accent"
-                />
                 <DashboardBreadcrumbs />
               </div>
               {/* <div>

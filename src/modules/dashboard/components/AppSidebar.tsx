@@ -103,37 +103,37 @@ export const AppSidebar = () => {
 
   return (
     <Sidebar collapsible="icon" className="">
-      <SidebarHeader className="border-b ">
-        <div className="flex items-center justify-center gap-3 px-3 py-3">
+      <SidebarHeader className="p-0 gap-0">
+        <div className="flex items-center justify-center gap-3 px-3 h-14 border-b group-data-[collapsible=icon]:px-0 shrink-0">
           <Image
             src="/logo.svg"
             alt="Logo"
             width={30}
             height={30}
-            className="cursor-pointer"
+            className="cursor-pointer shrink-0"
           />
           <h1 className="font-bold font-pop text-xl group-data-[collapsible=icon]:hidden">
             WeKraft
           </h1>
         </div>
         {user === undefined ? (
-          <div className="flex items-center gap-4 my-1 mx-auto border px-6 py-2 bg-sidebar-accent/30 rounded-md w-full">
-            <Skeleton className="h-10 w-10 rounded-full" />
-            <div className="flex flex-col space-y-2 group-data-[collapsible=icon]:hidden">
+          <div className="flex items-center gap-4 my-2 mx-auto border px-6 py-2 bg-sidebar-accent/30 rounded-md w-[calc(100%-1.5rem)] group-data-[collapsible=icon]:hidden">
+            <Skeleton className="h-10 w-10 rounded-full shrink-0" />
+            <div className="flex flex-col space-y-2">
               <Skeleton className="h-4 w-24" />
               <Skeleton className="h-3 w-16" />
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-4 my-0.5 mx-auto border px-6 py-2 bg-accent/40 rounded-md group-data-[collapsible=icon]:hidden font-sans">
-            <Avatar className="h-10 w-10">
+          <div className="flex items-center gap-4 my-2 mx-auto border px-6 py-2 bg-accent/40 rounded-md w-[calc(100%-1.5rem)] group-data-[collapsible=icon]:hidden font-sans">
+            <Avatar className="h-10 w-10 shrink-0">
               <AvatarImage src={user?.avatarUrl} />
               <AvatarFallback>UN</AvatarFallback>
             </Avatar>
 
-            <div className="flex flex-col space-y-0.5 group-data-[collapsible=icon]:hidden">
+            <div className="flex flex-col space-y-0.5">
               <h2 className="flex gap-2 text-sm items-center truncate">
-                <Github className="h-4 w-4" /> {user?.githubUsername}
+                <Github className="h-4 w-4 shrink-0" /> {user?.githubUsername}
               </h2>
               <p className="text-xs text-muted-foreground ml-3">
                 Account Synced
@@ -142,20 +142,21 @@ export const AppSidebar = () => {
           </div>
         )}
       </SidebarHeader>
-      <SidebarContent className="flex flex-col px-3 py-5 relative overflow-y-scroll scroll-smooth">
+      <SidebarContent className="flex flex-col px-3 py-5 relative overflow-y-auto scroll-smooth group-data-[collapsible=icon]:px-0">
         <SidebarMenu className="flex flex-col gap-2">
           {/* 1 */}
           <SidebarMenuButton
             asChild
-            data-active={isActive("/dashboard")}
+            tooltip="Dashboard"
+            isActive={isActive("/dashboard")}
             className="group relative overflow-hidden"
           >
             <Link
               href="/dashboard"
-              className="relative z-10 flex items-center gap-3 px-3 py-2 dark:data-[active=true]:text-white data-[active=true]:text-gray-700"
+              className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
             >
               <LucideLayoutDashboard className="h-5 w-5" />
-              <span className="text-sm">Dashboard</span>
+              <span className="text-sm group-data-[collapsible=icon]:hidden">Dashboard</span>
               <span
                 className="
         pointer-events-none absolute inset-0 -z-10
@@ -170,14 +171,14 @@ export const AppSidebar = () => {
           <Popover>
             <PopoverTrigger asChild>
               <SidebarMenuButton
-                data-active={isActive("/dashboard/community")}
+                tooltip="Community"
+                isActive={isActive("/dashboard/community")}
                 className="group relative overflow-hidden"
               >
-                <div className="relative z-10 flex items-center gap-3 w-full">
-                  <Users className="h-5 w-5" />
-                  <span className="text-sm">Community</span>
-                  <ChevronRight className="h-4 w-4 ml-auto" />
-                  <span className="" />
+                <div className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center">
+                  <Users className="h-5 w-5 shrink-0" />
+                  <span className="text-sm group-data-[collapsible=icon]:hidden">Community</span>
+                  <ChevronRight className="h-4 w-4 ml-auto group-data-[collapsible=icon]:hidden" />
                 </div>
               </SidebarMenuButton>
             </PopoverTrigger>
@@ -213,15 +214,16 @@ export const AppSidebar = () => {
           {/* 3 */}
           <SidebarMenuButton
             asChild
-            data-active={isActive("/dashboard/repositories")}
+            tooltip="Repositories"
+            isActive={isActive("/dashboard/repositories")}
             className="group relative overflow-hidden"
           >
             <Link
               href="/dashboard/repositories"
-              className="relative z-10 flex items-center gap-3 px-2 py-2 dark:data-[active=true]:text-white data-[active=true]:text-gray-700"
+              className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
             >
               <GitBranchPlus className="h-5 w-5" />
-              <span className="text-sm">Repositories</span>
+              <span className="text-sm group-data-[collapsible=icon]:hidden">Repositories</span>
               <span
                 className="
         pointer-events-none absolute inset-0 -z-10
@@ -425,15 +427,16 @@ export const AppSidebar = () => {
           {/* 5 */}
           <SidebarMenuButton
             asChild
-            data-active={isActive("/dashboard/my-profile")}
+            tooltip="My Profile"
+            isActive={isActive("/dashboard/my-profile")}
             className="group relative overflow-hidden"
           >
             <Link
               href="/dashboard/my-profile"
-              className="relative z-10 flex items-center gap-3 px-3 py-2 dark:data-[active=true]:text-white data-[active=true]:text-gray-700"
+              className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
             >
               <User2 className="h-5 w-5" />
-              <span className="text-sm">My Profile</span>
+              <span className="text-sm group-data-[collapsible=icon]:hidden">My Profile</span>
               <span
                 className="
         pointer-events-none absolute inset-0 -z-10
@@ -449,15 +452,16 @@ export const AppSidebar = () => {
           <Popover>
             <SidebarMenuButton
               asChild
+              tooltip="Theme"
               className="group relative overflow-hidden"
             >
               <PopoverTrigger asChild>
                 <button
                   type="button"
-                  className="relative z-10 flex w-full items-center gap-3 px-3 py-2 text-primary"
+                  className="relative z-10 flex w-full items-center gap-3 text-primary group-data-[collapsible=icon]:justify-center"
                 >
                   <Palette className="h-5 w-5" />
-                  <span className="text-sm">Theme</span>
+                  <span className="text-sm group-data-[collapsible=icon]:hidden">Theme</span>
 
                   {/* Active gradient */}
                   <span

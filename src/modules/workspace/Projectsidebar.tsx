@@ -140,13 +140,13 @@ export default function ProjectSidebar() {
     return pathname === url;
   };
   return (
-    <Sidebar collapsible="icon" className="">
+    <Sidebar collapsible="icon" className="border-r-0">
       {/* ───────── HEADER ───────── */}
       <SidebarHeader
-        className="border-b "
         style={{ viewTransitionName: "site-header" }}
+        className="h-14 justify-center flex-none border-b"
       >
-        <div className="flex items-center justify-between gap-4 px-3 py-1!">
+        <div className="flex items-center justify-between gap-4 px-3 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
           <Link href="/dashboard" className="flex items-center">
             <Image
               src="/logo.svg"
@@ -171,40 +171,38 @@ export default function ProjectSidebar() {
         </div>
       </SidebarHeader>
 
+
       {/* ───────── CONTENT ───────── */}
-      <SidebarContent className="px-2 py-5">
-        {/* INBOX */}
-        <SidebarMenuButton
-          asChild
-          tooltip="Inbox"
-          isActive={isActive(`/dashboard/my-projects/${slug}/inbox`)}
-          className="group relative overflow-hidden mb-1.5 cursor-pointer"
-        >
-          <Button
-            asChild
-            className="cursor-pointer text-xs"
-            size="sm"
-            variant={"outline"}
-          >
-            <Link
-              href={`/dashboard/my-projects/${slug}/inbox`}
-              className="relative z-10 flex items-center gap-3 px-3 py-2 dark:data-[active=true]:text-white data-[active=true]:text-gray-700"
+      <SidebarContent className="px-2 py-5 group-data-[collapsible=icon]:px-0">
+        <SidebarMenu className="mb-2">
+          <SidebarMenuItem>
+            <SidebarMenuButton
+              asChild
+              tooltip="Inbox"
+              variant="outline"
+              isActive={isActive(`/dashboard/my-projects/${slug}/inbox`)}
+              className="group relative overflow-hidden cursor-pointer"
             >
-              <Inbox className="h-5 w-5" />
-              <span className="text-sm group-data-[collapsible=icon]:hidden">
-                Inbox
-              </span>
-              <span
-                className="
-        pointer-events-none absolute inset-0 -z-10
-        opacity-0 transition-opacity
-        group-data-[active=true]:opacity-100
-        bg-linear-to-l from-blue-600/80 dark:from-blue-600/50 via-blue-600/10  to-transparent
-      "
-              />
-            </Link>
-          </Button>
-        </SidebarMenuButton>
+              <Link
+                href={`/dashboard/my-projects/${slug}/inbox`}
+                className="relative z-10 flex items-center gap-3 w-full dark:data-[active=true]:text-white data-[active=true]:text-gray-700 group-data-[collapsible=icon]:justify-center"
+              >
+                <Inbox className="h-5 w-5" />
+                <span className="text-sm group-data-[collapsible=icon]:hidden">
+                  Inbox
+                </span>
+                <span
+                  className="
+            pointer-events-none absolute inset-0 -z-10
+            opacity-0 transition-opacity
+            group-data-[active=true]:opacity-100
+            bg-linear-to-l from-blue-600/80 dark:from-blue-600/50 via-blue-600/10  to-transparent
+          "
+                />
+              </Link>
+            </SidebarMenuButton>
+          </SidebarMenuItem>
+        </SidebarMenu>
 
         <SidebarMenu>
           {/* =========AI ASSISTANT====== */}
@@ -217,7 +215,7 @@ export default function ProjectSidebar() {
                   isActive={isActiveExact("/dashboard/ai")}
                   className="group relative overflow-hidden cursor-pointer"
                 >
-                  <div className="relative z-10 flex items-center gap-3 px-3 w-full text-sm">
+                  <div className="relative z-10 flex items-center gap-3 w-full text-sm group-data-[collapsible=icon]:justify-center">
                     <Image src="/kaya.svg" alt="Logo" width={24} height={24} />
 
                     <span
@@ -320,7 +318,7 @@ export default function ProjectSidebar() {
             >
               <Link
                 href={`/dashboard/my-projects/${slug}/workspace`}
-                className="relative z-10 flex items-center gap-3 px-3 py-2"
+                className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
               >
                 <Layers
                   className={cn(
@@ -371,7 +369,7 @@ export default function ProjectSidebar() {
                 >
                   <Link
                     href={`/dashboard/my-projects/${slug}/workspace/tasks`}
-                    className="relative z-10 flex items-center gap-3 w-full"
+                    className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
                   >
                     <ListTree className="h-5 w-5" />
                     <span className="text-sm font-medium group-data-[collapsible=icon]:hidden">
@@ -450,7 +448,7 @@ export default function ProjectSidebar() {
                 >
                   <Link
                     href={href}
-                    className="relative z-10 flex items-center gap-3 px-2 py-2"
+                    className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
                   >
                     <Icon
                       className={cn(
@@ -482,9 +480,11 @@ export default function ProjectSidebar() {
               </SidebarMenuItem>
             );
           })}
+        </SidebarMenu>
 
-          <SidebarSeparator className="my-2" />
+        <SidebarSeparator className="my-2 mx-0 w-full" />
 
+        <SidebarMenu className="flex flex-col space-y-1.5">
           {/* HELP & SUPPORT */}
           <SidebarMenuItem>
             <SidebarMenuButton
@@ -494,10 +494,10 @@ export default function ProjectSidebar() {
             >
               <Link
                 href={`/dashboard/my-projects/${slug}/help`}
-                className="relative z-10 flex items-center gap-3 px-2 py-2"
+                className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
               >
                 <MessageCircleQuestionMark className="h-5 w-5 text-muted-foreground transition-colors group-hover:text-foreground" />
-                <span className="text-sm text-muted-foreground transition-colors group-hover:text-foreground">
+                <span className="text-sm text-muted-foreground transition-colors group-hover:text-foreground group-data-[collapsible=icon]:hidden">
                   Help and Support
                 </span>
               </Link>
@@ -513,10 +513,10 @@ export default function ProjectSidebar() {
             >
               <Link
                 href={`/dashboard/my-projects/${slug}/settings/delete`}
-                className="relative z-10 flex items-center gap-3 px-2 py-2"
+                className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
               >
                 <Trash2 className="h-5 w-5 text-muted-foreground transition-colors group-hover:text-primary" />
-                <span className="text-sm text-muted-foreground transition-colors group-hover:text-primary">
+                <span className="text-sm text-muted-foreground transition-colors group-hover:text-primary group-data-[collapsible=icon]:hidden">
                   Delete Project
                 </span>
               </Link>
