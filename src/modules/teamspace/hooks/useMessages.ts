@@ -267,7 +267,7 @@ export function useMessages(channelId: string | null, projectId: string, current
         const response = await fetch("/api/teamspace/reactions", {
           method: hasReacted ? "DELETE" : "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ messageId, emoji }),
+          body: JSON.stringify({ messageId, emoji, channelId }),
         });
 
         if (!response.ok) {
