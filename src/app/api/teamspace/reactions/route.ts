@@ -11,31 +11,51 @@ export async function POST(req: NextRequest) {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { messageId, emoji } = await req.json();
-  if (!messageId || !emoji) {
-    return NextResponse.json({ error: "messageId and emoji required" }, { status: 400 });
+  const { messageId, emoji, channelId } = await req.json();
+  if (!messageId || !emoji || !channelId) {
+    return NextResponse.json({ error: "messageId, emoji and channelId required" }, { status: 400 });
   }
 
   await initTeamspaceDB();
 
-  // Upsert via INSERT OR IGNORE (UNIQUE constraint handles duplicates)
+  // Enforce one reaction per user per message (WhatsApp style)
+  // 1. Get ALL existing reactions for this user on this message
+  const existing = await turso.execute({
+    sql: "SELECT emoji FROM ts_reactions WHERE message_id = ? AND user_id = ?",
+    args: [messageId, userId],
+  });
+
+  const ablyChannel = ably.channels.get(`teamspace:${channelId}`);
+
+  let alreadyHasThisEmoji = false;
+
+  if (existing.rows.length > 0) {
+    // Remove ALL existing reactions for this user on this message
+    await turso.execute({
+      sql: "DELETE FROM ts_reactions WHERE message_id = ? AND user_id = ?",
+      args: [messageId, userId],
+    });
+
+    // Broadcast removal for each existing emoji that isn't the new one
+    for (const row of existing.rows) {
+      const oldEmoji = row.emoji as string;
+      if (oldEmoji === emoji) {
+        alreadyHasThisEmoji = true;
+        continue;
+      }
+      await ablyChannel.publish("reaction.updated", { messageId, userId, emoji: oldEmoji, action: "remove" });
+    }
+  }
+
+  // 2. Add the new reaction
   const id = randomUUID();
   await turso.execute({
     sql: "INSERT OR IGNORE INTO ts_reactions (id, message_id, user_id, emoji, created_at) VALUES (?, ?, ?, ?, ?)",
     args: [id, messageId, userId, emoji, Date.now()],
   });
 
-  // Broadcast reaction update to Ably subscribers
-  const msgRow = await turso.execute({
-    sql: "SELECT channel_id FROM ts_messages WHERE id = ?",
-    args: [messageId],
-  });
-
-  if (msgRow.rows.length > 0) {
-    const channelId = msgRow.rows[0].channel_id as string;
-    const ablyChannel = ably.channels.get(`teamspace:${channelId}`);
-    await ablyChannel.publish("reaction.updated", { messageId, userId, emoji, action: "add" });
-  }
+  // Broadcast addition
+  await ablyChannel.publish("reaction.updated", { messageId, userId, emoji, action: "add" });
 
   return NextResponse.json({ success: true });
 }
@@ -45,9 +65,9 @@ export async function DELETE(req: NextRequest) {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { messageId, emoji } = await req.json();
-  if (!messageId || !emoji) {
-    return NextResponse.json({ error: "messageId and emoji required" }, { status: 400 });
+  const { messageId, emoji, channelId } = await req.json();
+  if (!messageId || !emoji || !channelId) {
+    return NextResponse.json({ error: "messageId, emoji and channelId required" }, { status: 400 });
   }
 
   await turso.execute({
@@ -55,16 +75,8 @@ export async function DELETE(req: NextRequest) {
     args: [messageId, userId, emoji],
   });
 
-  const msgRow = await turso.execute({
-    sql: "SELECT channel_id FROM ts_messages WHERE id = ?",
-    args: [messageId],
-  });
-
-  if (msgRow.rows.length > 0) {
-    const channelId = msgRow.rows[0].channel_id as string;
-    const ablyChannel = ably.channels.get(`teamspace:${channelId}`);
-    await ablyChannel.publish("reaction.updated", { messageId, userId, emoji, action: "remove" });
-  }
+  const ablyChannel = ably.channels.get(`teamspace:${channelId}`);
+  await ablyChannel.publish("reaction.updated", { messageId, userId, emoji, action: "remove" });
 
   return NextResponse.json({ success: true });
 }

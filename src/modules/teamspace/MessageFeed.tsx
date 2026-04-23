@@ -2,7 +2,6 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useMessages } from "./hooks/useMessages";
-import { toast } from "sonner";
 import { MessageItem } from "./MessageItem";
 import { MessageComposer } from "./MessageComposer";
 import { Message } from "./hooks/useMessages";
@@ -20,6 +19,13 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { PinOff } from "lucide-react";
 
 
 import { useProjectPermissions } from "@/hooks/use-project-permissions";
@@ -64,24 +70,6 @@ export function MessageFeed({
   const isAutoScrolling = useRef(false);
   const [atBottom, setAtBottom] = useState(true);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
-  const [pinnedMessageIds, setPinnedMessageIds] = useState<Set<string>>(new Set());
-
-  const handlePin = useCallback((messageId: string, pin: boolean) => {
-    // toast MUST be outside the setState updater — React Strict Mode
-    // double-invokes updaters in dev, which would fire the toast twice.
-    setPinnedMessageIds((prev) => {
-      const next = new Set(prev);
-      if (pin) next.add(messageId);
-      else next.delete(messageId);
-      return next;
-    });
-    if (pin) {
-      toast.success("Message pinned", { duration: 2000 });
-    } else {
-      toast("Message unpinned", { duration: 2000 });
-    }
-  }, []);
-
   const {
     messages,
     loading,
@@ -89,9 +77,12 @@ export function MessageFeed({
     sendMessage,
     editMessage,
     deleteMessage,
+    togglePin,
     toggleReaction,
     loadMore,
-  } = useMessages(channel?.id ?? null, projectId);
+  } = useMessages(channel?.id ?? null, projectId, currentUserId);
+
+  const pinnedMessages = messages.filter((m) => m.is_pinned === 1);
 
   // Auto-scroll to bottom on new messages (only if already at bottom)
   useEffect(() => {
@@ -127,6 +118,20 @@ export function MessageFeed({
       setAtBottom(!isScrollable || distFromBottom < 20);
     }
   }, [messages.length, loading, channel?.id]);
+
+  // Initial scroll to bottom on first load of a channel
+  const hasInitialScrolled = useRef(false);
+  useEffect(() => {
+    hasInitialScrolled.current = false;
+  }, [channel?.id]);
+
+  useEffect(() => {
+    if (!loading && messages.length > 0 && !hasInitialScrolled.current) {
+      bottomRef.current?.scrollIntoView({ behavior: "auto" });
+      setAtBottom(true);
+      hasInitialScrolled.current = true;
+    }
+  }, [loading, messages.length]);
 
   const handleSend = async (content: string) => {
     await sendMessage(content, currentUserId, currentUserName, currentUserImage, replyingTo?.id);
@@ -191,13 +196,108 @@ export function MessageFeed({
                 </TooltipTrigger>
                 <TooltipContent>Notifications</TooltipContent>
               </Tooltip>
-
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Pin className="h-5 w-5 hover:text-foreground cursor-pointer transition-colors" />
-                </TooltipTrigger>
-                <TooltipContent>Pinned Messages</TooltipContent>
-              </Tooltip>
+              <Popover>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <PopoverTrigger asChild>
+                      <button className="focus:outline-none relative group">
+                        <Pin className="h-5 w-5 hover:text-foreground cursor-pointer transition-colors" />
+                        {pinnedMessages.length > 0 && (
+                          <span className="absolute -top-1 -right-1 flex h-3 w-3 items-center justify-center rounded-full bg-blue-500 text-[8px] font-bold text-white shadow-sm ring-1 ring-background">
+                            {pinnedMessages.length}
+                          </span>
+                        )}
+                      </button>
+                    </PopoverTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>Pinned Messages</TooltipContent>
+                </Tooltip>
+                <PopoverContent className="w-80 p-0 shadow-2xl border-border/40 overflow-hidden bg-background/95 backdrop-blur-xl rounded-xl" align="end" sideOffset={12}>
+                  <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-500/10 to-transparent border-b border-border/50">
+                    <div className="flex items-center gap-2.5">
+                      <div className="bg-blue-500/20 p-1 rounded-md">
+                        <Pin className="h-4 w-4 text-blue-500" />
+                      </div>
+                      <span className="text-xs font-bold uppercase tracking-[0.1em] text-foreground/90">Pins</span>
+                    </div>
+                    <div className="px-2 py-0.5 rounded-full bg-accent/50 border border-border/40">
+                      <span className="text-[10px] font-medium text-muted-foreground">{pinnedMessages.length} total</span>
+                    </div>
+                  </div>
+                  <ScrollArea className="h-[380px]">
+                    {pinnedMessages.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+                        <div className="bg-accent/40 p-4 rounded-full mb-4 ring-8 ring-accent/10">
+                          <Pin className="h-8 w-8 text-muted-foreground/30" />
+                        </div>
+                        <p className="text-sm font-semibold text-foreground/80">No pinned messages</p>
+                        <p className="text-xs text-muted-foreground/50 mt-1.5 leading-relaxed">
+                           Pin important messages to find them easily later.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="p-3 space-y-3">
+                        {pinnedMessages
+                          .slice()
+                          .reverse()
+                          .map((msg) => (
+                            <div 
+                              key={msg.id} 
+                              className="group relative bg-accent/5 border border-border/20 rounded-xl p-3.5 hover:bg-accent/10 transition-all duration-200 cursor-pointer"
+                              onClick={() => {
+                                const el = document.getElementById(`message-${msg.id}`);
+                                el?.scrollIntoView({ behavior: "smooth", block: "center" });
+                              }}
+                            >
+                              <div className="flex gap-3">
+                                <Avatar className="h-8 w-8 shrink-0">
+                                  <AvatarImage src={msg.user_image ?? undefined} />
+                                  <AvatarFallback className="text-[10px] bg-blue-500/10 text-blue-500 font-bold">
+                                    {msg.user_name.substring(0, 2).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <div className="flex flex-col min-w-0 flex-1 pt-0.5">
+                                  <div className="flex items-center justify-between mb-1">
+                                    <span className="text-[12px] font-bold text-foreground/90 leading-none">{msg.user_name}</span>
+                                    <span className="text-[10px] text-muted-foreground/40 font-medium">
+                                      {format(new Date(msg.created_at), "MMM d")}
+                                    </span>
+                                  </div>
+                                  <p className="text-[11px] text-foreground/70 leading-relaxed antialiased line-clamp-3">
+                                    {msg.content}
+                                  </p>
+                                </div>
+                              </div>
+                              
+                              <TooltipProvider delayDuration={0}>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        togglePin(msg.id, false);
+                                      }}
+                                      className="absolute bottom-2 right-2 p-1.5 rounded-md bg-accent/20 border border-border/30 text-muted-foreground/40 hover:text-red-500 hover:bg-red-500/10 hover:border-red-500/20 opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-pointer backdrop-blur-sm"
+                                    >
+                                      <PinOff className="h-3 w-3" />
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="right" className="bg-white text-black text-[11px] font-bold px-2 py-1 border-none shadow-xl">
+                                    Unpin
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
+                            </div>
+                          ))}
+                      </div>
+                    )}
+                  </ScrollArea>
+                  <div className="px-4 py-2.5 bg-accent/30 border-t border-border/50 flex items-center justify-center gap-2">
+                    <div className="h-1 w-1 rounded-full bg-blue-500/50" />
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.05em] text-muted-foreground/60">Pinned globally for all members</p>
+                  </div>
+                </PopoverContent>
+              </Popover>
 
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -211,13 +311,13 @@ export function MessageFeed({
             </div>
           </TooltipProvider>
 
-          <div className="relative">
+          <div className="relative group">
             <input 
               type="text" 
               placeholder={`Search chat`}
-              className="bg-black w-48 text-xs px-2.5 py-1.5 pr-7 rounded-sm border focus:outline-none focus:ring-1 focus:ring-ring placeholder-muted-foreground/70"
+              className="bg-accent/40 w-48 text-[11px] px-3 py-1.5 pr-8 rounded-full border border-border/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-accent/60 transition-all placeholder:text-muted-foreground/50"
             />
-            <Search className="h-3.5 w-3.5 absolute right-2 top-1/2 -translate-y-1/2 text-muted-foreground/70" />
+            <Search className="h-3.5 w-3.5 absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
           </div>
         </div>
 
@@ -239,7 +339,7 @@ export function MessageFeed({
           </div>
         )}
 
-        {loading ? (
+        {loading && messages.length === 0 ? (
           <div className="px-4 space-y-4 py-4">
             {[...Array(5)].map((_, i) => (
               <div key={i} className="flex gap-3">
@@ -284,7 +384,7 @@ export function MessageFeed({
                   message={msg}
                   isGrouped={!!isGrouped}
                   currentUserId={currentUserId}
-                  isPinned={pinnedMessageIds.has(msg.id)}
+                  isPinned={msg.is_pinned === 1}
                   canModerateAll={isPower}
                   onReply={(m) => {
                     setReplyingTo(m);
@@ -292,7 +392,7 @@ export function MessageFeed({
                   onEdit={editMessage}
                   onDelete={deleteMessage}
                   onReact={toggleReaction}
-                  onPin={handlePin}
+                  onPin={togglePin}
                 />
               );
             })}

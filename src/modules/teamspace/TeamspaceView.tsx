@@ -11,6 +11,8 @@ import { Channel } from "./hooks/useChannels";
 import { Message } from "./hooks/useMessages";
 import { motion, AnimatePresence } from "framer-motion";
 
+import { useAuth } from "@clerk/nextjs";
+
 interface Props {
   projectSlug: string;
   projectId: string;
@@ -18,6 +20,7 @@ interface Props {
 
 export function TeamspaceView({ projectSlug, projectId }: Props) {
   const user = useQuery(api.user.getCurrentUser);
+  const { userId: clerkUserId } = useAuth();
 
   const { channels, loading, createChannel, updateChannel, deleteChannel } = useChannels(projectId);
   const [activeChannel, setActiveChannel] = useState<Channel | null>(null);
@@ -27,7 +30,7 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
   const resolvedChannel =
     activeChannel ?? channels.find((c) => c.is_default === 1) ?? channels[0] ?? null;
 
-  const currentUserId = user?._id ?? "";
+  const currentUserId = clerkUserId ?? "";
   const currentUserName = user?.name ?? user?.githubUsername ?? "User";
   const currentUserImage = user?.avatarUrl ?? null;
 

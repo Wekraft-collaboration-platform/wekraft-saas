@@ -1,10 +1,15 @@
 import { turso } from "./client";
 
+let isDbInitialized = false;
+
 /**
  * Runs CREATE TABLE IF NOT EXISTS for all teamspace tables.
  * Safe to call on every cold start — idempotent.
+ * Optimized to only run once per server instance lifecycle.
  */
 export async function initTeamspaceDB() {
+  if (isDbInitialized) return;
+
   await turso.executeMultiple(`
     CREATE TABLE IF NOT EXISTS ts_channels (
       id          TEXT PRIMARY KEY,
@@ -28,6 +33,7 @@ export async function initTeamspaceDB() {
       user_image       TEXT,
       content          TEXT NOT NULL,
       thread_parent_id TEXT,
+      is_pinned        INTEGER NOT NULL DEFAULT 0,
       edited_at        INTEGER,
       created_at       INTEGER NOT NULL,
       FOREIGN KEY (channel_id) REFERENCES ts_channels(id) ON DELETE CASCADE
@@ -45,4 +51,6 @@ export async function initTeamspaceDB() {
       FOREIGN KEY (message_id) REFERENCES ts_messages(id) ON DELETE CASCADE
     );
   `);
+
+  isDbInitialized = true;
 }

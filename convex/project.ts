@@ -763,10 +763,21 @@ export const updateProject = mutation({
 export const getProjectMembers = query({
   args: { projectId: v.id("projects") },
   handler: async (ctx, args) => {
-    return await ctx.db
+    const members = await ctx.db
       .query("projectMembers")
       .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
       .collect();
+
+    return await Promise.all(
+      members.map(async (m) => {
+        const user = await ctx.db.get(m.userId);
+        const clerkUserId = user?.clerkToken?.split("|").pop() ?? null;
+        return {
+          ...m,
+          clerkUserId,
+        };
+      })
+    );
   },
 });
 
