@@ -35,11 +35,60 @@ import { useParams } from "next/navigation";
 import { CalendarApprovalCard } from "@/modules/ai/CalendarApprovalCard";
 import { CalendarEventInterrupt } from "@/modules/ai/AgentTypes";
 import { ToolCallCard } from "@/modules/ai/ToolCard";
+import { SprintItemSelectionCard } from "@/modules/ai/SprintItemSelectionCard";
+import Image from "next/image";
 
 interface AiAssistantSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
+
+const KayaLoader = () => (
+  <svg
+    viewBox="0 0 100 100"
+    width="34"
+    height="34"
+    xmlns="http://www.w3.org/2000/svg"
+    className="shrink-0"
+  >
+    <defs>
+      <linearGradient id="orb-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#9B8FF5" />
+        <stop offset="50%" stopColor="#C084F5" />
+        <stop offset="100%" stopColor="#F472B6" />
+      </linearGradient>
+    </defs>
+
+    <style>{`
+    @keyframes spin {
+      from { transform: rotate(0deg); }
+      to   { transform: rotate(360deg); }
+    }
+    @keyframes morph {
+      0%, 100% { rx: 26px; ry: 26px; }
+      50%      { rx: 4px;  ry: 4px;  }
+    }
+    .spin-group {
+      animation: spin 2.4s linear infinite;
+      transform-origin: center;
+    }
+    .morph-rect { animation: morph 2.4s ease-in-out infinite; }
+  `}</style>
+
+    <g className="spin-group">
+      <rect
+        className="morph-rect"
+        fill="url(#orb-grad)"
+        x="24"
+        y="24"
+        width="52"
+        height="52"
+        rx="26"
+        ry="26"
+      />
+    </g>
+  </svg>
+);
 
 export function AiAssistantSheet({
   open,
@@ -159,9 +208,13 @@ export function AiAssistantSheet({
     switch (node.name) {
       case "__start__":
       case "kaya":
-      case "tools": {
-        // ── Calendar HITL interrupt card ──
-        const interrupt = checkpoint.interruptValue as InterruptValue | undefined;
+      case "tools":
+      case "sprint_add_items": {
+        const interrupt = checkpoint.interruptValue as
+          | InterruptValue
+          | undefined;
+
+        // ── Calendar HITL ──
         if (interrupt?.tool === "create_calendar_event") {
           const isCompleted =
             appCheckpoints.indexOf(checkpoint) < appCheckpoints.length - 1;
@@ -174,7 +227,21 @@ export function AiAssistantSheet({
           );
         }
 
-        // ── Tool call in-flight (LLM decided to call a tool, waiting) ──
+        // ── Sprint item selection HITL ──
+        if (interrupt?.tool === "add_items_to_sprint") {
+          const isCompleted =
+            appCheckpoints.indexOf(checkpoint) < appCheckpoints.length - 1;
+          return (
+            <SprintItemSelectionCard
+              projectId={projectId as any}
+              sprintId={interrupt.sprint_id}
+              isCompleted={isCompleted}
+              onResume={(value) => handleResume(value)}
+            />
+          );
+        }
+
+        // ── Kaya tool call in-flight ──
         const lastMsg = node.state.messages?.at(-1);
         if (lastMsg?.tool_calls?.length && node.name === "kaya") {
           return (
@@ -187,8 +254,51 @@ export function AiAssistantSheet({
         }
 
         // ── Normal chatbot message ──
-        return <ChatbotNode nodeState={node.state} />;
+        if (node.name === "kaya") return <ChatbotNode nodeState={node.state} />;
+        return null;
       }
+
+      // ── Analyst entry — nothing to render ────────────────────────────────
+      case "project_analyst": {
+        return null;
+      }
+
+      // ── Analyst think — show tool calls in flight ─────────────────────────
+      case "analyst_think": {
+        const lastMsg = node.state.messages?.at(-1);
+        if (lastMsg?.tool_calls?.length) {
+          return (
+            <div className="space-y-1">
+              {lastMsg.tool_calls.map((tc: any) => (
+                <ToolCallCard key={tc.id} toolName={tc.name} />
+              ))}
+            </div>
+          );
+        }
+        return null;
+      }
+
+      // ── Sprint write node — show tool call card while running ─────────────
+      case "sprint_create": {
+        const lastMsg = node.state.messages?.at(-1);
+        if (lastMsg?.tool_calls?.length) {
+          return (
+            <div className="space-y-1">
+              {lastMsg.tool_calls.map((tc: any) => (
+                <ToolCallCard key={tc.id} toolName={tc.name} />
+              ))}
+            </div>
+          );
+        }
+        return null;
+      }
+
+      // ── Internal plumbing — nothing to render ─────────────────────────────
+      case "analyst_tools":
+      case "analyst_done": {
+        return null;
+      }
+
       default:
         return null;
     }
@@ -200,14 +310,17 @@ export function AiAssistantSheet({
     <Sheet open={open} onOpenChange={onOpenChange}>
       <SheetContent
         side="right"
-        className="w-[500px] flex flex-col p-0 gap-0 h-full focus-visible:ring-0 focus:ring-0 outline-none"
+        className="w-[500px] flex flex-col p-0 gap-0 h-full focus-visible:ring-0 focus:ring-0 outline-none overflow-hidden"
       >
         {/* HEADER */}
         <SheetHeader className="px-4 py-5 border-b bg-card">
           <div className="flex items-center justify-between pr-10 gap-5">
             <div className="flex flex-col items-start">
-              <SheetTitle className="flex items-center gap-2 text-lg font-pop font-semibold">
-                Kaya AI
+              <SheetTitle className="flex items-center gap-2 text-lg font-pop font-semibold mb-1">
+                <Image src="/kaya.svg" alt="Kaya AI" width={24} height={24} />
+                <span className="text-xl font-semibold tracking-tight text-primary font-pop">
+                  Kaya
+                </span>
               </SheetTitle>
               {threadId && (
                 <p className="text-[9px] text-muted-foreground font-mono tracking-tight truncate max-w-[160px]">
@@ -226,9 +339,6 @@ export function AiAssistantSheet({
                   new <MessageSquare className="h-3! w-3!" />
                 </Button>
               )}
-              {/* <Button size="icon-sm" variant="outline" className="text-[10px]">
-                <Settings2 className="h-3! w-3!" />
-              </Button> */}
               <Button size="sm" variant="default" className="text-[10px]">
                 Visit space <MessagesSquare className="h-3 w-3" />
               </Button>
@@ -238,13 +348,36 @@ export function AiAssistantSheet({
 
         {/* MESSAGES */}
         <div ref={containerRef} className="flex-1 overflow-y-auto">
+          {appCheckpoints.length === 0 && !restoring && (
+            <div className="h-full flex flex-col items-center justify-center p-8 text-center animate-in fade-in zoom-in duration-500">
+              <div className="relative mb-6">
+                <Image
+                  src="/kaya.svg"
+                  alt="Kaya AI"
+                  width={60}
+                  height={60}
+                  className="relative drop-shadow-2xl"
+                />
+              </div>
+              <h3 className="text-lg font-pop font-semibold text-primary mb-1 tracking-tight">
+                Hello, I&apos;m Kaya
+              </h3>
+              <p className="text-sm text-muted-foreground max-w-[240px] leading-relaxed">
+                Start with asking ,{" "}
+                <span className="font-pop text-primary">
+                  &quot;What's happening in my project&quot;
+                </span>
+              </p>
+            </div>
+          )}
+
           {appCheckpoints.map((checkpoint, cpIndex) =>
             checkpoint.error ? (
               <div
                 key={checkpoint.checkpointConfig.configurable.checkpoint_id}
                 className="text-red-500 py-2 text-xs px-4"
               >
-                [ERROR]
+                Error occured by Agent. LLm sometimes give malformed response.
               </div>
             ) : (
               checkpoint.nodes.map((node, i) => {
@@ -280,13 +413,13 @@ export function AiAssistantSheet({
 
           {status === "running" && !restoring && (
             <div className="flex gap-2 items-center py-3 px-4 text-neutral-500">
-              <Spinner className="w-3 h-3" />
+              <KayaLoader />
               <div className="flex items-center gap-1.5">
-                <span className="text-[10px] uppercase tracking-tighter">
+                <span className="text-[10px] uppercase tracking-wide">
                   Kaya is thinking...
                 </span>
                 {thinkingTime > 0 && (
-                  <span className="text-[8px] tabular-nums  text-neutral-400">
+                  <span className="text-[9px] tabular-nums  text-neutral-400">
                     {thinkingTime}s
                   </span>
                 )}
@@ -315,7 +448,7 @@ export function AiAssistantSheet({
         </div>
 
         {/* FOOTER */}
-        <div className="px-4 py-6 bg-linear-to-b from-transparent to-blue-500/20">
+        <div className="px-4 py-6 bg-linear-to-b from-transparent via-indigo-200/10 to-purple-400/30">
           <div className="relative">
             <Input
               ref={inputRef}

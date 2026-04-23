@@ -3,7 +3,7 @@ import { AgentState } from "@/modules/ai/AgentTypes";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Copy, Check, User, Sparkles } from "lucide-react";
+import { Copy, Check, User, Sparkles, Sparkle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "convex/react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
@@ -47,7 +47,7 @@ export function ChatbotNode({ nodeState }: ChatbotNodeProps) {
                   )}
                 >
                   {isAI ? (
-                    <Sparkles size={12} />
+                    <Sparkle size={12} />
                   ) : (
                     <Avatar className="h-6 w-6 rounded-md overflow-hidden">
                       <AvatarImage src={user?.avatarUrl} />
@@ -80,12 +80,87 @@ export function ChatbotNode({ nodeState }: ChatbotNodeProps) {
 
             <div
               className={cn(
-                "text-sm leading-relaxed max-w-none prose prose-invert prose-violet",
+                "text-sm leading-relaxed max-w-none",
                 isAI ? "text-neutral-200" : "text-neutral-400 italic",
               )}
             >
-              <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                {msg.content}
+              <ReactMarkdown
+                remarkPlugins={[remarkGfm]}
+                components={{
+                  h1: ({ children }) => (
+                    <h1 className="text-2xl font-bold text-primary mb-3 mt-4 leading-tight">
+                      {children}
+                    </h1>
+                  ),
+                  h2: ({ children }) => (
+                    <h2 className="text-xl font-bold text-primary mb-2 mt-4 leading-tight">
+                      {children}
+                    </h2>
+                  ),
+                  h3: ({ children }) => (
+                    <h3 className="text-base font-semibold text-primary mb-2 mt-3">
+                      {children}
+                    </h3>
+                  ),
+                  p: ({ children }) => (
+                    <p className="mb-3 last:mb-0 text-primary leading-relaxed">
+                      {children}
+                    </p>
+                  ),
+                  strong: ({ children }) => (
+                    <strong className="font-semibold text-white">
+                      {children}
+                    </strong>
+                  ),
+                  em: ({ children }) => (
+                    <em className="italic text-neutral-300">{children}</em>
+                  ),
+                  ul: ({ children }) => (
+                    <ul className="mb-3 ml-4 space-y-1 list-disc marker:text-blue-400">
+                      {children}
+                    </ul>
+                  ),
+                  ol: ({ children }) => (
+                    <ol className="mb-3 ml-4 space-y-1 list-decimal marker:text-blue-400">
+                      {children}
+                    </ol>
+                  ),
+                  li: ({ children }) => (
+                    <li className="text-neutral-200 leading-relaxed pl-1">
+                      {children}
+                    </li>
+                  ),
+                  code: ({ inline, children }: any) =>
+                    inline ? (
+                      <code className="bg-neutral-800 text-violet-300 px-1.5 py-0.5 rounded text-[13px] font-mono">
+                        {children}
+                      </code>
+                    ) : (
+                      <pre className="bg-neutral-900 border border-neutral-700 rounded-lg p-4 mb-3 overflow-x-auto">
+                        <code className="text-green-300 text-[13px] font-mono leading-relaxed">
+                          {children}
+                        </code>
+                      </pre>
+                    ),
+                  blockquote: ({ children }) => (
+                    <blockquote className="border-l-2 border-violet-500 pl-4 mb-3 text-neutral-400 italic">
+                      {children}
+                    </blockquote>
+                  ),
+                  hr: () => <hr className="border-neutral-700 my-4" />,
+                  a: ({ href, children }) => (
+                    <a
+                      href={href}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-violet-400 underline underline-offset-2 hover:text-violet-300"
+                    >
+                      {children}
+                    </a>
+                  ),
+                }}
+              >
+                {typeof msg.content === "string" ? msg.content : ""}
               </ReactMarkdown>
             </div>
           </div>

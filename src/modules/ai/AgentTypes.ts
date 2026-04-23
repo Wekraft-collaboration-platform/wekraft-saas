@@ -6,7 +6,7 @@ export interface AgentState extends WithMessages {
   thread_id: string;
 }
 
-// ── Calendar event HITL interrupt payload ──
+// ── Calendar event HITL interrupt payload ──────────────────────────────────
 export interface CalendarEventInterrupt {
   tool: "create_calendar_event";
   message: string;
@@ -20,13 +20,23 @@ export interface CalendarEventInterrupt {
   };
 }
 
-// ── Union of all possible interrupt values ──
-export type InterruptValue = CalendarEventInterrupt;
+// ── Sprint item selection HITL interrupt payload ───────────────────────────
+export interface SprintItemSelectionInterrupt {
+  tool: "add_items_to_sprint";
+  sprint_id: string;
+  message?: string;
+}
 
-// ── Resume values the frontend can send back ──
+// ── Union of all possible interrupt values ─────────────────────────────────
+export type InterruptValue =
+  | CalendarEventInterrupt
+  | SprintItemSelectionInterrupt;
+
+// ── Resume values the frontend can send back ───────────────────────────────
 export type ResumeValue =
   | { action: "cancel" }
-  | { action: "approve"; edits?: Partial<CalendarEventInterrupt["preview"]> };
+  | { action: "approve"; edits?: Partial<CalendarEventInterrupt["preview"]> }
+  | { task_ids: string[] };
 
 export type KayaCustomEvent =
   | { type: "status"; message: string }
