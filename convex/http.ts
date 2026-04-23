@@ -194,4 +194,71 @@ http.route({
   }),
 });
 
+// get scheduler
+http.route({
+  path: "/getScheduler",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const body = await request.json();
+
+    if (!body.projectId) {
+      return new Response(JSON.stringify({ error: "projectId is required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const scheduler = await ctx.runQuery(internal.agentTools.getScheduler, {
+      projectId: body.projectId,
+    });
+
+    return new Response(JSON.stringify({ scheduler }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }),
+});
+
+// create or update scheduler
+http.route({
+  path: "/createOrUpdateScheduler",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const body = await request.json();
+
+    if (
+      !body.projectId ||
+      !body.name ||
+      body.frequencyDays === undefined ||
+      !body.reportType
+    ) {
+      return new Response(
+        JSON.stringify({
+          error: "projectId, name, frequencyDays, reportType are required",
+        }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
+
+    const schedulerId = await ctx.runMutation(
+      internal.agentTools.createOrUpdateScheduler,
+      {
+        projectId: body.projectId,
+        name: body.name,
+        frequencyDays: body.frequencyDays,
+        reportType: body.reportType,
+        isActive: body.isActive ?? false,
+      },
+    );
+
+    return new Response(JSON.stringify({ schedulerId }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }),
+});
+
 export default http;

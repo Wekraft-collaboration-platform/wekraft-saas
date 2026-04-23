@@ -266,7 +266,9 @@ export const addItemsToSprint = internalMutation({
 
     // Update historical tracking array on the sprint
     const existingTaskIds = sprint.taskIds || [];
-    const newTaskIds = Array.from(new Set([...existingTaskIds, ...args.taskIds]));
+    const newTaskIds = Array.from(
+      new Set([...existingTaskIds, ...args.taskIds]),
+    );
 
     await ctx.db.patch(args.sprintId, {
       taskIds: newTaskIds,
@@ -285,5 +287,78 @@ export const addItemsToSprint = internalMutation({
     }
 
     return "Tasks added to sprint successfully";
+  },
+});
+
+// Scheduler query by agent
+export const getScheduler = internalQuery({
+  args: {
+    projectId: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    const scheduler = await ctx.db
+      .query("schedulers")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .unique();
+
+    if (!scheduler) return null;
+
+    return {
+      name: scheduler.name,
+      frequencyDays: scheduler.frequencyDays,
+      reportType: scheduler.reportType,
+      isActive: scheduler.isActive,
+      lastRunAt: scheduler.lastRunAt ?? null,
+      nextRunAt: scheduler.nextRunAt,
+    };
+  },
+});
+
+// Create or Update Scheduler by agent
+export const createOrUpdateScheduler = internalMutation({
+  args: {
+    projectId: v.id("projects"),
+    name: v.string(),
+    frequencyDays: v.number(), // min 3 days
+    reportType: v.union(v.literal("sprints"), v.literal("project")),
+    isActive: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const project = await ctx.db.get(args.projectId);
+    if (!project) throw new Error(`Project not found: ${args.projectId}`);
+
+    const existingScheduler = await ctx.db
+      .query("schedulers")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .unique();
+
+    const now = Date.now();
+    const frequency = args.frequencyDays < 3 ? 3 : args.frequencyDays;
+    const nextRunAt = now + frequency * 24 * 60 * 60 * 1000;
+
+    if (existingScheduler) {
+      await ctx.db.patch(existingScheduler._id, {
+        name: args.name,
+        frequencyDays: frequency,
+        reportType: args.reportType,
+        nextRunAt: nextRunAt, // Usually updating frequency resets it.
+        isActive: args.isActive,
+        updatedAt: now,
+      });
+      return existingScheduler._id;
+    } else {
+      const id = await ctx.db.insert("schedulers", {
+        projectId: args.projectId,
+        name: args.name,
+        frequencyDays: frequency,
+        reportType: args.reportType,
+        isActive: args.isActive,
+        nextRunAt: nextRunAt,
+        createdBy: project.ownerId,
+        createdAt: now,
+        updatedAt: now,
+      });
+      return id;
+    }
   },
 });

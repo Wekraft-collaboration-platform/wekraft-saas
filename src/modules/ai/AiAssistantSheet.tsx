@@ -37,6 +37,7 @@ import { CalendarEventInterrupt } from "@/modules/ai/AgentTypes";
 import { ToolCallCard } from "@/modules/ai/ToolCard";
 import { SprintItemSelectionCard } from "@/modules/ai/SprintItemSelectionCard";
 import Image from "next/image";
+import { SchedulerSetupCard } from "./SchedulerSetupCard";
 
 interface AiAssistantSheetProps {
   open: boolean;
@@ -209,7 +210,8 @@ export function AiAssistantSheet({
       case "__start__":
       case "kaya":
       case "tools":
-      case "sprint_add_items": {
+      case "sprint_add_items":
+      case "scheduler_setup": {
         const interrupt = checkpoint.interruptValue as
           | InterruptValue
           | undefined;
@@ -236,6 +238,20 @@ export function AiAssistantSheet({
               projectId={projectId as any}
               sprintId={interrupt.sprint_id}
               isCompleted={isCompleted}
+              onResume={(value) => handleResume(value)}
+            />
+          );
+        }
+
+        // ── Scheduler setup HITL ──
+        if (interrupt?.tool === "setup_report_scheduler") {
+          const isCompleted =
+            appCheckpoints.indexOf(checkpoint) < appCheckpoints.length - 1;
+          return (
+            <SchedulerSetupCard
+              projectId={projectId as any}
+              isCompleted={isCompleted}
+              initialData={interrupt.existing_data as any}
               onResume={(value) => handleResume(value)}
             />
           );
@@ -293,9 +309,15 @@ export function AiAssistantSheet({
         return null;
       }
 
+      // case "analyst_tools":
+      // case "analyst_done": {
+      //   return null;
+      // }
       // ── Internal plumbing — nothing to render ─────────────────────────────
       case "analyst_tools":
-      case "analyst_done": {
+      case "analyst_done":
+      case "kaya_read_tools":
+      case "scheduler_setup": {
         return null;
       }
 
