@@ -69,8 +69,8 @@ export function MembersPanel({ projectId, channelId }: Props) {
     };
   }, [channelId]);
 
-  const online = members?.filter((m) => onlineIds.has(m.userId)) ?? [];
-  const offline = members?.filter((m) => !onlineIds.has(m.userId)) ?? [];
+  const online = members?.filter((m) => m.clerkUserId && onlineIds.has(m.clerkUserId)) ?? [];
+  const offline = members?.filter((m) => !m.clerkUserId || !onlineIds.has(m.clerkUserId)) ?? [];
 
   return (
     <div className="flex flex-col h-full w-full">

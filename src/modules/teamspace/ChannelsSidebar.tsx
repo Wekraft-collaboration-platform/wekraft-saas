@@ -84,11 +84,19 @@ export function ChannelsSidebar({
 
     return (
       <li key={channel.id} className="relative group/item px-2">
-        <button
+        <div
+          role="button"
+          tabIndex={0}
           id={`channel-${channel.id}`}
           onClick={() => onSelect(channel)}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              onSelect(channel);
+            }
+          }}
           className={cn(
-            "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[14px] font-medium transition-all duration-300 relative overflow-hidden",
+            "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[14px] font-medium transition-all duration-300 relative overflow-hidden cursor-pointer",
             isActive
               ? "bg-accent/60 text-foreground shadow-sm"
               : "text-muted-foreground hover:bg-accent/30 hover:text-foreground",
@@ -142,7 +150,7 @@ export function ChannelsSidebar({
           {channel.type === "announcement" && !isOwner && (
             <Lock className="h-3 w-3 ml-auto shrink-0 opacity-40 group-hover/item:opacity-70 transition-opacity" />
           )}
-        </button>
+        </div>
       </li>
     );
   };
