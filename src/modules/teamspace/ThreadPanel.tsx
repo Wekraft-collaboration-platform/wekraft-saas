@@ -1,3 +1,18 @@
+/**
+ * ThreadPanel.tsx
+ * 
+ * Side panel for viewing and interacting with message threads.
+ * 
+ * Features:
+ * - Displays a parent message and all its replies.
+ * - Real-time synchronization for thread messages.
+ * - Same interactive features as the main feed (Reactions, Edit, Delete).
+ * - Smooth transition and layout integration with the main feed.
+ * 
+ * Integration:
+ * - Opened from a `MessageItem` to focus on a specific conversation branch.
+ * - Uses `useMessages` hook with a `threadParentId` to filter for replies.
+ */
 "use client";
 
 import { useEffect, useRef } from "react";
@@ -41,11 +56,12 @@ export function ThreadPanel({
     sendMessage,
     editMessage,
     deleteMessage,
+    togglePin,
     toggleReaction,
-  } = useMessages(channelId, projectId, parentMessage?.id);
+  } = useMessages(channelId, projectId, currentUserId, parentMessage?.id);
 
   const handleSend = async (content: string) => {
-    await sendMessage(content, currentUserName, currentUserImage, parentMessage?.id);
+    await sendMessage(content, currentUserId, currentUserName, currentUserImage, parentMessage?.id);
   };
 
   useEffect(() => {
@@ -121,6 +137,7 @@ export function ThreadPanel({
                     onEdit={editMessage}
                     onDelete={deleteMessage}
                     onReact={toggleReaction}
+                    onPin={togglePin}
                   />
                 ))}
                 <div ref={bottomRef} />

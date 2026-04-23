@@ -1,3 +1,16 @@
+/**
+ * CreateChannelDialog.tsx
+ * 
+ * Dialog component for creating a new channel in the teamspace.
+ * 
+ * Features:
+ * - Form validation using Zod and React Hook Form.
+ * - Selection between "Text" and "Announcement" channel types.
+ * - Automatic name formatting (lowercase and hyphenated).
+ * 
+ * Integration:
+ * - Calls the `onCreate` callback passed from `ChannelsSidebar`.
+ */
 "use client";
 
 import { useState } from "react";

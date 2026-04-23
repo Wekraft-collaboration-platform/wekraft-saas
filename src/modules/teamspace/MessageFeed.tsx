@@ -1,3 +1,22 @@
+/**
+ * MessageFeed.tsx
+ * 
+ * The core messaging area for a channel. Displays a real-time list of messages,
+ * handles scrolling, pagination, and various message actions.
+ * 
+ * Features:
+ * - Real-time message updates via Ably.
+ * - Infinite scrolling (Load earlier messages).
+ * - Automatic scrolling to bottom on new messages.
+ * - Date dividers and message grouping for better readability.
+ * - Pinned messages popover and navigation.
+ * - Message composition with reply support.
+ * 
+ * Integration:
+ * - Uses `useMessages` hook for all real-time messaging logic.
+ * - Integrates with `MessageItem` for individual message rendering.
+ * - Integrates with `MessageComposer` for sending new messages.
+ */
 "use client";
 
 import { useEffect, useRef, useState, useCallback } from "react";

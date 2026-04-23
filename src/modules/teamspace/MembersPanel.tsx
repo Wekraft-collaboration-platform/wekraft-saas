@@ -1,3 +1,18 @@
+/**
+ * MembersPanel.tsx
+ * 
+ * Side panel for displaying the list of project members and their real-time presence.
+ * 
+ * Features:
+ * - Lists all project members with their roles.
+ * - Categorizes members into "Online" and "Offline" based on real-time presence.
+ * - Real-time presence tracking via Ably Presence.
+ * - Smooth layout transitions in the Teamspace view.
+ * 
+ * Integration:
+ * - Fetches member list from Convex via `api.project.getProjectMembers`.
+ * - Uses Ably Presence to track and display online status.
+ */
 "use client";
 
 import { useEffect, useState } from "react";

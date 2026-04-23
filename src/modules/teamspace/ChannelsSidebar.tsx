@@ -1,3 +1,19 @@
+/**
+ * ChannelsSidebar.tsx
+ * 
+ * Component for displaying and managing the list of channels in a project.
+ * 
+ * Functions:
+ * - Lists channels categorized by type (Announcements, Community Chat).
+ * - Handles channel selection with prefetching of messages for performance.
+ * - Provides administrative actions (Create, Edit, Delete) based on project permissions.
+ * - Shows visual indicators for the active channel and permissions.
+ * 
+ * Integration:
+ * - Uses `useChannels` hook for data and mutations.
+ * - Uses `useProjectPermissions` to determine user roles.
+ * - Triggers message prefetching on hover via `prefetchMessages`.
+ */
 "use client";
 
 import { useState } from "react";
