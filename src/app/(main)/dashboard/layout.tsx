@@ -14,6 +14,7 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { DashboardBreadcrumbs } from "@/modules/dashboard/components/HeaderCrumbs";
 import { CommunitySearchBar } from "@/modules/dashboard/components/SearchBar";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 export default function Layout({
   children,
@@ -43,8 +44,8 @@ export default function Layout({
       <Authenticated>
         <SidebarProvider defaultOpen={true}>
           {sidebar}
-          <SidebarInset className="border-l">
-            <header className="flex justify-between h-14 py-1 flex-none items-center border-b px-4 bg-background/80 backdrop-blur-xl sticky top-0 z-50">
+          <SidebarInset className="border-l h-screen flex flex-col">
+            <header className="flex justify-between h-14 py-1 flex-none items-center border-b px-4 bg-background/80 backdrop-blur-xl z-50">
               <div className="flex items-center gap-2">
                 <SidebarTrigger className="-ml-1 cursor-pointer hover:scale-105 transition-all duration-200" />
                 <DashboardBreadcrumbs />
@@ -62,7 +63,11 @@ export default function Layout({
                 />
               </div>
             </header>
-            <main className="flex-1 overflow-auto">{children}</main>
+            <div className="flex-1 min-h-0 overflow-hidden">
+              <ScrollArea className="h-full">
+                {children}
+              </ScrollArea>
+            </div>
           </SidebarInset>
         </SidebarProvider>
       </Authenticated>
