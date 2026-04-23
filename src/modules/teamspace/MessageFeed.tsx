@@ -269,16 +269,24 @@ export function MessageFeed({
                                 </div>
                               </div>
                               
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  togglePin(msg.id, false);
-                                }}
-                                className="absolute bottom-2 right-2 p-2 rounded-lg bg-background/60 border border-border/40 text-muted-foreground/50 hover:text-red-500 hover:bg-red-500/10 hover:border-red-500/20 opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-pointer shadow-sm backdrop-blur-sm"
-                                title="Unpin message"
-                              >
-                                <PinOff className="h-3.5 w-3.5" />
-                              </button>
+                              <TooltipProvider delayDuration={0}>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        togglePin(msg.id, false);
+                                      }}
+                                      className="absolute bottom-2 right-2 p-1.5 rounded-md bg-accent/20 border border-border/30 text-muted-foreground/40 hover:text-red-500 hover:bg-red-500/10 hover:border-red-500/20 opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-pointer backdrop-blur-sm"
+                                    >
+                                      <PinOff className="h-3 w-3" />
+                                    </button>
+                                  </TooltipTrigger>
+                                  <TooltipContent side="right" className="bg-white text-black text-[11px] font-bold px-2 py-1 border-none shadow-xl">
+                                    Unpin
+                                  </TooltipContent>
+                                </Tooltip>
+                              </TooltipProvider>
                             </div>
                           ))}
                       </div>

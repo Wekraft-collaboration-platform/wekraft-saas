@@ -68,6 +68,9 @@ export function ChannelsSidebar({
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [targetChannel, setTargetChannel] = useState<Channel | null>(null);
 
+  const [announcementsExpanded, setAnnouncementsExpanded] = useState(true);
+  const [chatExpanded, setChatExpanded] = useState(true);
+
   const getChannelColor = (name: string) => {
     return channelColors[name.toLowerCase()] ?? "text-blue-500";
   };
@@ -196,33 +199,65 @@ export function ChannelsSidebar({
               {/* Announcements Section */}
               {announcementChannels.length > 0 && (
                 <div>
-                  <div className="flex items-center justify-between px-2 pt-2 pb-1 group">
-                    <div className="flex items-center gap-1 cursor-pointer">
-                      <ChevronDown className="h-4 w-4  shrink-0" />
-                      <h3 className="text-sm capitalize select-none">
+                  <div 
+                    className="flex items-center justify-between px-2 pt-2 pb-1 group cursor-pointer hover:text-foreground transition-colors"
+                    onClick={() => setAnnouncementsExpanded(!announcementsExpanded)}
+                  >
+                    <div className="flex items-center gap-1 select-none">
+                      <ChevronDown className={cn(
+                        "h-4 w-4 shrink-0 transition-transform duration-300 text-muted-foreground/60 group-hover:text-foreground",
+                        !announcementsExpanded && "-rotate-90"
+                      )} />
+                      <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground/60 group-hover:text-foreground">
                         Announcements
                       </h3>
                     </div>
                   </div>
-                  <ul className="flex flex-col gap-0.5 mt-1">
-                    {announcementChannels.map(renderChannel)}
-                  </ul>
+                  <AnimatePresence initial={false}>
+                    {announcementsExpanded && (
+                      <motion.ul 
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2, ease: "easeInOut" }}
+                        className="flex flex-col gap-0.5 mt-1 overflow-hidden"
+                      >
+                        {announcementChannels.map(renderChannel)}
+                      </motion.ul>
+                    )}
+                  </AnimatePresence>
                 </div>
               )}
 
               {/* Community Chat Section */}
               <div>
-                <div className="flex items-center justify-between px-2 pt-2 pb-1 group">
-                  <div className="flex items-center gap-1 cursor-pointer">
-                    <ChevronDown className="h-4s w-4  shrink-0" />
-                    <h3 className="text-sm capitalize select-none">
+                <div 
+                  className="flex items-center justify-between px-2 pt-2 pb-1 group cursor-pointer hover:text-foreground transition-colors"
+                  onClick={() => setChatExpanded(!chatExpanded)}
+                >
+                  <div className="flex items-center gap-1 select-none">
+                    <ChevronDown className={cn(
+                      "h-4 w-4 shrink-0 transition-transform duration-300 text-muted-foreground/60 group-hover:text-foreground",
+                      !chatExpanded && "-rotate-90"
+                    )} />
+                    <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground/60 group-hover:text-foreground">
                       Community Chat
                     </h3>
                   </div>
                 </div>
-                <ul className="flex flex-col gap-0.5 mt-1">
-                  {chatChannels.map(renderChannel)}
-                </ul>
+                <AnimatePresence initial={false}>
+                  {chatExpanded && (
+                    <motion.ul 
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2, ease: "easeInOut" }}
+                      className="flex flex-col gap-0.5 mt-1 overflow-hidden"
+                    >
+                      {chatChannels.map(renderChannel)}
+                    </motion.ul>
+                  )}
+                </AnimatePresence>
               </div>
             </>
           )}
