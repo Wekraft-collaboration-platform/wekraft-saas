@@ -4,23 +4,18 @@
  * The primary engine for real-time messaging in the Teamspace module.
  * 
  * Architecture:
- * - Real-time: Powered by Ably (Pub/Sub).
+ * - Real-time: Powered by Ably (Pub/Sub + Presence).
  * - Caching: Multi-layered (In-memory cache -> IndexedDB -> Server).
  * - Prefetching: Messages are prefetched on channel hover for near-instant load.
  * - Optimistic Updates: Local state is updated immediately before server confirmation.
  * 
  * Features:
  * - Real-time message reception (new, updated, deleted).
+ * - Typing indicators and member presence tracking.
  * - Reaction synchronization.
  * - Threading support (via `threadParentId`).
  * - Infinite scrolling with cursor-based pagination.
  * - Offline support (persisted via IndexedDB).
- * 
- * Flow:
- * 1. Checks memory cache for immediate display.
- * 2. Loads from IndexedDB for persistence.
- * 3. Fetches fresh data from `/api/teamspace/messages`.
- * 4. Subscribes to Ably channels for live updates.
  */
 "use client";
 
@@ -46,11 +41,23 @@ export interface Message {
   is_pinned?: number;
   edited_at: number | null;
   created_at: number;
+  link_preview?: {
+    url: string;
+    title?: string;
+    description?: string;
+    image?: string;
+    siteName?: string;
+  } | null;
   reactions: Reaction[];
   reply_count?: number;
   parent_user_name?: string | null;
   parent_user_image?: string | null;
   parent_content?: string | null;
+}
+
+export interface TypingUser {
+  userId: string;
+  userName: string;
 }
 
 let ablyClient: Ably.Realtime | null = null;
@@ -71,15 +78,15 @@ const memoryCache: Record<string, { messages: Message[], nextCursor: string | nu
 /**
  * Prefetches messages for a channel and stores them in the memory cache and IndexedDB.
  */
-export async function prefetchMessages(channelId: string, threadParentId?: string) {
-  if (!channelId) return;
+export async function prefetchMessages(projectId: string, channelId: string, threadParentId?: string) {
+  if (!channelId || !projectId) return;
   
   // Skip if already prefetched recently (last 30 seconds)
   const cached = memoryCache[channelId];
   if (cached && Date.now() - cached.timestamp < 30000) return;
 
   try {
-    const params = new URLSearchParams({ channelId, limit: "50" });
+    const params = new URLSearchParams({ projectId, channelId, limit: "50" });
     if (threadParentId) params.set("threadParentId", threadParentId);
 
     const res = await fetch(`/api/teamspace/messages?${params}`);
@@ -101,11 +108,15 @@ export async function prefetchMessages(channelId: string, threadParentId?: strin
   }
 }
 
-export function useMessages(channelId: string | null, projectId: string, currentUserId: string, threadParentId?: string) {
+export function useMessages(channelId: string | null, projectId: string, currentUserId: string, currentUserName?: string, threadParentId?: string) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [loading, setLoading] = useState(true);
   const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
+  const [onlineIds, setOnlineIds] = useState<Set<string>>(new Set());
+  
   const subscriptionRef = useRef<Ably.RealtimeChannel | null>(null);
+  const typingTimerRef = useRef<NodeJS.Timeout | null>(null);
 
   // Initial cache load
   useEffect(() => {
@@ -115,7 +126,6 @@ export function useMessages(channelId: string | null, projectId: string, current
       return;
     }
 
-    // 1. Check memory cache first (latest prefetched data) - SYNCHRONOUS
     const mem = memoryCache[channelId];
     if (mem && Date.now() - mem.timestamp < 60000) {
       setMessages(mem.messages);
@@ -124,13 +134,11 @@ export function useMessages(channelId: string | null, projectId: string, current
       return;
     }
 
-    // 2. Check IndexedDB (persisted data) - ASYNCHRONOUS
     let isMounted = true;
     const loadFromDb = async () => {
       try {
         const cached = await chatDb.get(channelId);
         if (isMounted && cached && cached.messages.length > 0) {
-          // Only update if we haven't already loaded from network or memory
           setMessages((prev) => prev.length === 0 ? cached.messages : prev);
           setNextCursor((prev) => prev === null ? cached.nextCursor : prev);
           setLoading(false);
@@ -148,19 +156,19 @@ export function useMessages(channelId: string | null, projectId: string, current
   // Fetch fresh data from server
   const fetchMessages = useCallback(
     async (cursor?: string) => {
-      if (!channelId) return;
+      if (!channelId || !projectId) return;
       
-      // If we don't have a cursor (initial fetch), we might already have cached data
-      // but we still want to fetch fresh data in the background.
       if (cursor) setLoading(true); 
 
       try {
-        const params = new URLSearchParams({ channelId, limit: "50" });
+        const params = new URLSearchParams({ projectId, channelId, limit: "50" });
         if (cursor) params.set("cursor", cursor);
         if (threadParentId) params.set("threadParentId", threadParentId);
 
         const res = await fetch(`/api/teamspace/messages?${params}`);
         const data = await res.json();
+
+        if (data.error) throw new Error(data.error);
 
         const incoming: Message[] = data.messages ?? [];
         const nextC = data.nextCursor ?? null;
@@ -171,7 +179,6 @@ export function useMessages(channelId: string | null, projectId: string, current
         });
         setNextCursor(nextC);
 
-        // Update caches for initial load
         if (!cursor) {
           memoryCache[channelId] = {
             messages: incoming,
@@ -182,20 +189,36 @@ export function useMessages(channelId: string | null, projectId: string, current
         }
       } catch (e) {
         console.error("Failed to fetch messages", e);
+        if (e instanceof Error && e.message.includes("Forbidden")) {
+          toast.error("Access denied to this project's messages");
+        }
       } finally {
         setLoading(false);
       }
     },
-    [channelId, threadParentId]
+    [channelId, projectId, threadParentId]
   );
 
-  // Ably real-time subscription
+  // Ably real-time subscription & presence
   useEffect(() => {
     if (!channelId) return;
 
     const ably = getAblyClient();
     const ch = ably.channels.get(`teamspace:${channelId}`);
     subscriptionRef.current = ch;
+
+    // Presence & Typing logic
+    ch.presence.enter({ userId: currentUserId, userName: currentUserName });
+    
+    const updatePresence = () => {
+      ch.presence.get().then((members) => {
+        setOnlineIds(new Set(members.map((m) => m.clientId)));
+      }).catch(console.error);
+    };
+
+    ch.presence.subscribe("enter", updatePresence);
+    ch.presence.subscribe("leave", updatePresence);
+    updatePresence();
 
     const onNewMsg = (msg: Ably.Message) => {
       const newMsg = msg.data as Message;
@@ -206,10 +229,11 @@ export function useMessages(channelId: string | null, projectId: string, current
         setMessages((prev) => {
           if (prev.find((m) => m.id === newMsg.id)) return prev;
           const next = [...prev, newMsg];
-          // Update memory cache on new message
           if (memoryCache[channelId]) memoryCache[channelId].messages = next;
           return next;
         });
+        // Remove typing indicator if it was from this user
+        setTypingUsers(prev => prev.filter(u => u.userId !== newMsg.user_id));
       }
 
       if (!isThread && newMsg.thread_parent_id) {
@@ -235,11 +259,6 @@ export function useMessages(channelId: string | null, projectId: string, current
           return next;
         })
       );
-    };
-
-    const onDeletedMsg = (msg: Ably.Message) => {
-      const { id } = msg.data;
-      setMessages((prev) => prev.filter((m) => m.id !== id));
     };
 
     const onReactionUpdated = (msg: Ably.Message) => {
@@ -276,21 +295,39 @@ export function useMessages(channelId: string | null, projectId: string, current
       );
     };
 
+    const onDeletedMsg = (msg: Ably.Message) => {
+      const { id } = msg.data;
+      setMessages((prev) => prev.filter((m) => m.id !== id));
+    };
+
+    const onTyping = (msg: Ably.Message) => {
+      const { userId, userName, isTyping } = msg.data;
+      if (userId === currentUserId) return;
+
+      setTypingUsers(prev => {
+        if (isTyping) {
+          if (prev.find(u => u.userId === userId)) return prev;
+          return [...prev, { userId, userName }];
+        } else {
+          return prev.filter(u => u.userId !== userId);
+        }
+      });
+    };
+
     ch.subscribe("message.new", onNewMsg);
     ch.subscribe("message.updated", onUpdatedMsg);
     ch.subscribe("message.deleted", onDeletedMsg);
     ch.subscribe("reaction.updated", onReactionUpdated);
+    ch.subscribe("typing", onTyping);
 
     fetchMessages();
 
     return () => {
-      ch.unsubscribe("message.new", onNewMsg);
-      ch.unsubscribe("message.updated", onUpdatedMsg);
-      ch.unsubscribe("message.deleted", onDeletedMsg);
-      ch.unsubscribe("reaction.updated", onReactionUpdated);
+      ch.presence.leave();
+      ch.unsubscribe();
       subscriptionRef.current = null;
     };
-  }, [channelId, threadParentId, fetchMessages]);
+  }, [channelId, threadParentId, fetchMessages, currentUserId, currentUserName]);
 
   const sendMessage = useCallback(
     async (content: string, userId: string, userName: string, userImage: string | null, parentId?: string) => {
@@ -312,6 +349,11 @@ export function useMessages(channelId: string | null, projectId: string, current
       };
       setMessages((prev) => [...prev, tmpMsg]);
 
+      // Stop typing on send
+      if (subscriptionRef.current) {
+        subscriptionRef.current.publish("typing", { userId, userName, isTyping: false });
+      }
+
       try {
         const res = await fetch("/api/teamspace/messages", {
           method: "POST",
@@ -321,21 +363,46 @@ export function useMessages(channelId: string | null, projectId: string, current
             channelId,
             projectId,
             content,
-            userName,
-            userImage,
             threadParentId: parentId ?? null,
           }),
         });
         const json = await res.json();
         if (json.message) {
           setMessages((prev) => prev.map((m) => (m.id === optimisticId ? json.message : m)));
+        } else if (json.error) {
+          throw new Error(json.error);
         }
       } catch (err) {
         setMessages((prev) => prev.filter((m) => m.id !== optimisticId));
+        toast.error(err instanceof Error ? err.message : "Failed to send message");
       }
     },
     [channelId, projectId]
   );
+
+  const setTypingStatus = useCallback((isTyping: boolean) => {
+    if (!subscriptionRef.current || !channelId) return;
+
+    // Clear existing timer
+    if (typingTimerRef.current) clearTimeout(typingTimerRef.current);
+
+    subscriptionRef.current.publish("typing", { 
+      userId: currentUserId, 
+      userName: currentUserName, 
+      isTyping 
+    });
+
+    if (isTyping) {
+      // Auto-clear typing after 5 seconds of inactivity
+      typingTimerRef.current = setTimeout(() => {
+        subscriptionRef.current?.publish("typing", { 
+          userId: currentUserId, 
+          userName: currentUserName, 
+          isTyping: false 
+        });
+      }, 5000);
+    }
+  }, [channelId, currentUserId, currentUserName]);
 
   const editMessage = useCallback(
     async (messageId: string, content: string) => {
@@ -348,7 +415,7 @@ export function useMessages(channelId: string | null, projectId: string, current
         const res = await fetch(`/api/teamspace/messages/${messageId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ content }),
+          body: JSON.stringify({ projectId, content }),
         });
         if (!res.ok) throw new Error("Failed to edit message");
       } catch (err) {
@@ -357,7 +424,7 @@ export function useMessages(channelId: string | null, projectId: string, current
         toast.error("Failed to edit message. Please try again.");
       }
     },
-    [messages]
+    [messages, projectId]
   );
 
   const deleteMessage = useCallback(
@@ -366,7 +433,7 @@ export function useMessages(channelId: string | null, projectId: string, current
       setMessages((prev) => prev.filter((m) => m.id !== messageId));
 
       try {
-        const res = await fetch(`/api/teamspace/messages/${messageId}`, {
+        const res = await fetch(`/api/teamspace/messages/${messageId}?projectId=${projectId}`, {
           method: "DELETE",
         });
         if (!res.ok) throw new Error("Failed to delete message");
@@ -376,7 +443,7 @@ export function useMessages(channelId: string | null, projectId: string, current
         toast.error("Failed to delete message. Please try again.");
       }
     },
-    [messages]
+    [messages, projectId]
   );
 
   const togglePin = useCallback(
@@ -390,7 +457,7 @@ export function useMessages(channelId: string | null, projectId: string, current
         const res = await fetch(`/api/teamspace/messages/${messageId}`, {
           method: "PATCH",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ is_pinned: pin }),
+          body: JSON.stringify({ projectId, is_pinned: pin }),
         });
         if (!res.ok) throw new Error("Failed to update pin");
       } catch (err) {
@@ -399,11 +466,13 @@ export function useMessages(channelId: string | null, projectId: string, current
         toast.error("Failed to update pin status.");
       }
     },
-    [messages]
+    [messages, projectId]
   );
 
   const toggleReaction = useCallback(
     async (messageId: string, emoji: string, hasReacted: boolean) => {
+      if (!channelId || !projectId) return;
+
       const previousMessages = [...messages];
       setMessages((prev) =>
         prev.map((m) => {
@@ -435,7 +504,7 @@ export function useMessages(channelId: string | null, projectId: string, current
         const response = await fetch("/api/teamspace/reactions", {
           method: hasReacted ? "DELETE" : "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ messageId, emoji, channelId }),
+          body: JSON.stringify({ projectId, messageId, emoji, channelId }),
         });
         if (!response.ok) throw new Error("Failed to update reaction on server");
       } catch (error) {
@@ -443,7 +512,7 @@ export function useMessages(channelId: string | null, projectId: string, current
         setMessages(previousMessages);
       }
     },
-    [currentUserId, messages, channelId]
+    [currentUserId, messages, channelId, projectId]
   );
 
   const loadMore = useCallback(() => {
@@ -454,7 +523,10 @@ export function useMessages(channelId: string | null, projectId: string, current
     messages,
     loading,
     hasMore: !!nextCursor,
+    typingUsers,
+    onlineIds,
     sendMessage,
+    setTypingStatus,
     editMessage,
     deleteMessage,
     togglePin,
@@ -462,3 +534,5 @@ export function useMessages(channelId: string | null, projectId: string, current
     loadMore,
   };
 }
+
+

@@ -18,6 +18,7 @@
 "use client";
 
 import { useState } from "react";
+import { LinkPreview } from "./LinkPreview";
 import { Message } from "./hooks/useMessages";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -69,6 +70,25 @@ function formatTime(ts: number) {
   return format(d, "MMM d, h:mm a");
 }
 
+function Highlight({ text, term }: { text: string; term?: string }) {
+  if (!term || !term.trim()) return <>{text}</>;
+  const regex = new RegExp(`(${term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&")})`, "gi");
+  const parts = text.split(regex);
+  return (
+    <>
+      {parts.map((part, i) =>
+        regex.test(part) ? (
+          <span key={i} className="bg-yellow-400/40 dark:bg-yellow-500/40 text-foreground rounded-sm px-0.5 ring-1 ring-yellow-500/20">
+            {part}
+          </span>
+        ) : (
+          part
+        )
+      )}
+    </>
+  );
+}
+
 interface Props {
   message: Message;
   isGrouped: boolean;
@@ -80,6 +100,7 @@ interface Props {
   onDelete: (messageId: string) => Promise<void>;
   onReact: (messageId: string, emoji: string, hasReacted: boolean) => Promise<void>;
   onPin: (messageId: string, pinned: boolean) => void;
+  highlightTerm?: string;
 }
 
 export function MessageItem({
@@ -93,6 +114,7 @@ export function MessageItem({
   onDelete,
   onReact,
   onPin,
+  highlightTerm,
 }: Props) {
   const [hovered, setHovered] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -239,12 +261,15 @@ export function MessageItem({
             </div>
           ) : (
             <p className="text-[15px] leading-[1.375rem] text-foreground/90 break-words whitespace-pre-wrap">
-              {message.content}
+              <Highlight text={message.content} term={highlightTerm} />
               {message.edited_at && (
                 <span className="text-[10px] text-muted-foreground ml-1.5 select-none">(edited)</span>
               )}
             </p>
           )}
+
+          {/* Link Preview */}
+          {message.link_preview && <LinkPreview preview={message.link_preview} />}
 
           {/* Reactions */}
           {message.reactions.length > 0 && (

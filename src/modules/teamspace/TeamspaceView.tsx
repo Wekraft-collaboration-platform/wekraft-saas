@@ -87,7 +87,12 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
             transition={{ type: "spring", stiffness: 350, damping: 30 }}
             className="overflow-hidden bg-black border-l border-border/80 h-full shrink-0"
           >
-            <MembersPanel projectId={projectId} channelId={resolvedChannel?.id ?? null} />
+            <MembersPanel 
+              projectId={projectId} 
+              channelId={resolvedChannel?.id ?? null} 
+              currentUserId={currentUserId}
+              currentUserName={currentUserName}
+            />
           </motion.div>
         )}
       </AnimatePresence>

@@ -109,7 +109,7 @@ export function ChannelsSidebar({
           tabIndex={0}
           id={`channel-${channel.id}`}
           onClick={() => onSelect(channel)}
-          onMouseEnter={() => prefetchMessages(channel.id)}
+          onMouseEnter={() => prefetchMessages(projectId, channel.id)}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();

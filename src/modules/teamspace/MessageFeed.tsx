@@ -21,6 +21,7 @@
 
 import { useEffect, useRef, useState, useCallback } from "react";
 import { useMessages } from "./hooks/useMessages";
+import { SearchOverlay } from "./SearchOverlay";
 import { MessageItem } from "./MessageItem";
 import { MessageComposer } from "./MessageComposer";
 import { Message } from "./hooks/useMessages";
@@ -28,7 +29,7 @@ import { Channel } from "./hooks/useChannels";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Hash, Megaphone, ChevronUp, ArrowDown, Lock, Search, Bell, Pin, Users, Inbox, HelpCircle } from "lucide-react";
+import { Hash, Megaphone, ChevronUp, ChevronDown, ArrowDown, Lock, Search, Bell, Pin, Users, Inbox, HelpCircle, X, ArrowLeft } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format, isToday, isYesterday } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
@@ -89,17 +90,102 @@ export function MessageFeed({
   const isAutoScrolling = useRef(false);
   const [atBottom, setAtBottom] = useState(true);
   const [replyingTo, setReplyingTo] = useState<Message | null>(null);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [searchResults, setSearchResults] = useState<string[]>([]);
+  const [currentSearchIndex, setCurrentSearchIndex] = useState(-1);
+  const [isSearching, setIsSearching] = useState(false);
   const {
     messages,
     loading,
     hasMore,
+    typingUsers,
     sendMessage,
+    setTypingStatus,
     editMessage,
     deleteMessage,
     togglePin,
     toggleReaction,
     loadMore,
-  } = useMessages(channel?.id ?? null, projectId, currentUserId);
+  } = useMessages(channel?.id ?? null, projectId, currentUserId, currentUserName);
+
+  // --- WHATSAPP-STYLE SEARCH LOGIC ---
+  useEffect(() => {
+    if (!searchQuery.trim()) {
+      setSearchResults([]);
+      setCurrentSearchIndex(-1);
+      return;
+    }
+
+    const timer = setTimeout(async () => {
+      setIsSearching(true);
+      try {
+        const res = await fetch(`/api/teamspace/search?projectId=${projectId}&q=${encodeURIComponent(searchQuery)}`);
+        const data = await res.json();
+        const ids = data.results.map((r: any) => r.id);
+        setSearchResults(ids);
+        if (ids.length > 0) {
+          setCurrentSearchIndex(0);
+          jumpToMessage(ids[0]);
+        }
+      } catch (err) {
+        console.error("Search failed:", err);
+      } finally {
+        setIsSearching(false);
+      }
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [searchQuery, projectId]);
+
+  const jumpToMessage = (messageId: string) => {
+    const el = document.getElementById(`message-${messageId}`);
+    if (el) {
+      el.scrollIntoView({ behavior: "smooth", block: "center" });
+      el.classList.add("bg-yellow-500/20");
+      el.classList.add("ring-2");
+      el.classList.add("ring-yellow-500/50");
+      setTimeout(() => {
+        el.classList.remove("bg-yellow-500/20");
+        el.classList.remove("ring-2");
+        el.classList.remove("ring-yellow-500/50");
+      }, 2000);
+    }
+  };
+
+  const handleNextMatch = () => {
+    if (searchResults.length === 0) return;
+    const nextIdx = (currentSearchIndex + 1) % searchResults.length;
+    setCurrentSearchIndex(nextIdx);
+    jumpToMessage(searchResults[nextIdx]);
+  };
+
+  const handlePrevMatch = () => {
+    if (searchResults.length === 0) return;
+    const prevIdx = (currentSearchIndex - 1 + searchResults.length) % searchResults.length;
+    setCurrentSearchIndex(prevIdx);
+    jumpToMessage(searchResults[prevIdx]);
+  };
+
+  // Keyboard shortcuts for search
+  useEffect(() => {
+    if (searchResults.length === 0) return;
+    const handleKeys = (e: KeyboardEvent) => {
+      if (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) {
+        if (e.key === "Enter" && !e.shiftKey) {
+          e.preventDefault();
+          handleNextMatch();
+        } else if (e.key === "Enter" && e.shiftKey) {
+          e.preventDefault();
+          handlePrevMatch();
+        }
+      }
+      if (e.key === "Escape") {
+        setSearchQuery("");
+      }
+    };
+    window.addEventListener("keydown", handleKeys);
+    return () => window.removeEventListener("keydown", handleKeys);
+  }, [searchResults, currentSearchIndex]);
 
   const pinnedMessages = messages.filter((m) => m.is_pinned === 1);
 
@@ -330,13 +416,64 @@ export function MessageFeed({
             </div>
           </TooltipProvider>
 
-          <div className="relative group">
-            <input 
-              type="text" 
-              placeholder={`Search chat`}
-              className="bg-accent/40 w-48 text-[11px] px-3 py-1.5 pr-8 rounded-full border border-border/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-accent/60 transition-all placeholder:text-muted-foreground/50"
-            />
-            <Search className="h-3.5 w-3.5 absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
+          <div className="relative flex items-center gap-2">
+            {searchQuery && (
+              <button 
+                onClick={() => setSearchQuery("")}
+                className="p-1.5 hover:bg-accent rounded-full text-muted-foreground transition-colors"
+              >
+                <ArrowLeft className="h-4 w-4" />
+              </button>
+            )}
+            <div className="relative group">
+              <input 
+                type="text" 
+                placeholder={`Search in #${channel.name}`}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className={cn(
+                  "bg-accent/40 text-[11px] px-3 py-1.5 pr-8 rounded-full border border-border/50 focus:outline-none focus:ring-2 focus:ring-primary/20 focus:bg-accent/60 transition-all placeholder:text-muted-foreground/50",
+                  searchQuery ? "w-48 sm:w-64" : "w-48"
+                )}
+              />
+              <Search className="h-3.5 w-3.5 absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/40 group-focus-within:text-primary transition-colors" />
+            </div>
+
+            {searchResults.length > 0 && (
+              <div className="flex items-center gap-0.5 bg-accent/40 rounded-full px-2 py-1 border border-border/50 shadow-sm">
+                <span className="text-[9px] font-bold text-muted-foreground px-1.5 tabular-nums">
+                  {currentSearchIndex + 1} / {searchResults.length}
+                </span>
+                <div className="w-[1px] h-3 bg-border/50 mx-0.5" />
+                <button 
+                  onClick={handlePrevMatch}
+                  title="Previous match (Shift+Enter)"
+                  className="p-1 hover:bg-accent rounded-full text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <ChevronUp className="h-3 w-3" />
+                </button>
+                <button 
+                  onClick={handleNextMatch}
+                  title="Next match (Enter)"
+                  className="p-1 hover:bg-accent rounded-full text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <ChevronDown className="h-3 w-3" />
+                </button>
+                <button 
+                  onClick={() => setSearchQuery("")}
+                  className="p-1 hover:bg-accent rounded-full text-muted-foreground hover:text-red-500 transition-colors"
+                >
+                  <X className="h-3 w-3" />
+                </button>
+              </div>
+            )}
+            
+            {isSearching && (
+              <div className="flex items-center gap-2 px-2">
+                <div className="animate-spin h-3 w-3 border-2 border-primary border-t-transparent rounded-full" />
+                <span className="text-[9px] font-medium text-muted-foreground animate-pulse">Searching...</span>
+              </div>
+            )}
           </div>
         </div>
 
@@ -412,6 +549,7 @@ export function MessageFeed({
                   onDelete={deleteMessage}
                   onReact={toggleReaction}
                   onPin={togglePin}
+                  highlightTerm={searchQuery}
                 />
               );
             })}
@@ -420,12 +558,38 @@ export function MessageFeed({
         )}
       </div>
 
+      {/* Typing indicator */}
+      <div className="h-6 px-6 mb-1">
+        <AnimatePresence>
+          {typingUsers.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: 5 }}
+              animate={{ opacity: 1, y: 0 }}
+              exit={{ opacity: 0, y: 5 }}
+              className="flex items-center gap-2 text-muted-foreground"
+            >
+              <div className="flex gap-1">
+                <span className="h-1 w-1 bg-muted-foreground/50 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                <span className="h-1 w-1 bg-muted-foreground/50 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                <span className="h-1 w-1 bg-muted-foreground/50 rounded-full animate-bounce" />
+              </div>
+              <span className="text-[11px] italic font-medium">
+                {typingUsers.length <= 3 
+                  ? `${typingUsers.map(u => u.userName).join(", ")} ${typingUsers.length === 1 ? "is" : "are"} typing...`
+                  : "Several people are typing..."}
+              </span>
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+
       {/* Composer */}
       <MessageComposer
         channelName={channel.name}
         replyingTo={replyingTo}
         onClearReply={() => setReplyingTo(null)}
         onSend={handleSend}
+        onTyping={setTypingStatus}
         disabled={!canSend}
         isAnnouncement={isAnnouncement}
       />

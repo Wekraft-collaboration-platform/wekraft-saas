@@ -587,6 +587,39 @@ export const getProjectPermissions = query({
   },
 });
 
+export const getProjectPermissionsById = query({
+  args: { projectId: v.id("projects"), userId: v.id("users") },
+  handler: async (ctx, args) => {
+    const user = await ctx.db.get(args.userId);
+    if (!user) return null;
+
+    const project = await ctx.db.get(args.projectId);
+    if (!project) return null;
+
+    const isOwner = project.ownerId === user._id;
+
+    const membership = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .filter((q) => q.eq(q.field("userId"), user._id))
+      .unique();
+
+    const isAdmin = membership?.AccessRole === "admin";
+    const isMember = membership?.AccessRole === "member";
+    const isViewer = membership?.AccessRole === "viewer";
+    const isPower = isOwner || isAdmin;
+
+    return {
+      isOwner,
+      isAdmin,
+      isMember,
+      isViewer,
+      isPower,
+      role: isOwner ? "owner" : membership?.AccessRole || null,
+    };
+  },
+});
+
 // ====================================
 // GET JOIN REQUESTS
 // ====================================

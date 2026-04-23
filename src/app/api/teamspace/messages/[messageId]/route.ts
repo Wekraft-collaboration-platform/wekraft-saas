@@ -2,6 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { turso } from "@/lib/turso";
 import Ably from "ably";
+import { verifyProjectAccess } from "@/modules/teamspace/lib/auth";
 
 const ably = new Ably.Rest(process.env.ABLY_API_KEY!);
 
@@ -14,13 +15,20 @@ export async function PATCH(
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { messageId } = await params;
-  const { content, is_pinned } = await req.json();
+  const body = await req.json();
+  const { projectId, content, is_pinned } = body;
+
+  if (!projectId) return NextResponse.json({ error: "projectId required" }, { status: 400 });
 
   if (content === undefined && is_pinned === undefined) {
     return NextResponse.json({ error: "content or is_pinned required" }, { status: 400 });
   }
 
-  // Ensure the message belongs to this user (for edits) or user is admin (for pins)
+  // --- ACCESS CHECK ---
+  const access = await verifyProjectAccess(userId, projectId);
+  if ("error" in access) return NextResponse.json({ error: access.error }, { status: access.status });
+
+  // Get existing message
   const existing = await turso.execute({
     sql: "SELECT user_id, channel_id FROM ts_messages WHERE id = ?",
     args: [messageId],
@@ -30,10 +38,17 @@ export async function PATCH(
     return NextResponse.json({ error: "Message not found" }, { status: 404 });
   }
 
-  // For simplicity, allowing anyone to pin for now (or you can restrict to owner/admin)
   const isEditing = content !== undefined;
+  const isPinning = is_pinned !== undefined;
+
+  // 1. EDIT: ONLY AUTHOR
   if (isEditing && existing.rows[0].user_id !== userId) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+    return NextResponse.json({ error: "Forbidden: You can only edit your own messages" }, { status: 403 });
+  }
+
+  // 2. PIN: ONLY OWNER OR ADMIN
+  if (isPinning && !access.permissions.isOwner && !access.permissions.isAdmin) {
+    return NextResponse.json({ error: "Forbidden: Only owner or admin can pin messages" }, { status: 403 });
   }
 
   const now = Date.now();
@@ -79,6 +94,13 @@ export async function DELETE(
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { messageId } = await params;
+  const projectId = req.nextUrl.searchParams.get("projectId");
+
+  if (!projectId) return NextResponse.json({ error: "projectId required" }, { status: 400 });
+
+  // --- ACCESS CHECK ---
+  const access = await verifyProjectAccess(userId, projectId);
+  if ("error" in access) return NextResponse.json({ error: access.error }, { status: access.status });
 
   const existing = await turso.execute({
     sql: "SELECT user_id, channel_id FROM ts_messages WHERE id = ?",
@@ -89,9 +111,12 @@ export async function DELETE(
     return NextResponse.json({ error: "Message not found" }, { status: 404 });
   }
 
-  // Allow own messages or admins (for simplicity, check own for now)
-  if (existing.rows[0].user_id !== userId) {
-    return NextResponse.json({ error: "Forbidden" }, { status: 403 });
+  // ALLOW AUTHOR OR OWNER/ADMIN
+  const isAuthor = existing.rows[0].user_id === userId;
+  const canModerate = access.permissions.isOwner || access.permissions.isAdmin;
+
+  if (!isAuthor && !canModerate) {
+    return NextResponse.json({ error: "Forbidden: You don't have permission to delete this message" }, { status: 403 });
   }
 
   const channelId = existing.rows[0].channel_id as string;
@@ -107,3 +132,4 @@ export async function DELETE(
 
   return NextResponse.json({ success: true });
 }
+
