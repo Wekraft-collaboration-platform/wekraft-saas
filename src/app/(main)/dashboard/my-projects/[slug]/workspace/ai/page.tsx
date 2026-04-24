@@ -9,6 +9,7 @@ import {
 } from "@/components/ui/select";
 import Image from "next/image";
 import {
+  ArrowDown,
   ArrowRight,
   Bell,
   Brain,
@@ -126,29 +127,55 @@ const AIWorkspace = () => {
 
   const [message, setMessage] = useState("");
   const [thinkingTime, setThinkingTime] = useState(0);
+  const [showScrollButton, setShowScrollButton] = useState(false);
+  const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
 
-  const { status, appCheckpoints, run, resume, restore, stop, restoring } =
-    useLangGraphAgent<AgentState, InterruptValue, ResumeValue>();
+  const {
+    status,
+    appCheckpoints,
+    run,
+    resume,
+    restore,
+    stop,
+    restoring,
+    isStreaming,
+  } = useLangGraphAgent<AgentState, InterruptValue, ResumeValue>();
 
   useEffect(() => {
-    if (appCheckpoints.length > 0) {
+    if (appCheckpoints.length > 0 && shouldAutoScroll) {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
-  }, [appCheckpoints, status]);
+  }, [appCheckpoints, status, shouldAutoScroll]);
+
+  // Scroll button visibility
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    const handler = () => {
+      const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 100;
+      setShowScrollButton(!isAtBottom);
+      setShouldAutoScroll(isAtBottom);
+    };
+    el.addEventListener("scroll", handler);
+    return () => el.removeEventListener("scroll", handler);
+  }, [appCheckpoints]);
 
   // Thinking timer logic
   useEffect(() => {
     let interval: any;
     if (status === "running" || restoring) {
-      interval = setInterval(() => {
-        setThinkingTime((t) => t + 1);
-      }, 1000);
+      if (!isStreaming) {
+        interval = setInterval(() => {
+          setThinkingTime((t) => t + 1);
+        }, 1000);
+      }
     } else {
       setThinkingTime(0);
     }
     return () => clearInterval(interval);
-  }, [status, restoring]);
+  }, [status, restoring, isStreaming]);
 
   const handleSendMessage = (content: string) => {
     if (!content.trim() || status === "running" || restoring) return;
@@ -386,7 +413,8 @@ const AIWorkspace = () => {
                 key="chat-history"
                 initial={{ opacity: 0 }}
                 animate={{ opacity: 1 }}
-                className="space-y-4 pt-4"
+                ref={containerRef}
+                className="space-y-4 pt-4 max-h-[540px] overflow-y-auto scrollbar-hide"
               >
                 {appCheckpoints.map((checkpoint, cpIndex) =>
                   checkpoint.nodes.map((node, i) => {
@@ -418,7 +446,7 @@ const AIWorkspace = () => {
                     );
                   }),
                 )}
-                {status === "running" && (
+                {status === "running" && !isStreaming && (
                   <div className="flex gap-2 items-center py-2 px-6 text-neutral-500">
                     <KayaLoader />
                     <div className="flex items-center gap-1.5">
@@ -482,6 +510,19 @@ const AIWorkspace = () => {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {showScrollButton && (
+        <Button
+          className="fixed bottom-24 left-[60%] rounded-full border border-border bg-muted/70 hover:bg-background shadow-lg z-50 animate-in fade-in slide-in-from-bottom-4 duration-300"
+          size="icon"
+          onClick={() => {
+            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+            setShouldAutoScroll(true);
+          }}
+        >
+          <ArrowDown className="w-3.5 h-3.5! text-primary" />
+        </Button>
+      )}
     </div>
   );
 };

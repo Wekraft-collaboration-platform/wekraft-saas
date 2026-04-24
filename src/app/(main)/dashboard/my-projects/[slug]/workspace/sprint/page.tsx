@@ -279,7 +279,7 @@ const SprintPage = () => {
           </div>
 
           {/* Sprints List */}
-          <div className="grid gap-4 mt-10">
+          <div className="grid gap-4 mt-10 mb-20">
             {filteredSprints?.map((sprint) => (
               <div
                 key={sprint._id}
@@ -288,7 +288,7 @@ const SprintPage = () => {
                     `/dashboard/my-projects/${slug}/workspace/sprint/${encodeURIComponent(sprint.sprintName)}`,
                   )
                 }
-                className="group relative overflow-hidden bg-sidebar border border-border rounded-md transition-all duration-200 cursor-pointer"
+                className="group relative overflow-hidden bg-sidebar border border-border rounded-md transition-all duration-200 cursor-pointer "
               >
                 <div className="p-3.5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex items-start md:items-center gap-4">
