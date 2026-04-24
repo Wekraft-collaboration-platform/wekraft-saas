@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "sonner";
 import {
   Checkpoint,
   Interrupt,
@@ -194,10 +195,16 @@ export function useLangGraphAgent<
 
       setStatus("idle");
       setIsStreaming(false);
-    } catch (error) {
+    } catch (error: any) {
       console.error(error);
       setStatus("error");
       setIsStreaming(false);
+
+      if (error.message.includes("Too many requests")) {
+        toast.error(error.message, {
+          description: "Please wait a moment before trying again.",
+        });
+      }
     }
   }
 

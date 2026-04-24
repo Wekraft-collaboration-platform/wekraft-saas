@@ -379,7 +379,7 @@ export function AiAssistantSheet({
         </SheetHeader>
 
         {/* MESSAGES */}
-        <div ref={containerRef} className="flex-1 overflow-y-auto">
+        <div ref={containerRef} className="flex-1 overflow-y-auto py-4 px-2">
           {appCheckpoints.length === 0 && !restoring && (
             <div className="h-full flex flex-col items-center justify-center p-8 text-center animate-in fade-in zoom-in duration-500">
               <div className="relative mb-6">
