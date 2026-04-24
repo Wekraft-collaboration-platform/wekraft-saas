@@ -112,7 +112,18 @@ export const getRepositoryById = query({
   args: { repoId: v.optional(v.id("repositories")) },
   handler: async (ctx, args) => {
     if (!args.repoId) return null;
-    return await ctx.db.get(args.repoId);
+    const repo = await ctx.db.get(args.repoId);
+    if (!repo) return null;
+
+    const owner = await ctx.db.get(repo.userId);
+    
+    // Extract raw clerk ID from tokenIdentifier (e.g., "https://clerk...|user_2...")
+    const ownerClerkId = owner?.clerkToken.split("|").pop();
+
+    return {
+      ...repo,
+      ownerClerkId,
+    };
   },
 });
 

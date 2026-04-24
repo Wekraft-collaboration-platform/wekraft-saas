@@ -2,9 +2,7 @@ import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { turso, initTeamspaceDB } from "@/lib/turso";
 import { randomUUID } from "crypto";
-import { ConvexHttpClient } from "convex/browser";
-import { api } from "../../../../../convex/_generated/api";
-import { Id } from "../../../../../convex/_generated/dataModel";
+import { verifyProjectAccess } from "@/modules/workspace/teamspace/lib/auth";
 
 // GET /api/teamspace/channels?projectId=xxx
 export async function GET(req: NextRequest) {
@@ -14,15 +12,11 @@ export async function GET(req: NextRequest) {
   const projectId = req.nextUrl.searchParams.get("projectId");
   if (!projectId) return NextResponse.json({ error: "projectId required" }, { status: 400 });
 
-  await initTeamspaceDB();
-
   // --- ACCESS CHECK ---
-  const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
-  const user = await convex.query(api.user.getUserByClerkToken, { clerkToken: userId });
-  if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+  const access = await verifyProjectAccess(userId, projectId);
+  if ("error" in access) return NextResponse.json({ error: access.error }, { status: access.status });
 
-  const project = await convex.query(api.project.getProjectById, { projectId: projectId as Id<"projects"> });
-  if (!project) return NextResponse.json({ error: "Project not found" }, { status: 404 });
+  await initTeamspaceDB();
 
   const result = await turso.execute({
     sql: "SELECT * FROM ts_channels WHERE project_id = ? ORDER BY is_default DESC, created_at ASC",
@@ -81,20 +75,13 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "projectId and name required" }, { status: 400 });
   }
 
-  // --- OWNERSHIP CHECK ---
-  const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
-  
-  // Find Convex user
-  const user = await convex.query(api.user.getUserByClerkToken, { clerkToken: userId });
-  if (!user) return NextResponse.json({ error: "User not found" }, { status: 404 });
+  // --- ACCESS CHECK & PERMISSION CHECK ---
+  const access = await verifyProjectAccess(userId, projectId);
+  if ("error" in access) return NextResponse.json({ error: access.error }, { status: access.status });
 
-  // Get project
-  const project = await convex.query(api.project.getProjectById, { projectId: projectId as Id<"projects"> });
-  if (!project) return NextResponse.json({ error: "Project not found" }, { status: 404 });
-
-  // ONLY OWNER CAN CREATE CHANNELS
-  if (project.ownerId !== user._id) {
-    return NextResponse.json({ error: "Forbidden: Only owner can create channels" }, { status: 403 });
+  // ONLY OWNER OR ADMIN CAN CREATE CHANNELS
+  if (!access.permissions.isOwner && !access.permissions.isAdmin) {
+    return NextResponse.json({ error: "Forbidden: Only owner or admin can create channels" }, { status: 403 });
   }
 
   await initTeamspaceDB();
@@ -116,3 +103,4 @@ export async function POST(req: NextRequest) {
 
   return NextResponse.json({ channel: result.rows[0] }, { status: 201 });
 }
+

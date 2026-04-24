@@ -18,7 +18,7 @@
 
 import { useState } from "react";
 import { useQuery } from "convex/react";
-import { api } from "../../../convex/_generated/api";
+import { api } from "../../../../convex/_generated/api";
 import { useChannels } from "./hooks/useChannels";
 import { ChannelsSidebar } from "./ChannelsSidebar";
 import { MessageFeed } from "./MessageFeed";
@@ -51,7 +51,7 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
   const currentUserImage = user?.avatarUrl ?? null;
 
   return (
-    <div className="flex h-[calc(100vh-76px)] overflow-hidden bg-sidebar">
+    <div className="flex h-[calc(100vh-56px)] overflow-hidden bg-sidebar">
       {/* Left: Channels */}
       <ChannelsSidebar
         projectId={projectId}
@@ -87,7 +87,12 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
             transition={{ type: "spring", stiffness: 350, damping: 30 }}
             className="overflow-hidden bg-black border-l border-border/80 h-full shrink-0"
           >
-            <MembersPanel projectId={projectId} channelId={resolvedChannel?.id ?? null} />
+            <MembersPanel 
+              projectId={projectId} 
+              channelId={resolvedChannel?.id ?? null} 
+              currentUserId={currentUserId}
+              currentUserName={currentUserName}
+            />
           </motion.div>
         )}
       </AnimatePresence>

@@ -58,7 +58,7 @@ const ProjectWorkspace = () => {
 
   return (
     <div className="p-6">
-      <header className="flex items-start justify-between">
+      <header className="flex items-start justify-between flex-none">
         <div className="space-y-2">
           <div className="flex items-center gap-2 mb-2">
             <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />

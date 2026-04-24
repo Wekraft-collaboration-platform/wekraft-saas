@@ -3,7 +3,7 @@
 import { useParams } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "../../../../../../../../convex/_generated/api";
-import { TeamspaceView } from "@/modules/teamspace/TeamspaceView";
+import { TeamspaceView } from "@/modules/workspace/teamspace/TeamspaceView";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSidebar } from "@/components/ui/sidebar";
 import { useEffect, useRef } from "react";
@@ -26,7 +26,7 @@ export default function TeamspacePage() {
 
   if (project === undefined) {
     return (
-      <div className="flex h-[calc(100vh-76px)] overflow-hidden">
+      <div className="flex h-[calc(100vh-56px)] overflow-hidden">
         {/* Channels skeleton */}
         <div className="w-56 border-r p-3 flex flex-col gap-2">
           <Skeleton className="h-4 w-20 mb-2" />
@@ -67,7 +67,7 @@ export default function TeamspacePage() {
 
   if (!project) {
     return (
-      <div className="flex h-[calc(100vh-76px)] items-center justify-center">
+      <div className="flex h-[calc(100vh-56px)] items-center justify-center">
         <p className="text-muted-foreground text-sm">Project not found</p>
       </div>
     );

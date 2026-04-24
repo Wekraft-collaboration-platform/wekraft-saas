@@ -372,9 +372,17 @@ export const getProjectBySlug = query({
           .unique()
       : null;
 
+    const owner = await ctx.db.get(project.ownerId);
+    const ownerClerkId = owner?.clerkToken.split("|").pop();
+
+    const projectWithOwner = {
+      ...project,
+      ownerClerkId,
+    };
+
     // Security: Only return if public OR user is the owner OR user is a member
     if (project.isPublic || (user && project.ownerId === user._id)) {
-      return project;
+      return projectWithOwner;
     }
 
     if (user) {
@@ -384,7 +392,7 @@ export const getProjectBySlug = query({
         .filter((q) => q.eq(q.field("userId"), user._id))
         .unique();
 
-      if (membership) return project;
+      if (membership) return projectWithOwner;
     }
 
     return null;
@@ -562,6 +570,39 @@ export const getProjectPermissions = query({
         isViewer: false,
         isPower: false,
       };
+
+    const isOwner = project.ownerId === user._id;
+
+    const membership = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .filter((q) => q.eq(q.field("userId"), user._id))
+      .unique();
+
+    const isAdmin = membership?.AccessRole === "admin";
+    const isMember = membership?.AccessRole === "member";
+    const isViewer = membership?.AccessRole === "viewer";
+    const isPower = isOwner || isAdmin;
+
+    return {
+      isOwner,
+      isAdmin,
+      isMember,
+      isViewer,
+      isPower,
+      role: isOwner ? "owner" : membership?.AccessRole || null,
+    };
+  },
+});
+
+export const getProjectPermissionsById = query({
+  args: { projectId: v.id("projects"), userId: v.id("users") },
+  handler: async (ctx, args) => {
+    const user = await ctx.db.get(args.userId);
+    if (!user) return null;
+
+    const project = await ctx.db.get(args.projectId);
+    if (!project) return null;
 
     const isOwner = project.ownerId === user._id;
 

@@ -69,6 +69,7 @@ export const getRepoTree = async (
   owner: string,
   repo: string,
   dirPath: string = "",
+  ownerClerkId?: string
 ): Promise<GetRepoTreeResult> => {
   const cacheKey = `wekraft:repo-tree:v2:${owner}:${repo}:${dirPath || "root"}`;
 
@@ -80,7 +81,7 @@ export const getRepoTree = async (
       return { success: true, data: cached as TreeNode[] };
     }
 
-    const token = await getGithubAccessToken();
+    const token = await getGithubAccessToken(ownerClerkId);
     const octokit = new Octokit({ auth: token });
 
     // const { data: repoData } = await octokit.rest.repos.get({ owner, repo });

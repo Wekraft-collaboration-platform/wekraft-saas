@@ -40,7 +40,7 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 
 import { useProjectPermissions } from "@/hooks/use-project-permissions";
-import { Id } from "../../../convex/_generated/dataModel";
+import { Id } from "../../../../convex/_generated/dataModel";
 
 interface Props {
   projectId: string;
@@ -109,7 +109,7 @@ export function ChannelsSidebar({
           tabIndex={0}
           id={`channel-${channel.id}`}
           onClick={() => onSelect(channel)}
-          onMouseEnter={() => prefetchMessages(channel.id)}
+          onMouseEnter={() => prefetchMessages(projectId, channel.id)}
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
@@ -179,7 +179,7 @@ export function ChannelsSidebar({
   return (
     <div className="flex flex-col h-full w-60 border-r border-border/80 bg-background shrink-0">
       {/* Server Header */}
-      <div className="flex items-center justify-center px-4 py-3.5 border-b border-border/80 shadow-sm cursor-pointer hover:bg-accent/30 transition-colors">
+      <div className="flex items-center justify-center px-4 h-14 border-b border-border/80 shadow-sm cursor-pointer hover:bg-accent/30 transition-colors">
         <h2 className="font-semibold text-xl leading-tight truncate px-0.5">
           <PlaneTakeoff className="h-6 w-6 -mt-0.5 mr-2 inline" /> Team space
         </h2>

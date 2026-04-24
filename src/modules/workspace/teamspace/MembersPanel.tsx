@@ -21,8 +21,8 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { useQuery } from "convex/react";
-import { api } from "../../../convex/_generated/api";
-import { Id } from "../../../convex/_generated/dataModel";
+import { api } from "../../../../convex/_generated/api";
+import { Id } from "../../../../convex/_generated/dataModel";
 import Ably from "ably";
 import { cn } from "@/lib/utils";
 import { Users } from "lucide-react";
@@ -32,57 +32,22 @@ interface PresenceMember {
   data: { userId: string; userName: string };
 }
 
+import { usePresence } from "./hooks/usePresence";
+
 interface Props {
   projectId: string;
   channelId: string | null;
+  currentUserId: string;
+  currentUserName: string;
 }
 
-let ablyClient: Ably.Realtime | null = null;
-
-function getAblyClient(): Ably.Realtime {
-  if (!ablyClient) {
-    ablyClient = new Ably.Realtime({
-      authUrl: "/api/teamspace/ably-token",
-      authMethod: "GET",
-    });
-  }
-  return ablyClient;
-}
-
-export function MembersPanel({ projectId, channelId }: Props) {
-  const [onlineIds, setOnlineIds] = useState<Set<string>>(new Set());
+export function MembersPanel({ projectId, channelId, currentUserId, currentUserName }: Props) {
+  const { onlineIds } = usePresence(channelId, currentUserId, currentUserName);
+  
   const members = useQuery(
     api.project.getProjectMembers,
     projectId ? { projectId: projectId as Id<"projects"> } : "skip",
   );
-
-  // Track Ably presence for online status
-  useEffect(() => {
-    if (!channelId) return;
-
-    const ably = getAblyClient();
-    const ch = ably.channels.get(`teamspace:${channelId}`);
-
-    // Enter presence
-    ch.presence.enter({ channelId });
-
-    // Watch all presence members
-    ch.presence.subscribe(() => {
-      ch.presence.get().then((members) => {
-        setOnlineIds(new Set(members.map((m: any) => m.clientId)));
-      }).catch(console.error);
-    });
-
-    // Get initial presence set
-    ch.presence.get().then((members) => {
-      setOnlineIds(new Set(members.map((m: any) => m.clientId)));
-    }).catch(console.error);
-
-    return () => {
-      ch.presence.leave();
-      ch.presence.unsubscribe();
-    };
-  }, [channelId]);
 
   const online = members?.filter((m) => m.clerkUserId && onlineIds.has(m.clerkUserId)) ?? [];
   const offline = members?.filter((m) => !m.clerkUserId || !onlineIds.has(m.clerkUserId)) ?? [];
