@@ -290,15 +290,15 @@ const SprintPage = () => {
                 }
                 className="group relative overflow-hidden bg-sidebar border border-border rounded-md transition-all duration-200 cursor-pointer"
               >
-                <div className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4">
+                <div className="p-3.5 flex flex-col md:flex-row md:items-center justify-between gap-4">
                   <div className="flex items-start md:items-center gap-4">
                     <div
                       className={`p-2 rounded-md bg-opacity-10 ${
                         sprint.status === "active"
-                          ? "bg-emerald-500/30"
+                          ? "bg-blue-500/30"
                           : sprint.status === "planned"
                             ? "bg-amber-500/30"
-                            : "bg-blue-500/30"
+                            : "bg-emerald-500/30"
                       }`}
                     >
                       <FastForward className="w-5 h-5" />
@@ -341,7 +341,7 @@ const SprintPage = () => {
 
                   <div className="flex items-center gap-3 self-end md:self-center">
                     <div className="text-right hidden sm:block mr-2">
-                      <p className="text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                      <p className="text-xs font-medium text-muted-foreground tracking-wider">
                         Progress
                       </p>
                       <p className="text-sm font-semibold">

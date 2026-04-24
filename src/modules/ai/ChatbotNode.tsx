@@ -24,7 +24,7 @@ export function ChatbotNode({ nodeState }: ChatbotNodeProps) {
   };
 
   return (
-    <div className="space-y-4 my-1">
+    <div className="space-y-2 my-1">
       {nodeState?.messages?.map((msg, index) => {
         const isAI = msg.type === "ai";
         const msgId = msg.id ?? `msg-${index}`;

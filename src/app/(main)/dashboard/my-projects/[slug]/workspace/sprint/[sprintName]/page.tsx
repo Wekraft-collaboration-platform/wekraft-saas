@@ -13,6 +13,23 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
 import { useProjectPermissions } from "@/hooks/use-project-permissions";
 import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from "@/components/ui/dialog";
+import { statusIcons, priorityIcons2, statusColors } from "@/lib/static-store";
+import { cn } from "@/lib/utils";
+import {
   ArrowLeft,
   Target,
   Plus,
@@ -27,6 +44,12 @@ import {
   Circle,
   Clock,
   Flag,
+  FastForward,
+  ExternalLink,
+  Users,
+  Clipboard,
+  ClipboardList,
+  BugIcon,
 } from "lucide-react";
 
 const SprintDetailPage = () => {
@@ -163,20 +186,12 @@ const SprintDetailPage = () => {
 
   return (
     <div className="w-full h-full p-6 mx-auto bg-background min-h-screen text-foreground">
-      {/* Back link */}
-      <Link
-        href={`/dashboard/my-projects/${slug}/workspace/sprint`}
-        className="inline-flex items-center gap-1.5 text-xs font-medium text-muted-foreground hover:text-foreground transition-colors mb-8"
-      >
-        <ArrowLeft className="w-3.5 h-3.5" />
-        Back to Sprints
-      </Link>
-
       {/* Sprint Header */}
-      <div className="flex flex-row md:items-start justify-between gap-6  mb-3">
+      <header className="flex flex-row md:items-start justify-between gap-6  mb-3">
         <div>
           <div className="flex items-center gap-3 mb-3">
             <h1 className="text-3xl font-semibold tracking-tight">
+              <FastForward className="w-6 h-6 inline mr-1" />{" "}
               {sprint.sprintName}
             </h1>
             <Badge
@@ -206,7 +221,13 @@ const SprintDetailPage = () => {
         </div>
 
         {/* Sprint actions — Owner only */}
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex items-center gap-5 shrink-0">
+          <Link href={`/dashboard/my-projects/${slug}/workspace/sprint`}>
+            <Button variant="outline" size="sm" className="text-xs">
+              <ArrowLeft className="w-3.5 h-3.5" />
+              Back to Sprints
+            </Button>
+          </Link>
           {!isOwner ? (
             <div className="flex items-center gap-2 px-3 py-1.5 bg-muted/50 rounded-full text-[11px] font-medium text-muted-foreground uppercase tracking-wider border border-border/50">
               <Lock className="w-3 h-3" />
@@ -223,7 +244,7 @@ const SprintDetailPage = () => {
                 <Button
                   size="sm"
                   onClick={handleStartSprint}
-                  className="font-medium px-4 shadow-sm"
+                  className="font-medium px-4 shadow-sm text-xs"
                 >
                   <Play className="w-4 h-4 mr-1.5" />
                   Start Sprint
@@ -233,7 +254,7 @@ const SprintDetailPage = () => {
                 <Button
                   size="sm"
                   onClick={handleCompleteSprint}
-                  className="bg-foreground text-background hover:bg-foreground/90 font-medium px-5 shadow-sm"
+                  className="bg-foreground text-background hover:bg-foreground/90 font-medium px-5 shadow-sm text-xs"
                 >
                   <Check className="w-4 h-4 mr-1.5" />
                   Complete
@@ -242,9 +263,9 @@ const SprintDetailPage = () => {
             </>
           )}
         </div>
-      </div>
+      </header>
 
-      <div className="flex items-center gap-2 mb-5">
+      <div className="flex items-center gap-2 mb-8">
         <Flag className="w-4 h-4 opacity-70" />
         <span className="text-sm font-medium text-foreground">
           {sprint.sprintGoal}
@@ -253,42 +274,82 @@ const SprintDetailPage = () => {
 
       {/* Top Cards Grid */}
       {stats && (
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-4 mb-10">
-          <div className="lg:col-span-2 border border-border bg-accent/30 rounded-md p-4 flex flex-col justify-between shadow-xs">
-            <div className="flex justify-between items-start mb-6">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8">
+          {/* Progress Card */}
+          <div className="border ">
+            <div className="flex justify-between items-start mb-4">
               <div>
-                <h3 className="text-sm font-medium text-foreground">
+                <p className="text-xs text-muted-foreground font-medium">
                   Sprint Progress
-                </h3>
-                <p className="text-xs text-muted-foreground mt-1">
-                  {stats.completedItems} of {stats.totalItems} items completed
+                </p>
+                <p className="text-[11px] text-muted-foreground/70 mt-0.5">
+                  {stats.completedItems} of {stats.totalItems} items
                 </p>
               </div>
-              <span className="text-3xl font-semibold tracking-tight">
+              <span className="text-2xl font-semibold tracking-tight text-foreground">
                 {stats.completionPercent}%
               </span>
             </div>
-            <div className="w-full bg-muted/60 rounded-full h-2 overflow-hidden">
+            <div className="w-full bg-muted/40 rounded-full h-1.5 overflow-hidden">
               <div
-                className="bg-foreground rounded-full h-full transition-all duration-500 ease-out"
+                className="bg-primary rounded-full h-full transition-all duration-700 ease-out"
                 style={{ width: `${stats.completionPercent}%` }}
               />
             </div>
           </div>
 
-          <div className="border border-border bg-accent/30 rounded-md p-4 flex flex-col justify-between shadow-xs">
-            <div className="flex items-center gap-2 text-muted-foreground mb-4">
-              <Zap className="w-4 h-4" />
-              <h3 className="text-sm font-medium">Burn Rate</h3>
+          {/* Burn Rate Card */}
+          <div className="border ">
+            <div className="flex items-center gap-1.5 text-muted-foreground mb-3">
+              <Zap className="w-3.5 h-3.5" />
+              <p className="text-xs font-medium">Burn Rate</p>
             </div>
             <div className="flex items-end gap-1.5">
-              <span className="text-3xl font-semibold tracking-tight">
+              <span className="text-2xl font-semibold tracking-tight text-foreground">
                 {stats.burnRate}
               </span>
-              <span className="text-xs text-muted-foreground mb-1.5 font-medium">
+              <span className="text-[11px] text-muted-foreground mb-1 font-medium">
                 items/day
               </span>
             </div>
+          </div>
+
+          {/* Assignees Card */}
+          <div className="border">
+            <div className="flex items-center gap-1.5 text-muted-foreground mb-3">
+              <Users className="w-3.5 h-3.5" />
+              <p className="text-xs font-medium">Assignees</p>
+            </div>
+            {stats.teamMembers.length > 0 ? (
+              <div className="flex items-center gap-2">
+                <div className="flex -space-x-2">
+                  {stats.teamMembers.slice(0, 4).map((m) => (
+                    <Avatar
+                      key={m.userId}
+                      className="w-7 h-7 border-2 border-background ring-1 ring-border/30"
+                    >
+                      <AvatarImage src={m.avatar} />
+                      <AvatarFallback className="text-[9px] bg-primary/10 text-primary font-medium">
+                        {m.name[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                  ))}
+                  {stats.teamMembers.length > 4 && (
+                    <div className="w-7 h-7 rounded-full bg-muted border-2 border-background flex items-center justify-center text-[10px] font-medium text-muted-foreground">
+                      +{stats.teamMembers.length - 4}
+                    </div>
+                  )}
+                </div>
+                <span className="text-[11px] text-muted-foreground font-medium ml-1">
+                  {stats.teamMembers.length} member
+                  {stats.teamMembers.length !== 1 ? "s" : ""}
+                </span>
+              </div>
+            ) : (
+              <p className="text-[11px] text-muted-foreground">
+                No assignees yet
+              </p>
+            )}
           </div>
         </div>
       )}
@@ -298,341 +359,465 @@ const SprintDetailPage = () => {
         {/* LEFT — Tasks / Issues */}
         <div className="flex-1 min-w-0">
           {/* Tabs */}
-          <div className="flex items-center gap-6 border-b border-border/40 mb-2 px-1">
-            <button
-              onClick={() => setActiveTab("tasks")}
-              className={`pb-3 text-sm font-medium border-b-2 transition-all flex items-center gap-2 ${
-                activeTab === "tasks"
-                  ? "border-foreground text-foreground"
-                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
-              }`}
-            >
-              All Tasks
-              <span
-                className={`text-[10px] px-2 py-0.5 rounded-full ${activeTab === "tasks" ? "bg-muted text-foreground" : "bg-muted/50 text-muted-foreground"}`}
+          <div className="flex items-center justify-between border-b border-border pb-3 px-1">
+            <div className="flex items-center gap-8">
+              <button
+                onClick={() => setActiveTab("tasks")}
+                className={`pb-3 text-[15px] font-medium border-b-2 transition-all flex items-center gap-2 ${
+                  activeTab === "tasks"
+                    ? "border-foreground text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+                }`}
               >
-                {tasks?.length || 0}
-              </span>
-            </button>
-            <button
-              onClick={() => setActiveTab("issues")}
-              className={`pb-3 text-sm font-medium border-b-2 transition-all flex items-center gap-2 ${
-                activeTab === "issues"
-                  ? "border-foreground text-foreground"
-                  : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
-              }`}
-            >
-              Issues
-              <span
-                className={`text-[10px] px-2 py-0.5 rounded-full ${activeTab === "issues" ? "bg-muted text-foreground" : "bg-muted/50 text-muted-foreground"}`}
+                <ClipboardList className="w-4 h-4" /> Tasks
+                <span
+                  className={`text-[10px] px-2 py-0.5 rounded-full ${activeTab === "tasks" ? "bg-muted text-foreground" : "bg-muted/50 text-muted-foreground"}`}
+                >
+                  {tasks?.length || 0}
+                </span>
+              </button>
+              <button
+                onClick={() => setActiveTab("issues")}
+                className={`pb-3 text-[15px] font-medium border-b-2 transition-all flex items-center gap-2 ${
+                  activeTab === "issues"
+                    ? "border-foreground text-foreground"
+                    : "border-transparent text-muted-foreground hover:text-foreground hover:border-border"
+                }`}
               >
-                {issues?.length || 0}
-              </span>
-            </button>
+                <BugIcon className="w-4 h-4" /> Issues
+                <span
+                  className={`text-[10px] px-2 py-0.5 rounded-full ${activeTab === "issues" ? "bg-muted text-foreground" : "bg-muted/50 text-muted-foreground"}`}
+                >
+                  {issues?.length || 0}
+                </span>
+              </button>
+            </div>
+            {sprint.status !== "completed" && isOwner && (
+              <Button
+                size="sm"
+                variant="outline"
+                className="text-[10px] px-3 h-7 font-medium border-border hover:bg-accent/50 transition-all"
+                onClick={() => setShowBacklog(true)}
+              >
+                Add {activeTab === "tasks" ? "Task" : "Issue"}{" "}
+                <Plus className="w-3.5 h-3.5 ml-1.5" />
+              </Button>
+            )}
           </div>
 
-          {/* Tasks list */}
+          {/* Tasks list — table style */}
           {activeTab === "tasks" && (
             <div className="py-2">
               {tasks && tasks.length > 0 ? (
-                tasks.map((task) => (
-                  <div
-                    key={task._id}
-                    className={`flex flex-col sm:flex-row sm:items-center justify-between py-3 border-b border-border/30 px-3 -mx-3 rounded-lg transition-colors gap-3 ${sprint.status !== "completed" ? "group hover:bg-muted/30" : "opacity-80"}`}
-                  >
-                    <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
-                      <div className="mt-0.5 sm:mt-0 shrink-0 text-muted-foreground">
-                        {task.status === "completed" ? (
-                          <CheckCircle2 className="w-4 h-4 text-primary" />
-                        ) : (
-                          <Circle className="w-4 h-4 opacity-50" />
-                        )}
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 min-w-0 flex-1">
-                        <Link
-                          href={`/dashboard/my-projects/${slug}/workspace/tasks`}
-                          className="text-[13px] font-medium text-foreground truncate block hover:underline hover:text-primary transition-colors"
+                <div className="border border-border/50 rounded-lg overflow-hidden bg-muted/5">
+                  <Table>
+                    <TableHeader className="bg-accent/40">
+                      <TableRow className="hover:bg-transparent border-b border-border">
+                        <TableHead className="text-[12px] text-foreground/80 font-bold px-4 py-2.5 border-r border-border">
+                          Task Name
+                        </TableHead>
+                        <TableHead className="text-[12px] text-foreground/80 font-bold px-4 py-2.5 border-r border-border text-center">
+                          Tags
+                        </TableHead>
+                        <TableHead className="text-[12px] text-foreground/80 font-bold px-4 py-2.5 border-r border-border text-center">
+                          Assigned
+                        </TableHead>
+                        <TableHead className="text-[12px] text-foreground/80 font-bold px-4 py-2.5 border-r border-border text-center">
+                          Status
+                        </TableHead>
+                        <TableHead className="text-[12px] text-foreground/80 font-bold px-4 py-2.5 border-r border-border text-center">
+                          Priority
+                        </TableHead>
+                        <TableHead className="w-[40px] px-4 py-2.5"></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {tasks.map((task) => (
+                        <TableRow
+                          key={task._id}
+                          className={cn(
+                            "group border-b border-border/40 hover:bg-muted/10 transition-all cursor-pointer",
+                            sprint.status === "completed" && "opacity-80",
+                          )}
                         >
-                          {task.title}
-                        </Link>
-                        {task.isBlocked && (
-                          <Badge
-                            variant="outline"
-                            className="text-[9px] bg-red-500/10 text-red-500 border-transparent px-1.5 py-0"
-                          >
-                            Blocked
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
+                          <TableCell className="px-4 py-2 font-medium border-r border-border text-[13px] text-foreground/70 group-hover:text-foreground transition-colors">
+                            <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                              <span className="truncate">{task.title}</span>
+                              {task.isBlocked && (
+                                <Badge
+                                  variant="outline"
+                                  className="text-[9px] bg-red-500/10 text-red-500 border-red-500/20 px-1.5 py-0 shrink-0"
+                                >
+                                  Blocked
+                                </Badge>
+                              )}
+                            </div>
+                          </TableCell>
 
-                    <div className="flex items-center gap-4 shrink-0 pl-7 sm:pl-0">
-                      {/* Priority / Points */}
-                      <div className="flex items-center gap-2 w-24 sm:w-auto">
-                        {task.priority && (
-                          <div className="w-5 h-5 rounded flex items-center justify-center bg-muted text-[10px] uppercase font-bold text-muted-foreground">
-                            {task.priority[0]}
-                          </div>
-                        )}
-                        <Badge
-                          variant="outline"
-                          className="text-[10px] bg-muted/40 border-transparent text-muted-foreground font-medium capitalize h-5"
-                        >
-                          {task.status}
-                        </Badge>
-                      </div>
+                          <TableCell className="px-4 py-2 border-r border-border">
+                            <div className="flex items-center justify-center gap-1.5">
+                              {task.type ? (
+                                <div
+                                  className={cn(
+                                    "flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] tracking-wide capitalize border",
+                                    task.type.color === "green" &&
+                                      "bg-emerald-500/10 text-emerald-400 border-emerald-400/20",
+                                    task.type.color === "yellow" &&
+                                      "bg-yellow-500/10 text-primary border-yellow-400/20",
+                                    task.type.color === "purple" &&
+                                      "bg-purple-500/10 text-purple-400 border-purple-400/20",
+                                    task.type.color === "blue" &&
+                                      "bg-blue-500/10 text-blue-400 border-blue-400/20",
+                                    task.type.color === "grey" &&
+                                      "bg-muted/20 text-muted-foreground border-muted/30",
+                                  )}
+                                >
+                                  <div
+                                    className={cn(
+                                      "w-1 h-1 rounded-full",
+                                      task.type.color === "green" &&
+                                        "bg-emerald-400",
+                                      task.type.color === "yellow" &&
+                                        "bg-yellow-400",
+                                      task.type.color === "purple" &&
+                                        "bg-purple-400",
+                                      task.type.color === "blue" &&
+                                        "bg-blue-400",
+                                      task.type.color === "grey" &&
+                                        "bg-muted-foreground",
+                                    )}
+                                  />
+                                  {task.type.label}
+                                </div>
+                              ) : (
+                                <span className="text-[11px] text-muted/30">
+                                  —
+                                </span>
+                              )}
+                            </div>
+                          </TableCell>
 
-                      {/* Assignees */}
-                      <div className="flex items-center w-[60px] justify-end">
-                        <div className="flex -space-x-1.5">
-                          {task.assignedTo?.map((person, i) => (
-                            <Avatar
-                              key={i}
-                              className="w-6 h-6 border-2 border-background"
+                          <TableCell className="px-4 py-2 border-r border-border">
+                            <div className="flex items-center justify-center">
+                              {task.assignedTo && task.assignedTo.length > 0 ? (
+                                <div className="flex items-center -space-x-1.5">
+                                  {task.assignedTo
+                                    .slice(0, 3)
+                                    .map((person: any, i: number) => (
+                                      <Avatar
+                                        key={i}
+                                        className="w-6 h-6 border border-background shadow-sm"
+                                      >
+                                        <AvatarImage src={person.avatar} />
+                                        <AvatarFallback className="text-[8px] bg-muted text-muted-foreground font-bold uppercase">
+                                          {person.name[0]}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                    ))}
+                                  {task.assignedTo.length > 3 && (
+                                    <div className="w-6 h-6 rounded-full bg-muted border border-background flex items-center justify-center text-[8px] font-bold text-muted-foreground">
+                                      +{task.assignedTo.length - 3}
+                                    </div>
+                                  )}
+                                </div>
+                              ) : (
+                                <span className="text-[11px] text-muted-foreground">
+                                  Unassigned
+                                </span>
+                              )}
+                            </div>
+                          </TableCell>
+
+                          <TableCell className="px-4 py-2 border-r border-border">
+                            <div className="flex items-center justify-center">
+                              <Badge
+                                className={cn(
+                                  "px-2 py-0.5 rounded-full text-[10px] flex items-center gap-1.5 border font-semibold capitalize",
+                                  statusColors[task.status] ||
+                                    "bg-primary/10 text-primary border-primary/20",
+                                )}
+                              >
+                                {statusIcons[task.status]}
+                                {task.status}
+                              </Badge>
+                            </div>
+                          </TableCell>
+
+                          <TableCell className="px-4 py-2 border-r border-border/40">
+                            <div className="flex items-center justify-center scale-90">
+                              {priorityIcons2[task.priority || "none"]}
+                            </div>
+                          </TableCell>
+
+                          <TableCell className="px-4 py-2 text-right">
+                            <Link
+                              href={`/dashboard/my-projects/${slug}/workspace/tasks`}
                             >
-                              <AvatarImage src={person.avatar} />
-                              <AvatarFallback className="text-[9px] bg-primary/10 text-primary">
-                                {person.name[0]}
-                              </AvatarFallback>
-                            </Avatar>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="w-6 flex justify-end">
-                        {isOwner && sprint.status !== "completed" && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-red-500 focus:opacity-100"
-                            onClick={() => handleRemoveTask(task._id)}
-                          >
-                            ×
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))
+                              <ExternalLink className="w-3.5 h-3.5 text-muted-foreground/40 hover:text-primary transition-colors cursor-pointer ml-auto" />
+                            </Link>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
               ) : (
-                <div className="flex flex-col items-center justify-center py-12 px-4 border border-dashed rounded-xl bg-muted/10 mt-4">
-                  <p className="text-sm font-medium text-foreground mb-1">
+                <div className="flex flex-col items-center justify-center py-16 border border-dashed border-neutral-800 rounded-xl bg-neutral-900/20">
+                  <ClipboardList className="w-8 h-8 text-muted-foreground/20 mb-3" />
+                  <p className="text-sm font-medium text-primary/60">
                     No tasks in this sprint
                   </p>
-                  <p className="text-xs text-muted-foreground">
-                    Switch to backlog to add tasks to the sprint.
+                  <p className="text-[11px] text-muted-foreground">
+                    Add tasks from backlog to get started.
                   </p>
                 </div>
               )}
+            </div>
+          )}
 
-              {/* Add from backlog */}
-              {sprint.status !== "completed" && isOwner && (
-                <div className="mt-6 mb-10">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-xs font-medium text-muted-foreground hover:text-foreground"
-                    onClick={() => setShowBacklog(!showBacklog)}
-                  >
-                    <Plus className="w-3.5 h-3.5 mr-1.5" />
-                    Add tasks from backlog
-                  </Button>
+          {/* Issues list — table style */}
+          {activeTab === "issues" && (
+            <div className="py-2">
+              {issues && issues.length > 0 ? (
+                <div className="border border-border/50 rounded-lg overflow-hidden bg-muted/5">
+                  <Table>
+                    <TableHeader className="bg-muted/10">
+                      <TableRow className="hover:bg-transparent border-b border-border/50">
+                        <TableHead className="text-[12px] text-foreground/80 font-bold px-4 py-2.5 border-r border-border/50">
+                          Issue Name
+                        </TableHead>
+                        <TableHead className="text-[12px] text-foreground/80 font-bold px-4 py-2.5 border-r border-border/50 text-center">
+                          Type
+                        </TableHead>
+                        <TableHead className="text-[12px] text-foreground/80 font-bold px-4 py-2.5 border-r border-border/50 text-center">
+                          Assigned
+                        </TableHead>
+                        <TableHead className="text-[12px] text-foreground/80 font-bold px-4 py-2.5 border-r border-border/50 text-center">
+                          Status
+                        </TableHead>
+                        <TableHead className="text-[12px] text-foreground/80 font-bold px-4 py-2.5 border-r border-border/50 text-center">
+                          Severity
+                        </TableHead>
+                        <TableHead className="w-[40px] px-4 py-2.5"></TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {issues.map((issue) => (
+                        <TableRow
+                          key={issue._id}
+                          className={cn(
+                            "group border-b border-border/40 hover:bg-muted/10 transition-all cursor-pointer",
+                            sprint.status === "completed" && "opacity-80",
+                          )}
+                        >
+                          <TableCell className="px-4 py-2 font-medium border-r border-border/40 text-[13px] text-foreground/70 group-hover:text-foreground transition-colors">
+                            <div className="flex items-center gap-2.5 min-w-0 pr-2">
+                              <span className="truncate">{issue.title}</span>
+                            </div>
+                          </TableCell>
 
-                  {showBacklog && activeTab === "tasks" && (
-                    <div className="mt-4 border border-border/50 rounded-xl p-4 max-h-[350px] overflow-y-auto bg-card shadow-sm">
-                      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-1">
-                        Backlog ({backlogTasks?.length || 0})
-                      </p>
-                      <div className="space-y-1">
+                          <TableCell className="px-4 py-2 border-r border-border/40">
+                            <div className="flex items-center justify-center">
+                              <Badge
+                                variant="outline"
+                                className="text-[9px] font-bold uppercase tracking-widest bg-muted/20 text-foreground/80 border-border/40 px-2 py-0.5"
+                              >
+                                {issue.type || "bug"}
+                              </Badge>
+                            </div>
+                          </TableCell>
+
+                          <TableCell className="px-4 py-2 border-r border-border/40">
+                            <div className="flex items-center justify-center">
+                              {issue.IssueAssignee &&
+                              issue.IssueAssignee.length > 0 ? (
+                                <div className="flex items-center -space-x-1.5">
+                                  {issue.IssueAssignee.slice(0, 3).map(
+                                    (person: any, i: number) => (
+                                      <Avatar
+                                        key={i}
+                                        className="w-6 h-6 border border-background shadow-sm"
+                                      >
+                                        <AvatarImage src={person.avatar} />
+                                        <AvatarFallback className="text-[8px] bg-muted text-muted-foreground font-bold uppercase">
+                                          {person.name[0]}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                    ),
+                                  )}
+                                </div>
+                              ) : (
+                                <span className="text-[11px] text-muted/30">
+                                  Unassigned
+                                </span>
+                              )}
+                            </div>
+                          </TableCell>
+
+                          <TableCell className="px-4 py-2 border-r border-border/40">
+                            <div className="flex items-center justify-center">
+                              <Badge
+                                className={cn(
+                                  "px-2.5 py-0.5 rounded-full text-[10px] flex items-center gap-1.5 border font-semibold capitalize",
+                                  issue.status === "closed"
+                                    ? "bg-emerald-500/10 text-emerald-500 border-emerald-400/20"
+                                    : "bg-red-500/10 text-red-500 border-red-500/20",
+                                )}
+                              >
+                                {issue.status === "closed" ? (
+                                  <CheckCircle2 className="w-3.5 h-3.5" />
+                                ) : (
+                                  <AlertCircle className="w-3.5 h-3.5" />
+                                )}
+                                {issue.status}
+                              </Badge>
+                            </div>
+                          </TableCell>
+
+                          <TableCell className="px-4 py-2 border-r border-border/40">
+                            <div className="flex items-center justify-center scale-90">
+                              {priorityIcons2[issue.severity || "none"]}
+                            </div>
+                          </TableCell>
+
+                          <TableCell className="px-4 py-2 text-right">
+                            <Link
+                              href={`/dashboard/my-projects/${slug}/workspace/issues`}
+                            >
+                              <ExternalLink className="w-3.5 h-3.5 text-muted-foreground/40 hover:text-primary transition-colors cursor-pointer ml-auto" />
+                            </Link>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-16 border border-dashed border-neutral-800 rounded-xl bg-neutral-900/20">
+                  <BugIcon className="w-8 h-8 text-muted-foreground/20 mb-3" />
+                  <p className="text-sm font-medium text-primary/60">
+                    No issues in this sprint
+                  </p>
+                  <p className="text-[11px] text-muted-foreground">
+                    Clean slate! No bugs reported here.
+                  </p>
+                </div>
+              )}
+            </div>
+          )}
+
+          {/* Backlog Dialog */}
+          <Dialog open={showBacklog} onOpenChange={setShowBacklog}>
+            <DialogContent className="max-w-2xl bg-card border-border/60 shadow-2xl p-0 overflow-hidden rounded-xl">
+              <DialogHeader className="p-6 pb-2">
+                <DialogTitle className="text-lg font-bold flex items-center gap-2">
+                  {activeTab === "tasks" ? (
+                    <ClipboardList className="w-5 h-5 text-primary" />
+                  ) : (
+                    <BugIcon className="w-5 h-5 text-red-500" />
+                  )}
+                  Add from Backlog
+                </DialogTitle>
+                <DialogDescription className="text-xs text-muted-foreground">
+                  Select {activeTab} from the backlog to include in this sprint.
+                </DialogDescription>
+              </DialogHeader>
+
+              <div className="px-6 pb-6">
+                <div className="mt-4 border border-border/40 rounded-xl overflow-hidden bg-muted/5">
+                  <div className="max-h-[400px] overflow-y-auto custom-scrollbar">
+                    {activeTab === "tasks" ? (
+                      <div className="divide-y divide-border/30">
                         {backlogTasks && backlogTasks.length > 0 ? (
                           backlogTasks.map((task) => (
                             <div
                               key={task._id}
-                              className="group flex flex-col sm:flex-row sm:items-center justify-between p-2.5 rounded-lg hover:bg-muted/50 transition-colors gap-3 border border-transparent hover:border-border/50 cursor-pointer"
-                              onClick={() => handleAddTask(task._id)}
+                              className="group flex items-center justify-between p-3 hover:bg-muted/30 transition-all gap-4 cursor-pointer"
+                              onClick={() => {
+                                handleAddTask(task._id);
+                              }}
                             >
-                              <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
-                                <Circle className="w-3.5 h-3.5 opacity-40 mt-0.5 sm:mt-0" />
-                                <span className="text-[13px] truncate font-medium">
-                                  {task.title}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-3 pl-6 sm:pl-0 opacity-100 sm:opacity-50 group-hover:opacity-100 transition-opacity">
-                                <div className="text-[10px] bg-muted px-2 py-0.5 rounded text-muted-foreground font-medium">
-                                  {task.status}
+                              <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <Circle className="w-4 h-4 text-muted/40 shrink-0" />
+                                <div className="min-w-0">
+                                  <p className="text-[13px] font-medium text-foreground truncate">
+                                    {task.title}
+                                  </p>
+                                  <p className="text-[10px] text-muted-foreground uppercase tracking-tighter">
+                                    {task.status}
+                                  </p>
                                 </div>
-                                <Button
-                                  variant="secondary"
-                                  size="sm"
-                                  className="h-6 text-[10px] px-2.5"
-                                >
-                                  Add
-                                </Button>
                               </div>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 w-7 p-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity bg-primary/10 text-primary"
+                              >
+                                <Plus className="w-3.5 h-3.5" />
+                              </Button>
                             </div>
                           ))
                         ) : (
-                          <p className="text-xs text-muted-foreground py-4 text-center">
-                            Empty backlog
-                          </p>
+                          <div className="py-12 text-center">
+                            <p className="text-sm text-muted-foreground italic">
+                              No tasks in backlog
+                            </p>
+                          </div>
                         )}
                       </div>
-                    </div>
-                  )}
-                </div>
-              )}
-            </div>
-          )}
-
-          {/* Issues list */}
-          {activeTab === "issues" && (
-            <div className="py-2">
-              {issues && issues.length > 0 ? (
-                issues.map((issue) => (
-                  <div
-                    key={issue._id}
-                    className={`flex flex-col sm:flex-row sm:items-center justify-between py-3 border-b border-border/30 px-3 -mx-3 rounded-lg transition-colors gap-3 ${sprint.status !== "completed" ? "group hover:bg-muted/30" : "opacity-80"}`}
-                  >
-                    <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
-                      <div className="mt-0.5 sm:mt-0 shrink-0 text-muted-foreground">
-                        {issue.status === "closed" ? (
-                          <CheckCircle2 className="w-4 h-4 text-emerald-500" />
-                        ) : (
-                          <Circle className="w-4 h-4 opacity-50" />
-                        )}
-                      </div>
-                      <div className="flex flex-col sm:flex-row sm:items-center gap-2 min-w-0 flex-1">
-                        <Link
-                          href={`/dashboard/my-projects/${slug}/workspace/issues`}
-                          className="text-[13px] font-medium text-foreground truncate block hover:underline hover:text-primary transition-colors"
-                        >
-                          {issue.title}
-                        </Link>
-                        {issue.severity === "critical" && (
-                          <Badge
-                            variant="outline"
-                            className="text-[9px] bg-red-500/10 text-red-500 border-transparent px-1.5 py-0"
-                          >
-                            Critical
-                          </Badge>
-                        )}
-                      </div>
-                    </div>
-
-                    <div className="flex items-center gap-4 shrink-0 pl-7 sm:pl-0">
-                      {/* Priority / Points */}
-                      <div className="flex items-center gap-2 w-24 sm:w-auto">
-                        <Badge
-                          variant="outline"
-                          className="text-[10px] bg-muted/40 border-transparent text-muted-foreground font-medium capitalize h-5"
-                        >
-                          {issue.status}
-                        </Badge>
-                      </div>
-
-                      {/* Assignees */}
-                      <div className="flex items-center w-[60px] justify-end">
-                        <div className="flex -space-x-1.5">
-                          {issue.IssueAssignee?.map((person, i) => (
-                            <Avatar
-                              key={i}
-                              className="w-6 h-6 border-2 border-background"
-                            >
-                              <AvatarImage src={person.avatar} />
-                              <AvatarFallback className="text-[9px] bg-primary/10 text-primary">
-                                {person.name[0]}
-                              </AvatarFallback>
-                            </Avatar>
-                          ))}
-                        </div>
-                      </div>
-
-                      {/* Actions */}
-                      <div className="w-6 flex justify-end">
-                        {isOwner && sprint.status !== "completed" && (
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-red-500 focus:opacity-100"
-                            onClick={() => handleRemoveIssue(issue._id)}
-                          >
-                            ×
-                          </Button>
-                        )}
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <div className="flex flex-col items-center justify-center py-12 px-4 border border-dashed rounded-xl bg-muted/10 mt-4">
-                  <p className="text-sm font-medium text-foreground mb-1">
-                    No issues in this sprint
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    Enjoy the silence.
-                  </p>
-                </div>
-              )}
-
-              {/* Add from backlog */}
-              {sprint.status !== "completed" && isOwner && (
-                <div className="mt-6 mb-10">
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    className="text-xs font-medium text-muted-foreground hover:text-foreground"
-                    onClick={() => setShowBacklog(!showBacklog)}
-                  >
-                    <Plus className="w-3.5 h-3.5 mr-1.5" />
-                    Add issues from backlog
-                  </Button>
-
-                  {showBacklog && activeTab === "issues" && (
-                    <div className="mt-4 border border-border/50 rounded-xl p-4 max-h-[350px] overflow-y-auto bg-card shadow-sm">
-                      <p className="text-[11px] font-semibold text-muted-foreground uppercase tracking-wider mb-3 px-1">
-                        Backlog ({backlogIssues?.length || 0})
-                      </p>
-                      <div className="space-y-1">
+                    ) : (
+                      <div className="divide-y divide-border/30">
                         {backlogIssues && backlogIssues.length > 0 ? (
                           backlogIssues.map((issue) => (
                             <div
                               key={issue._id}
-                              className="group flex flex-col sm:flex-row sm:items-center justify-between p-2.5 rounded-lg hover:bg-muted/50 transition-colors gap-3 border border-transparent hover:border-border/50 cursor-pointer"
+                              className="group flex items-center justify-between p-3 hover:bg-muted/30 transition-all gap-4 cursor-pointer"
                               onClick={() => handleAddIssue(issue._id)}
                             >
-                              <div className="flex items-start sm:items-center gap-3 flex-1 min-w-0">
-                                <Circle className="w-3.5 h-3.5 opacity-40 mt-0.5 sm:mt-0" />
-                                <span className="text-[13px] truncate font-medium">
-                                  {issue.title}
-                                </span>
-                              </div>
-                              <div className="flex items-center gap-3 pl-6 sm:pl-0 opacity-100 sm:opacity-50 group-hover:opacity-100 transition-opacity">
-                                <div className="text-[10px] bg-muted px-2 py-0.5 rounded text-muted-foreground font-medium">
-                                  {issue.status}
+                              <div className="flex items-center gap-3 flex-1 min-w-0">
+                                <AlertCircle className="w-4 h-4 text-red-500/40 shrink-0" />
+                                <div className="min-w-0">
+                                  <p className="text-[13px] font-medium text-foreground truncate">
+                                    {issue.title}
+                                  </p>
+                                  <p className="text-[10px] text-muted-foreground uppercase tracking-tighter">
+                                    {issue.status} • {issue.severity}
+                                  </p>
                                 </div>
-                                <Button
-                                  variant="secondary"
-                                  size="sm"
-                                  className="h-6 text-[10px] px-2.5"
-                                >
-                                  Add
-                                </Button>
                               </div>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-7 w-7 p-0 rounded-full opacity-0 group-hover:opacity-100 transition-opacity bg-red-500/10 text-red-500"
+                              >
+                                <Plus className="w-3.5 h-3.5" />
+                              </Button>
                             </div>
                           ))
                         ) : (
-                          <p className="text-xs text-muted-foreground py-4 text-center">
-                            Empty backlog
-                          </p>
+                          <div className="py-12 text-center">
+                            <p className="text-sm text-muted-foreground italic">
+                              No issues in backlog
+                            </p>
+                          </div>
                         )}
                       </div>
-                    </div>
-                  )}
+                    )}
+                  </div>
                 </div>
-              )}
-            </div>
-          )}
+                <div className="mt-6 flex justify-end">
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="text-xs font-medium text-muted-foreground"
+                    onClick={() => setShowBacklog(false)}
+                  >
+                    Close
+                  </Button>
+                </div>
+              </div>
+            </DialogContent>
+          </Dialog>
         </div>
 
         {/* RIGHT — Context / Sidebars */}
@@ -640,11 +825,10 @@ const SprintDetailPage = () => {
           {/* Recent Activity / Burndown Placeholder (sleek dark aesthetic) */}
           <div className="border border-border/40 bg-card rounded-xl p-5 shadow-xs">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-sm font-semibold text-foreground">
+              <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider">
                 Timeline
               </h3>
             </div>
-
             <div className="h-[120px] w-full flex items-end justify-between gap-1 pb-2 border-b border-border/40">
               {/* Fake burndown visual bars */}
               {[...Array(7)].map((_, i) => (
@@ -667,78 +851,7 @@ const SprintDetailPage = () => {
               <span>{format(sprint.duration.endDate, "MMM d")}</span>
             </div>
           </div>
-
-          {/* Quick Stats list styling */}
-          {stats && (
-            <div className="border border-border/40 bg-card rounded-xl p-5 shadow-xs">
-              <h3 className="text-sm font-semibold text-foreground mb-4">
-                Overview
-              </h3>
-              <div className="space-y-3.5 text-[13px]">
-                <div className="flex justify-between items-center border-b border-border/30 pb-3">
-                  <span className="text-muted-foreground">Total Items</span>
-                  <span className="font-medium text-foreground">
-                    {stats.totalItems}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center border-b border-border/30 pb-3">
-                  <span className="text-muted-foreground">Completed</span>
-                  <span className="font-medium text-foreground">
-                    {stats.completedItems}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center border-b border-border/30 pb-3">
-                  <span className="text-muted-foreground">Remaining</span>
-                  <span className="font-medium text-foreground">
-                    {stats.totalItems - stats.completedItems}
-                  </span>
-                </div>
-                {stats.estimatedDaysToComplete !== null && (
-                  <div className="flex justify-between items-center pb-1">
-                    <span className="text-muted-foreground">
-                      Est. Completion
-                    </span>
-                    <span className="font-medium text-foreground">
-                      {stats.estimatedDaysToComplete}d
-                    </span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-
-          {/* Team Members */}
-          <div className="border border-border/40 bg-card rounded-xl p-5 shadow-xs">
-            <h3 className="text-sm font-semibold text-foreground mb-4">
-              Assignees
-            </h3>
-            {stats && stats.teamMembers.length > 0 ? (
-              <div className="space-y-4">
-                {stats.teamMembers.map((member) => (
-                  <div key={member.userId} className="flex items-center gap-3">
-                    <Avatar className="w-7 h-7 ring-2 ring-background">
-                      <AvatarImage src={member.avatar} />
-                      <AvatarFallback className="text-[10px] bg-primary/20 text-primary font-medium">
-                        {member.name[0]}
-                      </AvatarFallback>
-                    </Avatar>
-                    <div className="flex-1 min-w-0">
-                      <p className="text-[13px] font-medium text-foreground truncate">
-                        {member.name}
-                      </p>
-                    </div>
-                    <div className="text-[11px] text-muted-foreground bg-muted px-2 py-0.5 rounded-full font-medium">
-                      {member.taskCount}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            ) : (
-              <p className="text-xs text-muted-foreground">
-                No assignees in this sprint.
-              </p>
-            )}
-          </div>
+          {/* Kaya -> Analysis */}
         </div>
       </div>
     </div>
