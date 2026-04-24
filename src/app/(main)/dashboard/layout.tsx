@@ -64,7 +64,7 @@ export default function Layout({
               </div>
             </header>
             <div className="flex-1 min-h-0 overflow-hidden">
-              <ScrollArea className="h-full scroll-smooth">
+              <ScrollArea className="h-full scroll-smooth scrollbar-hide">
                 {children}
               </ScrollArea>
             </div>
