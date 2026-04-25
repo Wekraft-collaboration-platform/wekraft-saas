@@ -15,10 +15,11 @@
  */
 "use client";
 
-import { useState, useRef, useCallback, KeyboardEvent } from "react";
+import { useState, useRef, useCallback, KeyboardEvent, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { SmilePlus, Plus, Gift, FileImage, Sticker, X } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 import {
   Popover,
   PopoverContent,
@@ -47,6 +48,17 @@ export function MessageComposer({ channelName, replyingTo, onClearReply, onSend,
   const [content, setContent] = useState("");
   const [sending, setSending] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  
+  // Auto-resize logic
+  useEffect(() => {
+    const el = textareaRef.current;
+    if (el) {
+      el.style.height = "auto";
+      const newHeight = Math.min(el.scrollHeight, 200); // Max height 200px
+      el.style.height = `${newHeight}px`;
+      el.style.overflowY = el.scrollHeight > 200 ? "auto" : "hidden";
+    }
+  }, [content]);
 
   const handleSend = useCallback(async () => {
     const trimmed = content.trim();
@@ -94,20 +106,26 @@ export function MessageComposer({ channelName, replyingTo, onClearReply, onSend,
       )}
 
       {/* Input row */}
-      <div
+      <motion.div
+        layout
+        transition={{
+          layout: { duration: 0.2, ease: "easeOut" }
+        }}
         className={cn(
-          "flex items-center gap-2 rounded-lg bg-accent/40 px-4 py-2 transition-all duration-200",
+          "flex items-center gap-2 rounded-lg bg-accent/40 px-4 py-2 transition-all duration-200 ring-primary/0 focus-within:ring-2 focus-within:ring-primary/20",
           disabled && "opacity-70 bg-secondary/30"
         )}
       >
         {/* Plus attachment icon */}
-        <button
+        <motion.button
+          whileHover={{ scale: 1.1 }}
+          whileTap={{ scale: 0.9 }}
           type="button"
           disabled={disabled}
           className="h-6 w-6 rounded-full bg-muted-foreground/30 flex items-center justify-center shrink-0 hover:bg-muted-foreground/50 transition-colors disabled:opacity-50"
         >
           <Plus className="h-4 w-4 text-foreground/80" />
-        </button>
+        </motion.button>
 
         {/* Text input */}
         <Textarea
@@ -120,36 +138,47 @@ export function MessageComposer({ channelName, replyingTo, onClearReply, onSend,
           onKeyDown={handleKeyDown}
           placeholder={placeholder}
           disabled={disabled}
-          className="flex-1 border-0 shadow-none focus-visible:ring-0 resize-none bg-transparent min-h-[24px] max-h-[50vh] py-1 text-[15px] placeholder:text-muted-foreground/60 leading-normal scrollbar-hide disabled:cursor-not-allowed"
+          className="flex-1 border-0 shadow-none focus-visible:ring-0 resize-none bg-transparent min-h-[24px] py-1 text-[15px] placeholder:text-muted-foreground/60 leading-normal scrollbar-hide disabled:cursor-not-allowed transition-[height] duration-200 ease-out"
           rows={1}
           style={{ height: "auto" }}
-          onInput={(e) => {
-            const el = e.currentTarget;
-            el.style.height = "auto";
-            el.style.height = `${Math.min(el.scrollHeight, window.innerHeight * 0.5)}px`;
-          }}
         />
 
         {/* Right utility icons */}
         <div className="flex items-center gap-2.5 shrink-0 pr-1">
-          <button disabled={disabled} className="text-muted-foreground/80 hover:text-foreground transition-colors disabled:opacity-50">
+          <motion.button 
+            whileHover={{ y: -2 }}
+            disabled={disabled} 
+            className="text-muted-foreground/80 hover:text-foreground transition-colors disabled:opacity-50"
+          >
             <Gift className="h-[18px] w-[18px]" />
-          </button>
-          <button disabled={disabled} className="text-muted-foreground/80 hover:text-foreground transition-colors disabled:opacity-50">
+          </motion.button>
+          <motion.button 
+            whileHover={{ y: -2 }}
+            disabled={disabled} 
+            className="text-muted-foreground/80 hover:text-foreground transition-colors disabled:opacity-50"
+          >
             <FileImage className="h-[18px] w-[18px]" />
-          </button>
-          <button disabled={disabled} className="text-muted-foreground/80 hover:text-foreground transition-colors disabled:opacity-50">
+          </motion.button>
+          <motion.button 
+            whileHover={{ y: -2 }}
+            disabled={disabled} 
+            className="text-muted-foreground/80 hover:text-foreground transition-colors disabled:opacity-50"
+          >
             <Sticker className="h-[18px] w-[18px]" />
-          </button>
+          </motion.button>
           
           {/* Emoji picker */}
           <Popover>
             <PopoverTrigger asChild>
-              <button disabled={disabled} className="text-muted-foreground/80 hover:text-foreground transition-colors disabled:opacity-50">
+              <motion.button 
+                whileHover={{ y: -2, rotate: 10 }}
+                disabled={disabled} 
+                className="text-muted-foreground/80 hover:text-foreground transition-colors disabled:opacity-50"
+              >
                 <SmilePlus className="h-[18px] w-[18px]" />
-              </button>
+              </motion.button>
             </PopoverTrigger>
-            <PopoverContent side="top" align="end" className="w-64 p-3 mb-2">
+            <PopoverContent side="top" align="end" className="w-64 p-3 mb-2 bg-background/95 backdrop-blur-xl border-border/40 shadow-2xl rounded-xl">
               {EMOJI_GROUPS.map((group) => (
                 <div key={group.label} className="mb-2">
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
@@ -171,7 +200,7 @@ export function MessageComposer({ channelName, replyingTo, onClearReply, onSend,
             </PopoverContent>
           </Popover>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 }

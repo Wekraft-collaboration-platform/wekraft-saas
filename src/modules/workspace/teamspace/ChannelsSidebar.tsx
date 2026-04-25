@@ -178,29 +178,32 @@ export function ChannelsSidebar({
 
   return (
     <div className="flex flex-col h-full w-60 border-r border-border/80 bg-background shrink-0">
-      {/* Server Header */}
-      <div className="flex items-center justify-center px-4 h-14 border-b border-border/80 shadow-sm cursor-pointer hover:bg-accent/30 transition-colors">
-        <h2 className="font-semibold text-xl leading-tight truncate px-0.5">
-          <PlaneTakeoff className="h-6 w-6 -mt-0.5 mr-2 inline" /> Team space
-        </h2>
-      </div>
+      {/* Sticky Header Section */}
+      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border/80 shadow-sm">
+        {/* Server Header */}
+        <div className="flex items-center justify-center px-4 h-14 cursor-pointer hover:bg-accent/30 transition-colors">
+          <h2 className="font-semibold text-xl leading-tight truncate px-0.5">
+            <PlaneTakeoff className="h-6 w-6 -mt-0.5 mr-2 inline" /> Team space
+          </h2>
+        </div>
 
-      {/* Create Channel Action */}
-      <div className="px-3 pt-4 pb-2">
-        <motion.button
-          onClick={() => setCreateOpen(true)}
-          // whileHover={{ scale: 1, y: -1 }}
-          disabled={!isPower}
-          className="w-full flex items-center justify-center gap-3 px-3 h-9 bg-muted hover:bg-accent/30 border border-primary/20 hover:border-primary/40 text-foreground group transition-all duration-300 relative overflow-hidden rounded"
-        >
-          <div className="bg-primary/20 p-1 rounded group-hover:bg-primary/30">
-            <Plus className="h-4 w-4 text-primary" />
-          </div>
-          <span className="text-xs tracking-tight">Create Channel</span>
+        {/* Create Channel Action */}
+        <div className="px-3 pb-4">
+          <motion.button
+            onClick={() => setCreateOpen(true)}
+            // whileHover={{ scale: 1, y: -1 }}
+            disabled={!isPower}
+            className="w-full flex items-center justify-center gap-3 px-3 h-9 bg-muted hover:bg-accent/30 border border-primary/20 hover:border-primary/40 text-foreground group transition-all duration-300 relative overflow-hidden rounded"
+          >
+            <div className="bg-primary/20 p-1 rounded group-hover:bg-primary/30">
+              <Plus className="h-4 w-4 text-primary" />
+            </div>
+            <span className="text-xs tracking-tight">Create Channel</span>
 
-          {/* Subtle glow effect */}
-          <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
-        </motion.button>
+            {/* Subtle glow effect */}
+            <div className="absolute inset-0 bg-gradient-to-r from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500 pointer-events-none" />
+          </motion.button>
+        </div>
       </div>
 
       {/* Channel List */}
@@ -283,7 +286,7 @@ export function ChannelsSidebar({
       </ScrollArea>
 
       {/* Bottom Setting Section */}
-      <div className="relative overflow-hidden bg-sidebar/60 border-t border-border/60 shrink-0">
+      <div className="sticky bottom-0 z-20 bg-background/95 backdrop-blur-md border-t border-border/60 shrink-0">
         <div className="p-3 relative z-10">
           <motion.button
             whileHover={{
