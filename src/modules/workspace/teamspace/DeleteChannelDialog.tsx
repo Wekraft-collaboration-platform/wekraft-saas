@@ -22,9 +22,11 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { AlertTriangle, Trash2 } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Channel } from "./hooks/useChannels";
+import { useEffect } from "react";
 
 interface Props {
   open: boolean;
@@ -35,6 +37,13 @@ interface Props {
 
 export function DeleteChannelDialog({ open, onOpenChange, onConfirm, channel }: Props) {
   const [loading, setLoading] = useState(false);
+  const [confirmName, setConfirmName] = useState("");
+
+  useEffect(() => {
+    if (!open) {
+      setConfirmName("");
+    }
+  }, [open]);
 
   async function handleConfirm() {
     setLoading(true);
@@ -73,10 +82,24 @@ export function DeleteChannelDialog({ open, onOpenChange, onConfirm, channel }: 
           </div>
 
           <div className="bg-accent/40 rounded-2xl p-4 border border-border/40 mb-6">
-            <p className="text-sm text-muted-foreground leading-relaxed">
+            <p className="text-sm text-muted-foreground leading-relaxed mb-4">
               Are you sure you want to delete <span className="text-foreground font-bold italic">#{channel?.name}</span>? 
               All messages and attachments in this channel will be purged from our servers.
             </p>
+            
+            <div className="space-y-2">
+              <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60">
+                To confirm, type <span className="text-foreground select-none">"{channel?.name}"</span> below:
+              </p>
+              <Input
+                value={confirmName}
+                onChange={(e) => setConfirmName(e.target.value)}
+                onPaste={(e) => e.preventDefault()}
+                placeholder="Enter channel name"
+                className="bg-background/50 border-border/60 focus:border-destructive/40 focus:ring-destructive/10 h-10"
+                autoComplete="off"
+              />
+            </div>
           </div>
 
           <div className="flex flex-col gap-3">
@@ -84,7 +107,7 @@ export function DeleteChannelDialog({ open, onOpenChange, onConfirm, channel }: 
               variant="destructive"
               className="w-full h-11 text-sm font-bold shadow-lg shadow-destructive/20 hover:shadow-destructive/40 transition-all duration-300 group"
               onClick={handleConfirm}
-              disabled={loading}
+              disabled={loading || confirmName !== channel?.name}
             >
               <Trash2 className="w-4 h-4 mr-2 group-hover:scale-110 transition-transform" />
               {loading ? "Deleting Channel..." : "Delete Permanently"}

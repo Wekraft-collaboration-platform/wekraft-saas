@@ -34,10 +34,17 @@ import {
   Edit2,
   Trash2,
   PlaneTakeoff,
+  MoreHorizontal,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 import { useProjectPermissions } from "@/hooks/use-project-permissions";
 import { Id } from "../../../../convex/_generated/dataModel";
@@ -103,7 +110,7 @@ export function ChannelsSidebar({
     const color = getChannelColor(channel.name);
 
     return (
-      <li key={channel.id} className="relative group/item px-2">
+      <li key={channel.id} className="relative group px-2">
         <div
           role="button"
           tabIndex={0}
@@ -117,7 +124,7 @@ export function ChannelsSidebar({
             }
           }}
           className={cn(
-            "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[14px] font-medium transition-all duration-300 relative overflow-hidden cursor-pointer",
+            "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-[14px] font-medium transition-all duration-300 relative cursor-pointer",
             isActive
               ? "bg-accent/60 text-foreground shadow-sm"
               : "text-muted-foreground hover:bg-accent/30 hover:text-foreground",
@@ -135,41 +142,54 @@ export function ChannelsSidebar({
           <Icon
             className={cn(
               "h-[18px] w-[18px] shrink-0 transition-colors duration-300",
-              isActive
-                ? color
-                : "text-muted-foreground/50 group-hover/item:" + color,
+              isActive ? color : "text-muted-foreground/50 group-hover:text-foreground",
             )}
           />
-          <span className="truncate leading-tight">{channel.name}</span>
+          <span className="truncate leading-tight flex-1 min-w-0 max-w-[120px]">
+            {channel.name}
+          </span>
 
-          {/* Hover actions */}
-          {isOwner && !channel.is_default && (
-            <div className="ml-auto flex items-center gap-1 opacity-0 group-hover/item:opacity-100 transition-opacity z-20">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setTargetChannel(channel);
-                  setEditOpen(true);
-                }}
-                className="p-1 hover:bg-accent rounded-md text-muted-foreground hover:text-foreground transition-colors"
-              >
-                <Edit2 className="h-3.5 w-3.5" />
-              </button>
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  setTargetChannel(channel);
-                  setDeleteOpen(true);
-                }}
-                className="p-1 hover:bg-destructive/10 rounded-md text-muted-foreground hover:text-destructive transition-colors"
-              >
-                <Trash2 className="h-3.5 w-3.5" />
-              </button>
+          {/* Hover actions - 3 dot menu */}
+          {isPower && !channel.is_default && (
+            <div className="opacity-40 group-hover:opacity-100 transition-opacity z-20 shrink-0">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <button
+                    onClick={(e) => e.stopPropagation()}
+                    className="h-[18px] w-[18px] flex items-center justify-center hover:bg-accent rounded-md text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    <MoreHorizontal className="h-3.5 w-3.5" />
+                  </button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end" className="w-40">
+                  <DropdownMenuItem
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setTargetChannel(channel);
+                      setEditOpen(true);
+                    }}
+                  >
+                    <Edit2 className="h-4 w-4 mr-2" />
+                    Edit Channel
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    className="text-destructive focus:text-destructive"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setTargetChannel(channel);
+                      setDeleteOpen(true);
+                    }}
+                  >
+                    <Trash2 className="h-4 w-4 mr-2" />
+                    Delete Channel
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
             </div>
           )}
 
           {channel.type === "announcement" && !isOwner && (
-            <Lock className="h-3 w-3 ml-auto shrink-0 opacity-40 group-hover/item:opacity-70 transition-opacity" />
+            <Lock className="h-3 w-3 ml-auto shrink-0 opacity-40 group-hover:opacity-70 transition-opacity" />
           )}
         </div>
       </li>
@@ -207,8 +227,8 @@ export function ChannelsSidebar({
       </div>
 
       {/* Channel List */}
-      <ScrollArea className="flex-1 min-h-0">
-        <div className="px-2 py-3 space-y-4">
+      <ScrollArea className="flex-1 overflow-y-auto">
+        <div className="px-2 pt-4 pb-12 space-y-6">
           {loading ? (
             <div className="flex flex-col gap-1 px-1 mt-2">
               {[...Array(6)].map((_, i) => (
