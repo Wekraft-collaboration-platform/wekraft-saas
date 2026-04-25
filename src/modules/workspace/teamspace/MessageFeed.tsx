@@ -314,7 +314,7 @@ export function MessageFeed({
   return (
     <div className="flex flex-col flex-1 min-w-0 h-full overflow-hidden relative">
       {/* Channel header */}
-      <div className="flex items-center justify-between px-6 h-14 border-b border-border/80 flex-none bg-background/95 backdrop-blur shadow-sm z-10">
+      <div className="flex items-center justify-between px-6 h-14 border-b border-border/80 flex-none bg-background/95 backdrop-blur z-10">
         <div className="flex items-center gap-3.5 min-w-0">
           <div className="bg-primary/10 p-1.5 rounded-lg shrink-0 border border-primary/20">
             <ChannelIcon className="h-5 w-5 text-primary" />

@@ -94,6 +94,11 @@ export function DeleteChannelDialog({ open, onOpenChange, onConfirm, channel }: 
               <Input
                 value={confirmName}
                 onChange={(e) => setConfirmName(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && confirmName === channel?.name && !loading) {
+                    handleConfirm();
+                  }
+                }}
                 onPaste={(e) => e.preventDefault()}
                 placeholder="Enter channel name"
                 className="bg-background/50 border-border/60 focus:border-destructive/40 focus:ring-destructive/10 h-10"
