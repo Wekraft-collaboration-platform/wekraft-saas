@@ -45,7 +45,7 @@ export default function Layout({
         <SidebarProvider defaultOpen={true}>
           {sidebar}
           <SidebarInset className="border-l h-screen flex flex-col">
-            <header className="flex justify-between h-14 py-1 flex-none items-center border-b px-4 bg-background/80 backdrop-blur-xl z-50">
+            <header className="flex justify-between h-18 py-1 flex-none items-center border-b px-4 bg-sidebar/60 backdrop-blur-xl z-50">
               <div className="flex items-center gap-2">
                 <SidebarTrigger className="-ml-1 cursor-pointer hover:scale-105 transition-all duration-200" />
                 <DashboardBreadcrumbs />
@@ -54,17 +54,17 @@ export default function Layout({
                 <CommunitySearchBar />
               </div> */}
               <div className="flex items-center">
-                <UserButton 
+                <UserButton
                   appearance={{
                     elements: {
-                      userButtonAvatarBox: "h-9 w-9"
-                    }
+                      userButtonAvatarBox: "h-9 w-9",
+                    },
                   }}
                 />
               </div>
             </header>
             <div className="flex-1 min-h-0 overflow-hidden">
-              <ScrollArea className="h-full">
+              <ScrollArea className="h-full scroll-smooth scrollbar-hide">
                 {children}
               </ScrollArea>
             </div>

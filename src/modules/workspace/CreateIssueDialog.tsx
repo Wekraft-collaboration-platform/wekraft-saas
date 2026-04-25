@@ -43,6 +43,11 @@ import {
 import { cn } from "@/lib/utils";
 import { Id } from "../../../convex/_generated/dataModel";
 import { GetRepoStructure } from "./GetRepoStructure";
+import {
+  ISSUE_ENVIRONMENT_ICONS,
+  ISSUE_SEVERITY_ICONS,
+  ISSUE_STATUS_ICONS,
+} from "@/lib/static-store";
 
 interface CreateIssueDialogProps {
   projectName?: string;
@@ -51,27 +56,6 @@ interface CreateIssueDialogProps {
   ownerClerkId?: string;
   trigger: React.ReactNode;
 }
-
-const severityIcons: Record<string, React.ReactNode> = {
-  critical: <Zap className="w-3.5 h-3.5 text-red-500" />,
-  medium: <Zap className="w-3.5 h-3.5 text-orange-400" />,
-  low: <Zap className="w-3.5 h-3.5 text-blue-400" />,
-};
-
-const statusIcons: Record<string, React.ReactNode> = {
-  "not opened": <AlertCircle className="w-3.5 h-3.5 text-neutral-400" />,
-  opened: <AlertCircle className="w-3.5 h-3.5 text-blue-500" />,
-  "in review": <Clock className="w-3.5 h-3.5 text-yellow-500" />,
-  reopened: <AlertCircle className="w-3.5 h-3.5 text-purple-500" />,
-  closed: <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />,
-};
-
-const environmentIcons: Record<string, React.ReactNode> = {
-  local: <Globe className="w-3.5 h-3.5 text-neutral-400" />,
-  dev: <Globe className="w-3.5 h-3.5 text-blue-400" />,
-  staging: <Globe className="w-3.5 h-3.5 text-orange-400" />,
-  production: <Globe className="w-3.5 h-3.5 text-emerald-500" />,
-};
 
 export const CreateIssueDialog = ({
   projectName = "Project",
@@ -86,9 +70,9 @@ export const CreateIssueDialog = ({
   const [status, setStatus] = useState<
     "not opened" | "opened" | "in review" | "reopened" | "closed" | null
   >(null);
-  const [severity, setSeverity] = useState<"critical" | "medium" | "low" | null>(
-    null,
-  );
+  const [severity, setSeverity] = useState<
+    "critical" | "medium" | "low" | null
+  >(null);
   const [environment, setEnvironment] = useState<
     "local" | "dev" | "staging" | "production" | null
   >(null);
@@ -113,7 +97,7 @@ export const CreateIssueDialog = ({
         severity: severity || undefined,
         environment: environment || undefined,
         due_date: dueDate?.getTime(),
-        type: "user-created",
+        type: "manual",
         projectId,
         fileLinked: selectedPath || undefined,
       });
@@ -174,7 +158,11 @@ export const CreateIssueDialog = ({
                     status && "text-blue-400 border-blue-900/40 bg-blue-900/10",
                   )}
                 >
-                  {status ? statusIcons[status] : <ListFilter className="w-3.5 h-3.5" />}
+                  {status ? (
+                    ISSUE_STATUS_ICONS[status]
+                  ) : (
+                    <ListFilter className="w-3.5 h-3.5" />
+                  )}
                   <span className="capitalize">{status || "Status"}</span>
                 </Button>
               </DropdownMenuTrigger>
@@ -196,7 +184,7 @@ export const CreateIssueDialog = ({
                     onClick={() => setStatus(s)}
                     className="gap-2 cursor-pointer"
                   >
-                    {statusIcons[s]}
+                    {ISSUE_STATUS_ICONS[s]}
                     <span className="capitalize text-xs px-1.5">{s}</span>
                   </DropdownMenuItem>
                 ))}
@@ -211,10 +199,15 @@ export const CreateIssueDialog = ({
                   size="sm"
                   className={cn(
                     "h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
-                    severity && "text-blue-400 border-blue-900/40 bg-blue-900/10",
+                    severity &&
+                      "text-blue-400 border-blue-900/40 bg-blue-900/10",
                   )}
                 >
-                  {severity ? severityIcons[severity] : <Zap className="w-3.5 h-3.5" />}
+                  {severity ? (
+                    ISSUE_SEVERITY_ICONS[severity]
+                  ) : (
+                    <Zap className="w-3.5 h-3.5" />
+                  )}
                   <span className="capitalize">{severity || "Severity"}</span>
                 </Button>
               </DropdownMenuTrigger>
@@ -228,7 +221,7 @@ export const CreateIssueDialog = ({
                     onClick={() => setSeverity(sev)}
                     className="gap-2 cursor-pointer"
                   >
-                    {severityIcons[sev]}
+                    {ISSUE_SEVERITY_ICONS[sev]}
                     <span className="capitalize">{sev}</span>
                   </DropdownMenuItem>
                 ))}
@@ -243,11 +236,18 @@ export const CreateIssueDialog = ({
                   size="sm"
                   className={cn(
                     "h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
-                    environment && "text-blue-400 border-blue-900/40 bg-blue-900/10",
+                    environment &&
+                      "text-blue-400 border-blue-900/40 bg-blue-900/10",
                   )}
                 >
-                  {environment ? environmentIcons[environment] : <Globe className="w-3.5 h-3.5" />}
-                  <span className="capitalize">{environment || "Environment"}</span>
+                  {environment ? (
+                    ISSUE_ENVIRONMENT_ICONS[environment]
+                  ) : (
+                    <Globe className="w-3.5 h-3.5" />
+                  )}
+                  <span className="capitalize">
+                    {environment || "Environment"}
+                  </span>
                 </Button>
               </DropdownMenuTrigger>
               <DropdownMenuContent className="bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200">
@@ -261,7 +261,7 @@ export const CreateIssueDialog = ({
                       onClick={() => setEnvironment(env)}
                       className="gap-2 cursor-pointer"
                     >
-                      {environmentIcons[env]}
+                      {ISSUE_ENVIRONMENT_ICONS[env]}
                       <span className="capitalize">{env}</span>
                     </DropdownMenuItem>
                   ),

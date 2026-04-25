@@ -117,8 +117,16 @@ export function AiAssistantSheet({
   const [restoreError, setRestoreError] = useState(false);
   const [thinkingTime, setThinkingTime] = useState(0);
 
-  const { status, appCheckpoints, run, resume, restore, stop, restoring } =
-    useLangGraphAgent<AgentState, InterruptValue, ResumeValue>();
+  const {
+    status,
+    appCheckpoints,
+    run,
+    resume,
+    restore,
+    stop,
+    restoring,
+    isStreaming,
+  } = useLangGraphAgent<AgentState, InterruptValue, ResumeValue>();
 
   // Console threadId
   useEffect(() => {
@@ -129,14 +137,16 @@ export function AiAssistantSheet({
   useEffect(() => {
     let interval: any;
     if (status === "running" || restoring) {
-      interval = setInterval(() => {
-        setThinkingTime((t) => t + 1);
-      }, 1000);
+      if (!isStreaming) {
+        interval = setInterval(() => {
+          setThinkingTime((t) => t + 1);
+        }, 1000);
+      }
     } else {
       setThinkingTime(0);
     }
     return () => clearInterval(interval);
-  }, [status, restoring]);
+  }, [status, restoring, isStreaming]);
 
   // Keyboard shortcut
   useEffect(() => {
@@ -369,7 +379,7 @@ export function AiAssistantSheet({
         </SheetHeader>
 
         {/* MESSAGES */}
-        <div ref={containerRef} className="flex-1 overflow-y-auto">
+        <div ref={containerRef} className="flex-1 overflow-y-auto py-4 px-2">
           {appCheckpoints.length === 0 && !restoring && (
             <div className="h-full flex flex-col items-center justify-center p-8 text-center animate-in fade-in zoom-in duration-500">
               <div className="relative mb-6">
@@ -433,7 +443,7 @@ export function AiAssistantSheet({
             ),
           )}
 
-          {status === "running" && !restoring && (
+          {status === "running" && !restoring && !isStreaming && (
             <div className="flex gap-2 items-center py-3 px-4 text-neutral-500">
               <KayaLoader />
               <div className="flex items-center gap-1.5">

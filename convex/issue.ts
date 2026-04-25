@@ -18,11 +18,7 @@ export const createIssue = mutation({
       ),
     ),
     severity: v.optional(
-      v.union(
-        v.literal("critical"),
-        v.literal("medium"),
-        v.literal("low"),
-      ),
+      v.union(v.literal("critical"), v.literal("medium"), v.literal("low")),
     ),
     due_date: v.optional(v.number()),
     status: v.union(
@@ -32,7 +28,7 @@ export const createIssue = mutation({
       v.literal("reopened"),
       v.literal("closed"),
     ),
-    type: v.union(v.literal("user-created"), v.literal("github")),
+    type: v.union(v.literal("manual"), v.literal("github")),
     githubIssueUrl: v.optional(v.string()),
     fileLinked: v.optional(v.string()),
     taskId: v.optional(v.id("tasks")),
@@ -53,7 +49,9 @@ export const createIssue = mutation({
 
     const user = await ctx.db
       .query("users")
-      .withIndex("by_token", (q) => q.eq("clerkToken", identity.tokenIdentifier))
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
       .unique();
 
     if (!user) throw new Error("User not found");
@@ -101,11 +99,7 @@ export const getFilteredIssues = query({
       ),
     ),
     severity: v.optional(
-      v.union(
-        v.literal("critical"),
-        v.literal("medium"),
-        v.literal("low"),
-      ),
+      v.union(v.literal("critical"), v.literal("medium"), v.literal("low")),
     ),
     status: v.optional(
       v.union(
@@ -123,13 +117,17 @@ export const getFilteredIssues = query({
       .withIndex("by_project", (q) => q.eq("projectId", args.projectId));
 
     // Custom filtering
-    // Note: Convex filters are less efficient than indexes, but for project-specific issues, 
+    // Note: Convex filters are less efficient than indexes, but for project-specific issues,
     // it should be fine. If scale grows, we can add composite indexes.
     if (args.environment) {
-      baseQuery = baseQuery.filter((q) => q.eq(q.field("environment"), args.environment));
+      baseQuery = baseQuery.filter((q) =>
+        q.eq(q.field("environment"), args.environment),
+      );
     }
     if (args.severity) {
-      baseQuery = baseQuery.filter((q) => q.eq(q.field("severity"), args.severity));
+      baseQuery = baseQuery.filter((q) =>
+        q.eq(q.field("severity"), args.severity),
+      );
     }
     if (args.status) {
       baseQuery = baseQuery.filter((q) => q.eq(q.field("status"), args.status));
@@ -157,11 +155,7 @@ export const updateIssue = mutation({
       ),
     ),
     severity: v.optional(
-      v.union(
-        v.literal("critical"),
-        v.literal("medium"),
-        v.literal("low"),
-      ),
+      v.union(v.literal("critical"), v.literal("medium"), v.literal("low")),
     ),
     due_date: v.optional(v.number()),
     status: v.optional(

@@ -205,11 +205,11 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
           )}
         </div>
 
-        {hiddenOffendersCount > 0 && (
+        {/* {hiddenOffendersCount > 0 && (
           <div className="text-[9px] text-neutral-600 mt-2 font-medium border-t border-neutral-800/40 pt-1.5">
             + {hiddenOffendersCount} more hidden items
           </div>
-        )}
+        )} */}
       </div>
     </div>
   );

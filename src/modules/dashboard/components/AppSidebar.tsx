@@ -104,7 +104,7 @@ export const AppSidebar = () => {
   return (
     <Sidebar collapsible="icon" className="">
       <SidebarHeader className="p-0 gap-0">
-        <div className="flex items-center justify-center gap-3 px-3 h-14 border-b group-data-[collapsible=icon]:px-0 shrink-0">
+        <div className="flex items-center justify-center gap-3 px-3 h-18 border-b group-data-[collapsible=icon]:px-0 shrink-0">
           <Image
             src="/logo.svg"
             alt="Logo"
@@ -156,7 +156,9 @@ export const AppSidebar = () => {
               className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
             >
               <LucideLayoutDashboard className="h-5 w-5" />
-              <span className="text-sm group-data-[collapsible=icon]:hidden">Dashboard</span>
+              <span className="text-sm group-data-[collapsible=icon]:hidden">
+                Dashboard
+              </span>
               <span
                 className="
         pointer-events-none absolute inset-0 -z-10
@@ -177,7 +179,9 @@ export const AppSidebar = () => {
               >
                 <div className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center">
                   <Users className="h-5 w-5 shrink-0" />
-                  <span className="text-sm group-data-[collapsible=icon]:hidden">Community</span>
+                  <span className="text-sm group-data-[collapsible=icon]:hidden">
+                    Community
+                  </span>
                   <ChevronRight className="h-4 w-4 ml-auto group-data-[collapsible=icon]:hidden" />
                 </div>
               </SidebarMenuButton>
@@ -223,7 +227,9 @@ export const AppSidebar = () => {
               className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
             >
               <GitBranchPlus className="h-5 w-5" />
-              <span className="text-sm group-data-[collapsible=icon]:hidden">Repositories</span>
+              <span className="text-sm group-data-[collapsible=icon]:hidden">
+                Repositories
+              </span>
               <span
                 className="
         pointer-events-none absolute inset-0 -z-10
@@ -436,7 +442,9 @@ export const AppSidebar = () => {
               className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
             >
               <User2 className="h-5 w-5" />
-              <span className="text-sm group-data-[collapsible=icon]:hidden">My Profile</span>
+              <span className="text-sm group-data-[collapsible=icon]:hidden">
+                My Profile
+              </span>
               <span
                 className="
         pointer-events-none absolute inset-0 -z-10
@@ -461,7 +469,9 @@ export const AppSidebar = () => {
                   className="relative z-10 flex w-full items-center gap-3 text-primary group-data-[collapsible=icon]:justify-center"
                 >
                   <Palette className="h-5 w-5" />
-                  <span className="text-sm group-data-[collapsible=icon]:hidden">Theme</span>
+                  <span className="text-sm group-data-[collapsible=icon]:hidden">
+                    Theme
+                  </span>
 
                   {/* Active gradient */}
                   <span

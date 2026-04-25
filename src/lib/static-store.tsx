@@ -12,11 +12,16 @@ import {
   MoreHorizontal,
   ScanSearch,
   Table,
+  Zap,
+  AlertCircle,
+  Clock,
+  CheckCircle2,
+  Globe,
 } from "lucide-react";
-import { 
-  Popover, 
-  PopoverContent, 
-  PopoverTrigger 
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
 } from "@/components/ui/popover";
 import { Separator } from "@/components/ui/separator";
 
@@ -212,16 +217,36 @@ export const priorityIcons2: Record<string, React.ReactNode> = {
     </div>
   ),
 };
+// =========================ISSSUES STATIC STORE===========================
+export const ISSUE_STATUS_ICONS: Record<string, React.ReactNode> = {
+  "not opened": <AlertCircle className="w-3.5 h-3.5 text-neutral-400" />,
+  opened: <AlertCircle className="w-3.5 h-3.5 text-blue-500" />,
+  "in review": <Clock className="w-3.5 h-3.5 text-yellow-500" />,
+  reopened: <AlertCircle className="w-3.5 h-3.5 text-purple-500" />,
+  closed: <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />,
+};
 
+export const ISSUE_SEVERITY_ICONS: Record<string, React.ReactNode> = {
+  critical: <Zap className="w-3.5 h-3.5 text-red-500" />,
+  medium: <Zap className="w-3.5 h-3.5 text-orange-400" />,
+  low: <Zap className="w-3.5 h-3.5 text-blue-400" />,
+};
 
-export const SortPopover = ({ 
-  title, 
-  icon: TitleIcon, 
+export const ISSUE_ENVIRONMENT_ICONS: Record<string, React.ReactNode> = {
+  local: <Globe className="w-3.5 h-3.5 text-neutral-400" />,
+  dev: <Globe className="w-3.5 h-3.5 text-blue-400" />,
+  staging: <Globe className="w-3.5 h-3.5 text-orange-400" />,
+  production: <Globe className="w-3.5 h-3.5 text-emerald-500" />,
+};
+
+export const SortPopover = ({
+  title,
+  icon: TitleIcon,
   children,
-  trigger
-}: { 
-  title: string; 
-  icon: React.ElementType; 
+  trigger,
+}: {
+  title: string;
+  icon: React.ElementType;
   children: React.ReactNode;
   trigger: React.ReactNode;
 }) => (
@@ -231,18 +256,21 @@ export const SortPopover = ({
         {trigger}
       </div>
     </PopoverTrigger>
-    <PopoverContent className="w-56 p-2 rounded-lg shadow-md border-zinc-200 dark:border-zinc-800 bg-sidebar" align="end" sideOffset={8}>
+    <PopoverContent
+      className="w-56 p-2 rounded-lg shadow-md border-zinc-200 dark:border-zinc-800 bg-sidebar"
+      align="end"
+      sideOffset={8}
+    >
       <div className="flex items-center gap-2 px-3 py-2 mb-1">
         <TitleIcon className="w-4 h-4 text-primary" />
-        <span className="text-[13px] tracking-tight font-medium text-primary/70">{title}</span>
+        <span className="text-[13px] tracking-tight font-medium text-primary/70">
+          {title}
+        </span>
       </div>
       <Separator className="mb-2 bg-zinc-100 dark:bg-zinc-800" />
-      <div className="space-y-0.5">
-        {children}
-      </div>
+      <div className="space-y-0.5">{children}</div>
     </PopoverContent>
   </Popover>
 );
-
 
 export const INVITE_LINK = "http://localhost:3000/";

@@ -1,9 +1,37 @@
 import { NextRequest, NextResponse } from "next/server";
+import { ratelimit } from "@/lib/rate-limit";
 
 const AGENT_URL = process.env.NEXT_PUBLIC_AGENT_URL;
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
+
+  // Rate Limiting
+  const identifier =
+    body.state?.user_id || // getting user_id from the user request , sends to AI
+    request.headers.get("x-forwarded-for") ||
+    "anonymous";
+  const { success, limit, reset, remaining } =
+    await ratelimit.limit(identifier);
+
+  const rlHeaders = {
+    "X-RateLimit-Limit": String(limit),
+    "X-RateLimit-Remaining": String(remaining),
+    "X-RateLimit-Reset": String(reset),
+  };
+
+  if (!success) {
+    return NextResponse.json(
+      { error: "Too many requests. Please slow down." },
+      {
+        status: 429,
+        headers: {
+          ...rlHeaders,
+          "Retry-After": String(Math.ceil((reset - Date.now()) / 1000)),
+        },
+      },
+    );
+  }
 
   try {
     const response = await fetch(`${AGENT_URL}/agent`, {
@@ -55,6 +83,7 @@ export async function POST(request: NextRequest) {
         "Content-Type": "text/event-stream",
         "Cache-Control": "no-cache",
         Connection: "keep-alive",
+        ...rlHeaders,
       },
     });
   } catch (error) {

@@ -144,7 +144,7 @@ export default function ProjectSidebar() {
       {/* ───────── HEADER ───────── */}
       <SidebarHeader
         style={{ viewTransitionName: "site-header" }}
-        className="h-14 justify-center flex-none border-b"
+        className="h-18 justify-center flex-none border-b"
       >
         <div className="flex items-center justify-between gap-4 px-3 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
           <Link href="/dashboard" className="flex items-center">
@@ -157,20 +157,19 @@ export default function ProjectSidebar() {
             />
           </Link>
 
-          <h1 className="font-semibold text-lg truncate group-data-[collapsible=icon]:hidden">
+          <h1 className="font-semibold text-xl truncate group-data-[collapsible=icon]:hidden">
             {project?.projectName}
           </h1>
 
           <Button
-            size="icon-sm"
-            variant={"ghost"}
+            size="icon-xs"
+            variant={"outline"}
             className="group-data-[collapsible=icon]:hidden"
           >
             <ChevronsUpDown />
           </Button>
         </div>
       </SidebarHeader>
-
 
       {/* ───────── CONTENT ───────── */}
       <SidebarContent className="px-2 py-5 group-data-[collapsible=icon]:px-0">
@@ -185,7 +184,7 @@ export default function ProjectSidebar() {
             >
               <Link
                 href={`/dashboard/my-projects/${slug}/inbox`}
-                className="relative z-10 flex items-center gap-3 w-full dark:data-[active=true]:text-white data-[active=true]:text-gray-700 group-data-[collapsible=icon]:justify-center"
+                className="relative z-10 flex items-center justify-center gap-3 w-full bg-secondary border border-primary/30 dark:data-[active=true]:text-white data-[active=true]:text-gray-700 group-data-[collapsible=icon]:justify-center"
               >
                 <Inbox className="h-5 w-5" />
                 <span className="text-sm group-data-[collapsible=icon]:hidden">

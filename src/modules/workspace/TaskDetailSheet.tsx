@@ -40,6 +40,17 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import { Loader2 } from "lucide-react";
 
 interface TaskDetailSheetProps {
   task: Task | null;
@@ -88,6 +99,9 @@ export const TaskDetailSheet = ({
   );
 
   const updateAssignees = useMutation(api.workspace.updateTaskAssignees);
+  const markAsIssue = useMutation(api.workspace.markTaskAsIssue);
+  const [isMarkingIssue, setIsMarkingIssue] = useState(false);
+  const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
   if (!currentTask) return null;
 
@@ -135,6 +149,21 @@ export const TaskDetailSheet = ({
     }
   };
 
+  const handleMarkAsIssue = async () => {
+    if (!currentTask) return;
+    setIsMarkingIssue(true);
+    const toastId = toast.loading("Marking task as issue...");
+    try {
+      await markAsIssue({ taskId: currentTask._id });
+      toast.success("Task marked as issue successfully", { id: toastId });
+      setShowConfirmDialog(false);
+    } catch (error) {
+      toast.error("Failed to mark task as issue", { id: toastId });
+    } finally {
+      setIsMarkingIssue(false);
+    }
+  };
+
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="sm:max-w-lg w-full p-0 border-l border-neutral-800 bg-sidebar">
@@ -145,8 +174,22 @@ export const TaskDetailSheet = ({
               <Button variant="default" size="sm" className="text-[10px]">
                 <Edit2 size={12} /> Edit Task
               </Button>
-              <Button variant="outline" size="sm" className="text-[10px]">
-                <Bug size={12} /> Mark as Issue
+              <Button
+                variant="outline"
+                size="sm"
+                className={cn(
+                  "text-[10px]",
+                  currentTask.isBlocked && "text-red-500 border-red-500/50",
+                )}
+                onClick={() => setShowConfirmDialog(true)}
+                disabled={currentTask.isBlocked || isMarkingIssue}
+              >
+                {isMarkingIssue ? (
+                  <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                ) : (
+                  <Bug size={12} />
+                )}
+                {currentTask.isBlocked ? "Blocked by Issue" : "Mark as Issue"}
               </Button>
               <Button variant="outline" size="sm" className="text-[10px]">
                 <FastForward size={12} /> Add to Sprint
@@ -504,6 +547,32 @@ export const TaskDetailSheet = ({
           )}
         </div>
       </SheetContent>
+
+      <AlertDialog open={showConfirmDialog} onOpenChange={setShowConfirmDialog}>
+        <AlertDialogContent className="bg-sidebar border-accent">
+          <AlertDialogHeader>
+            <AlertDialogTitle className="text-primary">
+              Are you sure?
+            </AlertDialogTitle>
+            <AlertDialogDescription className="text-muted-foreground">
+              This will mark the task as blocked and create a new issue. This
+              action cannot be easily undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="bg-transparent border-accent text-primary hover:bg-accent/20">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleMarkAsIssue}
+              className="bg-blue-600! hover:bg-blue-700! text-white! "
+              disabled={isMarkingIssue}
+            >
+              {isMarkingIssue ? "Marking..." : "Confirm"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </Sheet>
   );
 };

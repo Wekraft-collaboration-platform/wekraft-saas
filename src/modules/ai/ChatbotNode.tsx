@@ -1,3 +1,4 @@
+"use client";
 import { useState } from "react";
 import { AgentState } from "@/modules/ai/AgentTypes";
 import { cn } from "@/lib/utils";
@@ -8,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { useQuery } from "convex/react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { api } from "../../../convex/_generated/api";
+import Image from "next/image";
 
 interface ChatbotNodeProps {
   nodeState: Partial<AgentState>;
@@ -24,7 +26,7 @@ export function ChatbotNode({ nodeState }: ChatbotNodeProps) {
   };
 
   return (
-    <div className="space-y-4 my-1">
+    <div className="space-y-2 my-1">
       {nodeState?.messages?.map((msg, index) => {
         const isAI = msg.type === "ai";
         const msgId = msg.id ?? `msg-${index}`;
@@ -33,7 +35,7 @@ export function ChatbotNode({ nodeState }: ChatbotNodeProps) {
           <div
             key={msgId}
             className={cn(
-              "group relative flex flex-col gap-3 py-4 px-6 transition-all duration-300",
+              "group relative flex flex-col gap-3 py-1 px-5 transition-all duration-300",
             )}
           >
             <div className="flex items-center justify-between">
@@ -47,7 +49,8 @@ export function ChatbotNode({ nodeState }: ChatbotNodeProps) {
                   )}
                 >
                   {isAI ? (
-                    <Sparkle size={12} />
+                    // <Sparkle size={12} />
+                    <Image src="/kaya.svg" alt="Kaya" width={22} height={22} />
                   ) : (
                     <Avatar className="h-6 w-6 rounded-md overflow-hidden">
                       <AvatarImage src={user?.avatarUrl} />

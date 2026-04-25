@@ -66,7 +66,9 @@ export async function* callAgentRoute<
 
     if (!response.ok) {
       const error = await response.json();
-      throw new Error(error.detail || "Failed to call agent route");
+      throw new Error(
+        error.error || error.detail || "Failed to call agent route",
+      );
     }
 
     const reader = response.body?.getReader();

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { toast } from "sonner";
 import {
   Checkpoint,
   Interrupt,
@@ -60,6 +61,7 @@ export function useLangGraphAgent<
 
   const [status, setStatus] = useState<AgentStatus>("idle");
   const [restoring, setRestoring] = useState(false);
+  const [isStreaming, setIsStreaming] = useState(false);
   const [appCheckpoints, setAppCheckpoints] = useState<
     AppCheckpoint<TAgentState, TInterruptValue>[]
   >([]);
@@ -144,6 +146,7 @@ export function useLangGraphAgent<
 
     try {
       setStatus("running");
+      setIsStreaming(false);
       // Invalidate cache when agent is called
       historyCache.delete(agentInput.thread_id);
 
@@ -154,6 +157,7 @@ export function useLangGraphAgent<
       >(agentInput);
       for await (const msg of messageStream) {
         if (msg.event === "checkpoint") {
+          setIsStreaming(false);
           processCheckpoint(
             msg.data as Checkpoint<TAgentState, TInterruptValue>,
             appCheckpoints,
@@ -162,7 +166,11 @@ export function useLangGraphAgent<
         }
 
         if (msg.event === "message_chunk") {
-          processMessageChunk(msg.data as NodeMessageChunk, appCheckpoints);
+          const chunk = msg.data as NodeMessageChunk;
+          if (chunk.message_chunk.content) {
+            setIsStreaming(true);
+          }
+          processMessageChunk(chunk, appCheckpoints);
           setAppCheckpoints([...appCheckpoints]);
         }
 
@@ -186,9 +194,17 @@ export function useLangGraphAgent<
       }
 
       setStatus("idle");
-    } catch (error) {
+      setIsStreaming(false);
+    } catch (error: any) {
       console.error(error);
       setStatus("error");
+      setIsStreaming(false);
+
+      if (error.message.includes("Too many requests")) {
+        toast.error(error.message, {
+          description: "Please wait a moment before trying again.",
+        });
+      }
     }
   }
 
@@ -543,5 +559,6 @@ export function useLangGraphAgent<
     restore,
     stop,
     restoring,
+    isStreaming,
   };
 }
