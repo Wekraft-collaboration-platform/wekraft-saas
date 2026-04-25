@@ -139,8 +139,8 @@ export function ChatbotNode({ nodeState }: ChatbotNodeProps) {
                         {children}
                       </code>
                     ) : (
-                      <pre className="bg-neutral-900 border border-neutral-700 rounded-lg p-4 mb-3 overflow-x-auto">
-                        <code className="text-green-300 text-[13px] font-mono leading-relaxed">
+                      <pre className="bg-muted/40 border border-border rounded-md p-2 mb-3 overflow-x-auto">
+                        <code className="text-primary text-[13px] font-mono leading-relaxed">
                           {children}
                         </code>
                       </pre>

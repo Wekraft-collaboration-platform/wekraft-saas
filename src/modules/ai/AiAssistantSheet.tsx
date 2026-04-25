@@ -38,6 +38,12 @@ import { ToolCallCard } from "@/modules/ai/ToolCard";
 import { SprintItemSelectionCard } from "@/modules/ai/SprintItemSelectionCard";
 import Image from "next/image";
 import { SchedulerSetupCard } from "./SchedulerSetupCard";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 interface AiAssistantSheetProps {
   open: boolean;
@@ -116,6 +122,7 @@ export function AiAssistantSheet({
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
   const [restoreError, setRestoreError] = useState(false);
   const [thinkingTime, setThinkingTime] = useState(0);
+  const [selectedModel, setSelectedModel] = useState<"fast" | "deep">("fast");
 
   const {
     status,
@@ -192,6 +199,7 @@ export function AiAssistantSheet({
     setRestoreError(false);
     run({
       thread_id: threadId,
+      model: selectedModel,
       state: {
         user_id: userId, // added user_id here...
         project_id: projectId, // added project_id here...
@@ -207,6 +215,7 @@ export function AiAssistantSheet({
       thread_id: threadId,
       user_id: userId,
       project_id: projectId,
+      model: selectedModel,
       resume: value,
     });
   };
@@ -345,7 +354,7 @@ export function AiAssistantSheet({
         className="w-[500px] flex flex-col p-0 gap-0 h-full focus-visible:ring-0 focus:ring-0 outline-none overflow-hidden"
       >
         {/* HEADER */}
-        <SheetHeader className="px-4 py-5 border-b bg-card">
+        <SheetHeader className="px-4 py-3 border-b bg-card">
           <div className="flex items-center justify-between pr-10 gap-5">
             <div className="flex flex-col items-start">
               <SheetTitle className="flex items-center gap-2 text-lg font-pop font-semibold mb-1">
@@ -491,35 +500,59 @@ export function AiAssistantSheet({
                 if (e.key === "Enter") sendMessage(inputValue);
               }}
               disabled={isDisabled}
-              className="h-12 rounded-xl bg-sidebar pr-24"
+              className="h-12 rounded-xl bg-sidebar pr-36"
             />
-            {status === "running" ? (
-              <Button
-                size="icon"
-                variant="destructive"
-                className="absolute right-12 top-2 h-8 w-8"
-                onClick={() => stop(threadId)}
-              >
-                <Square className="h-4 w-4" />
-              </Button>
-            ) : (
-              <Button
-                size="icon"
-                variant="outline"
-                className="absolute right-12 top-2 h-8 w-8"
-                onClick={() => sendMessage(inputValue)}
-                disabled={!inputValue.trim() || restoring}
-              >
-                <Send className="h-4 w-4" />
-              </Button>
-            )}
-            <Button
-              size="icon-sm"
-              variant="outline"
-              className="text-[10px] absolute right-2 top-2 h-8 w-8"
-            >
-              <Settings2 className="h-3! w-3!" />
-            </Button>
+            <div className="flex items-center gap-2 absolute right-2 top-2">
+              {status === "running" ? (
+                <Button
+                  size="icon"
+                  variant="destructive"
+                  className=" h-8 w-8"
+                  onClick={() => stop(threadId)}
+                >
+                  <Square className="h-3 w-3!" />
+                </Button>
+              ) : (
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className=" h-8 w-8"
+                  onClick={() => sendMessage(inputValue)}
+                  disabled={!inputValue.trim() || restoring}
+                >
+                  <Send className="h-3 w-3!" />
+                </Button>
+              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    className=" h-8 px-2 flex items-center gap-1.5 text-[10px] capitalize font-medium"
+                  >
+                    {selectedModel}
+                    <Settings2 className="h-3 w-3!" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <div className="text-xs p-2 items-center border-b border-accent">
+                    Select Model
+                  </div>
+                  <DropdownMenuItem
+                    onClick={() => setSelectedModel("fast")}
+                    className="text-[10px]"
+                  >
+                    Kaya Fast
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setSelectedModel("deep")}
+                    className="text-[10px]"
+                  >
+                    Kaya Deep
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
           </div>
           <p className="text-[10px] text-center text-muted-foreground mt-2">
             Kaya is personal PM agent.{" "}

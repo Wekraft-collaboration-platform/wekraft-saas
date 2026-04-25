@@ -121,6 +121,7 @@ interface AgentInput {
   thread_id: string;
   user_id?: string;
   project_id?: string;
+  model?: string;
 }
 
 export interface RunAgentInput<TAgentState> extends AgentInput {
