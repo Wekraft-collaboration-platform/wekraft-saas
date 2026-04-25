@@ -520,7 +520,11 @@ export function MessageFeed({
       {/* Messages area */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto py-2"
+        className="flex-1 overflow-y-auto overflow-x-hidden py-4 bg-accent/5"
+        style={{
+          backgroundImage: "radial-gradient(circle at 2px 2px, rgba(0,0,0,0.02) 1px, transparent 0)",
+          backgroundSize: "24px 24px"
+        }}
         onScroll={handleScroll}
       >
         {/* Load more */}

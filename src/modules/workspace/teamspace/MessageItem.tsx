@@ -188,96 +188,206 @@ export function MessageItem({
       <div
         id={`message-${message.id}`}
         className={cn(
-          "group flex gap-3 px-4 py-0.5 hover:bg-accent/30 rounded-md transition-colors relative",
-          isGrouped ? "mt-0" : "mt-3",
+          "group flex w-full gap-2 px-4 py-0.5 transition-colors relative overflow-visible",
+          isOwn ? "flex-row-reverse justify-start pl-16 pr-4" : "flex-row justify-start pr-16",
+          isGrouped ? "mt-0" : "mt-4",
           isPinned && "border-l-2 border-l-blue-500 rounded-l-none"
         )}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
       >
-        {/* Avatar / Spacer */}
-        <div className="w-10 shrink-0 mt-0.5">
-          {!isGrouped ? (
-            <Avatar className="h-10 w-10 cursor-pointer hover:opacity-90 transition-opacity">
-              <AvatarImage src={message.user_image ?? undefined} />
-              <AvatarFallback className="text-sm">
-                {message.user_name.substring(0, 2).toUpperCase()}
-              </AvatarFallback>
-            </Avatar>
-          ) : (
-            <span className="opacity-0 group-hover:opacity-100 text-[11px] text-muted-foreground select-none pt-1.5 block text-center w-full">
-              {format(new Date(message.created_at), "h:mm")}
-            </span>
-          )}
-        </div>
+        {/* Avatar / Spacer (Only for others) */}
+        {!isOwn && (
+          <div className="w-9 shrink-0 mt-0.5">
+            {!isGrouped ? (
+              <Avatar className="h-9 w-9 cursor-pointer hover:opacity-90 transition-opacity shadow-sm">
+                <AvatarImage src={message.user_image ?? undefined} />
+                <AvatarFallback className="text-xs bg-muted border">
+                  {message.user_name.substring(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            ) : (
+              <div className="w-9" />
+            )}
+          </div>
+        )}
 
-        {/* Content */}
-        <div className="flex-1 min-w-0">
-          {/* Header */}
-          {!isGrouped && (
-            <div className="flex items-baseline gap-2 mb-1">
-              <span className="font-semibold text-[15px] hover:underline cursor-pointer leading-tight">
+        {/* Message Container (Bubble + Info) */}
+        <div className={cn(
+          "flex flex-col max-w-[85%] md:max-w-[65%] relative",
+          isOwn ? "items-end" : "items-start"
+        )}>
+          {/* Header (Only for others, not grouped) */}
+          {!isOwn && !isGrouped && (
+            <div className="flex items-baseline gap-2 mb-1 px-1">
+              <span className="font-semibold text-xs text-blue-500 hover:underline cursor-pointer leading-tight">
                 {message.user_name}
               </span>
-              <span className="text-[11px] text-muted-foreground">{formatTime(message.created_at)}</span>
             </div>
           )}
 
-          {/* Quoted reply block */}
-          {message.thread_parent_id && (message.parent_content || message.parent_user_name) && (
-            <div className="mb-1 rounded p-2 bg-accent/20 border-l-4 border-l-blue-500/80 text-xs flex items-center gap-1.5 w-max max-w-full">
-              {message.parent_user_image && (
-                <img src={message.parent_user_image} alt="" className="w-4 h-4 rounded-full object-cover shrink-0" />
-              )}
-              <div className="font-semibold opacity-80 shrink-0">@{message.parent_user_name ?? "Unknown"}</div>
-              <div className="text-muted-foreground truncate max-w-[300px]">
-                {message.parent_content ?? "Message not found"}
+          {/* The Bubble */}
+          <div className={cn(
+            "relative px-3 py-1.5 transition-all duration-200 border backdrop-blur-[2px] min-w-[70px]",
+            isOwn 
+              ? cn(
+                  "bg-primary/[0.03] border-primary/[0.08]", 
+                  isGrouped ? "rounded-2xl" : "rounded-2xl rounded-tr-sm shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
+                ) 
+              : cn(
+                  "bg-muted/[0.05] border-border/40", 
+                  isGrouped ? "rounded-2xl" : "rounded-2xl rounded-tl-sm shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
+                )
+          )}>
+            {/* WhatsApp-style tail for first message in group */}
+            {!isGrouped && (
+              isOwn ? (
+                // Tail on top-right for own messages
+                <span
+                  aria-hidden="true"
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    right: -8,
+                    width: 0,
+                    height: 0,
+                    borderStyle: "solid",
+                    borderWidth: "0 0 10px 9px",
+                    borderColor: "transparent transparent transparent var(--bubble-own-bg, rgba(var(--primary-rgb,99,102,241),0.06))",
+                    filter: "drop-shadow(1px 0px 0px rgba(var(--primary-rgb,99,102,241),0.08))",
+                  }}
+                />
+              ) : (
+                // Tail on top-left for others' messages
+                <span
+                  aria-hidden="true"
+                  style={{
+                    position: "absolute",
+                    top: 0,
+                    left: -8,
+                    width: 0,
+                    height: 0,
+                    borderStyle: "solid",
+                    borderWidth: "0 9px 10px 0",
+                    borderColor: "transparent rgba(var(--muted-rgb,120,120,120),0.07) transparent transparent",
+                    filter: "drop-shadow(-1px 0px 0px rgba(0,0,0,0.06))",
+                  }}
+                />
+              )
+            )}
+            {/* More Actions Chevron (Inside Bubble) */}
+            {hovered && !editing && (
+              <div className="absolute top-1 right-1 z-30 animate-in fade-in zoom-in duration-150">
+                <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+                  <DropdownMenuTrigger asChild>
+                    <button className="p-0.5 rounded hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                      <MoreHorizontal className="h-3.5 w-3.5 text-muted-foreground/60" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-40 rounded-xl shadow-xl">
+                    <DropdownMenuItem onClick={() => onReply(message)} className="rounded-lg">
+                      <Reply className="h-4 w-4 mr-2 text-muted-foreground" />
+                      Reply
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={handleCopy} className="rounded-lg">
+                      <Copy className="h-4 w-4 mr-2 text-muted-foreground" />
+                      Copy Text
+                    </DropdownMenuItem>
+                    <DropdownMenuItem onClick={() => onPin(message.id, !isPinned)} className="rounded-lg">
+                      <Pin className="h-4 w-4 mr-2 text-muted-foreground" />
+                      {isPinned ? "Unpin" : "Pin"}
+                    </DropdownMenuItem>
+                    {isOwn && (
+                      <DropdownMenuItem onClick={() => setEditing(true)} className="rounded-lg">
+                        <Pencil className="h-4 w-4 mr-2 text-muted-foreground" />
+                        Edit
+                      </DropdownMenuItem>
+                    )}
+                    {canDelete && (
+                      <DropdownMenuItem
+                        className="text-destructive focus:text-destructive focus:bg-destructive/10 rounded-lg"
+                        onClick={() => setDeleteDialogOpen(true)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" />
+                        Delete
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
-            </div>
-          )}
-
-          {/* Message content / edit box */}
-          {editing ? (
-            <div className="mt-1">
-              <Textarea
-                value={editContent}
-                onChange={(e) => setEditContent(e.target.value)}
-                onKeyDown={handleKeyDown}
-                className="text-[15px] min-h-[60px] resize-none"
-                autoFocus
-              />
-              <div className="flex items-center gap-1.5 mt-1.5">
-                <Button size="sm" className="h-7 text-xs" onClick={handleSaveEdit} disabled={saving}>
-                  <Check className="h-3 w-3 mr-1" />
-                  Save
-                </Button>
-                <Button
-                  size="sm"
-                  variant="ghost"
-                  className="h-7 text-xs"
-                  onClick={() => { setEditContent(message.content); setEditing(false); }}
-                >
-                  <X className="h-3 w-3 mr-1" />
-                  Cancel
-                </Button>
-                <span className="text-[10px] text-muted-foreground ml-1">esc to cancel • enter to save</span>
+            )}
+            {/* Quoted reply block */}
+            {message.thread_parent_id && (message.parent_content || message.parent_user_name) && (
+              <div className={cn(
+                "mb-1 rounded p-1.5 text-[12px] flex flex-col gap-0 shadow-sm select-none cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors",
+                isOwn ? "bg-black/10" : "bg-accent/40"
+              )}>
+                <div className={cn("font-semibold text-[10px] leading-tight", isOwn ? "text-primary" : "text-blue-500")}>
+                  {message.parent_user_name ?? "Unknown"}
+                </div>
+                <div className="text-muted-foreground/80 line-clamp-2 leading-snug overflow-hidden text-ellipsis">
+                  {message.parent_content ?? "Message not found"}
+                </div>
               </div>
-            </div>
-          ) : (
-            <p className="text-[15px] leading-[1.375rem] text-foreground/90 break-words whitespace-pre-wrap">
-              <Highlight text={message.content} term={highlightTerm} messageId={message.id} />
-              {message.edited_at && (
-                <span className="text-[10px] text-muted-foreground ml-1.5 select-none">(edited)</span>
-              )}
-            </p>
-          )}
+            )}
 
-          {/* Link Preview */}
-          {message.link_preview && <LinkPreview preview={message.link_preview} />}
+            {/* Message content / edit box */}
+            {editing ? (
+              <div className="min-w-[200px]">
+                <Textarea
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className="text-[14px] min-h-[60px] resize-none bg-transparent border-none focus-visible:ring-0 p-0 text-inherit"
+                  autoFocus
+                />
+                <div className="flex items-center gap-1.5 mt-1.5">
+                  <Button size="sm" className="h-6 text-[10px] px-2" onClick={handleSaveEdit} disabled={saving}>
+                    <Check className="h-3 w-3 mr-1" />
+                    Save
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-6 text-[10px] px-2 text-inherit hover:bg-black/10"
+                    onClick={() => { setEditContent(message.content); setEditing(false); }}
+                  >
+                    <X className="h-3 w-3 mr-1" />
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col">
+                <p className="text-[14px] leading-snug break-all md:break-words whitespace-pre-wrap pr-1 text-foreground/80 font-normal">
+                  <Highlight text={message.content} term={highlightTerm} messageId={message.id} />
+                  {message.edited_at && (
+                    <span className="text-[8px] ml-1.5 select-none opacity-40 italic">
+                      (edited)
+                    </span>
+                  )}
+                </p>
+                <div className="flex items-center self-end gap-1 mt-0.5 ml-4">
+                  <span className="text-[9px] select-none text-muted-foreground/40 font-medium uppercase">
+                    {format(new Date(message.created_at), "h:mm a")}
+                  </span>
+                  {isOwn && (
+                    <div className="flex items-center text-blue-500/60">
+                      <Check className="h-2.5 w-2.5 -mr-1" />
+                      <Check className="h-2.5 w-2.5" />
+                    </div>
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Link Preview */}
+            {message.link_preview && <LinkPreview preview={message.link_preview} />}
+          </div>
 
           {/* Reactions */}
           {message.reactions.length > 0 && (
-            <div className="flex flex-wrap gap-1 mt-1.5">
+            <div className={cn("flex flex-wrap gap-1 mt-1", isOwn ? "justify-end" : "justify-start")}>
               {message.reactions.map((r) => {
                 const hasReacted = r.userIds.includes(currentUserId);
                 return (
@@ -285,130 +395,59 @@ export function MessageItem({
                     key={r.emoji}
                     onClick={() => onReact(message.id, r.emoji, hasReacted)}
                     className={cn(
-                      "flex items-center gap-1 px-2 py-0.5 rounded-full text-xs border transition-all active:scale-95",
+                      "flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] border transition-all active:scale-95",
                       hasReacted
-                        ? "bg-blue-500/15 border-blue-500/50 text-blue-500 font-semibold shadow-sm shadow-blue-500/10"
-                        : "bg-accent/50 border-border hover:bg-accent/80 hover:border-border/80 text-muted-foreground"
+                        ? "bg-blue-500/15 border-blue-500/50 text-blue-500 font-semibold"
+                        : "bg-background border-border hover:bg-accent text-muted-foreground"
                     )}
-                    title={r.userIds.length > 0 ? `${r.userIds.length} reaction${r.userIds.length > 1 ? "s" : ""}` : undefined}
                   >
-                    <span className={cn(hasReacted ? "scale-110" : "scale-100", "transition-transform")}>
-                      {r.emoji}
-                    </span>
+                    <span>{r.emoji}</span>
                     <span className="tabular-nums">{r.userIds.length}</span>
                   </button>
                 );
               })}
             </div>
           )}
+
+          {/* ── Reaction Tool (appears on hover outside bubble) ── */}
+          {showToolbar && (
+            <div className={cn(
+              "absolute top-1/2 -translate-y-1/2 flex items-center",
+              isOwn ? "right-full mr-2" : "left-full ml-2"
+            )}>
+              <Popover open={emojiOpen} onOpenChange={setEmojiOpen}>
+                <PopoverTrigger asChild>
+                  <Button size="icon" variant="ghost" className="h-6 w-6 rounded-full hover:bg-black/5 dark:hover:bg-white/5 text-muted-foreground/40 hover:text-muted-foreground">
+                    <SmilePlus className="h-4 w-4" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-auto p-2 rounded-2xl shadow-xl" side="top" align="center">
+                  <div className="flex gap-1">
+                    {QUICK_EMOJIS.map((emoji) => {
+                      const hasReacted = message.reactions
+                        .find((r) => r.emoji === emoji)
+                        ?.userIds.includes(currentUserId) ?? false;
+                      return (
+                        <button
+                          key={emoji}
+                          onClick={() => onReact(message.id, emoji, hasReacted)}
+                          className={cn(
+                            "text-xl p-1.5 rounded-xl transition-all hover:scale-125 active:scale-90",
+                            hasReacted 
+                              ? "bg-blue-500/20 ring-1 ring-blue-500/30" 
+                              : "hover:bg-accent"
+                          )}
+                        >
+                          {emoji}
+                        </button>
+                      );
+                    })}
+                  </div>
+                </PopoverContent>
+              </Popover>
+            </div>
+          )}
         </div>
-
-        {/* ── Action toolbar (appears on hover) ────────────── */}
-        {showToolbar && (
-          <div className="absolute right-3 top-0 -translate-y-1/2 flex items-center gap-0.5 bg-popover border rounded-md shadow-md p-0.5 z-10">
-            {/* Quick emoji */}
-            <Popover open={emojiOpen} onOpenChange={setEmojiOpen}>
-              <PopoverTrigger asChild>
-                <Button size="icon" variant="ghost" className="h-6 w-6">
-                  <SmilePlus className="h-3.5 w-3.5" />
-                </Button>
-              </PopoverTrigger>
-              <PopoverContent className="w-auto p-2" side="top" align="center">
-                <div className="flex gap-1">
-                  {QUICK_EMOJIS.map((emoji) => {
-                    const hasReacted = message.reactions
-                      .find((r) => r.emoji === emoji)
-                      ?.userIds.includes(currentUserId) ?? false;
-                    return (
-                      <button
-                        key={emoji}
-                        onClick={() => onReact(message.id, emoji, hasReacted)}
-                        className={cn(
-                          "text-lg p-1.5 rounded-md transition-all hover:scale-125 active:scale-90",
-                          hasReacted 
-                            ? "bg-blue-500/20 ring-1 ring-blue-500/30" 
-                            : "hover:bg-accent"
-                        )}
-                      >
-                        {emoji}
-                      </button>
-                    );
-                  })}
-                </div>
-              </PopoverContent>
-            </Popover>
-
-            {/* Reply */}
-            <Button
-              size="icon"
-              variant="ghost"
-              className="h-6 w-6"
-              onClick={() => onReply(message)}
-            >
-              <Reply className="h-3.5 w-3.5" />
-            </Button>
-
-            {/* ── 3-dot More Actions dropdown ─────────────── */}
-            <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
-              <DropdownMenuTrigger asChild>
-                <Button size="icon" variant="ghost" className="h-6 w-6">
-                  <MoreHorizontal className="h-3.5 w-3.5" />
-                </Button>
-              </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="w-44">
-
-                {/* Copy */}
-                <DropdownMenuItem onClick={handleCopy}>
-                  <Copy className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
-                  Copy Text
-                </DropdownMenuItem>
-
-                {/* Pin / Unpin — available to all */}
-                <DropdownMenuItem onClick={() => onPin(message.id, !isPinned)}>
-                  {isPinned ? (
-                    <>
-                      <PinOff className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
-                      Unpin Message
-                    </>
-                  ) : (
-                    <>
-                      <Pin className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
-                      Pin Message
-                    </>
-                  )}
-                </DropdownMenuItem>
-
-                {/* Owner-only actions */}
-                {isOwn && (
-                  <>
-                    <DropdownMenuSeparator />
-
-                    {/* Edit — only own messages */}
-                    <DropdownMenuItem onClick={() => setEditing(true)}>
-                      <Pencil className="h-3.5 w-3.5 mr-2 text-muted-foreground" />
-                      Edit Message
-                    </DropdownMenuItem>
-                  </>
-                )}
-
-                {/* Delete — own message OR admin/owner moderating others */}
-                {canDelete && (
-                  <>
-                    {/* Separator only if edit section wasn't shown (i.e. moderating someone else's msg) */}
-                    {!isOwn && <DropdownMenuSeparator />}
-                    <DropdownMenuItem
-                      className="text-destructive focus:text-destructive focus:bg-destructive/10"
-                      onClick={() => setDeleteDialogOpen(true)}
-                    >
-                      <Trash2 className="h-3.5 w-3.5 mr-2" />
-                      {isOwn ? "Delete Message" : "Delete for Everyone"}
-                    </DropdownMenuItem>
-                  </>
-                )}
-              </DropdownMenuContent>
-            </DropdownMenu>
-          </div>
-        )}
       </div>
 
       {/* ── Delete Confirmation Dialog ──────────────────────── */}
