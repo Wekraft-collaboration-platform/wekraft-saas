@@ -52,6 +52,7 @@ export interface Task {
   priority?: string;
   status: string;
   linkWithCodebase?: string;
+  isBlocked?: boolean;
   projectId: Id<"projects">;
   createdByUserId: string;
   createdAt: number;

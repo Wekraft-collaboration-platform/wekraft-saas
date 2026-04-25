@@ -7,6 +7,7 @@ import {
   Bug,
   FileCodeCorner,
   Filter,
+  Github,
   Layers3,
   Search,
   Sparkles,
@@ -18,6 +19,8 @@ import { useParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { CreateIssueDialog } from "@/modules/workspace/CreateIssueDialog";
+import { useState } from "react";
+import { cn } from "@/lib/utils";
 
 const users = [
   { name: "Ritesh", img: "https://i.pravatar.cc/40?img=1" },
@@ -31,6 +34,7 @@ const IssuesPage = () => {
   const slug = params.slug as string;
   const project = useQuery(api.project.getProjectBySlug, { slug });
   const projectName = project?.projectName;
+  const [activeTab, setActiveTab] = useState<"all" | "github">("all");
   return (
     <div className="w-full h-full p-6 2xl:p-8">
       <header className="flex items-center justify-between">
@@ -64,14 +68,35 @@ const IssuesPage = () => {
       </header>
 
       <div className="flex items-center w-full justify-between gap-3 mt-6 border-b border-accent pb-2">
-        <div className="">
+        <div className="flex items-center gap-6">
           <Button
-            size="sm"
-            variant={"outline"}
-            className="bg-linear-to-t from-indigo-600/30 via-purple-600/10 to-transparent text-xs cursor-pointer"
+            variant={"ghost"}
+            size={"sm"}
+            className={cn(
+              "text-[15px] relative h-9 px-0 hover:bg-transparent rounded-none",
+              activeTab === "all" ? "text-primary" : "text-muted-foreground"
+            )}
+            onClick={() => setActiveTab("all")}
           >
-            <Image src="/kaya.svg" alt="Kaya AI" width={18} height={18} />
-            Ask bout Issues
+            <Bug className="w-4 h-4 mr-2" /> All Issues
+            {activeTab === "all" && (
+              <div className="absolute -bottom-[9px] left-0 right-0 h-[2px] bg-primary rounded-t-full" />
+            )}
+          </Button>
+          <Button
+            variant={"ghost"}
+            size={"sm"}
+            className={cn(
+              "text-[15px] relative h-9 px-0 hover:bg-transparent rounded-none",
+              activeTab === "github" ? "text-primary" : "text-muted-foreground"
+            )}
+            onClick={() => setActiveTab("github")}
+          >
+            <Github className="w-4 h-4 mr-2" />
+            Github Issue
+            {activeTab === "github" && (
+              <div className="absolute -bottom-[9px] left-0 right-0 h-[2px] bg-primary rounded-t-full" />
+            )}
           </Button>
         </div>
 
@@ -87,6 +112,14 @@ const IssuesPage = () => {
           <Button variant="outline" size="sm" className="h-9 text-xs">
             <Filter className="w-5 h-5 mr-2" />
             Filters
+          </Button>
+          <Button
+            size="sm"
+            variant={"outline"}
+            className="bg-linear-to-t from-indigo-600/30 via-purple-600/10 to-transparent text-xs cursor-pointer"
+          >
+            <Image src="/kaya.svg" alt="Kaya AI" width={18} height={18} />
+            Ask bout Issues
           </Button>
           {project && (
             <CreateIssueDialog

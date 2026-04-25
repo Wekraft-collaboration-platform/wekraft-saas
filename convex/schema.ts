@@ -166,7 +166,7 @@ export default defineSchema({
       startDate: v.number(),
       endDate: v.number(),
     }),
-    isBlocked: v.optional(v.boolean()), // due to this task is marked as issue
+    isBlocked: v.optional(v.boolean()), // due to this task is marked as issue and cannot be marked as completed !!
     linkWithCodebase: v.optional(v.string()),
     projectId: v.id("projects"),
     createdByUserId: v.id("users"),
@@ -221,7 +221,7 @@ export default defineSchema({
       v.literal("closed"),
     ),
     type: v.union(
-      v.literal("user-created"),
+      v.literal("manual"),
       v.literal("task-issue"),
       v.literal("github"),
     ),

@@ -38,6 +38,7 @@ import {
   Clock,
   Plus,
   FileCodeCorner,
+  Bug,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -306,7 +307,10 @@ export const TableTab = ({ tasks, onLoadMore, hasMore }: TableTabProps) => {
                       />
                     </TableCell>
                     <TableCell className="px-4 font-medium border-r border-b border-neutral-700 text-base text-primary/70 group-hover:text-primary transition-colors">
-                      {task.title}
+                      <div className="flex items-center gap-1.5 capitalize">
+                        {task.isBlocked && <Bug className="w-4 h-4 text-red-500 shrink-0" />}
+                        {task.title}
+                      </div>
                     </TableCell>
                     <TableCell className="px-4 border-r border-b border-neutral-700">
                       <Badge

@@ -24,6 +24,7 @@ import {
   Calendar,
   Tag,
   CircleDot,
+  Bug,
 } from "lucide-react";
 
 import { Separator } from "@/components/ui/separator";
@@ -303,7 +304,8 @@ const TaskGroup = ({
                     </TableCell>
 
                     <TableCell className="p-2.5 border-r border-b border-neutral-800  max-w-[180px] truncate">
-                      <span className="text-xs font-medium text-muted-foreground capitalize">
+                      <span className="text-xs font-medium text-muted-foreground capitalize flex items-center gap-1.5">
+                        {task.isBlocked && <Bug className="w-3.5 h-3.5 text-red-500 shrink-0" />}
                         {task.title}
                       </span>
                     </TableCell>

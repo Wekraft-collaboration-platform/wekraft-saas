@@ -188,3 +188,50 @@ export const updateTaskAssignees = mutation({
     });
   },
 });
+
+// =============================================
+// MARK TASK AS ISSUE
+// =============================================
+export const markTaskAsIssue = mutation({
+  args: {
+    taskId: v.id("tasks"),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) throw new Error("User not found");
+
+    const task = await ctx.db.get(args.taskId);
+    if (!task) throw new Error("Task not found");
+
+    // 1. Update task to isBlocked: true
+    await ctx.db.patch(args.taskId, {
+      isBlocked: true,
+      updatedAt: Date.now(),
+    });
+
+    // 2. Create issue
+    const issueId = await ctx.db.insert("issues", {
+      title: task.title,
+      description: task.description,
+      fileLinked: task.linkWithCodebase,
+      status: "not opened",
+      type: "manual",
+      projectId: task.projectId,
+      taskId: task._id,
+      createdByUserId: user._id,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+
+    return issueId;
+  },
+});
