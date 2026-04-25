@@ -18,7 +18,7 @@
 import { useState, useRef, useCallback, KeyboardEvent, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { SmilePlus, Plus, Gift, FileImage, Sticker, X } from "lucide-react";
+import { SmilePlus, Plus, X, SendHorizontal } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   Popover,
@@ -54,9 +54,9 @@ export function MessageComposer({ channelName, replyingTo, onClearReply, onSend,
     const el = textareaRef.current;
     if (el) {
       el.style.height = "auto";
-      const newHeight = Math.min(el.scrollHeight, 200); // Max height 200px
+      const newHeight = Math.min(el.scrollHeight, 100); // Max height 100px
       el.style.height = `${newHeight}px`;
-      el.style.overflowY = el.scrollHeight > 200 ? "auto" : "hidden";
+      el.style.overflowY = el.scrollHeight > 100 ? "auto" : "hidden";
     }
   }, [content]);
 
@@ -117,68 +117,30 @@ export function MessageComposer({ channelName, replyingTo, onClearReply, onSend,
         )}
       >
         {/* Plus attachment icon */}
-        <motion.button
-          whileHover={{ scale: 1.1 }}
-          whileTap={{ scale: 0.9 }}
-          type="button"
-          disabled={disabled}
-          className="h-6 w-6 rounded-full bg-muted-foreground/30 flex items-center justify-center shrink-0 hover:bg-muted-foreground/50 transition-colors disabled:opacity-50"
-        >
-          <Plus className="h-4 w-4 text-foreground/80" />
-        </motion.button>
+        <div className="flex items-center gap-1.5 shrink-0">
+          <motion.button
+            whileHover={{ scale: 1.1 }}
+            whileTap={{ scale: 0.9 }}
+            type="button"
+            disabled={disabled}
+            className="h-6 w-6 rounded-full bg-muted-foreground/30 flex items-center justify-center shrink-0 hover:bg-muted-foreground/50 transition-colors disabled:opacity-50"
+          >
+            <Plus className="h-4 w-4 text-foreground/80" />
+          </motion.button>
 
-        {/* Text input */}
-        <Textarea
-          ref={textareaRef}
-          value={content}
-          onChange={(e) => {
-            setContent(e.target.value);
-            onTyping?.(e.target.value.length > 0);
-          }}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder}
-          disabled={disabled}
-          className="flex-1 border-0 shadow-none focus-visible:ring-0 resize-none bg-transparent min-h-[24px] py-1 text-[15px] placeholder:text-muted-foreground/60 leading-normal scrollbar-hide disabled:cursor-not-allowed transition-[height] duration-200 ease-out"
-          rows={1}
-          style={{ height: "auto" }}
-        />
-
-        {/* Right utility icons */}
-        <div className="flex items-center gap-2.5 shrink-0 pr-1">
-          <motion.button 
-            whileHover={{ y: -2 }}
-            disabled={disabled} 
-            className="text-muted-foreground/80 hover:text-foreground transition-colors disabled:opacity-50"
-          >
-            <Gift className="h-[18px] w-[18px]" />
-          </motion.button>
-          <motion.button 
-            whileHover={{ y: -2 }}
-            disabled={disabled} 
-            className="text-muted-foreground/80 hover:text-foreground transition-colors disabled:opacity-50"
-          >
-            <FileImage className="h-[18px] w-[18px]" />
-          </motion.button>
-          <motion.button 
-            whileHover={{ y: -2 }}
-            disabled={disabled} 
-            className="text-muted-foreground/80 hover:text-foreground transition-colors disabled:opacity-50"
-          >
-            <Sticker className="h-[18px] w-[18px]" />
-          </motion.button>
-          
           {/* Emoji picker */}
           <Popover>
             <PopoverTrigger asChild>
               <motion.button 
-                whileHover={{ y: -2, rotate: 10 }}
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
                 disabled={disabled} 
-                className="text-muted-foreground/80 hover:text-foreground transition-colors disabled:opacity-50"
+                className="h-6 w-6 flex items-center justify-center text-muted-foreground/80 hover:text-foreground transition-colors disabled:opacity-50"
               >
-                <SmilePlus className="h-[18px] w-[18px]" />
+                <SmilePlus className="h-5 w-5" />
               </motion.button>
             </PopoverTrigger>
-            <PopoverContent side="top" align="end" className="w-64 p-3 mb-2 bg-background/95 backdrop-blur-xl border-border/40 shadow-2xl rounded-xl">
+            <PopoverContent side="top" align="start" className="w-64 p-3 mb-2 bg-background/95 backdrop-blur-xl border-border/40 shadow-2xl rounded-xl">
               {EMOJI_GROUPS.map((group) => (
                 <div key={group.label} className="mb-2">
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
@@ -199,6 +161,40 @@ export function MessageComposer({ channelName, replyingTo, onClearReply, onSend,
               ))}
             </PopoverContent>
           </Popover>
+        </div>
+
+        {/* Text input */}
+        <Textarea
+          ref={textareaRef}
+          value={content}
+          onChange={(e) => {
+            setContent(e.target.value);
+            onTyping?.(e.target.value.length > 0);
+          }}
+          onKeyDown={handleKeyDown}
+          placeholder={placeholder}
+          disabled={disabled}
+          className="flex-1 border-0 shadow-none focus-visible:ring-0 resize-none bg-transparent min-h-[24px] py-1 text-[15px] placeholder:text-muted-foreground/60 leading-normal scrollbar-hide disabled:cursor-not-allowed transition-[height] duration-200 ease-out"
+          rows={1}
+          style={{ height: "auto" }}
+        />
+
+        {/* Send button */}
+        <div className="flex items-center shrink-0 pr-1">
+          <motion.button 
+            whileHover={content.trim() ? { scale: 1.1 } : {}}
+            whileTap={content.trim() ? { scale: 0.9 } : {}}
+            onClick={handleSend}
+            disabled={disabled || sending || !content.trim()} 
+            className={cn(
+              "p-1.5 rounded-md transition-all duration-200",
+              content.trim() 
+                ? "text-primary hover:bg-primary/10" 
+                : "text-muted-foreground/40 cursor-not-allowed"
+            )}
+          >
+            <SendHorizontal className="h-5 w-5" />
+          </motion.button>
         </div>
       </motion.div>
     </div>

@@ -178,8 +178,8 @@ export function ChannelsSidebar({
 
   return (
     <div className="flex flex-col h-full w-60 border-r border-border/80 bg-background shrink-0">
-      {/* Sticky Header Section */}
-      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border/80 shadow-sm">
+      {/* Header Section */}
+      <div className="bg-background border-b border-border/80 shadow-sm shrink-0">
         {/* Server Header */}
         <div className="flex items-center justify-center px-4 h-14 cursor-pointer hover:bg-accent/30 transition-colors">
           <h2 className="font-semibold text-xl leading-tight truncate px-0.5">
@@ -207,7 +207,7 @@ export function ChannelsSidebar({
       </div>
 
       {/* Channel List */}
-      <ScrollArea className="flex-1">
+      <ScrollArea className="flex-1 min-h-0">
         <div className="px-2 py-3 space-y-4">
           {loading ? (
             <div className="flex flex-col gap-1 px-1 mt-2">
@@ -286,7 +286,7 @@ export function ChannelsSidebar({
       </ScrollArea>
 
       {/* Bottom Setting Section */}
-      <div className="sticky bottom-0 z-20 bg-background/95 backdrop-blur-md border-t border-border/60 shrink-0">
+      <div className="bg-background border-t border-border/60 shrink-0">
         <div className="p-3 relative z-10">
           <motion.button
             whileHover={{
