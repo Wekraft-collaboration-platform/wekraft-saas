@@ -274,96 +274,117 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
           </Popover>
         </div>
 
-        {/* Text input */}
-        <Textarea
-          ref={textareaRef}
-          value={content}
-          onChange={(e) => {
-            const val = e.target.value;
-            setContent(val);
-            onTyping?.(val.length > 0);
+        {/* Text input — wrapper is `relative` so the mention dropdown anchors here */}
+        <div className="flex-1 relative">
+          <Textarea
+            ref={textareaRef}
+            value={content}
+            onChange={(e) => {
+              const val = e.target.value;
+              setContent(val);
+              onTyping?.(val.length > 0);
 
-            const cursorPosition = e.target.selectionStart || 0;
-            const textBeforeCursor = val.substring(0, cursorPosition);
-            
-            // Find the last "@" that isn't followed by a space
-            const lastAtIndex = textBeforeCursor.lastIndexOf("@");
-            
-            if (lastAtIndex !== -1) {
-              const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
-              const charBeforeAt = lastAtIndex > 0 ? textBeforeCursor[lastAtIndex - 1] : " ";
-              
-              // Trigger if @ is at start or preceded by space, and has no space after it
-              if ((charBeforeAt === " " || charBeforeAt === "\n") && !textAfterAt.includes(" ")) {
-                setMentionQuery(textAfterAt);
-                setShowMentions(true);
-                setMentionIndex(0);
-                setMentionStartIndex(lastAtIndex);
+              const cursorPosition = e.target.selectionStart ?? 0;
+              const textBeforeCursor = val.substring(0, cursorPosition);
+
+              // Find the last "@" before the cursor
+              const lastAtIndex = textBeforeCursor.lastIndexOf("@");
+
+              if (lastAtIndex !== -1) {
+                const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
+                // Char immediately before @ (undefined when @ is first char)
+                const charBeforeAt = lastAtIndex > 0 ? textBeforeCursor[lastAtIndex - 1] : undefined;
+
+                // Trigger if @ is at the start OR preceded by whitespace, and no space typed yet
+                const validStart =
+                  charBeforeAt === undefined ||
+                  charBeforeAt === " " ||
+                  charBeforeAt === "\n";
+
+                if (validStart && !textAfterAt.includes(" ")) {
+                  setMentionQuery(textAfterAt);
+                  setShowMentions(true);
+                  setMentionIndex(0);
+                  setMentionStartIndex(lastAtIndex);
+                } else {
+                  setShowMentions(false);
+                  setMentionStartIndex(-1);
+                }
               } else {
                 setShowMentions(false);
                 setMentionStartIndex(-1);
               }
-            } else {
-              setShowMentions(false);
-              setMentionStartIndex(-1);
-            }
-          }}
-          onKeyDown={handleKeyDown}
-          placeholder={placeholder || "@ to mention,  / for workflows"}
-          disabled={disabled}
-          className="flex-1 border-0 shadow-none focus-visible:ring-0 resize-none bg-transparent min-h-[24px] py-1 text-[15px] placeholder:text-muted-foreground/60 leading-normal scrollbar-hide disabled:cursor-not-allowed transition-[height] duration-200 ease-out"
-          rows={1}
-          style={{ height: "auto" }}
-        />
+            }}
+            onKeyDown={handleKeyDown}
+            placeholder={placeholder || "@ to mention,  / for workflows"}
+            disabled={disabled}
+            className="w-full border-0 shadow-none focus-visible:ring-0 resize-none bg-transparent min-h-[24px] py-1 text-[15px] placeholder:text-muted-foreground/60 leading-normal scrollbar-hide disabled:cursor-not-allowed transition-[height] duration-200 ease-out"
+            rows={1}
+            style={{ height: "auto" }}
+          />
 
-        {/* Mentions Dropdown */}
-        <AnimatePresence>
-          {showMentions && filteredMembers.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 10 }}
-              className="absolute bottom-full left-4 mb-2 w-64 bg-background/95 backdrop-blur-xl border border-border/40 shadow-2xl rounded-xl overflow-hidden z-50"
-            >
-              <div className="p-2 border-b border-border/50 bg-accent/30 flex items-center gap-2">
-                <AtSign className="h-3.5 w-3.5 text-blue-500" />
-                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
-                  Mentions
-                </span>
-              </div>
-              <ScrollArea className="max-h-[200px]">
-                <div className="p-1">
-                  {filteredMembers.map((member, i) => (
-                    <button
-                      key={member._id}
-                      onClick={() => insertMention(member.userName || "")}
-                      onMouseEnter={() => setMentionIndex(i)}
-                      className={cn(
-                        "w-full flex items-center gap-2.5 px-3 py-2 rounded-lg text-left transition-colors",
-                        i === mentionIndex ? "bg-primary/10" : "hover:bg-accent/50"
-                      )}
-                    >
-                      <Avatar className="h-7 w-7 border border-border/40">
-                        <AvatarImage src={member.userImage ?? undefined} />
-                        <AvatarFallback className="text-[10px] bg-blue-500/10 text-blue-500 font-bold">
-                          {(member.userName || "??").substring(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex flex-col min-w-0">
-                        <span className="text-xs font-semibold truncate" style={{ color: getUserColor(member.userName || "") }}>
-                          {member.userName}
-                        </span>
-                        <span className="text-[10px] text-muted-foreground truncate opacity-70">
-                          {member.AccessRole || "Member"}
-                        </span>
-                      </div>
-                    </button>
-                  ))}
+          {/* Mentions Dropdown — anchored relative to the textarea wrapper */}
+          <AnimatePresence>
+            {showMentions && filteredMembers.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, y: 6, scale: 0.97 }}
+                animate={{ opacity: 1, y: 0, scale: 1 }}
+                exit={{ opacity: 0, y: 6, scale: 0.97 }}
+                transition={{ duration: 0.15, ease: "easeOut" }}
+                className="absolute bottom-[calc(100%+8px)] left-0 w-64 bg-popover border border-border/50 shadow-2xl rounded-xl overflow-hidden z-[200]"
+              >
+                <div className="px-3 py-2 border-b border-border/40 bg-muted/50 flex items-center gap-2">
+                  <AtSign className="h-3.5 w-3.5 text-primary" />
+                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                    Mention someone
+                  </span>
                 </div>
-              </ScrollArea>
-            </motion.div>
-          )}
-        </AnimatePresence>
+                <ScrollArea className="max-h-[220px]">
+                  <div className="py-1">
+                    {filteredMembers.map((member, i) => (
+                      <button
+                        key={member._id}
+                        onClick={() => insertMention(member.userName || "")}
+                        onMouseEnter={() => setMentionIndex(i)}
+                        className={cn(
+                          "w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-colors",
+                          i === mentionIndex
+                            ? "bg-primary/15"
+                            : "hover:bg-accent/60"
+                        )}
+                      >
+                        <Avatar className="h-8 w-8 border border-border/40 shrink-0">
+                          <AvatarImage src={member.userImage ?? undefined} />
+                          <AvatarFallback className="text-[11px] bg-primary/10 text-primary font-bold">
+                            {(member.userName || "??").substring(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        <div className="flex flex-col min-w-0">
+                          <span
+                            className="text-[13px] font-semibold truncate leading-tight"
+                            style={{ color: getUserColor(member.userName || "") }}
+                          >
+                            {member.userName}
+                          </span>
+                          <span className="text-[11px] text-muted-foreground truncate">
+                            {member.AccessRole || "Member"}
+                          </span>
+                        </div>
+                        {i === mentionIndex && (
+                          <span className="ml-auto text-[9px] text-muted-foreground/60 shrink-0">
+                            ↵
+                          </span>
+                        )}
+                      </button>
+                    ))}
+                  </div>
+                </ScrollArea>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </div>
+
+
 
         {/* Send button */}
         <div className="flex items-center shrink-0 pr-1">
