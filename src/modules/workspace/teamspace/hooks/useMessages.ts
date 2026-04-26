@@ -466,6 +466,33 @@ export function useMessages(channelId: string | null, projectId: string, current
     [messages, projectId]
   );
 
+  const editPoll = useCallback(
+    async (messageId: string, poll: any) => {
+      const previousMessages = [...messages];
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === messageId
+            ? { ...m, poll: { ...(m.poll ?? {}), ...poll, votes: m.poll?.votes ?? [] } }
+            : m
+        )
+      );
+
+      try {
+        const res = await fetch(`/api/teamspace/messages/${messageId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ projectId, poll }),
+        });
+        if (!res.ok) throw new Error("Failed to update poll");
+      } catch (err) {
+        console.error("Edit poll sync error:", err);
+        setMessages(previousMessages);
+        toast.error("Failed to update poll. Please try again.");
+      }
+    },
+    [messages, projectId]
+  );
+
   const deleteMessage = useCallback(
     async (messageId: string) => {
       const previousMessages = [...messages];
@@ -609,6 +636,7 @@ export function useMessages(channelId: string | null, projectId: string, current
     sendMessage,
     setTypingStatus,
     editMessage,
+    editPoll,
     deleteMessage,
     togglePin,
     toggleReaction,

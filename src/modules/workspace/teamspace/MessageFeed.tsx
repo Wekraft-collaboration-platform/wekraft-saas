@@ -1,9 +1,9 @@
 /**
  * MessageFeed.tsx
- * 
+ *
  * The core messaging area for a channel. Displays a real-time list of messages,
  * handles scrolling, pagination, and various message actions.
- * 
+ *
  * Features:
  * - Real-time message updates via Ably.
  * - Infinite scrolling (Load earlier messages).
@@ -11,7 +11,7 @@
  * - Date dividers and message grouping for better readability.
  * - Pinned messages popover and navigation.
  * - Message composition with reply support.
- * 
+ *
  * Integration:
  * - Uses `useMessages` hook for all real-time messaging logic.
  * - Integrates with `MessageItem` for individual message rendering.
@@ -28,7 +28,23 @@ import { Channel } from "./hooks/useChannels";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Hash, Megaphone, ChevronUp, ChevronDown, ArrowDown, Lock, Search, Bell, Pin, Users, Inbox, HelpCircle, X, ArrowLeft, PinOff } from "lucide-react";
+import {
+  Hash,
+  Megaphone,
+  ChevronUp,
+  ChevronDown,
+  ArrowDown,
+  Lock,
+  Search,
+  Bell,
+  Pin,
+  Users,
+  Inbox,
+  HelpCircle,
+  X,
+  ArrowLeft,
+  PinOff,
+} from "lucide-react";
 import { format, isToday, isYesterday } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
@@ -38,6 +54,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { NotificationCenter } from "./NotificationCenter";
+import { PollBlock } from "./PollBlock";
 import {
   Popover,
   PopoverContent,
@@ -46,7 +64,6 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useProjectPermissions } from "@/hooks/use-project-permissions";
 import { Id } from "../../../../convex/_generated/dataModel";
-
 
 interface Props {
   channel: Channel | null;
@@ -57,10 +74,13 @@ interface Props {
   onToggleMembers: () => void;
 }
 
-
 function DateDivider({ timestamp }: { timestamp: number }) {
   const d = new Date(timestamp);
-  const label = isToday(d) ? "Today" : isYesterday(d) ? "Yesterday" : format(d, "MMMM d, yyyy");
+  const label = isToday(d)
+    ? "Today"
+    : isYesterday(d)
+      ? "Yesterday"
+      : format(d, "MMMM d, yyyy");
   return (
     <div className="flex items-center mt-4 mb-2 mx-4 relative group">
       <div className="flex-1 h-[1px] bg-border/80 group-hover:bg-border/90 transition-colors" />
@@ -79,7 +99,9 @@ export function MessageFeed({
   projectId,
   onToggleMembers,
 }: Props) {
-  const { isOwner, isPower } = useProjectPermissions(projectId as Id<"projects">);
+  const { isOwner, isPower } = useProjectPermissions(
+    projectId as Id<"projects">,
+  );
 
   const bottomRef = useRef<HTMLDivElement>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -97,13 +119,19 @@ export function MessageFeed({
     sendMessage,
     setTypingStatus,
     editMessage,
+    editPoll,
     deleteMessage,
     togglePin,
     toggleReaction,
     togglePollVote,
     loadMore,
     hasMore,
-  } = useMessages(channel?.id ?? null, projectId, currentUserId, currentUserName);
+  } = useMessages(
+    channel?.id ?? null,
+    projectId,
+    currentUserId,
+    currentUserName,
+  );
 
   // --- WHATSAPP-STYLE SEARCH LOGIC ---
   useEffect(() => {
@@ -116,14 +144,14 @@ export function MessageFeed({
     const timer = setTimeout(async () => {
       setIsSearching(true);
       try {
-        const params = new URLSearchParams({ 
-          projectId, 
+        const params = new URLSearchParams({
+          projectId,
           q: searchQuery,
-          channelId: channel?.id || "" 
+          channelId: channel?.id || "",
         });
         const res = await fetch(`/api/teamspace/search?${params}`);
         if (!res.ok) throw new Error("Search request failed");
-        
+
         const data = await res.json();
         if (data.results) {
           const ids = data.results.map((r: any) => String(r.id || r._id));
@@ -154,16 +182,34 @@ export function MessageFeed({
       const target = wordEl || messageEl;
 
       if (target) {
-        document.querySelectorAll(".search-highlight-pulse").forEach(el => {
-          el.classList.remove("search-highlight-pulse", "ring-2", "ring-primary/40", "bg-primary/5");
+        document.querySelectorAll(".search-highlight-pulse").forEach((el) => {
+          el.classList.remove(
+            "search-highlight-pulse",
+            "ring-2",
+            "ring-primary/40",
+            "bg-primary/5",
+          );
         });
         target.scrollIntoView({ behavior: "smooth", block: "center" });
         // Add a visual pulse to the message container
-        const container = messageEl || (wordEl?.closest('[id^="message-"]') as HTMLElement);
+        const container =
+          messageEl || (wordEl?.closest('[id^="message-"]') as HTMLElement);
         if (container) {
-          container.classList.add("search-highlight-pulse", "ring-2", "ring-primary/40", "bg-primary/5", "transition-all", "duration-500");
+          container.classList.add(
+            "search-highlight-pulse",
+            "ring-2",
+            "ring-primary/40",
+            "bg-primary/5",
+            "transition-all",
+            "duration-500",
+          );
           setTimeout(() => {
-            container.classList.remove("ring-2", "ring-primary/40", "bg-primary/5", "search-highlight-pulse");
+            container.classList.remove(
+              "ring-2",
+              "ring-primary/40",
+              "bg-primary/5",
+              "search-highlight-pulse",
+            );
           }, 1500);
         }
       } else if (count < 5) {
@@ -180,7 +226,8 @@ export function MessageFeed({
   const handleNextMatch = () => {
     if (searchResults.length === 0) return;
     // Go to NEWER message (decrement index towards 0 if 0 is newest, or cyclic)
-    const nextIdx = (currentSearchIndex - 1 + searchResults.length) % searchResults.length;
+    const nextIdx =
+      (currentSearchIndex - 1 + searchResults.length) % searchResults.length;
     setCurrentSearchIndex(nextIdx);
     jumpToMessage(searchResults[nextIdx]);
   };
@@ -203,9 +250,14 @@ export function MessageFeed({
 
       if (searchResults.length === 0) return;
 
-      const isSearchInput = e.target instanceof HTMLInputElement && e.target.placeholder === "Search chat";
-      const isOtherInput = (e.target instanceof HTMLInputElement || e.target instanceof HTMLTextAreaElement) && !isSearchInput;
-      
+      const isSearchInput =
+        e.target instanceof HTMLInputElement &&
+        e.target.placeholder === "Search chat";
+      const isOtherInput =
+        (e.target instanceof HTMLInputElement ||
+          e.target instanceof HTMLTextAreaElement) &&
+        !isSearchInput;
+
       if (isOtherInput) return;
 
       if (e.key === "Enter" && !e.shiftKey) {
@@ -237,7 +289,7 @@ export function MessageFeed({
     if (atBottom && messages.length > 0) {
       isAutoScrolling.current = true;
       bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-      
+
       // Reset auto-scrolling flag after a delay to allow the smooth scroll to complete
       const timer = setTimeout(() => {
         isAutoScrolling.current = false;
@@ -248,7 +300,7 @@ export function MessageFeed({
 
   const handleScroll = useCallback((e: React.UIEvent<HTMLDivElement>) => {
     if (isAutoScrolling.current) return;
-    
+
     const el = e.currentTarget;
     const distFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
     // Increased threshold so the button doesn't appear too early
@@ -261,7 +313,7 @@ export function MessageFeed({
       const el = scrollRef.current;
       const isScrollable = el.scrollHeight > el.clientHeight;
       const distFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
-      
+
       // If not scrollable or near bottom, set atBottom to true
       setAtBottom(!isScrollable || distFromBottom < 1000);
     }
@@ -282,7 +334,14 @@ export function MessageFeed({
   }, [loading, messages.length]);
 
   const handleSend = async (content: string, poll?: any) => {
-    await sendMessage(content, currentUserId, currentUserName, currentUserImage, replyingTo?.id, poll);
+    await sendMessage(
+      content,
+      currentUserId,
+      currentUserName,
+      currentUserImage,
+      replyingTo?.id,
+      poll,
+    );
     setReplyingTo(null);
   };
 
@@ -322,10 +381,10 @@ export function MessageFeed({
           </div>
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2">
-              <h2 className="font-bold text-xl leading-tight text-foreground truncate tracking-tight capitalize">{channel.name}</h2>
-              {isAnnouncement && (
-                <Lock className="h-4 w-4 text-amber-500/70" />
-              )}
+              <h2 className="font-bold text-xl leading-tight text-foreground truncate tracking-tight capitalize">
+                {channel.name}
+              </h2>
+              {isAnnouncement && <Lock className="h-4 w-4 text-amber-500/70" />}
             </div>
             {channel.description && (
               <p className="text-[11px] text-muted-foreground/50 truncate leading-tight mt-0.5 font-medium first-letter:uppercase">
@@ -340,7 +399,7 @@ export function MessageFeed({
             <div className="flex items-center gap-3 text-muted-foreground">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Bell className="h-5 w-5 hover:text-foreground cursor-pointer transition-colors" />
+                  <NotificationCenter userId={currentUserId} />
                 </TooltipTrigger>
                 <TooltipContent>Notifications</TooltipContent>
               </Tooltip>
@@ -360,16 +419,24 @@ export function MessageFeed({
                   </TooltipTrigger>
                   <TooltipContent>Pinned Messages</TooltipContent>
                 </Tooltip>
-                <PopoverContent className="w-80 p-0 shadow-2xl border-border/40 overflow-hidden bg-background/95 backdrop-blur-xl rounded-xl" align="end" sideOffset={12}>
+                <PopoverContent
+                  className="w-80 p-0 shadow-2xl border-border/40 overflow-hidden bg-background/95 backdrop-blur-xl rounded-xl"
+                  align="end"
+                  sideOffset={12}
+                >
                   <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-500/10 to-transparent border-b border-border/50">
                     <div className="flex items-center gap-2.5">
                       <div className="bg-blue-500/20 p-1 rounded-md">
                         <Pin className="h-4 w-4 text-blue-500" />
                       </div>
-                      <span className="text-xs font-bold uppercase tracking-[0.1em] text-foreground/90">Pins</span>
+                      <span className="text-xs font-bold uppercase tracking-[0.1em] text-foreground/90">
+                        Pins
+                      </span>
                     </div>
                     <div className="px-2 py-0.5 rounded-full bg-accent/50 border border-border/40">
-                      <span className="text-[10px] font-medium text-muted-foreground">{pinnedMessages.length} total</span>
+                      <span className="text-[10px] font-medium text-muted-foreground">
+                        {pinnedMessages.length} total
+                      </span>
                     </div>
                   </div>
                   <ScrollArea className="h-[380px]">
@@ -378,9 +445,11 @@ export function MessageFeed({
                         <div className="bg-accent/40 p-4 rounded-full mb-4 ring-8 ring-accent/10">
                           <Pin className="h-8 w-8 text-muted-foreground/30" />
                         </div>
-                        <p className="text-sm font-semibold text-foreground/80">No pinned messages</p>
+                        <p className="text-sm font-semibold text-foreground/80">
+                          No pinned messages
+                        </p>
                         <p className="text-xs text-muted-foreground/50 mt-1.5 leading-relaxed">
-                           Pin important messages to find them easily later.
+                          Pin important messages to find them easily later.
                         </p>
                       </div>
                     ) : (
@@ -389,8 +458,8 @@ export function MessageFeed({
                           .slice()
                           .reverse()
                           .map((msg) => (
-                            <div 
-                              key={msg.id} 
+                            <div
+                              key={msg.id}
                               className="group relative bg-accent/5 border border-border/20 rounded-xl p-3.5 hover:bg-accent/10 transition-all duration-200 cursor-pointer"
                               onClick={() => {
                                 jumpToMessage(msg.id);
@@ -398,16 +467,25 @@ export function MessageFeed({
                             >
                               <div className="flex gap-3">
                                 <Avatar className="h-8 w-8 shrink-0">
-                                  <AvatarImage src={msg.user_image ?? undefined} />
+                                  <AvatarImage
+                                    src={msg.user_image ?? undefined}
+                                  />
                                   <AvatarFallback className="text-[10px] bg-blue-500/10 text-blue-500 font-bold">
-                                    {msg.user_name.substring(0, 2).toUpperCase()}
+                                    {msg.user_name
+                                      .substring(0, 2)
+                                      .toUpperCase()}
                                   </AvatarFallback>
                                 </Avatar>
                                 <div className="flex flex-col min-w-0 flex-1 pt-0.5">
                                   <div className="flex items-center justify-between mb-1">
-                                    <span className="text-[12px] font-bold text-foreground/90 leading-none">{msg.user_name}</span>
+                                    <span className="text-[12px] font-bold text-foreground/90 leading-none">
+                                      {msg.user_name}
+                                    </span>
                                     <span className="text-[10px] text-muted-foreground/40 font-medium">
-                                      {format(new Date(msg.created_at), "MMM d")}
+                                      {format(
+                                        new Date(msg.created_at),
+                                        "MMM d",
+                                      )}
                                     </span>
                                   </div>
                                   <p className="text-[11px] text-foreground/70 leading-relaxed antialiased line-clamp-3">
@@ -415,7 +493,7 @@ export function MessageFeed({
                                   </p>
                                 </div>
                               </div>
-                              
+
                               <TooltipProvider delayDuration={0}>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
@@ -429,7 +507,10 @@ export function MessageFeed({
                                       <PinOff className="h-3 w-3" />
                                     </button>
                                   </TooltipTrigger>
-                                  <TooltipContent side="right" className="bg-white text-black text-[11px] font-bold px-2 py-1 border-none shadow-xl">
+                                  <TooltipContent
+                                    side="right"
+                                    className="bg-white text-black text-[11px] font-bold px-2 py-1 border-none shadow-xl"
+                                  >
                                     Unpin
                                   </TooltipContent>
                                 </Tooltip>
@@ -441,15 +522,17 @@ export function MessageFeed({
                   </ScrollArea>
                   <div className="px-4 py-2.5 bg-accent/30 border-t border-border/50 flex items-center justify-center gap-2">
                     <div className="h-1 w-1 rounded-full bg-blue-500/50" />
-                    <p className="text-[9px] font-semibold uppercase tracking-[0.05em] text-muted-foreground/60">Pinned globally for all members</p>
+                    <p className="text-[9px] font-semibold uppercase tracking-[0.05em] text-muted-foreground/60">
+                      Pinned globally for all members
+                    </p>
                   </div>
                 </PopoverContent>
               </Popover>
 
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Users 
-                    className="h-5 w-5 hover:text-foreground cursor-pointer transition-colors" 
+                  <Users
+                    className="h-5 w-5 hover:text-foreground cursor-pointer transition-colors"
                     onClick={onToggleMembers}
                   />
                 </TooltipTrigger>
@@ -460,17 +543,17 @@ export function MessageFeed({
 
           <div className="relative group flex items-center bg-accent/40 rounded-full border border-border/50 hover:bg-accent/60 transition-all overflow-hidden w-64 ring-primary/20 focus-within:ring-2">
             <div className="relative flex-1 flex items-center">
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="Search chat"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className={cn(
                   "bg-transparent text-[11px] px-3 py-1.5 w-full focus:outline-none placeholder:text-muted-foreground/50",
-                  searchQuery ? "pr-[85px]" : "pr-8"
+                  searchQuery ? "pr-[85px]" : "pr-8",
                 )}
               />
-              
+
               <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center">
                 {searchQuery ? (
                   <div className="flex items-center gap-1.5 bg-background/80 backdrop-blur-md rounded-xl px-2.5 py-1.5 border border-border/60 shadow-lg animate-in fade-in zoom-in duration-300">
@@ -479,7 +562,7 @@ export function MessageFeed({
                         {currentSearchIndex + 1}/{searchResults.length}
                       </span>
                     )}
-                    <button 
+                    <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handlePrevMatch(); // UP -> Older
@@ -489,7 +572,7 @@ export function MessageFeed({
                     >
                       <ChevronUp className="h-4.5 w-4.5 stroke-[2.5]" />
                     </button>
-                    <button 
+                    <button
                       onClick={(e) => {
                         e.stopPropagation();
                         handleNextMatch(); // DOWN -> Newer
@@ -499,7 +582,7 @@ export function MessageFeed({
                     >
                       <ChevronDown className="h-4.5 w-4.5 stroke-[2.5]" />
                     </button>
-                    <button 
+                    <button
                       onClick={(e) => {
                         e.stopPropagation();
                         setSearchQuery("");
@@ -523,15 +606,21 @@ export function MessageFeed({
         ref={scrollRef}
         className="flex-1 overflow-y-auto overflow-x-hidden py-4 bg-accent/5"
         style={{
-          backgroundImage: "radial-gradient(circle at 2px 2px, rgba(0,0,0,0.02) 1px, transparent 0)",
-          backgroundSize: "24px 24px"
+          backgroundImage:
+            "radial-gradient(circle at 2px 2px, rgba(0,0,0,0.02) 1px, transparent 0)",
+          backgroundSize: "24px 24px",
         }}
         onScroll={handleScroll}
       >
         {/* Load more */}
         {hasMore && (
           <div className="flex justify-center py-2">
-            <Button size="sm" variant="outline" onClick={loadMore} className="text-xs h-7">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={loadMore}
+              className="text-xs h-7"
+            >
               <ChevronUp className="h-3 w-3 mr-1" />
               Load earlier messages
             </Button>
@@ -557,9 +646,12 @@ export function MessageFeed({
               <ChannelIcon className="h-6 w-6 text-muted-foreground" />
             </div>
             <div>
-              <p className="font-semibold text-sm">Welcome to #{channel.name}!</p>
+              <p className="font-semibold text-sm">
+                Welcome to #{channel.name}!
+              </p>
               <p className="text-xs text-muted-foreground mt-1">
-                {channel.description || "This is the beginning of this channel."}
+                {channel.description ||
+                  "This is the beginning of this channel."}
               </p>
             </div>
           </div>
@@ -567,7 +659,12 @@ export function MessageFeed({
           <div className="pb-2">
             {withDividers.map((item, i) => {
               if ("type" in item && item.type === "divider") {
-                return <DateDivider key={`divider-${item.date}`} timestamp={item.date} />;
+                return (
+                  <DateDivider
+                    key={`divider-${item.date}`}
+                    timestamp={item.date}
+                  />
+                );
               }
               const msg = item as Message;
               const prevMsg = i > 0 ? (withDividers[i - 1] as Message) : null;
@@ -593,6 +690,7 @@ export function MessageFeed({
                   onReact={toggleReaction}
                   onPin={togglePin}
                   onPollVote={togglePollVote}
+                  onEditPoll={editPoll}
                   highlightTerm={searchQuery}
                 />
               );
@@ -618,8 +716,8 @@ export function MessageFeed({
                 <span className="h-1 w-1 bg-muted-foreground/50 rounded-full animate-bounce" />
               </div>
               <span className="text-[11px] italic font-medium">
-                {typingUsers.length <= 3 
-                  ? `${typingUsers.map(u => u.userName).join(", ")} ${typingUsers.length === 1 ? "is" : "are"} typing...`
+                {typingUsers.length <= 3
+                  ? `${typingUsers.map((u) => u.userName).join(", ")} ${typingUsers.length === 1 ? "is" : "are"} typing...`
                   : "Several people are typing..."}
               </span>
             </motion.div>
@@ -630,6 +728,7 @@ export function MessageFeed({
       {/* Composer */}
       <MessageComposer
         channelName={channel.name}
+        projectId={projectId}
         replyingTo={replyingTo}
         onClearReply={() => setReplyingTo(null)}
         onSend={handleSend}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -8,16 +8,42 @@ import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import { Plus, X } from "lucide-react";
 
+interface PollData {
+  question: string;
+  options: { id: string; text: string }[];
+  allowMultiple: boolean;
+}
+
 interface CreatePollDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   onSendPoll: (poll: any) => void;
+  initialPoll?: PollData;
+  isEditing?: boolean;
 }
 
-export function CreatePollDialog({ open, onOpenChange, onSendPoll }: CreatePollDialogProps) {
-  const [question, setQuestion] = useState("");
-  const [options, setOptions] = useState([{ id: "1", text: "" }, { id: "2", text: "" }]);
-  const [allowMultiple, setAllowMultiple] = useState(false);
+export function CreatePollDialog({ open, onOpenChange, onSendPoll, initialPoll, isEditing }: CreatePollDialogProps) {
+  const [question, setQuestion] = useState(initialPoll?.question ?? "");
+  const [options, setOptions] = useState(
+    initialPoll?.options?.length
+      ? initialPoll.options
+      : [{ id: "1", text: "" }, { id: "2", text: "" }]
+  );
+  const [allowMultiple, setAllowMultiple] = useState(initialPoll?.allowMultiple ?? false);
+
+  // Sync state when the dialog opens (e.g. editing a different poll)
+  useEffect(() => {
+    if (open) {
+      setQuestion(initialPoll?.question ?? "");
+      setOptions(
+        initialPoll?.options?.length
+          ? initialPoll.options
+          : [{ id: "1", text: "" }, { id: "2", text: "" }]
+      );
+      setAllowMultiple(initialPoll?.allowMultiple ?? false);
+    }
+  }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
+
 
   const handleAddOption = () => {
     if (options.length >= 12) return; // limit to 12 options
@@ -56,7 +82,7 @@ export function CreatePollDialog({ open, onOpenChange, onSendPoll }: CreatePollD
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px]">
         <DialogHeader>
-          <DialogTitle>Create a Poll</DialogTitle>
+          <DialogTitle>{isEditing ? "Edit Poll" : "Create a Poll"}</DialogTitle>
         </DialogHeader>
         <div className="grid gap-4 py-4">
           <div className="grid gap-2">
@@ -110,7 +136,7 @@ export function CreatePollDialog({ open, onOpenChange, onSendPoll }: CreatePollD
         </div>
         <DialogFooter>
           <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button disabled={!isValid} onClick={handleCreate}>Create Poll</Button>
+          <Button disabled={!isValid} onClick={handleCreate}>{isEditing ? "Update Poll" : "Create Poll"}</Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

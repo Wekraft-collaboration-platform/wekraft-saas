@@ -21,6 +21,7 @@ import { useEffect, useRef, useState } from "react";
 import { LinkPreview } from "./LinkPreview";
 import { Message } from "./hooks/useMessages";
 import { PollBlock } from "./PollBlock";
+import { CreatePollDialog } from "./CreatePollDialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
@@ -129,6 +130,7 @@ interface Props {
   onReact: (messageId: string, emoji: string, hasReacted: boolean) => Promise<void>;
   onPin: (messageId: string, pinned: boolean) => void;
   onPollVote: (messageId: string, optionId: string) => Promise<void>;
+  onEditPoll?: (messageId: string, poll: any) => Promise<void>;
   highlightTerm?: string;
 }
 
@@ -147,6 +149,7 @@ export function MessageItem({
   onReact,
   onPin,
   onPollVote,
+  onEditPoll,
   highlightTerm,
 }: Props) {
   const [hovered, setHovered] = useState(false);
@@ -157,6 +160,7 @@ export function MessageItem({
   const [saving, setSaving] = useState(false);
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
+  const [editPollDialogOpen, setEditPollDialogOpen] = useState(false);
 
   // FIX: Sync edit buffer when the message is updated externally (e.g. real-time
   // collaboration) while the user is NOT actively editing.
@@ -421,11 +425,32 @@ export function MessageItem({
               <div className="relative flex flex-col">
                 {message.content && (
                   <div className="text-[14px] leading-snug break-all md:break-words whitespace-pre-wrap text-foreground/80 font-normal">
-                    <Highlight
-                      text={message.content}
-                      term={highlightTerm}
-                      messageId={message.id}
-                    />
+                    {(() => {
+                      const mentionRegex = /(@[a-zA-Z0-9_]+)/g;
+                      const parts = message.content.split(mentionRegex);
+                      return parts.map((part, i) => {
+                        if (part.startsWith("@")) {
+                          const username = part.substring(1);
+                          return (
+                            <span
+                              key={i}
+                              className="font-bold hover:underline cursor-pointer transition-all"
+                              style={{ color: getUserColor(username) }}
+                            >
+                              {part}
+                            </span>
+                          );
+                        }
+                        return (
+                          <Highlight
+                            key={i}
+                            text={part}
+                            term={highlightTerm}
+                            messageId={message.id}
+                          />
+                        );
+                      });
+                    })()}
                     {message.edited_at && (
                       <span className="text-[8px] ml-1.5 select-none opacity-40 italic">
                         (edited)
@@ -553,7 +578,13 @@ export function MessageItem({
                     )}
                     {isOwn && (
                       <DropdownMenuItem
-                        onClick={() => setEditing(true)}
+                        onClick={() => {
+                          if (message.poll) {
+                            setEditPollDialogOpen(true);
+                          } else {
+                            setEditing(true);
+                          }
+                        }}
                         className="rounded-lg"
                       >
                         <Pencil className="h-4 w-4 mr-2 text-muted-foreground" aria-hidden="true" />
@@ -610,6 +641,24 @@ export function MessageItem({
 
         </div>
       </div>
+
+      {/* Poll Edit Dialog */}
+      {message.poll && onEditPoll && (
+        <CreatePollDialog
+          open={editPollDialogOpen}
+          onOpenChange={setEditPollDialogOpen}
+          isEditing
+          initialPoll={{
+            question: message.poll.question,
+            options: message.poll.options,
+            allowMultiple: message.poll.allowMultiple,
+          }}
+          onSendPoll={async (poll) => {
+            await onEditPoll(message.id, poll);
+            setEditPollDialogOpen(false);
+          }}
+        />
+      )}
 
       {/* Delete Confirmation Dialog */}
       <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>

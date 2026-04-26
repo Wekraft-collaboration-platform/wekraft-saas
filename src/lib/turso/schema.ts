@@ -12,7 +12,9 @@ export async function initTeamspaceDB() {
 
   // 1. Ensure migrations are applied (e.g. adding columns to existing tables)
   try {
-    await turso.execute("ALTER TABLE ts_messages ADD COLUMN link_preview TEXT;");
+    await turso.execute(
+      "ALTER TABLE ts_messages ADD COLUMN link_preview TEXT;",
+    );
   } catch (e) {
     // Column likely already exists
   }
@@ -98,6 +100,22 @@ export async function initTeamspaceDB() {
       UNIQUE(message_id, option_id, user_id),
       FOREIGN KEY (message_id) REFERENCES ts_messages(id) ON DELETE CASCADE
     );
+
+    CREATE TABLE IF NOT EXISTS ts_notifications (
+      id          TEXT PRIMARY KEY,
+      user_id     TEXT NOT NULL,
+      type        TEXT NOT NULL, -- 'mention'
+      sender_id    TEXT NOT NULL,
+      sender_name  TEXT NOT NULL,
+      sender_image TEXT,
+      project_id  TEXT NOT NULL,
+      channel_id  TEXT,
+      message_id  TEXT,
+      content     TEXT,
+      is_read     INTEGER NOT NULL DEFAULT 0,
+      created_at  INTEGER NOT NULL
+    );
+    CREATE INDEX IF NOT EXISTS idx_notifications_user ON ts_notifications(user_id, created_at);
   `);
 
   isDbInitialized = true;
