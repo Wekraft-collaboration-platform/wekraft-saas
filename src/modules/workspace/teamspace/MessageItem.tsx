@@ -23,6 +23,7 @@ import { Message } from "./hooks/useMessages";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
+import { getUserColor } from "./utils";
 import {
   SmilePlus,
   MoreHorizontal,
@@ -294,7 +295,10 @@ export function MessageItem({
           {/* Header (only for others, not grouped) */}
           {!isOwn && !isGrouped && (
             <div className="flex items-baseline gap-2 mb-1 px-1">
-              <span className="font-semibold text-xs text-blue-500 hover:underline cursor-pointer leading-tight">
+              <span 
+                className="font-semibold text-xs hover:underline cursor-pointer leading-tight"
+                style={{ color: getUserColor(message.user_name) }}
+              >
                 {message.user_name}
               </span>
             </div>
@@ -362,10 +366,8 @@ export function MessageItem({
                   aria-label={`Quoted reply from ${message.parent_user_name ?? "Unknown"}`}
                 >
                   <div
-                    className={cn(
-                      "font-semibold text-[10px] leading-tight",
-                      "text-primary"
-                    )}
+                    className="font-semibold text-[10px] leading-tight"
+                    style={{ color: message.parent_user_name ? getUserColor(message.parent_user_name) : undefined }}
                   >
                     {message.parent_user_name ?? "Unknown"}
                   </div>

@@ -20,12 +20,9 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { SmilePlus, Plus, X, SendHorizontal } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import { getUserColor } from "./utils";
 import { Message } from "./hooks/useMessages";
 
 const EMOJI_GROUPS = [
@@ -105,7 +102,7 @@ export function MessageComposer({ channelName, replyingTo, onClearReply, onSend,
       {replyingTo && (
         <div className="flex items-center gap-2 mb-2 px-3 py-1.5 rounded-md bg-accent/50 border text-xs text-muted-foreground">
           <span className="truncate flex-1">
-            Replying to <strong className="text-foreground">{replyingTo.user_name}</strong>:{" "}
+            Replying to <strong style={{ color: getUserColor(replyingTo.user_name) }}>{replyingTo.user_name}</strong>:{" "}
             <span className="opacity-70">{replyingTo.content.slice(0, 60)}{replyingTo.content.length > 60 ? "…" : ""}</span>
           </span>
           <button onClick={onClearReply} className="hover:text-foreground transition-colors shrink-0 cursor-pointer p-0.5 rounded-sm hover:bg-foreground/10">
