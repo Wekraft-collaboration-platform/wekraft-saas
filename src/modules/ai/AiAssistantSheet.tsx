@@ -399,7 +399,11 @@ export function AiAssistantSheet({
               <motion.div
                 initial={{ opacity: 0, scale: 0.9 }}
                 animate={{ opacity: 1, scale: 1 }}
-                exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.3 } }}
+                exit={{
+                  opacity: 0,
+                  scale: 0.95,
+                  transition: { duration: 0.3 },
+                }}
                 className="h-full flex flex-col items-center justify-center p-8 text-center"
               >
                 <div className="relative mb-6">
@@ -493,7 +497,7 @@ export function AiAssistantSheet({
 
           {status === "error" && (
             <div className="text-red-500 py-2 px-4 text-xs">
-              [CONNECTION ERROR]
+              Error Occurred due to network connectivity retry after some time.
             </div>
           )}
 
