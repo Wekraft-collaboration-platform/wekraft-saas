@@ -54,7 +54,9 @@ export interface Task {
   linkWithCodebase?: string;
   isBlocked?: boolean;
   projectId: Id<"projects">;
-  createdByUserId: string;
+  createdByUserId: Id<"users">;
+  finalCompletedAt?: number;
+  finalCompletedBy?: Id<"users">;
   createdAt: number;
   updatedAt: number;
 }
@@ -75,4 +77,3 @@ export const COLUMNS: { id: Status; label: string; color: string }[] = [
   { id: "testing",     label: "Testing",     color: "bg-indigo-400"  },
   { id: "completed",   label: "Completed",   color: "bg-green-400"   },
 ]
-

@@ -16,6 +16,9 @@ import {
   Cross,
   X,
   MessageSquare,
+  Sparkles,
+  Clover,
+  LayersPlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -490,76 +493,96 @@ export function AiAssistantSheet({
 
         {/* FOOTER */}
         <div className="px-4 py-6 bg-linear-to-b from-transparent via-indigo-200/10 to-purple-400/30">
-          <div className="relative">
-            <Input
-              ref={inputRef}
-              placeholder="Ask anything..."
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") sendMessage(inputValue);
-              }}
-              disabled={isDisabled}
-              className="h-12 rounded-xl bg-sidebar pr-36"
-            />
-            <div className="flex items-center gap-2 absolute right-2 top-2">
-              {status === "running" ? (
-                <Button
-                  size="icon"
-                  variant="destructive"
-                  className=" h-8 w-8"
-                  onClick={() => stop(threadId)}
-                >
-                  <Square className="h-3 w-3!" />
-                </Button>
-              ) : (
-                <Button
-                  size="icon"
-                  variant="outline"
-                  className=" h-8 w-8"
-                  onClick={() => sendMessage(inputValue)}
-                  disabled={!inputValue.trim() || restoring}
-                >
-                  <Send className="h-3 w-3!" />
-                </Button>
-              )}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className=" h-8 px-2 flex items-center gap-1.5 text-[10px] capitalize font-medium"
-                  >
-                    {selectedModel}
-                    <Settings2 className="h-3 w-3!" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <div className="text-xs p-2 items-center border-b border-accent">
-                    Select Model
-                  </div>
-                  <DropdownMenuItem
-                    onClick={() => setSelectedModel("fast")}
-                    className="text-[10px]"
-                  >
-                    Kaya Fast
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setSelectedModel("deep")}
-                    className="text-[10px]"
-                  >
-                    Kaya Deep
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+          {currentUser && currentUser.accountType !== "pro" ? (
+            <div className="flex flex-col items-center justify-center p-4 bg-card backdrop-blur-md rounded-xl border border-primary/20 shadow-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <Clover className="w-5 h-5 text-primary" />
+                <h4 className="text-sm font-semibold text-primary">
+                  Pro Feature
+                </h4>
+              </div>
+              <p className="text-[11px] text-muted-foreground text-center mb-3 px-6">
+                Kaya is available for Pro users. Get advanced project analysis,
+                automated reporting, and more.
+              </p>
+              <Button size="sm" className="w-full text-sm">
+                Upgrade to Pro <LayersPlus />
+              </Button>
             </div>
-          </div>
-          <p className="text-[10px] text-center text-muted-foreground mt-2">
-            Kaya is personal PM agent.{" "}
-            <span className="text-blue-500 cursor-pointer">
-              Click to configure
-            </span>
-          </p>
+          ) : (
+            <>
+              <div className="relative">
+                <Input
+                  ref={inputRef}
+                  placeholder="Ask anything..."
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") sendMessage(inputValue);
+                  }}
+                  disabled={isDisabled}
+                  className="h-12 rounded-xl bg-sidebar pr-36"
+                />
+                <div className="flex items-center gap-2 absolute right-2 top-2">
+                  {status === "running" ? (
+                    <Button
+                      size="icon"
+                      variant="destructive"
+                      className=" h-8 w-8"
+                      onClick={() => stop(threadId)}
+                    >
+                      <Square className="h-3 w-3!" />
+                    </Button>
+                  ) : (
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      className=" h-8 w-8"
+                      onClick={() => sendMessage(inputValue)}
+                      disabled={!inputValue.trim() || restoring}
+                    >
+                      <Send className="h-3 w-3!" />
+                    </Button>
+                  )}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className=" h-8 px-2 flex items-center gap-1.5 text-[10px] capitalize font-medium"
+                      >
+                        {selectedModel}
+                        <Settings2 className="h-3 w-3!" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <div className="text-xs p-2 items-center border-b border-accent">
+                        Select Model
+                      </div>
+                      <DropdownMenuItem
+                        onClick={() => setSelectedModel("fast")}
+                        className="text-[10px]"
+                      >
+                        Kaya Fast
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => setSelectedModel("deep")}
+                        className="text-[10px]"
+                      >
+                        Kaya Deep
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+              <p className="text-[10px] text-center text-muted-foreground mt-2">
+                Kaya is personal PM agent.{" "}
+                <span className="text-blue-500 cursor-pointer">
+                  Click to configure
+                </span>
+              </p>
+            </>
+          )}
         </div>
       </SheetContent>
       {showScrollButton && (

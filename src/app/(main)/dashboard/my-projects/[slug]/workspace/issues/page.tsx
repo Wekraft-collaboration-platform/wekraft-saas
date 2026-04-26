@@ -21,6 +21,7 @@ import Image from "next/image";
 import { CreateIssueDialog } from "@/modules/workspace/CreateIssueDialog";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
+import { AiAssistantSheet } from "@/modules/ai/AiAssistantSheet";
 
 const users = [
   { name: "Ritesh", img: "https://i.pravatar.cc/40?img=1" },
@@ -35,6 +36,7 @@ const IssuesPage = () => {
   const project = useQuery(api.project.getProjectBySlug, { slug });
   const projectName = project?.projectName;
   const [activeTab, setActiveTab] = useState<"all" | "github">("all");
+  const [isKayaOpen, setIsKayaOpen] = useState(false);
   return (
     <div className="w-full h-full p-6 2xl:p-8">
       <header className="flex items-center justify-between">
@@ -116,6 +118,7 @@ const IssuesPage = () => {
           <Button
             size="sm"
             variant={"outline"}
+            onClick={() => setIsKayaOpen(true)}
             className="bg-linear-to-t from-indigo-600/30 via-purple-600/10 to-transparent text-xs cursor-pointer"
           >
             <Image src="/kaya.svg" alt="Kaya AI" width={18} height={18} />
@@ -185,6 +188,7 @@ const IssuesPage = () => {
           </div>
         </div>
       </main>
+      <AiAssistantSheet open={isKayaOpen} onOpenChange={setIsKayaOpen} />
     </div>
   );
 };

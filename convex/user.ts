@@ -70,7 +70,13 @@ export const getUserByClerkToken = query({
 
     // Try finding by suffix if it's just the Clerk user_id
     const all = await ctx.db.query("users").collect();
-    return all.find(u => u.clerkToken === args.clerkToken || u.clerkToken.endsWith(`|${args.clerkToken}`)) ?? null;
+    return (
+      all.find(
+        (u) =>
+          u.clerkToken === args.clerkToken ||
+          u.clerkToken.endsWith(`|${args.clerkToken}`),
+      ) ?? null
+    );
   },
 });
 
@@ -194,7 +200,9 @@ export const updateUserIdentity = mutation({
 
     const currentUser = await ctx.db
       .query("users")
-      .withIndex("by_token", (q) => q.eq("clerkToken", identity.tokenIdentifier))
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
       .unique();
 
     if (!currentUser) throw new Error("User not found");
@@ -329,7 +337,7 @@ export const updateSocialLinks = mutation({
 });
 
 // ==================================
-// GET USER BY ID (name + avatar)
+// GET USER BY ID (name + avatar + accountType)
 // ==================================
 export const getUserById = query({
   args: { userId: v.id("users") },
@@ -339,6 +347,7 @@ export const getUserById = query({
     return {
       name: user.name ?? "Unknown",
       avatarUrl: user.avatarUrl ?? null,
+      accountType: user.accountType,
     };
   },
 });

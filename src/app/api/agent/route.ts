@@ -1,16 +1,18 @@
 import { NextRequest, NextResponse } from "next/server";
 import { ratelimit } from "@/lib/rate-limit";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "../../../../convex/_generated/api";
 
 const AGENT_URL = process.env.NEXT_PUBLIC_AGENT_URL;
+const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
+  const userId = body.state?.user_id;
 
-  // Rate Limiting
+  // 1. Rate Limiting (Fastest check)
   const identifier =
-    body.state?.user_id || // getting user_id from the user request , sends to AI
-    request.headers.get("x-forwarded-for") ||
-    "anonymous";
+    userId || request.headers.get("x-forwarded-for") || "anonymous";
   const { success, limit, reset, remaining } =
     await ratelimit.limit(identifier);
 
@@ -34,7 +36,8 @@ export async function POST(request: NextRequest) {
   }
 
   try {
-    const response = await fetch(`${AGENT_URL}/agent`, {
+    // 2. Start the AI Request and the Pro Check in parallel
+    const aiResponsePromise = fetch(`${AGENT_URL}/agent`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -43,29 +46,49 @@ export async function POST(request: NextRequest) {
       body: JSON.stringify(body),
     });
 
-    if (!response.ok) {
-      const error = await response.json();
-      throw new Error(error.detail || "Failed to call agent");
-    }
+    const proCheckPromise = userId
+      ? convex.query(api.user.getUserById, { userId })
+      : Promise.resolve({ accountType: "pro" }); // Fallback
 
+    // 3. Setup the stream and return IMMEDIATELY
     const stream = new TransformStream();
     const writer = stream.writable.getWriter();
 
     (async () => {
       try {
+        // --- TRULY NON-BLOCKING CHECK ---
+        const [user, response] = await Promise.all([
+          proCheckPromise,
+          aiResponsePromise,
+        ]);
+
+        if (userId && (!user || user.accountType !== "pro")) {
+          const errorData = JSON.stringify({
+            error: "Upgrade to Pro to use Kaya AI",
+          });
+          await writer.write(
+            new TextEncoder().encode(`event: error\ndata: ${errorData}\n\n`),
+          );
+          await writer.close();
+          return;
+        }
+
+        if (!response.ok) {
+          const error = await response.json();
+          throw new Error(error.detail || "Failed to call agent");
+        }
+
         const reader = response.body?.getReader();
         if (!reader) throw new Error("No reader available");
 
         while (true) {
           const { done, value } = await reader.read();
-          if (done) {
-            await writer.close();
-            break;
-          }
+          if (done) break;
 
           // Just forward the raw chunks
           await writer.write(value);
         }
+        await writer.close();
       } catch (error) {
         console.error("Stream processing error:", error);
 

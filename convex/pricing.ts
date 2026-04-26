@@ -1,6 +1,6 @@
 import { Doc } from "./_generated/dataModel";
 
-export type PlanType = "free" | "plus" | "pro" | "scale";
+export type PlanType = "free" | "plus" | "pro";
 
 export interface PlanLimits {
   project_creation_limit: number;
@@ -62,22 +62,6 @@ export const PLAN_CONFIGS: Record<PlanType, PlanLimits> = {
     message_before_join: true,
     ai_tools_access: "limited",
     ai_tools_limit: 50,
-    project_heatmap: "full",
-    dedicated_support: "priority",
-    vs_code_extension: "full",
-  },
-  scale: {
-    project_creation_limit: 20,
-    project_joining_limit: 100,
-    team_insights: "full",
-    pm_agent: "full",
-    ai_code_review: "higher",
-    members_per_project_limit: 25,
-    user_profile_limit: "full",
-    community_insights: "full",
-    message_before_join: true,
-    ai_tools_access: "full",
-    ai_tools_limit: 100,
     project_heatmap: "full",
     dedicated_support: "priority",
     vs_code_extension: "full",

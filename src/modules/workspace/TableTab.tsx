@@ -308,7 +308,9 @@ export const TableTab = ({ tasks, onLoadMore, hasMore }: TableTabProps) => {
                     </TableCell>
                     <TableCell className="px-4 font-medium border-r border-b border-neutral-700 text-base text-primary/70 group-hover:text-primary transition-colors">
                       <div className="flex items-center gap-1.5 capitalize">
-                        {task.isBlocked && <Bug className="w-4 h-4 text-red-500 shrink-0" />}
+                        {task.isBlocked && (
+                          <Bug className="w-4 h-4 text-red-500 shrink-0" />
+                        )}
                         {task.title}
                       </div>
                     </TableCell>
@@ -339,7 +341,7 @@ export const TableTab = ({ tasks, onLoadMore, hasMore }: TableTabProps) => {
                         {task.type ? (
                           <div
                             className={cn(
-                              "flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[9px] font-bold uppercase tracking-wider border",
+                              "flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold font-inter capitalize tracking-wide border",
                               task.type.color === "green" &&
                                 "bg-emerald-500/10 text-emerald-400 border-emerald-400/20",
                               task.type.color === "yellow" &&
