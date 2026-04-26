@@ -266,21 +266,30 @@ export async function POST(req: NextRequest) {
   await ablyChannel.publish("message.new", message);
 
   // --- MENTION NOTIFICATIONS ---
-  const mentionRegex = /@([a-zA-Z0-9_]+)/g;
-  const mentions = [...new Set(content?.match(mentionRegex) || [])] as string[];
+  try {
+    const projectMembers = await convex.query(api.project.getProjectMembers, {
+      projectId: projectId as any,
+    });
 
-  for (const mention of mentions) {
-    const username = mention.substring(1);
-    try {
-      const mentionedUser = await convex.query(api.user.getUserByName, {
-        name: username,
-      });
+    const isEveryoneMentioned = content.toLowerCase().includes("@everyone");
+    
+    // Match @Username in content or use all members if @everyone
+    const mentionedMembers = isEveryoneMentioned 
+      ? projectMembers.filter(m => m.clerkUserId !== userId) // Everyone except sender
+      : projectMembers.filter((member) => {
+          if (!member.userName) return false;
+          const mentionTag = `@${member.userName}`;
+          const escapedTag = mentionTag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+          const regex = new RegExp(`${escapedTag}(\\s|$)`, "i");
+          return regex.test(content);
+        });
 
-      if (mentionedUser && mentionedUser.clerkToken !== userId) {
+    for (const member of mentionedMembers) {
+      if (member.clerkUserId && member.clerkUserId !== userId) {
         const notificationId = randomUUID();
         const notification = {
           id: notificationId,
-          user_id: mentionedUser.clerkToken, // Using clerkToken as the unique ID for routing
+          user_id: member.clerkUserId,
           type: "mention",
           sender_id: userId,
           sender_name: user.name,
@@ -314,13 +323,13 @@ export async function POST(req: NextRequest) {
 
         // 2. Publish to Ably (User-specific channel)
         const userNotifyChannel = ably.channels.get(
-          `user:notifications:${mentionedUser.clerkToken}`,
+          `user:notifications:${member.clerkUserId}`,
         );
         await userNotifyChannel.publish("notification.new", notification);
       }
-    } catch (e) {
-      console.error("Failed to process mention for", username, e);
     }
+  } catch (e) {
+    console.error("Failed to process mentions:", e);
   }
 
   return NextResponse.json({ message }, { status: 201 });

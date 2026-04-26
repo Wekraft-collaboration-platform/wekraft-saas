@@ -735,6 +735,7 @@ export function MessageFeed({
         onTyping={setTypingStatus}
         disabled={!canSend}
         isAnnouncement={isAnnouncement}
+        currentUserId={currentUserId}
       />
 
       {/* Jump to bottom FAB */}

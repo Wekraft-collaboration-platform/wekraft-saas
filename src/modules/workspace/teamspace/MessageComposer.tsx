@@ -46,9 +46,10 @@ interface Props {
   onTyping?: (isTyping: boolean) => void;
   disabled?: boolean;
   isAnnouncement?: boolean;
+  currentUserId?: string;
 }
 
-export function MessageComposer({ channelName, projectId, replyingTo, onClearReply, onSend, onTyping, disabled, isAnnouncement }: Props) {
+export function MessageComposer({ channelName, projectId, replyingTo, onClearReply, onSend, onTyping, disabled, isAnnouncement, currentUserId }: Props) {
   const [content, setContent] = useState("");
   const [sending, setSending] = useState(false);
   const [isPollDialogOpen, setIsPollDialogOpen] = useState(false);
@@ -65,9 +66,15 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
     projectId: projectId as Id<"projects">,
   });
 
-  const filteredMembers = members?.filter((m) =>
-    m.userName?.toLowerCase().includes(mentionQuery.toLowerCase()),
-  ) || [];
+  const filteredMembers = [
+    ...(mentionQuery.toLowerCase() === "e" || mentionQuery.toLowerCase() === "ev" || "everyone".includes(mentionQuery.toLowerCase()) 
+      ? [{ _id: "everyone", userName: "everyone", AccessRole: "Notify everyone in project", userImage: undefined, role: "system" }] 
+      : []),
+    ...(members?.filter((m) =>
+      m.userName?.toLowerCase().includes(mentionQuery.toLowerCase()) &&
+      m.clerkUserId !== currentUserId // Filter out current user
+    ) || [])
+  ];
   
   // Auto-resize logic
   useEffect(() => {
