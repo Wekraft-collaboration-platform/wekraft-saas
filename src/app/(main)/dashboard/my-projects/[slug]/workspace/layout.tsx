@@ -1,6 +1,7 @@
 "use client";
 
 import { FloatingKaya } from "@/modules/ai/FloatingKaya";
+import { AiAssistantSheet } from "@/modules/ai/AiAssistantSheet";
 
 export default function WorkspaceLayout({
   children,
@@ -14,6 +15,7 @@ export default function WorkspaceLayout({
       {sidebar} {/* This will now receive workspace @sidebar */}
       <main className="flex-1">{children}</main>
       <FloatingKaya />
+      <AiAssistantSheet />
     </div>
   );
 }

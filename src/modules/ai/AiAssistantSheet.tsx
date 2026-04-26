@@ -50,10 +50,9 @@ import {
 
 import { AnimatePresence, motion } from "framer-motion";
 
-interface AiAssistantSheetProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
+import { useKayaStore } from "@/store/useKayaStore";
+
+interface AiAssistantSheetProps {}
 
 const KayaLoader = () => (
   <svg
@@ -102,11 +101,8 @@ const KayaLoader = () => (
   </svg>
 );
 
-export function AiAssistantSheet({
-  open,
-  onOpenChange,
-}: AiAssistantSheetProps) {
-  const [threadId] = useState(() => crypto.randomUUID());
+export function AiAssistantSheet({}: AiAssistantSheetProps) {
+  const { isOpen, setIsOpen, threadId, createNewSession } = useKayaStore();
   const currentUser = useQuery(api.user.getCurrentUser);
   const userId = currentUser?._id;
 
@@ -165,12 +161,12 @@ export function AiAssistantSheet({
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        onOpenChange(!open);
+        setIsOpen(!isOpen);
       }
     };
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
-  }, [open, onOpenChange]);
+  }, [isOpen, setIsOpen]);
 
   // Focus input when not running
   useEffect(() => {
@@ -353,7 +349,7 @@ export function AiAssistantSheet({
   const isDisabled = status === "running" || restoring;
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetContent
         side="right"
         className="w-[500px] flex flex-col p-0 gap-0 h-full focus-visible:ring-0 focus:ring-0 outline-none overflow-hidden"
@@ -381,6 +377,7 @@ export function AiAssistantSheet({
                   className="text-[11px] cursor-pointer"
                   size="sm"
                   variant={"outline"}
+                  onClick={() => createNewSession()}
                 >
                   new <MessageSquare className="h-3! w-3!" />
                 </Button>
