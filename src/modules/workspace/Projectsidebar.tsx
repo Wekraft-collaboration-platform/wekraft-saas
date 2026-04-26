@@ -548,7 +548,7 @@ export default function ProjectSidebar() {
           </Button>
         </div>
       </SidebarFooter>
-      <AiAssistantSheet open={assistantOpen} onOpenChange={setAssistantOpen} />
+      {/* <AiAssistantSheet open={assistantOpen} onOpenChange={setAssistantOpen} /> */}
     </Sidebar>
   );
 }
