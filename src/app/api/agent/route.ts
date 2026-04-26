@@ -87,6 +87,12 @@ export async function POST(request: NextRequest) {
 
           // Just forward the raw chunks
           await writer.write(value);
+
+          // Optional: also log incomplete chunks for debugging
+          // if (value) {
+          //   const chunkText = new TextDecoder().decode(value);
+          //   console.log("Received chunk:", chunkText);
+          // }
         }
         await writer.close();
       } catch (error) {

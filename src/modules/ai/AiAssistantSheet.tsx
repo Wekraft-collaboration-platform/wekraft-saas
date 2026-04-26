@@ -466,18 +466,27 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
           )}
 
           {status === "running" && !restoring && !isStreaming && (
-            <div className="flex gap-2 items-center py-3 px-4 text-neutral-500">
-              <KayaLoader />
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] uppercase tracking-wide">
-                  Kaya is thinking...
-                </span>
-                {thinkingTime > 0 && (
-                  <span className="text-[9px] tabular-nums  text-neutral-400">
-                    {thinkingTime}s
+            <div className="flex flex-col gap-1 py-3 px-4">
+              <div className="flex gap-2 items-center text-neutral-500">
+                <KayaLoader />
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] uppercase tracking-wide">
+                    {appCheckpoints.length === 0
+                      ? "Kaya is spinning up, hang tight..."
+                      : "Kaya is thinking..."}
                   </span>
-                )}
+                  {thinkingTime > 0 && (
+                    <span className="text-[9px] tabular-nums text-neutral-400">
+                      {thinkingTime}s
+                    </span>
+                  )}
+                </div>
               </div>
+              {appCheckpoints.length === 0 && (
+                <div className="text-[10px] text-muted-foreground animate-pulse pl-10 tracking-tighter">
+                  Initial response might take a few seconds to warm up...
+                </div>
+              )}
             </div>
           )}
 
