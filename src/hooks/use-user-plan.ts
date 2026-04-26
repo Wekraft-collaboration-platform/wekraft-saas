@@ -1,7 +1,13 @@
 import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Doc } from "../../convex/_generated/dataModel";
-import { getActiveUserPlan, getPlanLimits, PLAN_CONFIGS, PlanType, PlanLimits } from "../../convex/pricing";
+import {
+  getActiveUserPlan,
+  getPlanLimits,
+  PLAN_CONFIGS,
+  PlanType,
+  PlanLimits,
+} from "../../convex/pricing";
 
 export function useUserPlan(user?: Doc<"users"> | null) {
   const currentUser = useQuery(api.user.getCurrentUser);
@@ -16,7 +22,7 @@ export function useUserPlan(user?: Doc<"users"> | null) {
       isPro: false,
       isScale: false,
       isUpgraded: false,
-      isLoaded: currentUser === null ? true : false, 
+      isLoaded: currentUser === null ? true : false,
     };
   }
 
@@ -29,7 +35,6 @@ export function useUserPlan(user?: Doc<"users"> | null) {
     isFree: plan === "free",
     isPlus: plan === "plus",
     isPro: plan === "pro",
-    isScale: plan === "scale",
     isUpgraded: plan !== "free",
     isLoaded: true,
   };
