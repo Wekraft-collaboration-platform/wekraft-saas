@@ -503,7 +503,11 @@ export function MessageItem({
                       <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align={isOwn ? "end" : "start"} className="w-40 rounded-xl shadow-xl">
+                  <DropdownMenuContent 
+                    align={isOwn ? "end" : "start"} 
+                    className="w-40 rounded-xl shadow-xl"
+                    onCloseAutoFocus={(e) => e.preventDefault()}
+                  >
                     <DropdownMenuItem
                       onClick={() => onReply(message)}
                       className="rounded-lg"

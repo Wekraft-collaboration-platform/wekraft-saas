@@ -60,6 +60,15 @@ export function MessageComposer({ channelName, replyingTo, onClearReply, onSend,
     }
   }, [content]);
 
+  // Auto-focus when replying
+  useEffect(() => {
+    if (replyingTo) {
+      setTimeout(() => {
+        textareaRef.current?.focus();
+      }, 50);
+    }
+  }, [replyingTo]);
+
   const handleSend = useCallback(async () => {
     const trimmed = content.trim();
     if (!trimmed || sending) return;
@@ -99,7 +108,7 @@ export function MessageComposer({ channelName, replyingTo, onClearReply, onSend,
             Replying to <strong className="text-foreground">{replyingTo.user_name}</strong>:{" "}
             <span className="opacity-70">{replyingTo.content.slice(0, 60)}{replyingTo.content.length > 60 ? "…" : ""}</span>
           </span>
-          <button onClick={onClearReply} className="hover:text-foreground transition-colors shrink-0">
+          <button onClick={onClearReply} className="hover:text-foreground transition-colors shrink-0 cursor-pointer p-0.5 rounded-sm hover:bg-foreground/10">
             <X className="h-3.5 w-3.5" />
           </button>
         </div>
@@ -112,7 +121,7 @@ export function MessageComposer({ channelName, replyingTo, onClearReply, onSend,
           layout: { duration: 0.2, ease: "easeOut" }
         }}
         className={cn(
-          "flex items-center gap-2 rounded-lg bg-accent/40 px-4 py-2 transition-all duration-200 ring-primary/0 focus-within:ring-2 focus-within:ring-primary/20",
+          "flex items-center gap-2 rounded-lg bg-accent/40 px-4 py-2 transition-all duration-200",
           disabled && "opacity-70 bg-secondary/30"
         )}
       >
