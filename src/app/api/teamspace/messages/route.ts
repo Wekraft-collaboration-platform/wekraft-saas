@@ -93,11 +93,39 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  const messages = result.rows.reverse().map((m) => ({
-    ...m,
-    link_preview: m.link_preview ? JSON.parse(m.link_preview as string) : null,
-    reactions: reactionsMap[m.id as string] ?? [],
-  }));
+  // Fetch poll votes grouped for these messages
+  let pollVotesMap: Record<string, { option_id: string; user_id: string; user_name: string; user_image: string | null }[]> = {};
+  if (messageIds.length > 0) {
+    const placeholders = messageIds.map(() => "?").join(",");
+    const pollVotesRes = await turso.execute({
+      sql: `SELECT message_id, option_id, user_id, user_name, user_image FROM ts_poll_votes WHERE message_id IN (${placeholders})`,
+      args: messageIds,
+    });
+    
+    for (const row of pollVotesRes.rows) {
+      const mid = row.message_id as string;
+      if (!pollVotesMap[mid]) pollVotesMap[mid] = [];
+      pollVotesMap[mid].push({
+        option_id: row.option_id as string,
+        user_id: row.user_id as string,
+        user_name: row.user_name as string,
+        user_image: row.user_image as string | null,
+      });
+    }
+  }
+
+  const messages = result.rows.reverse().map((m) => {
+    let poll = m.poll ? JSON.parse(m.poll as string) : null;
+    if (poll) {
+      poll.votes = pollVotesMap[m.id as string] ?? [];
+    }
+    return {
+      ...m,
+      link_preview: m.link_preview ? JSON.parse(m.link_preview as string) : null,
+      poll,
+      reactions: reactionsMap[m.id as string] ?? [],
+    };
+  });
 
   const nextCursor =
     result.rows.length === limit
@@ -113,10 +141,10 @@ export async function POST(req: NextRequest) {
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const { id: clientId, channelId, projectId, content, threadParentId } = body;
+  const { id: clientId, channelId, projectId, content, threadParentId, poll } = body;
 
-  if (!channelId || !projectId || !content?.trim()) {
-    return NextResponse.json({ error: "channelId, projectId, content required" }, { status: 400 });
+  if (!channelId || !projectId || (!content?.trim() && !poll)) {
+    return NextResponse.json({ error: "channelId, projectId, content or poll required" }, { status: 400 });
   }
 
   // --- ACCESS CHECK & SERVER-SIDE PROFILE ---
@@ -131,7 +159,7 @@ export async function POST(req: NextRequest) {
   const now = Date.now();
 
   // --- LINK UNFURLING ---
-  const urls = extractUrls(content);
+  const urls = extractUrls(content ?? "");
   let linkPreview = null;
   if (urls.length > 0) {
     const preview = await unfurlUrl(urls[0]);
@@ -141,8 +169,8 @@ export async function POST(req: NextRequest) {
   }
 
   await turso.execute({
-    sql: `INSERT INTO ts_messages (id, channel_id, project_id, user_id, user_name, user_image, content, link_preview, thread_parent_id, created_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    sql: `INSERT INTO ts_messages (id, channel_id, project_id, user_id, user_name, user_image, content, link_preview, poll, thread_parent_id, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       id,
       channelId,
@@ -150,8 +178,9 @@ export async function POST(req: NextRequest) {
       userId,
       user.name,
       user.avatarUrl,
-      content.trim(),
+      content ? content.trim() : "",
       linkPreview,
+      poll ? JSON.stringify(poll) : null,
       threadParentId ?? null,
       now,
     ],
@@ -178,8 +207,9 @@ export async function POST(req: NextRequest) {
     user_id: userId,
     user_name: user.name,
     user_image: user.avatarUrl,
-    content: content.trim(),
+    content: content ? content.trim() : "",
     link_preview: linkPreview ? JSON.parse(linkPreview) : null,
+    poll: poll ? { ...poll, votes: [] } : null,
     thread_parent_id: threadParentId ?? null,
     parent_user_name,
     parent_content,

@@ -20,10 +20,11 @@
 import { useEffect, useRef, useState } from "react";
 import { LinkPreview } from "./LinkPreview";
 import { Message } from "./hooks/useMessages";
+import { PollBlock } from "./PollBlock";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { getUserColor } from "./utils";
+import { getUserColor } from "./lib/utils";
 import {
   SmilePlus,
   MoreHorizontal,
@@ -127,6 +128,7 @@ interface Props {
   onDelete: (messageId: string) => Promise<void>;
   onReact: (messageId: string, emoji: string, hasReacted: boolean) => Promise<void>;
   onPin: (messageId: string, pinned: boolean) => void;
+  onPollVote: (messageId: string, optionId: string) => Promise<void>;
   highlightTerm?: string;
 }
 
@@ -144,6 +146,7 @@ export function MessageItem({
   onDelete,
   onReact,
   onPin,
+  onPollVote,
   highlightTerm,
 }: Props) {
   const [hovered, setHovered] = useState(false);
@@ -415,21 +418,37 @@ export function MessageItem({
                 </div>
               </div>
             ) : (
-              <div className="relative">
-                <div className="text-[14px] leading-snug break-all md:break-words whitespace-pre-wrap text-foreground/80 font-normal">
-                  <Highlight
-                    text={message.content}
-                    term={highlightTerm}
-                    messageId={message.id}
-                  />
-                  {message.edited_at && (
-                    <span className="text-[8px] ml-1.5 select-none opacity-40 italic">
-                      (edited)
-                    </span>
-                  )}
-                  {/* Invisible spacer to prevent text from overlapping the timestamp */}
-                  <span className="inline-block w-11 h-0" />
-                </div>
+              <div className="relative flex flex-col">
+                {message.content && (
+                  <div className="text-[14px] leading-snug break-all md:break-words whitespace-pre-wrap text-foreground/80 font-normal">
+                    <Highlight
+                      text={message.content}
+                      term={highlightTerm}
+                      messageId={message.id}
+                    />
+                    {message.edited_at && (
+                      <span className="text-[8px] ml-1.5 select-none opacity-40 italic">
+                        (edited)
+                      </span>
+                    )}
+                    {/* Invisible spacer to prevent text from overlapping the timestamp */}
+                    {!(message.poll && !message.content) && <span className="inline-block w-11 h-0" />}
+                  </div>
+                )}
+                
+                {message.poll && (
+                  <div className="mt-1 mb-2">
+                    <PollBlock 
+                      poll={message.poll}
+                      messageId={message.id}
+                      currentUserId={currentUserId}
+                      onVote={(msgId, optId) => onPollVote(msgId, optId)}
+                    />
+                    {/* Invisible spacer for timestamp when there's only a poll */}
+                    {!message.content && <div className="h-2 w-11" />}
+                  </div>
+                )}
+
                 <div className="absolute bottom-0 right-0 flex items-center">
                   <span className="text-[9px] select-none text-muted-foreground/60 font-medium uppercase leading-none">
                     {format(new Date(message.created_at), "h:mm a")}
@@ -517,10 +536,12 @@ export function MessageItem({
                       <Reply className="h-4 w-4 mr-2 text-muted-foreground" aria-hidden="true" />
                       Reply
                     </DropdownMenuItem>
-                    <DropdownMenuItem onClick={handleCopy} className="rounded-lg">
-                      <Copy className="h-4 w-4 mr-2 text-muted-foreground" aria-hidden="true" />
-                      Copy Text
-                    </DropdownMenuItem>
+                    {message.content?.trim() ? (
+                      <DropdownMenuItem onClick={handleCopy} className="rounded-lg">
+                        <Copy className="h-4 w-4 mr-2 text-muted-foreground" aria-hidden="true" />
+                        Copy Text
+                      </DropdownMenuItem>
+                    ) : null}
                     {canPin && (
                       <DropdownMenuItem
                         onClick={() => onPin(message.id, !isPinned)}
@@ -572,10 +593,10 @@ export function MessageItem({
                     aria-label={`React with ${r.emoji}, ${r.userIds.length} reaction${r.userIds.length !== 1 ? "s" : ""}`}
                     aria-pressed={hasReacted}
                     className={cn(
-                      "flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] border transition-all active:scale-95",
+                      "flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] transition-all active:scale-95",
                       hasReacted
-                        ? "bg-blue-500/15 border-blue-500/50 text-blue-500 font-semibold"
-                        : "bg-background border-border hover:bg-accent text-muted-foreground"
+                        ? "text-blue-500 font-semibold"
+                        : "text-muted-foreground hover:bg-accent/50"
                     )}
                   >
                     <span aria-hidden="true">{r.emoji}</span>

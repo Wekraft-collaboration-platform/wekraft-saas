@@ -16,6 +16,11 @@ export async function initTeamspaceDB() {
   } catch (e) {
     // Column likely already exists
   }
+  try {
+    await turso.execute("ALTER TABLE ts_messages ADD COLUMN poll TEXT;");
+  } catch (e) {
+    // Column likely already exists
+  }
 
   await turso.executeMultiple(`
     CREATE TABLE IF NOT EXISTS ts_channels (
@@ -40,6 +45,7 @@ export async function initTeamspaceDB() {
       user_image       TEXT,
       content          TEXT NOT NULL,
       link_preview     TEXT, -- JSON metadata for unfurled links
+      poll             TEXT, -- JSON metadata for polls
       thread_parent_id TEXT,
       is_pinned        INTEGER NOT NULL DEFAULT 0,
       edited_at        INTEGER,
@@ -78,6 +84,18 @@ export async function initTeamspaceDB() {
       emoji      TEXT NOT NULL,
       created_at INTEGER NOT NULL,
       UNIQUE(message_id, user_id, emoji),
+      FOREIGN KEY (message_id) REFERENCES ts_messages(id) ON DELETE CASCADE
+    );
+
+    CREATE TABLE IF NOT EXISTS ts_poll_votes (
+      id         TEXT PRIMARY KEY,
+      message_id TEXT NOT NULL,
+      option_id  TEXT NOT NULL,
+      user_id    TEXT NOT NULL,
+      user_name  TEXT NOT NULL,
+      user_image TEXT,
+      created_at INTEGER NOT NULL,
+      UNIQUE(message_id, option_id, user_id),
       FOREIGN KEY (message_id) REFERENCES ts_messages(id) ON DELETE CASCADE
     );
   `);

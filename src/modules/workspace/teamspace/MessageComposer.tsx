@@ -18,12 +18,13 @@
 import { useState, useRef, useCallback, KeyboardEvent, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { SmilePlus, Plus, X, SendHorizontal } from "lucide-react";
+import { SmilePlus, Plus, X, SendHorizontal, BarChart2, Code } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { getUserColor } from "./utils";
+import { getUserColor } from "./lib/utils";
 import { Message } from "./hooks/useMessages";
+import { CreatePollDialog } from "./CreatePollDialog";
 
 const EMOJI_GROUPS = [
   { label: "React", emojis: ["👍", "❤️", "😂", "😮", "😢", "🙏", "🎉", "🔥"] },
@@ -35,7 +36,7 @@ interface Props {
   channelName: string;
   replyingTo?: Message | null;
   onClearReply?: () => void;
-  onSend: (content: string) => Promise<void>;
+  onSend: (content: string, poll?: any) => Promise<void>;
   onTyping?: (isTyping: boolean) => void;
   disabled?: boolean;
   isAnnouncement?: boolean;
@@ -44,6 +45,7 @@ interface Props {
 export function MessageComposer({ channelName, replyingTo, onClearReply, onSend, onTyping, disabled, isAnnouncement }: Props) {
   const [content, setContent] = useState("");
   const [sending, setSending] = useState(false);
+  const [isPollDialogOpen, setIsPollDialogOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   
   // Auto-resize logic
@@ -122,17 +124,55 @@ export function MessageComposer({ channelName, replyingTo, onClearReply, onSend,
           disabled && "opacity-70 bg-secondary/30"
         )}
       >
-        {/* Plus attachment icon */}
+        {/* Attachment menu */}
         <div className="flex items-center gap-1.5 shrink-0">
-          <motion.button
-            whileHover={{ scale: 1.1 }}
-            whileTap={{ scale: 0.9 }}
-            type="button"
-            disabled={disabled}
-            className="h-6 w-6 rounded-full bg-muted-foreground/30 flex items-center justify-center shrink-0 hover:bg-muted-foreground/50 transition-colors disabled:opacity-50"
-          >
-            <Plus className="h-4 w-4 text-foreground/80" />
-          </motion.button>
+          <Popover>
+            <PopoverTrigger asChild>
+              <motion.button
+                whileHover={{ scale: 1.1 }}
+                whileTap={{ scale: 0.9 }}
+                type="button"
+                disabled={disabled}
+                className="h-6 w-6 rounded-full bg-muted-foreground/30 flex items-center justify-center shrink-0 hover:bg-muted-foreground/50 transition-colors disabled:opacity-50"
+              >
+                <Plus className="h-4 w-4 text-foreground/80" />
+              </motion.button>
+            </PopoverTrigger>
+            <PopoverContent 
+              side="top" 
+              align="start" 
+              className="w-auto p-4 mb-2 bg-background/95 backdrop-blur-xl border-border/40 shadow-2xl rounded-2xl"
+            >
+              <div className="flex gap-6">
+                {[
+                  { label: "Codebase", icon: Code, color: "bg-foreground text-background" },
+                  { label: "Poll", icon: BarChart2, color: "bg-foreground text-background" },
+                ].map((item) => (
+                  <button 
+                    key={item.label}
+                    className="flex flex-col items-center gap-1.5 group outline-none"
+                    onClick={() => {
+                      if (item.label === "Poll") {
+                        setIsPollDialogOpen(true);
+                      } else {
+                        console.log("Clicked", item.label);
+                      }
+                    }}
+                  >
+                    <div className={cn(
+                      "h-10 w-10 rounded-full flex items-center justify-center shadow-sm transition-transform duration-200 group-hover:scale-110 group-active:scale-95",
+                      item.color
+                    )}>
+                      <item.icon className="h-[18px] w-[18px]" />
+                    </div>
+                    <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+                      {item.label}
+                    </span>
+                  </button>
+                ))}
+              </div>
+            </PopoverContent>
+          </Popover>
 
           {/* Emoji picker */}
           <Popover>
@@ -203,6 +243,14 @@ export function MessageComposer({ channelName, replyingTo, onClearReply, onSend,
           </motion.button>
         </div>
       </motion.div>
+
+      <CreatePollDialog 
+        open={isPollDialogOpen} 
+        onOpenChange={setIsPollDialogOpen} 
+        onSendPoll={async (poll) => {
+          await onSend("", poll);
+        }}
+      />
     </div>
   );
 }

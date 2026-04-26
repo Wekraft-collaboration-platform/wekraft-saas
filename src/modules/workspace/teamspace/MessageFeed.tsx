@@ -100,6 +100,7 @@ export function MessageFeed({
     deleteMessage,
     togglePin,
     toggleReaction,
+    togglePollVote,
     loadMore,
     hasMore,
   } = useMessages(channel?.id ?? null, projectId, currentUserId, currentUserName);
@@ -280,8 +281,8 @@ export function MessageFeed({
     }
   }, [loading, messages.length]);
 
-  const handleSend = async (content: string) => {
-    await sendMessage(content, currentUserId, currentUserName, currentUserImage, replyingTo?.id);
+  const handleSend = async (content: string, poll?: any) => {
+    await sendMessage(content, currentUserId, currentUserName, currentUserImage, replyingTo?.id, poll);
     setReplyingTo(null);
   };
 
@@ -591,6 +592,7 @@ export function MessageFeed({
                   onDelete={deleteMessage}
                   onReact={toggleReaction}
                   onPin={togglePin}
+                  onPollVote={togglePollVote}
                   highlightTerm={searchQuery}
                 />
               );
