@@ -48,6 +48,8 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 
+import { AnimatePresence, motion } from "framer-motion";
+
 interface AiAssistantSheetProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
@@ -392,28 +394,35 @@ export function AiAssistantSheet({
 
         {/* MESSAGES */}
         <div ref={containerRef} className="flex-1 overflow-y-auto py-4 px-2">
-          {appCheckpoints.length === 0 && !restoring && (
-            <div className="h-full flex flex-col items-center justify-center p-8 text-center animate-in fade-in zoom-in duration-500">
-              <div className="relative mb-6">
-                <Image
-                  src="/kaya.svg"
-                  alt="Kaya AI"
-                  width={60}
-                  height={60}
-                  className="relative drop-shadow-2xl"
-                />
-              </div>
-              <h3 className="text-lg font-pop font-semibold text-primary mb-1 tracking-tight">
-                Hello, I&apos;m Kaya
-              </h3>
-              <p className="text-sm text-muted-foreground max-w-[240px] leading-relaxed">
-                Start with asking ,{" "}
-                <span className="font-pop text-primary">
-                  &quot;What's happening in my project&quot;
-                </span>
-              </p>
-            </div>
-          )}
+          <AnimatePresence>
+            {appCheckpoints.length === 0 && !restoring && status === "idle" && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.95, transition: { duration: 0.3 } }}
+                className="h-full flex flex-col items-center justify-center p-8 text-center"
+              >
+                <div className="relative mb-6">
+                  <Image
+                    src="/kaya.svg"
+                    alt="Kaya AI"
+                    width={60}
+                    height={60}
+                    className="relative drop-shadow-2xl"
+                  />
+                </div>
+                <h3 className="text-lg font-pop font-semibold text-primary mb-1 tracking-tight">
+                  Hello, I&apos;m Kaya
+                </h3>
+                <p className="text-sm text-muted-foreground max-w-[240px] leading-relaxed">
+                  Start with asking ,{" "}
+                  <span className="font-pop text-primary">
+                    &quot;What's happening in my project&quot;
+                  </span>
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {appCheckpoints.map((checkpoint, cpIndex) =>
             checkpoint.error ? (
