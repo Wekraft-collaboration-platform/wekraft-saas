@@ -107,7 +107,7 @@ export default defineSchema({
     userName: v.string(),
     userImage: v.optional(v.string()),
     AccessRole: v.optional(
-      v.union(v.literal("admin"), v.literal("member"), v.literal("viewer")),
+      v.union(v.literal("owner"), v.literal("admin"), v.literal("member"), v.literal("viewer")),
     ),
     joinedAt: v.optional(v.number()),
     leftAt: v.optional(v.number()),

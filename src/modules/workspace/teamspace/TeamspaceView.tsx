@@ -55,7 +55,7 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
   const currentUserImage = user?.avatarUrl ?? null;
 
   return (
-    <div className="flex h-svh overflow-hidden bg-sidebar">
+    <div className="flex h-[calc(100vh-72px)] overflow-hidden bg-sidebar">
       {/* Left: Channels */}
       <ChannelsSidebar
         projectId={projectId}
@@ -77,6 +77,7 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
         currentUserName={currentUserName}
         currentUserImage={currentUserImage}
         projectId={projectId}
+        projectSlug={projectSlug}
         onToggleMembers={() => setShowMembers((prev) => !prev)}
       />
 

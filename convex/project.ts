@@ -89,7 +89,7 @@ export const projectInit = mutation({
       throw new Error("Could not create a unique project slug. Please retry.");
     }
 
-    return await ctx.db.insert("projects", {
+    const projectId = await ctx.db.insert("projects", {
       projectName: args.projectName,
       slug,
       description: args.description,
@@ -103,6 +103,18 @@ export const projectInit = mutation({
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
+
+    // Add owner to projectMembers so they are visible in Teamspace
+    await ctx.db.insert("projectMembers", {
+      projectId,
+      userId: user._id,
+      userName: user.name ?? "Owner",
+      userImage: user.avatarUrl,
+      AccessRole: "owner",
+      joinedAt: Date.now(),
+    });
+
+    return projectId;
   },
 });
 
@@ -804,18 +816,40 @@ export const updateProject = mutation({
 export const getProjectMembers = query({
   args: { projectId: v.id("projects") },
   handler: async (ctx, args) => {
+    const project = await ctx.db.get(args.projectId);
+    if (!project) return [];
+
     const members = await ctx.db
       .query("projectMembers")
       .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
       .collect();
 
+    // Ensure the owner is in the list (synthesize if missing)
+    const hasOwner = members.some((m) => m.userId === project.ownerId);
+    if (!hasOwner) {
+      // We don't insert here to keep it a pure query, but we include it in the results
+      const ownerUser = await ctx.db.get(project.ownerId);
+      if (ownerUser) {
+        members.push({
+          projectId: project._id,
+          userId: project.ownerId,
+          userName: ownerUser.name || "Owner",
+          userImage: ownerUser.avatarUrl,
+          AccessRole: "owner",
+          joinedAt: project.createdAt,
+        } as any);
+      }
+    }
+
     return await Promise.all(
       members.map(async (m) => {
         const user = await ctx.db.get(m.userId);
-        const clerkUserId = user?.clerkToken?.split("|").pop() ?? null;
         return {
           ...m,
-          clerkUserId,
+          userName: user?.name || m.userName || "Anonymous",
+          userImage: user?.avatarUrl || m.userImage || "",
+          AccessRole: m.AccessRole || (m as any).role || (m.userId === project.ownerId ? "owner" : "member"),
+          clerkUserId: user?.clerkToken?.split("|").pop() ?? null,
         };
       })
     );

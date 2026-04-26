@@ -17,6 +17,7 @@ export async function GET() {
     clientId: userId,
     capability: {
       "teamspace:*": ["subscribe", "publish", "presence"],
+      "user:notifications:*": ["subscribe", "publish"],
     },
     ttl: 3600 * 1000, // 1 hour in ms
   });

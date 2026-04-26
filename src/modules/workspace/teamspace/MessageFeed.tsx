@@ -54,6 +54,8 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { NotificationCenter } from "./NotificationCenter";
+import { PollBlock } from "./PollBlock";
 import {
   Popover,
   PopoverContent,
@@ -69,6 +71,7 @@ interface Props {
   currentUserName: string;
   currentUserImage: string | null;
   projectId: string;
+  projectSlug: string;
   onToggleMembers: () => void;
 }
 
@@ -95,6 +98,7 @@ export function MessageFeed({
   currentUserName,
   currentUserImage,
   projectId,
+  projectSlug,
   onToggleMembers,
 }: Props) {
   const { isOwner, isPower } = useProjectPermissions(
@@ -117,9 +121,11 @@ export function MessageFeed({
     sendMessage,
     setTypingStatus,
     editMessage,
+    editPoll,
     deleteMessage,
     togglePin,
     toggleReaction,
+    togglePollVote,
     loadMore,
     hasMore,
   } = useMessages(
@@ -299,8 +305,8 @@ export function MessageFeed({
 
     const el = e.currentTarget;
     const distFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
-    // Using a slightly more strict threshold and ensuring we don't flicker
-    setAtBottom(distFromBottom < 20);
+    // Increased threshold so the button doesn't appear too early
+    setAtBottom(distFromBottom < 1000);
   }, []);
 
   // Sync scroll state when content changes (e.g. after loading or channel switch)
@@ -311,7 +317,7 @@ export function MessageFeed({
       const distFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
 
       // If not scrollable or near bottom, set atBottom to true
-      setAtBottom(!isScrollable || distFromBottom < 20);
+      setAtBottom(!isScrollable || distFromBottom < 1000);
     }
   }, [messages.length, loading, channel?.id]);
 
@@ -329,13 +335,14 @@ export function MessageFeed({
     }
   }, [loading, messages.length]);
 
-  const handleSend = async (content: string) => {
+  const handleSend = async (content: string, poll?: any) => {
     await sendMessage(
       content,
       currentUserId,
       currentUserName,
       currentUserImage,
       replyingTo?.id,
+      poll,
     );
     setReplyingTo(null);
   };
@@ -369,7 +376,7 @@ export function MessageFeed({
   return (
     <div className="flex flex-col flex-1 min-w-0 h-full overflow-hidden relative">
       {/* Channel header */}
-      <div className="flex items-center justify-between px-6 h-20 border-b border-border/80 flex-none bg-background/95 backdrop-blur shadow-sm z-10">
+      <div className="flex items-center justify-between px-6 h-14 border-b border-border/80 flex-none bg-background/95 backdrop-blur z-10">
         <div className="flex items-center gap-3.5 min-w-0">
           <div className="bg-primary/10 p-1.5 rounded-lg shrink-0 border border-primary/20">
             <ChannelIcon className="h-5 w-5 text-primary" />
@@ -394,7 +401,7 @@ export function MessageFeed({
             <div className="flex items-center gap-3 text-muted-foreground">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Bell className="h-5 w-5 hover:text-foreground cursor-pointer transition-colors" />
+                  <NotificationCenter userId={currentUserId} />
                 </TooltipTrigger>
                 <TooltipContent>Notifications</TooltipContent>
               </Tooltip>
@@ -599,7 +606,12 @@ export function MessageFeed({
       {/* Messages area */}
       <div
         ref={scrollRef}
-        className="flex-1 overflow-y-auto py-2"
+        className="flex-1 overflow-y-auto overflow-x-hidden py-4 bg-accent/5"
+        style={{
+          backgroundImage:
+            "radial-gradient(circle at 2px 2px, rgba(0,0,0,0.02) 1px, transparent 0)",
+          backgroundSize: "24px 24px",
+        }}
         onScroll={handleScroll}
       >
         {/* Load more */}
@@ -679,6 +691,8 @@ export function MessageFeed({
                   onDelete={deleteMessage}
                   onReact={toggleReaction}
                   onPin={togglePin}
+                  onPollVote={togglePollVote}
+                  onEditPoll={editPoll}
                   highlightTerm={searchQuery}
                 />
               );
@@ -716,12 +730,15 @@ export function MessageFeed({
       {/* Composer */}
       <MessageComposer
         channelName={channel.name}
+        projectId={projectId}
         replyingTo={replyingTo}
         onClearReply={() => setReplyingTo(null)}
         onSend={handleSend}
         onTyping={setTypingStatus}
         disabled={!canSend}
         isAnnouncement={isAnnouncement}
+        currentUserId={currentUserId}
+        projectSlug={projectSlug}
       />
 
       {/* Jump to bottom FAB */}
@@ -734,20 +751,15 @@ export function MessageFeed({
             className="absolute bottom-[110px] right-6 z-50 pointer-events-none"
           >
             <Button
-              size="sm"
-              variant="secondary"
-              className="shadow-2xl h-10 rounded-full px-5 gap-2.5 bg-background/95 backdrop-blur-md border border-border/80 hover:bg-accent hover:border-border transition-all pointer-events-auto active:scale-95 group"
+              size="icon"
+              className="shadow-xl h-10 w-10 rounded-full bg-background/80 backdrop-blur-xl border border-border/50 hover:bg-accent/80 hover:border-border/80 hover:text-foreground text-muted-foreground transition-all pointer-events-auto active:scale-95 group flex items-center justify-center"
               onClick={() => {
                 bottomRef.current?.scrollIntoView({ behavior: "smooth" });
                 setAtBottom(true);
               }}
+              aria-label="Jump to bottom"
             >
-              <div className="bg-primary/20 p-1 rounded-full group-hover:bg-primary/30 transition-colors">
-                <ArrowDown className="h-4 w-4 text-primary" />
-              </div>
-              <span className="text-[13px] font-medium tracking-tight">
-                Jump to bottom
-              </span>
+              <ArrowDown className="h-5 w-5 transition-transform group-hover:translate-y-0.5" />
             </Button>
           </motion.div>
         )}

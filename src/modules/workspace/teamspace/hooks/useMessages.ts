@@ -29,6 +29,20 @@ export interface Reaction {
   userIds: string[];
 }
 
+export interface PollVote {
+  option_id: string;
+  user_id: string;
+  user_name: string;
+  user_image: string | null;
+}
+
+export interface Poll {
+  question: string;
+  options: { id: string; text: string }[];
+  allowMultiple: boolean;
+  votes: PollVote[];
+}
+
 export interface Message {
   id: string;
   channel_id: string;
@@ -48,6 +62,7 @@ export interface Message {
     image?: string;
     siteName?: string;
   } | null;
+  poll?: Poll | null;
   reactions: Reaction[];
   reply_count?: number;
   parent_user_name?: string | null;
@@ -314,11 +329,33 @@ export function useMessages(channelId: string | null, projectId: string, current
       });
     };
 
+    const onPollVoted = (msg: Ably.Message) => {
+      const { messageId, optionId, userId, userName, userImage, action, allowMultiple } = msg.data;
+      setMessages((prev) =>
+        prev.map((m) => {
+          if (m.id !== messageId || !m.poll) return m;
+          let votes = [...m.poll.votes];
+          
+          if (action === "add") {
+            if (!allowMultiple) {
+              votes = votes.filter(v => v.user_id !== userId);
+            }
+            votes.push({ option_id: optionId, user_id: userId, user_name: userName, user_image: userImage });
+          } else {
+            votes = votes.filter(v => !(v.option_id === optionId && v.user_id === userId));
+          }
+          
+          return { ...m, poll: { ...m.poll, votes } };
+        })
+      );
+    };
+
     ch.subscribe("message.new", onNewMsg);
     ch.subscribe("message.updated", onUpdatedMsg);
     ch.subscribe("message.deleted", onDeletedMsg);
     ch.subscribe("reaction.updated", onReactionUpdated);
     ch.subscribe("typing", onTyping);
+    ch.subscribe("poll.voted", onPollVoted);
 
     fetchMessages();
 
@@ -330,8 +367,8 @@ export function useMessages(channelId: string | null, projectId: string, current
   }, [channelId, threadParentId, fetchMessages, currentUserId, currentUserName]);
 
   const sendMessage = useCallback(
-    async (content: string, userId: string, userName: string, userImage: string | null, parentId?: string) => {
-      if (!channelId || !content.trim()) return;
+    async (content: string, userId: string, userName: string, userImage: string | null, parentId?: string, poll?: any) => {
+      if (!channelId || (!content.trim() && !poll)) return;
 
       const optimisticId = crypto.randomUUID();
       const tmpMsg: Message = {
@@ -342,6 +379,7 @@ export function useMessages(channelId: string | null, projectId: string, current
         user_name: userName,
         user_image: userImage,
         content: content.trim(),
+        poll: poll ? { ...poll, votes: [] } : null,
         thread_parent_id: parentId ?? null,
         created_at: Date.now(),
         edited_at: null,
@@ -364,6 +402,7 @@ export function useMessages(channelId: string | null, projectId: string, current
             projectId,
             content,
             threadParentId: parentId ?? null,
+            poll,
           }),
         });
         const json = await res.json();
@@ -422,6 +461,33 @@ export function useMessages(channelId: string | null, projectId: string, current
         console.error("Edit message sync error:", err);
         setMessages(previousMessages);
         toast.error("Failed to edit message. Please try again.");
+      }
+    },
+    [messages, projectId]
+  );
+
+  const editPoll = useCallback(
+    async (messageId: string, poll: any) => {
+      const previousMessages = [...messages];
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === messageId
+            ? { ...m, poll: { ...(m.poll ?? {}), ...poll, votes: m.poll?.votes ?? [] } }
+            : m
+        )
+      );
+
+      try {
+        const res = await fetch(`/api/teamspace/messages/${messageId}`, {
+          method: "PATCH",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ projectId, poll }),
+        });
+        if (!res.ok) throw new Error("Failed to update poll");
+      } catch (err) {
+        console.error("Edit poll sync error:", err);
+        setMessages(previousMessages);
+        toast.error("Failed to update poll. Please try again.");
       }
     },
     [messages, projectId]
@@ -515,6 +581,48 @@ export function useMessages(channelId: string | null, projectId: string, current
     [currentUserId, messages, channelId, projectId]
   );
 
+  const togglePollVote = useCallback(
+    async (messageId: string, optionId: string) => {
+      if (!channelId || !projectId) return;
+
+      const msg = messages.find(m => m.id === messageId);
+      if (!msg || !msg.poll) return;
+
+      const previousMessages = [...messages];
+      setMessages((prev) =>
+        prev.map((m) => {
+          if (m.id !== messageId || !m.poll) return m;
+          let votes = [...m.poll.votes];
+          const existing = votes.find(v => v.option_id === optionId && v.user_id === currentUserId);
+          
+          if (existing) {
+            votes = votes.filter(v => !(v.option_id === optionId && v.user_id === currentUserId));
+          } else {
+            if (!m.poll.allowMultiple) {
+              votes = votes.filter(v => v.user_id !== currentUserId);
+            }
+            votes.push({ option_id: optionId, user_id: currentUserId, user_name: currentUserName || "User", user_image: null });
+          }
+          
+          return { ...m, poll: { ...m.poll, votes } };
+        })
+      );
+
+      try {
+        const response = await fetch("/api/teamspace/polls", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ projectId, messageId, optionId, channelId }),
+        });
+        if (!response.ok) throw new Error("Failed to vote on poll");
+      } catch (error) {
+        console.error("Poll vote sync error:", error);
+        setMessages(previousMessages);
+      }
+    },
+    [currentUserId, currentUserName, messages, channelId, projectId]
+  );
+
   const loadMore = useCallback(() => {
     if (nextCursor) fetchMessages(nextCursor);
   }, [nextCursor, fetchMessages]);
@@ -528,9 +636,11 @@ export function useMessages(channelId: string | null, projectId: string, current
     sendMessage,
     setTypingStatus,
     editMessage,
+    editPoll,
     deleteMessage,
     togglePin,
     toggleReaction,
+    togglePollVote,
     loadMore,
   };
 }

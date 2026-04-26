@@ -351,3 +351,13 @@ export const getUserById = query({
     };
   },
 });
+
+export const getUserByName = query({
+  args: { name: v.string() },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("users")
+      .withIndex("by_name", (q) => q.eq("name", args.name))
+      .unique();
+  },
+});

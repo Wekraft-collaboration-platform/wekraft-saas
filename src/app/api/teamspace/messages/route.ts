@@ -4,28 +4,45 @@ import { turso, initTeamspaceDB } from "@/lib/turso";
 import Ably from "ably";
 import { randomUUID } from "crypto";
 import { verifyProjectAccess } from "@/modules/workspace/teamspace/lib/auth";
-import { extractUrls, unfurlUrl } from "@/modules/workspace/teamspace/lib/unfurl";
+import {
+  extractUrls,
+  unfurlUrl,
+} from "@/modules/workspace/teamspace/lib/unfurl";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "../../../../../convex/_generated/api";
 
+const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 const ably = new Ably.Rest(process.env.ABLY_API_KEY!);
 
 // GET /api/teamspace/messages?channelId=xxx&projectId=xxx&cursor=xxx&limit=50
 export async function GET(req: NextRequest) {
   const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!userId)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const channelId = req.nextUrl.searchParams.get("channelId");
   const projectId = req.nextUrl.searchParams.get("projectId");
   const cursor = req.nextUrl.searchParams.get("cursor"); // timestamp for pagination
   const threadParentId = req.nextUrl.searchParams.get("threadParentId");
-  const limit = Math.min(Number(req.nextUrl.searchParams.get("limit") ?? 50), 100);
+  const limit = Math.min(
+    Number(req.nextUrl.searchParams.get("limit") ?? 50),
+    100,
+  );
 
   if (!channelId || !projectId) {
-    return NextResponse.json({ error: "channelId and projectId required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "channelId and projectId required" },
+      { status: 400 },
+    );
   }
 
   // --- ACCESS CHECK ---
   const access = await verifyProjectAccess(userId, projectId);
-  if ("error" in access) return NextResponse.json({ error: access.error }, { status: access.status });
+  if ("error" in access)
+    return NextResponse.json(
+      { error: access.error },
+      { status: access.status },
+    );
 
   await initTeamspaceDB();
 
@@ -46,7 +63,9 @@ export async function GET(req: NextRequest) {
          FROM ts_messages m
          WHERE m.thread_parent_id = ?
          ORDER BY m.created_at ASC LIMIT ?`;
-    args = cursor ? [threadParentId, Number(cursor), limit] : [threadParentId, limit];
+    args = cursor
+      ? [threadParentId, Number(cursor), limit]
+      : [threadParentId, limit];
   } else {
     // Top-level messages (no thread_parent_id filter)
     sql = cursor
@@ -93,16 +112,52 @@ export async function GET(req: NextRequest) {
     }
   }
 
-  const messages = result.rows.reverse().map((m) => ({
-    ...m,
-    link_preview: m.link_preview ? JSON.parse(m.link_preview as string) : null,
-    reactions: reactionsMap[m.id as string] ?? [],
-  }));
+  // Fetch poll votes grouped for these messages
+  let pollVotesMap: Record<
+    string,
+    {
+      option_id: string;
+      user_id: string;
+      user_name: string;
+      user_image: string | null;
+    }[]
+  > = {};
+  if (messageIds.length > 0) {
+    const placeholders = messageIds.map(() => "?").join(",");
+    const pollVotesRes = await turso.execute({
+      sql: `SELECT message_id, option_id, user_id, user_name, user_image FROM ts_poll_votes WHERE message_id IN (${placeholders})`,
+      args: messageIds,
+    });
+
+    for (const row of pollVotesRes.rows) {
+      const mid = row.message_id as string;
+      if (!pollVotesMap[mid]) pollVotesMap[mid] = [];
+      pollVotesMap[mid].push({
+        option_id: row.option_id as string,
+        user_id: row.user_id as string,
+        user_name: row.user_name as string,
+        user_image: row.user_image as string | null,
+      });
+    }
+  }
+
+  const messages = result.rows.reverse().map((m) => {
+    let poll = m.poll ? JSON.parse(m.poll as string) : null;
+    if (poll) {
+      poll.votes = pollVotesMap[m.id as string] ?? [];
+    }
+    return {
+      ...m,
+      link_preview: m.link_preview
+        ? JSON.parse(m.link_preview as string)
+        : null,
+      poll,
+      reactions: reactionsMap[m.id as string] ?? [],
+    };
+  });
 
   const nextCursor =
-    result.rows.length === limit
-      ? String(result.rows[0].created_at)
-      : null;
+    result.rows.length === limit ? String(result.rows[0].created_at) : null;
 
   return NextResponse.json({ messages, nextCursor });
 }
@@ -110,18 +165,33 @@ export async function GET(req: NextRequest) {
 // POST /api/teamspace/messages
 export async function POST(req: NextRequest) {
   const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!userId)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const { id: clientId, channelId, projectId, content, threadParentId } = body;
+  const {
+    id: clientId,
+    channelId,
+    projectId,
+    content,
+    threadParentId,
+    poll,
+  } = body;
 
-  if (!channelId || !projectId || !content?.trim()) {
-    return NextResponse.json({ error: "channelId, projectId, content required" }, { status: 400 });
+  if (!channelId || !projectId || (!content?.trim() && !poll)) {
+    return NextResponse.json(
+      { error: "channelId, projectId, content or poll required" },
+      { status: 400 },
+    );
   }
 
   // --- ACCESS CHECK & SERVER-SIDE PROFILE ---
   const access = await verifyProjectAccess(userId, projectId);
-  if ("error" in access) return NextResponse.json({ error: access.error }, { status: access.status });
+  if ("error" in access)
+    return NextResponse.json(
+      { error: access.error },
+      { status: access.status },
+    );
 
   const { user } = access;
 
@@ -131,7 +201,7 @@ export async function POST(req: NextRequest) {
   const now = Date.now();
 
   // --- LINK UNFURLING ---
-  const urls = extractUrls(content);
+  const urls = extractUrls(content ?? "");
   let linkPreview = null;
   if (urls.length > 0) {
     const preview = await unfurlUrl(urls[0]);
@@ -141,8 +211,8 @@ export async function POST(req: NextRequest) {
   }
 
   await turso.execute({
-    sql: `INSERT INTO ts_messages (id, channel_id, project_id, user_id, user_name, user_image, content, link_preview, thread_parent_id, created_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    sql: `INSERT INTO ts_messages (id, channel_id, project_id, user_id, user_name, user_image, content, link_preview, poll, thread_parent_id, created_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       id,
       channelId,
@@ -150,8 +220,9 @@ export async function POST(req: NextRequest) {
       userId,
       user.name,
       user.avatarUrl,
-      content.trim(),
+      content ? content.trim() : "",
       linkPreview,
+      poll ? JSON.stringify(poll) : null,
       threadParentId ?? null,
       now,
     ],
@@ -178,8 +249,9 @@ export async function POST(req: NextRequest) {
     user_id: userId,
     user_name: user.name,
     user_image: user.avatarUrl,
-    content: content.trim(),
+    content: content ? content.trim() : "",
     link_preview: linkPreview ? JSON.parse(linkPreview) : null,
+    poll: poll ? { ...poll, votes: [] } : null,
     thread_parent_id: threadParentId ?? null,
     parent_user_name,
     parent_content,
@@ -193,6 +265,72 @@ export async function POST(req: NextRequest) {
   const ablyChannel = ably.channels.get(`teamspace:${channelId}`);
   await ablyChannel.publish("message.new", message);
 
+  // --- MENTION NOTIFICATIONS ---
+  try {
+    const projectMembers = await convex.query(api.project.getProjectMembers, {
+      projectId: projectId as any,
+    });
+
+    const isEveryoneMentioned = content.toLowerCase().includes("@everyone");
+    
+    // Match @Username in content or use all members if @everyone
+    const mentionedMembers = isEveryoneMentioned 
+      ? projectMembers.filter(m => m.clerkUserId !== userId) // Everyone except sender
+      : projectMembers.filter((member) => {
+          if (!member.userName) return false;
+          const mentionTag = `@${member.userName}`;
+          const escapedTag = mentionTag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+          const regex = new RegExp(`${escapedTag}(\\s|$)`, "i");
+          return regex.test(content);
+        });
+
+    for (const member of mentionedMembers) {
+      if (member.clerkUserId && member.clerkUserId !== userId) {
+        const notificationId = randomUUID();
+        const notification = {
+          id: notificationId,
+          user_id: member.clerkUserId,
+          type: "mention",
+          sender_id: userId,
+          sender_name: user.name,
+          sender_image: user.avatarUrl,
+          project_id: projectId,
+          channel_id: channelId,
+          message_id: id,
+          content: content.trim().substring(0, 100),
+          is_read: 0,
+          created_at: now,
+        };
+
+        // 1. Save to Turso
+        await turso.execute({
+          sql: `INSERT INTO ts_notifications (id, user_id, type, sender_id, sender_name, sender_image, project_id, channel_id, message_id, content, created_at)
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+          args: [
+            notification.id,
+            notification.user_id,
+            notification.type,
+            notification.sender_id,
+            notification.sender_name,
+            notification.sender_image,
+            notification.project_id,
+            notification.channel_id,
+            notification.message_id,
+            notification.content,
+            notification.created_at,
+          ],
+        });
+
+        // 2. Publish to Ably (User-specific channel)
+        const userNotifyChannel = ably.channels.get(
+          `user:notifications:${member.clerkUserId}`,
+        );
+        await userNotifyChannel.publish("notification.new", notification);
+      }
+    }
+  } catch (e) {
+    console.error("Failed to process mentions:", e);
+  }
+
   return NextResponse.json({ message }, { status: 201 });
 }
-

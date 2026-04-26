@@ -55,7 +55,7 @@ export function MembersPanel({ projectId, channelId, currentUserId, currentUserN
   return (
     <div className="flex flex-col h-full w-full">
       {/* Header */}
-      <div className="flex items-center gap-2 px-3 py-3 border-b border-border/80">
+      <div className="flex items-center gap-2 px-3 h-14 border-b border-border/80 shrink-0">
         <Users className="h-3.5 w-3.5 text-muted-foreground" />
         <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
           Members
