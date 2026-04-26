@@ -16,12 +16,12 @@ export async function PATCH(
 
   const { messageId } = await params;
   const body = await req.json();
-  const { projectId, content, is_pinned } = body;
+  const { projectId, content, is_pinned, poll } = body;
 
   if (!projectId) return NextResponse.json({ error: "projectId required" }, { status: 400 });
 
-  if (content === undefined && is_pinned === undefined) {
-    return NextResponse.json({ error: "content or is_pinned required" }, { status: 400 });
+  if (content === undefined && is_pinned === undefined && poll === undefined) {
+    return NextResponse.json({ error: "content, is_pinned, or poll required" }, { status: 400 });
   }
 
   // --- ACCESS CHECK ---
@@ -40,9 +40,10 @@ export async function PATCH(
 
   const isEditing = content !== undefined;
   const isPinning = is_pinned !== undefined;
+  const isEditingPoll = poll !== undefined;
 
-  // 1. EDIT: ONLY AUTHOR
-  if (isEditing && existing.rows[0].user_id !== userId) {
+  // 1. EDIT content/poll: ONLY AUTHOR
+  if ((isEditing || isEditingPoll) && existing.rows[0].user_id !== userId) {
     return NextResponse.json({ error: "Forbidden: You can only edit your own messages" }, { status: 403 });
   }
 
@@ -62,6 +63,10 @@ export async function PATCH(
   if (is_pinned !== undefined) {
     updates.push("is_pinned = ?");
     args.push(is_pinned ? 1 : 0);
+  }
+  if (poll !== undefined) {
+    updates.push("poll = ?, edited_at = ?");
+    args.push(JSON.stringify(poll), now);
   }
 
   args.push(messageId);
