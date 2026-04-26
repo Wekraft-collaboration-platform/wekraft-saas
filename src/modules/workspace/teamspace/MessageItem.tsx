@@ -303,19 +303,15 @@ export function MessageItem({
           {/* The Bubble */}
           <div
             className={cn(
-              "relative px-3 py-1.5 transition-all duration-200 border backdrop-blur-[2px] min-w-[70px] max-w-full",
+              "relative px-2.5 py-1 transition-all duration-200 border backdrop-blur-[2px] min-w-[60px] max-w-full shadow-sm",
               isOwn
                 ? cn(
                     "bg-primary/[0.03] border-primary/[0.08]",
-                    isGrouped
-                      ? "rounded-2xl"
-                      : "rounded-2xl rounded-tr-sm shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
+                    isGrouped ? "rounded-lg" : "rounded-lg rounded-tr-none"
                   )
                 : cn(
-                    "bg-muted/[0.05] border-border/40",
-                    isGrouped
-                      ? "rounded-2xl"
-                      : "rounded-2xl rounded-tl-sm shadow-[0_1px_2px_rgba(0,0,0,0.06)]"
+                    "bg-primary/[0.03] border-primary/[0.08]",
+                    isGrouped ? "rounded-lg" : "rounded-lg rounded-tl-none"
                   )
             )}
           >
@@ -323,37 +319,30 @@ export function MessageItem({
             {!isGrouped &&
               (isOwn ? (
                 <span
+                  className="absolute top-0 right-[-8px]"
                   aria-hidden="true"
                   style={{
-                    position: "absolute",
-                    top: 0,
-                    right: -8,
-                    width: 0,
-                    height: 0,
-                    borderStyle: "solid",
-                    borderWidth: "0 0 10px 9px",
-                    borderColor:
-                      "transparent transparent transparent var(--bubble-own-bg, rgba(var(--primary-rgb,99,102,241),0.06))",
-                    filter:
-                      "drop-shadow(1px 0px 0px rgba(var(--primary-rgb,99,102,241),0.08))",
+                    color: "rgba(var(--primary-rgb,99,102,241),0.06)",
+                    filter: "drop-shadow(1px 0px 0px rgba(var(--primary-rgb,99,102,241),0.08))",
                   }}
-                />
+                >
+                  <svg viewBox="0 0 8 13" width="8" height="13" className="overflow-visible">
+                    <path fill="currentColor" d="M5.188 0H0v11.193l6.467-8.625C7.526 1.026 6.958 0 5.188 0z" />
+                  </svg>
+                </span>
               ) : (
                 <span
+                  className="absolute top-0 left-[-8px]"
                   aria-hidden="true"
                   style={{
-                    position: "absolute",
-                    top: 0,
-                    left: -8,
-                    width: 0,
-                    height: 0,
-                    borderStyle: "solid",
-                    borderWidth: "0 9px 10px 0",
-                    borderColor:
-                      "transparent rgba(var(--muted-rgb,120,120,120),0.07) transparent transparent",
-                    filter: "drop-shadow(-1px 0px 0px rgba(0,0,0,0.06))",
+                    color: "rgba(var(--primary-rgb,99,102,241),0.06)",
+                    filter: "drop-shadow(-1px 0px 0px rgba(var(--primary-rgb,99,102,241),0.08))",
                   }}
-                />
+                >
+                  <svg viewBox="0 0 8 13" width="8" height="13" className="overflow-visible">
+                    <path fill="currentColor" d="M2.812 0H8v11.193L1.533 2.568C.474 1.026 1.042 0 2.812 0z" />
+                  </svg>
+                </span>
               ))}
 
 
@@ -368,19 +357,19 @@ export function MessageItem({
                   onKeyDown={handleQuoteKeyDown}
                   className={cn(
                     "mb-1 rounded p-1.5 text-[12px] flex flex-col gap-0 shadow-sm select-none cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors",
-                    isOwn ? "bg-black/10" : "bg-accent/40"
+                    "bg-black/10"
                   )}
                   aria-label={`Quoted reply from ${message.parent_user_name ?? "Unknown"}`}
                 >
                   <div
                     className={cn(
                       "font-semibold text-[10px] leading-tight",
-                      isOwn ? "text-primary" : "text-blue-500"
+                      "text-primary"
                     )}
                   >
                     {message.parent_user_name ?? "Unknown"}
                   </div>
-                  <div className="text-muted-foreground/80 line-clamp-2 leading-snug overflow-hidden text-ellipsis">
+                  <div className="text-muted-foreground/80 line-clamp-2 leading-snug overflow-hidden text-ellipsis mt-0.5">
                     {message.parent_content ?? "Message not found"}
                   </div>
                 </div>
@@ -424,8 +413,8 @@ export function MessageItem({
                 </div>
               </div>
             ) : (
-              <div className="flex flex-col">
-                <p className="text-[14px] leading-snug break-all md:break-words whitespace-pre-wrap pr-1 text-foreground/80 font-normal">
+              <div className="relative">
+                <div className="text-[14px] leading-snug break-all md:break-words whitespace-pre-wrap text-foreground/80 font-normal">
                   <Highlight
                     text={message.content}
                     term={highlightTerm}
@@ -436,12 +425,13 @@ export function MessageItem({
                       (edited)
                     </span>
                   )}
-                </p>
-                <div className="flex items-center self-end gap-1 mt-0.5 ml-4">
-                  <span className="text-[9px] select-none text-muted-foreground/40 font-medium uppercase">
+                  {/* Invisible spacer to prevent text from overlapping the timestamp */}
+                  <span className="inline-block w-11 h-0" />
+                </div>
+                <div className="absolute bottom-0 right-0 flex items-center">
+                  <span className="text-[9px] select-none text-muted-foreground/60 font-medium uppercase leading-none">
                     {format(new Date(message.created_at), "h:mm a")}
                   </span>
-                  {/* Removed double tick */}
                 </div>
               </div>
             )}
@@ -465,7 +455,7 @@ export function MessageItem({
                       size="icon"
                       variant="ghost"
                       aria-label="Add reaction"
-                      className="h-6 w-6 rounded-full hover:bg-black/5 dark:hover:bg-white/5 text-muted-foreground/40 hover:text-muted-foreground"
+                      className="h-7 w-7 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white transition-colors"
                     >
                       <SmilePlus className="h-4 w-4" aria-hidden="true" />
                     </Button>
@@ -508,7 +498,7 @@ export function MessageItem({
                       size="icon"
                       variant="ghost"
                       aria-label="Message actions"
-                      className="h-6 w-6 rounded-full hover:bg-black/5 dark:hover:bg-white/5 text-muted-foreground/40 hover:text-muted-foreground"
+                      className="h-7 w-7 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white transition-colors"
                     >
                       <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
                     </Button>

@@ -250,8 +250,8 @@ export function MessageFeed({
     
     const el = e.currentTarget;
     const distFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
-    // Using a slightly more strict threshold and ensuring we don't flicker
-    setAtBottom(distFromBottom < 20);
+    // Increased threshold so the button doesn't appear too early
+    setAtBottom(distFromBottom < 1000);
   }, []);
 
   // Sync scroll state when content changes (e.g. after loading or channel switch)
@@ -262,7 +262,7 @@ export function MessageFeed({
       const distFromBottom = el.scrollHeight - el.scrollTop - el.clientHeight;
       
       // If not scrollable or near bottom, set atBottom to true
-      setAtBottom(!isScrollable || distFromBottom < 20);
+      setAtBottom(!isScrollable || distFromBottom < 1000);
     }
   }, [messages.length, loading, channel?.id]);
 
@@ -646,18 +646,15 @@ export function MessageFeed({
             className="absolute bottom-[110px] right-6 z-50 pointer-events-none"
           >
             <Button
-              size="sm"
-              variant="secondary"
-              className="shadow-2xl h-10 rounded-full px-5 gap-2.5 bg-background/95 backdrop-blur-md border border-border/80 hover:bg-accent hover:border-border transition-all pointer-events-auto active:scale-95 group"
+              size="icon"
+              className="shadow-xl h-10 w-10 rounded-full bg-background/80 backdrop-blur-xl border border-border/50 hover:bg-accent/80 hover:border-border/80 hover:text-foreground text-muted-foreground transition-all pointer-events-auto active:scale-95 group flex items-center justify-center"
               onClick={() => {
                 bottomRef.current?.scrollIntoView({ behavior: "smooth" });
                 setAtBottom(true);
               }}
+              aria-label="Jump to bottom"
             >
-              <div className="bg-primary/20 p-1 rounded-full group-hover:bg-primary/30 transition-colors">
-                <ArrowDown className="h-4 w-4 text-primary" />
-              </div>
-              <span className="text-[13px] font-medium tracking-tight">Jump to bottom</span>
+              <ArrowDown className="h-5 w-5 transition-transform group-hover:translate-y-0.5" />
             </Button>
           </motion.div>
         )}
