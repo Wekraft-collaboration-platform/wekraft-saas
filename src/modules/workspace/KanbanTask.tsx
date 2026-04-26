@@ -41,6 +41,8 @@ import {
   ArrowDownNarrowWideIcon,
   ChevronsRightLeft,
   SeparatorVertical,
+  Bug,
+  Tag,
 } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -57,30 +59,35 @@ interface KanbanTaskProps {
   taskLimit: number;
 }
 
-export const KanbanTask = ({ tasks, projectId, taskLimit }: KanbanTaskProps) => {
+export const KanbanTask = ({
+  tasks,
+  projectId,
+  taskLimit,
+}: KanbanTaskProps) => {
   const { open: sidebarOpen } = useSidebar();
 
   // Optimistic UI — instantly updates the kanban on drag-drop
-  const updateStatus = useMutation(api.workspace.updateTaskStatus)
-    .withOptimisticUpdate((localStore, args) => {
-      const currentTasks = localStore.getQuery(api.workspace.getTasks, {
-        projectId,
-        limit: taskLimit,
-      });
-
-      if (currentTasks !== undefined) {
-        const updated = currentTasks.map((task) =>
-          task._id === args.taskId
-            ? { ...task, status: args.status, updatedAt: Date.now() }
-            : task,
-        );
-        localStore.setQuery(
-          api.workspace.getTasks,
-          { projectId, limit: taskLimit },
-          updated,
-        );
-      }
+  const updateStatus = useMutation(
+    api.workspace.updateTaskStatus,
+  ).withOptimisticUpdate((localStore, args) => {
+    const currentTasks = localStore.getQuery(api.workspace.getTasks, {
+      projectId,
+      limit: taskLimit,
     });
+
+    if (currentTasks !== undefined) {
+      const updated = currentTasks.map((task) =>
+        task._id === args.taskId
+          ? { ...task, status: args.status, updatedAt: Date.now() }
+          : task,
+      );
+      localStore.setQuery(
+        api.workspace.getTasks,
+        { projectId, limit: taskLimit },
+        updated,
+      );
+    }
+  });
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [selectedTaskForSheet, setSelectedTaskForSheet] = useState<Task | null>(
@@ -140,6 +147,13 @@ export const KanbanTask = ({ tasks, projectId, taskLimit }: KanbanTaskProps) => 
 
     const task = tasks.find((t) => t._id === activeTaskId);
     if (task && newStatus && task.status !== newStatus) {
+      if (newStatus === "completed" && task.isBlocked) {
+        toast.error("task is marked as blocked , kindly fix that");
+        setActiveId(null);
+        setActiveTask(null);
+        return;
+      }
+
       toast.promise(
         updateStatus({
           taskId: task._id,
@@ -148,7 +162,8 @@ export const KanbanTask = ({ tasks, projectId, taskLimit }: KanbanTaskProps) => 
         {
           loading: "Updating status...",
           success: `Task moved to ${COLUMNS.find((c) => c.id === newStatus)?.label}`,
-          error: "Failed to update status",
+          error: (err: any) =>
+            err.data?.message || err.message || "Failed to update status",
         },
       );
     }
@@ -412,47 +427,79 @@ const TaskCard = ({ task, isOverlay }: { task: Task; isOverlay?: boolean }) => {
     >
       <div className="p-3">
         <div className="flex items-start justify-between gap-3 ">
-          <h4 className="text-xs leading-relaxed tracking-tight line-clamp-2 group-hover:text-primary transition-colors">
+          <h4 className="text-xs leading-relaxed tracking-tight line-clamp-2 group-hover:text-primary transition-colors flex items-center gap-2">
+            {task.isBlocked && (
+              <Bug className="w-3.5 h-3.5 text-red-500 shrink-0" />
+            )}
             {task.title}
           </h4>
           <GripVertical className="w-4 h-4 text-muted-foreground group-hover:text-primary/40 transition-colors shrink-0 mt-0.5" />
         </div>
 
-        {task.description && (
-          <p className="text-[11px] text-muted-foreground line-clamp-2 leading-relaxed font-medium">
+        {/* {task.description && (
+          <p className="text-[11px] text-muted-foreground line-clamp-1 leading-relaxed font-medium">
             {task.description}
           </p>
-        )}
+        )} */}
 
-        <div className="flex items-center flex-wrap gap-2   pt-4">
-          {task.priority && (
-            <div className="flex items-center gap-2">
-              {priorityIcons[task.priority]}
-              <span className="text-[9px] text-muted-foreground/60 uppercase font-bold tracking-widest">
-                {task.priority}
-              </span>
+        <div className="flex items-center justify-between pt-5 gap-2">
+          <div className="flex items-center gap-2 overflow-hidden">
+            {task.priority && (
+              <div className="flex items-center gap-2 shrink-0">
+                {priorityIcons[task.priority]}
+              </div>
+            )}
+
+            <div className="flex items-center gap-2 text-[9px] font-semibold font-inter tracking-tight shrink-0">
+              {task.type ? (
+                <div
+                  className={cn(
+                    "flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold font-inter capitalize tracking-wide border",
+                    task.type.color === "green" &&
+                      "bg-emerald-500/10 text-emerald-400 border-emerald-400/20",
+                    task.type.color === "yellow" &&
+                      "bg-yellow-500/10 text-yellow-400 border-yellow-400/20",
+                    task.type.color === "blue" &&
+                      "bg-sky-500/10 text-sky-400 border-sky-400/20",
+                    task.type.color === "indigo" &&
+                      "bg-indigo-500/10 text-indigo-400 border-indigo-400/20",
+                    task.type.color === "orange" &&
+                      "bg-orange-500/10 text-orange-400 border-orange-400/20",
+                    task.type.color === "red" &&
+                      "bg-red-500/10 text-red-400 border-red-400/20",
+                    task.type.color === "purple" &&
+                      "bg-purple-500/10 text-purple-400 border-purple-400/20",
+                    task.type.color === "gray" &&
+                      "bg-gray-500/10 text-gray-400 border-gray-400/20",
+                  )}
+                >
+                  {task.type.label}
+                </div>
+              ) : (
+                <span className="text-[10px] border border-border p-1 rounded-md text-muted-foreground/80 font-medium whitespace-nowrap">
+                  No Tag
+                </span>
+              )}
             </div>
-          )}
 
-          <div className="flex items-center justify-between pt-1">
-            <div className="flex items-center gap-2 px-2 py-1 rounded bg-secondary/40 border border-border/30 text-[10px] text-primary/60 font-bold group-hover:bg-primary/5 group-hover:text-primary transition-all">
+            <div className="flex items-center gap-2 px-2 py-1 rounded bg-secondary/70 border border-border/30 text-[10px] text-primary/60 font-bold group-hover:bg-primary/5 group-hover:text-primary transition-all shrink-0">
               <Calendar className="w-3 h-3 mb-0.5" />
               <span>{format(task.estimation.endDate, "dd MMM")}</span>
             </div>
+          </div>
 
-            <div className="flex -space-x-2">
-              {task.assignedTo?.map((assignee, i) => (
-                <Avatar
-                  key={i}
-                  className="w-7 h-7 border-2 border-background ring-1 ring-border/10 shadow-sm transition-transform hover:scale-110 hover:z-10"
-                >
-                  <AvatarImage src={assignee.avatar} className="object-cover" />
-                  <AvatarFallback className="text-[10px] font-bold bg-primary/5 text-primary/40">
-                    {assignee.name[0]}
-                  </AvatarFallback>
-                </Avatar>
-              ))}
-            </div>
+          <div className="flex justify-end ml-auto -space-x-2 shrink-0">
+            {task.assignedTo?.slice(0, 3).map((assignee, i) => (
+              <Avatar
+                key={i}
+                className="w-6 h-6 border-2 border-background ring-1 ring-border/10 shadow-sm transition-transform hover:scale-110 hover:z-10"
+              >
+                <AvatarImage src={assignee.avatar} className="object-cover" />
+                <AvatarFallback className="text-[10px] font-bold bg-primary/5 text-primary/40">
+                  {assignee.name[0]}
+                </AvatarFallback>
+              </Avatar>
+            ))}
           </div>
         </div>
       </div>

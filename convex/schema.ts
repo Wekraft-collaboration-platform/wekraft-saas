@@ -14,7 +14,6 @@ export default defineSchema({
       v.literal("free"),
       v.literal("plus"),
       v.literal("pro"),
-      v.literal("sclae"),
     ),
     skills: v.optional(v.array(v.string())),
     lastUpdatedSkillsAt: v.optional(v.number()),
@@ -172,6 +171,9 @@ export default defineSchema({
     createdByUserId: v.id("users"),
 
     sprintId: v.optional(v.id("sprints")),
+    // Insights
+    finalCompletedAt: v.optional(v.number()), // date when finally its marked as completed.
+    finalCompletedBy: v.optional(v.id("users")), // id of that user
     createdAt: v.number(),
     updatedAt: v.number(),
   })
@@ -239,6 +241,9 @@ export default defineSchema({
       ),
     ),
     sprintId: v.optional(v.id("sprints")), // exluded closed issues
+    // Insights
+    finalCompletedAt: v.optional(v.number()),
+    finalCompletedBy: v.optional(v.id("users")),
     createdAt: v.number(),
     updatedAt: v.number(),
   })

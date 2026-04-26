@@ -179,7 +179,7 @@ export const TaskDetailSheet = ({
                 size="sm"
                 className={cn(
                   "text-[10px]",
-                  currentTask.isBlocked && "text-red-500 border-red-500/50",
+                  currentTask.isBlocked && "text-primary bg-red-500!",
                 )}
                 onClick={() => setShowConfirmDialog(true)}
                 disabled={currentTask.isBlocked || isMarkingIssue}

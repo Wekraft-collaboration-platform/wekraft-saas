@@ -1,4 +1,4 @@
-import { v } from "convex/values";
+import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 
 // =======================================
@@ -157,10 +157,35 @@ export const updateTaskStatus = mutation({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Unauthorized");
 
-    await ctx.db.patch(args.taskId, {
-      status: args.status,
-      updatedAt: Date.now(),
-    });
+    const task = await ctx.db.get(args.taskId);
+    if (!task) throw new Error("Task not found");
+
+    if (args.status === "completed") {
+      if (task.isBlocked) {
+        return;
+      }
+
+      const user = await ctx.db
+        .query("users")
+        .withIndex("by_token", (q) =>
+          q.eq("clerkToken", identity.tokenIdentifier),
+        )
+        .unique();
+
+      if (!user) throw new Error("User not found");
+
+      await ctx.db.patch(args.taskId, {
+        status: args.status,
+        finalCompletedAt: Date.now(),
+        finalCompletedBy: user._id,
+        updatedAt: Date.now(),
+      });
+    } else {
+      await ctx.db.patch(args.taskId, {
+        status: args.status,
+        updatedAt: Date.now(),
+      });
+    }
   },
 });
 

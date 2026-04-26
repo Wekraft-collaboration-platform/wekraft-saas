@@ -16,6 +16,9 @@ import {
   Cross,
   X,
   MessageSquare,
+  Sparkles,
+  Clover,
+  LayersPlus,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -38,11 +41,18 @@ import { ToolCallCard } from "@/modules/ai/ToolCard";
 import { SprintItemSelectionCard } from "@/modules/ai/SprintItemSelectionCard";
 import Image from "next/image";
 import { SchedulerSetupCard } from "./SchedulerSetupCard";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
-interface AiAssistantSheetProps {
-  open: boolean;
-  onOpenChange: (open: boolean) => void;
-}
+import { AnimatePresence, motion } from "framer-motion";
+
+import { useKayaStore } from "@/store/useKayaStore";
+
+interface AiAssistantSheetProps {}
 
 const KayaLoader = () => (
   <svg
@@ -91,11 +101,8 @@ const KayaLoader = () => (
   </svg>
 );
 
-export function AiAssistantSheet({
-  open,
-  onOpenChange,
-}: AiAssistantSheetProps) {
-  const [threadId] = useState(() => crypto.randomUUID());
+export function AiAssistantSheet({}: AiAssistantSheetProps) {
+  const { isOpen, setIsOpen, threadId, createNewSession } = useKayaStore();
   const currentUser = useQuery(api.user.getCurrentUser);
   const userId = currentUser?._id;
 
@@ -116,6 +123,7 @@ export function AiAssistantSheet({
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
   const [restoreError, setRestoreError] = useState(false);
   const [thinkingTime, setThinkingTime] = useState(0);
+  const [selectedModel, setSelectedModel] = useState<"fast" | "deep">("fast");
 
   const {
     status,
@@ -153,12 +161,12 @@ export function AiAssistantSheet({
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
         e.preventDefault();
-        onOpenChange(!open);
+        setIsOpen(!isOpen);
       }
     };
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
-  }, [open, onOpenChange]);
+  }, [isOpen, setIsOpen]);
 
   // Focus input when not running
   useEffect(() => {
@@ -192,6 +200,7 @@ export function AiAssistantSheet({
     setRestoreError(false);
     run({
       thread_id: threadId,
+      model: selectedModel,
       state: {
         user_id: userId, // added user_id here...
         project_id: projectId, // added project_id here...
@@ -207,6 +216,7 @@ export function AiAssistantSheet({
       thread_id: threadId,
       user_id: userId,
       project_id: projectId,
+      model: selectedModel,
       resume: value,
     });
   };
@@ -339,13 +349,13 @@ export function AiAssistantSheet({
   const isDisabled = status === "running" || restoring;
 
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
+    <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetContent
         side="right"
         className="w-[500px] flex flex-col p-0 gap-0 h-full focus-visible:ring-0 focus:ring-0 outline-none overflow-hidden"
       >
         {/* HEADER */}
-        <SheetHeader className="px-4 py-5 border-b bg-card">
+        <SheetHeader className="px-4 py-3 border-b bg-card">
           <div className="flex items-center justify-between pr-10 gap-5">
             <div className="flex flex-col items-start">
               <SheetTitle className="flex items-center gap-2 text-lg font-pop font-semibold mb-1">
@@ -367,6 +377,7 @@ export function AiAssistantSheet({
                   className="text-[11px] cursor-pointer"
                   size="sm"
                   variant={"outline"}
+                  onClick={() => createNewSession()}
                 >
                   new <MessageSquare className="h-3! w-3!" />
                 </Button>
@@ -380,28 +391,39 @@ export function AiAssistantSheet({
 
         {/* MESSAGES */}
         <div ref={containerRef} className="flex-1 overflow-y-auto py-4 px-2">
-          {appCheckpoints.length === 0 && !restoring && (
-            <div className="h-full flex flex-col items-center justify-center p-8 text-center animate-in fade-in zoom-in duration-500">
-              <div className="relative mb-6">
-                <Image
-                  src="/kaya.svg"
-                  alt="Kaya AI"
-                  width={60}
-                  height={60}
-                  className="relative drop-shadow-2xl"
-                />
-              </div>
-              <h3 className="text-lg font-pop font-semibold text-primary mb-1 tracking-tight">
-                Hello, I&apos;m Kaya
-              </h3>
-              <p className="text-sm text-muted-foreground max-w-[240px] leading-relaxed">
-                Start with asking ,{" "}
-                <span className="font-pop text-primary">
-                  &quot;What's happening in my project&quot;
-                </span>
-              </p>
-            </div>
-          )}
+          <AnimatePresence>
+            {appCheckpoints.length === 0 && !restoring && status === "idle" && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{
+                  opacity: 0,
+                  scale: 0.95,
+                  transition: { duration: 0.3 },
+                }}
+                className="h-full flex flex-col items-center justify-center p-8 text-center"
+              >
+                <div className="relative mb-6">
+                  <Image
+                    src="/kaya.svg"
+                    alt="Kaya AI"
+                    width={60}
+                    height={60}
+                    className="relative drop-shadow-2xl"
+                  />
+                </div>
+                <h3 className="text-lg font-pop font-semibold text-primary mb-1 tracking-tight">
+                  Hello, I&apos;m Kaya
+                </h3>
+                <p className="text-sm text-muted-foreground max-w-[240px] leading-relaxed">
+                  Start with asking ,{" "}
+                  <span className="font-pop text-primary">
+                    &quot;What's happening in my project&quot;
+                  </span>
+                </p>
+              </motion.div>
+            )}
+          </AnimatePresence>
 
           {appCheckpoints.map((checkpoint, cpIndex) =>
             checkpoint.error ? (
@@ -472,7 +494,7 @@ export function AiAssistantSheet({
 
           {status === "error" && (
             <div className="text-red-500 py-2 px-4 text-xs">
-              [CONNECTION ERROR]
+              Error Occurred due to network connectivity retry after some time.
             </div>
           )}
 
@@ -481,52 +503,96 @@ export function AiAssistantSheet({
 
         {/* FOOTER */}
         <div className="px-4 py-6 bg-linear-to-b from-transparent via-indigo-200/10 to-purple-400/30">
-          <div className="relative">
-            <Input
-              ref={inputRef}
-              placeholder="Ask anything..."
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") sendMessage(inputValue);
-              }}
-              disabled={isDisabled}
-              className="h-12 rounded-xl bg-sidebar pr-24"
-            />
-            {status === "running" ? (
-              <Button
-                size="icon"
-                variant="destructive"
-                className="absolute right-12 top-2 h-8 w-8"
-                onClick={() => stop(threadId)}
-              >
-                <Square className="h-4 w-4" />
+          {currentUser && currentUser.accountType !== "pro" ? (
+            <div className="flex flex-col items-center justify-center p-4 bg-card backdrop-blur-md rounded-xl border border-primary/20 shadow-lg">
+              <div className="flex items-center gap-2 mb-2">
+                <Clover className="w-5 h-5 text-primary" />
+                <h4 className="text-sm font-semibold text-primary">
+                  Pro Feature
+                </h4>
+              </div>
+              <p className="text-[11px] text-muted-foreground text-center mb-3 px-6">
+                Kaya is available for Pro users. Get advanced project analysis,
+                automated reporting, and more.
+              </p>
+              <Button size="sm" className="w-full text-sm">
+                Upgrade to Pro <LayersPlus />
               </Button>
-            ) : (
-              <Button
-                size="icon"
-                variant="outline"
-                className="absolute right-12 top-2 h-8 w-8"
-                onClick={() => sendMessage(inputValue)}
-                disabled={!inputValue.trim() || restoring}
-              >
-                <Send className="h-4 w-4" />
-              </Button>
-            )}
-            <Button
-              size="icon-sm"
-              variant="outline"
-              className="text-[10px] absolute right-2 top-2 h-8 w-8"
-            >
-              <Settings2 className="h-3! w-3!" />
-            </Button>
-          </div>
-          <p className="text-[10px] text-center text-muted-foreground mt-2">
-            Kaya is personal PM agent.{" "}
-            <span className="text-blue-500 cursor-pointer">
-              Click to configure
-            </span>
-          </p>
+            </div>
+          ) : (
+            <>
+              <div className="relative">
+                <Input
+                  ref={inputRef}
+                  placeholder="Ask anything..."
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") sendMessage(inputValue);
+                  }}
+                  disabled={isDisabled}
+                  className="h-12 rounded-xl bg-sidebar pr-36"
+                />
+                <div className="flex items-center gap-2 absolute right-2 top-2">
+                  {status === "running" ? (
+                    <Button
+                      size="icon"
+                      variant="destructive"
+                      className=" h-8 w-8"
+                      onClick={() => stop(threadId)}
+                    >
+                      <Square className="h-3 w-3!" />
+                    </Button>
+                  ) : (
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      className=" h-8 w-8"
+                      onClick={() => sendMessage(inputValue)}
+                      disabled={!inputValue.trim() || restoring}
+                    >
+                      <Send className="h-3 w-3!" />
+                    </Button>
+                  )}
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        className=" h-8 px-2 flex items-center gap-1.5 text-[10px] capitalize font-medium"
+                      >
+                        {selectedModel}
+                        <Settings2 className="h-3 w-3!" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent align="end">
+                      <div className="text-xs p-2 items-center border-b border-accent">
+                        Select Model
+                      </div>
+                      <DropdownMenuItem
+                        onClick={() => setSelectedModel("fast")}
+                        className="text-[10px]"
+                      >
+                        Kaya Fast
+                      </DropdownMenuItem>
+                      <DropdownMenuItem
+                        onClick={() => setSelectedModel("deep")}
+                        className="text-[10px]"
+                      >
+                        Kaya Deep
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
+              </div>
+              <p className="text-[10px] text-center text-muted-foreground mt-2">
+                Kaya is personal PM agent.{" "}
+                <span className="text-blue-500 cursor-pointer">
+                  Click to configure
+                </span>
+              </p>
+            </>
+          )}
         </div>
       </SheetContent>
       {showScrollButton && (

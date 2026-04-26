@@ -1,14 +1,14 @@
 /**
  * TeamspaceView.tsx
- * 
- * Main entry point for the Teamspace module. 
+ *
+ * Main entry point for the Teamspace module.
  * Provides a Slack-like interface with a channels sidebar, message feed, and members panel.
- * 
+ *
  * Features:
  * - Layout management for Channels, Messaging, and Members.
  * - Integration with Clerk for authentication and Convex for user profile data.
  * - Real-time channel selection and responsiveness.
- * 
+ *
  * Flow:
  * 1. Fetches user data via Convex.
  * 2. Manages active channel state.
@@ -38,13 +38,17 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
   const user = useQuery(api.user.getCurrentUser);
   const { userId: clerkUserId } = useAuth();
 
-  const { channels, loading, createChannel, updateChannel, deleteChannel } = useChannels(projectId);
+  const { channels, loading, createChannel, updateChannel, deleteChannel } =
+    useChannels(projectId);
   const [activeChannel, setActiveChannel] = useState<Channel | null>(null);
   const [showMembers, setShowMembers] = useState(false);
 
   // Auto-select default channel once loaded
   const resolvedChannel =
-    activeChannel ?? channels.find((c) => c.is_default === 1) ?? channels[0] ?? null;
+    activeChannel ??
+    channels.find((c) => c.is_default === 1) ??
+    channels[0] ??
+    null;
 
   const currentUserId = clerkUserId ?? "";
   const currentUserName = user?.name ?? user?.githubUsername ?? "User";
@@ -77,7 +81,6 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
         onToggleMembers={() => setShowMembers((prev) => !prev)}
       />
 
-
       {/* Right: Members panel */}
       <AnimatePresence>
         {showMembers && (
@@ -88,16 +91,15 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
             transition={{ type: "spring", stiffness: 350, damping: 30 }}
             className="overflow-hidden bg-black border-l border-border/80 h-full shrink-0"
           >
-            <MembersPanel 
-              projectId={projectId} 
-              channelId={resolvedChannel?.id ?? null} 
+            <MembersPanel
+              projectId={projectId}
+              channelId={resolvedChannel?.id ?? null}
               currentUserId={currentUserId}
               currentUserName={currentUserName}
             />
           </motion.div>
         )}
       </AnimatePresence>
-
     </div>
   );
 }

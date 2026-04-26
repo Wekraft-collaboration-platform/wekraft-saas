@@ -66,7 +66,7 @@ export const FloatingKaya = () => {
         initial={{ opacity: 0, scale: 0.8, y: 20 }}
         animate={{ opacity: 1, scale: 1, y: 0 }}
         exit={{ opacity: 0, scale: 0.8, y: 20 }}
-        className="fixed bottom-8 right-8 z-[100] group"
+        className="fixed bottom-8 right-8 z-9999 group pointer-events-auto"
       >
         {/* X Button */}
         <button

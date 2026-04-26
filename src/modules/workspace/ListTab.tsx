@@ -305,7 +305,9 @@ const TaskGroup = ({
 
                     <TableCell className="p-2.5 border-r border-b border-neutral-800  max-w-[180px] truncate">
                       <span className="text-xs font-medium text-muted-foreground capitalize flex items-center gap-1.5">
-                        {task.isBlocked && <Bug className="w-3.5 h-3.5 text-red-500 shrink-0" />}
+                        {task.isBlocked && (
+                          <Bug className="w-3.5 h-3.5 text-red-500 shrink-0" />
+                        )}
                         {task.title}
                       </span>
                     </TableCell>
@@ -332,7 +334,7 @@ const TaskGroup = ({
                         {task.type ? (
                           <div
                             className={cn(
-                              "flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold border",
+                              "flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold font-inter capitalize tracking-wide border",
                               task.type.color === "green" &&
                                 "bg-emerald-500/10 text-emerald-400 border-emerald-400/20",
                               task.type.color === "yellow" &&

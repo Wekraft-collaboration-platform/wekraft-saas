@@ -337,7 +337,7 @@ export const updateSocialLinks = mutation({
 });
 
 // ==================================
-// GET USER BY ID (name + avatar)
+// GET USER BY ID (name + avatar + accountType)
 // ==================================
 export const getUserById = query({
   args: { userId: v.id("users") },
@@ -347,6 +347,7 @@ export const getUserById = query({
     return {
       name: user.name ?? "Unknown",
       avatarUrl: user.avatarUrl ?? null,
+      accountType: user.accountType,
     };
   },
 });
