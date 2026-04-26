@@ -71,6 +71,7 @@ interface Props {
   currentUserName: string;
   currentUserImage: string | null;
   projectId: string;
+  projectSlug: string;
   onToggleMembers: () => void;
 }
 
@@ -97,6 +98,7 @@ export function MessageFeed({
   currentUserName,
   currentUserImage,
   projectId,
+  projectSlug,
   onToggleMembers,
 }: Props) {
   const { isOwner, isPower } = useProjectPermissions(
@@ -736,6 +738,7 @@ export function MessageFeed({
         disabled={!canSend}
         isAnnouncement={isAnnouncement}
         currentUserId={currentUserId}
+        projectSlug={projectSlug}
       />
 
       {/* Jump to bottom FAB */}

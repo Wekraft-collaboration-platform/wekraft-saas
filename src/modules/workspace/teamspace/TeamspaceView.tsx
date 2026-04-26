@@ -73,6 +73,7 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
         currentUserName={currentUserName}
         currentUserImage={currentUserImage}
         projectId={projectId}
+        projectSlug={projectSlug}
         onToggleMembers={() => setShowMembers((prev) => !prev)}
       />
 

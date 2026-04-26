@@ -25,6 +25,7 @@ import { cn } from "@/lib/utils";
 import { getUserColor } from "./lib/utils";
 import { Message } from "./hooks/useMessages";
 import { CreatePollDialog } from "./CreatePollDialog";
+import { GetRepoStructure } from "../GetRepoStructure";
 import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
@@ -47,9 +48,10 @@ interface Props {
   disabled?: boolean;
   isAnnouncement?: boolean;
   currentUserId?: string;
+  projectSlug?: string;
 }
 
-export function MessageComposer({ channelName, projectId, replyingTo, onClearReply, onSend, onTyping, disabled, isAnnouncement, currentUserId }: Props) {
+export function MessageComposer({ channelName, projectId, replyingTo, onClearReply, onSend, onTyping, disabled, isAnnouncement, currentUserId, projectSlug }: Props) {
   const [content, setContent] = useState("");
   const [sending, setSending] = useState(false);
   const [isPollDialogOpen, setIsPollDialogOpen] = useState(false);
@@ -59,6 +61,12 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
   const [mentionQuery, setMentionQuery] = useState("");
   const [showMentions, setShowMentions] = useState(false);
   const [mentionIndex, setMentionIndex] = useState(0);
+
+  // Code Linker state
+  const [showCodeLinker, setShowCodeLinker] = useState(false);
+  const [selectedPath, setSelectedPath] = useState<string | null>(null);
+
+  const project = useQuery(api.project.getProjectBySlug, projectSlug ? { slug: projectSlug } : "skip");
   const [mentionStartIndex, setMentionStartIndex] = useState(-1);
 
   // Fetch project members for mentions
@@ -226,6 +234,8 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
                     onClick={() => {
                       if (item.label === "Poll") {
                         setIsPollDialogOpen(true);
+                      } else if (item.label === "Codebase") {
+                        setShowCodeLinker(true);
                       } else {
                         console.log("Clicked", item.label);
                       }
@@ -294,31 +304,39 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
               const cursorPosition = e.target.selectionStart ?? 0;
               const textBeforeCursor = val.substring(0, cursorPosition);
 
-              // Find the last "@" before the cursor
+              // Handle mentions (@)
               const lastAtIndex = textBeforeCursor.lastIndexOf("@");
+              // Handle code linker (\)
+              const lastBackslashIndex = textBeforeCursor.lastIndexOf("\\");
 
-              if (lastAtIndex !== -1) {
+              if (lastAtIndex !== -1 && lastAtIndex >= lastBackslashIndex) {
                 const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
-                // Char immediately before @ (undefined when @ is first char)
                 const charBeforeAt = lastAtIndex > 0 ? textBeforeCursor[lastAtIndex - 1] : undefined;
-
-                // Trigger if @ is at the start OR preceded by whitespace, and no space typed yet
-                const validStart =
-                  charBeforeAt === undefined ||
-                  charBeforeAt === " " ||
-                  charBeforeAt === "\n";
+                const validStart = charBeforeAt === undefined || charBeforeAt === " " || charBeforeAt === "\n";
 
                 if (validStart && !textAfterAt.includes(" ")) {
                   setMentionQuery(textAfterAt);
                   setShowMentions(true);
                   setMentionIndex(0);
                   setMentionStartIndex(lastAtIndex);
+                  setShowCodeLinker(false);
                 } else {
                   setShowMentions(false);
                   setMentionStartIndex(-1);
                 }
+              } else if (lastBackslashIndex !== -1) {
+                const charBeforeBackslash = lastBackslashIndex > 0 ? textBeforeCursor[lastBackslashIndex - 1] : undefined;
+                const validStart = charBeforeBackslash === undefined || charBeforeBackslash === " " || charBeforeBackslash === "\n";
+
+                if (validStart) {
+                  setShowCodeLinker(true);
+                  setShowMentions(false);
+                } else {
+                  setShowCodeLinker(false);
+                }
               } else {
                 setShowMentions(false);
+                setShowCodeLinker(false);
                 setMentionStartIndex(-1);
               }
             }}
@@ -419,6 +437,29 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
           await onSend("", poll);
         }}
       />
+      {/* Code Linker Popover */}
+      <Popover open={showCodeLinker} onOpenChange={setShowCodeLinker}>
+        <PopoverTrigger asChild>
+          <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-0 h-0 pointer-events-none" />
+        </PopoverTrigger>
+        <PopoverContent className="w-[340px] p-0 border-border/40 bg-background/95 backdrop-blur-xl shadow-2xl rounded-xl overflow-hidden" side="top" align="center" sideOffset={10}>
+          <GetRepoStructure
+            repoFullName={project?.repoFullName}
+            ownerClerkId={project?.ownerClerkId}
+            selectedPath={selectedPath}
+            onSelect={(path) => {
+              if (path) {
+                const before = content.substring(0, content.lastIndexOf("\\"));
+                const after = content.substring(content.lastIndexOf("\\") + 1);
+                const fileLink = `\`${path}\``;
+                setContent(before + fileLink + " " + after);
+                setShowCodeLinker(false);
+                textareaRef.current?.focus();
+              }
+            }}
+          />
+        </PopoverContent>
+      </Popover>
     </div>
   );
 }
