@@ -260,3 +260,18 @@ export const markTaskAsIssue = mutation({
     return issueId;
   },
 });
+
+// =============================================
+// GET PROJECT SCHEDULER
+// =============================================
+export const getProjectScheduler = query({
+  args: {
+    projectId: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("schedulers")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .unique();
+  },
+});
