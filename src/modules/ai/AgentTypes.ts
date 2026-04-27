@@ -34,7 +34,7 @@ export interface SchedulerSetupInterrupt {
   existing_data?: {
     name: string;
     frequencyDays: number;
-    reportType: "sprints" | "project";
+    recipientEmail?: string;
     isActive: boolean;
   };
 }
@@ -54,7 +54,7 @@ export type ResumeValue =
       // action: "submit";
       name: string;
       frequencyDays: number;
-      reportType: "sprints" | "project";
+      recipientEmail?: string;
       isActive: boolean;
     };
 

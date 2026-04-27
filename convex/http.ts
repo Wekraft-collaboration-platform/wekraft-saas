@@ -226,15 +226,10 @@ http.route({
   handler: httpAction(async (ctx, request) => {
     const body = await request.json();
 
-    if (
-      !body.projectId ||
-      !body.name ||
-      body.frequencyDays === undefined ||
-      !body.reportType
-    ) {
+    if (!body.projectId || !body.name || body.frequencyDays === undefined) {
       return new Response(
         JSON.stringify({
-          error: "projectId, name, frequencyDays, reportType are required",
+          error: "projectId, name, frequencyDays are required",
         }),
         {
           status: 400,
@@ -243,18 +238,69 @@ http.route({
       );
     }
 
-    const schedulerId = await ctx.runMutation(
+    const result = await ctx.runMutation(
       internal.agentTools.createOrUpdateScheduler,
       {
         projectId: body.projectId,
         name: body.name,
         frequencyDays: body.frequencyDays,
-        reportType: body.reportType,
+        recipientEmail: body.recipientEmail,
         isActive: body.isActive ?? false,
       },
     );
 
-    return new Response(JSON.stringify({ schedulerId }), {
+    return new Response(JSON.stringify({ result }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }),
+});
+
+// =======================INSIGHTS TOOLS HTTP===============================
+// get member workload
+http.route({
+  path: "/getMemberWorkload",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const body = await request.json();
+
+    if (!body.projectId) {
+      return new Response(JSON.stringify({ error: "projectId is required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const members = await ctx.runQuery(internal.agentTools.getMemberWorkload, {
+      projectId: body.projectId,
+    });
+
+    return new Response(JSON.stringify({ members }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }),
+});
+
+// get sprint insights
+http.route({
+  path: "/getSprintInsights",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const body = await request.json();
+
+    if (!body.projectId) {
+      return new Response(JSON.stringify({ error: "projectId is required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    const sprints = await ctx.runQuery(internal.agentTools.getSprintInsights, {
+      projectId: body.projectId,
+    });
+
+    return new Response(JSON.stringify({ sprints }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });

@@ -107,7 +107,12 @@ export default defineSchema({
     userName: v.string(),
     userImage: v.optional(v.string()),
     AccessRole: v.optional(
-      v.union(v.literal("owner"), v.literal("admin"), v.literal("member"), v.literal("viewer")),
+      v.union(
+        v.literal("owner"),
+        v.literal("admin"),
+        v.literal("member"),
+        v.literal("viewer"),
+      ),
     ),
     joinedAt: v.optional(v.number()),
     leftAt: v.optional(v.number()),
@@ -334,11 +339,11 @@ export default defineSchema({
     projectId: v.id("projects"),
     name: v.string(),
     frequencyDays: v.number(), // min 3 days
-    reportType: v.union(v.literal("sprints"), v.literal("project")), // currently 2 types , later more....
-    // recipientEmail: v.string(),
+    recipientEmail: v.string(),
     isActive: v.boolean(), // default false , only true by kaya or team
     lastRunAt: v.optional(v.number()), // timestamp (Unix ms)
     nextRunAt: v.number(),
+    isRunning: v.optional(v.boolean()), // default false , only true when its scheduler is running.
     createdBy: v.id("users"),
     createdAt: v.number(),
     updatedAt: v.number(),

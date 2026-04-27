@@ -35,134 +35,6 @@ export const insertCalendarEvent = internalMutation({
   },
 });
 
-// Tasks query by agent
-export const getProjectTasks = internalQuery({
-  args: {
-    projectId: v.id("projects"),
-    status: v.optional(
-      v.union(
-        v.literal("not started"),
-        v.literal("inprogress"),
-        v.literal("reviewing"),
-        v.literal("testing"),
-        v.literal("completed"),
-      ),
-    ),
-    priority: v.optional(
-      v.union(v.literal("high"), v.literal("medium"), v.literal("low")),
-    ),
-    sprintId: v.optional(v.id("sprints")),
-  },
-  handler: async (ctx, args) => {
-    let tasks;
-
-    if (args.status) {
-      tasks = await ctx.db
-        .query("tasks")
-        .withIndex("by_project_status", (q) =>
-          q.eq("projectId", args.projectId).eq("status", args.status!),
-        )
-        .collect();
-    } else {
-      tasks = await ctx.db
-        .query("tasks")
-        .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
-        .collect();
-    }
-
-    // Apply optional in-memory filters
-    if (args.priority) {
-      tasks = tasks.filter((t) => t.priority === args.priority);
-    }
-    if (args.sprintId) {
-      tasks = tasks.filter((t) => t.sprintId === args.sprintId);
-    }
-
-    // Return only the fields the AI needs — keep tokens low
-    return tasks.map((t) => ({
-      id: t._id,
-      title: t.title,
-      status: t.status,
-      priority: t.priority ?? null,
-      assignedTo: (t.assignedTo ?? []).map((a) => a.name), // names only, no avatars
-      startDate: t.estimation.startDate,
-      endDate: t.estimation.endDate,
-      isBlocked: t.isBlocked ?? false,
-      sprintId: t.sprintId ?? null,
-    }));
-  },
-});
-
-// Issues query by agent
-export const getProjectIssues = internalQuery({
-  args: {
-    projectId: v.id("projects"),
-    status: v.optional(
-      v.union(
-        v.literal("not opened"),
-        v.literal("opened"),
-        v.literal("in review"),
-        v.literal("reopened"),
-        v.literal("closed"),
-      ),
-    ),
-    severity: v.optional(
-      v.union(v.literal("critical"), v.literal("medium"), v.literal("low")),
-    ),
-    environment: v.optional(
-      v.union(
-        v.literal("local"),
-        v.literal("dev"),
-        v.literal("staging"),
-        v.literal("production"),
-      ),
-    ),
-    sprintId: v.optional(v.id("sprints")),
-  },
-  handler: async (ctx, args) => {
-    let issues;
-
-    // Use indexed query where possible
-    if (args.status) {
-      issues = await ctx.db
-        .query("issues")
-        .withIndex("by_status", (q) => q.eq("status", args.status!))
-        .filter((q) => q.eq(q.field("projectId"), args.projectId))
-        .collect();
-    } else {
-      issues = await ctx.db
-        .query("issues")
-        .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
-        .collect();
-    }
-
-    // Apply optional in-memory filters
-    if (args.severity) {
-      issues = issues.filter((i) => i.severity === args.severity);
-    }
-    if (args.environment) {
-      issues = issues.filter((i) => i.environment === args.environment);
-    }
-    if (args.sprintId) {
-      issues = issues.filter((i) => i.sprintId === args.sprintId);
-    }
-
-    // Return only the fields the AI needs — keep tokens low
-    return issues.map((i) => ({
-      id: i._id,
-      title: i.title,
-      status: i.status,
-      severity: i.severity ?? null,
-      environment: i.environment ?? null,
-      type: i.type, // user-created | task-issue | github
-      due_date: i.due_date ?? null,
-      taskId: i.taskId ?? null, // linked task if type === "task-issue"
-      assignedTo: (i.IssueAssignee ?? []).map((a) => a.name), // names only, no avatars
-      sprintId: i.sprintId ?? null,
-    }));
-  },
-});
-
 // returns: project deadline, all sprint names, count of incomplete unassigned tasks, and duration to deadline.
 export const getSprintPlannerContext = internalQuery({
   args: {
@@ -306,7 +178,7 @@ export const getScheduler = internalQuery({
     return {
       name: scheduler.name,
       frequencyDays: scheduler.frequencyDays,
-      reportType: scheduler.reportType,
+      recipientEmail: scheduler.recipientEmail,
       isActive: scheduler.isActive,
       lastRunAt: scheduler.lastRunAt ?? null,
       nextRunAt: scheduler.nextRunAt,
@@ -320,12 +192,15 @@ export const createOrUpdateScheduler = internalMutation({
     projectId: v.id("projects"),
     name: v.string(),
     frequencyDays: v.number(), // min 3 days
-    reportType: v.union(v.literal("sprints"), v.literal("project")),
+    recipientEmail: v.optional(v.string()), // Agent can provide or not
     isActive: v.boolean(),
   },
   handler: async (ctx, args) => {
     const project = await ctx.db.get(args.projectId);
     if (!project) throw new Error(`Project not found: ${args.projectId}`);
+
+    const owner = await ctx.db.get(project.ownerId);
+    if (!owner) throw new Error("Owner not found");
 
     const existingScheduler = await ctx.db
       .query("schedulers")
@@ -336,29 +211,277 @@ export const createOrUpdateScheduler = internalMutation({
     const frequency = args.frequencyDays < 3 ? 3 : args.frequencyDays;
     const nextRunAt = now + frequency * 24 * 60 * 60 * 1000;
 
+    // Use owner email if no recipient email provided
+    const emailToUse = args.recipientEmail || owner.email;
+
     if (existingScheduler) {
       await ctx.db.patch(existingScheduler._id, {
         name: args.name,
         frequencyDays: frequency,
-        reportType: args.reportType,
+        recipientEmail: emailToUse,
         nextRunAt: nextRunAt, // Usually updating frequency resets it.
         isActive: args.isActive,
         updatedAt: now,
       });
-      return existingScheduler._id;
+      return {
+        id: existingScheduler._id,
+        recipientEmail: emailToUse,
+        message: "Scheduler updated successfully",
+      };
     } else {
       const id = await ctx.db.insert("schedulers", {
         projectId: args.projectId,
         name: args.name,
         frequencyDays: frequency,
-        reportType: args.reportType,
+        recipientEmail: emailToUse,
         isActive: args.isActive,
         nextRunAt: nextRunAt,
         createdBy: project.ownerId,
         createdAt: now,
         updatedAt: now,
       });
-      return id;
+      return {
+        id,
+        recipientEmail: emailToUse,
+        message: "Scheduler created successfully",
+      };
     }
+  },
+});
+
+// Tasks query by agent
+export const getProjectTasks = internalQuery({
+  args: {
+    projectId: v.id("projects"),
+    status: v.optional(
+      v.union(
+        v.literal("not started"),
+        v.literal("inprogress"),
+        v.literal("reviewing"),
+        v.literal("testing"),
+        v.literal("completed"),
+      ),
+    ),
+    priority: v.optional(
+      v.union(v.literal("high"), v.literal("medium"), v.literal("low")),
+    ),
+    sprintId: v.optional(v.id("sprints")),
+  },
+  handler: async (ctx, args) => {
+    let tasks;
+
+    if (args.status) {
+      tasks = await ctx.db
+        .query("tasks")
+        .withIndex("by_project_status", (q) =>
+          q.eq("projectId", args.projectId).eq("status", args.status!),
+        )
+        .collect();
+    } else {
+      tasks = await ctx.db
+        .query("tasks")
+        .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+        .collect();
+    }
+
+    // Apply optional in-memory filters
+    if (args.priority) {
+      tasks = tasks.filter((t) => t.priority === args.priority);
+    }
+    if (args.sprintId) {
+      tasks = tasks.filter((t) => t.sprintId === args.sprintId);
+    }
+
+    // Return only the fields the AI needs — keep tokens low
+    return tasks.map((t) => ({
+      id: t._id,
+      title: t.title,
+      status: t.status,
+      priority: t.priority ?? null,
+      assignedTo: (t.assignedTo ?? []).map((a) => a.name), // names only, no avatars
+      startDate: t.estimation.startDate,
+      endDate: t.estimation.endDate,
+      isBlocked: t.isBlocked ?? false,
+      sprintId: t.sprintId ?? null,
+    }));
+  },
+});
+
+// Issues query by agent
+export const getProjectIssues = internalQuery({
+  args: {
+    projectId: v.id("projects"),
+    status: v.optional(
+      v.union(
+        v.literal("not opened"),
+        v.literal("opened"),
+        v.literal("in review"),
+        v.literal("reopened"),
+        v.literal("closed"),
+      ),
+    ),
+    severity: v.optional(
+      v.union(v.literal("critical"), v.literal("medium"), v.literal("low")),
+    ),
+    environment: v.optional(
+      v.union(
+        v.literal("local"),
+        v.literal("dev"),
+        v.literal("staging"),
+        v.literal("production"),
+      ),
+    ),
+    sprintId: v.optional(v.id("sprints")),
+  },
+  handler: async (ctx, args) => {
+    let issues;
+
+    // Use indexed query where possible
+    if (args.status) {
+      issues = await ctx.db
+        .query("issues")
+        .withIndex("by_status", (q) => q.eq("status", args.status!))
+        .filter((q) => q.eq(q.field("projectId"), args.projectId))
+        .collect();
+    } else {
+      issues = await ctx.db
+        .query("issues")
+        .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+        .collect();
+    }
+
+    // Apply optional in-memory filters
+    if (args.severity) {
+      issues = issues.filter((i) => i.severity === args.severity);
+    }
+    if (args.environment) {
+      issues = issues.filter((i) => i.environment === args.environment);
+    }
+    if (args.sprintId) {
+      issues = issues.filter((i) => i.sprintId === args.sprintId);
+    }
+
+    // Return only the fields the AI needs — keep tokens low
+    return issues.map((i) => ({
+      id: i._id,
+      title: i.title,
+      status: i.status,
+      severity: i.severity ?? null,
+      environment: i.environment ?? null,
+      type: i.type, // user-created | task-issue | github
+      due_date: i.due_date ?? null,
+      taskId: i.taskId ?? null, // linked task if type === "task-issue"
+      assignedTo: (i.IssueAssignee ?? []).map((a) => a.name), // names only, no avatars
+      sprintId: i.sprintId ?? null,
+    }));
+  },
+});
+
+/**
+ * getMemberWorkload: Returns a detailed breakdown of each team member's current task and issue assignments.
+ * returns: Array<{ name: string, role: string, tasks: Array<{ title: string, priority: string, status: string }>, totalTasks: number, issues: Array<{ title: string, status: string }>, totalIssues: number }>
+ */
+export const getMemberWorkload = internalQuery({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, args) => {
+    const members = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
+    const tasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
+    const issues = await ctx.db
+      .query("issues")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
+    return members.map((m) => {
+      const memberTasks = tasks.filter((t) =>
+        (t.assignedTo ?? []).some((a) => a.userId === m.userId),
+      );
+
+      const memberIssues = issues.filter((i) =>
+        (i.IssueAssignee ?? []).some((a) => a.userId === m.userId),
+      );
+
+      return {
+        name: m.userName,
+        role: m.AccessRole ?? "member",
+        tasks: memberTasks.map((t) => ({
+          title: t.title,
+          priority: t.priority ?? "low",
+          status: t.status,
+        })),
+        totalTasks: memberTasks.length,
+        issues: memberIssues.map((i) => ({
+          title: i.title,
+          status: i.status,
+        })),
+        totalIssues: memberIssues.length,
+      };
+    });
+  },
+});
+
+/**
+ * getSprintInsights: Returns comprehensive analytics for all project sprints, including progress metrics and timelines.
+ * returns: Array<{ name: string, goal: string, status: string, duration: { start: string, end: string }, stats: { completedTasks: number, totalTasks: number, closedIssues: number, totalIssues: number, progressPercent: number } }>
+ */
+export const getSprintInsights = internalQuery({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, args) => {
+    const sprints = await ctx.db
+      .query("sprints")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
+    const allTasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
+    const allIssues = await ctx.db
+      .query("issues")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
+    return sprints.map((s) => {
+      const sprintTasks = allTasks.filter((t) => t.sprintId === s._id);
+      const sprintIssues = allIssues.filter((i) => i.sprintId === s._id);
+
+      const completedTasks = sprintTasks.filter(
+        (t) => t.status === "completed",
+      ).length;
+      const closedIssues = sprintIssues.filter(
+        (i) => i.status === "closed",
+      ).length;
+
+      const totalItems = sprintTasks.length + sprintIssues.length;
+      const completedItems = completedTasks + closedIssues;
+
+      const progress =
+        totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+
+      return {
+        name: s.sprintName,
+        goal: s.sprintGoal,
+        status: s.status,
+        duration: {
+          start: new Date(s.duration.startDate).toLocaleDateString(),
+          end: new Date(s.duration.endDate).toLocaleDateString(),
+        },
+        stats: {
+          completedTasks,
+          totalTasks: sprintTasks.length,
+          closedIssues,
+          totalIssues: sprintIssues.length,
+          progressPercent: progress,
+        },
+      };
+    });
   },
 });
