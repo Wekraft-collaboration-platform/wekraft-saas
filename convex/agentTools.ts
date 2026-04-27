@@ -485,3 +485,105 @@ export const getSprintInsights = internalQuery({
     });
   },
 });
+
+/**
+ * getProjectInsights: Returns basic project timeline information.
+ */
+export const getProjectInsights = internalQuery({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, args) => {
+    const project = await ctx.db.get(args.projectId);
+    if (!project) throw new Error("Project not found");
+
+    const projectDetail = await ctx.db
+      .query("projectDetails")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .unique();
+
+    const deadline = projectDetail?.targetDate ?? null;
+    let daysRemaining = null;
+
+    if (deadline) {
+      const now = Date.now();
+      const diff = deadline - now;
+      daysRemaining = Math.ceil(diff / (1000 * 60 * 60 * 24));
+    }
+
+    return {
+      projectName: project.projectName,
+      createdAt: project.createdAt,
+      deadline,
+      daysRemaining:
+        daysRemaining !== null ? (daysRemaining > 0 ? daysRemaining : 0) : null,
+      isOverdue: daysRemaining !== null && daysRemaining < 0,
+    };
+  },
+});
+
+/**
+ * getTasksSummary: Returns an AI-optimized summary of tasks, prioritizing active and high-priority ones.
+ */
+export const getTasksSummary = internalQuery({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, args) => {
+    const tasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
+    const activeTasks = tasks.filter(
+      (t) =>
+        ["inprogress", "reviewing", "testing"].includes(t.status) ||
+        (t.status === "not started" && t.priority === "high") ||
+        t.isBlocked,
+    );
+
+    const completedCount = tasks.filter((t) => t.status === "completed").length;
+    const blockedCount = tasks.filter((t) => t.isBlocked).length;
+
+    return {
+      criticalAndActiveTasks: activeTasks.map((t) => ({
+        title: t.title,
+        status: t.status,
+        priority: t.priority ?? "medium",
+        isBlocked: t.isBlocked ?? false,
+        assignees: (t.assignedTo ?? []).map((a) => a.name),
+      })),
+      completedCount,
+      blockedCount,
+      totalCount: tasks.length,
+    };
+  },
+});
+
+/**
+ * getIssuesSummary: Returns an AI-optimized summary of issues, prioritizing critical and open ones.
+ */
+export const getIssuesSummary = internalQuery({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, args) => {
+    const issues = await ctx.db
+      .query("issues")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
+    const openIssues = issues.filter((i) => i.status !== "closed");
+    const closedCount = issues.filter((i) => i.status === "closed").length;
+    const criticalCount = issues.filter(
+      (i) => i.severity === "critical" && i.status !== "closed",
+    ).length;
+
+    return {
+      activeIssues: openIssues.map((i) => ({
+        title: i.title,
+        status: i.status,
+        severity: i.severity ?? "medium",
+        type: i.type,
+        assignees: (i.IssueAssignee ?? []).map((a) => a.name),
+      })),
+      closedCount,
+      criticalCount,
+      totalCount: issues.length,
+    };
+  },
+});

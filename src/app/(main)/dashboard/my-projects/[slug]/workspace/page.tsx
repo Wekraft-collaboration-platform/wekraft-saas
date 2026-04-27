@@ -26,6 +26,9 @@ import {
   History,
   CalendarRange,
   CalendarSync,
+  ClipboardList,
+  Users2,
+  TicketPlus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -46,6 +49,7 @@ import {
   CardFooter,
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
+import Image from "next/image";
 
 const ProjectWorkspace = () => {
   const params = useParams();
@@ -213,54 +217,60 @@ const ProjectWorkspace = () => {
               <Layers3 className="w-4 h-4" /> Activity Overview
             </CardTitle>
           </CardHeader>
-          <CardContent className="p-0 grid grid-cols-2 gap-3 -mt-5">
+          <CardContent className="p-0 grid grid-cols-2 gap-3 -mt-6">
             {[
               {
                 label: "Tasks",
                 count: tasks?.length || 0,
+                icon: ClipboardList,
                 href: `/dashboard/my-projects/${slug}/workspace/tasks`,
-                action: "View",
+                action: "View Tasks",
               },
               {
                 label: "Issues",
                 count: issues?.length || 0,
+                icon: Bug,
                 href: `/dashboard/my-projects/${slug}/workspace/issues`,
-                action: "Track",
+                action: "View Issues",
               },
               {
                 label: "Team",
                 count: members?.length || 0,
+                icon: Users2,
                 href: "#",
-                action: "Manage",
+                action: "Manage Team",
               },
               {
                 label: "Events",
                 count: events?.length || 0,
+                icon: TicketPlus,
                 href: `/dashboard/my-projects/${slug}/workspace/calendar`,
                 action: "Calendar",
               },
             ].map((stat, i) => (
               <div
                 key={i}
-                className="p-3 rounded-xl bg-card/40 border border-border/50 flex flex-col justify-between h-24"
+                className="p-2.5 rounded-xl bg-card border flex flex-col justify-between h-22"
               >
                 <div className="flex justify-between items-start">
-                  <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-70">
-                    {stat.label}
-                  </span>
-                  <span className="text-xl font-black tracking-tighter leading-none">
+                  <span className="text-[10px]">{stat.label}</span>
+
+                  <stat.icon className="w-4 h-4" />
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-xl font-bold tracking-tighter leading-none pl-2">
                     {stat.count}
                   </span>
+                  <Link href={stat.href}>
+                    <Button
+                      variant="link"
+                      size="sm"
+                      className="p-0 h-auto text-[10px] flex justify-end ml-auto text-foreground hover:translate-x-0.5 transition-transform cursor-pointer"
+                    >
+                      {stat.action} <ChevronRight className="w-3 h-3 " />
+                    </Button>
+                  </Link>
                 </div>
-                <Link href={stat.href}>
-                  <Button
-                    variant="link"
-                    size="sm"
-                    className="p-0 h-auto text-[10px] font-bold uppercase text-foreground hover:translate-x-0.5 transition-transform"
-                  >
-                    {stat.action} <ChevronRight className="w-3 h-3 ml-0.5" />
-                  </Button>
-                </Link>
               </div>
             ))}
           </CardContent>
@@ -273,19 +283,29 @@ const ProjectWorkspace = () => {
               <CardTitle className="text-sm flex items-center gap-2 font-bold tracking-tight">
                 <CalendarSync className="w-4 h-4" /> Project Scheduler
               </CardTitle>
-              {scheduler && (
-                <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground opacity-60">
-                  {scheduler.isActive ? "Active" : "Inactive"}
-                </span>
-              )}
+              <Button
+                className="bg-linear-to-br from-card to-indigo-500 text-primary text-[10px] cursor-pointer flex items-center gap-2"
+                size="sm"
+              >
+                <Image src="/kaya.svg" alt="Kaya" width={18} height={18} />
+                help with schedule
+              </Button>
             </CardHeader>
-            <CardContent className="p-0 space-y-4">
+            <CardContent className="p-0 space-y-3 -mt-3">
               {!scheduler ? (
                 <div className="py-8 text-center flex flex-col items-center gap-2">
+                  <CalendarSync className="w-8 h-8 opacity-30 " />
+                  <p className="font-semibold tracking-tight text-base">
+                    No Schedule Setup Yet
+                  </p>
+                  <p className="text-xs text-muted-foreground px-8">
+                    Ask Kaya for help to generate an optimized schedule for your
+                    project.
+                  </p>
                   <Button
                     size="sm"
                     variant="outline"
-                    className="h-6 text-[9px] font-bold uppercase"
+                    className="h-7 text-[10px] "
                   >
                     Setup
                   </Button>
