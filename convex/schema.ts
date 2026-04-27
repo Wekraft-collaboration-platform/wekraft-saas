@@ -349,5 +349,5 @@ export default defineSchema({
     updatedAt: v.number(),
   })
     .index("by_project", ["projectId", "isActive", "nextRunAt"])
-    .index("by_nextRun", ["nextRunAt", "isActive"]),
+    .index("by_nextRun", ["isActive", "nextRunAt"]),
 });

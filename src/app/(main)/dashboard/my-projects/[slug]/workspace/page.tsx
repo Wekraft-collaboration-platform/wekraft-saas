@@ -2,7 +2,7 @@
 
 import { useParams } from "next/navigation";
 import { Id } from "../../../../../../../convex/_generated/dataModel";
-import { useMutation, useQuery } from "convex/react";
+import { useAction, useMutation, useQuery } from "convex/react";
 import { api } from "../../../../../../../convex/_generated/api";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -101,23 +101,23 @@ const ProjectWorkspace = () => {
     ? Math.max(0, Math.ceil((deadline - Date.now()) / (1000 * 60 * 60 * 24)))
     : 0;
 
-  const handleDateSelect = async (date: Date | undefined) => {
-    if (!date || !projectId) return;
-    const normalizedDate = new Date(
-      date.getFullYear(),
-      date.getMonth(),
-      date.getDate(),
-    ).getTime();
-    try {
-      await updateDeadline({
-        projectId: projectId as Id<"projects">,
-        targetDate: normalizedDate,
-      });
-      toast.success("Deadline updated");
-    } catch (error) {
-      toast.error("Error updating deadline");
-    }
-  };
+  // const handleDateSelect = async (date: Date | undefined) => {
+  //   if (!date || !projectId) return;
+  //   const normalizedDate = new Date(
+  //     date.getFullYear(),
+  //     date.getMonth(),
+  //     date.getDate(),
+  //   ).getTime();
+  //   try {
+  //     await updateDeadline({
+  //       projectId: projectId as Id<"projects">,
+  //       targetDate: normalizedDate,
+  //     });
+  //     toast.success("Deadline updated");
+  //   } catch (error) {
+  //     toast.error("Error updating deadline");
+  //   }
+  // };
 
   return (
     <div className="p-6">
@@ -138,17 +138,19 @@ const ProjectWorkspace = () => {
             one Space.
           </p>
         </div>
-        <Link href={`/dashboard/my-projects/${slug}`}>
-          <Button
-            className="text-xs cursor-pointer"
-            variant="outline"
-            size="sm"
-          >
-            <ChevronLeft />
-            Back to Home
-            <Home className="w-3 h-3" />
-          </Button>
-        </Link>
+        <div className="flex">
+          <Link href={`/dashboard/my-projects/${slug}`}>
+            <Button
+              className="text-xs cursor-pointer"
+              variant="outline"
+              size="sm"
+            >
+              <ChevronLeft />
+              Back to Home
+              <Home className="w-3 h-3" />
+            </Button>
+          </Link>
+        </div>
       </header>
 
       {/* TOP STATS CARDS */}

@@ -54,14 +54,12 @@ OUTPUT FORMAT:
 Begin the report:
 `;
 
-    // 3. Generate text using OpenAI
     console.log(`[AI Schedule] Generating brief with OpenAI...`);
     const { text } = await generateText({
       model: openai("gpt-4.1-mini"),
       prompt: prompt,
     });
 
-    // 4. Console log the output as requested
     console.log("--- AI GENERATED BRIEF ---");
     console.log(text);
     console.log("--------------------------");

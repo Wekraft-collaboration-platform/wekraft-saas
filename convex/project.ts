@@ -667,8 +667,7 @@ export const getProjectJoinRequests = query({
       .filter((q) => q.eq(q.field("userId"), user._id))
       .unique();
 
-    const isAuthorized =
-      project.ownerId === user._id || !!membership;
+    const isAuthorized = project.ownerId === user._id || !!membership;
 
     if (!isAuthorized) {
       throw new Error("Unauthorized to view join requests");
@@ -848,10 +847,13 @@ export const getProjectMembers = query({
           ...m,
           userName: user?.name || m.userName || "Anonymous",
           userImage: user?.avatarUrl || m.userImage || "",
-          AccessRole: m.AccessRole || (m as any).role || (m.userId === project.ownerId ? "owner" : "member"),
+          AccessRole:
+            m.AccessRole ||
+            (m as any).role ||
+            (m.userId === project.ownerId ? "owner" : "member"),
           clerkUserId: user?.clerkToken?.split("|").pop() ?? null,
         };
-      })
+      }),
     );
   },
 });

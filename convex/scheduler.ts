@@ -1,7 +1,8 @@
 import { v } from "convex/values";
-import { query } from "./_generated/server";
+import { mutation, query, internalMutation } from "./_generated/server";
 import { QueryCtx } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
+import { internal } from "./_generated/api";
 
 async function getMemberWorkloadLogic(
   ctx: QueryCtx,
@@ -245,5 +246,146 @@ export const getProjectScheduleContext = query({
       sprints,
       workload,
     };
+  },
+});
+
+/**
+ * upsertScheduler: Called by Kaya or the UI to create/update a schedule.
+ * It handles the initial scheduling of the runner.
+ */
+export const upsertScheduler = mutation({
+  args: {
+    projectId: v.id("projects"),
+    name: v.string(),
+    frequencyDays: v.number(),
+    recipientEmail: v.string(),
+    isActive: v.boolean(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+    if (!user) throw new Error("User not found");
+
+    const existing = await ctx.db
+      .query("schedulers")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .unique();
+
+    const now = Date.now();
+    const frequency = Math.max(3, args.frequencyDays); // Hard enforce min 3 days
+    let schedulerId: Id<"schedulers">;
+
+    if (existing) {
+      schedulerId = existing._id;
+      await ctx.db.patch(existing._id, {
+        name: args.name,
+        frequencyDays: args.frequencyDays,
+        recipientEmail: args.recipientEmail,
+        isActive: args.isActive,
+        updatedAt: now,
+      });
+    } else {
+      schedulerId = await ctx.db.insert("schedulers", {
+        projectId: args.projectId,
+        name: args.name,
+        frequencyDays: args.frequencyDays,
+        recipientEmail: args.recipientEmail,
+        isActive: args.isActive,
+        nextRunAt: now, // Run immediately if new
+        createdBy: user._id,
+        createdAt: now,
+        updatedAt: now,
+      });
+    }
+
+    // If active, schedule the first run
+    if (args.isActive) {
+      const scheduler = await ctx.db.get(schedulerId);
+      const nextRun = scheduler?.nextRunAt ?? now;
+
+      console.log(
+        `[Scheduler] Scheduling first run for ${schedulerId} at ${new Date(nextRun).toLocaleString()}`,
+      );
+
+      await ctx.scheduler.runAt(
+        nextRun,
+        internal.scheduleRunner.executeScheduler,
+        {
+          projectId: args.projectId,
+          recipientEmail: args.recipientEmail,
+          schedulerName: args.name,
+          schedulerId: schedulerId,
+        },
+      );
+    }
+
+    return schedulerId;
+  },
+});
+
+/**
+ * markRunCompleteAndScheduleNext: Called by the Action after successful execution.
+ * It handles the recursive scheduling of the NEXT run.
+ */
+export const markRunCompleteAndScheduleNext = internalMutation({
+  args: { schedulerId: v.id("schedulers") },
+  handler: async (ctx, args) => {
+    const scheduler = await ctx.db.get(args.schedulerId);
+    if (!scheduler || !scheduler.isActive) {
+      console.log(
+        `[Scheduler] ${args.schedulerId} is no longer active or exists. Stopping recursion.`,
+      );
+      return;
+    }
+
+    const lastRunAt = Date.now();
+    const nextRunAt = lastRunAt + scheduler.frequencyDays * 24 * 60 * 60 * 1000;
+
+    await ctx.db.patch(args.schedulerId, {
+      lastRunAt,
+      nextRunAt,
+      isRunning: false,
+      updatedAt: lastRunAt,
+    });
+
+    // RECURSIVE STEP: Schedule the next one!
+    console.log(
+      `[Scheduler] Scheduling NEXT run for ${args.schedulerId} at ${new Date(nextRunAt).toLocaleString()}`,
+    );
+
+    await ctx.scheduler.runAt(
+      nextRunAt,
+      internal.scheduleRunner.executeScheduler,
+      {
+        projectId: scheduler.projectId,
+        recipientEmail: scheduler.recipientEmail,
+        schedulerName: scheduler.name,
+        schedulerId: scheduler._id,
+      },
+    );
+  },
+});
+
+/**
+ * handleRunError: Critical for production. Resets the isRunning state
+ * if an action fails, allowing the system to recover.
+ */
+export const handleRunError = internalMutation({
+  args: { schedulerId: v.id("schedulers"), error: v.string() },
+  handler: async (ctx, args) => {
+    console.error(
+      `[Scheduler] ERROR in run ${args.schedulerId}: ${args.error}`,
+    );
+    await ctx.db.patch(args.schedulerId, {
+      isRunning: false,
+      updatedAt: Date.now(),
+    });
   },
 });

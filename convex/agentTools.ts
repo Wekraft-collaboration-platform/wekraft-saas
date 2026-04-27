@@ -1,5 +1,6 @@
 import { internalMutation, internalQuery } from "./_generated/server";
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 
 // Calendar Events mutation by agent
 export const insertCalendarEvent = internalMutation({
@@ -209,43 +210,65 @@ export const createOrUpdateScheduler = internalMutation({
 
     const now = Date.now();
     const frequency = args.frequencyDays < 3 ? 3 : args.frequencyDays;
-    const nextRunAt = now + frequency * 24 * 60 * 60 * 1000;
 
     // Use owner email if no recipient email provided
     const emailToUse = args.recipientEmail || owner.email;
 
+    let schedulerId;
+    let runTime;
+
     if (existingScheduler) {
+      schedulerId = existingScheduler._id;
+      // Keep existing nextRunAt if already scheduled, or update if frequency changed
+      runTime = existingScheduler.nextRunAt;
+
       await ctx.db.patch(existingScheduler._id, {
         name: args.name,
         frequencyDays: frequency,
         recipientEmail: emailToUse,
-        nextRunAt: nextRunAt, // Usually updating frequency resets it.
         isActive: args.isActive,
         updatedAt: now,
       });
-      return {
-        id: existingScheduler._id,
-        recipientEmail: emailToUse,
-        message: "Scheduler updated successfully",
-      };
     } else {
-      const id = await ctx.db.insert("schedulers", {
+      // NEW schedule: set nextRunAt to NOW to trigger immediately
+      runTime = now;
+      schedulerId = await ctx.db.insert("schedulers", {
         projectId: args.projectId,
         name: args.name,
         frequencyDays: frequency,
         recipientEmail: emailToUse,
         isActive: args.isActive,
-        nextRunAt: nextRunAt,
+        nextRunAt: now,
         createdBy: project.ownerId,
         createdAt: now,
         updatedAt: now,
       });
-      return {
-        id,
-        recipientEmail: emailToUse,
-        message: "Scheduler created successfully",
-      };
     }
+
+    // Trigger the scheduled runner if active
+    if (args.isActive) {
+      console.log(
+        `[Agent-Scheduler] Triggering run for ${schedulerId} at ${new Date(runTime).toLocaleString()}`,
+      );
+      await ctx.scheduler.runAt(
+        runTime,
+        internal.scheduleRunner.executeScheduler,
+        {
+          projectId: args.projectId,
+          recipientEmail: emailToUse,
+          schedulerName: args.name,
+          schedulerId: schedulerId,
+        },
+      );
+    }
+
+    return {
+      id: schedulerId,
+      recipientEmail: emailToUse,
+      message: existingScheduler
+        ? "Scheduler updated successfully"
+        : "Scheduler created successfully",
+    };
   },
 });
 
