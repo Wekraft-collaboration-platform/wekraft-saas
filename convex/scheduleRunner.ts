@@ -17,6 +17,11 @@ export const executeScheduler = internalAction({
   },
   handler: async (ctx, args) => {
     try {
+      // Mark run as started
+      await ctx.runMutation(internal.scheduler.markRunStarted, {
+        schedulerId: args.schedulerId,
+      });
+
       // 1. Fetch all data from Convex using our aggregator query
       console.log(
         `[Scheduler] Fetching context for project: ${args.projectId}`,

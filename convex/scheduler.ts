@@ -389,3 +389,13 @@ export const handleRunError = internalMutation({
     });
   },
 });
+
+export const markRunStarted = internalMutation({
+  args: { schedulerId: v.id("schedulers") },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.schedulerId, {
+      isRunning: true,
+      updatedAt: Date.now(),
+    });
+  },
+});

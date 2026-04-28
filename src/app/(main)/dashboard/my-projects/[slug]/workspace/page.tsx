@@ -29,6 +29,8 @@ import {
   ClipboardList,
   Users2,
   TicketPlus,
+  Settings2,
+  Loader2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -100,24 +102,6 @@ const ProjectWorkspace = () => {
   const daysRemaining = deadline
     ? Math.max(0, Math.ceil((deadline - Date.now()) / (1000 * 60 * 60 * 24)))
     : 0;
-
-  // const handleDateSelect = async (date: Date | undefined) => {
-  //   if (!date || !projectId) return;
-  //   const normalizedDate = new Date(
-  //     date.getFullYear(),
-  //     date.getMonth(),
-  //     date.getDate(),
-  //   ).getTime();
-  //   try {
-  //     await updateDeadline({
-  //       projectId: projectId as Id<"projects">,
-  //       targetDate: normalizedDate,
-  //     });
-  //     toast.success("Deadline updated");
-  //   } catch (error) {
-  //     toast.error("Error updating deadline");
-  //   }
-  // };
 
   return (
     <div className="p-6">
@@ -313,29 +297,25 @@ const ProjectWorkspace = () => {
                   </Button>
                 </div>
               ) : (
-                <div className="space-y-4">
+                <div className="space-y-4 mt-4">
                   <div className="flex justify-between items-end">
                     <div className="space-y-1">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-70">
-                        Name
-                      </p>
-                      <p className="text-base font-black tracking-tighter">
+                      <p className="text-xs">Name</p>
+                      <p className="text-sm font-semibold tracking-tight">
                         {scheduler.name}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-70">
-                        Frequency
-                      </p>
+                      <p className="text-xs">Frequency</p>
                       <p className="text-xs font-bold">
                         {scheduler.frequencyDays} Days
                       </p>
                     </div>
                   </div>
 
-                  <div className="space-y-2 border-t pt-4">
+                  <div className="space-y-1 border-t pt-2">
                     <div className="flex justify-between items-center">
-                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
+                      <span className="text-[10px] text-muted-foreground">
                         Last Run
                       </span>
                       <span className="text-[11px] font-semibold">
@@ -345,7 +325,7 @@ const ProjectWorkspace = () => {
                       </span>
                     </div>
                     <div className="flex justify-between items-center">
-                      <span className="text-[10px] text-muted-foreground uppercase font-bold tracking-widest">
+                      <span className="text-[10px] text-muted-foreground">
                         Next Run
                       </span>
                       <span className="text-[11px] font-bold">
@@ -358,16 +338,28 @@ const ProjectWorkspace = () => {
             </CardContent>
           </div>
           {scheduler && (
-            <CardFooter className="p-0 pt-4 border-t flex justify-between items-center">
-              <span className="text-[9px] text-muted-foreground truncate max-w-[100px]">
-                {scheduler.recipientEmail}
-              </span>
+            <CardFooter className="p-0 pt-3 border-t flex justify-between items-center">
+              {scheduler.isRunning ? (
+                <div className="flex items-center gap-1.5">
+                  <Loader2 className="w-3 h-3 text-blue-500 animate-spin" />
+                  <span className="text-[10px] text-blue-600 font-semibold  tracking-wide">
+                    Running
+                  </span>
+                </div>
+              ) : (
+                <div className="flex items-center gap-1.5">
+                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
+                  <span className="text-[9px] text-muted-foreground font-semibold uppercase tracking-wider">
+                    Active
+                  </span>
+                </div>
+              )}
               <Button
                 variant="outline"
                 size="sm"
-                className="h-6 px-2 text-[9px] font-bold uppercase"
+                className="h-6 px-2 text-[10px] text-muted-foreground"
               >
-                Settings
+                Settings <Settings2 className="w-3 h-3 ml-1" />
               </Button>
             </CardFooter>
           )}
