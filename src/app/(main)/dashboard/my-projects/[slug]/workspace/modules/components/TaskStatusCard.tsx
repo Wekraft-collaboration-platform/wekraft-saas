@@ -56,7 +56,7 @@ export const TaskStatusCard = ({ tasks }: TaskStatusCardProps) => {
   );
 
   return (
-    <Card className="p-3! overflow-hidden shadow-sm bg-linear-to-br from-card to-muted/70 flex flex-col h-full">
+    <Card className="p-3! overflow-hidden shadow-sm bg-accent/30 flex flex-col h-full">
       <CardHeader className="px-0 pb-2 flex flex-row items-center justify-between">
         <CardTitle className="text-sm flex items-center gap-2 font-semibold tracking-tight">
           <LayoutDashboard className="w-5 h-5!" /> Task Distribution

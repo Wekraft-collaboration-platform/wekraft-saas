@@ -12,6 +12,7 @@ import {
   CalendarDays,
   LayoutGrid,
   Sparkles,
+  Layers2,
 } from "lucide-react";
 import { useKayaStore } from "@/store/useKayaStore";
 import { cn } from "@/lib/utils";
@@ -24,7 +25,7 @@ interface UserWorkTableProps {
 export const UserWorkTable = ({ userName }: UserWorkTableProps) => {
   const [activeTab, setActiveTab] = useState("tasks");
   const { toggleKaya } = useKayaStore();
-  const today = format(new Date(), "PPPP");
+  const today = format(new Date(), "PPP");
 
   const tabs = [
     { id: "tasks", label: "Tasks", icon: ClipboardList },
@@ -76,23 +77,24 @@ export const UserWorkTable = ({ userName }: UserWorkTableProps) => {
   };
 
   return (
-    <Card className="border border-border shadow-none overflow-hidden bg-card">
+    <Card className="border border-border shadow-none overflow-hidden bg-card h-[600px]">
       <CardHeader className="flex  items-center justify-between space-y-0 ">
         <div className="space-y-1">
-          <CardTitle className="text-base font-semibold tracking-tight text-primary uppercase flex items-center gap-2">
-            <LayoutGrid className="w-4 h-4 text-primary" />
-            {userName ? `${userName}'s Work` : "My Work"}
+          <CardTitle className="text-base font-semibold  text-primary flex items-center gap-2">
+            <Layers2 className="w-4 h-4 text-primary" />
+            Your work,
+            <span className="text-primary capitalize">{userName}</span>
           </CardTitle>
         </div>
-        <div className="flex items-center gap-1.5 text-sm font-medium text-muted-foreground">
+        <div className="flex items-center gap-1.5 text-xs tracking-tight font-medium text-muted-foreground">
           <CalendarDays className="w-3 h-3" />
           {today}
         </div>
       </CardHeader>
 
       <CardContent className="px-6 pb-6 pt-0">
-        <div className="flex items-center justify-between border-b border-border/40 mb-8">
-          <div className="flex items-center gap-2">
+        <div className="flex items-center justify-between border-b border-border mb-8">
+          <div className="flex items-center gap-3">
             {tabs.map((tab) => (
               <Button
                 key={tab.id}
@@ -100,7 +102,7 @@ export const UserWorkTable = ({ userName }: UserWorkTableProps) => {
                 variant="ghost"
                 size="sm"
                 className={cn(
-                  "h-10 text-[11px] font-semibold px-4 transition-all relative cursor-pointer rounded-none border-b-2",
+                  "h-10 text-xs font-semibold px-4 transition-all relative cursor-pointer rounded-t-lg rounded-b-none border-b-2",
                   activeTab === tab.id
                     ? "border-b-primary text-primary bg-transparent"
                     : "border-b-transparent text-muted-foreground hover:text-foreground hover:bg-transparent",
@@ -108,10 +110,10 @@ export const UserWorkTable = ({ userName }: UserWorkTableProps) => {
               >
                 <tab.icon
                   className={cn(
-                    "w-3.5 h-3.5 mr-2",
+                    "w-3.5 h-3.5 mr-1",
                     activeTab === tab.id
                       ? "text-primary"
-                      : "text-muted-foreground/60",
+                      : "text-muted-foreground",
                   )}
                 />
                 {tab.label}
@@ -123,7 +125,7 @@ export const UserWorkTable = ({ userName }: UserWorkTableProps) => {
             onClick={toggleKaya}
             variant="outline"
             size="sm"
-            className="h-8 text-[11px] font-bold gap-2 rounded-full border-primary/20 hover:border-primary/40 hover:bg-primary/5 text-primary transition-all cursor-pointer shadow-none"
+            className="h-8 text-[10px] gap-2 rounded-md border-primary/20 hover:border-primary/40 hover:bg-primary/5 text-primary transition-all cursor-pointer shadow-none"
           >
             <Image src="/kaya.svg" alt="kaya" width={20} height={20} />
             Ask for Standup

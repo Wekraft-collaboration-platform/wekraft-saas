@@ -49,6 +49,7 @@ import { SchedulerCard } from "./modules/components/SchedulerCard";
 import { TaskStatusCard } from "./modules/components/TaskStatusCard";
 import { Skeleton } from "@/components/ui/skeleton";
 import { UserWorkTable } from "./modules/components/UserWork/UserWorkTable";
+import { SprintBarChart } from "./modules/components/SprintBarChart";
 
 const ProjectWorkspace = () => {
   const params = useParams();
@@ -165,12 +166,12 @@ const ProjectWorkspace = () => {
           </Link>
 
           <Button
-            className="text-xs cursor-pointer font-sans font-medium!"
-            variant="default"
+            className="text-xs cursor-pointer font-sans font-medium! bg-linear-to-br from-transparent to-indigo-500"
+            variant="outline"
             size="sm"
           >
-            Add Widgets
-            <PlusCircle className="w-3 h-3 ml-1" />
+            <Image src="/kaya.svg" alt="kaya" width={20} height={20} />
+            Today Insights
           </Button>
         </div>
       </header>
@@ -178,7 +179,7 @@ const ProjectWorkspace = () => {
       {/* TOP STATS CARDS */}
       <section className="grid grid-cols-3 gap-6 mt-10">
         {/* Project Deadline Card */}
-        <Card className="p-3! overflow-hidden shadow-sm bg-linear-to-br from-card to-muted/70">
+        <Card className="p-3! overflow-hidden shadow-sm bg-accent/30">
           <CardHeader className="px-0 flex flex-row items-center justify-between">
             <CardTitle className="text-sm flex items-center gap-2">
               <AudioLines className="w-5 h-5!" /> Track Your Project
@@ -242,19 +243,17 @@ const ProjectWorkspace = () => {
           sprintsCount={sprints?.length || 0}
           eventsCount={events?.length || 0}
         />
-
-        {/* Scheduler Card */}
-        {/* <SchedulerCard scheduler={scheduler} /> */}
         {/* Task Status Pie Chart Card */}
         <TaskStatusCard tasks={tasks || []} />
       </section>
 
       {/* WORK & OTHER CARDS */}
       <section className="grid grid-cols-3 gap-6 mt-14">
-        <div className="flex flex-col space-y-3">
-          {/* Sceduler card */}
-
+        <div className="flex flex-col space-y-6">
+          {/* Scheduler Card */}
+          <SchedulerCard scheduler={scheduler} />
           {/* Sprint bar graph */}
+          <SprintBarChart projectId={projectId as Id<"projects">} />
         </div>
 
         {/* My all work Table */}
