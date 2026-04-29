@@ -22,6 +22,7 @@ import {
   XCircle,
   History,
   CalendarRange,
+  PlusCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -45,6 +46,9 @@ import { Progress } from "@/components/ui/progress";
 import Image from "next/image";
 import { ActivityOverviewCard } from "./modules/components/ActivityOverviewCard";
 import { SchedulerCard } from "./modules/components/SchedulerCard";
+import { TaskStatusCard } from "./modules/components/TaskStatusCard";
+import { Skeleton } from "@/components/ui/skeleton";
+import { UserWorkTable } from "./modules/components/UserWork/UserWorkTable";
 
 const ProjectWorkspace = () => {
   const params = useParams();
@@ -52,6 +56,8 @@ const ProjectWorkspace = () => {
 
   const project = useQuery(api.project.getProjectBySlug, { slug });
   const projectId = project?._id;
+
+  const user = useQuery(api.user.getCurrentUser);
 
   const projectDetails = useQuery(
     api.projectDetails.getProjectDetails,
@@ -100,26 +106,52 @@ const ProjectWorkspace = () => {
     ? Math.max(0, Math.ceil((deadline - Date.now()) / (1000 * 60 * 60 * 24)))
     : 0;
 
+  if (project === undefined || user === undefined) {
+    return (
+      <div className="p-6 space-y-10">
+        <header className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-2 w-2 rounded-full" />
+            <Skeleton className="h-3 w-20" />
+          </div>
+          <Skeleton className="h-10 w-64" />
+          <Skeleton className="h-4 w-96" />
+        </header>
+
+        <section className="grid grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="p-6 h-[220px]">
+              <div className="space-y-4">
+                <Skeleton className="h-6 w-32" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                </div>
+                <div className="pt-4 space-y-2">
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              </div>
+            </Card>
+          ))}
+        </section>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6">
       <header className="flex items-start justify-between flex-none">
         <div className="space-y-2">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-70">
-              {" "}
-              Workspace
-            </p>
-          </div>
-          <h1 className="text-2xl font-semibold tracking-tighter">
-            <Activity className="w-6 h-6 mr-2 inline" /> Activity Workspace
+          <div className="flex items-center gap-2 mb-2"></div>
+          <h1 className="text-3xl font-bold font-inter tracking-wide capitalize">
+            Welcome {user?.name}
           </h1>
           <p className="text-sm text-muted-foreground max-w-lg leading-relaxed">
-            Monitor project insights, track progress and team performance all in
-            one Space.
+            Monitor project insights, track progress and your tasks all in one
+            Space.
           </p>
         </div>
-        <div className="flex">
+        <div className="flex items-center gap-4">
           <Link href={`/dashboard/my-projects/${slug}`}>
             <Button
               className="text-xs cursor-pointer"
@@ -131,6 +163,15 @@ const ProjectWorkspace = () => {
               <Home className="w-3 h-3" />
             </Button>
           </Link>
+
+          <Button
+            className="text-xs cursor-pointer font-sans font-medium!"
+            variant="default"
+            size="sm"
+          >
+            Add Widgets
+            <PlusCircle className="w-3 h-3 ml-1" />
+          </Button>
         </div>
       </header>
 
@@ -152,7 +193,7 @@ const ProjectWorkspace = () => {
             </Button>
           </CardHeader>
           <CardContent>
-            <div className="flex justify-between items-end mb-2">
+            <div className="flex justify-between items-end my-3">
               <p className="text-[10px] tracking-wide text-muted-foreground ">
                 Days Remaining
               </p>
@@ -165,7 +206,7 @@ const ProjectWorkspace = () => {
               className="h-4.5! bg-blue-100/50 dark:bg-accent [&>div]:bg-blue-500 transition-all duration-500"
             />
           </CardContent>
-          <CardFooter className="flex flex-col items-start gap-2 border-t pt-4 ">
+          <CardFooter className="flex flex-col items-start gap-2 border-t pt-4">
             <div className="flex flex-col items-start gap-3 text-xs text-muted-foreground w-full">
               <div className="flex items-center gap-1.5">
                 <Clock3 className="w-3 h-3! " /> Created :
@@ -204,6 +245,22 @@ const ProjectWorkspace = () => {
 
         {/* Scheduler Card */}
         {/* <SchedulerCard scheduler={scheduler} /> */}
+        {/* Task Status Pie Chart Card */}
+        <TaskStatusCard tasks={tasks || []} />
+      </section>
+
+      {/* WORK & OTHER CARDS */}
+      <section className="grid grid-cols-3 gap-6 mt-14">
+        <div className="flex flex-col space-y-3">
+          {/* Sceduler card */}
+
+          {/* Sprint bar graph */}
+        </div>
+
+        {/* My all work Table */}
+        <div className="col-span-2">
+          <UserWorkTable userName={user?.name} />
+        </div>
       </section>
     </div>
   );

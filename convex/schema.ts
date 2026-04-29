@@ -349,4 +349,20 @@ export default defineSchema({
   })
     .index("by_project", ["projectId", "isActive", "nextRunAt"])
     .index("by_nextRun", ["isActive", "nextRunAt"]),
+
+  // -------------------------------------------------
+  tickets: defineTable({
+    projectId: v.id("projects"),
+    title: v.string(),
+    description: v.optional(v.string()),
+    createdBy: v.id("users"),
+    assignedTo: v.id("users"),
+    status: v.union(v.literal("open"), v.literal("closed")),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_project", ["projectId"])
+    .index("by_creator", ["createdBy"])
+    .index("by_assignee", ["assignedTo"])
+    .index("by_status", ["status"]),
 });
