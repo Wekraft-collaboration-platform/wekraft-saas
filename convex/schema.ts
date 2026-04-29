@@ -161,7 +161,6 @@ export default defineSchema({
     status: v.union(
       v.literal("not started"),
       v.literal("inprogress"),
-      // v.literal("issue"),
       v.literal("reviewing"),
       v.literal("testing"),
       v.literal("completed"),
