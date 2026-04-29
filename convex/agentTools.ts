@@ -473,21 +473,29 @@ export const getSprintInsights = internalQuery({
       .collect();
 
     return sprints.map((s) => {
-      const sprintTasks = allTasks.filter((t) => t.sprintId === s._id);
-      const sprintIssues = allIssues.filter((i) => i.sprintId === s._id);
+      let completedTasks = 0;
+      let totalTasks = 0;
+      let closedIssues = 0;
+      let totalIssues = 0;
 
-      const completedTasks = sprintTasks.filter(
-        (t) => t.status === "completed",
-      ).length;
-      const closedIssues = sprintIssues.filter(
-        (i) => i.status === "closed",
-      ).length;
+      if (s.status === "completed" && s.finalStats) {
+        completedTasks = s.finalStats.completedTasks;
+        totalTasks = s.finalStats.totalTasks;
+        closedIssues = s.finalStats.closedIssues;
+        totalIssues = s.finalStats.totalIssues;
+      } else {
+        const sprintTasks = allTasks.filter((t) => t.sprintId === s._id);
+        const sprintIssues = allIssues.filter((i) => i.sprintId === s._id);
 
-      const totalItems = sprintTasks.length + sprintIssues.length;
+        completedTasks = sprintTasks.filter((t) => t.status === "completed").length;
+        totalTasks = sprintTasks.length;
+        closedIssues = sprintIssues.filter((i) => i.status === "closed").length;
+        totalIssues = sprintIssues.length;
+      }
+
+      const totalItems = totalTasks + totalIssues;
       const completedItems = completedTasks + closedIssues;
-
-      const progress =
-        totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+      const progress = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
 
       return {
         name: s.sprintName,
@@ -499,9 +507,9 @@ export const getSprintInsights = internalQuery({
         },
         stats: {
           completedTasks,
-          totalTasks: sprintTasks.length,
+          totalTasks,
           closedIssues,
-          totalIssues: sprintIssues.length,
+          totalIssues,
           progressPercent: progress,
         },
       };
@@ -554,24 +562,59 @@ export const getTasksSummary = internalQuery({
       .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
       .collect();
 
-    const activeTasks = tasks.filter(
-      (t) =>
-        ["inprogress", "reviewing", "testing"].includes(t.status) ||
-        (t.status === "not started" && t.priority === "high") ||
-        t.isBlocked,
-    );
+    const now = Date.now();
+    const NEAR_OVERDUE_THRESHOLD = 2 * 24 * 60 * 60 * 1000; // 2 days
+
+    const criticalTasks = tasks.filter((t) => {
+      if (t.status === "completed") return false;
+
+      const isOverdue = now > t.estimation.endDate;
+      const isNearOverdue =
+        !isOverdue && now > t.estimation.endDate - NEAR_OVERDUE_THRESHOLD;
+      const isNotStarted = t.status === "not started";
+      const isHighPriority = t.priority === "high";
+
+      return (
+        isOverdue ||
+        isNearOverdue ||
+        isNotStarted ||
+        isHighPriority ||
+        t.isBlocked
+      );
+    });
 
     const completedCount = tasks.filter((t) => t.status === "completed").length;
     const blockedCount = tasks.filter((t) => t.isBlocked).length;
 
     return {
-      criticalAndActiveTasks: activeTasks.map((t) => ({
-        title: t.title,
-        status: t.status,
-        priority: t.priority ?? "medium",
-        isBlocked: t.isBlocked ?? false,
-        assignees: (t.assignedTo ?? []).map((a) => a.name),
-      })),
+      criticalAndActiveTasks: criticalTasks.map((t) => {
+        const isOverdue = now > t.estimation.endDate;
+        const isNearOverdue =
+          !isOverdue && now > t.estimation.endDate - NEAR_OVERDUE_THRESHOLD;
+
+        let timelineStatus = "on track";
+        if (isOverdue) {
+          const days = Math.ceil(
+            (now - t.estimation.endDate) / (1000 * 60 * 60 * 24),
+          );
+          timelineStatus = `OVERDUE by ${days} days`;
+        } else if (isNearOverdue) {
+          const days = Math.ceil(
+            (t.estimation.endDate - now) / (1000 * 60 * 60 * 24),
+          );
+          timelineStatus = `Near overdue (due in ${days} days)`;
+        }
+
+        return {
+          title: t.title,
+          status: t.status,
+          priority: t.priority ?? "medium",
+          isBlocked: t.isBlocked ?? false,
+          assignees: (t.assignedTo ?? []).map((a) => a.name),
+          endDate: new Date(t.estimation.endDate).toLocaleDateString(),
+          timelineStatus,
+        };
+      }),
       completedCount,
       blockedCount,
       totalCount: tasks.length,

@@ -87,80 +87,95 @@ export const SprintBarChart = ({ projectId }: SprintBarChartProps) => {
           </Button>
         </div>
       </CardHeader>
-      <CardContent>
-        <div className="relative h-[220px] w-full flex items-end justify-around px-2 mt-2">
-          {/* Y-Axis Labels */}
-          <div className="absolute left-0 top-0 h-full flex flex-col justify-between text-[9px] font-bold text-muted-foreground pr-2 border-r border-border">
-            <span>{Math.round(maxDuration)}d</span>
-            <span>{Math.round(maxDuration / 2)}d</span>
-            <span>0d</span>
-          </div>
+      <CardContent className="w-full p-3! -mt-2">
+        <div className="mt-2 flex flex-col relative">
+          {/* Main Chart Section with balanced padding for centering */}
+          <div className="relative w-full px-5">
+            {/* Y-Axis Labels & Line (Absolutely positioned to stay in the left padding) */}
+            <div className="absolute left-0 top-0 h-[180px] w-5 flex flex-col justify-between text-[10px] font-bold text-muted-foreground pr-3 border-r-2 border-accent text-right">
+              <span>{Math.round(maxDuration)}d</span>
+              <span>{Math.round(maxDuration / 2)}d</span>
+              <span>0d</span>
+            </div>
 
-          {/* Grid Lines */}
-          <div className="absolute left-10 right-0 top-0 h-full -z-0">
-            <div className="absolute top-0 w-full border-t border-dashed border-border" />
-            <div className="absolute top-1/2 w-full border-t border-dashed border-border" />
-          </div>
-
-          {displaySprints.map((sprint, idx) => {
-            const duration =
-              (sprint.duration.endDate - sprint.duration.startDate) /
-              (1000 * 60 * 60 * 24);
-            const totalItems =
-              (sprint as any).totalTasks + (sprint as any).totalIssues;
-            const completedItems =
-              (sprint as any).completedTasks + (sprint as any).closedIssues;
-            const percent =
-              totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
-            const barHeight = getHeight(duration);
-
-            return (
-              <div
-                key={sprint._id}
-                className="flex flex-col items-center gap-3 group w-full max-w-[45px] relative z-10"
-              >
-                {/* Tooltip */}
-                <div className="absolute bottom-[calc(100%+10px)] opacity-0 group-hover:opacity-100 transition-all duration-300 bg-zinc-900 text-white text-[10px] p-2.5 rounded-lg z-20 pointer-events-none shadow-2xl border border-white/10 w-32 backdrop-blur-md">
-                  <p className="font-bold border-b border-white/10 pb-1 mb-1">
-                    {sprint.sprintName}
-                  </p>
-                  <div className="flex justify-between items-center mt-1">
-                    <span className="text-white/60">Duration:</span>
-                    <span>{duration} days</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-white/60">Progress:</span>
-                    <span className="text-blue-400 font-bold">
-                      {Math.round(percent)}%
-                    </span>
-                  </div>
-                </div>
-
-                <div
-                  className="w-10 rounded-t-lg relative overflow-hidden bg-muted shadow-xs border border-border/50 group-hover:border-primary/10 transition-all duration-200"
-                  style={{ height: `${barHeight}px` }}
-                >
-                  {/* Completed Part */}
-                  <div
-                    className="absolute bottom-0 left-0 w-full bg-linear-to-t from-blue-600 to-blue-400 group-hover:from-blue-500 group-hover:to-blue-300 transition-all duration-700 ease-out flex items-center justify-center overflow-hidden"
-                    style={{ height: `${percent}%` }}
-                  >
-                    {percent > 20 && (
-                      <div className="absolute top-0 left-0 w-full h-full bg-white/10 opacity-20 pointer-events-none" />
-                    )}
-                  </div>
-                </div>
-                <div className="space-y-0.5 text-center">
-                  <p className="text-[10px] font-bold text-foreground/80 truncate w-full group-hover:text-primary transition-colors">
-                    {sprint.sprintName.replace("sprint-", "S")}
-                  </p>
-                  <p className="text-[9px] font-medium text-muted-foreground/60">
-                    {duration}d
-                  </p>
-                </div>
+            {/* Chart Area */}
+            <div className="relative h-[180px] w-full flex items-end justify-around border-b-2 border-accent">
+              {/* Grid Lines */}
+              <div className="absolute inset-0 z-0">
+                <div className="absolute top-0 w-full border-t border-dashed border-accent" />
+                <div className="absolute top-1/2 w-full border-t border-dashed border-accent" />
               </div>
-            );
-          })}
+
+              {displaySprints.map((sprint) => {
+                const duration =
+                  (sprint.duration.endDate - sprint.duration.startDate) /
+                  (1000 * 60 * 60 * 24);
+                const totalItems =
+                  (sprint as any).totalTasks + (sprint as any).totalIssues;
+                const completedItems =
+                  (sprint as any).completedTasks + (sprint as any).closedIssues;
+                const percent =
+                  totalItems > 0 ? (completedItems / totalItems) * 100 : 0;
+                const barHeight = getHeight(duration);
+
+                return (
+                  <div
+                    key={sprint._id}
+                    className="group relative flex flex-col items-center z-10 w-full max-w-[50px]"
+                  >
+                    {/* Tooltip */}
+                    <div className="absolute bottom-[calc(100%+10px)] opacity-0 group-hover:opacity-100 transition-all duration-300 bg-zinc-900 text-white text-[10px] p-2.5 rounded-lg z-20 pointer-events-none shadow-2xl border border-white/10 w-32 backdrop-blur-md">
+                      <p className="font-bold border-b border-white/10 pb-1 mb-1">
+                        {sprint.sprintName}
+                      </p>
+                      <div className="flex justify-between items-center mt-1">
+                        <span className="text-white/60">Duration:</span>
+                        <span>{duration} days</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-white/60">Progress:</span>
+                        <span className="text-blue-400 font-bold">
+                          {Math.round(percent)}%
+                        </span>
+                      </div>
+                    </div>
+
+                    {/* The Bar */}
+                    <div
+                      className="w-10 rounded-t-md relative overflow-hidden bg-muted shadow-xs border border-border group-hover:border-primary/10 transition-all duration-300"
+                      style={{ height: `${barHeight}px` }}
+                    >
+                      <div
+                        className="absolute bottom-0 left-0 w-full bg-linear-to-t from-blue-600/90 to-blue-400/90 group-hover:from-blue-500 group-hover:to-blue-300 transition-all duration-700 ease-out"
+                        style={{ height: `${percent}%` }}
+                      >
+                        <div className="absolute top-0 left-0 w-full h-full bg-white/5 opacity-20" />
+                      </div>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* X-Axis Labels Row: Stays aligned with bars because it shares the px-12 context */}
+            <div className="flex justify-around items-start w-full">
+              {displaySprints.map((sprint) => {
+                const duration =
+                  (sprint.duration.endDate - sprint.duration.startDate) /
+                  (1000 * 60 * 60 * 24);
+                return (
+                  <div
+                    key={`label-${sprint._id}`}
+                    className="flex flex-col items-center py-3 w-full max-w-[40px] gap-1"
+                  >
+                    <p className="text-[10px] font-medium text-muted-foreground">
+                      {duration}d
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
         </div>
       </CardContent>
     </Card>
