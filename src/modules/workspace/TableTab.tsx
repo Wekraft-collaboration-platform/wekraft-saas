@@ -306,7 +306,7 @@ export const TableTab = ({ tasks, onLoadMore, hasMore }: TableTabProps) => {
                         className="rounded border-neutral-800 data-[state=checked]:bg-primary"
                       />
                     </TableCell>
-                    <TableCell className="px-4 font-medium border-r border-b border-neutral-700 text-base text-primary/70 group-hover:text-primary transition-colors">
+                    <TableCell className="px-4 text-sm   font-medium border-r border-b border-neutral-700  text-primary transition-colors">
                       <div className="flex items-center gap-1.5 capitalize">
                         {task.isBlocked && (
                           <Bug className="w-4 h-4 text-red-500 shrink-0" />

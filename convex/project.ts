@@ -921,6 +921,15 @@ export const getJoinedProjects = query({
 export const getProjectById = query({
   args: { projectId: v.id("projects") },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.projectId);
+    const project = await ctx.db.get(args.projectId);
+    if (!project) return null;
+
+    const owner = await ctx.db.get(project.ownerId);
+    const ownerClerkId = owner?.clerkToken.split("|").pop();
+
+    return {
+      ...project,
+      ownerClerkId,
+    };
   },
 });
