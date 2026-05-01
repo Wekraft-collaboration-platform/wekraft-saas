@@ -43,6 +43,7 @@ import {
   SeparatorVertical,
   Bug,
   Tag,
+  Info,
 } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -93,9 +94,19 @@ export const KanbanTask = ({
   const [selectedTaskForSheet, setSelectedTaskForSheet] = useState<Task | null>(
     null,
   );
-  const [collapsedColumns, setCollapsedColumns] = useState<Set<string>>(
-    new Set(),
-  );
+  const [collapsedColumns, setCollapsedColumns] = useState<Set<string>>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("kanban-collapsed-columns");
+      if (saved) {
+        try {
+          return new Set(JSON.parse(saved));
+        } catch (e) {
+          console.error("Failed to parse collapsed columns", e);
+        }
+      }
+    }
+    return new Set();
+  });
 
   const toggleColumn = (columnId: string) => {
     setCollapsedColumns((prev) => {
@@ -105,6 +116,10 @@ export const KanbanTask = ({
       } else {
         next.add(columnId);
       }
+      localStorage.setItem(
+        "kanban-collapsed-columns",
+        JSON.stringify(Array.from(next)),
+      );
       return next;
     });
   };
@@ -428,19 +443,19 @@ const TaskCard = ({ task, isOverlay }: { task: Task; isOverlay?: boolean }) => {
       <div className="p-3">
         <div className="flex items-start justify-between gap-3 ">
           <h4 className="text-xs leading-relaxed tracking-tight line-clamp-2 group-hover:text-primary transition-colors flex items-center gap-2">
-            {task.isBlocked && (
+            {task.isBlocked ? (
               <Bug className="w-3.5 h-3.5 text-red-500 shrink-0" />
+            ) : (
+              task.estimation?.endDate &&
+              task.estimation.endDate < Date.now() &&
+              task.status !== "completed" && (
+                <Info className="w-3.5 h-3.5 text-primary/70 shrink-0" />
+              )
             )}
             {task.title}
           </h4>
           <GripVertical className="w-4 h-4 text-muted-foreground group-hover:text-primary/40 transition-colors shrink-0 mt-0.5" />
         </div>
-
-        {/* {task.description && (
-          <p className="text-[11px] text-muted-foreground line-clamp-1 leading-relaxed font-medium">
-            {task.description}
-          </p>
-        )} */}
 
         <div className="flex items-center justify-between pt-5 gap-2">
           <div className="flex items-center gap-2 overflow-hidden">

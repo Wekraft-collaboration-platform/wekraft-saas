@@ -39,6 +39,7 @@ import {
   Plus,
   FileCodeCorner,
   Bug,
+  Info,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -310,8 +311,14 @@ export const TableTab = ({ tasks, onLoadMore, hasMore }: TableTabProps) => {
                     <TableCell className="px-4 text-sm   font-medium border-r border-b border-neutral-700  text-primary transition-colors">
                       <div className="flex items-center gap-1.5 capitalize">
                         {task.title}
-                        {task.isBlocked && (
+                        {task.isBlocked ? (
                           <Bug className="w-4 h-4 text-red-500/70 shrink-0 ml-auto" />
+                        ) : (
+                          task.estimation?.endDate &&
+                          task.estimation.endDate < Date.now() &&
+                          task.status !== "completed" && (
+                            <Info className="w-4 h-4 text-primary/70 shrink-0 ml-auto" />
+                          )
                         )}
                       </div>
                     </TableCell>
