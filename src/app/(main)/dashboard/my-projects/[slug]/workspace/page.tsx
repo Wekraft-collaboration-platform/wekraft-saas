@@ -10,27 +10,19 @@ import {
   ChevronLeft,
   Home,
   CalendarIcon,
-  Layers3,
   Activity,
   AudioLines,
   ExternalLink,
   Clock3,
   FlagTriangleRight,
   ClockFading,
-  ChevronRight,
-  Bug,
   Users,
   Timer,
   CheckCircle2,
   XCircle,
   History,
   CalendarRange,
-  CalendarSync,
-  ClipboardList,
-  Users2,
-  TicketPlus,
-  Settings2,
-  Loader2,
+  PlusCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -52,6 +44,12 @@ import {
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import Image from "next/image";
+import { ActivityOverviewCard } from "./modules/components/ActivityOverviewCard";
+import { SchedulerCard } from "./modules/components/SchedulerCard";
+import { TaskStatusCard } from "./modules/components/TaskStatusCard";
+import { Skeleton } from "@/components/ui/skeleton";
+import { UserWorkTable } from "./modules/components/UserWork/UserWorkTable";
+import { SprintBarChart } from "./modules/components/SprintBarChart";
 
 const ProjectWorkspace = () => {
   const params = useParams();
@@ -59,6 +57,8 @@ const ProjectWorkspace = () => {
 
   const project = useQuery(api.project.getProjectBySlug, { slug });
   const projectId = project?._id;
+
+  const user = useQuery(api.user.getCurrentUser);
 
   const projectDetails = useQuery(
     api.projectDetails.getProjectDetails,
@@ -87,6 +87,10 @@ const ProjectWorkspace = () => {
     api.workspace.getProjectScheduler,
     projectId ? { projectId: projectId as Id<"projects"> } : "skip",
   );
+  const sprints = useQuery(
+    api.sprint.getSprintsByProject,
+    projectId ? { projectId: projectId as Id<"projects"> } : "skip",
+  );
 
   const createdAt = project?._creationTime;
   const deadline = projectDetails?.targetDate;
@@ -103,26 +107,52 @@ const ProjectWorkspace = () => {
     ? Math.max(0, Math.ceil((deadline - Date.now()) / (1000 * 60 * 60 * 24)))
     : 0;
 
+  if (project === undefined || user === undefined) {
+    return (
+      <div className="p-6 space-y-10">
+        <header className="space-y-4">
+          <div className="flex items-center gap-2">
+            <Skeleton className="h-2 w-2 rounded-full" />
+            <Skeleton className="h-3 w-20" />
+          </div>
+          <Skeleton className="h-10 w-64" />
+          <Skeleton className="h-4 w-96" />
+        </header>
+
+        <section className="grid grid-cols-3 gap-6">
+          {[1, 2, 3].map((i) => (
+            <Card key={i} className="p-6 h-[220px]">
+              <div className="space-y-4">
+                <Skeleton className="h-6 w-32" />
+                <div className="space-y-2">
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-4 w-3/4" />
+                </div>
+                <div className="pt-4 space-y-2">
+                  <Skeleton className="h-10 w-full" />
+                </div>
+              </div>
+            </Card>
+          ))}
+        </section>
+      </div>
+    );
+  }
+
   return (
     <div className="p-6">
       <header className="flex items-start justify-between flex-none">
         <div className="space-y-2">
-          <div className="flex items-center gap-2 mb-2">
-            <div className="w-2 h-2 rounded-full bg-primary animate-pulse" />
-            <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground opacity-70">
-              {" "}
-              Workspace
-            </p>
-          </div>
-          <h1 className="text-2xl font-semibold tracking-tighter">
-            <Activity className="w-6 h-6 mr-2 inline" /> Activity Workspace
+          <div className="flex items-center gap-2 mb-2"></div>
+          <h1 className="text-3xl font-bold font-inter tracking-wide capitalize">
+            Welcome {user?.name}
           </h1>
           <p className="text-sm text-muted-foreground max-w-lg leading-relaxed">
-            Monitor project insights, track progress and team performance all in
-            one Space.
+            Monitor project insights, track progress and your tasks all in one
+            Space.
           </p>
         </div>
-        <div className="flex">
+        <div className="flex items-center gap-4">
           <Link href={`/dashboard/my-projects/${slug}`}>
             <Button
               className="text-xs cursor-pointer"
@@ -134,16 +164,25 @@ const ProjectWorkspace = () => {
               <Home className="w-3 h-3" />
             </Button>
           </Link>
+
+          <Button
+            className="text-xs cursor-pointer font-sans font-medium! bg-linear-to-br from-transparent to-indigo-500"
+            variant="outline"
+            size="sm"
+          >
+            <Image src="/kaya.svg" alt="kaya" width={20} height={20} />
+            Today Insights
+          </Button>
         </div>
       </header>
 
       {/* TOP STATS CARDS */}
       <section className="grid grid-cols-3 gap-6 mt-10">
         {/* Project Deadline Card */}
-        <Card className="p-3! overflow-hidden shadow-sm bg-linear-to-br from-card to-muted/70">
-          <CardHeader className="flex flex-row items-center justify-between">
+        <Card className="p-3! overflow-hidden shadow-sm bg-accent/30">
+          <CardHeader className="px-0 flex flex-row items-center justify-between">
             <CardTitle className="text-sm flex items-center gap-2">
-              <AudioLines /> Track Your Project
+              <AudioLines className="w-5 h-5!" /> Track Your Project
             </CardTitle>
 
             <Button
@@ -155,7 +194,7 @@ const ProjectWorkspace = () => {
             </Button>
           </CardHeader>
           <CardContent>
-            <div className="flex justify-between items-end mb-2">
+            <div className="flex justify-between items-end my-3">
               <p className="text-[10px] tracking-wide text-muted-foreground ">
                 Days Remaining
               </p>
@@ -165,10 +204,10 @@ const ProjectWorkspace = () => {
             </div>
             <Progress
               value={calculateProgress()}
-              className="h-5 bg-blue-100/50 dark:bg-accent [&>div]:bg-blue-500 transition-all duration-500"
+              className="h-4.5! bg-blue-100/50 dark:bg-accent [&>div]:bg-blue-500 transition-all duration-500"
             />
           </CardContent>
-          <CardFooter className="flex flex-col items-start gap-2 border-t pt-4 ">
+          <CardFooter className="flex flex-col items-start gap-2 border-t pt-4">
             <div className="flex flex-col items-start gap-3 text-xs text-muted-foreground w-full">
               <div className="flex items-center gap-1.5">
                 <Clock3 className="w-3 h-3! " /> Created :
@@ -197,173 +236,30 @@ const ProjectWorkspace = () => {
           </CardFooter>
         </Card>
         {/* Activity Overview Card */}
-        <Card className="p-3! overflow-hidden shadow-sm bg-linear-to-br from-card to-muted/70">
-          <CardHeader className=" pb-4 flex flex-row items-center justify-between">
-            <CardTitle className="text-sm flex items-center gap-2 font-bold tracking-tight">
-              <Layers3 className="w-4 h-4" /> Activity Overview
-            </CardTitle>
-          </CardHeader>
-          <CardContent className="p-0 grid grid-cols-2 gap-3 -mt-6">
-            {[
-              {
-                label: "Tasks",
-                count: tasks?.length || 0,
-                icon: ClipboardList,
-                href: `/dashboard/my-projects/${slug}/workspace/tasks`,
-                action: "View Tasks",
-              },
-              {
-                label: "Issues",
-                count: issues?.length || 0,
-                icon: Bug,
-                href: `/dashboard/my-projects/${slug}/workspace/issues`,
-                action: "View Issues",
-              },
-              {
-                label: "Team",
-                count: members?.length || 0,
-                icon: Users2,
-                href: "#",
-                action: "Manage Team",
-              },
-              {
-                label: "Events",
-                count: events?.length || 0,
-                icon: TicketPlus,
-                href: `/dashboard/my-projects/${slug}/workspace/calendar`,
-                action: "Calendar",
-              },
-            ].map((stat, i) => (
-              <div
-                key={i}
-                className="p-2.5 rounded-xl bg-card border flex flex-col justify-between h-22"
-              >
-                <div className="flex justify-between items-start">
-                  <span className="text-[10px]">{stat.label}</span>
+        <ActivityOverviewCard
+          slug={slug}
+          tasksCount={tasks?.length || 0}
+          issuesCount={issues?.length || 0}
+          sprintsCount={sprints?.length || 0}
+          eventsCount={events?.length || 0}
+        />
+        {/* Task Status Pie Chart Card */}
+        <TaskStatusCard tasks={tasks || []} />
+      </section>
 
-                  <stat.icon className="w-4 h-4" />
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-xl font-bold tracking-tighter leading-none pl-2">
-                    {stat.count}
-                  </span>
-                  <Link href={stat.href}>
-                    <Button
-                      variant="link"
-                      size="sm"
-                      className="p-0 h-auto text-[10px] flex justify-end ml-auto text-foreground hover:translate-x-0.5 transition-transform cursor-pointer"
-                    >
-                      {stat.action} <ChevronRight className="w-3 h-3 " />
-                    </Button>
-                  </Link>
-                </div>
-              </div>
-            ))}
-          </CardContent>
-        </Card>
+      {/* WORK & OTHER CARDS */}
+      <section className="grid grid-cols-3 gap-6 mt-14">
+        <div className="flex flex-col space-y-6">
+          {/* Scheduler Card */}
+          <SchedulerCard scheduler={scheduler} />
+          {/* Sprint bar graph */}
+          <SprintBarChart projectId={projectId as Id<"projects">} />
+        </div>
 
-        {/* Scheduler  Card */}
-        <Card className="p-3! overflow-hidden shadow-sm bg-linear-to-br from-card to-muted/70 flex flex-col justify-between">
-          <div>
-            <CardHeader className=" pb-4 flex flex-row items-center justify-between">
-              <CardTitle className="text-sm flex items-center gap-2 font-bold tracking-tight">
-                <CalendarSync className="w-4 h-4" /> Project Scheduler
-              </CardTitle>
-              <Button
-                className="bg-linear-to-br from-card to-indigo-500 text-primary text-[10px] cursor-pointer flex items-center gap-2"
-                size="sm"
-              >
-                <Image src="/kaya.svg" alt="Kaya" width={18} height={18} />
-                help with schedule
-              </Button>
-            </CardHeader>
-            <CardContent className="p-0 space-y-3 -mt-3">
-              {!scheduler ? (
-                <div className="py-8 text-center flex flex-col items-center gap-2">
-                  <CalendarSync className="w-8 h-8 opacity-30 " />
-                  <p className="font-semibold tracking-tight text-base">
-                    No Schedule Setup Yet
-                  </p>
-                  <p className="text-xs text-muted-foreground px-8">
-                    Ask Kaya for help to generate an optimized schedule for your
-                    project.
-                  </p>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-7 text-[10px] "
-                  >
-                    Setup
-                  </Button>
-                </div>
-              ) : (
-                <div className="space-y-4 mt-4">
-                  <div className="flex justify-between items-end">
-                    <div className="space-y-1">
-                      <p className="text-xs">Name</p>
-                      <p className="text-sm font-semibold tracking-tight">
-                        {scheduler.name}
-                      </p>
-                    </div>
-                    <div className="text-right">
-                      <p className="text-xs">Frequency</p>
-                      <p className="text-xs font-bold">
-                        {scheduler.frequencyDays} Days
-                      </p>
-                    </div>
-                  </div>
-
-                  <div className="space-y-1 border-t pt-2">
-                    <div className="flex justify-between items-center">
-                      <span className="text-[10px] text-muted-foreground">
-                        Last Run
-                      </span>
-                      <span className="text-[11px] font-semibold">
-                        {scheduler.lastRunAt
-                          ? format(scheduler.lastRunAt, "MMM d, HH:mm")
-                          : "---"}
-                      </span>
-                    </div>
-                    <div className="flex justify-between items-center">
-                      <span className="text-[10px] text-muted-foreground">
-                        Next Run
-                      </span>
-                      <span className="text-[11px] font-bold">
-                        {format(scheduler.nextRunAt, "MMM d, HH:mm")}
-                      </span>
-                    </div>
-                  </div>
-                </div>
-              )}
-            </CardContent>
-          </div>
-          {scheduler && (
-            <CardFooter className="p-0 pt-3 border-t flex justify-between items-center">
-              {scheduler.isRunning ? (
-                <div className="flex items-center gap-1.5">
-                  <Loader2 className="w-3 h-3 text-blue-500 animate-spin" />
-                  <span className="text-[10px] text-blue-600 font-semibold  tracking-wide">
-                    Running
-                  </span>
-                </div>
-              ) : (
-                <div className="flex items-center gap-1.5">
-                  <div className="w-1.5 h-1.5 rounded-full bg-emerald-500" />
-                  <span className="text-[9px] text-muted-foreground font-semibold uppercase tracking-wider">
-                    Active
-                  </span>
-                </div>
-              )}
-              <Button
-                variant="outline"
-                size="sm"
-                className="h-6 px-2 text-[10px] text-muted-foreground"
-              >
-                Settings <Settings2 className="w-3 h-3 ml-1" />
-              </Button>
-            </CardFooter>
-          )}
-        </Card>
+        {/* My all work Table */}
+        <div className="col-span-2">
+          <UserWorkTable userName={user?.name} />
+        </div>
       </section>
     </div>
   );

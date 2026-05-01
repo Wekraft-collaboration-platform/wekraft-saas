@@ -305,10 +305,10 @@ const TaskGroup = ({
 
                     <TableCell className="p-2.5 border-r border-b border-neutral-800  max-w-[180px] truncate">
                       <span className="text-xs font-medium text-muted-foreground capitalize flex items-center gap-1.5">
-                        {task.isBlocked && (
-                          <Bug className="w-3.5 h-3.5 text-red-500 shrink-0" />
-                        )}
                         {task.title}
+                        {task.isBlocked && (
+                          <Bug className="w-4 h-4 text-red-500/70 shrink-0 ml-auto" />
+                        )}
                       </span>
                     </TableCell>
                     <TableCell className="p-2.5 border-r border-b border-neutral-800">

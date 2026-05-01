@@ -161,7 +161,6 @@ export default defineSchema({
     status: v.union(
       v.literal("not started"),
       v.literal("inprogress"),
-      // v.literal("issue"),
       v.literal("reviewing"),
       v.literal("testing"),
       v.literal("completed"),
@@ -344,10 +343,29 @@ export default defineSchema({
     lastRunAt: v.optional(v.number()), // timestamp (Unix ms)
     nextRunAt: v.number(),
     isRunning: v.optional(v.boolean()), // default false , only true when its scheduler is running.
+    lastRunStatus: v.optional(
+      v.union(v.literal("success"), v.literal("failure")),
+    ), // success or failure
     createdBy: v.id("users"),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("by_project", ["projectId", "isActive", "nextRunAt"])
     .index("by_nextRun", ["isActive", "nextRunAt"]),
+
+  // -------------------------------------------------
+  tickets: defineTable({
+    projectId: v.id("projects"),
+    title: v.string(),
+    description: v.optional(v.string()),
+    createdBy: v.id("users"),
+    assignedTo: v.id("users"),
+    status: v.union(v.literal("open"), v.literal("closed")),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_project", ["projectId"])
+    .index("by_creator", ["createdBy"])
+    .index("by_assignee", ["assignedTo"])
+    .index("by_status", ["status"]),
 });

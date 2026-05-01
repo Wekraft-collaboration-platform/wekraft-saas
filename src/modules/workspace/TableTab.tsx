@@ -54,6 +54,7 @@ import {
   priorityIcons2,
   statusColors,
   statusIcons,
+  statusIconsNoColors,
 } from "@/lib/static-store";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
@@ -306,12 +307,12 @@ export const TableTab = ({ tasks, onLoadMore, hasMore }: TableTabProps) => {
                         className="rounded border-neutral-800 data-[state=checked]:bg-primary"
                       />
                     </TableCell>
-                    <TableCell className="px-4 font-medium border-r border-b border-neutral-700 text-base text-primary/70 group-hover:text-primary transition-colors">
+                    <TableCell className="px-4 text-sm   font-medium border-r border-b border-neutral-700  text-primary transition-colors">
                       <div className="flex items-center gap-1.5 capitalize">
-                        {task.isBlocked && (
-                          <Bug className="w-4 h-4 text-red-500 shrink-0" />
-                        )}
                         {task.title}
+                        {task.isBlocked && (
+                          <Bug className="w-4 h-4 text-red-500/70 shrink-0 ml-auto" />
+                        )}
                       </div>
                     </TableCell>
                     <TableCell className="px-4 border-r border-b border-neutral-700">
@@ -320,7 +321,7 @@ export const TableTab = ({ tasks, onLoadMore, hasMore }: TableTabProps) => {
                           "px-2.5 py-0.5 rounded-full text-[12px] flex items-center gap-1.5 border font-medium capitalize whitespace-nowrap bg-primary/10 text-primary",
                         )}
                       >
-                        {statusIcons[task.status]}
+                        {statusIconsNoColors[task.status]}
                         {task.status}
                       </Badge>
                     </TableCell>

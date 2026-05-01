@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import {
@@ -13,12 +13,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import {
-  Plus,
   X,
   ChevronRight,
-  Flag,
   User,
-  CalendarIcon,
   Tag,
   Link2,
   Loader2,
@@ -51,45 +48,53 @@ import { GetRepoStructure } from "./GetRepoStructure";
 import { priorityIcons, statusIcons } from "@/lib/static-store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
-interface CreateTaskDialogProps {
+interface EditTaskDialogProps {
   projectName: string;
-  projectId: Id<"projects">; // From Convex
-  repoFullName?: string; // owner/repo
+  projectId: Id<"projects">;
+  repoFullName?: string;
   ownerClerkId?: string;
   trigger: React.ReactNode;
+  task: any; // The task object to edit
 }
 
-export const CreateTaskDialog = ({
+export const EditTaskDialog = ({
   projectName,
   projectId,
   repoFullName,
   ownerClerkId,
   trigger,
-}: CreateTaskDialogProps) => {
+  task,
+}: EditTaskDialogProps) => {
   const [open, setOpen] = useState(false);
-  const [title, setTitle] = useState("");
-  const [description, setDescription] = useState("");
-  const [status, setStatus] = useState("not started");
+  const [title, setTitle] = useState(task.title || "");
+  const [description, setDescription] = useState(task.description || "");
+  const [status, setStatus] = useState(task.status || "not started");
   const [priority, setPriority] = useState<"low" | "medium" | "high" | "none">(
-    "none",
+    task.priority || "none",
   );
   const [date, setDate] = useState<DateRange | undefined>({
-    from: undefined,
-    to: undefined,
+    from: task.estimation?.startDate
+      ? new Date(task.estimation.startDate)
+      : undefined,
+    to: task.estimation?.endDate
+      ? new Date(task.estimation.endDate)
+      : undefined,
   });
-  const [tag, setTag] = useState<{ label: string; color: string } | null>(null);
+  const [tag, setTag] = useState<{ label: string; color: string } | null>(
+    task.type || null,
+  );
   const [tagInput, setTagInput] = useState("");
   const [selectedTagColor, setSelectedTagColor] = useState("blue");
 
-  const [selectedPath, setSelectedPath] = useState<string | null>(null);
+  const [selectedPath, setSelectedPath] = useState<string | null>(
+    task.linkWithCodebase || null,
+  );
   const [assignedMembers, setAssignedMembers] = useState<
     { userId: Id<"users">; name: string; avatar?: string }[]
-  >([]);
+  >(task.assignedTo || []);
   const [isPending, setIsPending] = useState(false);
 
   const members = useQuery(api.project.getProjectMembers, { projectId });
-
-  const createTask = useMutation(api.workspace.createTask);
   const existingTags = useQuery(api.workspace.getUniqueTags, { projectId });
 
   const defaultTags = [
@@ -102,7 +107,30 @@ export const CreateTaskDialog = ({
   const tagsToShow =
     existingTags && existingTags.length > 0 ? existingTags : defaultTags;
 
-  const handleCreateTask = async () => {
+  const editTask = useMutation(api.workspace.editTask);
+
+  // Update states when task changes or dialog opens
+  useEffect(() => {
+    if (open) {
+      setTitle(task.title || "");
+      setDescription(task.description || "");
+      setStatus(task.status || "not started");
+      setPriority(task.priority || "none");
+      setDate({
+        from: task.estimation?.startDate
+          ? new Date(task.estimation.startDate)
+          : undefined,
+        to: task.estimation?.endDate
+          ? new Date(task.estimation.endDate)
+          : undefined,
+      });
+      setTag(task.type || null);
+      setSelectedPath(task.linkWithCodebase || null);
+      setAssignedMembers(task.assignedTo || []);
+    }
+  }, [task, open]);
+
+  const handleEditTask = async () => {
     if (!title.trim()) {
       toast.error("Task title is required");
       return;
@@ -114,7 +142,8 @@ export const CreateTaskDialog = ({
 
     try {
       setIsPending(true);
-      await createTask({
+      await editTask({
+        taskId: task._id,
         title,
         description: description.trim() || undefined,
         status: status as any,
@@ -124,26 +153,14 @@ export const CreateTaskDialog = ({
           endDate: date.to.getTime(),
         },
         type: tag ? tag : undefined,
-        projectId,
         linkWithCodebase: selectedPath || undefined,
         assignedTo: assignedMembers.length > 0 ? assignedMembers : undefined,
       });
-      toast.success("Task created successfully");
+      toast.success("Task updated successfully");
       setOpen(false);
-      // Reset form
-      setTitle("");
-      setDescription("");
-      setStatus("not started");
-      setPriority("none");
-      setDate({ from: undefined, to: undefined });
-      setTag(null);
-      setTagInput("");
-      setSelectedTagColor("blue");
-      setSelectedPath(null);
-      setAssignedMembers([]);
     } catch (error) {
       console.error(error);
-      toast.error("Failed to create task");
+      toast.error("Failed to update task");
     } finally {
       setIsPending(false);
     }
@@ -158,7 +175,7 @@ export const CreateTaskDialog = ({
             <div className="w-3 h-3 rounded-full bg-blue-600 flex items-center justify-center text-[10px] text-white"></div>
             <span className="text-sm">{projectName}</span>
             <ChevronRight className="w-3 h-3" />
-            <span className="text-xs">New task</span>
+            <span className="text-xs">Edit task</span>
           </div>
         </DialogHeader>
 
@@ -588,16 +605,16 @@ export const CreateTaskDialog = ({
             </Button>
             <Button
               disabled={isPending}
-              onClick={handleCreateTask}
+              onClick={handleEditTask}
               className="h-8 text-xs bg-blue-600 hover:bg-blue-700 text-white px-4"
             >
               {isPending ? (
                 <>
                   <Loader2 className="w-3.5 h-3.5 mr-2 animate-spin" />
-                  Creating...
+                  Saving...
                 </>
               ) : (
-                "Create task"
+                "Save changes"
               )}
             </Button>
           </div>

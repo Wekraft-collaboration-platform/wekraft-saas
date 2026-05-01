@@ -33,7 +33,12 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { toast } from "sonner";
 import { Task } from "@/types/types";
-import { priorityIcons2, statusColors, statusIcons } from "@/lib/static-store";
+import {
+  priorityIcons2,
+  statusColors,
+  statusIcons,
+  statusIconsNoColors,
+} from "@/lib/static-store";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,6 +56,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Loader2 } from "lucide-react";
+import { EditTaskDialog } from "./EditTaskDialog";
 
 interface TaskDetailSheetProps {
   task: Task | null;
@@ -100,6 +106,12 @@ export const TaskDetailSheet = ({
 
   const updateAssignees = useMutation(api.workspace.updateTaskAssignees);
   const markAsIssue = useMutation(api.workspace.markTaskAsIssue);
+
+  const project = useQuery(
+    api.project.getProjectById,
+    currentTask ? { projectId: currentTask.projectId } : "skip",
+  );
+
   const [isMarkingIssue, setIsMarkingIssue] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
 
@@ -171,9 +183,18 @@ export const TaskDetailSheet = ({
           {/* Top Actions */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-accent">
             <div className="flex items-center gap-3">
-              <Button variant="default" size="sm" className="text-[10px]">
-                <Edit2 size={12} /> Edit Task
-              </Button>
+              <EditTaskDialog
+                projectName={project?.projectName || "Project"}
+                projectId={currentTask.projectId}
+                repoFullName={project?.repoFullName}
+                ownerClerkId={project?.ownerClerkId}
+                task={currentTask}
+                trigger={
+                  <Button variant="default" size="sm" className="text-[10px]">
+                    <Edit2 size={12} /> Edit Task
+                  </Button>
+                }
+              />
               <Button
                 variant="outline"
                 size="sm"
@@ -289,7 +310,9 @@ export const TaskDetailSheet = ({
                         "px-3 py-1 flex items-center bg-accent rounded-full text-[10px] border capitalize gap-1.5",
                       )}
                     >
-                      {statusIcons[currentTask.status] || <Circle size={12} />}
+                      {statusIconsNoColors[currentTask.status] || (
+                        <Circle size={12} />
+                      )}
                       {currentTask.status}
                     </p>
                   </div>

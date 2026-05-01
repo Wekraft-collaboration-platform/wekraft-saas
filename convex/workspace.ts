@@ -261,6 +261,62 @@ export const markTaskAsIssue = mutation({
   },
 });
 
+// =======================================
+// EDITING TASK
+// =======================================
+export const editTask = mutation({
+  args: {
+    taskId: v.id("tasks"),
+    title: v.optional(v.string()),
+    description: v.optional(v.string()),
+    type: v.optional(v.object({ label: v.string(), color: v.string() })),
+    priority: v.optional(
+      v.union(v.literal("high"), v.literal("medium"), v.literal("low")),
+    ),
+    assignedTo: v.optional(
+      v.array(
+        v.object({
+          userId: v.id("users"),
+          name: v.string(),
+          avatar: v.optional(v.string()),
+        }),
+      ),
+    ),
+    status: v.optional(
+      v.union(
+        v.literal("not started"),
+        v.literal("inprogress"),
+        v.literal("reviewing"),
+        v.literal("testing"),
+        v.literal("completed"),
+      ),
+    ),
+    estimation: v.optional(
+      v.object({
+        startDate: v.number(),
+        endDate: v.number(),
+      }),
+    ),
+    linkWithCodebase: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const { taskId, ...updateFields } = args;
+
+    const task = await ctx.db.get(taskId);
+    if (!task) throw new Error("Task not found");
+
+    await ctx.db.patch(taskId, {
+      ...updateFields,
+      updatedAt: Date.now(),
+    });
+
+    return taskId;
+  },
+});
+
 // =============================================
 // GET PROJECT SCHEDULER
 // =============================================
@@ -273,5 +329,29 @@ export const getProjectScheduler = query({
       .query("schedulers")
       .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
       .unique();
+  },
+});
+// =============================================
+// GET UNIQUE TAGS FOR A PROJECT
+// =============================================
+export const getUniqueTags = query({
+  args: {
+    projectId: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    const tasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
+    const tagsMap = new Map<string, { label: string; color: string }>();
+
+    tasks.forEach((task) => {
+      if (task.type) {
+        tagsMap.set(task.type.label, task.type);
+      }
+    });
+
+    return Array.from(tagsMap.values());
   },
 });
