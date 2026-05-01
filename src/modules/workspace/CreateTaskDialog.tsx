@@ -90,6 +90,17 @@ export const CreateTaskDialog = ({
   const members = useQuery(api.project.getProjectMembers, { projectId });
 
   const createTask = useMutation(api.workspace.createTask);
+  const existingTags = useQuery(api.workspace.getUniqueTags, { projectId });
+
+  const defaultTags = [
+    { label: "Payment", color: "green" },
+    { label: "Auth", color: "blue" },
+    { label: "Mobile", color: "purple" },
+    { label: "CRM", color: "yellow" },
+  ];
+
+  const tagsToShow =
+    existingTags && existingTags.length > 0 ? existingTags : defaultTags;
 
   const handleCreateTask = async () => {
     if (!title.trim()) {
@@ -371,10 +382,45 @@ export const CreateTaskDialog = ({
               <PopoverContent className="w-[280px] p-3 bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200">
                 <div className="space-y-3">
                   <p className="text-xs font-medium text-center text-muted-foreground border-b border-accent pb-2">
+                    {existingTags && existingTags.length > 0
+                      ? "Project Tags"
+                      : "Default Tags"}
+                  </p>
+
+                  <div className="flex flex-wrap gap-2 mb-2 min-h-6">
+                    {tagsToShow.map((t) => (
+                      <Badge
+                        key={t.label}
+                        onClick={() => setTag(t)}
+                        className={cn(
+                          "text-[10px] py-0 px-2 h-5 gap-1 border-none font-medium capitalize cursor-pointer transition-all hover:scale-105",
+                          tag?.label === t.label
+                            ? "ring-1 ring-white/50"
+                            : "opacity-70 hover:opacity-100",
+                          t.color === "green" &&
+                            "bg-emerald-500/20 text-emerald-400",
+                          t.color === "yellow" &&
+                            "bg-yellow-500/20 text-yellow-400",
+                          t.color === "purple" &&
+                            "bg-purple-500/20 text-purple-400",
+                          t.color === "blue" && "bg-blue-500/20 text-blue-400",
+                          t.color === "grey" &&
+                            "bg-neutral-500/20 text-neutral-400",
+                        )}
+                      >
+                        {t.label}
+                        {tag?.label === t.label && (
+                          <Check className="w-2.5 h-2.5 ml-1" />
+                        )}
+                      </Badge>
+                    ))}
+                  </div>
+
+                  <p className="text-xs font-medium text-center text-muted-foreground border-b border-accent pb-2 pt-2">
                     Custom Tags
                   </p>
 
-                  {/* Current Tag */}
+                  {/* Current Tag Display & Removal */}
                   {tag && (
                     <div className="flex flex-wrap gap-1.5 mb-2">
                       <Badge

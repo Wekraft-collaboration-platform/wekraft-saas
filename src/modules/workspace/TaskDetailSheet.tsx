@@ -33,7 +33,12 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { toast } from "sonner";
 import { Task } from "@/types/types";
-import { priorityIcons2, statusColors, statusIcons } from "@/lib/static-store";
+import {
+  priorityIcons2,
+  statusColors,
+  statusIcons,
+  statusIconsNoColors,
+} from "@/lib/static-store";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -305,7 +310,9 @@ export const TaskDetailSheet = ({
                         "px-3 py-1 flex items-center bg-accent rounded-full text-[10px] border capitalize gap-1.5",
                       )}
                     >
-                      {statusIcons[currentTask.status] || <Circle size={12} />}
+                      {statusIconsNoColors[currentTask.status] || (
+                        <Circle size={12} />
+                      )}
                       {currentTask.status}
                     </p>
                   </div>

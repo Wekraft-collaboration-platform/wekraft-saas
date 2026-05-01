@@ -331,3 +331,27 @@ export const getProjectScheduler = query({
       .unique();
   },
 });
+// =============================================
+// GET UNIQUE TAGS FOR A PROJECT
+// =============================================
+export const getUniqueTags = query({
+  args: {
+    projectId: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    const tasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
+    const tagsMap = new Map<string, { label: string; color: string }>();
+
+    tasks.forEach((task) => {
+      if (task.type) {
+        tagsMap.set(task.type.label, task.type);
+      }
+    });
+
+    return Array.from(tagsMap.values());
+  },
+});
