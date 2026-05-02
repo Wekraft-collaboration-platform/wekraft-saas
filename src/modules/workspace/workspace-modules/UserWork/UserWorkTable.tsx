@@ -13,6 +13,7 @@ import {
   LayoutGrid,
   Sparkles,
   Layers2,
+  FastForward,
 } from "lucide-react";
 import { useKayaStore } from "@/store/useKayaStore";
 import { cn } from "@/lib/utils";
@@ -30,7 +31,7 @@ export const UserWorkTable = ({ userName }: UserWorkTableProps) => {
   const tabs = [
     { id: "tasks", label: "Tasks", icon: ClipboardList },
     { id: "issues", label: "Issues", icon: Bug },
-    { id: "sprints", label: "Sprints", icon: Zap },
+    { id: "sprints", label: "Sprints", icon: FastForward },
     { id: "tickets", label: "Tickets", icon: Ticket },
   ];
 
@@ -47,7 +48,7 @@ export const UserWorkTable = ({ userName }: UserWorkTableProps) => {
         desc: "Great job! There are no critical bugs requiring your immediate attention.",
       },
       sprints: {
-        icon: Zap,
+        icon: FastForward,
         title: "No active sprints",
         desc: "You are not part of any active sprints currently. Check with your team lead.",
       },
@@ -62,11 +63,10 @@ export const UserWorkTable = ({ userName }: UserWorkTableProps) => {
     const Icon = state.icon;
 
     return (
-      <div className="min-h-[300px] flex flex-col items-center justify-center text-center p-12 bg-muted/10 rounded-xl border border-dashed border-border/40 transition-all duration-300">
-        <div className="w-14 h-14 rounded-full bg-primary/5 flex items-center justify-center mb-6 border border-primary/10 shadow-xs">
-          <Icon className="w-7 h-7 text-primary/40" />
-        </div>
-        <h3 className="text-sm font-semibold tracking-tight text-foreground/80">
+      <div className=" flex flex-col items-center justify-center text-center p-12 mt-20 bg-muted/40 rounded-xl border border-dashed border-accent transition-all duration-300">
+        <Icon className="w-10 h-10 text-primary opacity-50 mb-5" />
+
+        <h3 className="text-sm font-semibold tracking-tight text-primary">
           {state.title}
         </h3>
         <p className="text-[11px] text-muted-foreground max-w-[240px] mt-2 font-medium leading-relaxed">
@@ -77,13 +77,15 @@ export const UserWorkTable = ({ userName }: UserWorkTableProps) => {
   };
 
   return (
-    <Card className="border border-border shadow-none overflow-hidden bg-card h-[600px]">
+    <Card className="border border-border shadow-none overflow-hidden bg-accent/30 h-[620px]">
       <CardHeader className="flex  items-center justify-between space-y-0 ">
         <div className="space-y-1">
           <CardTitle className="text-base font-semibold  text-primary flex items-center gap-2">
-            <Layers2 className="w-4 h-4 text-primary" />
+            <Layers2 className="w-5 h-5! text-primary" />
             Your work,
-            <span className="text-primary capitalize">{userName}</span>
+            <span className="text-primary font-bold text-xl capitalize">
+              {userName}
+            </span>
           </CardTitle>
         </div>
         <div className="flex items-center gap-1.5 text-xs tracking-tight font-medium text-muted-foreground">

@@ -12,8 +12,8 @@ import {
   History,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { api } from "../../../../../../../../../convex/_generated/api";
-import { Id } from "../../../../../../../../../convex/_generated/dataModel";
+import { api } from "../../../../convex/_generated/api";
+import { Id } from "../../../../convex/_generated/dataModel";
 
 interface SprintBarChartProps {
   projectId: Id<"projects">;
@@ -60,7 +60,7 @@ export const SprintBarChart = ({ projectId }: SprintBarChartProps) => {
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
         <div className="space-y-1">
           <CardTitle className="text-sm font-semibold text-primary flex items-center gap-2">
-            <BarChart3 className="w-4 h-4" /> Sprint Performance Metrics
+            <BarChart3 className="w-5 h-5!" /> Sprint Performance Metrics
           </CardTitle>
           <p className="text-[10px] text-muted-foreground font-medium">
             Sprint duration vs task completion

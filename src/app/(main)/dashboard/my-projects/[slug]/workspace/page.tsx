@@ -44,12 +44,12 @@ import {
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import Image from "next/image";
-import { ActivityOverviewCard } from "./modules/components/ActivityOverviewCard";
-import { SchedulerCard } from "./modules/components/SchedulerCard";
-import { TaskStatusCard } from "./modules/components/TaskStatusCard";
 import { Skeleton } from "@/components/ui/skeleton";
-import { UserWorkTable } from "./modules/components/UserWork/UserWorkTable";
-import { SprintBarChart } from "./modules/components/SprintBarChart";
+import { ActivityOverviewCard } from "@/modules/workspace/workspace-modules/ActivityOverviewCard";
+import { TaskStatusCard } from "@/modules/workspace/workspace-modules/TaskStatusCard";
+import { SchedulerCard } from "@/modules/workspace/workspace-modules/SchedulerCard";
+import { SprintBarChart } from "@/modules/workspace/workspace-modules/SprintBarChart";
+import { UserWorkTable } from "@/modules/workspace/workspace-modules/UserWork/UserWorkTable";
 
 const ProjectWorkspace = () => {
   const params = useParams();
