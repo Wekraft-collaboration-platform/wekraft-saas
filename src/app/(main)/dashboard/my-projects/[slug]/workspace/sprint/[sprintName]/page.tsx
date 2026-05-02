@@ -274,9 +274,9 @@ const SprintDetailPage = () => {
 
       {/* Top Cards Grid */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-3 mb-8">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
           {/* Progress Card */}
-          <div className="border ">
+          <div className="bg-accent/30 p-3 rounded-xl border border-border/50">
             <div className="flex justify-between items-start mb-4">
               <div>
                 <p className="text-xs text-muted-foreground font-medium">
@@ -290,16 +290,16 @@ const SprintDetailPage = () => {
                 {stats.completionPercent}%
               </span>
             </div>
-            <div className="w-full bg-muted/40 rounded-full h-1.5 overflow-hidden">
+            <div className="w-full bg-muted/40 rounded-full h-6 overflow-hidden">
               <div
-                className="bg-primary rounded-full h-full transition-all duration-700 ease-out"
+                className="bg-blue-600 rounded-full h-full transition-all duration-700 ease-out"
                 style={{ width: `${stats.completionPercent}%` }}
               />
             </div>
           </div>
 
           {/* Burn Rate Card */}
-          <div className="border ">
+          <div className="bg-accent/30 p-3 rounded-xl border border-border/50">
             <div className="flex items-center gap-1.5 text-muted-foreground mb-3">
               <Zap className="w-3.5 h-3.5" />
               <p className="text-xs font-medium">Burn Rate</p>
@@ -315,7 +315,7 @@ const SprintDetailPage = () => {
           </div>
 
           {/* Assignees Card */}
-          <div className="border">
+          <div className="bg-accent/30 p-3 rounded-xl border border-border/50">
             <div className="flex items-center gap-1.5 text-muted-foreground mb-3">
               <Users className="w-3.5 h-3.5" />
               <p className="text-xs font-medium">Assignees</p>

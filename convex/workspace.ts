@@ -492,33 +492,29 @@ export const getMyTasks = query({
       .filter((q) => q.eq(q.field("projectId"), args.projectId))
       .collect();
 
-    // 2. Get unique task IDs (skip duplicates)
+    // 2. Get unique task IDs
     const taskIds = [...new Set(assignments.map((a) => a.taskId))];
 
-    // 3. Paginate over taskIds
-    const paginatedIds = taskIds.slice(skip, skip + limit);
+    // 3. Fetch and filter out completed tasks
+    const allUserTasks = await Promise.all(taskIds.map((id) => ctx.db.get(id)));
+    const activeTasks = allUserTasks.filter(
+      (t): t is any => t !== null && t.status !== "completed",
+    );
 
-    // 4. Fetch lean task data
-    const items = (
-      await Promise.all(
-        paginatedIds.map(async (taskId) => {
-          const task = await ctx.db.get(taskId);
-          if (!task) return null;
-          return {
-            _id: task._id,
-            title: task.title,
-            description: task.description,
-            priority: task.priority,
-            status: task.status,
-            estimation: task.estimation,
-            isBlocked: task.isBlocked,
-          };
-        }),
-      )
-    ).filter(Boolean);
+    // 4. Paginate over activeTasks
+    const paginatedTasks = activeTasks.slice(skip, skip + limit);
 
-    const nextCursor =
-      skip + limit < taskIds.length ? skip + limit : null;
+    const items = paginatedTasks.map((task) => ({
+      _id: task._id,
+      title: task.title,
+      description: task.description,
+      priority: task.priority,
+      status: task.status,
+      estimation: task.estimation,
+      isBlocked: task.isBlocked,
+    }));
+
+    const nextCursor = skip + limit < activeTasks.length ? skip + limit : null;
 
     return { items, nextCursor };
   },
