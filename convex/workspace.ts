@@ -459,3 +459,132 @@ export const getUniqueTags = query({
     return Array.from(tagsMap.values());
   },
 });
+
+// =============================================
+// GET MY TASKS (Paginated — for UserWorkTable)
+// =============================================
+export const getMyTasks = query({
+  args: {
+    projectId: v.id("projects"),
+    limit: v.optional(v.number()),
+    cursor: v.optional(v.number()), // skip count
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return { items: [], nextCursor: null };
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) return { items: [], nextCursor: null };
+
+    const limit = args.limit ?? 10;
+    const skip = args.cursor ?? 0;
+
+    // 1. Find all taskAssignee rows for this user in this project
+    const assignments = await ctx.db
+      .query("taskAssignees")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .filter((q) => q.eq(q.field("projectId"), args.projectId))
+      .collect();
+
+    // 2. Get unique task IDs (skip duplicates)
+    const taskIds = [...new Set(assignments.map((a) => a.taskId))];
+
+    // 3. Paginate over taskIds
+    const paginatedIds = taskIds.slice(skip, skip + limit);
+
+    // 4. Fetch lean task data
+    const items = (
+      await Promise.all(
+        paginatedIds.map(async (taskId) => {
+          const task = await ctx.db.get(taskId);
+          if (!task) return null;
+          return {
+            _id: task._id,
+            title: task.title,
+            description: task.description,
+            priority: task.priority,
+            status: task.status,
+            estimation: task.estimation,
+            isBlocked: task.isBlocked,
+          };
+        }),
+      )
+    ).filter(Boolean);
+
+    const nextCursor =
+      skip + limit < taskIds.length ? skip + limit : null;
+
+    return { items, nextCursor };
+  },
+});
+
+// =============================================
+// GET MY ISSUES (Paginated — for UserWorkTable)
+// =============================================
+export const getMyIssues = query({
+  args: {
+    projectId: v.id("projects"),
+    limit: v.optional(v.number()),
+    cursor: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return { items: [], nextCursor: null };
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) return { items: [], nextCursor: null };
+
+    const limit = args.limit ?? 10;
+    const skip = args.cursor ?? 0;
+
+    // 1. Find all issueAssignee rows for this user in this project
+    const assignments = await ctx.db
+      .query("issueAssignees")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .filter((q) => q.eq(q.field("projectId"), args.projectId))
+      .collect();
+
+    // 2. Get unique issue IDs
+    const issueIds = [...new Set(assignments.map((a) => a.issueId))];
+
+    // 3. Paginate
+    const paginatedIds = issueIds.slice(skip, skip + limit);
+
+    // 4. Fetch lean issue data
+    const items = (
+      await Promise.all(
+        paginatedIds.map(async (issueId) => {
+          const issue = await ctx.db.get(issueId);
+          if (!issue) return null;
+          return {
+            _id: issue._id,
+            title: issue.title,
+            description: issue.description,
+            severity: issue.severity,
+            status: issue.status,
+            due_date: issue.due_date,
+            environment: issue.environment,
+            type: issue.type,
+          };
+        }),
+      )
+    ).filter(Boolean);
+
+    const nextCursor =
+      skip + limit < issueIds.length ? skip + limit : null;
+
+    return { items, nextCursor };
+  },
+});

@@ -50,7 +50,7 @@ import { ActivityOverviewCard } from "@/modules/workspace/workspace-modules/Acti
 import { TaskStatusCard } from "@/modules/workspace/workspace-modules/TaskStatusCard";
 import { SchedulerCard } from "@/modules/workspace/workspace-modules/SchedulerCard";
 import { SprintBarChart } from "@/modules/workspace/workspace-modules/SprintBarChart";
-import { UserWorkTable } from "@/modules/workspace/workspace-modules/UserWork/UserWorkTable";
+import { UserWorkTable } from "@/modules/workspace/workspace-modules/UserWorkTable";
 import { SetTargetDateDialog } from "@/modules/workspace/SetTargetDateDialog";
 
 const ProjectWorkspace = () => {
@@ -270,7 +270,7 @@ const ProjectWorkspace = () => {
 
         {/* My all work Table */}
         <div className="col-span-2">
-          <UserWorkTable userName={user?.name} />
+          <UserWorkTable userName={user?.name} projectId={projectId as Id<"projects">} />
         </div>
       </section>
     </div>
