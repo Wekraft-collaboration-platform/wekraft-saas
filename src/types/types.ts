@@ -48,7 +48,7 @@ export interface Task {
   description?: string;
   estimation: { startDate: number; endDate: number };
   type?: Tag;
-  assignedTo?: { name: string; avatar?: string; userId: Id<"users"> }[];
+  assignees?: { name: string; avatar?: string; userId: Id<"users"> }[];
   priority?: string;
   status: string;
   linkWithCodebase?: string;

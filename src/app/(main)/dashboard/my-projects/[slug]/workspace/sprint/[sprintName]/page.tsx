@@ -499,9 +499,9 @@ const SprintDetailPage = () => {
 
                           <TableCell className="px-4 py-2 border-r border-border">
                             <div className="flex items-center justify-center">
-                              {task.assignedTo && task.assignedTo.length > 0 ? (
+                              {task.assignees && task.assignees.length > 0 ? (
                                 <div className="flex items-center -space-x-1.5">
-                                  {task.assignedTo
+                                  {task.assignees
                                     .slice(0, 3)
                                     .map((person: any, i: number) => (
                                       <Avatar
@@ -514,9 +514,9 @@ const SprintDetailPage = () => {
                                         </AvatarFallback>
                                       </Avatar>
                                     ))}
-                                  {task.assignedTo.length > 3 && (
+                                  {task.assignees.length > 3 && (
                                     <div className="w-6 h-6 rounded-full bg-muted border border-background flex items-center justify-center text-[8px] font-bold text-muted-foreground">
-                                      +{task.assignedTo.length - 3}
+                                      +{task.assignees.length - 3}
                                     </div>
                                   )}
                                 </div>

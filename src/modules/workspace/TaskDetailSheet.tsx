@@ -136,7 +136,7 @@ export const TaskDetailSheet = ({
   const handleAssignMember = async (member: any, isSelected: boolean) => {
     if (!currentTask) return;
 
-    let newAssignees = currentTask.assignedTo || [];
+    let newAssignees = currentTask.assignees || [];
     if (isSelected) {
       newAssignees = newAssignees.filter((m) => m.userId !== member.userId);
     } else {
@@ -153,7 +153,11 @@ export const TaskDetailSheet = ({
     try {
       await updateAssignees({
         taskId: currentTask._id,
-        assignedTo: newAssignees,
+        assignees: newAssignees.map(a => ({
+          userId: a.userId,
+          name: a.name,
+          avatar: a.avatar,
+        })),
       });
       toast.success("Assignees updated");
     } catch (error) {
@@ -327,10 +331,10 @@ export const TaskDetailSheet = ({
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <div className="cursor-pointer">
-                          {currentTask.assignedTo &&
-                          currentTask.assignedTo.length > 0 ? (
+                          {currentTask.assignees &&
+                          currentTask.assignees.length > 0 ? (
                             <div className="flex -space-x-2">
-                              {currentTask.assignedTo.map((person, i) => (
+                              {currentTask.assignees.map((person, i) => (
                                 <Avatar
                                   key={i}
                                   className="w-7 h-7 border-2 border-neutral-900"
@@ -358,7 +362,7 @@ export const TaskDetailSheet = ({
                           Assign Members
                         </div>
                         {members?.map((member) => {
-                          const isSelected = currentTask.assignedTo?.some(
+                          const isSelected = currentTask.assignees?.some(
                             (m) => m.userId === member.userId,
                           );
                           return (

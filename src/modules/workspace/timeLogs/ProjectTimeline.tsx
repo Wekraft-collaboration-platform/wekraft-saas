@@ -263,7 +263,7 @@ function TimelineWeekAxis({
             const isWide = baseWidth >= 180;
             const isMed = baseWidth >= 80;
 
-            const assignees = task.assignedTo ?? [];
+            const assignees = task.assignees ?? [];
 
             const getTaskColor = (t: Task) => {
               const today = startOfDay(new Date());
@@ -488,7 +488,7 @@ function TimelineDayAxis({
             const isWide = baseWidth >= 180; // show icon + avatars + title + duration
             const isMed = baseWidth >= 90; // show title + duration only
 
-            const assignees = task.assignedTo ?? [];
+            const assignees = task.assignees ?? [];
 
             const getTaskColor = (t: Task) => {
               const today = startOfDay(new Date());

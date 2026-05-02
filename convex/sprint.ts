@@ -153,17 +153,30 @@ export const getSprintTasks = query({
     const sprint = await ctx.db.get(args.sprintId);
     if (!sprint) return [];
 
+    let tasks = [];
     if (sprint.taskIds) {
       const taskResults = await Promise.all(
         sprint.taskIds.map((id) => ctx.db.get(id)),
       );
-      return taskResults.filter((t): t is any => t !== null);
+      tasks = taskResults.filter((t): t is any => t !== null);
+    } else {
+      tasks = await ctx.db
+        .query("tasks")
+        .withIndex("by_sprint", (q) => q.eq("sprintId", args.sprintId))
+        .collect();
     }
 
-    return await ctx.db
-      .query("tasks")
-      .withIndex("by_sprint", (q) => q.eq("sprintId", args.sprintId))
-      .collect();
+    const tasksWithAssignees = await Promise.all(
+      tasks.map(async (task) => {
+        const assignees = await ctx.db
+          .query("taskAssignees")
+          .withIndex("by_task", (q) => q.eq("taskId", task._id))
+          .collect();
+        return { ...task, assignees };
+      }),
+    );
+
+    return tasksWithAssignees;
   },
 });
 
@@ -299,15 +312,25 @@ export const getSprintStats = query({
         (taskStatusBreakdown[task.status] || 0) + 1;
     }
 
+    const tasksWithAssignees = await Promise.all(
+      tasks.map(async (task) => {
+        const assignees = await ctx.db
+          .query("taskAssignees")
+          .withIndex("by_task", (q) => q.eq("taskId", task._id))
+          .collect();
+        return { ...task, assignees };
+      })
+    );
+
     // Unique team members from task assignees + issue assignees
     const memberMap = new Map<
       string,
       { userId: string; name: string; avatar?: string; taskCount: number }
     >();
 
-    for (const task of tasks) {
-      if (task.assignedTo) {
-        for (const person of task.assignedTo) {
+    for (const task of tasksWithAssignees) {
+      if (task.assignees) {
+        for (const person of task.assignees) {
           const existing = memberMap.get(person.userId);
           if (existing) {
             existing.taskCount += 1;

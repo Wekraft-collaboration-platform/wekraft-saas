@@ -23,13 +23,23 @@ async function getMemberWorkloadLogic(
     .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
     .collect();
 
+  const taskAssignees = await ctx.db
+    .query("taskAssignees")
+    .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+    .collect();
+
+  const issueAssignees = await ctx.db
+    .query("issueAssignees")
+    .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+    .collect();
+
   return members.map((m) => {
     const memberTasks = tasks.filter((t) =>
-      (t.assignedTo ?? []).some((a) => a.userId === m.userId),
+      taskAssignees.some((a) => a.taskId === t._id && a.userId === m.userId),
     );
 
     const memberIssues = issues.filter((i) =>
-      (i.IssueAssignee ?? []).some((a) => a.userId === m.userId),
+      issueAssignees.some((a) => a.issueId === i._id && a.userId === m.userId),
     );
 
     return {
@@ -153,6 +163,11 @@ async function getTasksSummaryLogic(
     .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
     .collect();
 
+  const taskAssignees = await ctx.db
+    .query("taskAssignees")
+    .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+    .collect();
+
   const now = Date.now();
   const NEAR_OVERDUE_THRESHOLD = 2 * 24 * 60 * 60 * 1000; // 2 days
 
@@ -194,7 +209,7 @@ async function getTasksSummaryLogic(
         status: t.status,
         priority: t.priority ?? "medium",
         isBlocked: t.isBlocked ?? false,
-        assignees: (t.assignedTo ?? []).map((a) => a.name),
+        assignees: taskAssignees.filter((a) => a.taskId === t._id).map((a) => a.name),
         endDate: new Date(t.estimation.endDate).toLocaleDateString(),
         timelineStatus,
       };
@@ -214,6 +229,11 @@ async function getIssuesSummaryLogic(
     .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
     .collect();
 
+  const issueAssignees = await ctx.db
+    .query("issueAssignees")
+    .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+    .collect();
+
   const openIssues = issues.filter((i) => i.status !== "closed");
   const closedCount = issues.filter((i) => i.status === "closed").length;
   const criticalCount = issues.filter(
@@ -226,7 +246,7 @@ async function getIssuesSummaryLogic(
       status: i.status,
       severity: i.severity ?? "medium",
       type: i.type,
-      assignees: (i.IssueAssignee ?? []).map((a) => a.name),
+      assignees: issueAssignees.filter((a) => a.issueId === i._id).map((a) => a.name),
     })),
     closedCount,
     criticalCount,

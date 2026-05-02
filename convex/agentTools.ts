@@ -315,13 +315,18 @@ export const getProjectTasks = internalQuery({
       tasks = tasks.filter((t) => t.sprintId === args.sprintId);
     }
 
+    const taskAssignees = await ctx.db
+      .query("taskAssignees")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
     // Return only the fields the AI needs — keep tokens low
     return tasks.map((t) => ({
       id: t._id,
       title: t.title,
       status: t.status,
       priority: t.priority ?? null,
-      assignedTo: (t.assignedTo ?? []).map((a) => a.name), // names only, no avatars
+      assignees: taskAssignees.filter((a) => a.taskId === t._id).map((a) => a.name), // names only, no avatars
       startDate: t.estimation.startDate,
       endDate: t.estimation.endDate,
       isBlocked: t.isBlocked ?? false,
@@ -384,6 +389,11 @@ export const getProjectIssues = internalQuery({
       issues = issues.filter((i) => i.sprintId === args.sprintId);
     }
 
+    const issueAssignees = await ctx.db
+      .query("issueAssignees")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
     // Return only the fields the AI needs — keep tokens low
     return issues.map((i) => ({
       id: i._id,
@@ -394,7 +404,7 @@ export const getProjectIssues = internalQuery({
       type: i.type, // user-created | task-issue | github
       due_date: i.due_date ?? null,
       taskId: i.taskId ?? null, // linked task if type === "task-issue"
-      assignedTo: (i.IssueAssignee ?? []).map((a) => a.name), // names only, no avatars
+      assignees: issueAssignees.filter((a) => a.issueId === i._id).map((a) => a.name), // names only, no avatars
       sprintId: i.sprintId ?? null,
     }));
   },
@@ -422,13 +432,23 @@ export const getMemberWorkload = internalQuery({
       .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
       .collect();
 
+    const taskAssignees = await ctx.db
+      .query("taskAssignees")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
+    const issueAssignees = await ctx.db
+      .query("issueAssignees")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
     return members.map((m) => {
       const memberTasks = tasks.filter((t) =>
-        (t.assignedTo ?? []).some((a) => a.userId === m.userId),
+        taskAssignees.some((a) => a.taskId === t._id && a.userId === m.userId),
       );
 
       const memberIssues = issues.filter((i) =>
-        (i.IssueAssignee ?? []).some((a) => a.userId === m.userId),
+        issueAssignees.some((a) => a.issueId === i._id && a.userId === m.userId),
       );
 
       return {
@@ -562,6 +582,11 @@ export const getTasksSummary = internalQuery({
       .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
       .collect();
 
+    const taskAssignees = await ctx.db
+      .query("taskAssignees")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
     const now = Date.now();
     const NEAR_OVERDUE_THRESHOLD = 2 * 24 * 60 * 60 * 1000; // 2 days
 
@@ -610,7 +635,7 @@ export const getTasksSummary = internalQuery({
           status: t.status,
           priority: t.priority ?? "medium",
           isBlocked: t.isBlocked ?? false,
-          assignees: (t.assignedTo ?? []).map((a) => a.name),
+          assignees: taskAssignees.filter((a) => a.taskId === t._id).map((a) => a.name),
           endDate: new Date(t.estimation.endDate).toLocaleDateString(),
           timelineStatus,
         };
@@ -633,6 +658,11 @@ export const getIssuesSummary = internalQuery({
       .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
       .collect();
 
+    const issueAssignees = await ctx.db
+      .query("issueAssignees")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
     const openIssues = issues.filter((i) => i.status !== "closed");
     const closedCount = issues.filter((i) => i.status === "closed").length;
     const criticalCount = issues.filter(
@@ -645,7 +675,7 @@ export const getIssuesSummary = internalQuery({
         status: i.status,
         severity: i.severity ?? "medium",
         type: i.type,
-        assignees: (i.IssueAssignee ?? []).map((a) => a.name),
+        assignees: issueAssignees.filter((a) => a.issueId === i._id).map((a) => a.name),
       })),
       closedCount,
       criticalCount,

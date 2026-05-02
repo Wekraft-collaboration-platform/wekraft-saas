@@ -12,7 +12,7 @@ export const createTask = mutation({
     priority: v.optional(
       v.union(v.literal("high"), v.literal("medium"), v.literal("low")),
     ),
-    assignedTo: v.optional(
+    assignees: v.optional(
       v.array(
         v.object({
           userId: v.id("users"),
@@ -34,6 +34,7 @@ export const createTask = mutation({
     }),
     linkWithCodebase: v.optional(v.string()),
     projectId: v.id("projects"),
+    sprintId: v.optional(v.id("sprints")),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -48,13 +49,30 @@ export const createTask = mutation({
 
     if (!user) throw new Error("User not found");
 
+    const { assignees, ...taskData } = args;
+
     const taskId = await ctx.db.insert("tasks", {
-      ...args,
+      ...taskData,
       createdByUserId: user._id,
       isBlocked: false,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
+
+    // Handle Assignees
+    if (assignees && assignees.length > 0) {
+      await Promise.all(
+        assignees.map((assignee) =>
+          ctx.db.insert("taskAssignees", {
+            taskId,
+            userId: assignee.userId,
+            name: assignee.name,
+            avatar: assignee.avatar,
+            projectId: args.projectId,
+          }),
+        ),
+      );
+    }
 
     return taskId;
   },
@@ -69,11 +87,23 @@ export const getTasks = query({
     limit: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    return await ctx.db
+    const tasks = await ctx.db
       .query("tasks")
       .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
       .filter((q) => q.neq(q.field("status"), "issue"))
       .take(args.limit ?? 10);
+
+    const tasksWithAssignees = await Promise.all(
+      tasks.map(async (task) => {
+        const assignees = await ctx.db
+          .query("taskAssignees")
+          .withIndex("by_task", (q) => q.eq("taskId", task._id))
+          .collect();
+        return { ...task, assignees: assignees };
+      }),
+    );
+
+    return tasksWithAssignees;
   },
 });
 
@@ -86,10 +116,19 @@ export const getTimelineTasks = query({
     const tasks = await ctx.db
       .query("tasks")
       .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
-      // .filter((q) => q.neq(q.field("status"), "issue"))
       .collect();
 
-    return tasks;
+    const tasksWithAssignees = await Promise.all(
+      tasks.map(async (task) => {
+        const assignees = await ctx.db
+          .query("taskAssignees")
+          .withIndex("by_task", (q) => q.eq("taskId", task._id))
+          .collect();
+        return { ...task, assignees: assignees };
+      }),
+    );
+
+    return tasksWithAssignees;
   },
 });
 
@@ -195,7 +234,7 @@ export const updateTaskStatus = mutation({
 export const updateTaskAssignees = mutation({
   args: {
     taskId: v.id("tasks"),
-    assignedTo: v.array(
+    assignees: v.array(
       v.object({
         userId: v.id("users"),
         name: v.string(),
@@ -207,8 +246,31 @@ export const updateTaskAssignees = mutation({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Unauthorized");
 
+    const task = await ctx.db.get(args.taskId);
+    if (!task) throw new Error("Task not found");
+
+    // 1. Delete existing assignees
+    const existingAssignees = await ctx.db
+      .query("taskAssignees")
+      .withIndex("by_task", (q) => q.eq("taskId", args.taskId))
+      .collect();
+
+    await Promise.all(existingAssignees.map((a) => ctx.db.delete(a._id)));
+
+    // 2. Insert new assignees
+    await Promise.all(
+      args.assignees.map((assignee) =>
+        ctx.db.insert("taskAssignees", {
+          taskId: args.taskId,
+          userId: assignee.userId,
+          name: assignee.name,
+          avatar: assignee.avatar,
+          projectId: task.projectId,
+        }),
+      ),
+    );
+
     await ctx.db.patch(args.taskId, {
-      assignedTo: args.assignedTo,
       updatedAt: Date.now(),
     });
   },
@@ -257,6 +319,24 @@ export const markTaskAsIssue = mutation({
       updatedAt: Date.now(),
     });
 
+    // 3. Move assignees from task to issue (Optional but consistent)
+    const taskAssignees = await ctx.db
+      .query("taskAssignees")
+      .withIndex("by_task", (q) => q.eq("taskId", args.taskId))
+      .collect();
+
+    await Promise.all(
+      taskAssignees.map((a) =>
+        ctx.db.insert("issueAssignees", {
+          issueId,
+          userId: a.userId,
+          name: a.name,
+          avatar: a.avatar,
+          projectId: task.projectId,
+        }),
+      ),
+    );
+
     return issueId;
   },
 });
@@ -273,7 +353,7 @@ export const editTask = mutation({
     priority: v.optional(
       v.union(v.literal("high"), v.literal("medium"), v.literal("low")),
     ),
-    assignedTo: v.optional(
+    assignees: v.optional(
       v.array(
         v.object({
           userId: v.id("users"),
@@ -303,7 +383,7 @@ export const editTask = mutation({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Unauthorized");
 
-    const { taskId, ...updateFields } = args;
+    const { taskId, assignees, ...updateFields } = args;
 
     const task = await ctx.db.get(taskId);
     if (!task) throw new Error("Task not found");
@@ -312,6 +392,30 @@ export const editTask = mutation({
       ...updateFields,
       updatedAt: Date.now(),
     });
+
+    // Handle Assignees update if provided
+    if (assignees !== undefined) {
+      // 1. Delete existing assignees
+      const existingAssignees = await ctx.db
+        .query("taskAssignees")
+        .withIndex("by_task", (q) => q.eq("taskId", taskId))
+        .collect();
+
+      await Promise.all(existingAssignees.map((a) => ctx.db.delete(a._id)));
+
+      // 2. Insert new assignees
+      await Promise.all(
+        assignees.map((assignee) =>
+          ctx.db.insert("taskAssignees", {
+            taskId,
+            userId: assignee.userId,
+            name: assignee.name,
+            avatar: assignee.avatar,
+            projectId: task.projectId,
+          }),
+        ),
+      );
+    }
 
     return taskId;
   },

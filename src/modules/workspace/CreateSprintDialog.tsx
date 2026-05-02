@@ -104,28 +104,34 @@ export const CreateSprintDialog = ({
       <DialogContent className="w-full max-w-[480px] dark:bg-[#1c1c1c] border-[#2b2b2b] p-0 overflow-hidden dark:text-neutral-200">
         <DialogHeader className="p-4 flex flex-row items-center gap-2 border-b border-[#2b2b2b]">
           <div className="flex items-center gap-1.5 text-xs text-neutral-400 font-medium">
-            <div className="w-3 h-3 rounded-full bg-amber-600 flex items-center justify-center text-[10px] text-white" />
+            <div className="w-3 h-3 rounded-full bg-blue-600 flex items-center justify-center text-[10px] text-white" />
             <span className="text-sm">{projectName}</span>
             <ChevronRight className="w-3 h-3" />
-            <span className="text-xs">New Sprint</span>
+            <span className="text-xs -mb-1">New Sprint</span>
           </div>
         </DialogHeader>
 
-        <div className="p-5 space-y-4">
-          {projectDetails?.targetDate && (
-            <div className="px-3 py-2 bg-amber-500/5 border border-amber-500/20 rounded-md flex items-center gap-2">
-              <CalendarIcon className="w-3.5 h-3.5 text-amber-500" />
-              <p className="text-[11px] text-amber-200/80">
-                Project Deadline:{" "}
-                <span className="font-semibold text-amber-400">
-                  {format(projectDetails.targetDate, "MMM d, yyyy")}
-                </span>
-              </p>
+        <div className=" space-y-3">
+          <div className="relative h-[180px] w-full overflow-hidden">
+            <img
+              src="/3.svg"
+              alt="Pattern Header"
+              className="w-full h-full object-cover"
+            />
+            <div className="absolute inset-0 bg-linear-to-t from-zinc-950  to-transparent" />
+            <div className="absolute bottom-4 left-6 flex items-center gap-3">
+              <div>
+                <h4 className="text-sm font-medium text-primary drop-shadow-md">
+                  Create a new Sprint
+                </h4>
+                <p className="text-xs text-muted-foreground font-medium tracking-tight">
+                  Sprints help us to breakdown the work and achieve our goals.
+                </p>
+              </div>
             </div>
-          )}
-
+          </div>
           {/* Sprint Name */}
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 px-4">
             <Label className="text-sm">Sprint Name</Label>
             <Input
               placeholder="e.g. Sprint 1 — Auth Flow"
@@ -136,7 +142,7 @@ export const CreateSprintDialog = ({
           </div>
 
           {/* Sprint Goal */}
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 px-4">
             <Label className="text-sm">Sprint Goal</Label>
             <Textarea
               placeholder="What should the team achieve by the end of this sprint?"
@@ -147,7 +153,7 @@ export const CreateSprintDialog = ({
           </div>
 
           {/* Duration */}
-          <div className="space-y-1.5">
+          <div className="space-y-1.5 px-4">
             <Label className="text-sm">Duration</Label>
             <Popover>
               <PopoverTrigger asChild>

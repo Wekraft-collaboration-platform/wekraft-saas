@@ -504,7 +504,7 @@ const TaskCard = ({ task, isOverlay }: { task: Task; isOverlay?: boolean }) => {
           </div>
 
           <div className="flex justify-end ml-auto -space-x-2 shrink-0">
-            {task.assignedTo?.slice(0, 3).map((assignee, i) => (
+            {task.assignees?.slice(0, 3).map((assignee, i) => (
               <Avatar
                 key={i}
                 className="w-6 h-6 border-2 border-background ring-1 ring-border/10 shadow-sm transition-transform hover:scale-110 hover:z-10"

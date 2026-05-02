@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useParams } from "next/navigation";
 import { Id } from "../../../../../../../convex/_generated/dataModel";
 import { useAction, useMutation, useQuery } from "convex/react";
@@ -50,10 +51,12 @@ import { TaskStatusCard } from "@/modules/workspace/workspace-modules/TaskStatus
 import { SchedulerCard } from "@/modules/workspace/workspace-modules/SchedulerCard";
 import { SprintBarChart } from "@/modules/workspace/workspace-modules/SprintBarChart";
 import { UserWorkTable } from "@/modules/workspace/workspace-modules/UserWork/UserWorkTable";
+import { SetTargetDateDialog } from "@/modules/workspace/SetTargetDateDialog";
 
 const ProjectWorkspace = () => {
   const params = useParams();
   const slug = params.slug as string;
+  const [isDeadlineDialogOpen, setIsDeadlineDialogOpen] = useState(false);
 
   const project = useQuery(api.project.getProjectBySlug, { slug });
   const projectId = project?._id;
@@ -227,10 +230,19 @@ const ProjectWorkspace = () => {
                 <Button
                   size="sm"
                   variant={"outline"}
-                  className="cursor-pointer text-[10px] bg-card!"
+                  onClick={() => setIsDeadlineDialogOpen(true)}
+                  className="cursor-pointer text-[10px] bg-muted!"
                 >
                   Change <ClockFading className="w-3 h-3!" />
                 </Button>
+                {projectId && (
+                  <SetTargetDateDialog
+                    isOpen={isDeadlineDialogOpen}
+                    onOpenChange={setIsDeadlineDialogOpen}
+                    projectId={projectId as Id<"projects">}
+                    projectName={project?.projectName}
+                  />
+                )}
               </div>
             </div>
           </CardFooter>

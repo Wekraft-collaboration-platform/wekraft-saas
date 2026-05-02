@@ -382,9 +382,9 @@ export const TableTab = ({ tasks, onLoadMore, hasMore }: TableTabProps) => {
                       </div>
                     </TableCell>
                     <TableCell className="px-4 border-r border-b border-neutral-700">
-                      {task.assignedTo && task.assignedTo.length > 0 ? (
+                      {task.assignees && task.assignees.length > 0 ? (
                         <div className="flex items-center justify-center -space-x-1">
-                          {task.assignedTo.map((person, i) => (
+                          {task.assignees.map((person, i) => (
                             <Avatar
                               key={i}
                               className="w-7 h-7 border-2 border-background shadow-sm"
