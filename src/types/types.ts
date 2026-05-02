@@ -48,7 +48,7 @@ export interface Task {
   description?: string;
   estimation: { startDate: number; endDate: number };
   type?: Tag;
-  assignedTo?: { name: string; avatar?: string; userId: Id<"users"> }[];
+  assignees?: { name: string; avatar?: string; userId: Id<"users"> }[];
   priority?: string;
   status: string;
   linkWithCodebase?: string;
@@ -67,13 +67,37 @@ export type Status =
   | "inprogress"
   | "reviewing"
   | "testing"
-  | "completed"
-
+  | "completed";
 
 export const COLUMNS: { id: Status; label: string; color: string }[] = [
-  { id: "not started", label: "Not Started", color: "bg-slate-400"   },
-  { id: "inprogress", label: "In Progress", color: "bg-amber-400"    },
-  { id: "reviewing",   label: "Reviewing",   color: "bg-blue-400"  },
-  { id: "testing",     label: "Testing",     color: "bg-indigo-400"  },
-  { id: "completed",   label: "Completed",   color: "bg-green-400"   },
-]
+  { id: "not started", label: "Not Started", color: "bg-slate-400" },
+  { id: "inprogress", label: "In Progress", color: "bg-amber-400" },
+  { id: "reviewing", label: "Reviewing", color: "bg-blue-400" },
+  { id: "testing", label: "Testing", color: "bg-indigo-400" },
+  { id: "completed", label: "Completed", color: "bg-green-400" },
+];
+export type MyTaskItem = {
+  _id: Id<"tasks">;
+  title: string;
+  description?: string;
+  priority?: "high" | "medium" | "low";
+  status: "not started" | "inprogress" | "reviewing" | "testing" | "completed";
+  estimation: { startDate: number; endDate: number };
+  isBlocked?: boolean;
+};
+
+export type MyIssueItem = {
+  _id: Id<"issues">;
+  title: string;
+  description?: string;
+  severity?: "critical" | "medium" | "low";
+  status: "not opened" | "opened" | "in review" | "reopened" | "closed";
+  due_date?: number;
+  environment?: "local" | "dev" | "staging" | "production";
+  type: "manual" | "task-issue" | "github";
+};
+
+export type PaginatedResult<T> = {
+  items: T[];
+  nextCursor: number | null;
+};

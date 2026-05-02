@@ -149,15 +149,6 @@ export default defineSchema({
     priority: v.optional(
       v.union(v.literal("high"), v.literal("medium"), v.literal("low")),
     ),
-    assignedTo: v.optional(
-      v.array(
-        v.object({
-          userId: v.id("users"),
-          name: v.string(),
-          avatar: v.optional(v.string()),
-        }),
-      ),
-    ),
     status: v.union(
       v.literal("not started"),
       v.literal("inprogress"),
@@ -235,15 +226,6 @@ export default defineSchema({
     taskId: v.optional(v.id("tasks")), // if its from task.
     projectId: v.id("projects"),
     createdByUserId: v.id("users"),
-    IssueAssignee: v.optional(
-      v.array(
-        v.object({
-          userId: v.id("users"),
-          name: v.string(),
-          avatar: v.optional(v.string()),
-        }),
-      ),
-    ),
     sprintId: v.optional(v.id("sprints")), // exluded closed issues
     // Insights
     finalCompletedAt: v.optional(v.number()),
@@ -368,4 +350,30 @@ export default defineSchema({
     .index("by_creator", ["createdBy"])
     .index("by_assignee", ["assignedTo"])
     .index("by_status", ["status"]),
+
+  // -------------------------------------------------
+  // Scalable Join Tables for Assignees
+  taskAssignees: defineTable({
+    taskId: v.id("tasks"),
+    userId: v.id("users"),
+    name: v.string(), // Denormalized for fast list rendering
+    avatar: v.optional(v.string()), // Denormalized for fast list rendering
+    projectId: v.id("projects"), // To optimize fetching all assignees for a project
+  })
+    .index("by_task", ["taskId"])
+    .index("by_user", ["userId"])
+    .index("by_project", ["projectId"])
+    .index("by_task_user", ["taskId", "userId"]),
+
+  issueAssignees: defineTable({
+    issueId: v.id("issues"),
+    userId: v.id("users"),
+    name: v.string(),
+    avatar: v.optional(v.string()),
+    projectId: v.id("projects"),
+  })
+    .index("by_issue", ["issueId"])
+    .index("by_user", ["userId"])
+    .index("by_project", ["projectId"])
+    .index("by_issue_user", ["issueId", "userId"]),
 });

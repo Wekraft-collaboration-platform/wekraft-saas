@@ -91,7 +91,7 @@ export const EditTaskDialog = ({
   );
   const [assignedMembers, setAssignedMembers] = useState<
     { userId: Id<"users">; name: string; avatar?: string }[]
-  >(task.assignedTo || []);
+  >(task.assignees || []);
   const [isPending, setIsPending] = useState(false);
 
   const members = useQuery(api.project.getProjectMembers, { projectId });
@@ -126,7 +126,7 @@ export const EditTaskDialog = ({
       });
       setTag(task.type || null);
       setSelectedPath(task.linkWithCodebase || null);
-      setAssignedMembers(task.assignedTo || []);
+      setAssignedMembers(task.assignees || []);
     }
   }, [task, open]);
 
@@ -154,7 +154,11 @@ export const EditTaskDialog = ({
         },
         type: tag ? tag : undefined,
         linkWithCodebase: selectedPath || undefined,
-        assignedTo: assignedMembers.length > 0 ? assignedMembers : undefined,
+        assignees: assignedMembers.length > 0 ? assignedMembers.map(a => ({
+          userId: a.userId,
+          name: a.name,
+          avatar: a.avatar
+        })) : undefined,
       });
       toast.success("Task updated successfully");
       setOpen(false);

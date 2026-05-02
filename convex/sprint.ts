@@ -72,6 +72,16 @@ export const getSprintsByProject = query({
           };
         }
 
+        if (sprint.status === "planned") {
+          return {
+            ...sprint,
+            totalTasks: tasks.length,
+            completedTasks: 0,
+            totalIssues: issues.length,
+            closedIssues: 0,
+          };
+        }
+
         const completedTasks = tasks.filter(
           (t) => t.status === "completed",
         ).length;
@@ -153,17 +163,30 @@ export const getSprintTasks = query({
     const sprint = await ctx.db.get(args.sprintId);
     if (!sprint) return [];
 
+    let tasks = [];
     if (sprint.taskIds) {
       const taskResults = await Promise.all(
         sprint.taskIds.map((id) => ctx.db.get(id)),
       );
-      return taskResults.filter((t): t is any => t !== null);
+      tasks = taskResults.filter((t): t is any => t !== null);
+    } else {
+      tasks = await ctx.db
+        .query("tasks")
+        .withIndex("by_sprint", (q) => q.eq("sprintId", args.sprintId))
+        .collect();
     }
 
-    return await ctx.db
-      .query("tasks")
-      .withIndex("by_sprint", (q) => q.eq("sprintId", args.sprintId))
-      .collect();
+    const tasksWithAssignees = await Promise.all(
+      tasks.map(async (task) => {
+        const assignees = await ctx.db
+          .query("taskAssignees")
+          .withIndex("by_task", (q) => q.eq("taskId", task._id))
+          .collect();
+        return { ...task, assignees };
+      }),
+    );
+
+    return tasksWithAssignees;
   },
 });
 
@@ -259,9 +282,11 @@ export const getSprintStats = query({
     const finalTotalItems = finalTotalTasks + finalTotalIssues;
     const finalCompletedItems = finalCompletedTasks + finalClosedIssues;
     const completionPercent =
-      finalTotalItems > 0
-        ? Math.round((finalCompletedItems / finalTotalItems) * 100)
-        : 0;
+      sprint.status === "planned"
+        ? 0
+        : finalTotalItems > 0
+          ? Math.round((finalCompletedItems / finalTotalItems) * 100)
+          : 0;
 
     // Days elapsed and remaining
     const now = Date.now();
@@ -299,15 +324,25 @@ export const getSprintStats = query({
         (taskStatusBreakdown[task.status] || 0) + 1;
     }
 
+    const tasksWithAssignees = await Promise.all(
+      tasks.map(async (task) => {
+        const assignees = await ctx.db
+          .query("taskAssignees")
+          .withIndex("by_task", (q) => q.eq("taskId", task._id))
+          .collect();
+        return { ...task, assignees };
+      })
+    );
+
     // Unique team members from task assignees + issue assignees
     const memberMap = new Map<
       string,
       { userId: string; name: string; avatar?: string; taskCount: number }
     >();
 
-    for (const task of tasks) {
-      if (task.assignedTo) {
-        for (const person of task.assignedTo) {
+    for (const task of tasksWithAssignees) {
+      if (task.assignees) {
+        for (const person of task.assignees) {
           const existing = memberMap.get(person.userId);
           if (existing) {
             existing.taskCount += 1;
@@ -497,8 +532,49 @@ export const startSprint = mutation({
       );
     }
 
+    // Remove completed tasks and closed issues before starting
+    const tasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_sprint", (q) => q.eq("sprintId", args.sprintId))
+      .collect();
+
+    for (const task of tasks) {
+      if (task.status === "completed") {
+        await ctx.db.patch(task._id, {
+          sprintId: undefined,
+          updatedAt: Date.now(),
+        });
+      }
+    }
+
+    const issues = await ctx.db
+      .query("issues")
+      .withIndex("by_sprint", (q) => q.eq("sprintId", args.sprintId))
+      .collect();
+
+    for (const issue of issues) {
+      if (issue.status === "closed") {
+        await ctx.db.patch(issue._id, {
+          sprintId: undefined,
+          updatedAt: Date.now(),
+        });
+      }
+    }
+
+    // Update sprint's historical taskIds and issueIds to match the current filtered state
+    const currentTasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_sprint", (q) => q.eq("sprintId", args.sprintId))
+      .collect();
+    const currentIssues = await ctx.db
+      .query("issues")
+      .withIndex("by_sprint", (q) => q.eq("sprintId", args.sprintId))
+      .collect();
+
     await ctx.db.patch(args.sprintId, {
       status: "active",
+      taskIds: currentTasks.map((t) => t._id),
+      issueIds: currentIssues.map((i) => i._id),
       updatedAt: Date.now(),
     });
   },

@@ -1,5 +1,6 @@
 "use client";
 
+import { useState } from "react";
 import { useParams } from "next/navigation";
 import { Id } from "../../../../../../../convex/_generated/dataModel";
 import { useAction, useMutation, useQuery } from "convex/react";
@@ -44,16 +45,18 @@ import {
 } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import Image from "next/image";
-import { ActivityOverviewCard } from "./modules/components/ActivityOverviewCard";
-import { SchedulerCard } from "./modules/components/SchedulerCard";
-import { TaskStatusCard } from "./modules/components/TaskStatusCard";
 import { Skeleton } from "@/components/ui/skeleton";
-import { UserWorkTable } from "./modules/components/UserWork/UserWorkTable";
-import { SprintBarChart } from "./modules/components/SprintBarChart";
+import { ActivityOverviewCard } from "@/modules/workspace/workspace-modules/ActivityOverviewCard";
+import { TaskStatusCard } from "@/modules/workspace/workspace-modules/TaskStatusCard";
+import { SchedulerCard } from "@/modules/workspace/workspace-modules/SchedulerCard";
+import { SprintBarChart } from "@/modules/workspace/workspace-modules/SprintBarChart";
+import { UserWorkTable } from "@/modules/workspace/workspace-modules/UserWorkTable";
+import { SetTargetDateDialog } from "@/modules/workspace/SetTargetDateDialog";
 
 const ProjectWorkspace = () => {
   const params = useParams();
   const slug = params.slug as string;
+  const [isDeadlineDialogOpen, setIsDeadlineDialogOpen] = useState(false);
 
   const project = useQuery(api.project.getProjectBySlug, { slug });
   const projectId = project?._id;
@@ -227,10 +230,19 @@ const ProjectWorkspace = () => {
                 <Button
                   size="sm"
                   variant={"outline"}
-                  className="cursor-pointer text-[10px] bg-card!"
+                  onClick={() => setIsDeadlineDialogOpen(true)}
+                  className="cursor-pointer text-[10px] bg-muted!"
                 >
                   Change <ClockFading className="w-3 h-3!" />
                 </Button>
+                {projectId && (
+                  <SetTargetDateDialog
+                    isOpen={isDeadlineDialogOpen}
+                    onOpenChange={setIsDeadlineDialogOpen}
+                    projectId={projectId as Id<"projects">}
+                    projectName={project?.projectName}
+                  />
+                )}
               </div>
             </div>
           </CardFooter>
@@ -258,7 +270,7 @@ const ProjectWorkspace = () => {
 
         {/* My all work Table */}
         <div className="col-span-2">
-          <UserWorkTable userName={user?.name} />
+          <UserWorkTable userName={user?.name} projectId={projectId as Id<"projects">} />
         </div>
       </section>
     </div>

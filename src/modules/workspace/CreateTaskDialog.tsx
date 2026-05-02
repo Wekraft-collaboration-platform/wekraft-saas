@@ -126,7 +126,7 @@ export const CreateTaskDialog = ({
         type: tag ? tag : undefined,
         projectId,
         linkWithCodebase: selectedPath || undefined,
-        assignedTo: assignedMembers.length > 0 ? assignedMembers : undefined,
+        assignees: assignedMembers.length > 0 ? assignedMembers : undefined,
       });
       toast.success("Task created successfully");
       setOpen(false);

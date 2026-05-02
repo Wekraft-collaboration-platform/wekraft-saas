@@ -18,6 +18,7 @@ import {
   Loader2,
   Play,
   Settings2,
+  TableConfig,
 } from "lucide-react";
 import Image from "next/image";
 import { format } from "date-fns";
@@ -32,11 +33,13 @@ export const SchedulerCard = ({ scheduler }: SchedulerCardProps) => {
     <Card className="p-3! overflow-hidden shadow-sm bg-accent/30 flex flex-col justify-between">
       <div>
         <CardHeader className="px-0 pb-2 flex flex-row items-center justify-between">
-          <CardTitle className="text-sm flex items-center gap-2 font-medium tracking-tight">
-            <CalendarSync className="w-5 h-5!" /> Project Scheduler
+          <CardTitle className="text-sm flex items-center gap-2 font-semibold!  tracking-tight">
+            <div className="flex items-center gap-2">
+              <CalendarSync className="w-5 h-5!" /> Project Scheduler
+            </div>
           </CardTitle>
           <Button
-            className="bg-linear-to-br h-7! from-card to-indigo-500 border border-border capitalize text-primary text-[10px] cursor-pointer flex items-center gap-2"
+            className="bg-muted h-7!  border border-border capitalize text-primary text-[10px] cursor-pointer flex items-center gap-2"
             size="sm"
           >
             <Image src="/kaya.svg" alt="Kaya" width={18} height={18} />
@@ -45,17 +48,20 @@ export const SchedulerCard = ({ scheduler }: SchedulerCardProps) => {
         </CardHeader>
         <CardContent className="p-0 space-y-3 -mt-2">
           {!scheduler ? (
-            <div className="py-8 text-center flex flex-col items-center gap-2">
-              <CalendarSync className="w-8 h-8 opacity-30 " />
+            <div className="py-5 text-center flex flex-col items-center gap-2">
+              <CalendarSync className="w-8 h-8 opacity-50 " />
               <p className="font-semibold tracking-tight text-base">
                 No Schedule Setup Yet
               </p>
-              <p className="text-xs text-muted-foreground px-8">
-                Ask Kaya for help to generate an optimized schedule for your
-                project.
+              <p className="text-xs text-muted-foreground px-6">
+                Ask KAYA to create automated schedules or configure manually.
               </p>
-              <Button size="sm" variant="outline" className="h-7 text-[10px] ">
-                Setup
+              <Button
+                size="sm"
+                variant="outline"
+                className="h-7 text-[10px] mt-2 px-4!"
+              >
+                Setup <Settings2 />
               </Button>
             </div>
           ) : (

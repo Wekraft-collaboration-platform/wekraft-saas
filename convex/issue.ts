@@ -33,7 +33,7 @@ export const createIssue = mutation({
     fileLinked: v.optional(v.string()),
     taskId: v.optional(v.id("tasks")),
     projectId: v.id("projects"),
-    IssueAssignee: v.optional(
+    assignees: v.optional(
       v.array(
         v.object({
           userId: v.id("users"),
@@ -56,12 +56,29 @@ export const createIssue = mutation({
 
     if (!user) throw new Error("User not found");
 
+    const { assignees, ...issueData } = args;
+
     const issueId = await ctx.db.insert("issues", {
-      ...args,
+      ...issueData,
       createdByUserId: user._id,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
+
+    // Handle Assignees
+    if (assignees && assignees.length > 0) {
+      await Promise.all(
+        assignees.map((assignee) =>
+          ctx.db.insert("issueAssignees", {
+            issueId,
+            userId: assignee.userId,
+            name: assignee.name,
+            avatar: assignee.avatar,
+            projectId: args.projectId,
+          }),
+        ),
+      );
+    }
 
     return issueId;
   },
@@ -76,11 +93,23 @@ export const getIssues = query({
     paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, args) => {
-    return await ctx.db
+    const results = await ctx.db
       .query("issues")
       .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
       .order("desc")
       .paginate(args.paginationOpts);
+
+    const issuesWithAssignees = await Promise.all(
+      results.page.map(async (issue) => {
+        const assignees = await ctx.db
+          .query("issueAssignees")
+          .withIndex("by_issue", (q) => q.eq("issueId", issue._id))
+          .collect();
+        return { ...issue, assignedTo: assignees };
+      }),
+    );
+
+    return { ...results, page: issuesWithAssignees };
   },
 });
 
@@ -116,9 +145,6 @@ export const getFilteredIssues = query({
       .query("issues")
       .withIndex("by_project", (q) => q.eq("projectId", args.projectId));
 
-    // Custom filtering
-    // Note: Convex filters are less efficient than indexes, but for project-specific issues,
-    // it should be fine. If scale grows, we can add composite indexes.
     if (args.environment) {
       baseQuery = baseQuery.filter((q) =>
         q.eq(q.field("environment"), args.environment),
@@ -133,7 +159,19 @@ export const getFilteredIssues = query({
       baseQuery = baseQuery.filter((q) => q.eq(q.field("status"), args.status));
     }
 
-    return await baseQuery.order("desc").collect();
+    const issues = await baseQuery.order("desc").collect();
+
+    const issuesWithAssignees = await Promise.all(
+      issues.map(async (issue) => {
+        const assignees = await ctx.db
+          .query("issueAssignees")
+          .withIndex("by_issue", (q) => q.eq("issueId", issue._id))
+          .collect();
+        return { ...issue, assignedTo: assignees };
+      }),
+    );
+
+    return issuesWithAssignees;
   },
 });
 
@@ -167,7 +205,7 @@ export const updateIssue = mutation({
         v.literal("closed"),
       ),
     ),
-    IssueAssignee: v.optional(
+    assignees: v.optional(
       v.array(
         v.object({
           userId: v.id("users"),
@@ -178,7 +216,7 @@ export const updateIssue = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const { issueId, ...updates } = args;
+    const { issueId, assignees, ...updates } = args;
 
     const existing = await ctx.db.get(issueId);
     if (!existing) throw new Error("Issue not found");
@@ -187,6 +225,30 @@ export const updateIssue = mutation({
       ...updates,
       updatedAt: Date.now(),
     });
+
+    // Handle Assignees update if provided
+    if (assignees !== undefined) {
+      // 1. Delete existing assignees
+      const existingAssignees = await ctx.db
+        .query("issueAssignees")
+        .withIndex("by_issue", (q) => q.eq("issueId", issueId))
+        .collect();
+
+      await Promise.all(existingAssignees.map((a) => ctx.db.delete(a._id)));
+
+      // 2. Insert new assignees
+      await Promise.all(
+        assignees.map((assignee) =>
+          ctx.db.insert("issueAssignees", {
+            issueId,
+            userId: assignee.userId,
+            name: assignee.name,
+            avatar: assignee.avatar,
+            projectId: existing.projectId,
+          }),
+        ),
+      );
+    }
 
     return issueId;
   },
