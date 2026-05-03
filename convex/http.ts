@@ -39,64 +39,8 @@ http.route({
   }),
 });
 
-// get project tasks
-http.route({
-  path: "/getProjectTasks",
-  method: "POST",
-  handler: httpAction(async (ctx, request) => {
-    const body = await request.json();
-
-    if (!body.projectId) {
-      return new Response(JSON.stringify({ error: "projectId is required" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    const tasks = await ctx.runQuery(internal.agentTools.getProjectTasks, {
-      projectId: body.projectId,
-      ...(body.status && { status: body.status }),
-      ...(body.priority && { priority: body.priority }),
-      ...(body.sprintId && { sprintId: body.sprintId }),
-    });
-
-    return new Response(JSON.stringify({ tasks }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-  }),
-});
-
-// get project issues
-http.route({
-  path: "/getProjectIssues",
-  method: "POST",
-  handler: httpAction(async (ctx, request) => {
-    const body = await request.json();
-
-    if (!body.projectId) {
-      return new Response(JSON.stringify({ error: "projectId is required" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    const issues = await ctx.runQuery(internal.agentTools.getProjectIssues, {
-      projectId: body.projectId,
-      ...(body.status && { status: body.status }),
-      ...(body.severity && { severity: body.severity }),
-      ...(body.environment && { environment: body.environment }),
-      ...(body.sprintId && { sprintId: body.sprintId }),
-    });
-
-    return new Response(JSON.stringify({ issues }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-  }),
-});
-
-// get prject sprint planner context
+// getSprintPlannerContext: Returns project deadline, all sprint names, count of incomplete unassigned tasks, and duration to deadline.
+// returns: { projectDeadline: number | null, daysToDeadline: string | null, sprintTitles: string[], unassignedTasksCount: number }
 http.route({
   path: "/getSprintPlannerContext",
   method: "POST",
@@ -256,8 +200,16 @@ http.route({
   }),
 });
 
+// ==============ANALYSIST-AGENT-TOOLS=====================================
+// getTasksSummary: High-level task analytics and critical items.
+// getIssuesSummary: Focuses on active and critical project issues.
+// getMemberWorkload: Breakdown of assignments per team member.
+// getSprintPlannerContext: Essential data for planning new sprints.
+// getUserStandup: Personalized active items for daily planning. (Kaya TOOL for direct access)
+
 // =======================INSIGHTS TOOLS HTTP===============================
-// get member workload
+// getMemberWorkload: Returns a detailed breakdown of each team member's current task and issue assignments.
+// returns: Array<{ name: string, role: string, tasks: Array<{ title: string, priority: string, status: string }>, totalTasks: number, issues: Array<{ title: string, status: string }>, totalIssues: number }>
 http.route({
   path: "/getMemberWorkload",
   method: "POST",
@@ -284,6 +236,30 @@ http.route({
 
 // get sprint insights
 http.route({
+  path: "/getMemberWorkloadPYAgent",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const body = await request.json();
+    if (!body.projectId) {
+      return new Response(JSON.stringify({ error: "projectId is required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    const members = await ctx.runQuery(
+      internal.agentTools.getMemberWorkloadPYAgent,
+      {
+        projectId: body.projectId,
+      },
+    );
+    return new Response(JSON.stringify({ members }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }),
+});
+
+http.route({
   path: "/getSprintInsights",
   method: "POST",
   handler: httpAction(async (ctx, request) => {
@@ -301,6 +277,111 @@ http.route({
     });
 
     return new Response(JSON.stringify({ sprints }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }),
+});
+
+// getTasksSummary: Returns a high-level summary of all tasks including critical and active ones.
+// returns: { criticalAndActiveTasks: Array<{ title: string, status: string, priority: string, isBlocked: boolean, assignees: string[], endDate: string, timelineStatus: string }>, completedCount: number, blockedCount: number, totalCount: number }
+http.route({
+  path: "/getTasksSummary",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const body = await request.json();
+    if (!body.projectId) {
+      return new Response(JSON.stringify({ error: "projectId is required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    const tasksSummary = await ctx.runQuery(
+      internal.agentTools.getTasksSummary,
+      {
+        projectId: body.projectId,
+      },
+    );
+    return new Response(JSON.stringify({ tasksSummary }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }),
+});
+
+// getIssuesSummary: Returns a summary of all issues, focusing on active and critical ones.
+// returns: { activeIssues: Array<{ title: string, status: string, severity: string, type: string, assignees: string[] }>, closedCount: number, criticalCount: number, totalCount: number }
+http.route({
+  path: "/getIssuesSummary",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const body = await request.json();
+    if (!body.projectId) {
+      return new Response(JSON.stringify({ error: "projectId is required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    const issuesSummary = await ctx.runQuery(
+      internal.agentTools.getIssuesSummary,
+      {
+        projectId: body.projectId,
+      },
+    );
+    return new Response(JSON.stringify({ issuesSummary }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }),
+});
+
+// getUserStandup: Returns active tasks and issues for a specific user to prioritize.
+// returns: { tasks: Array<{ id: string, title: string, status: string, priority: string, endDate: number, isBlocked: boolean }>, issues: Array<{ id: string, title: string, status: string, severity: string, due_date: number | null }> }
+http.route({
+  path: "/getUserStandup",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const body = await request.json();
+    if (!body.projectId || !body.userId) {
+      return new Response(
+        JSON.stringify({ error: "projectId and userId are required" }),
+        {
+          status: 400,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
+    const standup = await ctx.runQuery(internal.agentTools.getUserStandup, {
+      projectId: body.projectId,
+      userId: body.userId,
+    });
+    return new Response(JSON.stringify({ standup }), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }),
+});
+
+// getProjectInsights: Returns basic project timeline information.
+// returns: { projectName: string, createdAt: number, deadline: number | null, daysRemaining: number | null, isOverdue: boolean }
+http.route({
+  path: "/getProjectInsights",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const body = await request.json();
+    if (!body.projectId) {
+      return new Response(JSON.stringify({ error: "projectId is required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+    const projectInsights = await ctx.runQuery(
+      internal.agentTools.getProjectInsights,
+      {
+        projectId: body.projectId,
+      },
+    );
+    return new Response(JSON.stringify({ projectInsights }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });

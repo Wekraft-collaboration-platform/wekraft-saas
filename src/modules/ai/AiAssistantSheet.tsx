@@ -105,6 +105,7 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
   const { isOpen, setIsOpen, threadId, createNewSession } = useKayaStore();
   const currentUser = useQuery(api.user.getCurrentUser);
   const userId = currentUser?._id;
+  const userName = currentUser?.name || "User";
 
   const params = useParams();
   const slug = params?.slug as string;
@@ -200,10 +201,13 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
     setRestoreError(false);
     run({
       thread_id: threadId,
+      user_id: userId,
+      user_name: userName,
       model: selectedModel,
       state: {
-        user_id: userId, // added user_id here...
-        project_id: projectId, // added project_id here...
+        user_id: userId,
+        user_name: userName,
+        project_id: projectId,
         messages: [{ type: "user", content }],
       },
     });
@@ -215,6 +219,7 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
     resume({
       thread_id: threadId,
       user_id: userId,
+      user_name: userName,
       project_id: projectId,
       model: selectedModel,
       resume: value,
