@@ -122,6 +122,8 @@ interface TaskGroupProps {
   accentColor: string;
   defaultExpanded?: boolean;
   onTaskClick: (task: Task) => void;
+  selectedTaskIds: Id<"tasks">[];
+  setSelectedTaskIds: React.Dispatch<React.SetStateAction<Id<"tasks">[]>>;
 }
 
 const TaskGroup = ({
@@ -130,8 +132,42 @@ const TaskGroup = ({
   accentColor,
   defaultExpanded = false,
   onTaskClick,
+  selectedTaskIds,
+  setSelectedTaskIds,
 }: TaskGroupProps) => {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
+
+  const toggleTask = (taskId: Id<"tasks">) => {
+    setSelectedTaskIds((prev) =>
+      prev.includes(taskId)
+        ? prev.filter((id) => id !== taskId)
+        : [...prev, taskId],
+    );
+  };
+
+  const toggleAll = () => {
+    const groupTaskIds = tasks.map((t) => t._id as Id<"tasks">);
+    const allInGroupSelected = groupTaskIds.every((id) =>
+      selectedTaskIds.includes(id),
+    );
+
+    if (allInGroupSelected) {
+      setSelectedTaskIds((prev) =>
+        prev.filter((id) => !groupTaskIds.includes(id)),
+      );
+    } else {
+      setSelectedTaskIds((prev) => {
+        const newIds = [...prev];
+        groupTaskIds.forEach((id) => {
+          if (!newIds.includes(id)) newIds.push(id);
+        });
+        return newIds;
+      });
+    }
+  };
+
+  const isAllGroupSelected =
+    tasks.length > 0 && tasks.every((t) => selectedTaskIds.includes(t._id as Id<"tasks">));
 
   return (
     <div className="">
@@ -170,7 +206,11 @@ const TaskGroup = ({
             <TableHeader className=" border-none">
               <TableRow className="hover:bg-transparent dark:bg-neutral-950 border-none">
                 <TableHead className="w-[50px] px-4">
-                  <Checkbox className="rounded border-muted-foreground/30 data-[state=checked]:bg-primary" />
+                  <Checkbox
+                    checked={isAllGroupSelected}
+                    onCheckedChange={toggleAll}
+                    className="rounded border-muted-foreground/30 data-[state=checked]:bg-primary"
+                  />
                 </TableHead>
                 <TableHead className="px-4 text-sm font-medium text-primary capitalize tracking-widest min-w-[200px]  border-r border-b border-neutral-800">
                   <div className="flex items-center gap-2">
@@ -294,18 +334,28 @@ const TaskGroup = ({
                 tasks.map((task) => (
                   <TableRow
                     key={task._id}
-                    className="group border-none hover:bg-muted/40 transition-all duration-200 cursor-pointer"
+                    className={cn(
+                      "group border-none hover:bg-neutral-900 transition-all duration-200 cursor-pointer",
+                      selectedTaskIds.includes(task._id as Id<"tasks">) &&
+                        "bg-primary/5",
+                    )}
                     onClick={() => onTaskClick(task)}
                   >
                     <TableCell
                       className="px-4 py-4"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <Checkbox className="rounded border-muted-foreground/30 data-[state=checked]:bg-primary" />
+                      <Checkbox
+                        checked={selectedTaskIds.includes(task._id)}
+                        onCheckedChange={() =>
+                          toggleTask(task._id)
+                        }
+                        className="rounded border-muted-foreground/30 data-[state=checked]:bg-primary"
+                      />
                     </TableCell>
 
                     <TableCell className="p-2.5 border-r border-b border-neutral-800  max-w-[180px] truncate">
-                      <span className="text-xs font-medium text-muted-foreground capitalize flex items-center gap-1.5">
+                      <span className="text-sm font-medium text-primary capitalize flex items-center gap-1.5 transition-colors">
                         {task.title}
                         {task.isBlocked ? (
                           <Bug className="w-4 h-4 text-red-500/70 shrink-0 ml-auto" />
@@ -319,11 +369,11 @@ const TaskGroup = ({
                       </span>
                     </TableCell>
                     <TableCell className="p-2.5 border-r border-b border-neutral-800">
-                      <p className="text-xs text-muted-foreground line-clamp-1 max-w-[280px] truncate">
+                      <p className="text-xs text-muted-foreground group-hover:text-primary transition-colors line-clamp-1 max-w-[280px] truncate">
                         {task.description || "No description provided yet..."}
                       </p>
                     </TableCell>
-                    <TableCell className="p-2.5 whitespace-nowrap text-xs text-muted-foreground border-r border-b border-neutral-800">
+                    <TableCell className="p-2.5 whitespace-nowrap text-xs text-muted-foreground group-hover:text-primary border-r border-b border-neutral-800 transition-colors">
                       <div className="flex items-center justify-center gap-2">
                         <Clock className="w-3.5 h-3.5" />
                         {task.estimation ? (
@@ -388,14 +438,14 @@ const TaskGroup = ({
                         </div>
                       ) : (
                         <div className="flex items-center justify-center w-full">
-                          <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+                          <p className="text-[11px] text-muted-foreground group-hover:text-primary flex items-center gap-1 transition-colors">
                             <Minus className="w-3.5 h-3.5" />
                             Unassigned
                           </p>
                         </div>
                       )}
                     </TableCell>
-                    <TableCell className="p-2.5 border-b border-neutral-800 text-muted-foreground whitespace-nowrap">
+                    <TableCell className="p-2.5 border-b border-neutral-800 text-muted-foreground group-hover:text-primary whitespace-nowrap transition-colors">
                       <PriorityBadge priority={task.priority} />
                     </TableCell>
 
@@ -440,7 +490,15 @@ const TaskGroup = ({
   );
 };
 
-export const ListTab = ({ tasks }: { tasks: Task[] }) => {
+export const ListTab = ({
+  tasks,
+  selectedTaskIds,
+  setSelectedTaskIds,
+}: {
+  tasks: Task[];
+  selectedTaskIds: Id<"tasks">[];
+  setSelectedTaskIds: React.Dispatch<React.SetStateAction<Id<"tasks">[]>>;
+}) => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
@@ -457,30 +515,40 @@ export const ListTab = ({ tasks }: { tasks: Task[] }) => {
         accentColor="bg-slate-400"
         defaultExpanded={true}
         onTaskClick={handleTaskClick}
+        selectedTaskIds={selectedTaskIds}
+        setSelectedTaskIds={setSelectedTaskIds}
       />
       <TaskGroup
         title="In Progress"
         tasks={tasks.filter((t) => t.status === "inprogress")}
         accentColor="bg-amber-500"
         onTaskClick={handleTaskClick}
+        selectedTaskIds={selectedTaskIds}
+        setSelectedTaskIds={setSelectedTaskIds}
       />
       <TaskGroup
         title="Reviewing"
         tasks={tasks.filter((t) => t.status === "reviewing")}
         accentColor="bg-blue-500"
         onTaskClick={handleTaskClick}
+        selectedTaskIds={selectedTaskIds}
+        setSelectedTaskIds={setSelectedTaskIds}
       />
       <TaskGroup
         title="Testing"
         tasks={tasks.filter((t) => t.status === "testing")}
         accentColor="bg-indigo-500"
         onTaskClick={handleTaskClick}
+        selectedTaskIds={selectedTaskIds}
+        setSelectedTaskIds={setSelectedTaskIds}
       />
       <TaskGroup
         title="Completed"
         tasks={tasks.filter((t) => t.status === "completed")}
         accentColor="bg-emerald-500"
         onTaskClick={handleTaskClick}
+        selectedTaskIds={selectedTaskIds}
+        setSelectedTaskIds={setSelectedTaskIds}
       />
 
       <TaskDetailSheet

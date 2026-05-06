@@ -88,6 +88,7 @@ export const CreateTaskDialog = ({
   const [isPending, setIsPending] = useState(false);
 
   const members = useQuery(api.project.getProjectMembers, { projectId });
+  const projectDetails = useQuery(api.projectDetails.getProjectDetails, { projectId });
 
   const createTask = useMutation(api.workspace.createTask);
   const existingTags = useQuery(api.workspace.getUniqueTags, { projectId });
@@ -348,6 +349,11 @@ export const CreateTaskDialog = ({
                   selected={date}
                   onSelect={setDate}
                   numberOfMonths={1}
+                  disabled={
+                    projectDetails?.targetDate
+                      ? { after: new Date(projectDetails.targetDate) }
+                      : undefined
+                  }
                   className="bg-[#1c1c1c] text-neutral-200"
                 />
               </PopoverContent>
