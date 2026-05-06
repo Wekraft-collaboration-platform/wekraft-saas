@@ -50,6 +50,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { TaskDetailSheet } from "./TaskDetailSheet";
 import { Task } from "@/types/types";
+import { Id } from "../../../convex/_generated/dataModel";
 import {
   SortPopover,
   priorityIcons2,
@@ -88,6 +89,8 @@ interface TableTabProps {
   tasks: Task[];
   onLoadMore: () => void;
   hasMore: boolean;
+  selectedTaskIds: Id<"tasks">[];
+  setSelectedTaskIds: React.Dispatch<React.SetStateAction<Id<"tasks">[]>>;
 }
 
 const PriorityBadge = ({ priority = "none" }: { priority?: string }) => {
@@ -100,7 +103,13 @@ const PriorityBadge = ({ priority = "none" }: { priority?: string }) => {
 
 const PAGE_SIZE = 10;
 
-export const TableTab = ({ tasks, onLoadMore, hasMore }: TableTabProps) => {
+export const TableTab = ({
+  tasks,
+  onLoadMore,
+  hasMore,
+  selectedTaskIds,
+  setSelectedTaskIds,
+}: TableTabProps) => {
   const [page, setPage] = useState(0);
 
   // Client-side pagination: slice the loaded tasks
@@ -119,13 +128,12 @@ export const TableTab = ({ tasks, onLoadMore, hasMore }: TableTabProps) => {
       setPage((p) => p + 1);
     }
   };
-  const [selectedTasks, setSelectedTasks] = useState<string[]>([]);
   const [selectedTaskForSheet, setSelectedTaskForSheet] = useState<Task | null>(
     null,
   );
 
-  const toggleTask = (taskId: string) => {
-    setSelectedTasks((prev) =>
+  const toggleTask = (taskId: Id<"tasks">) => {
+    setSelectedTaskIds((prev) =>
       prev.includes(taskId)
         ? prev.filter((id) => id !== taskId)
         : [...prev, taskId],
@@ -133,10 +141,13 @@ export const TableTab = ({ tasks, onLoadMore, hasMore }: TableTabProps) => {
   };
 
   const toggleAll = () => {
-    if (selectedTasks.length === tasks.length && tasks.length > 0) {
-      setSelectedTasks([]);
+    if (
+      selectedTaskIds.length === paginatedTasks.length &&
+      paginatedTasks.length > 0
+    ) {
+      setSelectedTaskIds([]);
     } else {
-      setSelectedTasks(tasks.map((t) => t._id));
+      setSelectedTaskIds(paginatedTasks.map((t) => t._id as Id<"tasks">));
     }
   };
 
@@ -152,7 +163,7 @@ export const TableTab = ({ tasks, onLoadMore, hasMore }: TableTabProps) => {
               <TableHead className="w-[50px] px-6 py-4">
                 <Checkbox
                   checked={
-                    selectedTasks.length === paginatedTasks.length &&
+                    selectedTaskIds.length === paginatedTasks.length &&
                     paginatedTasks.length > 0
                   }
                   onCheckedChange={toggleAll}
@@ -287,13 +298,13 @@ export const TableTab = ({ tasks, onLoadMore, hasMore }: TableTabProps) => {
               </TableRow>
             ) : (
               paginatedTasks.map((task) => {
-                const isSelected = selectedTasks.includes(task._id);
+                const isSelected = selectedTaskIds.includes(task._id);
 
                 return (
                   <TableRow
                     key={task._id}
                     className={cn(
-                      "group border-b border-neutral-800 hover:bg-neutral-800/20 transition-all cursor-pointer",
+                      "group border-b border-neutral-800 hover:bg-neutral-900 transition-all cursor-pointer",
                       isSelected && "bg-primary/5",
                     )}
                     onClick={() => setSelectedTaskForSheet(task)}
@@ -304,13 +315,15 @@ export const TableTab = ({ tasks, onLoadMore, hasMore }: TableTabProps) => {
                     >
                       <Checkbox
                         checked={isSelected}
-                        onCheckedChange={() => toggleTask(task._id)}
+                        onCheckedChange={() =>
+                          toggleTask(task._id as Id<"tasks">)
+                        }
                         className="rounded border-neutral-800 data-[state=checked]:bg-primary"
                       />
                     </TableCell>
-                    <TableCell className="px-4 text-sm   font-medium border-r border-b border-neutral-700  text-primary transition-colors">
+                    <TableCell className="px-4 text-sm   font-medium border-r border-b border-neutral-700  text-muted-foreground transition-colors">
                       <div className="flex items-center gap-1.5 capitalize">
-                        {task.title}
+                        <span className="text-primary">{task.title}</span>
                         {task.isBlocked ? (
                           <Bug className="w-4 h-4 text-red-500/70 shrink-0 ml-auto" />
                         ) : (
@@ -332,7 +345,7 @@ export const TableTab = ({ tasks, onLoadMore, hasMore }: TableTabProps) => {
                         {task.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="px-4 text-[12px] font-medium text-primary/70 border-r border-b border-neutral-700">
+                    <TableCell className="px-4 text-[12px] font-medium text-muted-foreground group-hover:text-primary transition-colors border-r border-b border-neutral-700">
                       {task.estimation ? (
                         <span className="flex items-center justify-center gap-1.5 opacity-80">
                           {format(task.estimation.startDate, "MMM d")} —{" "}
@@ -398,14 +411,14 @@ export const TableTab = ({ tasks, onLoadMore, hasMore }: TableTabProps) => {
                         </div>
                       ) : (
                         <div className="flex items-center justify-center w-full">
-                          <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+                          <p className="text-[11px] text-muted-foreground group-hover:text-primary flex items-center gap-1 transition-colors">
                             <Minus className="w-3.5 h-3.5" />
                             Unassigned
                           </p>
                         </div>
                       )}
                     </TableCell>
-                    <TableCell className="px-4 border-r border-b text-muted-foreground border-neutral-700">
+                    <TableCell className="px-4 border-r border-b text-muted-foreground group-hover:text-primary transition-colors border-neutral-700">
                       <PriorityBadge priority={task.priority} />
                     </TableCell>
                     <TableCell
@@ -442,36 +455,6 @@ export const TableTab = ({ tasks, onLoadMore, hasMore }: TableTabProps) => {
           </TableBody>
         </Table>
       </div>
-
-      {/* Floating Selected Toolbar */}
-      {selectedTasks.length > 0 && (
-        <div className="absolute bottom-20 left-1/2 -translate-x-1/2 bg-neutral-900 border border-neutral-800 shadow-2xl rounded-2xl p-2 flex items-center gap-2 px-4 py-2.5 animate-in fade-in slide-in-from-bottom-2 duration-300 z-50">
-          <div className="text-[11px] font-semibold text-primary/90 mr-3 border-r border-neutral-800 pr-3">
-            {selectedTasks.length} Selected
-          </div>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 text-[10px] font-semibold text-primary/60 hover:text-primary hover:bg-neutral-800 rounded-lg gap-2"
-          >
-            <FileCode size={13} /> Apply Code
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 text-[10px] font-semibold text-primary/60 hover:text-primary hover:bg-neutral-800 rounded-lg gap-2"
-          >
-            <Edit size={13} /> Edit
-          </Button>
-          <Button
-            variant="ghost"
-            size="sm"
-            className="h-8 text-[10px] font-semibold text-rose-500/70 hover:text-rose-500 hover:bg-rose-500/10 rounded-lg gap-2"
-          >
-            <Trash2 size={13} /> Delete
-          </Button>
-        </div>
-      )}
 
       {/* Simple Pagination */}
       <div className="flex items-center justify-between px-6 py-4 border-t border-neutral-800/60">
@@ -520,3 +503,4 @@ export const TableTab = ({ tasks, onLoadMore, hasMore }: TableTabProps) => {
     </div>
   );
 };
+

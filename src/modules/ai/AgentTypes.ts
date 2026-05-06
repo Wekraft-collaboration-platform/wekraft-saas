@@ -2,6 +2,7 @@ import { WithMessages } from "./langGraphAgent/types";
 
 export interface AgentState extends WithMessages {
   user_id?: string;
+  user_name?: string;
   project_id?: string;
   thread_id: string;
 }

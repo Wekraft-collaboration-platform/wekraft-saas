@@ -24,7 +24,6 @@ export const createIssue = mutation({
     status: v.union(
       v.literal("not opened"),
       v.literal("opened"),
-      v.literal("in review"),
       v.literal("reopened"),
       v.literal("closed"),
     ),
@@ -200,7 +199,6 @@ export const updateIssue = mutation({
       v.union(
         v.literal("not opened"),
         v.literal("opened"),
-        v.literal("in review"),
         v.literal("reopened"),
         v.literal("closed"),
       ),

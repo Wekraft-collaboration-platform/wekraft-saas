@@ -121,6 +121,7 @@ export interface AgentEvent<TAgentState, TInterruptValue> {
 interface AgentInput {
   thread_id: string;
   user_id?: string;
+  user_name?: string;
   project_id?: string;
   model?: string;
 }

@@ -17,12 +17,12 @@ const TOOL_META: Record<
   ask_project_analyst: {
     label: "Agent project analyst",
     caller: "Kaya",
-    colorClass: "bg-amber-600/20 text-primary/80",
+    colorClass: "bg-amber-500/30 text-primary",
   },
   create_sprint: {
     label: "Creating sprint",
     caller: "Kaya",
-    colorClass: "bg-teal-600/30 text-primary/80",
+    colorClass: "bg-blue-500/20 text-muted-foreground",
   },
   add_items_to_sprint: {
     label: "Waiting for task selection",
@@ -39,22 +39,37 @@ const TOOL_META: Record<
     caller: "Kaya",
     colorClass: "bg-violet-600/30 text-primary/80",
   },
+  get_user_standup: {
+    label: "Preparing your standup",
+    caller: "Kaya",
+    colorClass: "bg-orange-600/30 text-primary/80",
+  },
 
   // ── Project analyst's tools ───────────────────────────────────────────────
-  get_project_tasks: {
-    label: "Fetching tasks",
+  get_tasks_summary: {
+    label: "Analyzing tasks summary",
     caller: "Project analyst",
-    colorClass: "bg-teal-600/20 text-primary/80",
+    colorClass: "bg-indigo-500/30 text-primary/80",
   },
-  get_project_issues: {
-    label: "Fetching issues",
+  get_issues_summary: {
+    label: "Analyzing issues summary",
     caller: "Project analyst",
-    colorClass: "bg-teal-600/20 text-primary/80",
+    colorClass: "bg-indigo-500/30 text-primary/80",
   },
-  get_sprint_planner_context: {
-    label: "Checking sprint context",
+  get_member_workload: {
+    label: "Reviewing team workload",
     caller: "Project analyst",
-    colorClass: "bg-pink-600/40 text-primary/80",
+    colorClass: "bg-indigo-500/30 text-primary/80",
+  },
+  get_sprint_insights: {
+    label: "Analyzing sprint velocity",
+    caller: "Project analyst",
+    colorClass: "bg-indigo-500/30 text-primary/80",
+  },
+  get_project_insights: {
+    label: "Checking project timeline",
+    caller: "Project analyst",
+    colorClass: "bg-indigo-500/30 text-primary/80",
   },
 };
 

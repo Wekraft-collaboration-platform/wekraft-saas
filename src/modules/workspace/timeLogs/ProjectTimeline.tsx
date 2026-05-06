@@ -23,6 +23,8 @@ import {
   Filter,
   Layers,
   Layers2,
+  AlertCircle,
+  AlertTriangle,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -407,8 +409,8 @@ function TimelineDayAxis({
               key={day.toISOString()}
               style={{ width: `${columnWidthPercentage}%` }}
               className={cn(
-                "relative shrink-0 border-l border-border/40 first:border-l-0",
-                weekend && "bg-muted/10",
+                "relative shrink-0 border-l border-border/70 first:border-l-0",
+                weekend && "bg-muted/35",
               )}
             >
               {/* TODAY  */}
@@ -481,60 +483,87 @@ function TimelineDayAxis({
             const actualDurationDays = differenceInDays(end, start) + 1;
 
             const left = `${(startOffsetDays / days.length) * 100}%`;
-            const width = `max(${(durationDays / days.length) * 100}%, 90px)`;
+            const width = `max(${(durationDays / days.length) * 100}%, 140px)`;
 
-            // Width thresholds
             const baseWidth = (durationDays / days.length) * trackWidth;
-            const isWide = baseWidth >= 180; // show icon + avatars + title + duration
-            const isMed = baseWidth >= 90; // show title + duration only
 
             const assignees = task.assignees ?? [];
 
-            const getTaskColor = (t: Task) => {
+            const getTaskUI = (t: Task) => {
               const today = startOfDay(new Date());
               const endTask = startOfDay(new Date(t.estimation.endDate));
               const daysLeft = differenceInDays(endTask, today);
-              if (daysLeft < 0)
-                return "bg-red-500 border-primary/70 text-white";
-              if (daysLeft <= 2)
-                return "bg-orange-500 border-primary/70 text-white";
-              return "bg-primary border-primary/50 text-primary-foreground ";
+
+              if (daysLeft < 0) {
+                return {
+                  barClass:
+                    "bg-red-50 dark:bg-red-500/40 border-red-200 dark:border-red-500/30 text-white shadow-[0_2px_10px_-3px_rgba(239,68,68,0.2)]",
+                  icon: <AlertTriangle size={10} className="text-white" />,
+                  iconBg: "bg-red-500",
+                };
+              }
+              if (daysLeft <= 2) {
+                return {
+                  barClass:
+                    "bg-yellow-50 dark:bg-yellow-500/10 border-yellow-200 dark:border-yellow-500/30 text-yellow-700 dark:text-yellow-500 shadow-[0_2px_10px_-3px_rgba(234,179,8,0.2)]",
+                  icon: <AlertCircle size={10} className="text-white" />,
+                  iconBg: "bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.4)]",
+                };
+              }
+              return {
+                barClass:
+                  "bg-neutral-800 border-border text-primary dark:text-zinc-200 shadow-sm",
+                icon: <ClipboardList size={10} className="text-black" />,
+                iconBg: "bg-primary",
+              };
             };
 
-            const colorClasses = getTaskColor(task);
+            const taskUI = getTaskUI(task);
+
+            // Use rendered width for visibility checks
+            const renderedWidth = Math.max(baseWidth, 140);
+            const isWide = renderedWidth >= 180;
+            const isMed = renderedWidth >= 100;
 
             return (
               <div
                 key={task._id}
-                className="relative h-7 pointer-events-auto flex items-center"
+                className="relative h-8 pointer-events-auto flex items-center"
               >
                 {/* Bar — group is ON the bar itself, not the outer wrapper */}
                 <div
                   className={cn(
-                    "absolute h-full rounded border flex items-center px-2.5 shadow-md group transition-colors",
-                    colorClasses,
+                    "absolute h-8 rounded-full border flex items-center pl-1 pr-3 shadow-sm group transition-all hover:shadow-md hover:scale-[1.01] backdrop-blur-sm",
+                    taskUI.barClass,
                   )}
                   style={{ left, width }}
                 >
-                  <div className="flex items-center gap-1.5 overflow-hidden w-full">
-                    {/* Icon — only when wide */}
-                    {isWide && <ClipboardList size={12} className="shrink-0" />}
+                  <div className="flex items-center gap-2 overflow-hidden w-full">
+                    {/* Circular Icon at Start */}
+                    <div
+                      className={cn(
+                        "h-5 w-5 rounded-full flex items-center justify-center shrink-0 shadow-sm",
+                        taskUI.iconBg,
+                      )}
+                    >
+                      {taskUI.icon}
+                    </div>
 
                     {/* Title */}
-                    <span className="text-[11px] font-medium capitalize truncate leading-none flex-1">
+                    <span className="text-[11px] font-semibold capitalize truncate leading-none flex-1">
                       {task.title}
                     </span>
 
                     {/* Duration */}
                     {isMed && (
-                      <span className="text-[10px] opacity-90 font-mono shrink-0">
+                      <span className="text-[10px] font-bold  bg-muted px-1.5 py-0.5 rounded-full shrink-0 tabular-nums">
                         {actualDurationDays}d
                       </span>
                     )}
 
-                    {/* Stacked Avatars — only when wide */}
+                    {/* Stacked Avatars */}
                     {isWide && (
-                      <div className="flex items-center shrink-0 -space-x-1.5">
+                      <div className="flex items-center shrink-0 -space-x-1.5 ml-1">
                         {assignees.length === 0 ? (
                           <span className="text-[10px] opacity-40 font-mono">
                             —
@@ -543,7 +572,7 @@ function TimelineDayAxis({
                           assignees.slice(0, 3).map((a, i) => (
                             <div
                               key={i}
-                              className="h-4 w-4 rounded-full border border-current bg-muted overflow-hidden shrink-0"
+                              className="h-6 w-6 rounded-full border-2 border-background bg-muted overflow-hidden shrink-0 shadow-sm"
                               style={{ zIndex: 10 - i }}
                             >
                               {a.avatar ? (
@@ -553,7 +582,7 @@ function TimelineDayAxis({
                                   className="h-full w-full object-cover"
                                 />
                               ) : (
-                                <div className="h-full w-full flex items-center justify-center bg-accent text-[8px] font-bold text-foreground uppercase">
+                                <div className="h-full w-full flex items-center justify-center bg-accent text-[7px] font-bold text-foreground uppercase">
                                   {a.name.charAt(0)}
                                 </div>
                               )}

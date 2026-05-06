@@ -62,6 +62,8 @@ export function useLangGraphAgent<
   const [status, setStatus] = useState<AgentStatus>("idle");
   const [restoring, setRestoring] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
+  const [agentStatus, setAgentStatus] = useState<string>("");
+  const [activeNode, setActiveNode] = useState<string>("");
   const [appCheckpoints, setAppCheckpoints] = useState<
     AppCheckpoint<TAgentState, TInterruptValue>[]
   >([]);
@@ -147,6 +149,8 @@ export function useLangGraphAgent<
     try {
       setStatus("running");
       setIsStreaming(false);
+      setAgentStatus("");
+      setActiveNode("");
       // Invalidate cache when agent is called
       historyCache.delete(agentInput.thread_id);
 
@@ -167,8 +171,10 @@ export function useLangGraphAgent<
 
         if (msg.event === "message_chunk") {
           const chunk = msg.data as NodeMessageChunk;
-          if (chunk.message_chunk.content) {
+          // Only start streaming UI for 'kaya' node (the main assistant response)
+          if (chunk.message_chunk.content && chunk.node_name === "kaya") {
             setIsStreaming(true);
+            setAgentStatus(""); // Clear intermediate status when final response starts
           }
           processMessageChunk(chunk, appCheckpoints);
           setAppCheckpoints([...appCheckpoints]);
@@ -195,10 +201,14 @@ export function useLangGraphAgent<
 
       setStatus("idle");
       setIsStreaming(false);
+      setAgentStatus("");
+      setActiveNode("");
     } catch (error: any) {
       console.error(error);
       setStatus("error");
       setIsStreaming(false);
+      setAgentStatus("");
+      setActiveNode("");
 
       if (error.message.includes("Too many requests")) {
         toast.error(error.message, {
@@ -334,6 +344,7 @@ export function useLangGraphAgent<
 
     // Create a new checkpoint except for the last checkpoint.
     if (checkpoint.next.length > 0) {
+      setActiveNode(checkpoint.next[0]); // Track which node is starting
       const newCheckpoint = createAppCheckpoint(checkpoint);
       appCheckpoints.push(newCheckpoint);
       onCheckpointStart?.(newCheckpoint);
@@ -470,6 +481,12 @@ export function useLangGraphAgent<
 
     // Update the last checkpoint state. Update only the properties that are in the custom event.
     const lastCheckpoint = appCheckpoints[appCheckpoints.length - 1];
+    
+    // Check if the custom event contains an agent_status update
+    if ((state as any).agent_status) {
+      setAgentStatus((state as any).agent_status);
+    }
+
     lastCheckpoint.state = deepCopy({
       ...lastCheckpoint.state,
       ...state,
@@ -560,5 +577,7 @@ export function useLangGraphAgent<
     stop,
     restoring,
     isStreaming,
+    agentStatus,
+    activeNode,
   };
 }

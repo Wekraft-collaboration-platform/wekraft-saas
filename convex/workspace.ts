@@ -584,3 +584,36 @@ export const getMyIssues = query({
     return { items, nextCursor };
   },
 });
+// =============================================
+// DELETE TASKS (Bulk)
+// =============================================
+export const deleteTasks = mutation({
+  args: {
+    taskIds: v.array(v.id("tasks")),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    await Promise.all(
+      args.taskIds.map(async (taskId) => {
+        // 1. Delete task assignees
+        const assignees = await ctx.db
+          .query("taskAssignees")
+          .withIndex("by_task", (q) => q.eq("taskId", taskId))
+          .collect();
+        await Promise.all(assignees.map((a) => ctx.db.delete(a._id)));
+
+        // 2. Delete task comments
+        const comments = await ctx.db
+          .query("taskComments")
+          .withIndex("by_task", (q) => q.eq("taskId", taskId))
+          .collect();
+        await Promise.all(comments.map((c) => ctx.db.delete(c._id)));
+
+        // 3. Delete the task itself
+        await ctx.db.delete(taskId);
+      }),
+    );
+  },
+});

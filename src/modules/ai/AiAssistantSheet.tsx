@@ -105,6 +105,7 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
   const { isOpen, setIsOpen, threadId, createNewSession } = useKayaStore();
   const currentUser = useQuery(api.user.getCurrentUser);
   const userId = currentUser?._id;
+  const userName = currentUser?.name || "User";
 
   const params = useParams();
   const slug = params?.slug as string;
@@ -134,7 +135,22 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
     stop,
     restoring,
     isStreaming,
-  } = useLangGraphAgent<AgentState, InterruptValue, ResumeValue>();
+    agentStatus,
+    activeNode,
+  } = useLangGraphAgent<AgentState, InterruptValue, ResumeValue>({
+    onCheckpointStateUpdate: (checkpoint) => {
+      // Backend emits { analyst_tool_running: "tool_name" } for each parallel tool.
+      // We store these on the checkpoint object so they persist after the run finishes.
+      const toolName = (checkpoint.state as any).analyst_tool_running;
+      if (toolName && typeof toolName === "string") {
+        const cp = checkpoint as any;
+        if (!cp._analystTools) cp._analystTools = [];
+        if (!cp._analystTools.includes(toolName)) {
+          cp._analystTools.push(toolName);
+        }
+      }
+    },
+  });
 
   // Console threadId
   useEffect(() => {
@@ -200,10 +216,13 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
     setRestoreError(false);
     run({
       thread_id: threadId,
+      user_id: userId,
+      user_name: userName,
       model: selectedModel,
       state: {
-        user_id: userId, // added user_id here...
-        project_id: projectId, // added project_id here...
+        user_id: userId,
+        user_name: userName,
+        project_id: projectId,
         messages: [{ type: "user", content }],
       },
     });
@@ -215,6 +234,7 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
     resume({
       thread_id: threadId,
       user_id: userId,
+      user_name: userName,
       project_id: projectId,
       model: selectedModel,
       resume: value,
@@ -299,17 +319,25 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
         return null;
       }
 
-      // ── Analyst think — show tool calls in flight ─────────────────────────
-      case "analyst_think": {
-        const lastMsg = node.state.messages?.at(-1);
-        if (lastMsg?.tool_calls?.length) {
-          return (
-            <div className="space-y-1">
-              {lastMsg.tool_calls.map((tc: any) => (
-                <ToolCallCard key={tc.id} toolName={tc.name} />
-              ))}
-            </div>
-          );
+      // Analyst execution nodes — render tools stored on the checkpoint
+      case "analyst_think":
+      case "analyst_tools": {
+        const cp = checkpoint as any;
+        const tools = cp._analystTools || [];
+        if (tools.length > 0) {
+          // Only render for the first node of this type in the checkpoint to avoid duplication
+          const isFirst =
+            checkpoint.nodes.indexOf(node) ===
+            checkpoint.nodes.findIndex((n) => n.name === node.name);
+          if (isFirst) {
+            return (
+              <div className="space-y-1">
+                {tools.map((name: string) => (
+                  <ToolCallCard key={name} toolName={name} />
+                ))}
+              </div>
+            );
+          }
         }
         return null;
       }
@@ -329,12 +357,6 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
         return null;
       }
 
-      // case "analyst_tools":
-      // case "analyst_done": {
-      //   return null;
-      // }
-      // ── Internal plumbing — nothing to render ─────────────────────────────
-      case "analyst_tools":
       case "analyst_done":
       case "kaya_read_tools":
       case "scheduler_setup": {
@@ -467,16 +489,16 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
 
           {status === "running" && !restoring && !isStreaming && (
             <div className="flex flex-col gap-1 py-3 px-4">
-              <div className="flex gap-2 items-center text-neutral-500">
+              <div className="flex gap-2 items-center text-neutral-300">
                 <KayaLoader />
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] uppercase tracking-wide">
+                  <span className="text-[10px] uppercase tracking-normal">
                     {appCheckpoints.length === 0
                       ? "Kaya is spinning up, hang tight..."
-                      : "Kaya is thinking..."}
+                      : agentStatus || "Kaya is thinking..."}
                   </span>
                   {thinkingTime > 0 && (
-                    <span className="text-[9px] tabular-nums text-neutral-400">
+                    <span className="text-[9px] tabular-nums text-neutral-200">
                       {thinkingTime}s
                     </span>
                   )}
