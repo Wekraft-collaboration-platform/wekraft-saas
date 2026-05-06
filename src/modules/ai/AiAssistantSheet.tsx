@@ -133,6 +133,7 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
     resume,
     restore,
     stop,
+    reset,
     restoring,
     isStreaming,
     agentStatus,
@@ -399,7 +400,10 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                   className="text-[11px] cursor-pointer"
                   size="sm"
                   variant={"outline"}
-                  onClick={() => createNewSession()}
+                  onClick={() => {
+                    createNewSession();
+                    reset();
+                  }}
                 >
                   new <MessageSquare className="h-3! w-3!" />
                 </Button>

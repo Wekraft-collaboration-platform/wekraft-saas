@@ -53,6 +53,7 @@ import {
   MessagesSquare,
   MessageCircleWarning,
   ContactRound,
+  Users2,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
@@ -87,7 +88,7 @@ const workspaceMenu = [
   {
     label: "Manage Team",
     path: "workspace/team",
-    icon: ContactRound,
+    icon: Users2,
   },
   {
     label: "Heatmap",

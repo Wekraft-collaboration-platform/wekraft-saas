@@ -566,6 +566,17 @@ export function useLangGraphAgent<
     return JSON.parse(JSON.stringify(obj));
   }
 
+  /**
+   * Resets the agent state.
+   */
+  function reset() {
+    setAppCheckpoints([]);
+    setStatus("idle");
+    setAgentStatus("");
+    setActiveNode("");
+    setIsStreaming(false);
+  }
+
   return {
     status,
     appCheckpoints,
@@ -579,5 +590,6 @@ export function useLangGraphAgent<
     isStreaming,
     agentStatus,
     activeNode,
+    reset,
   };
 }
