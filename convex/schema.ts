@@ -213,7 +213,6 @@ export default defineSchema({
     status: v.union(
       v.literal("not opened"),
       v.literal("opened"),
-      v.literal("in review"),
       v.literal("reopened"),
       v.literal("closed"),
     ),

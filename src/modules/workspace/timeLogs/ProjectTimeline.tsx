@@ -409,8 +409,8 @@ function TimelineDayAxis({
               key={day.toISOString()}
               style={{ width: `${columnWidthPercentage}%` }}
               className={cn(
-                "relative shrink-0 border-l border-border first:border-l-0",
-                weekend && "bg-muted/40",
+                "relative shrink-0 border-l border-border/70 first:border-l-0",
+                weekend && "bg-muted/35",
               )}
             >
               {/* TODAY  */}

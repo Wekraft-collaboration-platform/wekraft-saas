@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import {
   Dialog,
@@ -24,6 +24,9 @@ import {
   AlertCircle,
   Link2,
   ListFilter,
+  Paperclip,
+  Check,
+  User,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -48,6 +51,7 @@ import {
   ISSUE_SEVERITY_ICONS,
   ISSUE_STATUS_ICONS,
 } from "@/lib/static-store";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface CreateIssueDialogProps {
   projectName?: string;
@@ -68,7 +72,7 @@ export const CreateIssueDialog = ({
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [status, setStatus] = useState<
-    "not opened" | "opened" | "in review" | "reopened" | "closed" | null
+    "not opened" | "opened" | "reopened" | "closed" | null
   >(null);
   const [severity, setSeverity] = useState<
     "critical" | "medium" | "low" | null
@@ -78,8 +82,12 @@ export const CreateIssueDialog = ({
   >(null);
   const [dueDate, setDueDate] = useState<Date | undefined>(undefined);
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
+  const [assignedMembers, setAssignedMembers] = useState<
+    { userId: Id<"users">; name: string; avatar?: string }[]
+  >([]);
   const [isPending, setIsPending] = useState(false);
 
+  const members = useQuery(api.project.getProjectMembers, { projectId });
   const createIssue = useMutation(api.issue.createIssue);
 
   const handleCreateIssue = async () => {
@@ -100,6 +108,7 @@ export const CreateIssueDialog = ({
         type: "manual",
         projectId,
         fileLinked: selectedPath || undefined,
+        assignees: assignedMembers.length > 0 ? assignedMembers : undefined,
       });
       toast.success("Issue created successfully");
       setOpen(false);
@@ -111,6 +120,7 @@ export const CreateIssueDialog = ({
       setEnvironment(null);
       setDueDate(undefined);
       setSelectedPath(null);
+      setAssignedMembers([]);
     } catch (error) {
       console.error(error);
       toast.error("Failed to create issue");
@@ -170,24 +180,18 @@ export const CreateIssueDialog = ({
                 <div className="text-xs text-center font-medium p-2 border-b border-accent">
                   Select Status
                 </div>
-                {(
-                  [
-                    "not opened",
-                    "opened",
-                    "in review",
-                    "reopened",
-                    "closed",
-                  ] as const
-                ).map((s) => (
-                  <DropdownMenuItem
-                    key={s}
-                    onClick={() => setStatus(s)}
-                    className="gap-2 cursor-pointer"
-                  >
-                    {ISSUE_STATUS_ICONS[s]}
-                    <span className="capitalize text-xs px-1.5">{s}</span>
-                  </DropdownMenuItem>
-                ))}
+                {(["not opened", "opened", "reopened", "closed"] as const).map(
+                  (s) => (
+                    <DropdownMenuItem
+                      key={s}
+                      onClick={() => setStatus(s)}
+                      className="gap-2 cursor-pointer"
+                    >
+                      {ISSUE_STATUS_ICONS[s]}
+                      <span className="capitalize text-xs px-1.5">{s}</span>
+                    </DropdownMenuItem>
+                  ),
+                )}
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -328,6 +332,90 @@ export const CreateIssueDialog = ({
                 />
               </PopoverContent>
             </Popover>
+
+            {/* Members Selector */}
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className={cn(
+                    "h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-3 gap-1.5 rounded-full text-[11px]",
+                    assignedMembers.length > 0 &&
+                      "text-blue-400 border-blue-900/40 bg-blue-900/10",
+                  )}
+                >
+                  <User className="w-3.5 h-3.5" />
+                  {assignedMembers.length > 0
+                    ? `${assignedMembers.length} Assigned`
+                    : "Assignees"}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent className="bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200 w-48">
+                <div className="text-xs text-center font-medium p-2 border-b border-accent">
+                  Select Members
+                </div>
+                {members?.map((member) => {
+                  const isSelected = assignedMembers.some(
+                    (m) => m.userId === member.userId,
+                  );
+                  return (
+                    <DropdownMenuItem
+                      key={member.userId}
+                      onSelect={(e) => {
+                        e.preventDefault();
+                        if (isSelected) {
+                          setAssignedMembers(
+                            assignedMembers.filter(
+                              (m) => m.userId !== member.userId,
+                            ),
+                          );
+                        } else {
+                          setAssignedMembers([
+                            ...assignedMembers,
+                            {
+                              userId: member.userId,
+                              name: member.userName,
+                              avatar: member.userImage,
+                            },
+                          ]);
+                        }
+                      }}
+                      className="flex items-center gap-2 cursor-pointer"
+                    >
+                      <Avatar className="h-5 w-5">
+                        <AvatarImage src={member.userImage} />
+                        <AvatarFallback className="text-[8px]">
+                          {member.userName[0]}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span
+                        className={cn(
+                          "text-xs",
+                          isSelected && "text-blue-500 font-bold",
+                        )}
+                      >
+                        {member.userName}
+                      </span>
+                      {isSelected && (
+                        <Check className="w-3 h-3 ml-auto text-blue-500" />
+                      )}
+                    </DropdownMenuItem>
+                  );
+                })}
+              </DropdownMenuContent>
+            </DropdownMenu>
+
+            {/* Attachments (UI Only) */}
+            <Button
+              variant="outline"
+              size="sm"
+              className="h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]"
+              onClick={() => toast.info("Attachments module coming soon!")}
+            >
+              <Paperclip className="w-3.5 h-3.5" />
+              Attachments
+            </Button>
           </div>
 
           <Textarea
