@@ -135,6 +135,8 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
     stop,
     restoring,
     isStreaming,
+    agentStatus,
+    activeNode,
   } = useLangGraphAgent<AgentState, InterruptValue, ResumeValue>({
     onCheckpointStateUpdate: (checkpoint) => {
       // Backend emits { analyst_tool_running: "tool_name" } for each parallel tool.
@@ -485,19 +487,18 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
             ),
           )}
 
-
           {status === "running" && !restoring && !isStreaming && (
             <div className="flex flex-col gap-1 py-3 px-4">
-              <div className="flex gap-2 items-center text-neutral-500">
+              <div className="flex gap-2 items-center text-neutral-300">
                 <KayaLoader />
                 <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] uppercase tracking-wide">
+                  <span className="text-[10px] uppercase tracking-normal">
                     {appCheckpoints.length === 0
                       ? "Kaya is spinning up, hang tight..."
-                      : "Kaya is thinking..."}
+                      : agentStatus || "Kaya is thinking..."}
                   </span>
                   {thinkingTime > 0 && (
-                    <span className="text-[9px] tabular-nums text-neutral-400">
+                    <span className="text-[9px] tabular-nums text-neutral-200">
                       {thinkingTime}s
                     </span>
                   )}
