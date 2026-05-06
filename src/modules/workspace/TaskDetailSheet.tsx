@@ -99,6 +99,13 @@ export const TaskDetailSheet = ({
     currentTask ? { userId: currentTask.createdByUserId as any } : "skip",
   );
 
+  const completer = useQuery(
+    api.user.getUserById,
+    currentTask?.finalCompletedBy
+      ? { userId: currentTask.finalCompletedBy as any }
+      : "skip",
+  );
+
   const members = useQuery(
     api.project.getProjectMembers,
     currentTask ? { projectId: currentTask.projectId } : "skip",
@@ -153,7 +160,7 @@ export const TaskDetailSheet = ({
     try {
       await updateAssignees({
         taskId: currentTask._id,
-        assignees: newAssignees.map(a => ({
+        assignees: newAssignees.map((a) => ({
           userId: a.userId,
           name: a.name,
           avatar: a.avatar,
@@ -438,13 +445,38 @@ export const TaskDetailSheet = ({
             </div>
 
             <div className="my-3">
-              <p className="text-sm text-muted-foreground">
-                <CalendarClock size={16} className=" mr-1 inline -mt-1" /> Last
-                updated:{" "}
-                <span className="text-xs font-medium ml-3 text-primary">
-                  {format(currentTask.updatedAt, "d MMMM, yyyy")}
-                </span>
-              </p>
+              {currentTask.status === "completed" ? (
+                <div className="flex items-center justify-between bg-emerald-100/5 border border-emerald-500/20 rounded-md p-3 shadow-sm transition-all duration-300">
+                  <p className="text-xs text-muted-foreground flex items-center">
+                    <Check size={16} className="mr-2 text-emerald-500" />
+                    Completed at:
+                    <span className="text-xs font-semibold ml-3 text-emerald-500">
+                      {currentTask.finalCompletedAt
+                        ? format(currentTask.finalCompletedAt, "d MMMM, yyyy")
+                        : format(currentTask.updatedAt, "d MMMM, yyyy")}
+                    </span>
+                  </p>
+                  <div className="flex items-center gap-2 border-l border-primary/60 pl-4">
+                    <span className="text-[10px] text-muted-foreground">
+                      By:
+                    </span>
+                    <Avatar className="w-5 h-5 border border-emerald-500/30">
+                      <AvatarImage src={completer?.avatarUrl || ""} />
+                      <AvatarFallback className="text-[8px] bg-neutral-800 text-neutral-400">
+                        {completer?.name?.[0] || "?"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  <CalendarClock size={16} className=" mr-1 inline -mt-1" />{" "}
+                  Last updated:{" "}
+                  <span className="text-xs font-medium ml-3 text-primary">
+                    {format(currentTask.updatedAt, "d MMMM, yyyy")}
+                  </span>
+                </p>
+              )}
             </div>
 
             {/* Description & Attachments Tabs */}

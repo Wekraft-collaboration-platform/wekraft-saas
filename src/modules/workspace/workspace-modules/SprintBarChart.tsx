@@ -56,7 +56,7 @@ export const SprintBarChart = ({ projectId }: SprintBarChartProps) => {
   };
 
   return (
-    <Card className="border border-border shadow-none bg-accent/30 overflow-hidden">
+    <Card className="border border-border shadow-none bg-accent/20 overflow-hidden">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
         <div className="space-y-1">
           <CardTitle className="text-sm font-semibold text-primary flex items-center gap-2">

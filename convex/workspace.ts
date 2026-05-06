@@ -222,6 +222,8 @@ export const updateTaskStatus = mutation({
     } else {
       await ctx.db.patch(args.taskId, {
         status: args.status,
+        finalCompletedAt: undefined,
+        finalCompletedBy: undefined,
         updatedAt: Date.now(),
       });
     }
@@ -388,10 +390,30 @@ export const editTask = mutation({
     const task = await ctx.db.get(taskId);
     if (!task) throw new Error("Task not found");
 
-    await ctx.db.patch(taskId, {
+    const patchData: any = {
       ...updateFields,
       updatedAt: Date.now(),
-    });
+    };
+
+    if (updateFields.status !== undefined) {
+      if (updateFields.status === "completed") {
+        const user = await ctx.db
+          .query("users")
+          .withIndex("by_token", (q) =>
+            q.eq("clerkToken", identity.tokenIdentifier),
+          )
+          .unique();
+        if (user) {
+          patchData.finalCompletedAt = Date.now();
+          patchData.finalCompletedBy = user._id;
+        }
+      } else {
+        patchData.finalCompletedAt = undefined;
+        patchData.finalCompletedBy = undefined;
+      }
+    }
+
+    await ctx.db.patch(taskId, patchData);
 
     // Handle Assignees update if provided
     if (assignees !== undefined) {
