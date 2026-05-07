@@ -9,6 +9,8 @@ import {
   Frown,
   Calendar,
   FileCodeCorner,
+  Sparkles,
+  TrendingDown,
 } from "lucide-react";
 import React, { useState } from "react";
 import { useParams } from "next/navigation";
@@ -103,7 +105,66 @@ const TimeLogsPage = () => {
         {projectDetails?.targetDate ? (
           <div className="h-full">
             <div className="h-[240px] grid grid-cols-3 mb-14 gap-8">
-              <div className="border"></div>
+              <div className="border rounded-xl bg-accent/20 p-4 flex flex-col justify-between relative overflow-hidden group border-primary/10">
+                <div className="space-y-3 relative z-10">
+                  <div className="flex items-center gap-2">
+                    <div className="p-1.5 rounded-lg bg-primary/10 border border-primary/20">
+                      <Sparkles className="w-3.5 h-3.5 text-primary animate-pulse" />
+                    </div>
+                    <h3 className="font-semibold text-[11px] tracking-wider text-primary/90 uppercase">
+                      AI Prediction
+                    </h3>
+                  </div>
+
+                  <div className="space-y-0.5">
+                    <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-medium">
+                      Estimated Completion
+                    </p>
+                    <p className="text-2xl font-bold bg-gradient-to-r from-orange-400 to-red-500 bg-clip-text text-transparent">
+                      {new Date(
+                        projectDetails.targetDate + 5 * 24 * 60 * 60 * 1000,
+                      ).toLocaleDateString("en-US", {
+                        month: "short",
+                        day: "numeric",
+                        year: "numeric",
+                      })}
+                    </p>
+                  </div>
+
+                  <div className="grid grid-cols-2 gap-3 pt-2 border-t border-border">
+                    <div>
+                      <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">
+                        Deadline
+                      </p>
+                      <p className="text-xs font-medium flex items-center gap-1.5">
+                        <Calendar className="w-3 h-3 text-muted-foreground" />
+                        {new Date(projectDetails.targetDate).toLocaleDateString(
+                          "en-US",
+                          {
+                            month: "short",
+                            day: "numeric",
+                          },
+                        )}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] uppercase tracking-wider text-muted-foreground font-semibold">
+                        Status
+                      </p>
+                      <p className="text-xs font-medium text-red-400 flex items-center gap-1.5">
+                        <TrendingDown className="w-3 h-3" />
+                        +5d Delay
+                      </p>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="mt-auto p-2 rounded-lg bg-primary/5 border border-primary/5 relative z-10">
+                  <p className="text-[10px] text-muted-foreground/80 leading-snug italic">
+                    "Velocity analysis: Tasks lagging. Timeline shifted +5d."
+                  </p>
+                </div>
+              </div>
               <DelayDebt tasks={tasks as any} projectId={project._id} />
               <PaceTracker
                 tasks={tasks as any}

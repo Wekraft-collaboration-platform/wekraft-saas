@@ -121,7 +121,7 @@ export const PaceTracker = ({
   };
 
   return (
-    <div className="h-full w-full border border-neutral-800 rounded-lg bg-sidebar p-4 flex flex-col justify-between relative overflow-hidden">
+    <div className="h-full w-full border border-neutral-800 rounded-lg bg-accent/20 p-4 flex flex-col justify-between relative overflow-hidden">
       {/* HEADER */}
       <div>
         <div className="flex items-center justify-between mb-4">
