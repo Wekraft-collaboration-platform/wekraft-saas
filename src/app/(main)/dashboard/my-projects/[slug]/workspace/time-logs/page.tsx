@@ -103,7 +103,7 @@ const TimeLogsPage = () => {
         {projectDetails?.targetDate ? (
           <div className="h-full">
             <div className="h-[240px] grid grid-cols-3 mb-14 gap-8">
-              <div className="border"></div>
+              <div className="border rounded-lg bg-accent/20 p-4"></div>
               <DelayDebt tasks={tasks as any} projectId={project._id} />
               <PaceTracker
                 tasks={tasks as any}

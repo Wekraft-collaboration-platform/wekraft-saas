@@ -20,7 +20,16 @@ import {
 
 import "@xyflow/react/dist/style.css";
 import { FolderNode } from "./action";
-import { MoveRight, Network, Plus, Minus, ChevronRight } from "lucide-react";
+import {
+  MoveRight,
+  Network,
+  Plus,
+  Minus,
+  ChevronRight,
+  ChevronUp,
+  ChevronDown,
+  Info,
+} from "lucide-react";
 import {
   FileIcon as FileSymbol,
   FolderIcon as FolderSymbol,
@@ -185,6 +194,7 @@ const HeatmapFlowInner = ({
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const { fitView, zoomIn, zoomOut } = useReactFlow();
+  const [isLegendOpen, setIsLegendOpen] = useState(true);
 
   // Helper to check if a path contains issues
   const containsIssue = useCallback(
@@ -430,6 +440,68 @@ const HeatmapFlowInner = ({
                 className="group-hover/btn:scale-110 group-active/btn:scale-95 transition-transform"
               />
             </button>
+          </div>
+        </Panel>
+
+        <Panel
+          position="top-right"
+          className="m-5 select-none origin-top-right"
+        >
+          <div
+            className={cn(
+              "bg-[#050505]/80 backdrop-blur-2xl rounded-2xl border border-white/10 shadow-xl transition-all duration-300 overflow-hidden",
+              isLegendOpen
+                ? "w-[220px] p-4"
+                : "w-[44px] h-[44px] p-0 flex items-center justify-center",
+            )}
+          >
+            {isLegendOpen ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Info size={14} className="text-primary" />
+                    <span className="text-[10px] font-semibold text-primary">
+                      Legend
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setIsLegendOpen(false)}
+                    className="p-1 hover:bg-white/5 rounded-md transition-colors"
+                  >
+                    <ChevronUp size={14} className="text-zinc-500" />
+                  </button>
+                </div>
+
+                <div className="space-y-3 pt-1">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)] shrink-0" />
+                    <span className="text-[11px] font-medium text-zinc-300">
+                      Active Issues / Errors
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)] shrink-0" />
+                    <span className="text-[11px] font-medium text-zinc-300">
+                      Modified (Last 7 Days)
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-2.5 h-2.5 rounded-full bg-blue-500/50 border border-blue-500/30 shrink-0" />
+                    <span className="text-[11px] font-medium text-zinc-500">
+                      Stable Folders (No Recent Chnages/ Issues)
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setIsLegendOpen(true)}
+                className="w-full h-full flex items-center justify-center hover:bg-white/5 transition-colors"
+                title="Show Legend"
+              >
+                <Info size={18} className="text-zinc-400" />
+              </button>
+            )}
           </div>
         </Panel>
       </ReactFlow>
