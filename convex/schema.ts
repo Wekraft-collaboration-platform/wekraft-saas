@@ -61,18 +61,18 @@ export default defineSchema({
     repoFullName: v.optional(v.string()),
     // ----
     thumbnailUrl: v.optional(v.string()),
-    lookingForMembers: v.optional(
-      v.array(
-        v.object({
-          role: v.string(),
-          type: v.union(
-            v.literal("casual"),
-            v.literal("part-time"),
-            v.literal("serious"),
-          ),
-        }),
-      ),
-    ),
+    // lookingForMembers: v.optional(
+    //   v.array(
+    //     v.object({
+    //       role: v.string(),
+    //       type: v.union(
+    //         v.literal("casual"),
+    //         v.literal("part-time"),
+    //         v.literal("serious"),
+    //       ),
+    //     }),
+    //   ),
+    // ),
     ownerId: v.id("users"),
     ownerName: v.string(),
     ownerImage: v.string(),
