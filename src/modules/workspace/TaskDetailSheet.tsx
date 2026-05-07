@@ -21,6 +21,9 @@ import {
   MessagesSquare,
   GitBranch,
   FastForward,
+  FileText,
+  Trash2,
+  ExternalLink,
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -113,6 +116,8 @@ export const TaskDetailSheet = ({
 
   const updateAssignees = useMutation(api.workspace.updateTaskAssignees);
   const markAsIssue = useMutation(api.workspace.markTaskAsIssue);
+  const addAttachment = useMutation(api.workspace.addTaskAttachment);
+  const removeAttachment = useMutation(api.workspace.removeTaskAttachment);
 
   const project = useQuery(
     api.project.getProjectById,
@@ -121,6 +126,7 @@ export const TaskDetailSheet = ({
 
   const [isMarkingIssue, setIsMarkingIssue] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   if (!currentTask) return null;
 
@@ -184,6 +190,66 @@ export const TaskDetailSheet = ({
       toast.error("Failed to mark task as issue", { id: toastId });
     } finally {
       setIsMarkingIssue(false);
+    }
+  };
+
+  const handleAttachmentUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file || !currentTask) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("File too large. Max 10MB allowed.");
+      return;
+    }
+
+    const toastId = toast.loading(`Uploading ${file.name}...`);
+    setIsUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/attachments", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (data.error) throw new Error(data.error);
+
+      await addAttachment({
+        taskId: currentTask._id,
+        name: data.name,
+        url: data.url,
+      });
+
+      toast.success("Attachment added successfully", { id: toastId });
+    } catch (error: any) {
+      toast.error(error.message || "Failed to upload attachment", {
+        id: toastId,
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleRemoveAttachment = async (url: string) => {
+    if (!currentTask) return;
+    try {
+      await removeAttachment({
+        taskId: currentTask._id,
+        url,
+      });
+      // Optionally delete from S3 too
+      await fetch("/api/attachments", {
+        method: "DELETE",
+        body: JSON.stringify({ url }),
+      });
+      toast.success("Attachment removed");
+    } catch (error) {
+      toast.error("Failed to remove attachment");
     }
   };
 
@@ -507,23 +573,99 @@ export const TaskDetailSheet = ({
                 </TabsContent>
 
                 <TabsContent value="attachments" className="pt-2">
-                  <div className="flex flex-wrap gap-4 items-center justify-center p-4 border-2 border-dashed border-neutral-800/50 rounded-2xl bg-neutral-900/20">
-                    <div className="text-center space-y-2">
-                      <Paperclip
-                        size={24}
-                        className="text-primary/20 mx-auto"
-                      />
-                      <p className="text-primary/40 text-xs font-medium">
-                        No attachments yet
-                      </p>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-8 px-3 text-[10px] bg-neutral-800/30 border-neutral-800 text-primary/60 hover:text-primary rounded-lg gap-1.5 mt-2"
-                      >
-                        <Plus size={12} /> Add Attachment
-                      </Button>
-                    </div>
+                  <div className="p-2 ">
+                    {currentTask.attachments &&
+                    currentTask.attachments.length > 0 ? (
+                      <div className="grid grid-cols-1 gap-2 w-full">
+                        {currentTask.attachments.map((file, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-center justify-between bg-accent/20 border border-[#333] rounded-xl px-4 py-2 group hover:border-blue-500/50 transition-all duration-200"
+                          >
+                            <div className="flex items-center gap-3 overflow-hidden">
+                              <div className="p-2 bg-blue-500/10 rounded-lg">
+                                <FileText className="w-5 h-5 text-blue-400" />
+                              </div>
+                              <div className="flex flex-col min-w-0">
+                                <span className="text-xs font-medium text-primary truncate max-w-[200px]">
+                                  {file.name}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-neutral-400 hover:text-blue-400 hover:bg-blue-400/10"
+                                onClick={() => window.open(file.url, "_blank")}
+                              >
+                                <ExternalLink size={14} />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-neutral-400 hover:text-red-400"
+                                onClick={() => handleRemoveAttachment(file.url)}
+                              >
+                                <Trash2 size={14} />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-9 px-3 text-xs bg-neutral-800/30 border-neutral-800 text-primary/60 hover:text-primary rounded-xl gap-2 mt-2 border-dashed"
+                          disabled={isUploading}
+                          onClick={() =>
+                            document
+                              .getElementById("detail-file-upload")
+                              ?.click()
+                          }
+                        >
+                          {isUploading ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <Plus size={14} />
+                          )}
+                          Add More
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="text-center space-y-3 py-4 w-full">
+                        <Paperclip
+                          size={32}
+                          className="text-primary/10 mx-auto"
+                        />
+                        <p className="text-primary/40 text-xs font-medium">
+                          No attachments yet
+                        </p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-9 px-4 text-xs bg-neutral-800/30 border-neutral-800 text-primary/60 hover:text-primary rounded-xl gap-2 mt-2"
+                          disabled={isUploading}
+                          onClick={() =>
+                            document
+                              .getElementById("detail-file-upload")
+                              ?.click()
+                          }
+                        >
+                          {isUploading ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <Plus size={14} />
+                          )}
+                          Add Attachment
+                        </Button>
+                      </div>
+                    )}
+                    <input
+                      id="detail-file-upload"
+                      type="file"
+                      className="hidden"
+                      onChange={handleAttachmentUpload}
+                    />
                   </div>
                 </TabsContent>
 

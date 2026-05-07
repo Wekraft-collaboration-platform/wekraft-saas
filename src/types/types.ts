@@ -53,6 +53,7 @@ export interface Task {
   status: string;
   linkWithCodebase?: string;
   isBlocked?: boolean;
+  attachments?: { name: string; url: string }[];
   projectId: Id<"projects">;
   createdByUserId: Id<"users">;
   finalCompletedAt?: number;
