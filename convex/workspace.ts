@@ -313,7 +313,7 @@ export const markTaskAsIssue = mutation({
       description: task.description,
       fileLinked: task.linkWithCodebase,
       status: "not opened",
-      type: "manual",
+      type: "task-issue",
       projectId: task.projectId,
       taskId: task._id,
       createdByUserId: user._id,
@@ -321,7 +321,7 @@ export const markTaskAsIssue = mutation({
       updatedAt: Date.now(),
     });
 
-    // 3. Move assignees from task to issue (Optional but consistent)
+    // 3. Move assignees from task to issue
     const taskAssignees = await ctx.db
       .query("taskAssignees")
       .withIndex("by_task", (q) => q.eq("taskId", args.taskId))
@@ -600,8 +600,7 @@ export const getMyIssues = query({
       )
     ).filter(Boolean);
 
-    const nextCursor =
-      skip + limit < issueIds.length ? skip + limit : null;
+    const nextCursor = skip + limit < issueIds.length ? skip + limit : null;
 
     return { items, nextCursor };
   },
