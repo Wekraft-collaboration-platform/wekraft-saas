@@ -281,4 +281,5 @@ export const SortPopover = ({
   </Popover>
 );
 
-export const INVITE_LINK = "http://localhost:3000/";
+// export const INVITE_LINK = "http://localhost:3000/";
+export const INVITE_LINK = "https://wekraft-saas.vercel.app/";
