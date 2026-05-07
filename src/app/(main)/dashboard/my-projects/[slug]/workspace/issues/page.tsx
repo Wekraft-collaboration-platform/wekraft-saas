@@ -8,20 +8,19 @@ import {
   FileCodeCorner,
   Filter,
   Github,
-  Layers3,
   Search,
   Sparkles,
   UserPlus,
 } from "lucide-react";
-import React from "react";
+import React, { useState } from "react";
 import { api } from "../../../../../../../../convex/_generated/api";
 import { useParams } from "next/navigation";
 import { Input } from "@/components/ui/input";
 import Image from "next/image";
 import { CreateIssueDialog } from "@/modules/workspace/CreateIssueDialog";
-import { useState } from "react";
 import { cn } from "@/lib/utils";
 import { useKayaStore } from "@/store/useKayaStore";
+import { IssueKanbanUI } from "@/modules/workspace/IssueKanbanUI";
 
 const users = [
   { name: "Ritesh", img: "https://i.pravatar.cc/40?img=1" },
@@ -36,9 +35,20 @@ const IssuesPage = () => {
   const project = useQuery(api.project.getProjectBySlug, { slug });
   const projectName = project?.projectName;
   const [activeTab, setActiveTab] = useState<"all" | "github">("all");
+  const [searchQuery, setSearchQuery] = useState("");
   const { setIsOpen } = useKayaStore();
+
+  // Fetch all issues for the kanban board
+  const issues = useQuery(
+    api.issue.getIssuesForKanban,
+    project?._id ? { projectId: project._id } : "skip",
+  );
+
+  const hasIssues = issues && issues.length > 0;
+
   return (
-    <div className="w-full h-full p-6 2xl:p-8">
+    <div className="w-full h-full p-6 2xl:p-8 flex flex-col">
+      {/* ── Header ───────────────────────────────────── */}
       <header className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">
           <Bug className="w-6 h-6 ml-1 -mt-0.5 text-primary inline" /> Issues
@@ -69,6 +79,7 @@ const IssuesPage = () => {
         </div>
       </header>
 
+      {/* ── Tabs + Controls ──────────────────────────── */}
       <div className="flex items-center w-full justify-between gap-3 mt-6 border-b border-accent pb-2">
         <div className="flex items-center gap-6">
           <Button
@@ -103,18 +114,24 @@ const IssuesPage = () => {
         </div>
 
         <div className="flex items-center gap-3">
+          {/* Search */}
           <div className="relative">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="text"
               placeholder="Search ..."
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 h-9 w-[300px] border-muted"
             />
           </div>
-          <Button variant="outline" size="sm" className="h-9 text-xs">
+
+          {/* <Button variant="outline" size="sm" className="h-9 text-xs">
             <Filter className="w-5 h-5 mr-2" />
             Filters
-          </Button>
+          </Button> */}
+
+          {/* Ask Kaya */}
           <Button
             size="sm"
             variant={"outline"}
@@ -124,6 +141,8 @@ const IssuesPage = () => {
             <Image src="/kaya.svg" alt="Kaya AI" width={18} height={18} />
             Ask bout Issues
           </Button>
+
+          {/* New Issue */}
           {project && (
             <CreateIssueDialog
               projectId={project._id}
@@ -141,52 +160,95 @@ const IssuesPage = () => {
         </div>
       </div>
 
-      {/* BODY */}
-      <main className="w-full h-full min-h-[500px] flex items-center justify-center">
-        {/* Empty State */}
-        <div className="flex flex-col items-start justify-center space-y-1.5 p-4 w-[360px] mx-auto">
-          <Image
-            src="/pat101.svg"
-            alt="Empty Workspace"
-            width={100}
-            height={100}
-            className=""
-          />
-          <p className="text-base font-medium  text-primary">No Issues Found</p>
-          <p className="text-muted-foreground text-wrap text-left">
-            Create your First Issue and start managing your project in a right
-            way.
-          </p>
+      {/* ── Body ─────────────────────────────────────── */}
+      <main className="w-full flex-1 mt-2 overflow-hidden">
+        {activeTab === "all" && (
+          <>
+            {/* Loading skeleton */}
+            {issues === undefined && (
+              <div className="flex gap-5 pt-4">
+                {[...Array(4)].map((_, i) => (
+                  <div
+                    key={i}
+                    className="min-w-[310px] w-[310px] h-[500px] rounded-xl bg-sidebar/50 border border-border/30 animate-pulse"
+                  />
+                ))}
+              </div>
+            )}
 
-          <div className="flex items-center gap-4 mt-2">
-            {project && (
-              <CreateIssueDialog
+            {/* Empty state */}
+            {issues !== undefined && !hasIssues && (
+              <div className="flex items-center justify-center min-h-[500px]">
+                <div className="flex flex-col items-start justify-center space-y-1.5 p-4 w-[360px] mx-auto">
+                  <Image
+                    src="/pat101.svg"
+                    alt="Empty Workspace"
+                    width={100}
+                    height={100}
+                  />
+                  <p className="text-base font-medium text-primary">
+                    No Issues Found
+                  </p>
+                  <p className="text-muted-foreground text-wrap text-left">
+                    Create your First Issue and start managing your project in a
+                    right way.
+                  </p>
+
+                  <div className="flex items-center gap-4 mt-2">
+                    {project && (
+                      <CreateIssueDialog
+                        projectId={project._id}
+                        projectName={projectName}
+                        repoFullName={project.repoFullName}
+                        ownerClerkId={(project as any).ownerClerkId}
+                        trigger={
+                          <Button
+                            variant="default"
+                            size="sm"
+                            className="rounded-full text-[11px]"
+                          >
+                            <Bug className="w-4 h-4" />
+                            Add Issue
+                          </Button>
+                        }
+                      />
+                    )}
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="rounded-full text-[11px]"
+                    >
+                      Check Docs
+                      <FileCodeCorner className="w-4 h-4" />
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* Kanban Board */}
+            {issues !== undefined && hasIssues && project && (
+              <IssueKanbanUI
                 projectId={project._id}
                 projectName={projectName}
                 repoFullName={project.repoFullName}
                 ownerClerkId={(project as any).ownerClerkId}
-                trigger={
-                  <Button
-                    variant="default"
-                    size="sm"
-                    className="rounded-full text-[11px]"
-                  >
-                    <Bug className="w-4 h-4" />
-                    Add Issue
-                  </Button>
-                }
               />
             )}
-            <Button
-              variant="outline"
-              size="sm"
-              className="rounded-full text-[11px]"
-            >
-              Check Docs
-              <FileCodeCorner className="w-4 h-4" />
-            </Button>
+          </>
+        )}
+
+        {/* GitHub issues tab — placeholder for later */}
+        {activeTab === "github" && (
+          <div className="flex items-center justify-center min-h-[500px]">
+            <div className="flex flex-col items-center gap-3 text-muted-foreground">
+              <Github className="w-12 h-12 opacity-20" />
+              <p className="text-sm font-medium opacity-50">
+                GitHub Issues coming soon
+              </p>
+            </div>
           </div>
-        </div>
+        )}
       </main>
     </div>
   );

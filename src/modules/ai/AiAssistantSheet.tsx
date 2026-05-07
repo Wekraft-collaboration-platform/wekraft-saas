@@ -194,10 +194,10 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
 
   // Auto-scroll
   useEffect(() => {
-    if (shouldAutoScroll) {
+    if (shouldAutoScroll && appCheckpoints.length > 0) {
       messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
     }
-  }, [appCheckpoints, shouldAutoScroll]);
+  }, [appCheckpoints, status, shouldAutoScroll]);
 
   // Scroll button visibility
   useEffect(() => {
@@ -205,12 +205,16 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
     if (!el) return;
     const handler = () => {
       const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 100;
-      setShowScrollButton(!isAtBottom);
+      const hasOverflow = el.scrollHeight > el.clientHeight;
+      setShowScrollButton(
+        !isAtBottom && hasOverflow && appCheckpoints.length > 0,
+      );
       setShouldAutoScroll(isAtBottom);
     };
     el.addEventListener("scroll", handler);
+    handler(); // Initial check
     return () => el.removeEventListener("scroll", handler);
-  }, []);
+  }, [appCheckpoints, status]);
 
   const sendMessage = (content: string) => {
     if (!content.trim() || status === "running" || restoring) return;
@@ -416,124 +420,142 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
         </SheetHeader>
 
         {/* MESSAGES */}
-        <div ref={containerRef} className="flex-1 overflow-y-auto py-4 px-2">
-          <AnimatePresence>
-            {appCheckpoints.length === 0 && !restoring && status === "idle" && (
-              <motion.div
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                exit={{
-                  opacity: 0,
-                  scale: 0.95,
-                  transition: { duration: 0.3 },
-                }}
-                className="h-full flex flex-col items-center justify-center p-8 text-center"
-              >
-                <div className="relative mb-6">
-                  <Image
-                    src="/kaya.svg"
-                    alt="Kaya AI"
-                    width={60}
-                    height={60}
-                    className="relative drop-shadow-2xl"
-                  />
-                </div>
-                <h3 className="text-lg font-pop font-semibold text-primary mb-1 tracking-tight">
-                  Hello, I&apos;m Kaya
-                </h3>
-                <p className="text-sm text-muted-foreground max-w-[240px] leading-relaxed">
-                  Start with asking ,{" "}
-                  <span className="font-pop text-primary">
-                    &quot;What's happening in my project&quot;
-                  </span>
-                </p>
-              </motion.div>
-            )}
-          </AnimatePresence>
-
-          {appCheckpoints.map((checkpoint, cpIndex) =>
-            checkpoint.error ? (
-              <div
-                key={checkpoint.checkpointConfig.configurable.checkpoint_id}
-                className="text-red-500 py-2 text-xs px-4"
-              >
-                Error occured by Agent. LLm sometimes give malformed response.
-              </div>
-            ) : (
-              checkpoint.nodes.map((node, i) => {
-                const prevCheckpoint =
-                  cpIndex > 0 ? appCheckpoints[cpIndex - 1] : null;
-                const userMessages =
-                  checkpoint.state.messages?.filter((m) => {
-                    const isUser = m.type === "human" || m.type === "user";
-                    if (!isUser) return false;
-                    if (!prevCheckpoint) return true;
-                    return !prevCheckpoint.state.messages.some(
-                      (pm) => pm.id === m.id,
-                    );
-                  }) || [];
-
-                return (
-                  <div
-                    key={`${checkpoint.checkpointConfig.configurable.checkpoint_id}-${i}`}
+        <div className="flex-1 overflow-hidden relative flex flex-col">
+          <div ref={containerRef} className="flex-1 overflow-y-auto py-4 px-2">
+            <AnimatePresence>
+              {appCheckpoints.length === 0 &&
+                !restoring &&
+                status === "idle" && (
+                  <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    exit={{
+                      opacity: 0,
+                      scale: 0.95,
+                      transition: { duration: 0.3 },
+                    }}
+                    className="h-full flex flex-col items-center justify-center p-8 text-center"
                   >
-                    {i === 0 &&
-                      userMessages.map((m, idx) => (
-                        <ChatbotNode
-                          key={`user-${idx}`}
-                          nodeState={{ messages: [m] }}
-                        />
-                      ))}
-                    {renderNode(checkpoint, node)}
-                  </div>
-                );
-              })
-            ),
-          )}
+                    <div className="relative mb-6">
+                      <Image
+                        src="/kaya.svg"
+                        alt="Kaya AI"
+                        width={60}
+                        height={60}
+                        className="relative drop-shadow-2xl"
+                      />
+                    </div>
+                    <h3 className="text-lg font-pop font-semibold text-primary mb-1 tracking-tight">
+                      Hello, I&apos;m Kaya
+                    </h3>
+                    <p className="text-sm text-muted-foreground max-w-[240px] leading-relaxed">
+                      Start with asking ,{" "}
+                      <span className="font-pop text-primary">
+                        &quot;What's happening in my project&quot;
+                      </span>
+                    </p>
+                  </motion.div>
+                )}
+            </AnimatePresence>
 
-          {status === "running" && !restoring && !isStreaming && (
-            <div className="flex flex-col gap-1 py-3 px-4">
-              <div className="flex gap-2 items-center text-neutral-300">
-                <KayaLoader />
-                <div className="flex items-center gap-1.5">
-                  <span className="text-[10px] uppercase tracking-normal">
-                    {appCheckpoints.length === 0
-                      ? "Kaya is spinning up, hang tight..."
-                      : agentStatus || "Kaya is thinking..."}
-                  </span>
-                  {thinkingTime > 0 && (
-                    <span className="text-[9px] tabular-nums text-neutral-200">
-                      {thinkingTime}s
+            {appCheckpoints.map((checkpoint, cpIndex) =>
+              checkpoint.error ? (
+                <div
+                  key={checkpoint.checkpointConfig.configurable.checkpoint_id}
+                  className="text-red-500 py-2 text-xs px-4"
+                >
+                  Error occured by Agent. LLm sometimes give malformed response.
+                </div>
+              ) : (
+                checkpoint.nodes.map((node, i) => {
+                  const prevCheckpoint =
+                    cpIndex > 0 ? appCheckpoints[cpIndex - 1] : null;
+                  const userMessages =
+                    checkpoint.state.messages?.filter((m) => {
+                      const isUser = m.type === "human" || m.type === "user";
+                      if (!isUser) return false;
+                      if (!prevCheckpoint) return true;
+                      return !prevCheckpoint.state.messages.some(
+                        (pm) => pm.id === m.id,
+                      );
+                    }) || [];
+
+                  return (
+                    <div
+                      key={`${checkpoint.checkpointConfig.configurable.checkpoint_id}-${i}`}
+                    >
+                      {i === 0 &&
+                        userMessages.map((m, idx) => (
+                          <ChatbotNode
+                            key={`user-${idx}`}
+                            nodeState={{ messages: [m] }}
+                          />
+                        ))}
+                      {renderNode(checkpoint, node)}
+                    </div>
+                  );
+                })
+              ),
+            )}
+
+            {status === "running" && !restoring && !isStreaming && (
+              <div className="flex flex-col gap-1 py-3 px-4">
+                <div className="flex gap-2 items-center text-neutral-300">
+                  <KayaLoader />
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-[10px] uppercase tracking-normal">
+                      {appCheckpoints.length === 0
+                        ? "Kaya is spinning up, hang tight..."
+                        : agentStatus || "Kaya is thinking..."}
                     </span>
-                  )}
+                    {thinkingTime > 0 && (
+                      <span className="text-[9px] tabular-nums text-neutral-200">
+                        {thinkingTime}s
+                      </span>
+                    )}
+                  </div>
+                </div>
+                {appCheckpoints.length === 0 && (
+                  <div className="text-[10px] text-muted-foreground animate-pulse pl-10 tracking-tighter">
+                    Initial response might take a few seconds to warm up...
+                  </div>
+                )}
+              </div>
+            )}
+
+            {restoring && (
+              <div className="flex gap-2 items-center py-3 px-4 text-neutral-500">
+                <Spinner className="w-3 h-3" />
+                <div className="flex items-center gap-1.5">
+                  <span className="text-[10px] uppercase tracking-tighter">
+                    Initializing Kaya...
+                  </span>
                 </div>
               </div>
-              {appCheckpoints.length === 0 && (
-                <div className="text-[10px] text-muted-foreground animate-pulse pl-10 tracking-tighter">
-                  Initial response might take a few seconds to warm up...
-                </div>
-              )}
-            </div>
-          )}
+            )}
 
-          {restoring && (
-            <div className="flex gap-2 items-center py-3 px-4 text-neutral-500">
-              <Spinner className="w-3 h-3" />
-              <div className="flex items-center gap-1.5">
-                <span className="text-[10px] uppercase tracking-tighter">
-                  Initializing Kaya...
-                </span>
+            {status === "error" && (
+              <div className="text-red-500 py-2 px-4 text-xs">
+                Error Occurred due to network connectivity retry after some
+                time.
               </div>
-            </div>
-          )}
+            )}
 
-          {status === "error" && (
-            <div className="text-red-500 py-2 px-4 text-xs">
-              Error Occurred due to network connectivity retry after some time.
-            </div>
-          )}
+            <div ref={messagesEndRef} />
+          </div>
 
-          <div ref={messagesEndRef} />
+          {showScrollButton && (
+            <Button
+              className="absolute bottom-6 left-1/2 -translate-x-1/2 rounded-full border border-border bg-muted/70 hover:bg-background shadow-lg z-50 animate-in fade-in slide-in-from-bottom-4 duration-300"
+              size="icon"
+              onClick={() => {
+                messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+                setShouldAutoScroll(true);
+              }}
+            >
+              <ArrowDown className="w-3.5 h-3.5! text-primary" />
+            </Button>
+          )}
         </div>
 
         {/* FOOTER */}
@@ -630,17 +652,6 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
           )}
         </div>
       </SheetContent>
-      {showScrollButton && (
-        <Button
-          className="fixed bottom-24 right-8 rounded-none border border-neutral-800 bg-background"
-          size="icon"
-          onClick={() =>
-            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" })
-          }
-        >
-          <ArrowDown className="w-4 h-4" />
-        </Button>
-      )}
     </Sheet>
   );
 }
