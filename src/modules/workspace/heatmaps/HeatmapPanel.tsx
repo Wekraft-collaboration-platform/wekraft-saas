@@ -9,8 +9,13 @@ import {
   RefreshCw,
   Info,
   Package,
+  Bug,
 } from "lucide-react";
-import { FileIcon as FileSymbol, FolderIcon as FolderSymbol, DefaultFolderOpenedIcon as FolderOpenSymbol } from "@react-symbols/icons/utils";
+import {
+  FileIcon as FileSymbol,
+  FolderIcon as FolderSymbol,
+  DefaultFolderOpenedIcon as FolderOpenSymbol,
+} from "@react-symbols/icons/utils";
 import { memo, useEffect, useState, useCallback, useMemo } from "react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
@@ -18,7 +23,7 @@ import { useQuery } from "convex/react";
 import { ExternalLink, Github } from "lucide-react";
 import { Id } from "../../../../convex/_generated/dataModel";
 import { api } from "../../../../convex/_generated/api";
-import { getRepoStructure, type FolderNode } from "./action";
+import { getRepoStructure, getRecentlyChangedPaths, type FolderNode } from "./action";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
@@ -27,17 +32,24 @@ interface HeatmapPanelProps {
   isOpen: boolean;
   onToggle: (open: boolean) => void;
   repoId?: Id<"repositories">;
+  projectId?: Id<"projects">;
   structure: FolderNode | null;
   issuePaths?: string[];
+  recentlyChangedPaths?: string[];
+  setRecentlyChangedPaths?: (paths: string[]) => void;
   setStructure: (structure: FolderNode | null) => void;
 }
 
 // Helper to filter the tree for issues
-const pruneTreeForIssues = (node: FolderNode, issuePaths: string[]): FolderNode | null => {
-  const isPathInIssues = (path: string) => issuePaths.some(ip => ip === path || ip.startsWith(path + "/"));
-  
+const pruneTreeForIssues = (
+  node: FolderNode,
+  issuePaths: string[],
+): FolderNode | null => {
+  const isPathInIssues = (path: string) =>
+    issuePaths.some((ip) => ip === path || ip.startsWith(path + "/"));
+
   // 1. Filter files in this node
-  const filteredFiles = node.files.filter(fileName => {
+  const filteredFiles = node.files.filter((fileName) => {
     const filePath = node.path ? `${node.path}/${fileName}` : fileName;
     return issuePaths.includes(filePath);
   });
@@ -58,7 +70,12 @@ const pruneTreeForIssues = (node: FolderNode, issuePaths: string[]): FolderNode 
       files: filteredFiles,
       children: filteredChildren,
       // Total count here might be misleading, but we'll show what's left
-      totalFileCount: filteredFiles.length + Object.values(filteredChildren).reduce((acc, c) => acc + c.totalFileCount, 0)
+      totalFileCount:
+        filteredFiles.length +
+        Object.values(filteredChildren).reduce(
+          (acc, c) => acc + c.totalFileCount,
+          0,
+        ),
     };
   }
 
@@ -85,30 +102,43 @@ const FolderTree = ({
     Object.keys(node.children).length > 0 ||
     (node.files && node.files.length > 0);
 
-  const containsIssue = (path: string) => issuePaths.some(ip => ip === path || ip.startsWith(path + "/"));
+  const containsIssue = (path: string) =>
+    issuePaths.some((ip) => ip === path || ip.startsWith(path + "/"));
   const hasIssue = containsIssue(node.path);
-  const hasIssueChild = Object.values(node.children).some(child => containsIssue(child.path));
-  const isActiveFolder = isIssueView && hasIssue && (!isExpanded || !hasIssueChild);
+  const hasIssueChild = Object.values(node.children).some((child) =>
+    containsIssue(child.path),
+  );
+  const isActiveFolder =
+    isIssueView && hasIssue && (!isExpanded || !hasIssueChild);
 
   return (
     <div className="flex flex-col">
       <div
         className={cn(
           "flex items-center gap-2 py-1.5 px-2 mb-0.5 rounded-md hover:bg-accent/40 cursor-pointer transition-all text-[13px] group relative border border-transparent",
-          level === 0 && !isIssueView && "font-bold bg-accent/20 mb-2 border border-border/10",
-          level === 0 && isIssueView && "font-bold bg-accent/20 mb-2 border border-border/10",
+          level === 0 &&
+            !isIssueView &&
+            "font-bold bg-accent/20 mb-2 border border-border/10",
+          level === 0 &&
+            isIssueView &&
+            "font-bold bg-accent/20 mb-2 border border-border/10",
           isActiveFolder && "border-red-500/40 bg-red-500/5",
           isExpanded && level !== 0 && "bg-accent/5",
         )}
-
         style={{ paddingLeft: `${level * 16 + 8}px` }}
         onClick={() => togglePath(node.path)}
       >
         {hasChildren ? (
           isExpanded ? (
-            <ChevronDown size={14} className="transition-transform text-muted-foreground" />
+            <ChevronDown
+              size={14}
+              className="transition-transform text-muted-foreground"
+            />
           ) : (
-            <ChevronRight size={14} className="transition-transform text-muted-foreground" />
+            <ChevronRight
+              size={14}
+              className="transition-transform text-muted-foreground"
+            />
           )
         ) : (
           <span className="w-[14px]" />
@@ -122,25 +152,27 @@ const FolderTree = ({
           ) : isExpanded ? (
             <FolderOpenSymbol width={16} height={16} />
           ) : (
-            <FolderSymbol 
-              folderName={node.name} 
-              width={16}
-              height={16}
-            />
+            <FolderSymbol folderName={node.name} width={16} height={16} />
           )}
         </div>
 
-        <span className={cn("truncate flex-1", isIssueView && "font-medium")}>{node.name}</span>
+        <span className={cn("truncate flex-1", isIssueView && "font-medium")}>
+          {node.name}
+        </span>
 
         <div
           className={cn(
             "flex items-center gap-2 transition-opacity",
-            level === 0 || isIssueView ? "opacity-100" : "opacity-0 group-hover:opacity-100",
+            level === 0 || isIssueView
+              ? "opacity-100"
+              : "opacity-0 group-hover:opacity-100",
           )}
         >
-          <span className={cn(
-            "text-[9px] px-1.5 py-0.5 rounded-full font-mono uppercase tracking-tighter bg-primary/10 text-primary"
-          )}>
+          <span
+            className={cn(
+              "text-[9px] px-1.5 py-0.5 rounded-full font-mono uppercase tracking-tighter bg-primary/10 text-primary",
+            )}
+          >
             {node.totalFileCount} {isIssueView ? "Issues" : "Files"}
           </span>
         </div>
@@ -158,7 +190,7 @@ const FolderTree = ({
             {/* Vertical Guide Line */}
             <div
               className={cn(
-                "absolute left-[15px] top-0 bottom-0 w-[1px] z-0 bg-border/20"
+                "absolute left-[15px] top-0 bottom-0 w-[1px] z-0 bg-border/20",
               )}
               style={{ left: `${level * 16 + 15}px` }}
             />
@@ -181,19 +213,26 @@ const FolderTree = ({
             {(node.files || [])
               .sort((a, b) => a.localeCompare(b))
               .map((fileName) => {
-                const filePath = node.path ? `${node.path}/${fileName}` : fileName;
+                const filePath = node.path
+                  ? `${node.path}/${fileName}`
+                  : fileName;
                 const fileHasIssue = issuePaths.includes(filePath);
                 return (
                   <div
                     key={filePath}
                     className={cn(
                       "flex items-center gap-2 py-1 px-2 mb-0.5 rounded-sm text-[13px] hover:bg-accent/30 hover:text-foreground cursor-pointer transition-colors group relative",
-                      fileHasIssue ? "text-red-400" : "text-muted-foreground/80"
+                      fileHasIssue
+                        ? "text-red-400"
+                        : "text-muted-foreground/80",
                     )}
                     style={{ paddingLeft: `${(level + 1) * 16 + 12}px` }}
                   >
                     <div className="w-4 h-4 flex items-center justify-center shrink-0">
-                      <FileSymbol fileName={fileName} className="w-full h-full" />
+                      <FileSymbol
+                        fileName={fileName}
+                        className="w-full h-full"
+                      />
                     </div>
                     <span className="truncate flex-1">{fileName}</span>
                     {fileHasIssue && (
@@ -214,16 +253,22 @@ export const HeatmapPanel = memo(
     isOpen,
     onToggle,
     repoId,
+    projectId,
     structure,
     issuePaths = [],
+    recentlyChangedPaths = [],
+    setRecentlyChangedPaths,
     setStructure,
   }: HeatmapPanelProps) => {
     const { setOpen: setSidebarOpen } = useSidebar();
     const [isLoading, setIsLoading] = useState(false);
-    const [expandedPaths, setExpandedPaths] = useState<Set<string>>(new Set());
-    
+
     // Track expanded paths for the issue tree separately
-    const [issueExpandedPaths, setIssueExpandedPaths] = useState<Set<string>>(new Set());
+    const [issueExpandedPaths, setIssueExpandedPaths] = useState<Set<string>>(
+      new Set(),
+    );
+
+    const [isIssuesOpen, setIsIssuesOpen] = useState(true);
 
     const [lastUpdated, setLastUpdated] = useState<number | null>(null);
 
@@ -233,6 +278,16 @@ export const HeatmapPanel = memo(
       if (!structure || issuePaths.length === 0) return null;
       return pruneTreeForIssues(structure, issuePaths);
     }, [structure, issuePaths]);
+
+    const issues = useQuery(
+      api.issue.getIssuesForKanban,
+      projectId ? { projectId } : "skip",
+    );
+
+    const linkedIssues = useMemo(() => {
+      if (!issues) return [];
+      return issues.filter((issue) => issue.fileLinked);
+    }, [issues]);
 
     // Automatically expand issue tree when it changes
     useEffect(() => {
@@ -257,7 +312,13 @@ export const HeatmapPanel = memo(
             repository.repoOwner,
             repository.repoName,
             force,
-            repository.ownerClerkId
+            repository.ownerClerkId,
+          );
+          
+          const churnData = await getRecentlyChangedPaths(
+            repository.repoOwner,
+            repository.repoName,
+            repository.ownerClerkId,
           );
 
           if (result.rateLimited) {
@@ -274,6 +335,7 @@ export const HeatmapPanel = memo(
 
           if (result.data) {
             setStructure(result.data.root);
+            setRecentlyChangedPaths?.(churnData);
             setLastUpdated(result.data.lastUpdated);
             if (force) toast.success("Refreshed from GitHub!");
           }
@@ -291,16 +353,6 @@ export const HeatmapPanel = memo(
         loadStructure();
       }
     }, [isOpen, structure, repository, loadStructure]);
-
-    const togglePath = (path: string) => {
-      const next = new Set(expandedPaths);
-      if (next.has(path)) {
-        next.delete(path);
-      } else {
-        next.add(path);
-      }
-      setExpandedPaths(next);
-    };
 
     const toggleIssuePath = (path: string) => {
       const next = new Set(issueExpandedPaths);
@@ -352,7 +404,10 @@ export const HeatmapPanel = memo(
                   disabled={isLoading}
                   className={cn("h-8 w-8")}
                 >
-                  <RefreshCw size={14} className={cn(isLoading && "animate-spin")} />
+                  <RefreshCw
+                    size={14}
+                    className={cn(isLoading && "animate-spin")}
+                  />
                 </Button>
               </div>
 
@@ -368,65 +423,93 @@ export const HeatmapPanel = memo(
             </div>
 
             {/* BODY */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar">
-              <div className="p-4 space-y-8">
-                {/* 🔴 ISSUES SECTION (Only shown if issues exist) */}
-                {issueTree && (
-                  <div className="space-y-4">
-                    <div className="flex items-center justify-between px-1">
-                      <span className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.2em] flex items-center gap-2">
-                        <div className="w-1.5 h-1.5 rounded-full bg-red-500" />
-                        Active Issues
-                      </span>
-                    </div>
+            <div className="flex-1 overflow-y-auto custom-scrollbar px-4 py-6">
+              {/* ISSUE BOX */}
+              <div className="w-full space-y-4">
+                <Button
+                  className="w-full flex items-center justify-center relative px-10"
+                  variant={"secondary"}
+                  onClick={() => setIsIssuesOpen(!isIssuesOpen)}
+                >
+                  <span className="flex items-center gap-2">
+                    <Bug size={18} />
+                    Issues
+                  </span>
 
-                    <div className="border border-border/20 rounded-xl p-1 bg-accent/5">
-                      <FolderTree
-                        node={issueTree}
-                        expandedPaths={issueExpandedPaths}
-                        togglePath={toggleIssuePath}
-                        issuePaths={issuePaths}
-                        isIssueView={true}
-                      />
-                    </div>
-                  </div>
-                )}
+                  <ChevronDown
+                    className={cn(
+                      "absolute right-4 transition-transform duration-200",
+                      isIssuesOpen && "rotate-180",
+                    )}
+                    size={18}
+                  />
+                </Button>
 
-                {/* 📂 FULL DIRECTORY STRUCTURE */}
-                <div className="space-y-4">
-                  <div className="flex items-center justify-between px-1">
-                    <span className="text-[10px] font-black text-muted-foreground/40 uppercase tracking-[0.2em]">
-                      Directory Structure
-                    </span>
-                    <span className="text-[10px] text-muted-foreground/30 italic">
-                      Folders & Files
-                    </span>
-                  </div>
+                <AnimatePresence>
+                  {isIssuesOpen && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: "auto", opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      className="overflow-hidden space-y-2"
+                    >
+                      {linkedIssues.length > 0 ? (
+                        linkedIssues.map((issue) => (
+                          <div
+                            key={issue._id}
+                            className="p-2.5! rounded-xl border border-border bg-accent/20 hover:bg-accent/40 transition-colors group"
+                          >
+                            <div className="flex items-start justify-between gap-3">
+                              <div className="flex-1 min-w-0">
+                                <h3 className="text-xs capitalize font-medium text-white truncate group-hover:text-primary transition-colors">
+                                  {issue.title}
+                                </h3>
+                                <p className="text-[11px] text-zinc-500 mt-1 flex items-center gap-1.5">
+                                  <FileSymbol
+                                    fileName={
+                                      issue.fileLinked?.split("/").pop() || ""
+                                    }
+                                    width={12}
+                                    height={12}
+                                  />
+                                  <span className="truncate">
+                                    {issue.fileLinked}
+                                  </span>
+                                </p>
+                              </div>
 
-                  {isLoading && !structure ? (
-                    <div className="space-y-2 pt-4">
-                      {[1, 2, 3, 4, 5].map((i) => (
-                        <div
-                          key={i}
-                          className="h-8 bg-accent/20 animate-pulse rounded-md w-full"
-                        />
-                      ))}
-                    </div>
-                  ) : structure ? (
-                    <div className="border border-border/30 rounded-xl p-1 bg-accent/5">
-                      <FolderTree
-                        node={structure}
-                        expandedPaths={expandedPaths}
-                        togglePath={togglePath}
-                        issuePaths={issuePaths}
-                      />
-                    </div>
-                  ) : (
-                    <div className="text-center py-10 text-muted-foreground text-sm italic">
-                      No structure data available
-                    </div>
+                              <div className="flex -space-x-2 shrink-0">
+                                {issue.assignedTo?.map((assignee) => (
+                                  <div
+                                    key={assignee._id}
+                                    className="w-6 h-6 rounded-full border-2 border-[#030303] bg-zinc-800 overflow-hidden"
+                                    title={assignee.name}
+                                  >
+                                    {assignee.avatar ? (
+                                      <img
+                                        src={assignee.avatar}
+                                        alt={assignee.name}
+                                        className="w-full h-full object-cover"
+                                      />
+                                    ) : (
+                                      <div className="w-full h-full flex items-center justify-center text-[10px] text-white">
+                                        {assignee.name.charAt(0)}
+                                      </div>
+                                    )}
+                                  </div>
+                                ))}
+                              </div>
+                            </div>
+                          </div>
+                        ))
+                      ) : (
+                        <div className="text-center py-8 text-zinc-500 text-sm italic">
+                          No linked issues found
+                        </div>
+                      )}
+                    </motion.div>
                   )}
-                </div>
+                </AnimatePresence>
               </div>
             </div>
           </div>

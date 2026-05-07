@@ -20,7 +20,10 @@ export async function getGithubAccessToken(userId?: string) {
   }
 
   const client = await clerkClient();
-  const tokens = await client.users.getUserOauthAccessToken(targetUserId, "github");
+  const tokens = await client.users.getUserOauthAccessToken(
+    targetUserId,
+    "github",
+  );
   const accessToken = tokens.data[0]?.token;
 
   return accessToken;
@@ -47,6 +50,62 @@ export const getRepositories = async (
   });
 
   return data;
+};
+
+// ============================================
+// GETTING GITHUB ISSUES
+// ============================================
+export const getIssues = async (
+  owner: string,
+  repo: string,
+  page: number = 1,
+  perPage: number = 10,
+) => {
+  const token = await getGithubAccessToken();
+
+  const octokit = new Octokit({ auth: token });
+
+  const { data } = await octokit.rest.issues.listForRepo({
+    owner,
+    repo,
+    state: "open", // fetches only open & reopened issues
+    sort: "updated",
+    direction: "desc",
+    page,
+    per_page: perPage,
+  });
+
+  // Filter out pull requests — GitHub API returns PRs as issues too
+  return data.filter((issue) => !issue.pull_request);
+};
+
+// ============================================
+// GETTING GITHUB FOLDER CHURN DATA
+// ============================================
+export const getFolderChurnData = async (
+  owner: string,
+  repo: string,
+  folderPath: string,
+) => {
+  const token = await getGithubAccessToken();
+  const octokit = new Octokit({ auth: token });
+
+  const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(); // last 7 days
+
+  const { data: commits } = await octokit.rest.repos.listCommits({
+    owner,
+    repo,
+    path: folderPath,
+    since,
+    per_page: 100,
+  });
+
+  const isChangedRecently = commits.length > 0;
+
+  return {
+    folderPath,
+    isChangedRecently, // true = yellow
+  };
 };
 
 // ===================================================
@@ -124,36 +183,33 @@ export const createWebhook = async (
 
   const fullWebhookUrl = `${webhookUrl}/api/webhooks/github`;
 
- 
-    const token = await getGithubAccessToken();
-    const octokit = new Octokit({ auth: token });
+  const token = await getGithubAccessToken();
+  const octokit = new Octokit({ auth: token });
 
-    const { data: hooks } = await octokit.rest.repos.listWebhooks({
-      owner,
-      repo,
-    });
-    const existingHook = hooks.find(
-      (hook) => hook.config.url === fullWebhookUrl,
-    );
+  const { data: hooks } = await octokit.rest.repos.listWebhooks({
+    owner,
+    repo,
+  });
+  const existingHook = hooks.find((hook) => hook.config.url === fullWebhookUrl);
 
-    if (existingHook) {
-      return { success: true };
-    }
-
-    await octokit.rest.repos.createWebhook({
-      owner,
-      repo,
-      config: { url: fullWebhookUrl, content_type: "json" },
-      events: [
-        "pull_request",
-        "push",
-        "issues",
-        "deployment",
-        "deployment_status",
-      ],
-    });
-
+  if (existingHook) {
     return { success: true };
+  }
+
+  await octokit.rest.repos.createWebhook({
+    owner,
+    repo,
+    config: { url: fullWebhookUrl, content_type: "json" },
+    events: [
+      "pull_request",
+      "push",
+      "issues",
+      "deployment",
+      "deployment_status",
+    ],
+  });
+
+  return { success: true };
 };
 // ===============================
 // GETTING THE USER CONTRIBUTIONS.

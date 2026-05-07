@@ -21,6 +21,7 @@ import { CreateIssueDialog } from "@/modules/workspace/CreateIssueDialog";
 import { cn } from "@/lib/utils";
 import { useKayaStore } from "@/store/useKayaStore";
 import { IssueKanbanUI } from "@/modules/workspace/IssueKanbanUI";
+import { ImportGithubIssueDialog } from "@/modules/workspace/heatmaps/ImportGithubIssueDialog";
 
 const users = [
   { name: "Ritesh", img: "https://i.pravatar.cc/40?img=1" },
@@ -238,14 +239,21 @@ const IssuesPage = () => {
           </>
         )}
 
-        {/* GitHub issues tab — placeholder for later */}
+        {/* GitHub issues tab */}
         {activeTab === "github" && (
-          <div className="flex items-center justify-center min-h-[500px]">
-            <div className="flex flex-col items-center gap-3 text-muted-foreground">
-              <Github className="w-12 h-12 opacity-20" />
-              <p className="text-sm font-medium opacity-50">
-                GitHub Issues coming soon
-              </p>
+          <div className="flex w-full mt-4">
+            <div className="flex w-full justify-end gap-3">
+              {project && (
+                <ImportGithubIssueDialog
+                  repoFullName={project.repoFullName}
+                  trigger={
+                    <Button variant={"default"} size={"sm"} className="text-sm">
+                      <Github className="w-4 h-4 mr-2" />
+                      Import from Github
+                    </Button>
+                  }
+                />
+              )}
             </div>
           </div>
         )}

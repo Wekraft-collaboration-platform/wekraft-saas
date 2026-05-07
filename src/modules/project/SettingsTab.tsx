@@ -64,7 +64,6 @@ import { Separator } from "@/components/ui/separator";
 import { AVAILABLE_TAGS, ROLES } from "@/lib/static-store";
 import { useUserPlan } from "@/hooks/use-user-plan";
 
-
 interface LookingForMember {
   role: string;
   type: "casual" | "part-time" | "serious";
@@ -79,11 +78,7 @@ interface ProjectData {
   lookingForMembers?: LookingForMember[];
 }
 
-const SettingTab = ({
-  project,
-}: {
-  project: ProjectData;
-}) => {
+const SettingTab = ({ project }: { project: ProjectData }) => {
   const { isPro } = useUserPlan();
   const updateProject = useMutation(api.project.updateProject);
 
@@ -301,7 +296,7 @@ const SettingTab = ({
       </div>
 
       {/* ------------------AI BUTTTON ------------------ */}
-      {isPublic && (
+      {/* {isPublic && (
         <div className="bg-accent/40 p-2 rounded-md w-full">
           <p className="text-sm  text-muted-foreground">
             <LucideInfo className="inline w-4 h-4 mr-2" /> Make Sure to have
@@ -326,10 +321,10 @@ const SettingTab = ({
             </Button>
           )}
         </div>
-      )}
+      )} */}
 
       {/* Team Settings Section */}
-      <Card
+      {/* <Card
         className={`${
           isPublic ? "" : "opacity-30 border-dashed pointer-events-none"
         }`}
@@ -351,7 +346,6 @@ const SettingTab = ({
               </p>
             </div>
 
-            {/* ============================================= */}
             <Dialog open={isAddRoleOpen} onOpenChange={setIsAddRoleOpen}>
               <DialogTrigger asChild>
                 <Button variant="outline" className="gap-2">
@@ -367,7 +361,6 @@ const SettingTab = ({
                 </DialogHeader>
                 <Separator />
                 <div className="flex flex-col   w-full">
-                  {/* ROLE */}
                   <div className="flex flex-col gap-2 w-full mb-5">
                     <Label htmlFor="role">
                       {" "}
@@ -413,7 +406,6 @@ const SettingTab = ({
                     </div>
                   </div>
 
-                  {/* TYPE */}
                   <div className="flex flex-col gap-2 w-full mt-auto">
                     <Label htmlFor="type">
                       <LucideActivity className="w-4 h-4 inline mr-2" /> Type
@@ -457,7 +449,6 @@ const SettingTab = ({
             </Dialog>
           </div>
 
-          {/* List of Roles */}
           {lookingForMembers.length > 0 ? (
             <div className="rounded-md border">
               <div className="p-4 bg-muted/20 border-b">
@@ -510,10 +501,10 @@ const SettingTab = ({
             </div>
           )}
         </CardContent>
-      </Card>
+      </Card> */}
 
       {/* Save Action */}
-      <div className="flex justify-end sticky bottom-6 z-10">
+      <div className="flex justify-end">
         <Button
           size="sm"
           onClick={handleSave}

@@ -161,3 +161,51 @@ export async function getRepoStructure(
     return { data: null, error: error instanceof Error ? error.message : "Failed to fetch repo structure" };
   }
 }
+
+export async function getRecentlyChangedPaths(
+  owner: string,
+  repo: string,
+  ownerClerkId?: string
+): Promise<string[]> {
+  try {
+    const accessToken = await getGithubAccessToken(ownerClerkId);
+    const octokit = new Octokit({ auth: accessToken });
+
+    const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
+
+    const { data: commits } = await octokit.rest.repos.listCommits({
+      owner,
+      repo,
+      since,
+      per_page: 100,
+    });
+
+    if (commits.length === 0) return [];
+
+    const oldestSha = commits[commits.length - 1].sha;
+    const newestSha = commits[0].sha;
+
+    const { data: comparison } = await octokit.rest.repos.compareCommits({
+      owner,
+      repo,
+      base: oldestSha + "^",
+      head: newestSha,
+    });
+
+    const changedPaths = new Set<string>();
+    comparison.files?.forEach(file => {
+      if (file.filename) {
+        const parts = file.filename.split('/');
+        for (let i = 1; i <= parts.length; i++) {
+          const path = parts.slice(0, i).join('/');
+          if (path) changedPaths.add(path);
+        }
+      }
+    });
+
+    return Array.from(changedPaths);
+  } catch (error) {
+    console.error(`[Heatmap] Error fetching recently changed paths:`, error);
+    return [];
+  }
+}
