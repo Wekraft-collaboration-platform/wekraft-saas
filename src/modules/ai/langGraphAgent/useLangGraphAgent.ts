@@ -194,7 +194,8 @@ export function useLangGraphAgent<
         }
 
         if (msg.event === "error") {
-          processError(appCheckpoints);
+          const errorData = msg.data as { error?: string } | undefined;
+          processError(appCheckpoints, errorData?.error);
           setAppCheckpoints([...appCheckpoints]);
         }
       }
@@ -514,13 +515,14 @@ export function useLangGraphAgent<
 
   function processError(
     appCheckpoints: AppCheckpoint<TAgentState, TInterruptValue>[],
+    message?: string,
   ) {
     if (appCheckpoints.length === 0) {
       return;
     }
-
     const lastCheckpoint = appCheckpoints[appCheckpoints.length - 1];
     lastCheckpoint.error = true;
+    lastCheckpoint.errorMessage = message;
   }
 
   function getStateDiff(

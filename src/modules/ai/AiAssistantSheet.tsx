@@ -464,7 +464,8 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                   key={checkpoint.checkpointConfig.configurable.checkpoint_id}
                   className="text-red-500 py-2 text-xs px-4"
                 >
-                  Error occured by Agent. LLm sometimes give malformed response.
+                  {checkpoint.errorMessage ||
+                    "Error occurred by Agent. LLM sometimes gives malformed response."}
                 </div>
               ) : (
                 checkpoint.nodes.map((node, i) => {
