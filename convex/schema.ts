@@ -166,6 +166,14 @@ export default defineSchema({
     createdByUserId: v.id("users"),
 
     sprintId: v.optional(v.id("sprints")),
+    attachments: v.optional(
+      v.array(
+        v.object({
+          name: v.string(),
+          url: v.string(),
+        })
+      )
+    ),
     // Insights
     finalCompletedAt: v.optional(v.number()), // date when finally its marked as completed.
     finalCompletedBy: v.optional(v.id("users")), // id of that user

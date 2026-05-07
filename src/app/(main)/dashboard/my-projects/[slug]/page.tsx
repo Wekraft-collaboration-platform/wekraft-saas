@@ -4,7 +4,8 @@ import { api } from "@/../convex/_generated/api";
 import { Id } from "@/../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
+import { toast } from "sonner";
 import {
   ArrowUpRight,
   ChevronLeft,
@@ -55,6 +56,58 @@ const ProjectPage = () => {
 
   const [isUploading, setIsUploading] = useState(false);
   const [homeTab, setHomeTab] = useState("settings");
+
+  const updateThumbnail = useMutation(api.project.updateProjectThumbnail);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validation
+    if (file.size > 1 * 1024 * 1024) {
+      toast.error("File too large. Max 1MB allowed.");
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file.");
+      return;
+    }
+
+    const toastId = toast.loading("Uploading thumbnail...");
+    setIsUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      if (project?.thumbnailUrl) {
+        formData.append("oldUrl", project.thumbnailUrl);
+      }
+
+      const response = await fetch("/api/objects", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      await updateThumbnail({
+        projectId: project?._id as Id<"projects">,
+        thumbnailUrl: data.url,
+      });
+
+      toast.success("Thumbnail updated successfully!", { id: toastId });
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      toast.error(error.message || "Failed to upload thumbnail", { id: toastId });
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   if (project === undefined) {
     return <ProjectSkeleton />;
@@ -176,7 +229,7 @@ const ProjectPage = () => {
                 type="file"
                 accept="image/*"
                 className="hidden"
-                // onChange={handleFileChange}
+                onChange={handleFileChange}
               />
             </label>
           )}

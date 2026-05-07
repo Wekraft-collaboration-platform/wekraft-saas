@@ -35,6 +35,14 @@ export const createTask = mutation({
     linkWithCodebase: v.optional(v.string()),
     projectId: v.id("projects"),
     sprintId: v.optional(v.id("sprints")),
+    attachments: v.optional(
+      v.array(
+        v.object({
+          name: v.string(),
+          url: v.string(),
+        }),
+      ),
+    ),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -380,6 +388,14 @@ export const editTask = mutation({
       }),
     ),
     linkWithCodebase: v.optional(v.string()),
+    attachments: v.optional(
+      v.array(
+        v.object({
+          name: v.string(),
+          url: v.string(),
+        }),
+      ),
+    ),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -636,5 +652,49 @@ export const deleteTasks = mutation({
         await ctx.db.delete(taskId);
       }),
     );
+  },
+});
+
+export const addTaskAttachment = mutation({
+  args: {
+    taskId: v.id("tasks"),
+    name: v.string(),
+    url: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const task = await ctx.db.get(args.taskId);
+    if (!task) throw new Error("Task not found");
+
+    const currentAttachments = task.attachments ?? [];
+
+    await ctx.db.patch(args.taskId, {
+      attachments: [...currentAttachments, { name: args.name, url: args.url }],
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+export const removeTaskAttachment = mutation({
+  args: {
+    taskId: v.id("tasks"),
+    url: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const task = await ctx.db.get(args.taskId);
+    if (!task) throw new Error("Task not found");
+
+    const currentAttachments = task.attachments ?? [];
+    const newAttachments = currentAttachments.filter((a) => a.url !== args.url);
+
+    await ctx.db.patch(args.taskId, {
+      attachments: newAttachments,
+      updatedAt: Date.now(),
+    });
   },
 });
