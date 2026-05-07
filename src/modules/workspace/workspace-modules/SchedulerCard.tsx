@@ -30,7 +30,7 @@ interface SchedulerCardProps {
 
 export const SchedulerCard = ({ scheduler }: SchedulerCardProps) => {
   return (
-    <Card className="p-3! overflow-hidden shadow-sm bg-accent/30 flex flex-col justify-between">
+    <Card className="p-3! overflow-hidden shadow-sm bg-accent/20 flex flex-col justify-between">
       <div>
         <CardHeader className="px-0 pb-2 flex flex-row items-center justify-between">
           <CardTitle className="text-sm flex items-center gap-2 font-semibold!  tracking-tight">

@@ -17,11 +17,11 @@ import {
 } from "lucide-react";
 
 export const STEPS = [
-  { id: 1, title: "Where did you Hear about us", icon: ScanSearch },
-  { id: 2, title: "Your main purpose for using WeKraft" },
-  { id: 3, title: "Repository", icon: Github },
-  { id: 4, title: "Project Details", icon: Layers },
-  { id: 5, title: "Team", icon: Users },
+  { id: 1, title: "Usage" },
+  { id: 2, title: "Identity" },
+  { id: 3, title: "Project" },
+  { id: 4, title: "Theme" },
+  { id: 5, title: "Team" },
 ];
 
 export const SOURCES = [

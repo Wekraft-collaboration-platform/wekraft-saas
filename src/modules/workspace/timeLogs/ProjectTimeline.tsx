@@ -505,9 +505,9 @@ function TimelineDayAxis({
               if (daysLeft <= 2) {
                 return {
                   barClass:
-                    "bg-yellow-50 dark:bg-yellow-500/10 border-yellow-200 dark:border-yellow-500/30 text-yellow-700 dark:text-yellow-500 shadow-[0_2px_10px_-3px_rgba(234,179,8,0.2)]",
+                    "bg-amber-50 dark:bg-amber-500/40 border-amber-200 dark:border-amber-500/30 text-primary shadow-[0_2px_10px_-3px_rgba(234,179,8,0.2)]",
                   icon: <AlertCircle size={10} className="text-white" />,
-                  iconBg: "bg-yellow-500 shadow-[0_0_8px_rgba(234,179,8,0.4)]",
+                  iconBg: "bg-amber-500 shadow-[0_0_8px_rgba(234,179,8,0.4)]",
                 };
               }
               return {

@@ -56,7 +56,7 @@ export const TaskStatusCard = ({ tasks }: TaskStatusCardProps) => {
   );
 
   return (
-    <Card className="p-3! overflow-hidden shadow-sm bg-accent/30 flex flex-col h-full">
+    <Card className="p-3! overflow-hidden shadow-sm bg-accent/20 flex flex-col h-full">
       <CardHeader className="px-0 pb-2 flex flex-row items-center justify-between">
         <CardTitle className="text-sm flex items-center gap-2 font-semibold tracking-tight">
           <LayoutDashboard className="w-5 h-5!" /> Task Distribution
@@ -77,7 +77,7 @@ export const TaskStatusCard = ({ tasks }: TaskStatusCardProps) => {
           </div>
         ) : (
           <>
-            <ChartContainer config={chartConfig} className="h-[180px] w-full">
+            <ChartContainer config={chartConfig} className="h-[200px] w-full">
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <ChartTooltip
@@ -101,7 +101,7 @@ export const TaskStatusCard = ({ tasks }: TaskStatusCardProps) => {
                     dataKey="value"
                     nameKey="name"
                     innerRadius={60}
-                    outerRadius={80}
+                    outerRadius={85}
                     paddingAngle={4}
                     stroke="none"
                   >

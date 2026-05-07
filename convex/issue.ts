@@ -219,10 +219,28 @@ export const updateIssue = mutation({
     const existing = await ctx.db.get(issueId);
     if (!existing) throw new Error("Issue not found");
 
-    await ctx.db.patch(issueId, {
+    const updateData: any = {
       ...updates,
       updatedAt: Date.now(),
-    });
+    };
+
+    if (updates.status === "closed") {
+      updateData.finalCompletedAt = Date.now();
+      const identity = await ctx.auth.getUserIdentity();
+      if (identity) {
+        const user = await ctx.db
+          .query("users")
+          .withIndex("by_token", (q) =>
+            q.eq("clerkToken", identity.tokenIdentifier),
+          )
+          .unique();
+        if (user) {
+          updateData.finalCompletedBy = user._id;
+        }
+      }
+    }
+
+    await ctx.db.patch(issueId, updateData);
 
     // Handle Assignees update if provided
     if (assignees !== undefined) {

@@ -60,7 +60,7 @@ export default async function LoginPage() {
               <p className="text-sm font-medium text-neutral-400 tracking-wide uppercase">
                 Building the future together
               </p>
-              <div className="h-px w-28 bg-linear-to-r from-transparent via-neutral-700 to-transparent mx-auto" />
+              <div className="h-px w-40 bg-linear-to-r from-transparent via-neutral-400 to-transparent mx-auto" />
             </div>
           </div>
 
@@ -70,8 +70,8 @@ export default async function LoginPage() {
               <h2 className="text-2xl font-semibold tracking-tight text-white">
                 Welcome back
               </h2>
-              <p className="text-sm text-neutral-500">
-                Sign in to manage your AI-native projects
+              <p className="text-sm text-muted-foreground">
+                Sign in with Github to start building your AI project
               </p>
             </div>
 
@@ -79,10 +79,16 @@ export default async function LoginPage() {
               <SignInButton>
                 <Button
                   variant="outline"
-                  className="w-full h-9 bg-neutral-900/50 border-neutral-800 hover:bg-neutral-800 hover:border-neutral-700 transition-all duration-300 gap-3 text-white rounded-lg group cursor-pointer shadow-sm relative overflow-hidden"
+                  className="w-full h-10 bg-neutral-900/50 border-neutral-800 hover:bg-neutral-800 hover:border-neutral-700 transition-all duration-300 gap-3 text-white rounded-lg group cursor-pointer shadow-sm relative overflow-hidden"
                 >
                   <div className="absolute inset-0 bg-linear-to-r from-blue-500/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity" />
-                  <LucideGithub className="w-5 h-5 transition-transform group-hover:scale-110" />
+                  {/* <LucideGithub className="w-5 h-5 transition-transform group-hover:scale-110" /> */}
+                  <Image
+                    src="/git-auth.png"
+                    alt="github"
+                    width={26}
+                    height={26}
+                  />
                   <span className="text-xs font-medium tracking-tight">
                     Continue with GitHub
                   </span>
@@ -91,7 +97,7 @@ export default async function LoginPage() {
 
               <div className="relative py-2">
                 <div className="absolute inset-0 flex items-center">
-                  <span className="w-full border-t border-neutral-800/50" />
+                  <span className="w-full border-t border-neutral-800" />
                 </div>
                 <div className="relative flex justify-center text-xs uppercase">
                   <span className="bg-black px-3 text-neutral-600 font-medium tracking-widest">
@@ -100,15 +106,22 @@ export default async function LoginPage() {
                 </div>
               </div>
 
-              <Button
-                variant="outline"
-                className="w-full h-9 bg-neutral-900/50 border-neutral-800 hover:bg-neutral-800 hover:border-neutral-700 transition-all duration-300 gap-3 text-white rounded-lg group cursor-pointer shadow-sm relative overflow-hidden"
-              >
-                <GhostIcon className="w-5 h-5 transition-transform group-hover:scale-110" />
-                <span className="text-xs font-medium tracking-tight">
-                  Continue as Guest
-                </span>
-              </Button>
+              <SignInButton>
+                <Button
+                  variant="outline"
+                  className="w-full h-10 bg-neutral-900/50 border-neutral-800 hover:bg-neutral-800 hover:border-neutral-700 transition-all duration-300 gap-3 text-white rounded-lg group cursor-pointer shadow-sm relative overflow-hidden"
+                >
+                  <Image
+                    src="/search.png"
+                    alt="google"
+                    width={24}
+                    height={24}
+                  />
+                  <span className="text-xs font-medium tracking-tight">
+                    Continue with Google
+                  </span>
+                </Button>
+              </SignInButton>
             </div>
           </div>
 
@@ -136,7 +149,7 @@ export default async function LoginPage() {
                 </Link>
               </div>
               <p className="text-[10px] text-neutral-400 font-medium tracking-widest uppercase">
-                © 2026 WeKraft 
+                © 2026 WeKraft
               </p>
             </div>
           </div>

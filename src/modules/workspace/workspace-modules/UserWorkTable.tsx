@@ -177,7 +177,7 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
                     `/dashboard/my-projects/${slug}/workspace/tasks?task=${task._id}`,
                   )
                 }
-                className="bg-muted/80 border border-border rounded-lg p-3 cursor-pointer hover:bg-muted transition-colors"
+                className="bg-muted/30 border border-border rounded-lg p-3 cursor-pointer hover:bg-muted/50 transition-colors"
               >
                 {/* Row 1 — Title + Estimation */}
                 <div className="flex items-start justify-between gap-4">
@@ -394,7 +394,7 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
   };
 
   return (
-    <Card className="border border-border shadow-none overflow-hidden bg-accent/30 h-[620px]">
+    <Card className="border border-border shadow-none overflow-hidden bg-accent/20 h-[620px]">
       <CardHeader className="flex  items-center justify-between space-y-0 ">
         <div className="space-y-1">
           <CardTitle className="text-base font-semibold  text-primary flex items-center gap-2">

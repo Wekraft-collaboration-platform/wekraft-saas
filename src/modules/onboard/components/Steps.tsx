@@ -20,7 +20,12 @@ import {
   Code2,
   Rocket,
   TrendingUp,
+  Sun,
+  Moon,
+  Monitor,
+  Palette,
 } from "lucide-react";
+import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -91,8 +96,7 @@ export function MultiStepOnboarding() {
   const [generatedInviteLink, setGeneratedInviteLink] = useState("");
 
   // step 4
-  const [selectedRepo, setSelectedRepo] = useState<string | null>(null);
-  const [searchQuery, setSearchQuery] = useState("");
+  const { theme, setTheme } = useTheme();
 
   const handleNext = async () => {
     try {
@@ -189,7 +193,7 @@ export function MultiStepOnboarding() {
     );
   };
 
-  const isSkip = currentStep === 1 || currentStep === 4;
+  const isSkip = currentStep === 1;
 
   return (
     <div className="dark flex flex-col items-center justify-center h-screen p-4 pt-10 relative text-foreground overflow-hidden">
@@ -250,8 +254,17 @@ export function MultiStepOnboarding() {
       </div>
 
       {/* BODY  */}
-      <main className="w-full relative h-full flex flex-col max-h-[500px]  max-w-2xl  bg-linear-to-b from-neutral-900 to-neutral-900 border border-neutral-600 rounded-xl overflow-hidden font-sans">
-        <div className="p-5 h-full flex flex-col">
+      <main className="w-full relative h-full flex flex-col max-h-[500px] max-w-2xl overflow-hidden font-sans group">
+        {/* Background & Border Layer with Fade/Blur Effect */}
+        <div 
+          className="absolute inset-0 bg-neutral-900/80 border border-neutral-600 rounded-xl backdrop-blur-xl pointer-events-none transition-all duration-500"
+          style={{ 
+            WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 60%, transparent 100%)',
+            maskImage: 'linear-gradient(to bottom, black 0%, black 60%, transparent 100%)'
+          }}
+        />
+
+        <div className="p-5 h-full flex flex-col relative z-10">
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={currentStep}
@@ -468,30 +481,59 @@ export function MultiStepOnboarding() {
                   </div>
                 </div>
               )}
-              {/* STE 4 :  REPO CONNECT (SKIP) --- */}
+              {/* STEP 4 : THEME SELECTION --- */}
               {currentStep === 4 && (
-                <div className="space-y-5 relative">
-                  <div className="text-center space-y-2 mb-5">
+                <div className="space-y-6 relative">
+                  <div className="text-center space-y-2 mb-8">
                     <h2 className="text-2xl font-semibold tracking-tight text-white flex items-center justify-center gap-2">
-                      Connect your repository
-                      <FolderGit2 className="w-6 h-6 " />
+                      Personalize your space
+                      <Palette className="w-6 h-6 text-blue-400" />
                     </h2>
                     <p className="text-white/50 text-sm">
-                      Connect your github repository to sync and collab{" "}
-                      <span className="text-white relative font-inter ">
-                        (Optional)
-                      </span>
+                      Choose a theme that suits your working style
                     </p>
                   </div>
 
-                  <div className="relative flex items-center">
-                    <Search className="absolute left-3 top-2 w-4 h-4 text-muted-foreground" />
-                    <Input
-                      placeholder="Search repositories..."
-                      className="bg-white/5 border-white/10 pl-10 mb-4 focus:ring-1 focus:ring-white/20"
-                      value={searchQuery}
-                      onChange={(e) => setSearchQuery(e.target.value)}
-                    />
+                  <div className="grid grid-cols-3 gap-4">
+                    {[
+                      { id: "light", label: "Light", icon: Sun, desc: "Clean & Bright" },
+                      { id: "dark", label: "Dark", icon: Moon, desc: "Sleek & Deep" },
+                      { id: "system", label: "System", icon: Monitor, desc: "Auto sync" },
+                    ].map((t) => {
+                      const isSelected = theme === t.id;
+                      return (
+                        <button
+                          key={t.id}
+                          onClick={() => setTheme(t.id)}
+                          className={cn(
+                            "relative flex flex-col items-center gap-4 p-6 rounded-2xl border transition-all duration-300 group",
+                            isSelected
+                              ? "bg-white/10 border-white text-white shadow-[0_0_30px_rgba(255,255,255,0.05)] scale-[1.02]"
+                              : "bg-white/5 border-white/5 text-neutral-400 hover:bg-white/[0.08] hover:border-white/20 hover:text-white"
+                          )}
+                        >
+                          <div className={cn(
+                            "w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300",
+                            isSelected ? "bg-white text-black" : "bg-white/5"
+                          )}>
+                            <t.icon className="w-6 h-6" />
+                          </div>
+                          
+                          <div className="text-center">
+                            <p className="text-sm font-semibold">{t.label}</p>
+                            <p className="text-[10px] text-neutral-500 mt-1 uppercase tracking-widest">{t.desc}</p>
+                          </div>
+
+                          {isSelected && (
+                            <motion.div
+                              layoutId="theme-active"
+                              className="absolute inset-0 rounded-2xl border-2 border-white/20"
+                              initial={false}
+                            />
+                          )}
+                        </button>
+                      );
+                    })}
                   </div>
                 </div>
               )}

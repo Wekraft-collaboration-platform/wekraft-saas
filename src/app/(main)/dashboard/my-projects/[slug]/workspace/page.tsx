@@ -182,7 +182,7 @@ const ProjectWorkspace = () => {
       {/* TOP STATS CARDS */}
       <section className="grid grid-cols-3 gap-6 mt-10">
         {/* Project Deadline Card */}
-        <Card className="p-3! overflow-hidden shadow-sm bg-accent/30">
+        <Card className="p-3! overflow-hidden shadow-sm bg-accent/20">
           <CardHeader className="px-0 flex flex-row items-center justify-between">
             <CardTitle className="text-sm flex items-center gap-2">
               <AudioLines className="w-5 h-5!" /> Track Your Project
@@ -254,6 +254,9 @@ const ProjectWorkspace = () => {
           issuesCount={issues?.length || 0}
           sprintsCount={sprints?.length || 0}
           eventsCount={events?.length || 0}
+          tasks={tasks}
+          issues={issues}
+          projectCreatedAt={project?._creationTime}
         />
         {/* Task Status Pie Chart Card */}
         <TaskStatusCard tasks={tasks || []} />
@@ -270,7 +273,10 @@ const ProjectWorkspace = () => {
 
         {/* My all work Table */}
         <div className="col-span-2">
-          <UserWorkTable userName={user?.name} projectId={projectId as Id<"projects">} />
+          <UserWorkTable
+            userName={user?.name}
+            projectId={projectId as Id<"projects">}
+          />
         </div>
       </section>
     </div>
