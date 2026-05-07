@@ -95,22 +95,35 @@ export async function POST(request: NextRequest) {
           // }
         }
         await writer.close();
-      } catch (error) {
-        console.error("Stream processing error:", error);
+      } catch (error: any) {
+        console.error("Stream processing error in /api/agent:", {
+          message: error.message,
+          stack: error.stack,
+          cause: error.cause,
+        });
 
         // Write an error message to the stream before closing
-        const errorData = JSON.stringify({ error: "Error in agent" });
-        await writer.write(
-          new TextEncoder().encode(`event: error\ndata: ${errorData}\n\n`),
-        );
-        await writer.close();
+        const errorData = JSON.stringify({ 
+          error: error.message || "Error in agent stream processing" 
+        });
+        
+        try {
+          await writer.write(
+            new TextEncoder().encode(`event: error\ndata: ${errorData}\n\n`),
+          );
+        } catch (writeError) {
+          console.error("Failed to write error to stream:", writeError);
+        } finally {
+          await writer.close();
+        }
       }
     })();
 
     return new Response(stream.readable, {
       headers: {
         "Content-Type": "text/event-stream",
-        "Cache-Control": "no-cache",
+        "Cache-Control": "no-cache, no-transform",
+        "X-Accel-Buffering": "no",
         Connection: "keep-alive",
         ...rlHeaders,
       },

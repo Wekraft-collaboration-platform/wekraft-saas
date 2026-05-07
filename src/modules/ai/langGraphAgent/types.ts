@@ -61,6 +61,7 @@ export interface AppCheckpoint<TAgentState, TInterruptValue> {
   interruptValue?: TInterruptValue;
   checkpointConfig: CheckpointConfig;
   error: boolean;
+  errorMessage?: string;
 }
 
 /** Node that is executed in the checkpoint.
