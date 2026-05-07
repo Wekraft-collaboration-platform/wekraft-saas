@@ -21,7 +21,7 @@ import { CreateIssueDialog } from "@/modules/workspace/CreateIssueDialog";
 import { cn } from "@/lib/utils";
 import { useKayaStore } from "@/store/useKayaStore";
 import { IssueKanbanUI } from "@/modules/workspace/IssueKanbanUI";
-import { ImportGithubIssueDialog } from "@/modules/github/ImportGithubIssueDialog";
+import { ImportGithubIssueDialog } from "@/modules/workspace/heatmaps/ImportGithubIssueDialog";
 
 const users = [
   { name: "Ritesh", img: "https://i.pravatar.cc/40?img=1" },

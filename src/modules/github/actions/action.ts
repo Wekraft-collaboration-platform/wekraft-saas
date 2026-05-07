@@ -79,6 +79,35 @@ export const getIssues = async (
   return data.filter((issue) => !issue.pull_request);
 };
 
+// ============================================
+// GETTING GITHUB FOLDER CHURN DATA
+// ============================================
+export const getFolderChurnData = async (
+  owner: string,
+  repo: string,
+  folderPath: string,
+) => {
+  const token = await getGithubAccessToken();
+  const octokit = new Octokit({ auth: token });
+
+  const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(); // last 7 days
+
+  const { data: commits } = await octokit.rest.repos.listCommits({
+    owner,
+    repo,
+    path: folderPath,
+    since,
+    per_page: 100,
+  });
+
+  const isChangedRecently = commits.length > 0;
+
+  return {
+    folderPath,
+    isChangedRecently, // true = yellow
+  };
+};
+
 // ===================================================
 // GET USER LANGUAGES FOR SKIILS
 // ===================================================

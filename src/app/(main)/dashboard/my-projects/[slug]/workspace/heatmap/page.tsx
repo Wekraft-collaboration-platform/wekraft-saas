@@ -14,6 +14,7 @@ const HeatmapPage = () => {
   const { open: sidebarOpen, setOpen: setSidebarOpen } = useSidebar();
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [structure, setStructure] = useState<FolderNode | null>(null);
+  const [recentlyChangedPaths, setRecentlyChangedPaths] = useState<string[]>([]);
 
   const params = useParams();
   const slug = params.slug as string;
@@ -54,8 +55,11 @@ const HeatmapPage = () => {
       <HeatmapPanel
         isOpen={isPanelOpen}
         repoId={repoId}
+        projectId={projectId}
         structure={structure}
         issuePaths={issuePaths}
+        recentlyChangedPaths={recentlyChangedPaths}
+        setRecentlyChangedPaths={setRecentlyChangedPaths}
         setStructure={setStructure}
         onToggle={(open) => {
           setIsPanelOpen(open);
@@ -64,7 +68,11 @@ const HeatmapPage = () => {
       />
       {/* REACT FLOW MAP */}
       <div className="flex-1 relative overflow-hidden">
-        <HeatmapFlow structure={structure} issuePaths={issuePaths} />
+        <HeatmapFlow 
+          structure={structure} 
+          issuePaths={issuePaths} 
+          recentlyChangedPaths={recentlyChangedPaths}
+        />
       </div>
     </div>
   );
