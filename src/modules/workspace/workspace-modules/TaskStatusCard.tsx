@@ -56,7 +56,7 @@ export const TaskStatusCard = ({ tasks }: TaskStatusCardProps) => {
   );
 
   return (
-    <Card className="p-3! overflow-hidden shadow-sm bg-accent/20 flex flex-col h-full">
+    <Card className="p-3! overflow-hidden shadow-sm bg-accent/30 border-accent flex flex-col h-full">
       <CardHeader className="px-0 pb-2 flex flex-row items-center justify-between">
         <CardTitle className="text-sm flex items-center gap-2 font-semibold tracking-tight">
           <LayoutDashboard className="w-5 h-5!" /> Task Distribution
@@ -72,7 +72,10 @@ export const TaskStatusCard = ({ tasks }: TaskStatusCardProps) => {
 
       <CardContent className="p-0 flex-1 flex flex-col items-center justify-center -mt-2">
         {totalTasks === 0 ? (
-          <div className="py-10 text-center text-muted-foreground text-xs italic">
+          <div className="py-10 text-center text-muted-foreground text-sm italic flex flex-col items-center gap-4">
+            <p>
+              <ClipboardList className="w-7 h-7" />
+            </p>
             No tasks found
           </div>
         ) : (

@@ -24,6 +24,8 @@ import {
   History,
   CalendarRange,
   PlusCircle,
+  ChartBar,
+  Table,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -52,11 +54,13 @@ import { SchedulerCard } from "@/modules/workspace/workspace-modules/SchedulerCa
 import { SprintBarChart } from "@/modules/workspace/workspace-modules/SprintBarChart";
 import { UserWorkTable } from "@/modules/workspace/workspace-modules/UserWorkTable";
 import { SetTargetDateDialog } from "@/modules/workspace/SetTargetDateDialog";
+import { Separator } from "@/components/ui/separator";
 
 const ProjectWorkspace = () => {
   const params = useParams();
   const slug = params.slug as string;
   const [isDeadlineDialogOpen, setIsDeadlineDialogOpen] = useState(false);
+  const [isChartView, setIsChartView] = useState(false);
 
   const project = useQuery(api.project.getProjectBySlug, { slug });
   const projectId = project?._id;
@@ -182,7 +186,7 @@ const ProjectWorkspace = () => {
       {/* TOP STATS CARDS */}
       <section className="grid grid-cols-3 gap-6 mt-10">
         {/* Project Deadline Card */}
-        <Card className="p-3! overflow-hidden shadow-sm bg-accent/20">
+        <Card className="p-3! overflow-hidden shadow-sm bg-accent/30 border-accent">
           <CardHeader className="px-0 flex flex-row items-center justify-between">
             <CardTitle className="text-sm flex items-center gap-2">
               <AudioLines className="w-5 h-5!" /> Track Your Project
@@ -262,25 +266,51 @@ const ProjectWorkspace = () => {
         <TaskStatusCard tasks={tasks || []} />
       </section>
 
-      {/* WORK & OTHER CARDS */}
-      <section className="grid grid-cols-3 gap-6 mt-14">
-        <div className="flex flex-col space-y-6">
-          {/* Scheduler Card */}
-          <SchedulerCard scheduler={scheduler} />
-          {/* Sprint bar graph */}
-          <SprintBarChart projectId={projectId as Id<"projects">} />
-        </div>
+      {/* TABS: advance charts (scheduler + advance charts) / My work table */}
+      <div className="flex mt-6 mb-2 items-center justify-end gap-6 px-12">
+        <Button
+          className="text-xs cursor-pointer"
+          variant={
+            isChartView ? "default" : "outline"
+          }
+          size={"sm"}
+          onClick={() => setIsChartView(true)}
+        >
+          Advance Charts <ChartBar />
+        </Button>
 
-        {/* My all work Table */}
-        <div className="col-span-2">
-          <UserWorkTable
-            userName={user?.name}
-            projectId={projectId as Id<"projects">}
-          />
-        </div>
+        <Button
+          className="text-xs cursor-pointer"
+          variant={
+            isChartView ? "outline" : "default"
+          }
+          size={"sm"}
+          onClick={() => setIsChartView(false)}
+        >
+          My Work <Table />
+        </Button>
+      </div>
+
+      <section>
+        <Separator className="bg-accent" />
       </section>
     </div>
   );
 };
 
 export default ProjectWorkspace;
+
+// <div className="flex flex-col space-y-6">
+//         {/* Scheduler Card */}
+//         <SchedulerCard scheduler={scheduler} />
+//         {/* Sprint bar graph */}
+//         <SprintBarChart projectId={projectId as Id<"projects">} />
+//       </div>
+
+//       {/* My all work Table */}
+//       <div className="col-span-2">
+//         <UserWorkTable
+//           userName={user?.name}
+//           projectId={projectId as Id<"projects">}
+//         />
+//       </div>
