@@ -41,10 +41,6 @@ import { Button } from "@/components/ui/button";
 
 interface ActivityOverviewCardProps {
   slug: string;
-  tasksCount: number;
-  issuesCount: number;
-  sprintsCount: number;
-  eventsCount: number;
   tasks?: any[];
   issues?: any[];
   projectCreatedAt?: number;
@@ -63,10 +59,6 @@ const chartConfig = {
 
 export const ActivityOverviewCard = ({
   slug,
-  tasksCount,
-  issuesCount,
-  sprintsCount,
-  eventsCount,
   tasks,
   issues,
   projectCreatedAt,

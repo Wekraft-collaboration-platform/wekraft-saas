@@ -698,3 +698,70 @@ export const removeTaskAttachment = mutation({
     });
   },
 });
+
+// =============================================
+// GET PROJECT CONTRIBUTIONS (For Radar Chart)
+// =============================================
+export const getProjectContributions = query({
+  args: {
+    projectId: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    const members = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
+    const contributions = await Promise.all(
+      members.map(async (member) => {
+        // 1. Completed Tasks
+        const completedTasks = await ctx.db
+          .query("tasks")
+          .withIndex("by_project_status", (q) =>
+            q.eq("projectId", args.projectId).eq("status", "completed"),
+          )
+          .filter((q) => q.eq(q.field("finalCompletedBy"), member.userId))
+          .collect();
+
+        // 2. Resolved Issues
+        const resolvedIssues = await ctx.db
+          .query("issues")
+          .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+          .filter((q) =>
+            q.and(
+              q.eq(q.field("status"), "closed"),
+              q.eq(q.field("finalCompletedBy"), member.userId),
+            ),
+          )
+          .collect();
+
+        // 3. Calculate Average Speed (in days)
+        const avgSpeed =
+          completedTasks.length > 0
+            ? completedTasks.reduce((acc, t) => {
+                const start = t.createdAt ?? t._creationTime;
+                const end = t.finalCompletedAt!;
+                return acc + (end - start);
+              }, 0) /
+              completedTasks.length /
+              (1000 * 60 * 60 * 24)
+            : 0;
+
+        // Normalize speed score (0-10)
+        const speedScore = Math.max(0, 10 - avgSpeed);
+
+        return {
+          userId: member.userId,
+          name: member.userName,
+          avatar: member.userImage,
+          tasks: completedTasks.length,
+          issues: resolvedIssues.length,
+          speed: Math.round(speedScore * 10) / 10,
+          reliability: Math.min(10, completedTasks.length + resolvedIssues.length), 
+        };
+      }),
+    );
+
+    return contributions;
+  },
+});

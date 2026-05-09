@@ -72,7 +72,7 @@ const ProjectWorkspace = () => {
     projectId ? { projectId: projectId as Id<"projects"> } : "skip",
   );
 
-  const updateDeadline = useMutation(api.projectDetails.updateTargetDate);
+  // const updateDeadline = useMutation(api.projectDetails.updateTargetDate);
 
   const tasks = useQuery(
     api.workspace.getTimelineTasks,
@@ -82,18 +82,18 @@ const ProjectWorkspace = () => {
     api.issue.getFilteredIssues,
     projectId ? { projectId: projectId as Id<"projects"> } : "skip",
   );
-  const members = useQuery(
-    api.project.getProjectMembers,
-    projectId ? { projectId: projectId as Id<"projects"> } : "skip",
-  );
-  const events = useQuery(
-    api.calendar.getEvents,
-    projectId ? { projectId: projectId as Id<"projects"> } : "skip",
-  );
-  const scheduler = useQuery(
-    api.workspace.getProjectScheduler,
-    projectId ? { projectId: projectId as Id<"projects"> } : "skip",
-  );
+  // const members = useQuery(
+  //   api.project.getProjectMembers,
+  //   projectId ? { projectId: projectId as Id<"projects"> } : "skip",
+  // );
+  // const events = useQuery(
+  //   api.calendar.getEvents,
+  //   projectId ? { projectId: projectId as Id<"projects"> } : "skip",
+  // );
+  // const scheduler = useQuery(
+  //   api.workspace.getProjectScheduler,
+  //   projectId ? { projectId: projectId as Id<"projects"> } : "skip",
+  // );
   const sprints = useQuery(
     api.sprint.getSprintsByProject,
     projectId ? { projectId: projectId as Id<"projects"> } : "skip",
@@ -254,10 +254,6 @@ const ProjectWorkspace = () => {
         {/* Activity Overview Card */}
         <ActivityOverviewCard
           slug={slug}
-          tasksCount={tasks?.length || 0}
-          issuesCount={issues?.length || 0}
-          sprintsCount={sprints?.length || 0}
-          eventsCount={events?.length || 0}
           tasks={tasks}
           issues={issues}
           projectCreatedAt={project?._creationTime}
