@@ -336,9 +336,9 @@ const IssueColumn = ({
     <div
       ref={setNodeRef}
       className={cn(
-        "flex flex-col transition-all duration-300 rounded-lg border border-neutral-800 h-fit min-h-[500px] max-h-[calc(100vh-280px)]",
+        "flex flex-col transition-all duration-300 rounded-lg border border-accent h-fit min-h-[500px] max-h-[800px]",
         isCollapsed
-          ? "min-w-[56px] w-[56px] bg-sidebar border-transparent"
+          ? "min-w-[56px] w-[56px] bg-sidebar border-border"
           : "min-w-[300px] w-[300px] bg-sidebar",
       )}
     >
@@ -357,7 +357,7 @@ const IssueColumn = ({
               <span className="text-sm font-semibold text-neutral-200">
                 {column.label}
               </span>
-              <span className="text-[11px] font-medium text-neutral-500">
+              <span className="text-[11px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
                 {issues.length}
               </span>
             </>
@@ -487,7 +487,7 @@ const IssueCard = ({
   return (
     <Card
       className={cn(
-        "group cursor-pointer p-3! bg-muted border-neutral-800 hover:border-neutral-700 transition-all rounded-xl shadow-sm",
+        "group cursor-pointer p-2.5! bg-muted border-neutral-800 hover:border-neutral-700 transition-all rounded-xl shadow-sm",
         isOverlay && "scale-[1.02] shadow-2xl border-neutral-700 bg-sidebar",
       )}
     >
@@ -497,7 +497,7 @@ const IssueCard = ({
           <div className="flex items-center gap-1.5">
             <span
               className={cn(
-                "text-[10px] font-medium px-2 py-1.5 rounded bg-sidebar border border-neutral-800 text-neutral-400 flex items-center gap-1.5",
+                "text-[10px] font-medium px-2 py-1 rounded bg-sidebar border border-neutral-800 text-neutral-400 flex items-center gap-1.5",
               )}
             >
               <span className={cn(severity.iconColor)}>

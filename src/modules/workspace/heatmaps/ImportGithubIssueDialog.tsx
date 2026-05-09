@@ -69,15 +69,15 @@ export const ImportGithubIssueDialog = ({
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="max-w-3xl h-[80vh] flex flex-col p-0 overflow-hidden dark:bg-[#121212] border-border/40">
-        <DialogHeader className="p-6 border-b border-border/40 bg-card/50 shrink-0">
+      <DialogContent className="max-w-3xl h-[80vh] bg-sidebar flex flex-col p-0 overflow-hidden border-accent">
+        <DialogHeader className="p-4! border-b border-border shrink-0">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="p-2 bg-primary/10 rounded-lg">
                 <Github className="w-5 h-5 text-primary" />
               </div>
               <div>
-                <DialogTitle className="text-xl">GitHub Issues</DialogTitle>
+                <DialogTitle className="text-lg">GitHub Issues</DialogTitle>
                 <p className="text-xs text-muted-foreground mt-1">
                   Showing open issues for{" "}
                   <span className="text-foreground font-medium">
