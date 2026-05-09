@@ -17,19 +17,26 @@ import {
   MessageSquare,
   Clock,
   User,
+  CheckCircle2,
 } from "lucide-react";
 import { getIssues } from "@/modules/github/actions/action";
 import { formatDistanceToNow } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { toast } from "sonner";
+import { useMutation, useQuery } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
+import { Id } from "../../../../convex/_generated/dataModel";
+import { cn } from "@/lib/utils";
 
 interface ImportGithubIssueDialogProps {
+  projectId: Id<"projects">;
   repoFullName?: string;
   trigger: React.ReactNode;
 }
 
 export const ImportGithubIssueDialog = ({
+  projectId,
   repoFullName,
   trigger,
 }: ImportGithubIssueDialogProps) => {
@@ -37,6 +44,11 @@ export const ImportGithubIssueDialog = ({
   const [issues, setIssues] = useState<any[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [importingId, setImportingId] = useState<number | null>(null);
+
+  const createIssue = useMutation(api.issue.createIssue);
+  const existingIssues =
+    useQuery(api.issue.getIssuesForKanban, { projectId }) ?? [];
 
   const fetchGithubIssues = async () => {
     if (!repoFullName) return;
@@ -57,6 +69,29 @@ export const ImportGithubIssueDialog = ({
       toast.error("Error fetching GitHub issues");
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const handleImport = async (githubIssue: any) => {
+    try {
+      setImportingId(githubIssue.id);
+      const status = githubIssue.state === "open" ? "opened" : "closed";
+
+      await createIssue({
+        title: githubIssue.title,
+        description: githubIssue.body || "",
+        type: "github",
+        status: status as any,
+        githubIssueUrl: githubIssue.html_url,
+        projectId,
+      });
+
+      toast.success(`Imported issue #${githubIssue.number}`);
+    } catch (err) {
+      console.error("Import error:", err);
+      toast.error("Failed to import issue");
+    } finally {
+      setImportingId(null);
     }
   };
 
@@ -129,86 +164,113 @@ export const ImportGithubIssueDialog = ({
           ) : (
             <ScrollArea className="flex-1">
               <div className="divide-y divide-border/40">
-                {issues.map((issue) => (
-                  <div
-                    key={issue.id}
-                    className="p-5 hover:bg-muted/30 transition-colors group relative"
-                  >
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-xs font-mono text-muted-foreground">
-                            #{issue.number}
-                          </span>
-                          {issue.labels?.map((label: any) => (
-                            <Badge
-                              key={label.id}
-                              style={{
-                                backgroundColor: `#${label.color}20`,
-                                color: `#${label.color}`,
-                                borderColor: `#${label.color}40`,
-                              }}
-                              className="text-[10px] px-1.5 py-0 font-medium border"
-                            >
-                              {label.name}
-                            </Badge>
-                          ))}
-                        </div>
-                        <h4 className="text-[15px] font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-1">
-                          {issue.title}
-                        </h4>
+                {issues.map((issue) => {
+                  const importedIssue = existingIssues.find(
+                    (i) => i.githubIssueUrl === issue.html_url,
+                  );
+                  const isImported = !!importedIssue;
 
-                        <div className="flex items-center gap-4 mt-3 text-[11px] text-muted-foreground">
-                          <div className="flex items-center gap-1.5">
-                            <User className="w-3.5 h-3.5" />
-                            <span>{issue.user?.login}</span>
-                          </div>
-                          <div className="flex items-center gap-1.5">
-                            <Clock className="w-3.5 h-3.5" />
-                            <span>
-                              Opened{" "}
-                              {formatDistanceToNow(new Date(issue.created_at))}{" "}
-                              ago
+                  return (
+                    <div
+                      key={issue.id}
+                      className="p-5 hover:bg-muted/30 transition-colors group relative"
+                    >
+                      <div className="flex items-start justify-between gap-4">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs font-mono text-muted-foreground">
+                              #{issue.number}
                             </span>
+                            {issue.labels?.map((label: any) => (
+                              <Badge
+                                key={label.id}
+                                style={{
+                                  backgroundColor: `#${label.color}20`,
+                                  color: `#${label.color}`,
+                                  borderColor: `#${label.color}40`,
+                                }}
+                                className="text-[10px] px-1.5 py-0 font-medium border"
+                              >
+                                {label.name}
+                              </Badge>
+                            ))}
+                            {isImported && (
+                              <Badge
+                                variant="outline"
+                                className="text-[10px] bg-blue-500/10 text-blue-400 border-blue-500/20 ml-auto"
+                              >
+                                <CheckCircle2 className="w-3 h-3 mr-1" />
+                                Imported -{" "}
+                                {importedIssue.status.charAt(0).toUpperCase() +
+                                  importedIssue.status.slice(1)}
+                              </Badge>
+                            )}
                           </div>
-                          {issue.comments > 0 && (
+                          <h4 className="text-[15px] font-semibold text-foreground group-hover:text-primary transition-colors line-clamp-1">
+                            {issue.title}
+                          </h4>
+
+                          <div className="flex items-center gap-4 mt-3 text-[11px] text-muted-foreground">
                             <div className="flex items-center gap-1.5">
-                              <MessageSquare className="w-3.5 h-3.5" />
-                              <span>{issue.comments} comments</span>
+                              <User className="w-3.5 h-3.5" />
+                              <span>{issue.user?.login}</span>
                             </div>
+                            <div className="flex items-center gap-1.5">
+                              <Clock className="w-3.5 h-3.5" />
+                              <span>
+                                Opened{" "}
+                                {formatDistanceToNow(new Date(issue.created_at))}{" "}
+                                ago
+                              </span>
+                            </div>
+                            {issue.comments > 0 && (
+                              <div className="flex items-center gap-1.5">
+                                <MessageSquare className="w-3.5 h-3.5" />
+                                <span>{issue.comments} comments</span>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+
+                        <div className="shrink-0 flex gap-2">
+                          <a
+                            href={issue.html_url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={cn(
+                              "transition-opacity",
+                              isImported
+                                ? "opacity-100"
+                                : "opacity-0 group-hover:opacity-100",
+                            )}
+                          >
+                            <Button
+                              variant="outline"
+                              size="icon"
+                              className="h-8 w-8"
+                            >
+                              <ExternalLink className="w-3.5 h-3.5" />
+                            </Button>
+                          </a>
+
+                          {!isImported && (
+                            <Button
+                              size="sm"
+                              className="text-[11px] h-8 px-3 opacity-0 group-hover:opacity-100 transition-opacity bg-primary hover:bg-primary/90"
+                              disabled={importingId === issue.id}
+                              onClick={() => handleImport(issue)}
+                            >
+                              {importingId === issue.id ? (
+                                <Loader2 className="w-3 h-3 animate-spin mr-1" />
+                              ) : null}
+                              Import
+                            </Button>
                           )}
                         </div>
                       </div>
-
-                      <div className="shrink-0 flex gap-2">
-                        <a
-                          href={issue.html_url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="opacity-0 group-hover:opacity-100 transition-opacity"
-                        >
-                          <Button
-                            variant="outline"
-                            size="icon"
-                            className="h-8 w-8"
-                          >
-                            <ExternalLink className="w-3.5 h-3.5" />
-                          </Button>
-                        </a>
-                        {/* Placeholder for actual import action */}
-                        <Button
-                          size="sm"
-                          className="text-[11px] h-8 px-3 opacity-0 group-hover:opacity-100 transition-opacity bg-primary hover:bg-primary/90"
-                          onClick={() =>
-                            toast.info("Import feature coming soon!")
-                          }
-                        >
-                          Import
-                        </Button>
-                      </div>
                     </div>
-                  </div>
-                ))}
+                  );
+                })}
               </div>
             </ScrollArea>
           )}
@@ -216,7 +278,7 @@ export const ImportGithubIssueDialog = ({
 
         <div className="p-4 border-t border-border/40 bg-card/30 flex justify-end shrink-0">
           <Button
-            variant="ghost"
+            variant="default"
             size="sm"
             onClick={() => setIsOpen(false)}
             className="text-xs"
@@ -228,3 +290,4 @@ export const ImportGithubIssueDialog = ({
     </Dialog>
   );
 };
+

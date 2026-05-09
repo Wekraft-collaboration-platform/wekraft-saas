@@ -37,6 +37,7 @@ import {
   CheckCircle2,
   SeparatorVertical,
   ArrowDownNarrowWideIcon,
+  ExternalLink,
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -107,7 +108,7 @@ const ISSUE_COLUMNS: {
   },
 ];
 
-const SEVERITY_CONFIG: Record<
+export const SEVERITY_CONFIG: Record<
   IssueSeverity,
   { label: string; iconColor: string; icon: React.ReactNode }
 > = {
@@ -128,7 +129,7 @@ const SEVERITY_CONFIG: Record<
   },
 };
 
-const TYPE_CONFIG: Record<
+export const TYPE_CONFIG: Record<
   IssueType,
   { label: string; iconColor: string; icon: React.ReactNode }
 > = {
@@ -468,7 +469,7 @@ const SortableIssue = ({ issue }: { issue: Issue }) => {
 
 // ─── Issue Card ───────────────────────────────────────────────────────────────
 
-const IssueCard = ({
+export const IssueCard = ({
   issue,
   isOverlay,
 }: {
@@ -511,7 +512,7 @@ const IssueCard = ({
             </span>
             <span
               className={cn(
-                "text-[10px] font-medium px-2 py-1.5 rounded bg-sidebar border border-neutral-800 text-neutral-400 flex items-center gap-1.5",
+                "text-[10px] font-medium px-2 py-1 rounded bg-sidebar border border-neutral-800 text-neutral-400 flex items-center gap-1.5",
               )}
             >
               <span className={cn(type.iconColor)}>
@@ -524,13 +525,32 @@ const IssueCard = ({
               {type.label}
             </span>
           </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity text-neutral-500"
-          >
-            <MoreHorizontal className="h-3 w-3" />
-          </Button>
+          <div className="flex items-center gap-1">
+            {issue.githubIssueUrl && (
+              <a
+                href={issue.githubIssueUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={(e) => e.stopPropagation()}
+                className=""
+              >
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-5 w-5 text-neutral-500 hover:text-primary transition-colors"
+                >
+                  <ExternalLink className="h-3 w-3" />
+                </Button>
+              </a>
+            )}
+            <Button
+              variant="ghost"
+              size="icon"
+              className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity text-neutral-500"
+            >
+              <MoreHorizontal className="h-3 w-3" />
+            </Button>
+          </div>
         </div>
 
         {/* Name */}
