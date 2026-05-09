@@ -1,9 +1,9 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import { Id } from "../../../../../../../convex/_generated/dataModel";
-import { useAction, useMutation, useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../../../../convex/_generated/api";
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
@@ -57,12 +57,24 @@ import { SetTargetDateDialog } from "@/modules/workspace/SetTargetDateDialog";
 import { Separator } from "@/components/ui/separator";
 import { TeamContributionRadarCard } from "@/modules/workspace/workspace-modules/TeamContributionRadarCard";
 import { Lock, Sparkles } from "lucide-react";
+import { EnvironmentalSeverityHeatmap } from "@/modules/workspace/workspace-modules/EnvironmentalSeverityHeatmap";
+import { WeeklyVelocityChart } from "@/modules/workspace/workspace-modules/WeeklyVelocityChart";
 
 const ProjectWorkspace = () => {
   const params = useParams();
   const slug = params.slug as string;
   const [isDeadlineDialogOpen, setIsDeadlineDialogOpen] = useState(false);
   const [isChartView, setIsChartView] = useState(true);
+  const [cachedData, setCachedData] = useState<any>(null);
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const fetchAnalytics = async (projectId: string, forceRefresh = false) => {
+    const params = new URLSearchParams({ projectId });
+    if (forceRefresh) params.set("forceRefresh", "true");
+    const res = await fetch(`/api/analytics/dashboard?${params}`);
+    if (!res.ok) throw new Error("Failed to fetch analytics");
+    return res.json();
+  };
 
   const project = useQuery(api.project.getProjectBySlug, { slug });
   const projectId = project?._id;
@@ -100,6 +112,27 @@ const ProjectWorkspace = () => {
     api.sprint.getSprintsByProject,
     projectId ? { projectId: projectId as Id<"projects"> } : "skip",
   );
+
+  useEffect(() => {
+    if (projectId && isChartView && !cachedData) {
+      fetchAnalytics(projectId).then(setCachedData).catch(console.error);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [projectId, isChartView]);
+
+  const handleRefresh = async () => {
+    if (!projectId) return;
+    setIsRefreshing(true);
+    try {
+      const data = await fetchAnalytics(projectId, true);
+      setCachedData(data);
+      toast.success("Analytics refreshed!");
+    } catch {
+      toast.error("Failed to refresh analytics");
+    } finally {
+      setIsRefreshing(false);
+    }
+  };
 
   const createdAt = project?._creationTime;
   const deadline = projectDetails?.targetDate;
@@ -254,52 +287,78 @@ const ProjectWorkspace = () => {
           </CardFooter>
         </Card>
         {/* Activity Overview Card */}
-        <ActivityOverviewCard
-          slug={slug}
-          tasks={tasks}
-          issues={issues}
-        />
+        <ActivityOverviewCard slug={slug} tasks={tasks} issues={issues} />
         {/* Task Status Pie Chart Card */}
         <TaskStatusCard tasks={tasks || []} />
       </section>
 
       {/* TABS: advance charts (scheduler + advance charts) / My work table */}
       <div className="flex mt-8 mb-2 items-center justify-end gap-6 px-10">
-        <Button
-          className="text-xs cursor-pointer"
-          variant={isChartView ? "default" : "outline"}
-          size={"sm"}
-          onClick={() => setIsChartView(true)}
-        >
-          Advance Charts <ChartBar />
-        </Button>
+        <div className="flex items-center gap-2">
+          <Button
+            className="text-xs cursor-pointer"
+            variant={isChartView ? "default" : "outline"}
+            size={"sm"}
+            onClick={() => setIsChartView(true)}
+          >
+            Advance Charts <ChartBar />
+          </Button>
 
-        <Button
-          className="text-xs cursor-pointer"
-          variant={isChartView ? "outline" : "default"}
-          size={"sm"}
-          onClick={() => setIsChartView(false)}
-        >
-          My Work <Table />
-        </Button>
+          <Button
+            className="text-xs cursor-pointer"
+            variant={isChartView ? "outline" : "default"}
+            size={"sm"}
+            onClick={() => setIsChartView(false)}
+          >
+            My Work <Table />
+          </Button>
+        </div>
       </div>
+
       <Separator className="bg-accent" />
-      <section className="mt-4">
+
+      <section className="mt-4 w-full">
+          {isChartView && user?.accountType !== "free" && (
+          <Button
+            className={cn(
+              "text-[10px] h-7 px-2 flex justify-end ml-auto mb-5 cursor-pointer transition-all",
+              isRefreshing && "animate-pulse opacity-50",
+            )}
+            variant="default"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
+          >
+            <History className={cn("w-3 h-3 mr-1", isRefreshing && "animate-spin")} />
+            {isRefreshing ? "Refreshing..." : "Refresh Analytics"}
+          </Button>
+        )}
         {/* Advace charts area */}
         {isChartView && (
           <div className="mt-6">
             {user?.accountType === "free" ? (
               <div className="flex flex-col items-center justify-center py-16 ">
-               free account
+                free account
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-6">
-                {projectId && (
-                  <TeamContributionRadarCard
-                    projectId={projectId as Id<"projects">}
-                  />
-                )}
-                {/* More advance charts will follow here */}
+                <TeamContributionRadarCard
+                  projectId={projectId as Id<"projects">}
+                  data={cachedData?.contributions}
+                />
+                <SprintBarChart
+                  projectId={projectId as Id<"projects">}
+                  data={cachedData?.sprints}
+                />
+                <EnvironmentalSeverityHeatmap
+                  projectId={projectId as Id<"projects">}
+                  data={cachedData?.heatmap}
+                />
+
+                <WeeklyVelocityChart
+                  projectId={projectId as Id<"projects">}
+                  data={cachedData?.velocity}
+                />
               </div>
             )}
           </div>

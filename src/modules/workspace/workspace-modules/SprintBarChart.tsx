@@ -17,10 +17,15 @@ import { Id } from "../../../../convex/_generated/dataModel";
 
 interface SprintBarChartProps {
   projectId: Id<"projects">;
+  data?: any[];
 }
 
-export const SprintBarChart = ({ projectId }: SprintBarChartProps) => {
-  const sprints = useQuery(api.sprint.getSprintsByProject, { projectId });
+export const SprintBarChart = ({
+  projectId,
+  data: providedData,
+}: SprintBarChartProps) => {
+  const queryData = useQuery(api.sprint.getSprintsByProject, { projectId });
+  const sprints = providedData || queryData;
   const [startIndex, setStartIndex] = useState(0);
 
   if (!sprints) return null;
@@ -31,6 +36,34 @@ export const SprintBarChart = ({ projectId }: SprintBarChartProps) => {
   );
 
   const totalSprintsCount = sortedSprints.length;
+
+  if (totalSprintsCount === 0) {
+    return (
+      <Card className="border shadow-none bg-accent/30 border-accent overflow-hidden h-[340px]">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
+          <div className="space-y-1">
+            <CardTitle className="text-sm font-semibold text-primary flex items-center gap-2">
+              <BarChart3 className="w-5 h-5!" /> Sprint Performance Metrics
+            </CardTitle>
+            <p className="text-[10px] text-muted-foreground font-medium">
+              Sprint duration vs task completion
+            </p>
+          </div>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center justify-center h-[260px] text-center p-6">
+          <History className="w-8 h-8 mb-2 text-muted-foreground" />
+
+          <p className="text-base font-medium text-muted-foreground">
+            No sprint data available
+          </p>
+          <p className="text-[10px] text-muted-foreground max-w-[200px] mt-1">
+            Start your first sprint to see performance metrics and velocity
+            trends.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
 
   // Frame logic: show 4 sprints, default to latest 4
   const displaySprints = sortedSprints.slice(
@@ -56,7 +89,7 @@ export const SprintBarChart = ({ projectId }: SprintBarChartProps) => {
   };
 
   return (
-    <Card className="border border-border shadow-none bg-accent/20 overflow-hidden">
+    <Card className="border shadow-none bg-accent/30 border-accent overflow-hidden h-[340px]">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
         <div className="space-y-1">
           <CardTitle className="text-sm font-semibold text-primary flex items-center gap-2">

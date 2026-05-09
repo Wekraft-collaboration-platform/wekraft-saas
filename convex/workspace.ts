@@ -770,3 +770,89 @@ export const getProjectContributions = query({
     );
   },
 });
+
+// =============================================
+// GET ENVIRONMENTAL SEVERITY HEATMAP
+// =============================================
+export const getEnvironmentalSeverityHeatmap = query({
+  args: {
+    projectId: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    // 1. Fetch all non-closed issues for the project
+    const issues = await ctx.db
+      .query("issues")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .filter((q) => q.neq(q.field("status"), "closed"))
+      .collect();
+
+    // 2. Define environments and severities
+    const envs = ["production", "staging", "dev", "local"];
+    
+    // 3. Count issues per environment/severity
+    return envs.map((env) => {
+      const envIssues = issues.filter((i) => (i.environment || "dev") === env);
+      return {
+        environment: env.charAt(0).toUpperCase() + env.slice(1),
+        critical: envIssues.filter((i) => i.severity === "critical").length,
+        medium: envIssues.filter((i) => i.severity === "medium").length,
+        low: envIssues.filter((i) => i.severity === "low").length,
+      };
+    });
+  },
+});
+
+// =============================================
+// GET WEEKLY VELOCITY (This Week)
+// =============================================
+export const getWeeklyVelocity = query({
+  args: {
+    projectId: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    // 1. Calculate start of current week (Monday 00:00)
+    const now = new Date();
+    const currentDay = now.getDay();
+    const diff = now.getDate() - currentDay + (currentDay === 0 ? -6 : 1);
+    const monday = new Date(new Date().setDate(diff));
+    monday.setHours(0, 0, 0, 0);
+    const mondayTs = monday.getTime();
+
+    // 2. Fetch completed work since Monday
+    const tasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_project_status", (q) =>
+        q.eq("projectId", args.projectId).eq("status", "completed"),
+      )
+      .filter((q) => q.gte(q.field("finalCompletedAt"), mondayTs))
+      .collect();
+
+    const issues = await ctx.db
+      .query("issues")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("status"), "closed"),
+          q.gte(q.field("finalCompletedAt"), mondayTs),
+        ),
+      )
+      .collect();
+
+    // 3. Group by day (Mon-Sun)
+    const days = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    return days.map((name, i) => {
+      const dayStart = mondayTs + i * 24 * 60 * 60 * 1000;
+      const dayEnd = dayStart + 24 * 60 * 60 * 1000;
+
+      return {
+        day: name,
+        tasks: tasks.filter(
+          (t) => t.finalCompletedAt! >= dayStart && t.finalCompletedAt! < dayEnd,
+        ).length,
+        issues: issues.filter(
+          (i) => i.finalCompletedAt! >= dayStart && i.finalCompletedAt! < dayEnd,
+        ).length,
+      };
+    });
+  },
+});
