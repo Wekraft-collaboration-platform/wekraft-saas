@@ -43,7 +43,6 @@ interface ActivityOverviewCardProps {
   slug: string;
   tasks?: any[];
   issues?: any[];
-  projectCreatedAt?: number;
 }
 
 const chartConfig = {
@@ -61,9 +60,8 @@ export const ActivityOverviewCard = ({
   slug,
   tasks,
   issues,
-  projectCreatedAt,
 }: ActivityOverviewCardProps) => {
-  const [range, setRange] = useState<"24h" | "7d" | "30d" | "all">("all");
+  const [range, setRange] = useState<"24h" | "7d" | "30d">("24h");
 
   const chartData = useMemo(() => {
     if (!tasks || !issues) return [];
@@ -81,34 +79,10 @@ export const ActivityOverviewCard = ({
       startDate = subDays(now, 6);
       intervals = eachDayOfInterval({ start: startOfDay(startDate), end: now });
       labelFormat = "EEE";
-    } else if (range === "30d") {
+    } else {
       startDate = subDays(now, 29);
       intervals = eachDayOfInterval({ start: startOfDay(startDate), end: now });
       labelFormat = "MMM dd";
-    } else {
-      // "all" - start from project inception
-      startDate = projectCreatedAt
-        ? new Date(projectCreatedAt)
-        : subMonths(now, 5);
-
-      // If project is less than 2 months old, show daily points for better "pulse"
-      const daysDiff = Math.ceil(
-        (now.getTime() - startDate.getTime()) / (1000 * 60 * 60 * 24),
-      );
-
-      if (daysDiff <= 60) {
-        intervals = eachDayOfInterval({
-          start: startOfDay(startDate),
-          end: now,
-        });
-        labelFormat = "MMM dd";
-      } else {
-        intervals = eachMonthOfInterval({
-          start: startOfMonth(startDate),
-          end: now,
-        });
-        labelFormat = "MMM";
-      }
     }
 
     return intervals.map((date) => {
@@ -118,10 +92,6 @@ export const ActivityOverviewCard = ({
       if (range === "24h") {
         intervalStart = startOfHour(date).getTime();
         intervalEnd = endOfHour(date).getTime();
-      } else if (range === "all" && intervals.length > 60) {
-        // Monthly
-        intervalStart = startOfMonth(date).getTime();
-        intervalEnd = endOfMonth(date).getTime();
       } else {
         // Daily
         intervalStart = startOfDay(date).getTime();
@@ -151,7 +121,7 @@ export const ActivityOverviewCard = ({
         issues: activeIssues,
       };
     });
-  }, [tasks, issues, projectCreatedAt, range]);
+  }, [tasks, issues, range]);
 
   if (!tasks || !issues) {
     return (
@@ -183,7 +153,7 @@ export const ActivityOverviewCard = ({
         </div>
         <div className="flex items-center gap-3">
           <div className="flex bg-muted p-0.5 rounded-md border border-border">
-            {(["24h", "7d", "30d", "all"] as const).map((r) => (
+            {(["24h", "7d", "30d"] as const).map((r) => (
               <button
                 key={r}
                 onClick={() => setRange(r)}

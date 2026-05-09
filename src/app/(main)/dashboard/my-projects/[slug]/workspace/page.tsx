@@ -55,12 +55,14 @@ import { SprintBarChart } from "@/modules/workspace/workspace-modules/SprintBarC
 import { UserWorkTable } from "@/modules/workspace/workspace-modules/UserWorkTable";
 import { SetTargetDateDialog } from "@/modules/workspace/SetTargetDateDialog";
 import { Separator } from "@/components/ui/separator";
+import { TeamContributionRadarCard } from "@/modules/workspace/workspace-modules/TeamContributionRadarCard";
+import { Lock, Sparkles } from "lucide-react";
 
 const ProjectWorkspace = () => {
   const params = useParams();
   const slug = params.slug as string;
   const [isDeadlineDialogOpen, setIsDeadlineDialogOpen] = useState(false);
-  const [isChartView, setIsChartView] = useState(false);
+  const [isChartView, setIsChartView] = useState(true);
 
   const project = useQuery(api.project.getProjectBySlug, { slug });
   const projectId = project?._id;
@@ -256,19 +258,16 @@ const ProjectWorkspace = () => {
           slug={slug}
           tasks={tasks}
           issues={issues}
-          projectCreatedAt={project?._creationTime}
         />
         {/* Task Status Pie Chart Card */}
         <TaskStatusCard tasks={tasks || []} />
       </section>
 
       {/* TABS: advance charts (scheduler + advance charts) / My work table */}
-      <div className="flex mt-6 mb-2 items-center justify-end gap-6 px-12">
+      <div className="flex mt-8 mb-2 items-center justify-end gap-6 px-10">
         <Button
           className="text-xs cursor-pointer"
-          variant={
-            isChartView ? "default" : "outline"
-          }
+          variant={isChartView ? "default" : "outline"}
           size={"sm"}
           onClick={() => setIsChartView(true)}
         >
@@ -277,18 +276,34 @@ const ProjectWorkspace = () => {
 
         <Button
           className="text-xs cursor-pointer"
-          variant={
-            isChartView ? "outline" : "default"
-          }
+          variant={isChartView ? "outline" : "default"}
           size={"sm"}
           onClick={() => setIsChartView(false)}
         >
           My Work <Table />
         </Button>
       </div>
-
-      <section>
-        <Separator className="bg-accent" />
+      <Separator className="bg-accent" />
+      <section className="mt-4">
+        {/* Advace charts area */}
+        {isChartView && (
+          <div className="mt-6">
+            {user?.accountType === "free" ? (
+              <div className="flex flex-col items-center justify-center py-16 ">
+               free account
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-6">
+                {projectId && (
+                  <TeamContributionRadarCard
+                    projectId={projectId as Id<"projects">}
+                  />
+                )}
+                {/* More advance charts will follow here */}
+              </div>
+            )}
+          </div>
+        )}
       </section>
     </div>
   );

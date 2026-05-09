@@ -1,5 +1,6 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { Id } from "./_generated/dataModel";
 
 // =======================================
 // CREATING TASK WITH NO ISSUE INITIAL
@@ -707,61 +708,65 @@ export const getProjectContributions = query({
     projectId: v.id("projects"),
   },
   handler: async (ctx, args) => {
-    const members = await ctx.db
-      .query("projectMembers")
-      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+    // 1. Fetch completed work for the whole project
+    const completedTasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_project_status", (q) =>
+        q.eq("projectId", args.projectId).eq("status", "completed"),
+      )
       .collect();
 
-    const contributions = await Promise.all(
-      members.map(async (member) => {
-        // 1. Completed Tasks
-        const completedTasks = await ctx.db
-          .query("tasks")
-          .withIndex("by_project_status", (q) =>
-            q.eq("projectId", args.projectId).eq("status", "completed"),
-          )
-          .filter((q) => q.eq(q.field("finalCompletedBy"), member.userId))
-          .collect();
+    const resolvedIssues = await ctx.db
+      .query("issues")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .filter((q) => q.eq(q.field("status"), "closed"))
+      .collect();
 
-        // 2. Resolved Issues
-        const resolvedIssues = await ctx.db
-          .query("issues")
-          .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
-          .filter((q) =>
-            q.and(
-              q.eq(q.field("status"), "closed"),
-              q.eq(q.field("finalCompletedBy"), member.userId),
-            ),
-          )
-          .collect();
+    // 2. Aggregate counts in memory
+    const userStats: Record<string, { tasks: number; issues: number }> = {};
 
-        // 3. Calculate Average Speed (in days)
-        const avgSpeed =
-          completedTasks.length > 0
-            ? completedTasks.reduce((acc, t) => {
-                const start = t.createdAt ?? t._creationTime;
-                const end = t.finalCompletedAt!;
-                return acc + (end - start);
-              }, 0) /
-              completedTasks.length /
-              (1000 * 60 * 60 * 24)
-            : 0;
+    completedTasks.forEach((t) => {
+      const uid = t.finalCompletedBy;
+      if (!uid) return;
+      const uidStr = uid.toString();
+      if (!userStats[uidStr]) userStats[uidStr] = { tasks: 0, issues: 0 };
+      userStats[uidStr].tasks++;
+    });
 
-        // Normalize speed score (0-10)
-        const speedScore = Math.max(0, 10 - avgSpeed);
+    resolvedIssues.forEach((i) => {
+      const uid = i.finalCompletedBy;
+      if (!uid) return;
+      const uidStr = uid.toString();
+      if (!userStats[uidStr]) userStats[uidStr] = { tasks: 0, issues: 0 };
+      userStats[uidStr].issues++;
+    });
 
+    // 3. Get Top 3 performers purely by total work
+    const topUserIds = Object.keys(userStats)
+      .sort((a, b) => {
+        const totalA = userStats[a].tasks + userStats[a].issues;
+        const totalB = userStats[b].tasks + userStats[b].issues;
+        return totalB - totalA;
+      })
+      .slice(0, 3);
+
+    // 4. Fetch details for those 3
+    return await Promise.all(
+      topUserIds.map(async (uidStr) => {
+        const userId = uidStr as Id<"users">;
+        const user = await ctx.db.get(userId);
+        const stats = userStats[uidStr];
+        
         return {
-          userId: member.userId,
-          name: member.userName,
-          avatar: member.userImage,
-          tasks: completedTasks.length,
-          issues: resolvedIssues.length,
-          speed: Math.round(speedScore * 10) / 10,
-          reliability: Math.min(10, completedTasks.length + resolvedIssues.length), 
+          userId,
+          name: user?.name || "Unknown",
+          avatar: user?.avatarUrl || "",
+          tasks: stats.tasks,
+          issues: stats.issues,
+          speed: Math.min(10, stats.tasks + 2), 
+          reliability: Math.min(10, stats.tasks + stats.issues),
         };
       }),
     );
-
-    return contributions;
   },
 });
