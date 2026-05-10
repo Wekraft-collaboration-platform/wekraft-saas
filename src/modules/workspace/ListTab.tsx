@@ -25,6 +25,7 @@ import {
   Tag,
   CircleDot,
   Bug,
+  Info,
 } from "lucide-react";
 
 import { Separator } from "@/components/ui/separator";
@@ -60,17 +61,17 @@ const priorityIcons: Record<string, React.ReactNode> = {
   low: (
     <div className="flex items-end gap-px h-3 mb-0.5">
       <div className="w-[4px] h-5 bg-yellow-500 rounded-px" />
-      <div className="w-[4px] h-4 dark:bg-neutral-400 bg-accent rounded-px" />
-      <div className="w-[4px] h-3 dark:bg-neutral-400 bg-accent rounded-px" />
-      <div className="w-[4px] h-[8px] dark:bg-neutral-400 bg-accent rounded-px" />
+      <div className="w-[4px] h-4 dark:bg-neutral-400 bg-accent/20 rounded-px" />
+      <div className="w-[4px] h-3 dark:bg-neutral-400 bg-accent/20 rounded-px" />
+      <div className="w-[4px] h-[8px] dark:bg-neutral-400 bg-accent/20 rounded-px" />
     </div>
   ),
   medium: (
     <div className="flex items-end gap-px h-3 mb-0.5">
       <div className="w-[4px] h-5 bg-green-500 rounded-px" />
       <div className="w-[4px] h-4 bg-green-500 rounded-px" />
-      <div className="w-[4px] h-3  dark:bg-neutral-400 bg-accent  rounded-px" />
-      <div className="w-[4px] h-[8px] dark:bg-neutral-400 bg-accent rounded-px" />
+      <div className="w-[4px] h-3  dark:bg-neutral-400 bg-accent/20  rounded-px" />
+      <div className="w-[4px] h-[8px] dark:bg-neutral-400 bg-accent/20 rounded-px" />
     </div>
   ),
   high: (
@@ -78,7 +79,7 @@ const priorityIcons: Record<string, React.ReactNode> = {
       <div className="w-[4px] h-5 bg-red-500 rounded-px" />
       <div className="w-[4px] h-4 bg-red-500 rounded-px" />
       <div className="w-[4px] h-3 bg-red-500 rounded-px" />
-      <div className="w-[4px] h-[8px] dark:bg-neutral-400 bg-accent rounded-px" />
+      <div className="w-[4px] h-[8px] dark:bg-neutral-400 bg-accent/20 rounded-px" />
     </div>
   ),
 };
@@ -121,6 +122,8 @@ interface TaskGroupProps {
   accentColor: string;
   defaultExpanded?: boolean;
   onTaskClick: (task: Task) => void;
+  selectedTaskIds: Id<"tasks">[];
+  setSelectedTaskIds: React.Dispatch<React.SetStateAction<Id<"tasks">[]>>;
 }
 
 const TaskGroup = ({
@@ -129,12 +132,46 @@ const TaskGroup = ({
   accentColor,
   defaultExpanded = false,
   onTaskClick,
+  selectedTaskIds,
+  setSelectedTaskIds,
 }: TaskGroupProps) => {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
+  const toggleTask = (taskId: Id<"tasks">) => {
+    setSelectedTaskIds((prev) =>
+      prev.includes(taskId)
+        ? prev.filter((id) => id !== taskId)
+        : [...prev, taskId],
+    );
+  };
+
+  const toggleAll = () => {
+    const groupTaskIds = tasks.map((t) => t._id as Id<"tasks">);
+    const allInGroupSelected = groupTaskIds.every((id) =>
+      selectedTaskIds.includes(id),
+    );
+
+    if (allInGroupSelected) {
+      setSelectedTaskIds((prev) =>
+        prev.filter((id) => !groupTaskIds.includes(id)),
+      );
+    } else {
+      setSelectedTaskIds((prev) => {
+        const newIds = [...prev];
+        groupTaskIds.forEach((id) => {
+          if (!newIds.includes(id)) newIds.push(id);
+        });
+        return newIds;
+      });
+    }
+  };
+
+  const isAllGroupSelected =
+    tasks.length > 0 && tasks.every((t) => selectedTaskIds.includes(t._id as Id<"tasks">));
+
   return (
     <div className="">
-      <div className="flex items-center justify-between mb-4 px-4 dark:bg-neutral-900 py-1.5 rounded-md">
+      <div className="flex items-center justify-between mb-4 px-4 dark:bg-neutral-900 bg-neutral-100 py-1.5 rounded-md">
         <div
           className="flex items-center gap-3 cursor-pointer w-full select-none"
           onClick={() => setIsExpanded(!isExpanded)}
@@ -148,7 +185,7 @@ const TaskGroup = ({
           <div className={cn("w-1 h-5 rounded-full", accentColor)} />
           <h2 className="text-base tracking-tight flex items-center gap-2">
             {title}
-            <span className="text-[10px] font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded">
+            <span className="text-[10px] font-medium text-muted-foreground dark:bg-muted bg-neutral-100 px-1.5 py-0.5 rounded">
               {tasks.length}
             </span>
           </h2>
@@ -164,24 +201,28 @@ const TaskGroup = ({
       </div>
 
       {isExpanded && (
-        <div className="overflow-hidden w-full bg-background mt-2">
-          <Table className="border-t border-b border-neutral-800">
+        <div className="overflow-hidden w-full dark:bg-background bg-card mt-2">
+          <Table className="border-t border-b dark:border-neutral-800 border-neutral-200">
             <TableHeader className=" border-none">
-              <TableRow className="hover:bg-transparent dark:bg-neutral-950 border-none">
+              <TableRow className="hover:bg-transparent dark:bg-neutral-950 bg-neutral-100 border-none">
                 <TableHead className="w-[50px] px-4">
-                  <Checkbox className="rounded border-muted-foreground/30 data-[state=checked]:bg-primary" />
+                  <Checkbox
+                    checked={isAllGroupSelected}
+                    onCheckedChange={toggleAll}
+                    className="rounded border-muted-foreground/30 data-[state=checked]:bg-primary"
+                  />
                 </TableHead>
-                <TableHead className="px-4 text-sm font-medium text-primary capitalize tracking-widest min-w-[200px]  border-r border-b border-neutral-800">
+                <TableHead className="px-4 text-sm font-medium dark:text-primary capitalize tracking-widest min-w-[200px]  border-r border-b dark:border-neutral-800 border-neutral-200">
                   <div className="flex items-center gap-2">
                     <FolderPen className="w-4.5 h-4.5" /> Task Name
                   </div>
                 </TableHead>
-                <TableHead className="px-4 text-sm font-medium capitalize tracking-widest min-w-[300px] border-r border-b border-neutral-800">
+                <TableHead className="px-4 text-sm font-medium capitalize tracking-widest min-w-[300px] border-r border-b dark:border-neutral-800 border-neutral-200">
                   <div className="flex items-center gap-2">
                     <TextQuote className="w-4.5 h-4.5" /> Description
                   </div>
                 </TableHead>
-                <TableHead className="px-4 text-sm text-primary font-medium capitalize tracking-widest shrink-0 border-r border-b border-neutral-800">
+                <TableHead className="px-4 text-sm dark:text-primary font-medium capitalize tracking-widest shrink-0 border-r border-b dark:border-neutral-800 border-neutral-200">
                   <div className="flex items-center justify-center gap-2 overflow-hidden">
                     <div className="flex items-center gap-2">
                       <Hourglass className="w-4.5 h-4.5" /> Duration
@@ -190,7 +231,7 @@ const TaskGroup = ({
                       title="Sort Duration"
                       icon={Calendar}
                       trigger={
-                        <ChevronsUpDown className="w-3.5 h-3.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer shrink-0" />
+                        <ChevronsUpDown className="w-3.5 h-3.5 text-muted-foreground dark:hover:text-primary hover:text-primary/70 transition-colors cursor-pointer shrink-0" />
                       }
                     >
                       <SortOption
@@ -213,7 +254,7 @@ const TaskGroup = ({
                     </SortPopover>
                   </div>
                 </TableHead>
-                <TableHead className="px-4 text-sm text-primary font-medium capitalize tracking-widest shrink-0 border-r border-b border-neutral-800 min-w-[120px]">
+                <TableHead className="px-4 text-sm dark:text-primary font-medium capitalize tracking-widest shrink-0 border-r border-b dark:border-neutral-800 border-neutral-200 min-w-[120px]">
                   <div className="flex items-center justify-center gap-2 overflow-hidden">
                     <div className="flex items-center gap-2">
                       <Box className="w-4.5 h-4.5" /> Tags
@@ -222,7 +263,7 @@ const TaskGroup = ({
                       title="Filter & Sort"
                       icon={Tag}
                       trigger={
-                        <ChevronsUpDown className="w-3.5 h-3.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer shrink-0" />
+                        <ChevronsUpDown className="w-3.5 h-3.5 text-muted-foreground dark:hover:text-primary hover:text-primary/70 transition-colors cursor-pointer shrink-0" />
                       }
                     >
                       <SortOption
@@ -236,12 +277,12 @@ const TaskGroup = ({
                     </SortPopover>
                   </div>
                 </TableHead>
-                <TableHead className="px-4 text-sm text-primary font-medium  capitalize tracking-widest shrink-0 border-r border-b border-neutral-800">
+                <TableHead className="px-4 text-sm dark:text-primary font-medium  capitalize tracking-widest shrink-0 border-r border-b dark:border-neutral-800 border-neutral-200">
                   <div className="flex items-center gap-2">
                     <Users className="w-4.5 h-4.5" /> Assigned
                   </div>
                 </TableHead>
-                <TableHead className="px-4 text-sm text-primary font-medium  capitalize tracking-widest shrink-0 border-b border-neutral-800">
+                <TableHead className="px-4 text-sm dark:text-primary font-medium  capitalize tracking-widest shrink-0 border-b dark:border-neutral-800 border-neutral-200">
                   <div className="flex items-center justify-between gap-2 overflow-hidden">
                     <div className="flex items-center gap-2">
                       <ChartNoAxesColumnIncreasing className="w-4.5 h-4.5" />{" "}
@@ -251,7 +292,7 @@ const TaskGroup = ({
                       title="Sort Priority"
                       icon={ChartNoAxesColumnIncreasing}
                       trigger={
-                        <ChevronsUpDown className="w-3.5 h-3.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer shrink-0" />
+                        <ChevronsUpDown className="w-3.5 h-3.5 text-muted-foreground dark:hover:text-primary hover:text-primary/70 transition-colors cursor-pointer shrink-0" />
                       }
                     >
                       <SortOption
@@ -293,30 +334,46 @@ const TaskGroup = ({
                 tasks.map((task) => (
                   <TableRow
                     key={task._id}
-                    className="group border-none hover:bg-muted/40 transition-all duration-200 cursor-pointer"
+                    className={cn(
+                      "group border-none dark:hover:bg-neutral-900 hover:bg-neutral-100 transition-all duration-200 cursor-pointer",
+                      selectedTaskIds.includes(task._id as Id<"tasks">) &&
+                        "bg-primary/5",
+                    )}
                     onClick={() => onTaskClick(task)}
                   >
                     <TableCell
                       className="px-4 py-4"
                       onClick={(e) => e.stopPropagation()}
                     >
-                      <Checkbox className="rounded border-muted-foreground/30 data-[state=checked]:bg-primary" />
+                      <Checkbox
+                        checked={selectedTaskIds.includes(task._id)}
+                        onCheckedChange={() =>
+                          toggleTask(task._id)
+                        }
+                        className="rounded border-muted-foreground/30 data-[state=checked]:bg-primary"
+                      />
                     </TableCell>
 
-                    <TableCell className="p-2.5 border-r border-b border-neutral-800  max-w-[180px] truncate">
-                      <span className="text-xs font-medium text-muted-foreground capitalize flex items-center gap-1.5">
-                        {task.isBlocked && (
-                          <Bug className="w-3.5 h-3.5 text-red-500 shrink-0" />
-                        )}
+                    <TableCell className="p-2.5 border-r border-b dark:border-neutral-800 border-neutral-200  max-w-[180px] truncate">
+                      <span className="text-sm font-medium dark:text-primary text-foreground capitalize flex items-center gap-1.5 transition-colors">
                         {task.title}
+                        {task.isBlocked ? (
+                          <Bug className="w-4 h-4 text-red-500/70 shrink-0 ml-auto" />
+                        ) : (
+                          task.estimation?.endDate &&
+                          task.estimation.endDate < Date.now() &&
+                          task.status !== "completed" && (
+                            <Info className="w-4 h-4 text-primary/70 shrink-0 ml-auto" />
+                          )
+                        )}
                       </span>
                     </TableCell>
-                    <TableCell className="p-2.5 border-r border-b border-neutral-800">
-                      <p className="text-xs text-muted-foreground line-clamp-1 max-w-[280px] truncate">
+                    <TableCell className="p-2.5 border-r border-b dark:border-neutral-800 border-neutral-200">
+                      <p className="text-xs text-muted-foreground dark:group-hover:text-primary group-hover:text-foreground transition-colors line-clamp-1 max-w-[280px] truncate">
                         {task.description || "No description provided yet..."}
                       </p>
                     </TableCell>
-                    <TableCell className="p-2.5 whitespace-nowrap text-xs text-muted-foreground border-r border-b border-neutral-800">
+                    <TableCell className="p-2.5 whitespace-nowrap text-xs text-muted-foreground dark:group-hover:text-primary group-hover:text-foreground border-r border-b dark:border-neutral-800 border-neutral-200 transition-colors">
                       <div className="flex items-center justify-center gap-2">
                         <Clock className="w-3.5 h-3.5" />
                         {task.estimation ? (
@@ -329,7 +386,7 @@ const TaskGroup = ({
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="p-2.5 whitespace-nowrap border-r border-b border-neutral-800">
+                    <TableCell className="p-2.5 whitespace-nowrap border-r border-b dark:border-neutral-800 border-neutral-200">
                       <div className="flex items-center justify-center gap-1.5 flex-wrap">
                         {task.type ? (
                           <div
@@ -364,10 +421,10 @@ const TaskGroup = ({
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="p-2.5 border-r border-b border-neutral-800">
-                      {task.assignedTo && task.assignedTo.length > 0 ? (
+                    <TableCell className="p-2.5 border-r border-b dark:border-neutral-800 border-neutral-200">
+                      {task.assignees && task.assignees.length > 0 ? (
                         <div className="flex items-center justify-center -space-x-2">
-                          {task.assignedTo.map((person, i) => (
+                          {task.assignees.map((person, i) => (
                             <Avatar
                               key={i}
                               className="w-7 h-7 border-2 border-primary/50 shadow-sm hover:z-10 transition-transform hover:scale-110"
@@ -381,14 +438,14 @@ const TaskGroup = ({
                         </div>
                       ) : (
                         <div className="flex items-center justify-center w-full">
-                          <p className="text-[11px] text-muted-foreground flex items-center gap-1">
+                          <p className="text-[11px] text-muted-foreground dark:group-hover:text-primary group-hover:text-foreground flex items-center gap-1 transition-colors">
                             <Minus className="w-3.5 h-3.5" />
                             Unassigned
                           </p>
                         </div>
                       )}
                     </TableCell>
-                    <TableCell className="p-2.5 border-b border-neutral-800 text-muted-foreground whitespace-nowrap">
+                    <TableCell className="p-2.5 border-b dark:border-neutral-800 border-neutral-200 text-muted-foreground dark:group-hover:text-primary group-hover:text-foreground whitespace-nowrap transition-colors">
                       <PriorityBadge priority={task.priority} />
                     </TableCell>
 
@@ -433,7 +490,15 @@ const TaskGroup = ({
   );
 };
 
-export const ListTab = ({ tasks }: { tasks: Task[] }) => {
+export const ListTab = ({
+  tasks,
+  selectedTaskIds,
+  setSelectedTaskIds,
+}: {
+  tasks: Task[];
+  selectedTaskIds: Id<"tasks">[];
+  setSelectedTaskIds: React.Dispatch<React.SetStateAction<Id<"tasks">[]>>;
+}) => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
 
@@ -450,30 +515,40 @@ export const ListTab = ({ tasks }: { tasks: Task[] }) => {
         accentColor="bg-slate-400"
         defaultExpanded={true}
         onTaskClick={handleTaskClick}
+        selectedTaskIds={selectedTaskIds}
+        setSelectedTaskIds={setSelectedTaskIds}
       />
       <TaskGroup
         title="In Progress"
         tasks={tasks.filter((t) => t.status === "inprogress")}
         accentColor="bg-amber-500"
         onTaskClick={handleTaskClick}
+        selectedTaskIds={selectedTaskIds}
+        setSelectedTaskIds={setSelectedTaskIds}
       />
       <TaskGroup
         title="Reviewing"
         tasks={tasks.filter((t) => t.status === "reviewing")}
         accentColor="bg-blue-500"
         onTaskClick={handleTaskClick}
+        selectedTaskIds={selectedTaskIds}
+        setSelectedTaskIds={setSelectedTaskIds}
       />
       <TaskGroup
         title="Testing"
         tasks={tasks.filter((t) => t.status === "testing")}
         accentColor="bg-indigo-500"
         onTaskClick={handleTaskClick}
+        selectedTaskIds={selectedTaskIds}
+        setSelectedTaskIds={setSelectedTaskIds}
       />
       <TaskGroup
         title="Completed"
         tasks={tasks.filter((t) => t.status === "completed")}
         accentColor="bg-emerald-500"
         onTaskClick={handleTaskClick}
+        selectedTaskIds={selectedTaskIds}
+        setSelectedTaskIds={setSelectedTaskIds}
       />
 
       <TaskDetailSheet

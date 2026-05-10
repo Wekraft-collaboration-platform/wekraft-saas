@@ -26,8 +26,15 @@ import {
   Plus,
   Minus,
   ChevronRight,
+  ChevronUp,
+  ChevronDown,
+  Info,
 } from "lucide-react";
-import { FileIcon as FileSymbol, FolderIcon as FolderSymbol, DefaultFolderOpenedIcon as FolderOpenSymbol } from "@react-symbols/icons/utils";
+import {
+  FileIcon as FileSymbol,
+  FolderIcon as FolderSymbol,
+  DefaultFolderOpenedIcon as FolderOpenSymbol,
+} from "@react-symbols/icons/utils";
 import { cn } from "@/lib/utils";
 
 // --- Custom Node Component ---
@@ -39,21 +46,34 @@ const FolderNodeComponent = (props: NodeProps) => {
     folderCount?: number;
     fileCount?: number;
     hasIssue?: boolean;
+    isChangedRecently?: boolean;
   };
-  const { label, isExpanded, level, folderCount, fileCount, hasIssue } = data;
+  const {
+    label,
+    isExpanded,
+    level,
+    folderCount,
+    fileCount,
+    hasIssue,
+    isChangedRecently,
+  } = data;
   const isRoot = level === 0;
 
   return (
     <div
       className={cn(
-        "px-6 py-4 rounded-2xl border transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] min-w-[220px] flex items-center gap-4 cursor-pointer select-none relative group",
+        "px-6 py-4 rounded-xl border transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] min-w-[220px] flex items-center gap-4 cursor-pointer select-none relative group",
         isRoot
-          ? "bg-[#0A0A0A] bg-gradient-to-br from-blue-600/15 via-transparent to-blue-600/5 border-blue-500/30 text-white shadow-[0_20px_50px_rgba(0,0,0,0.4)] hover:scale-[1.02] hover:-translate-y-1 hover:border-blue-400"
+          ? "bg-[#0D0D0D] text-white shadow-[0_20px_50px_rgba(0,0,0,0.4)] hover:scale-[1.02] hover:-translate-y-1 hover:border-primary/30"
           : "bg-[#0D0D0D]/90 backdrop-blur-md border-white/10 hover:border-white/25 text-zinc-100 shadow-[0_10px_30px_rgba(0,0,0,0.3)] hover:bg-[#111111] hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.98]",
         isExpanded &&
           !isRoot &&
           "ring-1 ring-white/10 border-white/50 bg-[#121212]",
-        hasIssue && "border-red-500/60 shadow-[0_0_20px_rgba(239,68,68,0.3)] ring-1 ring-red-500/40",
+        hasIssue &&
+          "border-red-500/60 shadow-[0_0_20px_rgba(239,68,68,0.3)] ring-1 ring-red-500/40",
+        isChangedRecently &&
+          !hasIssue &&
+          "border-yellow-500/40 shadow-[0_0_20px_rgba(234,179,8,0.1)] ring-1 ring-yellow-500/20",
       )}
     >
       {/* Connection Points */}
@@ -65,25 +85,36 @@ const FolderNodeComponent = (props: NodeProps) => {
 
       <div className="flex items-center gap-4 w-full">
         {isRoot ? (
-          <div className={cn(
-            "p-2 rounded-lg border shrink-0 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] transition-colors",
-            hasIssue ? "bg-red-500/10 border-red-500/20" : "bg-blue-600/10 border-blue-500/20"
-          )}>
-            <Network size={18} className={cn(hasIssue ? "text-red-400" : "text-blue-400")} />
+          <div
+            className={cn(
+              "p-2 rounded-lg border shrink-0 shadow-[inset_0_1px_1px_rgba(255,255,255,0.1)] transition-colors",
+              hasIssue
+                ? "bg-red-500/10 border-red-500/20"
+                : isChangedRecently
+                  ? "bg-yellow-500/10 border-yellow-500/20"
+                  : "bg-blue-600/10 border-blue-500/20",
+            )}
+          >
+            <Network
+              size={18}
+              className={cn(hasIssue ? "text-red-400" : "text-blue-400")}
+            />
           </div>
         ) : (
-          <div className={cn(
-            "p-2.5 bg-zinc-900/80 rounded-lg border border-white/5 shrink-0 group-hover:bg-zinc-800/80 transition-colors shadow-inner",
-            hasIssue && "border-red-500/30 bg-red-500/5"
-          )}>
+          <div
+            className={cn(
+              "p-2.5 bg-zinc-900/80 rounded-lg border border-white/5 shrink-0 group-hover:bg-zinc-800/80 transition-colors shadow-inner",
+              hasIssue && "border-red-500/30 bg-red-500/5",
+              isChangedRecently &&
+                !hasIssue &&
+                "border-yellow-500/30 bg-yellow-500/5",
+            )}
+          >
             <div className="w-5 h-5 flex items-center justify-center">
               {isExpanded ? (
                 <FolderOpenSymbol className="w-full h-full" />
               ) : (
-                <FolderSymbol
-                  folderName={label}
-                  className="w-full h-full"
-                />
+                <FolderSymbol folderName={label} className="w-full h-full" />
               )}
             </div>
           </div>
@@ -96,26 +127,27 @@ const FolderNodeComponent = (props: NodeProps) => {
               isRoot
                 ? "font-bold text-white"
                 : "font-medium text-zinc-200 group-hover:text-white",
-              hasIssue && "text-red-200"
+              hasIssue && "text-red-300",
+              isChangedRecently && !hasIssue,
             )}
             title={label}
           >
             {label}
           </span>
           <div className="flex items-center gap-2.5 mt-2">
-            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-zinc-900/50 border border-white/10 shadow-inner">
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-zinc-900/50 border border-white/10 shadow-inner">
               <div className="w-3 h-3">
                 <FolderSymbol folderName="folder" className="w-full h-full" />
               </div>
-              <span className="text-[10px] font-bold text-zinc-200">
+              <span className="text-[10px] font-semibold text-primary">
                 {folderCount ?? 0}
               </span>
             </div>
-            <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-md bg-zinc-900/50 border border-white/10 shadow-inner">
+            <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-zinc-900/50 border border-white/10 shadow-inner">
               <div className="w-3 h-3">
-                <FileSymbol fileName="index.js" className="w-full h-full" />
+                <FileSymbol fileName="index.tsx" className="w-full h-full" />
               </div>
-              <span className="text-[10px] font-bold text-zinc-200">
+              <span className="text-[10px] font-semibold text-primary">
                 {fileCount ?? 0}
               </span>
             </div>
@@ -128,12 +160,12 @@ const FolderNodeComponent = (props: NodeProps) => {
             className={cn(
               "text-zinc-600 transition-all duration-300",
               isExpanded ? "rotate-90 text-white" : "group-hover:text-zinc-400",
-              hasIssue && "text-red-400/70"
+              hasIssue && "text-red-400/70",
+              isChangedRecently && !hasIssue && "text-yellow-400/70",
             )}
           />
         )}
       </div>
-
 
       <Handle
         type="source"
@@ -151,17 +183,26 @@ const nodeTypes = {
 interface HeatmapFlowProps {
   structure: FolderNode | null;
   issuePaths?: string[];
+  recentlyChangedPaths?: string[];
 }
 
-const HeatmapFlowInner = ({ structure, issuePaths = [] }: HeatmapFlowProps) => {
+const HeatmapFlowInner = ({
+  structure,
+  issuePaths = [],
+  recentlyChangedPaths = [],
+}: HeatmapFlowProps) => {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
   const { fitView, zoomIn, zoomOut } = useReactFlow();
+  const [isLegendOpen, setIsLegendOpen] = useState(true);
 
   // Helper to check if a path contains issues
-  const containsIssue = useCallback((path: string) => {
-    return issuePaths.some(ip => ip === path || ip.startsWith(path + "/"));
-  }, [issuePaths]);
+  const containsIssue = useCallback(
+    (path: string) => {
+      return issuePaths.some((ip) => ip === path || ip.startsWith(path + "/"));
+    },
+    [issuePaths],
+  );
 
   // Track expanded paths for toggleable layers
   const [expandedPaths, setExpandedPaths] = useState<Set<string>>(
@@ -217,7 +258,7 @@ const HeatmapFlowInner = ({ structure, issuePaths = [] }: HeatmapFlowProps) => {
 
     // Spacing configuration (centered & clean)
     const HORIZONTAL_GAP = 300;
-    const VERTICAL_GAP = 90;
+    const VERTICAL_GAP = 100;
 
     // Track vertical counts to center the tree
     const levelCounts: Record<number, number> = {};
@@ -245,16 +286,18 @@ const HeatmapFlowInner = ({ structure, issuePaths = [] }: HeatmapFlowProps) => {
       positionedCount[level] = currentIdx + 1;
 
       const isExpanded = expandedPaths.has(id);
-      
+
       // Logic for "Last subfolder" coloring:
       // A node has an issue if it or its descendants are in issuePaths
       const nodeHasIssue = containsIssue(node.path || "");
-      
+
       // It should be RED if:
       // 1. It has an issue
       // 2. AND (it's not expanded OR none of its children have an issue)
       // This ensures the "deepest" visible folder in the issue path is the one that's red.
-      const hasIssueChild = Object.values(node.children).some(child => containsIssue(child.path));
+      const hasIssueChild = Object.values(node.children).some((child) =>
+        containsIssue(child.path),
+      );
       const shouldBeRed = nodeHasIssue && (!isExpanded || !hasIssueChild);
 
       // Vertical Centering Logic:
@@ -273,6 +316,7 @@ const HeatmapFlowInner = ({ structure, issuePaths = [] }: HeatmapFlowProps) => {
           folderCount: node.folderCount,
           fileCount: node.fileCount,
           hasIssue: shouldBeRed,
+          isChangedRecently: recentlyChangedPaths.includes(node.path || ""),
         },
         position: { x, y },
       });
@@ -285,7 +329,13 @@ const HeatmapFlowInner = ({ structure, issuePaths = [] }: HeatmapFlowProps) => {
           type: "smoothstep",
           animated: true,
           style: {
-            stroke: nodeHasIssue && !expandedPaths.has(id) ? "rgba(239, 68, 68, 0.5)" : "rgba(59, 130, 246, 0.5)",
+            stroke:
+              nodeHasIssue && !expandedPaths.has(id)
+                ? "rgba(239, 68, 68, 0.5)"
+                : recentlyChangedPaths.includes(node.path || "") &&
+                    !expandedPaths.has(id)
+                  ? "rgba(234, 179, 8, 0.5)"
+                  : "rgba(59, 130, 246, 0.5)",
             strokeWidth: 2,
           },
           pathOptions: {
@@ -305,7 +355,6 @@ const HeatmapFlowInner = ({ structure, issuePaths = [] }: HeatmapFlowProps) => {
 
     traverse(structure, 0);
 
-
     setNodes(newNodes);
     setEdges(newEdges);
 
@@ -317,7 +366,16 @@ const HeatmapFlowInner = ({ structure, issuePaths = [] }: HeatmapFlowProps) => {
         duration: 1000,
       });
     }, 50);
-  }, [structure, expandedPaths, issuePaths, setNodes, setEdges, fitView, containsIssue]);
+  }, [
+    structure,
+    expandedPaths,
+    issuePaths,
+    setNodes,
+    setEdges,
+    fitView,
+    containsIssue,
+    recentlyChangedPaths,
+  ]);
 
   return (
     <div className="w-full h-full bg-[#030303] overflow-hidden relative">
@@ -384,16 +442,85 @@ const HeatmapFlowInner = ({ structure, issuePaths = [] }: HeatmapFlowProps) => {
             </button>
           </div>
         </Panel>
+
+        <Panel
+          position="top-right"
+          className="m-5 select-none origin-top-right"
+        >
+          <div
+            className={cn(
+              "bg-[#050505]/80 backdrop-blur-2xl rounded-2xl border border-white/10 shadow-xl transition-all duration-300 overflow-hidden",
+              isLegendOpen
+                ? "w-[220px] p-4"
+                : "w-[44px] h-[44px] p-0 flex items-center justify-center",
+            )}
+          >
+            {isLegendOpen ? (
+              <div className="space-y-4">
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-2">
+                    <Info size={14} className="text-primary" />
+                    <span className="text-[10px] font-semibold text-primary">
+                      Legend
+                    </span>
+                  </div>
+                  <button
+                    onClick={() => setIsLegendOpen(false)}
+                    className="p-1 hover:bg-white/5 rounded-md transition-colors"
+                  >
+                    <ChevronUp size={14} className="text-zinc-500" />
+                  </button>
+                </div>
+
+                <div className="space-y-3 pt-1">
+                  <div className="flex items-center gap-3">
+                    <div className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)] shrink-0" />
+                    <span className="text-[11px] font-medium text-zinc-300">
+                      Active Issues / Errors
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)] shrink-0" />
+                    <span className="text-[11px] font-medium text-zinc-300">
+                      Modified (Last 7 Days)
+                    </span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className="w-2.5 h-2.5 rounded-full bg-blue-500/50 border border-blue-500/30 shrink-0" />
+                    <span className="text-[11px] font-medium text-zinc-500">
+                      Stable Folders (No Recent Chnages/ Issues)
+                    </span>
+                  </div>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setIsLegendOpen(true)}
+                className="w-full h-full flex items-center justify-center hover:bg-white/5 transition-colors"
+                title="Show Legend"
+              >
+                <Info size={18} className="text-zinc-400" />
+              </button>
+            )}
+          </div>
+        </Panel>
       </ReactFlow>
     </div>
   );
 };
 
-export const HeatmapFlow = ({ structure, issuePaths }: HeatmapFlowProps) => {
+export const HeatmapFlow = ({
+  structure,
+  issuePaths,
+  recentlyChangedPaths,
+}: HeatmapFlowProps) => {
   return (
     <ReactFlowProvider>
-      <HeatmapFlowInner structure={structure} issuePaths={issuePaths} />
+      <HeatmapFlowInner
+        structure={structure}
+        issuePaths={issuePaths}
+        recentlyChangedPaths={recentlyChangedPaths}
+      />
     </ReactFlowProvider>
   );
 };
-

@@ -4,7 +4,8 @@ import { api } from "@/../convex/_generated/api";
 import { Id } from "@/../convex/_generated/dataModel";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
+import { toast } from "sonner";
 import {
   ArrowUpRight,
   ChevronLeft,
@@ -22,6 +23,8 @@ import {
   Calendar,
   Clock,
   Users,
+  CopyPlus,
+  Globe2,
 } from "lucide-react";
 
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -53,6 +56,58 @@ const ProjectPage = () => {
 
   const [isUploading, setIsUploading] = useState(false);
   const [homeTab, setHomeTab] = useState("settings");
+
+  const updateThumbnail = useMutation(api.project.updateProjectThumbnail);
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    // Validation
+    if (file.size > 1 * 1024 * 1024) {
+      toast.error("File too large. Max 1MB allowed.");
+      return;
+    }
+
+    if (!file.type.startsWith("image/")) {
+      toast.error("Please upload an image file.");
+      return;
+    }
+
+    const toastId = toast.loading("Uploading thumbnail...");
+    setIsUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      if (project?.thumbnailUrl) {
+        formData.append("oldUrl", project.thumbnailUrl);
+      }
+
+      const response = await fetch("/api/objects", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      await updateThumbnail({
+        projectId: project?._id as Id<"projects">,
+        thumbnailUrl: data.url,
+      });
+
+      toast.success("Thumbnail updated successfully!", { id: toastId });
+    } catch (error: any) {
+      console.error("Upload error:", error);
+      toast.error(error.message || "Failed to upload thumbnail", { id: toastId });
+    } finally {
+      setIsUploading(false);
+    }
+  };
 
   if (project === undefined) {
     return <ProjectSkeleton />;
@@ -124,12 +179,19 @@ const ProjectPage = () => {
               <ChevronLeft className="w-4 h-4 inline mr-2" /> Back
             </Button>
           </Link>
+
+          <Link href={`/dashboard/my-projects/${project?.slug}/workspace`}>
+            <Button size="sm" className="px-4! text-[10px]" variant={"default"}>
+              Visit workspace{" "}
+              <LucideExternalLink className="ml-2 w-3.5 h-3.5" />
+            </Button>
+          </Link>
         </div>
       </header>
 
       {/* ----------------------------------------------- */}
       {/* -------------------AWS SETUP HERE ------------- */}
-      <div className="w-[1080px] h-[260px] mx-auto bg-primary/10 rounded-lg overflow-hidden mb-5 relative group border border-border">
+      <div className="w-[1080px] h-[260px] mx-auto bg-primary/10 rounded-lg overflow-hidden my-8 relative group border border-border">
         {project.thumbnailUrl ? (
           <Image
             src={project.thumbnailUrl}
@@ -167,7 +229,7 @@ const ProjectPage = () => {
                 type="file"
                 accept="image/*"
                 className="hidden"
-                // onChange={handleFileChange}
+                onChange={handleFileChange}
               />
             </label>
           )}
@@ -184,16 +246,26 @@ const ProjectPage = () => {
                 className="px-5! h-7! rounded-md text-xs cursor-pointer bg-blue-500 text-white hover:bg-blue-600"
                 size="sm"
               >
-                Invite <ExternalLink className="ml-2 w-3.5 h-3.5" />
+                Invite <CopyPlus className="ml-2 w-3.5 h-3.5" />
               </Button>
             }
-          />{" "}
+          />
+          <Link href={`/dashboard/my-projects/${project?.slug}/workspace`}>
+            <Button
+              size="sm"
+              className=" px-4! text-[10px]"
+              variant={"default"}
+            >
+              Visit workspace{" "}
+              <LucideExternalLink className="ml-2 w-3.5 h-3.5" />
+            </Button>
+          </Link>
           <Button
             className="px-3! text-xs cursor-pointer"
             size="sm"
             variant={"outline"}
           >
-            View Public Page <ArrowUpRight className="ml-2 w-3.5 h-3.5" />
+            View Public Page <Globe className="ml-2 w-3.5 h-3.5" />
           </Button>
         </div>
       </div>
@@ -205,16 +277,6 @@ const ProjectPage = () => {
         <div className="w-[65%] h-full">
           {/* TABS */}
           <div className="flex items-center justify-center gap-6  px-4 border-b border-accent pb-4">
-            <Link href={`/dashboard/my-projects/${project?.slug}/workspace`}>
-              <Button
-                size="sm"
-                className="rounded-full px-4! text-[10px]"
-                variant={"outline"}
-              >
-                Visit workspace <LucideExternalLink className="ml-2 w-3.5 h-3.5" />
-              </Button>
-            </Link>
-
             <Button
               size="sm"
               className="rounded-full px-4! text-[10px]"

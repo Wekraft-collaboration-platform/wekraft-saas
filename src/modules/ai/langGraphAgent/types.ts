@@ -61,6 +61,7 @@ export interface AppCheckpoint<TAgentState, TInterruptValue> {
   interruptValue?: TInterruptValue;
   checkpointConfig: CheckpointConfig;
   error: boolean;
+  errorMessage?: string;
 }
 
 /** Node that is executed in the checkpoint.
@@ -121,6 +122,7 @@ export interface AgentEvent<TAgentState, TInterruptValue> {
 interface AgentInput {
   thread_id: string;
   user_id?: string;
+  user_name?: string;
   project_id?: string;
   model?: string;
 }

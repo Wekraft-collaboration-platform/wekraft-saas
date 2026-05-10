@@ -61,18 +61,18 @@ export default defineSchema({
     repoFullName: v.optional(v.string()),
     // ----
     thumbnailUrl: v.optional(v.string()),
-    lookingForMembers: v.optional(
-      v.array(
-        v.object({
-          role: v.string(),
-          type: v.union(
-            v.literal("casual"),
-            v.literal("part-time"),
-            v.literal("serious"),
-          ),
-        }),
-      ),
-    ),
+    // lookingForMembers: v.optional(
+    //   v.array(
+    //     v.object({
+    //       role: v.string(),
+    //       type: v.union(
+    //         v.literal("casual"),
+    //         v.literal("part-time"),
+    //         v.literal("serious"),
+    //       ),
+    //     }),
+    //   ),
+    // ),
     ownerId: v.id("users"),
     ownerName: v.string(),
     ownerImage: v.string(),
@@ -107,7 +107,12 @@ export default defineSchema({
     userName: v.string(),
     userImage: v.optional(v.string()),
     AccessRole: v.optional(
-      v.union(v.literal("owner"), v.literal("admin"), v.literal("member"), v.literal("viewer")),
+      v.union(
+        v.literal("owner"),
+        v.literal("admin"),
+        v.literal("member"),
+        v.literal("viewer"),
+      ),
     ),
     joinedAt: v.optional(v.number()),
     leftAt: v.optional(v.number()),
@@ -144,19 +149,9 @@ export default defineSchema({
     priority: v.optional(
       v.union(v.literal("high"), v.literal("medium"), v.literal("low")),
     ),
-    assignedTo: v.optional(
-      v.array(
-        v.object({
-          userId: v.id("users"),
-          name: v.string(),
-          avatar: v.optional(v.string()),
-        }),
-      ),
-    ),
     status: v.union(
       v.literal("not started"),
       v.literal("inprogress"),
-      // v.literal("issue"),
       v.literal("reviewing"),
       v.literal("testing"),
       v.literal("completed"),
@@ -171,6 +166,14 @@ export default defineSchema({
     createdByUserId: v.id("users"),
 
     sprintId: v.optional(v.id("sprints")),
+    attachments: v.optional(
+      v.array(
+        v.object({
+          name: v.string(),
+          url: v.string(),
+        })
+      )
+    ),
     // Insights
     finalCompletedAt: v.optional(v.number()), // date when finally its marked as completed.
     finalCompletedBy: v.optional(v.id("users")), // id of that user
@@ -218,7 +221,6 @@ export default defineSchema({
     status: v.union(
       v.literal("not opened"),
       v.literal("opened"),
-      v.literal("in review"),
       v.literal("reopened"),
       v.literal("closed"),
     ),
@@ -231,15 +233,6 @@ export default defineSchema({
     taskId: v.optional(v.id("tasks")), // if its from task.
     projectId: v.id("projects"),
     createdByUserId: v.id("users"),
-    IssueAssignee: v.optional(
-      v.array(
-        v.object({
-          userId: v.id("users"),
-          name: v.string(),
-          avatar: v.optional(v.string()),
-        }),
-      ),
-    ),
     sprintId: v.optional(v.id("sprints")), // exluded closed issues
     // Insights
     finalCompletedAt: v.optional(v.number()),
@@ -334,15 +327,60 @@ export default defineSchema({
     projectId: v.id("projects"),
     name: v.string(),
     frequencyDays: v.number(), // min 3 days
-    reportType: v.union(v.literal("sprints"), v.literal("project")), // currently 2 types , later more....
-    // recipientEmail: v.string(),
+    recipientEmail: v.string(),
     isActive: v.boolean(), // default false , only true by kaya or team
     lastRunAt: v.optional(v.number()), // timestamp (Unix ms)
     nextRunAt: v.number(),
+    isRunning: v.optional(v.boolean()), // default false , only true when its scheduler is running.
+    lastRunStatus: v.optional(
+      v.union(v.literal("success"), v.literal("failure")),
+    ), // success or failure
     createdBy: v.id("users"),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("by_project", ["projectId", "isActive", "nextRunAt"])
-    .index("by_nextRun", ["nextRunAt", "isActive"]),
+    .index("by_nextRun", ["isActive", "nextRunAt"]),
+
+  // -------------------------------------------------
+  tickets: defineTable({
+    projectId: v.id("projects"),
+    title: v.string(),
+    description: v.optional(v.string()),
+    createdBy: v.id("users"),
+    assignedTo: v.id("users"),
+    status: v.union(v.literal("open"), v.literal("closed")),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_project", ["projectId"])
+    .index("by_creator", ["createdBy"])
+    .index("by_assignee", ["assignedTo"])
+    .index("by_status", ["status"]),
+
+  // -------------------------------------------------
+  // Scalable Join Tables for Assignees
+  taskAssignees: defineTable({
+    taskId: v.id("tasks"),
+    userId: v.id("users"),
+    name: v.string(), // Denormalized for fast list rendering
+    avatar: v.optional(v.string()), // Denormalized for fast list rendering
+    projectId: v.id("projects"), // To optimize fetching all assignees for a project
+  })
+    .index("by_task", ["taskId"])
+    .index("by_user", ["userId"])
+    .index("by_project", ["projectId"])
+    .index("by_task_user", ["taskId", "userId"]),
+
+  issueAssignees: defineTable({
+    issueId: v.id("issues"),
+    userId: v.id("users"),
+    name: v.string(),
+    avatar: v.optional(v.string()),
+    projectId: v.id("projects"),
+  })
+    .index("by_issue", ["issueId"])
+    .index("by_user", ["userId"])
+    .index("by_project", ["projectId"])
+    .index("by_issue_user", ["issueId", "userId"]),
 });

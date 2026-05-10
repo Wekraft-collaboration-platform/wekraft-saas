@@ -9,6 +9,8 @@ import {
   Frown,
   Calendar,
   FileCodeCorner,
+  Sparkles,
+  TrendingDown,
 } from "lucide-react";
 import React, { useState } from "react";
 import { useParams } from "next/navigation";
@@ -102,9 +104,12 @@ const TimeLogsPage = () => {
       <div className="my-6">
         {projectDetails?.targetDate ? (
           <div className="h-full">
-            <div className="h-[240px] grid grid-cols-3 mb-6 gap-8">
-              <div className="border"></div>
+            <div className="h-[240px] grid grid-cols-3 mb-14 gap-8">
+              {/* CARD-1 */}
+              <div className="border rounded-xl bg-accent/20 p-4"></div>
+              {/* CARD-2 */}
               <DelayDebt tasks={tasks as any} projectId={project._id} />
+              {/* CARD-3 */}
               <PaceTracker
                 tasks={tasks as any}
                 createdAt={project.createdAt}

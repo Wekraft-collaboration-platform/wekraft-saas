@@ -26,6 +26,8 @@ import {
   Paperclip,
   Clock,
   Check,
+  FileText,
+  Trash2,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -85,11 +87,27 @@ export const CreateTaskDialog = ({
   const [assignedMembers, setAssignedMembers] = useState<
     { userId: Id<"users">; name: string; avatar?: string }[]
   >([]);
+  const [attachments, setAttachments] = useState<{ name: string; url: string }[]>(
+    [],
+  );
   const [isPending, setIsPending] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   const members = useQuery(api.project.getProjectMembers, { projectId });
+  const projectDetails = useQuery(api.projectDetails.getProjectDetails, { projectId });
 
   const createTask = useMutation(api.workspace.createTask);
+  const existingTags = useQuery(api.workspace.getUniqueTags, { projectId });
+
+  const defaultTags = [
+    { label: "Payment", color: "green" },
+    { label: "Auth", color: "blue" },
+    { label: "Mobile", color: "purple" },
+    { label: "CRM", color: "yellow" },
+  ];
+
+  const tagsToShow =
+    existingTags && existingTags.length > 0 ? existingTags : defaultTags;
 
   const handleCreateTask = async () => {
     if (!title.trim()) {
@@ -115,7 +133,8 @@ export const CreateTaskDialog = ({
         type: tag ? tag : undefined,
         projectId,
         linkWithCodebase: selectedPath || undefined,
-        assignedTo: assignedMembers.length > 0 ? assignedMembers : undefined,
+        assignees: assignedMembers.length > 0 ? assignedMembers : undefined,
+        attachments: attachments.length > 0 ? attachments : undefined,
       });
       toast.success("Task created successfully");
       setOpen(false);
@@ -130,11 +149,60 @@ export const CreateTaskDialog = ({
       setSelectedTagColor("blue");
       setSelectedPath(null);
       setAssignedMembers([]);
+      setAttachments([]);
     } catch (error) {
       console.error(error);
       toast.error("Failed to create task");
     } finally {
       setIsPending(false);
+    }
+  };
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("File too large. Max 10MB allowed.");
+      return;
+    }
+
+    const toastId = toast.loading(`Uploading ${file.name}...`);
+    setIsUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/attachments", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (data.error) throw new Error(data.error);
+
+      setAttachments((prev) => [...prev, { name: data.name, url: data.url }]);
+      toast.success("File uploaded successfully", { id: toastId });
+    } catch (error: any) {
+      toast.error(error.message || "Failed to upload file", { id: toastId });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const removeAttachment = async (url: string) => {
+    try {
+      // Opt-in: Delete from S3 too
+      await fetch("/api/attachments", {
+        method: "DELETE",
+        body: JSON.stringify({ url }),
+      });
+      setAttachments((prev) => prev.filter((a) => a.url !== url));
+    } catch (error) {
+      console.error("Failed to delete attachment from S3", error);
+      // Still remove from local state
+      setAttachments((prev) => prev.filter((a) => a.url !== url));
     }
   };
 
@@ -337,21 +405,45 @@ export const CreateTaskDialog = ({
                   selected={date}
                   onSelect={setDate}
                   numberOfMonths={1}
+                  disabled={
+                    projectDetails?.targetDate
+                      ? { after: new Date(projectDetails.targetDate) }
+                      : undefined
+                  }
                   className="bg-[#1c1c1c] text-neutral-200"
                 />
               </PopoverContent>
             </Popover>
 
-            {/* Attachments (UI Only) */}
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]"
-              onClick={() => toast.info("Attachments module coming soon!")}
-            >
-              <Paperclip className="w-3.5 h-3.5" />
-              Attachments
-            </Button>
+            {/* Attachments */}
+            <div className="relative">
+              <Button
+                variant="outline"
+                size="sm"
+                className={cn(
+                  "h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
+                  attachments.length > 0 &&
+                    "text-blue-400 border-blue-900/40 bg-blue-900/10",
+                )}
+                disabled={isUploading}
+                onClick={() => document.getElementById("file-upload")?.click()}
+              >
+                {isUploading ? (
+                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                ) : (
+                  <Paperclip className="w-3.5 h-3.5" />
+                )}
+                {attachments.length > 0
+                  ? `${attachments.length} Attachments`
+                  : "Attachments"}
+              </Button>
+              <input
+                id="file-upload"
+                type="file"
+                className="hidden"
+                onChange={handleFileUpload}
+              />
+            </div>
 
             {/* Type/Tag */}
             <Popover>
@@ -371,10 +463,45 @@ export const CreateTaskDialog = ({
               <PopoverContent className="w-[280px] p-3 bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200">
                 <div className="space-y-3">
                   <p className="text-xs font-medium text-center text-muted-foreground border-b border-accent pb-2">
+                    {existingTags && existingTags.length > 0
+                      ? "Project Tags"
+                      : "Default Tags"}
+                  </p>
+
+                  <div className="flex flex-wrap gap-2 mb-2 min-h-6">
+                    {tagsToShow.map((t) => (
+                      <Badge
+                        key={t.label}
+                        onClick={() => setTag(t)}
+                        className={cn(
+                          "text-[10px] py-0 px-2 h-5 gap-1 border-none font-medium capitalize cursor-pointer transition-all hover:scale-105",
+                          tag?.label === t.label
+                            ? "ring-1 ring-white/50"
+                            : "opacity-70 hover:opacity-100",
+                          t.color === "green" &&
+                            "bg-emerald-500/20 text-emerald-400",
+                          t.color === "yellow" &&
+                            "bg-yellow-500/20 text-yellow-400",
+                          t.color === "purple" &&
+                            "bg-purple-500/20 text-purple-400",
+                          t.color === "blue" && "bg-blue-500/20 text-blue-400",
+                          t.color === "grey" &&
+                            "bg-neutral-500/20 text-neutral-400",
+                        )}
+                      >
+                        {t.label}
+                        {tag?.label === t.label && (
+                          <Check className="w-2.5 h-2.5 ml-1" />
+                        )}
+                      </Badge>
+                    ))}
+                  </div>
+
+                  <p className="text-xs font-medium text-center text-muted-foreground border-b border-accent pb-2 pt-2">
                     Custom Tags
                   </p>
 
-                  {/* Current Tag */}
+                  {/* Current Tag Display & Removal */}
                   {tag && (
                     <div className="flex flex-wrap gap-1.5 mb-2">
                       <Badge
@@ -527,8 +654,31 @@ export const CreateTaskDialog = ({
             placeholder="Add a description, a project brief, or collect ideas..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="h-[220px] overflow-y-scroll bg-transparent border p-2 focus-visible:ring-0 placeholder:text-neutral-600 resize-none text-sm leading-relaxed"
+            className="h-[180px] overflow-y-scroll bg-transparent border p-2 focus-visible:ring-0 placeholder:text-neutral-600 resize-none text-sm leading-relaxed"
           />
+
+          {/* Attachments List */}
+          {attachments.length > 0 && (
+            <div className="flex flex-wrap gap-2 pt-2 border-t border-[#2b2b2b]/50">
+              {attachments.map((file, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center gap-2 bg-[#252525] border border-[#333] rounded-md px-2 py-1 group"
+                >
+                  <FileText className="w-3.5 h-3.5 text-blue-400" />
+                  <span className="text-[10px] text-neutral-300 max-w-[120px] truncate">
+                    {file.name}
+                  </span>
+                  <button
+                    onClick={() => removeAttachment(file.url)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity text-neutral-500 hover:text-red-400"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="p-4 border-t border-[#2b2b2b] flex items-center justify-end">

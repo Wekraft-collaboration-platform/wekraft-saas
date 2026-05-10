@@ -44,7 +44,7 @@ const Home = () => {
             height={40}
             className="rounded-lg"
           />
-          <h1 className="text-2xl font-semibold font-pop">WeKraft</h1>
+          <h1 className="text-2xl text-white font-semibold font-pop">WeKraft</h1>
         </motion.div>
 
         <motion.h3

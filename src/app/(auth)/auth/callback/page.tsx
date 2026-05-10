@@ -27,27 +27,27 @@ const AuthCallback = () => {
 
     const handleRedirect = async () => {
       // IF USER SKILLS ARE ALREADY PRESENT, JUST REDIRECT
-      if (user && user.skills && user.skills.length > 0) {
-        if (user.hasCompletedOnboarding) {
-          router.push("/dashboard");
-        } else {
-          router.push(`/onboard/user`);
-        }
-        return;
-      }
+      // if (user && user.skills && user.skills.length > 0) {
+      //   if (user.hasCompletedOnboarding) {
+      //     router.push("/dashboard");
+      //   } else {
+      //     router.push(`/onboard/user`);
+      //   }
+      //   return;
+      // }
 
-      try {
-        if (user && user.githubUsername) {
-          const topLanguages = await getUserTopLanguages(user.githubUsername);
-          if (topLanguages && topLanguages.length > 0) {
-            await updateUserSkills({ skills: topLanguages });
-            toast.success("Github User Profile Synced Successfully.");
-          }
-        }
-      } catch (error) {
-        console.error("❌ Failed to update user skills:", error);
-        toast.error("Failed to update user skills");
-      }
+      // try {
+      //   if (user && user.githubUsername) {
+      //     const topLanguages = await getUserTopLanguages(user.githubUsername);
+      //     if (topLanguages && topLanguages.length > 0) {
+      //       await updateUserSkills({ skills: topLanguages });
+      //       toast.success("Github User Profile Synced Successfully.");
+      //     }
+      //   }
+      // } catch (error) {
+      //   console.error("❌ Failed to update user skills:", error);
+      //   toast.error("Failed to update user skills");
+      // }
 
       if (user && user.hasCompletedOnboarding) {
         router.push("/dashboard");

@@ -121,7 +121,7 @@ export const PaceTracker = ({
   };
 
   return (
-    <div className="h-full w-full border border-neutral-800 rounded-xl bg-neutral-950/50 p-4 flex flex-col justify-between relative overflow-hidden">
+    <div className="h-full w-full border border-neutral-800 rounded-lg bg-accent/20 p-4 flex flex-col justify-between relative overflow-hidden">
       {/* HEADER */}
       <div>
         <div className="flex items-center justify-between mb-4">
@@ -136,7 +136,7 @@ export const PaceTracker = ({
           {isBehind ? (
             <div
               className={cn(
-                "px-3 py-1.5 rounded-sm text-[10px] flex items-center gap-1 border bg-muted/50 text-rose-500",
+                "px-3 py-1.5 rounded-sm text-[10px] flex items-center gap-1 border border-border bg-muted text-rose-500",
               )}
             >
               <AlertCircle className="w-3 h-3" />
@@ -216,37 +216,37 @@ export const PaceTracker = ({
           </div>
         ) : (
           <div className="grid grid-cols-4 gap-1.5">
-            <div className="bg-neutral-900/80 rounded-lg p-2 border border-neutral-800 max-h-[48px] flex flex-col justify-center transition-all hover:bg-neutral-800">
+            <div className="bg-card rounded-lg p-2 border border-border max-h-[48px] flex flex-col justify-center">
               <div className="text-base font-bold text-white tracking-tight leading-none mb-0.5">
                 {Math.ceil(daysRemaining)}
               </div>
-              <div className="text-[9px] text-neutral-500 tracking-wider">
+              <div className="text-[9px] text-primary tracking-wider">
                 Days left
               </div>
             </div>
-            <div className="bg-neutral-900/80 rounded-lg p-2 border border-neutral-800 max-h-[48px] flex flex-col justify-center transition-all hover:bg-neutral-800">
+            <div className="bg-card rounded-lg p-2 border border-border max-h-[48px] flex flex-col justify-center">
               <div className="text-base font-bold text-primary tracking-tight leading-none mb-0.5">
                 {tasksRemaining}
               </div>
-              <div className="text-[9px] text-neutral-500 tracking-wider">
+              <div className="text-[9px] text-primary tracking-wider">
                 Tasks left
               </div>
             </div>
-            <div className="bg-neutral-900/80 rounded-lg p-2 border border-neutral-800 max-h-[48px] flex flex-col justify-center transition-all hover:bg-neutral-800">
+            <div className="bg-card rounded-lg p-2 border border-border max-h-[48px] flex flex-col justify-center">
               <div className="text-base font-bold text-primary tracking-tight leading-none mb-0.5 flex items-baseline">
                 {needPerDay}
                 <span className="text-[10px] ml-0.5 font-semibold">/day</span>
               </div>
-              <div className="text-[9px] text-neutral-500 tracking-wider">
+              <div className="text-[9px] text-primary tracking-wider">
                 Need rate
               </div>
             </div>
-            <div className="bg-neutral-900/80 rounded-lg p-2 border border-neutral-800 max-h-[48px] flex flex-col justify-center transition-all hover:bg-neutral-800">
+            <div className="bg-card rounded-lg p-2 border border-border max-h-[48px] flex flex-col justify-center">
               <div className="text-base font-bold text-primary tracking-tight leading-none mb-0.5 flex items-baseline">
                 {currentPace}
                 <span className="text-[10px] ml-0.5 font-semibold">/day</span>
               </div>
-              <div className="text-[9px] text-neutral-500 tracking-wider">
+              <div className="text-[9px] text-primary tracking-wider">
                 Pace rate
               </div>
             </div>

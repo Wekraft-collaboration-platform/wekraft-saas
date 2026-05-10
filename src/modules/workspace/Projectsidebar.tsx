@@ -52,6 +52,9 @@ import {
   MessageSquare,
   MessagesSquare,
   MessageCircleWarning,
+  ContactRound,
+  Users2,
+  Palette,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
@@ -71,6 +74,7 @@ import { AiAssistantSheet } from "../ai/AiAssistantSheet";
 import { Kbd } from "@/components/ui/kbd";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
+import { ThemeButtons } from "../dashboard/components/ThemeButton";
 
 const workspaceMenu = [
   {
@@ -82,6 +86,11 @@ const workspaceMenu = [
     label: "Teamspace",
     path: "workspace/teamspace",
     icon: PlaneTakeoff,
+  },
+  {
+    label: "Manage Team",
+    path: "workspace/team",
+    icon: Users2,
   },
   {
     label: "Heatmap",
@@ -184,7 +193,7 @@ export default function ProjectSidebar() {
             >
               <Link
                 href={`/dashboard/my-projects/${slug}/inbox`}
-                className="relative z-10 flex items-center justify-center gap-3 w-full bg-secondary border border-primary/30 dark:data-[active=true]:text-white data-[active=true]:text-gray-700 group-data-[collapsible=icon]:justify-center"
+                className="relative z-10 flex items-center justify-center gap-3 w-full bg-secondary border dark:border-primary/30 bg-muted dark:data-[active=true]:text-white data-[active=true]:text-gray-700 group-data-[collapsible=icon]:justify-center"
               >
                 <Inbox className="h-5 w-5" />
                 <span className="text-sm group-data-[collapsible=icon]:hidden">
@@ -379,7 +388,7 @@ export default function ProjectSidebar() {
                 </SidebarMenuButton>
               </CollapsibleTrigger>
               <CollapsibleContent>
-                <SidebarMenuSub className="border-l border-dashed border-accent ml-[21px] pl-3 gap-1.5">
+                <SidebarMenuSub className="border-l border-dashed dark:border-accent border-muted-foreground ml-[21px] pl-3 gap-1.5">
                   {collapsibleItems.map((item) => {
                     const href = `/dashboard/my-projects/${slug}/${item.path}`;
                     const active = isActive(href);
@@ -483,6 +492,47 @@ export default function ProjectSidebar() {
 
         <SidebarSeparator className="my-2 mx-0 w-full" />
 
+        <SidebarMenu>
+          {/* THEME SWITCHER */}
+          <Popover>
+            <SidebarMenuButton
+              asChild
+              tooltip="Theme"
+              className="group relative overflow-hidden"
+            >
+              <PopoverTrigger asChild>
+                <button
+                  type="button"
+                  className="relative z-10 flex w-full items-center gap-3 text-primary group-data-[collapsible=icon]:justify-center"
+                >
+                  <Palette className="h-5 w-5" />
+                  <span className="text-sm group-data-[collapsible=icon]:hidden">
+                    Theme
+                  </span>
+
+                  {/* Active gradient */}
+                  <span
+                    className="
+            pointer-events-none absolute inset-0 -z-10
+            opacity-0 transition-opacity
+            group-data-[active=true]:opacity-100
+            bg-linear-to-l from-blue-600/50 via-transparent to-transparent
+          "
+                  />
+                </button>
+              </PopoverTrigger>
+            </SidebarMenuButton>
+
+            <PopoverContent
+              align="start"
+              side="right"
+              className="w-48 rounded-lg p-2"
+            >
+              <ThemeButtons />
+            </PopoverContent>
+          </Popover>
+        </SidebarMenu>
+
         <SidebarMenu className="flex flex-col space-y-1.5">
           {/* HELP & SUPPORT */}
           <SidebarMenuItem>
@@ -495,8 +545,8 @@ export default function ProjectSidebar() {
                 href={`/dashboard/my-projects/${slug}/help`}
                 className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
               >
-                <MessageCircleQuestionMark className="h-5 w-5 text-muted-foreground transition-colors group-hover:text-foreground" />
-                <span className="text-sm text-muted-foreground transition-colors group-hover:text-foreground group-data-[collapsible=icon]:hidden">
+                <MessageCircleQuestionMark className="h-5 w-5 text-foreground" />
+                <span className="text-sm text-foreground group-data-[collapsible=icon]:hidden">
                   Help and Support
                 </span>
               </Link>
@@ -514,8 +564,8 @@ export default function ProjectSidebar() {
                 href={`/dashboard/my-projects/${slug}/settings/delete`}
                 className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
               >
-                <Trash2 className="h-5 w-5 text-muted-foreground transition-colors group-hover:text-primary" />
-                <span className="text-sm text-muted-foreground transition-colors group-hover:text-primary group-data-[collapsible=icon]:hidden">
+                <Trash2 className="h-5 w-5 text-primary transition-colors group-hover:text-destructive" />
+                <span className="text-sm  text-primary group-data-[collapsible=icon]:hidden">
                   Delete Project
                 </span>
               </Link>

@@ -21,6 +21,9 @@ import {
   MessagesSquare,
   GitBranch,
   FastForward,
+  FileText,
+  Trash2,
+  ExternalLink,
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -33,7 +36,12 @@ import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { toast } from "sonner";
 import { Task } from "@/types/types";
-import { priorityIcons2, statusColors, statusIcons } from "@/lib/static-store";
+import {
+  priorityIcons2,
+  statusColors,
+  statusIcons,
+  statusIconsNoColors,
+} from "@/lib/static-store";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -51,6 +59,7 @@ import {
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Loader2 } from "lucide-react";
+import { EditTaskDialog } from "./EditTaskDialog";
 
 interface TaskDetailSheetProps {
   task: Task | null;
@@ -93,6 +102,13 @@ export const TaskDetailSheet = ({
     currentTask ? { userId: currentTask.createdByUserId as any } : "skip",
   );
 
+  const completer = useQuery(
+    api.user.getUserById,
+    currentTask?.finalCompletedBy
+      ? { userId: currentTask.finalCompletedBy as any }
+      : "skip",
+  );
+
   const members = useQuery(
     api.project.getProjectMembers,
     currentTask ? { projectId: currentTask.projectId } : "skip",
@@ -100,8 +116,17 @@ export const TaskDetailSheet = ({
 
   const updateAssignees = useMutation(api.workspace.updateTaskAssignees);
   const markAsIssue = useMutation(api.workspace.markTaskAsIssue);
+  const addAttachment = useMutation(api.workspace.addTaskAttachment);
+  const removeAttachment = useMutation(api.workspace.removeTaskAttachment);
+
+  const project = useQuery(
+    api.project.getProjectById,
+    currentTask ? { projectId: currentTask.projectId } : "skip",
+  );
+
   const [isMarkingIssue, setIsMarkingIssue] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
 
   if (!currentTask) return null;
 
@@ -124,7 +149,7 @@ export const TaskDetailSheet = ({
   const handleAssignMember = async (member: any, isSelected: boolean) => {
     if (!currentTask) return;
 
-    let newAssignees = currentTask.assignedTo || [];
+    let newAssignees = currentTask.assignees || [];
     if (isSelected) {
       newAssignees = newAssignees.filter((m) => m.userId !== member.userId);
     } else {
@@ -141,7 +166,11 @@ export const TaskDetailSheet = ({
     try {
       await updateAssignees({
         taskId: currentTask._id,
-        assignedTo: newAssignees,
+        assignees: newAssignees.map((a) => ({
+          userId: a.userId,
+          name: a.name,
+          avatar: a.avatar,
+        })),
       });
       toast.success("Assignees updated");
     } catch (error) {
@@ -164,6 +193,66 @@ export const TaskDetailSheet = ({
     }
   };
 
+  const handleAttachmentUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file || !currentTask) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("File too large. Max 10MB allowed.");
+      return;
+    }
+
+    const toastId = toast.loading(`Uploading ${file.name}...`);
+    setIsUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/attachments", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (data.error) throw new Error(data.error);
+
+      await addAttachment({
+        taskId: currentTask._id,
+        name: data.name,
+        url: data.url,
+      });
+
+      toast.success("Attachment added successfully", { id: toastId });
+    } catch (error: any) {
+      toast.error(error.message || "Failed to upload attachment", {
+        id: toastId,
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleRemoveAttachment = async (url: string) => {
+    if (!currentTask) return;
+    try {
+      await removeAttachment({
+        taskId: currentTask._id,
+        url,
+      });
+      // Optionally delete from S3 too
+      await fetch("/api/attachments", {
+        method: "DELETE",
+        body: JSON.stringify({ url }),
+      });
+      toast.success("Attachment removed");
+    } catch (error) {
+      toast.error("Failed to remove attachment");
+    }
+  };
+
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
       <SheetContent className="sm:max-w-lg w-full p-0 border-l border-neutral-800 bg-sidebar">
@@ -171,9 +260,18 @@ export const TaskDetailSheet = ({
           {/* Top Actions */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-accent">
             <div className="flex items-center gap-3">
-              <Button variant="default" size="sm" className="text-[10px]">
-                <Edit2 size={12} /> Edit Task
-              </Button>
+              <EditTaskDialog
+                projectName={project?.projectName || "Project"}
+                projectId={currentTask.projectId}
+                repoFullName={project?.repoFullName}
+                ownerClerkId={project?.ownerClerkId}
+                task={currentTask}
+                trigger={
+                  <Button variant="default" size="sm" className="text-[10px]">
+                    <Edit2 size={12} /> Edit Task
+                  </Button>
+                }
+              />
               <Button
                 variant="outline"
                 size="sm"
@@ -289,7 +387,9 @@ export const TaskDetailSheet = ({
                         "px-3 py-1 flex items-center bg-accent rounded-full text-[10px] border capitalize gap-1.5",
                       )}
                     >
-                      {statusIcons[currentTask.status] || <Circle size={12} />}
+                      {statusIconsNoColors[currentTask.status] || (
+                        <Circle size={12} />
+                      )}
                       {currentTask.status}
                     </p>
                   </div>
@@ -304,10 +404,10 @@ export const TaskDetailSheet = ({
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <div className="cursor-pointer">
-                          {currentTask.assignedTo &&
-                          currentTask.assignedTo.length > 0 ? (
+                          {currentTask.assignees &&
+                          currentTask.assignees.length > 0 ? (
                             <div className="flex -space-x-2">
-                              {currentTask.assignedTo.map((person, i) => (
+                              {currentTask.assignees.map((person, i) => (
                                 <Avatar
                                   key={i}
                                   className="w-7 h-7 border-2 border-neutral-900"
@@ -335,7 +435,7 @@ export const TaskDetailSheet = ({
                           Assign Members
                         </div>
                         {members?.map((member) => {
-                          const isSelected = currentTask.assignedTo?.some(
+                          const isSelected = currentTask.assignees?.some(
                             (m) => m.userId === member.userId,
                           );
                           return (
@@ -411,13 +511,38 @@ export const TaskDetailSheet = ({
             </div>
 
             <div className="my-3">
-              <p className="text-sm text-muted-foreground">
-                <CalendarClock size={16} className=" mr-1 inline -mt-1" /> Last
-                updated:{" "}
-                <span className="text-xs font-medium ml-3 text-primary">
-                  {format(currentTask.updatedAt, "d MMMM, yyyy")}
-                </span>
-              </p>
+              {currentTask.status === "completed" ? (
+                <div className="flex items-center justify-between bg-emerald-100/5 border border-emerald-500/20 rounded-md p-3 shadow-sm transition-all duration-300">
+                  <p className="text-xs text-muted-foreground flex items-center">
+                    <Check size={16} className="mr-2 text-emerald-500" />
+                    Completed at:
+                    <span className="text-xs font-semibold ml-3 text-emerald-500">
+                      {currentTask.finalCompletedAt
+                        ? format(currentTask.finalCompletedAt, "d MMMM, yyyy")
+                        : format(currentTask.updatedAt, "d MMMM, yyyy")}
+                    </span>
+                  </p>
+                  <div className="flex items-center gap-2 border-l border-primary/60 pl-4">
+                    <span className="text-[10px] text-muted-foreground">
+                      By:
+                    </span>
+                    <Avatar className="w-5 h-5 border border-emerald-500/30">
+                      <AvatarImage src={completer?.avatarUrl || ""} />
+                      <AvatarFallback className="text-[8px] bg-neutral-800 text-neutral-400">
+                        {completer?.name?.[0] || "?"}
+                      </AvatarFallback>
+                    </Avatar>
+                  </div>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  <CalendarClock size={16} className=" mr-1 inline -mt-1" />{" "}
+                  Last updated:{" "}
+                  <span className="text-xs font-medium ml-3 text-primary">
+                    {format(currentTask.updatedAt, "d MMMM, yyyy")}
+                  </span>
+                </p>
+              )}
             </div>
 
             {/* Description & Attachments Tabs */}
@@ -448,23 +573,99 @@ export const TaskDetailSheet = ({
                 </TabsContent>
 
                 <TabsContent value="attachments" className="pt-2">
-                  <div className="flex flex-wrap gap-4 items-center justify-center p-4 border-2 border-dashed border-neutral-800/50 rounded-2xl bg-neutral-900/20">
-                    <div className="text-center space-y-2">
-                      <Paperclip
-                        size={24}
-                        className="text-primary/20 mx-auto"
-                      />
-                      <p className="text-primary/40 text-xs font-medium">
-                        No attachments yet
-                      </p>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        className="h-8 px-3 text-[10px] bg-neutral-800/30 border-neutral-800 text-primary/60 hover:text-primary rounded-lg gap-1.5 mt-2"
-                      >
-                        <Plus size={12} /> Add Attachment
-                      </Button>
-                    </div>
+                  <div className="p-2 ">
+                    {currentTask.attachments &&
+                    currentTask.attachments.length > 0 ? (
+                      <div className="grid grid-cols-1 gap-2 w-full">
+                        {currentTask.attachments.map((file, idx) => (
+                          <div
+                            key={idx}
+                            className="flex items-center justify-between bg-accent/20 border border-[#333] rounded-xl px-4 py-2 group hover:border-blue-500/50 transition-all duration-200"
+                          >
+                            <div className="flex items-center gap-3 overflow-hidden">
+                              <div className="p-2 bg-blue-500/10 rounded-lg">
+                                <FileText className="w-5 h-5 text-blue-400" />
+                              </div>
+                              <div className="flex flex-col min-w-0">
+                                <span className="text-xs font-medium text-primary truncate max-w-[200px]">
+                                  {file.name}
+                                </span>
+                              </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-neutral-400 hover:text-blue-400 hover:bg-blue-400/10"
+                                onClick={() => window.open(file.url, "_blank")}
+                              >
+                                <ExternalLink size={14} />
+                              </Button>
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                className="h-8 w-8 text-neutral-400 hover:text-red-400"
+                                onClick={() => handleRemoveAttachment(file.url)}
+                              >
+                                <Trash2 size={14} />
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-9 px-3 text-xs bg-neutral-800/30 border-neutral-800 text-primary/60 hover:text-primary rounded-xl gap-2 mt-2 border-dashed"
+                          disabled={isUploading}
+                          onClick={() =>
+                            document
+                              .getElementById("detail-file-upload")
+                              ?.click()
+                          }
+                        >
+                          {isUploading ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <Plus size={14} />
+                          )}
+                          Add More
+                        </Button>
+                      </div>
+                    ) : (
+                      <div className="text-center space-y-3 py-4 w-full">
+                        <Paperclip
+                          size={32}
+                          className="text-primary/10 mx-auto"
+                        />
+                        <p className="text-primary/40 text-xs font-medium">
+                          No attachments yet
+                        </p>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          className="h-9 px-4 text-xs bg-neutral-800/30 border-neutral-800 text-primary/60 hover:text-primary rounded-xl gap-2 mt-2"
+                          disabled={isUploading}
+                          onClick={() =>
+                            document
+                              .getElementById("detail-file-upload")
+                              ?.click()
+                          }
+                        >
+                          {isUploading ? (
+                            <Loader2 className="w-3 h-3 animate-spin" />
+                          ) : (
+                            <Plus size={14} />
+                          )}
+                          Add Attachment
+                        </Button>
+                      </div>
+                    )}
+                    <input
+                      id="detail-file-upload"
+                      type="file"
+                      className="hidden"
+                      onChange={handleAttachmentUpload}
+                    />
                   </div>
                 </TabsContent>
 

@@ -34,7 +34,20 @@ Right now, the "Timeline" chart is a sleek placeholder. It uses CSS to draw dyna
 
 
 
+## Extension
+The whole login UX in 4 seconds
+
+User installs extension, sees "Connect to WeKraft" button in sidebar
+Clicks it → browser opens → logs into their WeKraft account
+Browser auto-redirects → VS Code pops back up → sidebar fills with their projects
+Next time they open VS Code → already logged in, data loads instantly
 
 
-### errors
-When tasks are added , on ui card , default ones are only showed !!
+## kaya agent tools 
+# schema for scheduler
+{
+  "name": "string",
+  "frequencyDays": "number",
+  "recipientEmail": "string", (optional from user side)
+  "isActive": "boolean"
+}

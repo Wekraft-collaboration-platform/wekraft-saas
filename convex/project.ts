@@ -667,8 +667,7 @@ export const getProjectJoinRequests = query({
       .filter((q) => q.eq(q.field("userId"), user._id))
       .unique();
 
-    const isAuthorized =
-      project.ownerId === user._id || !!membership;
+    const isAuthorized = project.ownerId === user._id || !!membership;
 
     if (!isAuthorized) {
       throw new Error("Unauthorized to view join requests");
@@ -848,10 +847,13 @@ export const getProjectMembers = query({
           ...m,
           userName: user?.name || m.userName || "Anonymous",
           userImage: user?.avatarUrl || m.userImage || "",
-          AccessRole: m.AccessRole || (m as any).role || (m.userId === project.ownerId ? "owner" : "member"),
+          AccessRole:
+            m.AccessRole ||
+            (m as any).role ||
+            (m.userId === project.ownerId ? "owner" : "member"),
           clerkUserId: user?.clerkToken?.split("|").pop() ?? null,
         };
-      })
+      }),
     );
   },
 });
@@ -919,6 +921,47 @@ export const getJoinedProjects = query({
 export const getProjectById = query({
   args: { projectId: v.id("projects") },
   handler: async (ctx, args) => {
-    return await ctx.db.get(args.projectId);
+    const project = await ctx.db.get(args.projectId);
+    if (!project) return null;
+
+    const owner = await ctx.db.get(project.ownerId);
+    const ownerClerkId = owner?.clerkToken.split("|").pop();
+
+    return {
+      ...project,
+      ownerClerkId,
+    };
+  },
+});
+
+export const updateProjectThumbnail = mutation({
+  args: {
+    projectId: v.id("projects"),
+    thumbnailUrl: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthenticated");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier)
+      )
+      .unique();
+
+    if (!user) throw new Error("User not found");
+
+    const project = await ctx.db.get(args.projectId);
+    if (!project) throw new Error("Project not found");
+
+    if (project.ownerId !== user._id) {
+      throw new Error("Unauthorized");
+    }
+
+    await ctx.db.patch(args.projectId, {
+      thumbnailUrl: args.thumbnailUrl,
+      updatedAt: Date.now(),
+    });
   },
 });

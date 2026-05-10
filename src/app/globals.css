@@ -180,6 +180,8 @@
   --shadow-lg: var(--shadow-lg);
   --shadow-xl: var(--shadow-xl);
   --shadow-2xl: var(--shadow-2xl);
+
+  --animate-spotlight: spotlight 2s ease 0.75s 1 forwards;
 }
 
 @layer base {
@@ -483,5 +485,102 @@
     animation-delay: 0s !important;
   }
 }
+
+@keyframes spotlight {
+  0% {
+    opacity: 0;
+    transform: translate(-72%, -62%) scale(0.5);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -40%) scale(1);
+  }
 }
-          
+
+/* FlipText Component Animations */
+.flip-text-wrapper {
+  perspective: 1200px;
+}
+
+.flip-char {
+  position: relative;
+  display: inline-block;
+  color: inherit;
+  -webkit-text-fill-color: transparent;
+  height: 1.2em;
+  line-height: 1.2em;
+  vertical-align: middle;
+  transform-style: preserve-3d;
+  animation: flip var(--flip-duration, 2.2s) var(--flip-delay, 0s) var(--flip-iteration, infinite) cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+.flip-char::before,
+.flip-char::after {
+  content: attr(data-char);
+  position: absolute;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  backface-visibility: hidden;
+  -webkit-text-fill-color: currentColor;
+  transition: opacity 0.3s ease;
+}
+
+/* Front Face */
+.flip-char::after {
+  transform: translateZ(0.55em);
+  animation: face-fade-out var(--flip-duration, 2.2s) var(--flip-delay, 0s) var(--flip-iteration, infinite) cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+/* Bottom Face (Rotates in) */
+.flip-char::before {
+  transform: rotateX(-90deg) translateZ(0.55em);
+  animation: face-fade-in var(--flip-duration, 2.2s) var(--flip-delay, 0s) var(--flip-iteration, infinite) cubic-bezier(0.76, 0, 0.24, 1);
+}
+
+@keyframes flip {
+  0%, 15% {
+    transform: rotateX(0deg);
+  }
+  40%, 65% {
+    transform: rotateX(90deg);
+  }
+  85%, 100% {
+    transform: rotateX(0deg);
+  }
+}
+
+@keyframes face-fade-out {
+  0%, 15% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+  40%, 65% {
+    opacity: 0;
+    filter: brightness(0.5);
+  }
+  85%, 100% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+}
+
+@keyframes face-fade-in {
+  0%, 15% {
+    opacity: 0;
+    filter: brightness(0.5);
+  }
+  40%, 65% {
+    opacity: 1;
+    filter: brightness(1);
+  }
+  85%, 100% {
+    opacity: 0;
+    filter: brightness(0.5);
+  }
+}
+}

@@ -13,6 +13,7 @@ import {
   Layers3,
   Sparkle,
   Sparkles,
+  Trash2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -24,6 +25,19 @@ import { TableTab } from "@/modules/workspace/TableTab";
 import { KanbanTask } from "@/modules/workspace/KanbanTask";
 import Image from "next/image";
 import { useKayaStore } from "@/store/useKayaStore";
+import { useMutation } from "convex/react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import { toast } from "sonner";
 
 const users = [
   { name: "Ritesh", img: "https://i.pravatar.cc/40?img=1" },
@@ -38,6 +52,7 @@ const TaskPage = () => {
 
   const [activeTab, setActiveTab] = useState("List");
   const [taskLimit, setTaskLimit] = useState(10);
+  const [selectedTaskIds, setSelectedTaskIds] = useState<Id<"tasks">[]>([]);
   const { setIsOpen } = useKayaStore();
 
   const currentUser = useQuery(api.user.getCurrentUser);
@@ -50,6 +65,18 @@ const TaskPage = () => {
       ? { projectId: project._id as Id<"projects">, limit: taskLimit }
       : "skip",
   );
+
+  const deleteTasks = useMutation(api.workspace.deleteTasks);
+
+  const handleDeleteTasks = async () => {
+    try {
+      await deleteTasks({ taskIds: selectedTaskIds });
+      toast.success(`${selectedTaskIds.length} tasks deleted successfully`);
+      setSelectedTaskIds([]);
+    } catch (error) {
+      toast.error("Failed to delete tasks");
+    }
+  };
 
   const hasMoreTasks = tasks && tasks.length >= taskLimit;
 
@@ -127,14 +154,49 @@ const TaskPage = () => {
             <Input
               type="text"
               placeholder="Search ..."
-              className="pl-9 h-9 w-[240px] border-muted"
+              className="pl-9 h-9 w-[240px] border-border dark:bg-neutral-900! bg-card"
             />
           </div>
-          <Button variant="outline" size="sm" className="h-9 text-xs">
-            <Filter className="w-5 h-5 mr-2" />
-            Filter
-          </Button>
-          {/* AI button */}
+          {/* Delete Button (Visible when tasks are selected) */}
+          {selectedTaskIds.length > 0 && (
+            <AlertDialog>
+              <AlertDialogTrigger asChild>
+                <Button
+                  variant="destructive"
+                  size="sm"
+                  className="text-xs animate-in fade-in zoom-in duration-200"
+                >
+                  <Trash2 className="w-4 h-4 mr-2" />
+                  Delete {selectedTaskIds.length} Tasks
+                </Button>
+              </AlertDialogTrigger>
+              <AlertDialogContent className="bg-neutral-900 border-neutral-800 shadow-2xl">
+                <AlertDialogHeader>
+                  <AlertDialogTitle className="text-primary">
+                    Are you absolutely sure?
+                  </AlertDialogTitle>
+                  <AlertDialogDescription className="text-muted-foreground">
+                    This action cannot be undone. This will permanently delete{" "}
+                    <span className="text-primary font-semibold">
+                      {selectedTaskIds.length}
+                    </span>{" "}
+                    tasks and remove all associated data.
+                  </AlertDialogDescription>
+                </AlertDialogHeader>
+                <AlertDialogFooter>
+                  <AlertDialogCancel className="bg-neutral-800 border-neutral-700 text-primary hover:bg-neutral-700">
+                    Cancel
+                  </AlertDialogCancel>
+                  <AlertDialogAction
+                    onClick={handleDeleteTasks}
+                    className="bg-red-600 text-white hover:bg-red-700"
+                  >
+                    Delete Permanently
+                  </AlertDialogAction>
+                </AlertDialogFooter>
+              </AlertDialogContent>
+            </AlertDialog>
+          )}
           <Button
             size="sm"
             variant={"outline"}
@@ -163,12 +225,20 @@ const TaskPage = () => {
       <div className="mt-6 max-w-full">
         <ViewTransition key={activeTab} name="tab-content">
           <>
-            {activeTab === "List" && <ListTab tasks={tasks || []} />}
+            {activeTab === "List" && (
+              <ListTab
+                tasks={tasks || []}
+                selectedTaskIds={selectedTaskIds}
+                setSelectedTaskIds={setSelectedTaskIds}
+              />
+            )}
             {activeTab === "Table" && (
               <TableTab
                 tasks={tasks || []}
                 onLoadMore={() => setTaskLimit((p) => p + 10)}
                 hasMore={!!hasMoreTasks}
+                selectedTaskIds={selectedTaskIds}
+                setSelectedTaskIds={setSelectedTaskIds}
               />
             )}
             {activeTab === "Kanban" && (

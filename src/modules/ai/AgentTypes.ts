@@ -2,6 +2,7 @@ import { WithMessages } from "./langGraphAgent/types";
 
 export interface AgentState extends WithMessages {
   user_id?: string;
+  user_name?: string;
   project_id?: string;
   thread_id: string;
 }
@@ -34,7 +35,7 @@ export interface SchedulerSetupInterrupt {
   existing_data?: {
     name: string;
     frequencyDays: number;
-    reportType: "sprints" | "project";
+    recipientEmail?: string;
     isActive: boolean;
   };
 }
@@ -54,7 +55,7 @@ export type ResumeValue =
       // action: "submit";
       name: string;
       frequencyDays: number;
-      reportType: "sprints" | "project";
+      recipientEmail?: string;
       isActive: boolean;
     };
 

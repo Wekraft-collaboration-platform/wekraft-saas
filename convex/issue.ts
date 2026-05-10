@@ -24,16 +24,19 @@ export const createIssue = mutation({
     status: v.union(
       v.literal("not opened"),
       v.literal("opened"),
-      v.literal("in review"),
       v.literal("reopened"),
       v.literal("closed"),
     ),
-    type: v.union(v.literal("manual"), v.literal("github")),
+    type: v.union(
+      v.literal("manual"),
+      v.literal("task-issue"),
+      v.literal("github"),
+    ),
     githubIssueUrl: v.optional(v.string()),
     fileLinked: v.optional(v.string()),
     taskId: v.optional(v.id("tasks")),
     projectId: v.id("projects"),
-    IssueAssignee: v.optional(
+    assignees: v.optional(
       v.array(
         v.object({
           userId: v.id("users"),
@@ -56,12 +59,29 @@ export const createIssue = mutation({
 
     if (!user) throw new Error("User not found");
 
+    const { assignees, ...issueData } = args;
+
     const issueId = await ctx.db.insert("issues", {
-      ...args,
+      ...issueData,
       createdByUserId: user._id,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
+
+    // Handle Assignees
+    if (assignees && assignees.length > 0) {
+      await Promise.all(
+        assignees.map((assignee) =>
+          ctx.db.insert("issueAssignees", {
+            issueId,
+            userId: assignee.userId,
+            name: assignee.name,
+            avatar: assignee.avatar,
+            projectId: args.projectId,
+          }),
+        ),
+      );
+    }
 
     return issueId;
   },
@@ -76,16 +96,60 @@ export const getIssues = query({
     paginationOpts: paginationOptsValidator,
   },
   handler: async (ctx, args) => {
-    return await ctx.db
+    const results = await ctx.db
       .query("issues")
       .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
       .order("desc")
       .paginate(args.paginationOpts);
+
+    const issuesWithAssignees = await Promise.all(
+      results.page.map(async (issue) => {
+        const assignees = await ctx.db
+          .query("issueAssignees")
+          .withIndex("by_issue", (q) => q.eq("issueId", issue._id))
+          .collect();
+        return { ...issue, assignedTo: assignees };
+      }),
+    );
+
+    return { ...results, page: issuesWithAssignees };
   },
 });
 
 // =============================
-// 3. GET FILTERED ISSUES
+// 3. GET ISSUES FOR KANBAN BOARD
+// — Returns all project issues (all types) with their assignees.
+// — No pagination: Kanban renders all at once grouped by status column.
+// =============================
+export const getIssuesForKanban = query({
+  args: {
+    projectId: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    // Fetch ALL issues for this project, ordered by creation time desc
+    const issues = await ctx.db
+      .query("issues")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .order("desc")
+      .collect();
+
+    // For each issue, also fetch its assignees from the join table
+    const issuesWithAssignees = await Promise.all(
+      issues.map(async (issue) => {
+        const assignees = await ctx.db
+          .query("issueAssignees")
+          .withIndex("by_issue", (q) => q.eq("issueId", issue._id))
+          .collect();
+        return { ...issue, assignedTo: assignees };
+      }),
+    );
+
+    return issuesWithAssignees;
+  },
+});
+
+// =============================
+// 4. GET FILTERED ISSUES
 // =============================
 export const getFilteredIssues = query({
   args: {
@@ -116,9 +180,6 @@ export const getFilteredIssues = query({
       .query("issues")
       .withIndex("by_project", (q) => q.eq("projectId", args.projectId));
 
-    // Custom filtering
-    // Note: Convex filters are less efficient than indexes, but for project-specific issues,
-    // it should be fine. If scale grows, we can add composite indexes.
     if (args.environment) {
       baseQuery = baseQuery.filter((q) =>
         q.eq(q.field("environment"), args.environment),
@@ -133,12 +194,93 @@ export const getFilteredIssues = query({
       baseQuery = baseQuery.filter((q) => q.eq(q.field("status"), args.status));
     }
 
-    return await baseQuery.order("desc").collect();
+    const issues = await baseQuery.order("desc").collect();
+
+    const issuesWithAssignees = await Promise.all(
+      issues.map(async (issue) => {
+        const assignees = await ctx.db
+          .query("issueAssignees")
+          .withIndex("by_issue", (q) => q.eq("issueId", issue._id))
+          .collect();
+        return { ...issue, assignedTo: assignees };
+      }),
+    );
+
+    return issuesWithAssignees;
   },
 });
 
 // =============================
-// 4. UPDATE ISSUE
+// 5. UPDATE ISSUE STATUS (Kanban Drag-Drop)
+// — Core mutation for drag-and-drop status changes.
+// — When an issue is "closed" AND it was a "task-issue":
+//     → The linked task's isBlocked flag is set back to false.
+//     → This unblocks the task so it can be moved to completed.
+// — When "closed": records finalCompletedAt + finalCompletedBy.
+// =============================
+export const updateIssueStatus = mutation({
+  args: {
+    issueId: v.id("issues"),
+    status: v.union(
+      v.literal("not opened"),
+      v.literal("opened"),
+      v.literal("reopened"),
+      v.literal("closed"),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    // Fetch the issue to validate it exists
+    const issue = await ctx.db.get(args.issueId);
+    if (!issue) throw new Error("Issue not found");
+
+    // Build the patch payload
+    const patchData: any = {
+      status: args.status,
+      updatedAt: Date.now(),
+    };
+
+    if (args.status === "closed") {
+      // Record who closed it and when
+      const user = await ctx.db
+        .query("users")
+        .withIndex("by_token", (q) =>
+          q.eq("clerkToken", identity.tokenIdentifier),
+        )
+        .unique();
+
+      if (user) {
+        patchData.finalCompletedAt = Date.now();
+        patchData.finalCompletedBy = user._id;
+      }
+
+      // If this issue originated from a blocked task → unblock it
+      // This lets the task be moved to "completed" on the Kanban task board.
+      if (issue.type === "task-issue" && issue.taskId) {
+        const linkedTask = await ctx.db.get(issue.taskId);
+        if (linkedTask && linkedTask.isBlocked) {
+          await ctx.db.patch(issue.taskId, {
+            isBlocked: false,
+            updatedAt: Date.now(),
+          });
+        }
+      }
+    } else {
+      // Reopening or re-opening — clear the completion metadata
+      patchData.finalCompletedAt = undefined;
+      patchData.finalCompletedBy = undefined;
+    }
+
+    await ctx.db.patch(args.issueId, patchData);
+
+    return args.issueId;
+  },
+});
+
+// =============================
+// 6. UPDATE ISSUE (Full Edit)
 // =============================
 export const updateIssue = mutation({
   args: {
@@ -162,12 +304,11 @@ export const updateIssue = mutation({
       v.union(
         v.literal("not opened"),
         v.literal("opened"),
-        v.literal("in review"),
         v.literal("reopened"),
         v.literal("closed"),
       ),
     ),
-    IssueAssignee: v.optional(
+    assignees: v.optional(
       v.array(
         v.object({
           userId: v.id("users"),
@@ -178,15 +319,68 @@ export const updateIssue = mutation({
     ),
   },
   handler: async (ctx, args) => {
-    const { issueId, ...updates } = args;
+    const { issueId, assignees, ...updates } = args;
 
     const existing = await ctx.db.get(issueId);
     if (!existing) throw new Error("Issue not found");
 
-    await ctx.db.patch(issueId, {
+    const updateData: any = {
       ...updates,
       updatedAt: Date.now(),
-    });
+    };
+
+    if (updates.status === "closed") {
+      updateData.finalCompletedAt = Date.now();
+      const identity = await ctx.auth.getUserIdentity();
+      if (identity) {
+        const user = await ctx.db
+          .query("users")
+          .withIndex("by_token", (q) =>
+            q.eq("clerkToken", identity.tokenIdentifier),
+          )
+          .unique();
+        if (user) {
+          updateData.finalCompletedBy = user._id;
+        }
+      }
+
+      // Unblock the linked task if it's a task-issue
+      if (existing.type === "task-issue" && existing.taskId) {
+        const linkedTask = await ctx.db.get(existing.taskId);
+        if (linkedTask && linkedTask.isBlocked) {
+          await ctx.db.patch(existing.taskId, {
+            isBlocked: false,
+            updatedAt: Date.now(),
+          });
+        }
+      }
+    }
+
+    await ctx.db.patch(issueId, updateData);
+
+    // Handle Assignees update if provided
+    if (assignees !== undefined) {
+      // 1. Delete existing assignees
+      const existingAssignees = await ctx.db
+        .query("issueAssignees")
+        .withIndex("by_issue", (q) => q.eq("issueId", issueId))
+        .collect();
+
+      await Promise.all(existingAssignees.map((a) => ctx.db.delete(a._id)));
+
+      // 2. Insert new assignees
+      await Promise.all(
+        assignees.map((assignee) =>
+          ctx.db.insert("issueAssignees", {
+            issueId,
+            userId: assignee.userId,
+            name: assignee.name,
+            avatar: assignee.avatar,
+            projectId: existing.projectId,
+          }),
+        ),
+      );
+    }
 
     return issueId;
   },

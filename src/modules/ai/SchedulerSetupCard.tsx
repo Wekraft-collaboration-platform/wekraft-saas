@@ -1,7 +1,17 @@
 "use client";
 
 import { useState } from "react";
-import { CalendarClock, BarChart2, Layers, Check, Save } from "lucide-react";
+import {
+  CalendarClock,
+  BarChart2,
+  Layers,
+  Check,
+  Save,
+  ClipboardClock,
+  TicketCheck,
+  BarChart,
+  Loader2,
+} from "lucide-react";
 import { cn } from "@/lib/utils";
 
 // ── Types ──────────────────────────────────────────────────────────────────
@@ -9,7 +19,7 @@ import { cn } from "@/lib/utils";
 interface SchedulerResumeValue {
   name: string;
   frequencyDays: number;
-  reportType: "sprints" | "project";
+  recipientEmail?: string;
   isActive: boolean;
 }
 
@@ -19,7 +29,7 @@ interface SchedulerSetupCardProps {
   initialData?: {
     name: string;
     frequencyDays: number;
-    reportType: "sprints" | "project";
+    recipientEmail?: string;
     isActive: boolean;
   };
   onResume: (value: SchedulerResumeValue) => void;
@@ -36,8 +46,8 @@ export function SchedulerSetupCard({
   const [frequencyDays, setFrequencyDays] = useState<string>(
     initialData?.frequencyDays?.toString() ?? "7",
   );
-  const [reportType, setReportType] = useState<"sprints" | "project">(
-    initialData?.reportType ?? "sprints",
+  const [recipientEmail, setRecipientEmail] = useState(
+    initialData?.recipientEmail ?? "",
   );
   const [isActive, setIsActive] = useState(initialData?.isActive ?? true);
   const [submitted, setSubmitted] = useState(false);
@@ -52,18 +62,86 @@ export function SchedulerSetupCard({
     onResume({
       name: name.trim(),
       frequencyDays: freq,
-      reportType,
+      recipientEmail: recipientEmail.trim() || undefined,
       isActive: isActive,
     });
   }
 
   // ── Completed state ────────────────────────────────────────────────────
-  if (isCompleted || submitted) {
+  if (submitted && !isCompleted) {
     return (
-      <div className="mx-4 my-1.5 w-full max-w-[280px]">
-        <div className="rounded-lg border border-violet-500/20 bg-violet-500/5 px-3 py-2 flex items-center gap-2.5 text-[11px] text-muted-foreground">
-          <Check className="w-3 h-3 text-violet-400" />
-          Scheduler configured
+      <div className="mx-4 my-2 w-full max-w-[300px]">
+        <div className="rounded-lg border border-violet-500/20 bg-violet-500/5 px-4 py-3 flex items-center gap-3 text-[12px] text-muted-foreground animate-pulse">
+          <Loader2 className="w-4 h-4 text-violet-400 animate-spin" />
+          Configuring scheduler...
+        </div>
+      </div>
+    );
+  }
+
+  if (isCompleted) {
+    return (
+      <div className="mx-auto my-4 w-full max-w-[400px]">
+        <div className="rounded-md border border-violet-500/20 bg-card shadow-md overflow-hidden">
+          <div className="px-3 py-2 border-b border-violet-500/10 flex items-center justify-between bg-violet-500/5">
+            <div className="flex items-center gap-2">
+              <CalendarClock className="w-3.5 h-3.5 text-primary" />
+              <span className="text-xs font-semibold text-primary">
+                Active Scheduler
+              </span>
+            </div>
+            {/* <div className="flex items-center gap-1.5 px-2 py-0.5 rounded-full bg-violet-500/20 text-[10px] text-primary font-medium border border-violet-500/30">
+              <Check className="w-2.5 h-2.5" /> Live
+            </div> */}
+          </div>
+
+          <div className="p-4 space-y-4">
+            <div className="flex items-start gap-3">
+              <div className="mt-0.5 p-1.5 rounded-md bg-violet-500/10 border border-violet-500/20">
+                <ClipboardClock className="w-3.5 h-3.5 text-primary/70" />
+              </div>
+              <div>
+                <p className="text-[11px] text-muted-foreground  tracking-tighter mb-0.5">
+                  Scheduler Name
+                </p>
+                <p className="text-xs font-medium text-foreground">
+                  {initialData?.name || name}
+                </p>
+              </div>
+            </div>
+
+            <div className="grid gap-4">
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 p-1.5 rounded-md bg-violet-500/10 border border-violet-500/20">
+                  <TicketCheck className="w-3.5 h-3.5 text-primary/70" />
+                </div>
+                <div>
+                  <p className="text-[11px] text-muted-foreground  tracking-tighter mb-0.5">
+                    Recipient
+                  </p>
+                  <p className="text-xs! font-medium text-foreground truncate max-w-[160px]">
+                    {initialData?.recipientEmail ||
+                      recipientEmail ||
+                      "Owner Email"}
+                  </p>
+                </div>
+              </div>
+
+              <div className="flex items-start gap-3">
+                <div className="mt-0.5 p-1.5 rounded-md bg-violet-500/10 border border-violet-500/20">
+                  <BarChart className="w-3.5 h-3.5 text-primary/70" />
+                </div>
+                <div>
+                  <p className="text-[11px] text-muted-foreground  tracking-tighter mb-0.5">
+                    Frequency
+                  </p>
+                  <p className="text-xs font-medium text-foreground">
+                    Every {initialData?.frequencyDays || freq} Days
+                  </p>
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     );
@@ -79,24 +157,27 @@ export function SchedulerSetupCard({
             <CalendarClock className="w-3.5 h-3.5 text-primary" />
             <span className="text-sm tracking-wider">Scheduler</span>
           </div>
-          <button
-            onClick={() => setIsActive(!isActive)}
-            className={cn(
-              "flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium transition-all border",
-              isActive
-                ? "bg-violet-500/10 border-violet-500/20 text-primary"
-                : "bg-muted border-border text-muted-foreground",
-            )}
-          >
-            {isActive ? "Active" : "Paused"}
-          </button>
+          <div className="flex items-center gap-2">
+            <span className="text-xs">Toggle: </span>
+            <button
+              onClick={() => setIsActive(!isActive)}
+              className={cn(
+                "flex items-center gap-1 px-2 py-1 rounded text-[11px] font-medium transition-all border",
+                isActive
+                  ? "bg-violet-500/10 border-violet-500/20 text-primary"
+                  : "bg-muted border-border text-muted-foreground",
+              )}
+            >
+              {isActive ? "Active" : "Paused"}
+            </button>
+          </div>
         </div>
 
         <div className="px-3 py-3 space-y-3">
           {/* Name Input */}
           <div className="space-y-1">
-            <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">
-              Scheduler Name
+            <label className="flex items-center gap-2 text-[11px] text-muted-foreground capitalize tracking-tight">
+              <ClipboardClock className="w-3.5 h-3.5" /> Scheduler Name
             </label>
             <input
               type="text"
@@ -108,39 +189,28 @@ export function SchedulerSetupCard({
             />
           </div>
 
-          {/* Row for Type and Frequency */}
+          {/* Row for Recipient Email and Frequency */}
           <div className="flex flex-col gap-3">
-            {/* Report Type */}
+            {/* Recipient Email */}
             <div className="space-y-1">
-              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">
-                Report Type
+              <label className="flex items-center gap-2 text-[11px] text-muted-foreground capitalize tracking-tight">
+                <TicketCheck className="w-3.5 h-3.5" />
+                Recipient Email (Optional)
               </label>
-              <div className="flex bg-muted/30 p-1 rounded-md border border-border h-10">
-                {(["sprints", "project"] as const).map((type) => {
-                  const Icon = type === "sprints" ? Layers : BarChart2;
-                  const active = reportType === type;
-                  return (
-                    <button
-                      key={type}
-                      onClick={() => setReportType(type)}
-                      className={cn(
-                        "flex-1 flex items-center justify-center gap-1 rounded-[4px] text-[10px] transition-all",
-                        active
-                          ? "bg-background text-foreground shadow-sm border border-border/50"
-                          : "text-muted-foreground hover:text-foreground",
-                      )}
-                    >
-                      <Icon className="w-3 h-3" />
-                      <span className="capitalize">{type}</span>
-                    </button>
-                  );
-                })}
-              </div>
+              <input
+                type="email"
+                value={recipientEmail}
+                onChange={(e) => setRecipientEmail(e.target.value)}
+                placeholder="e.g. team@example.com"
+                className="w-full h-8 rounded-md border border-border bg-background px-2 py-1 text-xs placeholder:text-muted-foreground/40 focus:outline-none focus:ring-1 focus:ring-violet-500/50 transition"
+                onKeyDown={(e) => e.key === "Enter" && handleSubmit()}
+              />
             </div>
 
             {/* Frequency Input */}
             <div className="space-y-1 w-full">
-              <label className="text-[10px] font-bold text-muted-foreground uppercase tracking-tight">
+              <label className="flex items-center gap-2 text-[11px] text-muted-foreground capitalize tracking-tight">
+                <BarChart className="w-3.5 h-3.5" />
                 Frequency in Days (3-9)
               </label>
               <div className="relative">
@@ -163,16 +233,6 @@ export function SchedulerSetupCard({
               </div>
             </div>
           </div>
-
-          {/* Summary line */}
-          {/* {canSubmit && (
-            <div className="text-[9px] text-muted-foreground/80 italic text-center pt-1 border-t border-border/50">
-              Generating{" "}
-              <span className="text-violet-400 font-medium">{reportType}</span>{" "}
-              report every{" "}
-              <span className="text-violet-400 font-medium">{freq} days</span>
-            </div>
-          )} */}
 
           {/* Action */}
           <button

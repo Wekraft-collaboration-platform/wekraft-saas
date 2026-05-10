@@ -43,6 +43,7 @@ import {
   SeparatorVertical,
   Bug,
   Tag,
+  Info,
 } from "lucide-react";
 import { format } from "date-fns";
 import { Button } from "@/components/ui/button";
@@ -93,9 +94,19 @@ export const KanbanTask = ({
   const [selectedTaskForSheet, setSelectedTaskForSheet] = useState<Task | null>(
     null,
   );
-  const [collapsedColumns, setCollapsedColumns] = useState<Set<string>>(
-    new Set(),
-  );
+  const [collapsedColumns, setCollapsedColumns] = useState<Set<string>>(() => {
+    if (typeof window !== "undefined") {
+      const saved = localStorage.getItem("kanban-collapsed-columns");
+      if (saved) {
+        try {
+          return new Set(JSON.parse(saved));
+        } catch (e) {
+          console.error("Failed to parse collapsed columns", e);
+        }
+      }
+    }
+    return new Set();
+  });
 
   const toggleColumn = (columnId: string) => {
     setCollapsedColumns((prev) => {
@@ -105,6 +116,10 @@ export const KanbanTask = ({
       } else {
         next.add(columnId);
       }
+      localStorage.setItem(
+        "kanban-collapsed-columns",
+        JSON.stringify(Array.from(next)),
+      );
       return next;
     });
   };
@@ -276,9 +291,9 @@ const Column = ({
   return (
     <div
       className={cn(
-        "flex flex-col transition-all duration-500 ease-in-out bg-sidebar rounded-lg border border-border overflow-hidden shadow-sm h-fit min-h-[560px] max-h-[calc(100vh-320px)]",
+        "flex flex-col transition-all duration-500 ease-in-out dark:bg-sidebar bg-neutral-100 rounded-lg border border-border overflow-hidden shadow-sm h-fit min-h-[560px] max-h-[calc(100vh-320px)]",
         isCollapsed
-          ? "min-w-[60px] w-[60px] bg-sidebar border-none shadow-none"
+          ? "min-w-[60px] w-[60px] dark:bg-sidebar bg-neutral-100 border-none shadow-none"
           : "min-w-[320px] w-[320px]",
       )}
     >
@@ -287,7 +302,7 @@ const Column = ({
           "p-2 flex border-b sticky top-0 z-10 transition-all duration-300",
           isCollapsed
             ? "flex-col items-center gap-4 h-full border-b-0 bg-transparent"
-            : "items-center justify-between bg-card backdrop-blur-md",
+            : "items-center justify-between dark:bg-card bg-neutral-100 backdrop-blur-md",
         )}
       >
         <div
@@ -299,7 +314,7 @@ const Column = ({
           {!isCollapsed && KANBAN_COLUMN_ICONS[column.id]}
           <h3
             className={cn(
-              "font-semibold tracking-tight capitalize text-primary transition-all duration-300",
+              "font-semibold tracking-tight capitalize dark:text-primary text-foreground transition-all duration-300",
               isCollapsed
                 ? "[writing-mode:vertical-lr] rotate-180 text-lg py-4"
                 : "text-base",
@@ -309,7 +324,7 @@ const Column = ({
           </h3>
           <Badge
             variant="secondary"
-            className="bg-primary/5 text-primary/60 text-[10px] font-bold h-5 w-5 rounded-full border-none flex items-center justify-center p-0"
+            className="dark:bg-primary/5 bg-primary/10 dark:text-primary/60 text-primary font-bold h-5 w-5 rounded-full border-none flex items-center justify-center p-0"
           >
             {tasks.length}
           </Badge>
@@ -324,7 +339,7 @@ const Column = ({
           {!isCollapsed && (
             <button
               aria-label="Column menu"
-              className="text-primary transition-colors p-1.5 rounded-lg hover:bg-primary/5"
+              className="dark:text-primary text-foreground transition-colors p-1.5 rounded-lg dark:hover:bg-primary/5 hover:bg-neutral-200"
             >
               <ArrowDownNarrowWideIcon className="w-5 h-5" />
             </button>
@@ -332,7 +347,7 @@ const Column = ({
           <button
             onClick={onToggle}
             aria-label="Column menu"
-            className="text-primary transition-colors p-1.5 rounded-lg hover:bg-primary/5"
+            className="dark:text-primary text-foreground transition-colors p-1.5 rounded-lg dark:hover:bg-primary/5 hover:bg-neutral-200"
           >
             <SeparatorVertical className="w-5 h-5" />
           </button>
@@ -420,27 +435,27 @@ const TaskCard = ({ task, isOverlay }: { task: Task; isOverlay?: boolean }) => {
   return (
     <Card
       className={cn(
-        "group cursor-pointer p-0 transition-all duration-300 border-none shadow-sm hover:shadow-xl bg-background backdrop-blur-sm rounded-md",
+        "group cursor-pointer p-0 transition-all duration-300 border-none shadow-sm hover:shadow-xl dark:bg-background bg-card backdrop-blur-sm rounded-md",
         isOverlay &&
           "border-primary shadow-2xl ring-4 ring-primary/5 scale-[1.02]",
       )}
     >
       <div className="p-3">
         <div className="flex items-start justify-between gap-3 ">
-          <h4 className="text-xs leading-relaxed tracking-tight line-clamp-2 group-hover:text-primary transition-colors flex items-center gap-2">
-            {task.isBlocked && (
+          <h4 className="text-xs leading-relaxed tracking-tight line-clamp-2 dark:group-hover:text-primary group-hover:text-foreground transition-colors flex items-center gap-2">
+            {task.isBlocked ? (
               <Bug className="w-3.5 h-3.5 text-red-500 shrink-0" />
+            ) : (
+              task.estimation?.endDate &&
+              task.estimation.endDate < Date.now() &&
+              task.status !== "completed" && (
+                <Info className="w-3.5 h-3.5 dark:text-primary/70 text-primary shrink-0" />
+              )
             )}
             {task.title}
           </h4>
-          <GripVertical className="w-4 h-4 text-muted-foreground group-hover:text-primary/40 transition-colors shrink-0 mt-0.5" />
+          <GripVertical className="w-4 h-4 text-muted-foreground dark:group-hover:text-primary/40 group-hover:text-primary transition-colors shrink-0 mt-0.5" />
         </div>
-
-        {/* {task.description && (
-          <p className="text-[11px] text-muted-foreground line-clamp-1 leading-relaxed font-medium">
-            {task.description}
-          </p>
-        )} */}
 
         <div className="flex items-center justify-between pt-5 gap-2">
           <div className="flex items-center gap-2 overflow-hidden">
@@ -482,14 +497,14 @@ const TaskCard = ({ task, isOverlay }: { task: Task; isOverlay?: boolean }) => {
               )}
             </div>
 
-            <div className="flex items-center gap-2 px-2 py-1 rounded bg-secondary/70 border border-border/30 text-[10px] text-primary/60 font-bold group-hover:bg-primary/5 group-hover:text-primary transition-all shrink-0">
+            <div className="flex items-center gap-2 px-2 py-1 rounded dark:bg-secondary/70 bg-neutral-100 border border-border/30 text-[10px] dark:text-primary/60 text-primary font-bold dark:group-hover:bg-primary/5 group-hover:bg-primary/10 dark:group-hover:text-primary group-hover:text-primary transition-all shrink-0">
               <Calendar className="w-3 h-3 mb-0.5" />
               <span>{format(task.estimation.endDate, "dd MMM")}</span>
             </div>
           </div>
 
           <div className="flex justify-end ml-auto -space-x-2 shrink-0">
-            {task.assignedTo?.slice(0, 3).map((assignee, i) => (
+            {task.assignees?.slice(0, 3).map((assignee, i) => (
               <Avatar
                 key={i}
                 className="w-6 h-6 border-2 border-background ring-1 ring-border/10 shadow-sm transition-transform hover:scale-110 hover:z-10"

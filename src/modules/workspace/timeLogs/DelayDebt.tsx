@@ -92,7 +92,7 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
   }
 
   return (
-    <div className="h-full w-full border border-neutral-800 rounded-xl bg-neutral-950/50 p-4 flex flex-col justify-start relative overflow-hidden">
+    <div className="h-full w-full border border-border rounded-lg bg-accent/20 p-4 flex flex-col justify-start relative overflow-hidden">
       {/* HEADER: Title & Compact Tabs */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
@@ -104,7 +104,7 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
           </h3>
         </div>
 
-        <div className="flex p-0.5 bg-neutral-900 rounded-md border border-neutral-800">
+        <div className="flex p-0.5 bg-card rounded-md border border-border">
           <button
             onClick={() => setActiveTab("tasks")}
             className={cn(
@@ -132,7 +132,7 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
 
       {/* STAT CARDS: Compact & Simplified */}
       <div className="grid grid-cols-2 gap-2 mb-4">
-        <div className="bg-neutral-900/40 rounded-lg p-2 border border-neutral-800/60">
+        <div className="bg-card rounded-lg p-2 border border-border">
           <div
             className={cn(
               "text-xl font-bold tracking-tight leading-none mb-1 text-primary",
@@ -144,7 +144,7 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
             Days Overdue
           </div>
         </div>
-        <div className="bg-neutral-900/40 rounded-lg p-2 border border-neutral-800/60 relative">
+        <div className="bg-card rounded-lg p-2 border border-border relative">
           <div
             className={cn(
               "text-xl font-bold tracking-tight leading-none mb-1 text-primary",
@@ -160,11 +160,11 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
 
       {/* WORST OFFENDERS: Clean List */}
       <div className="flex-1 overflow-hidden flex flex-col pt-1">
-        <div className="mb-2.5 text-[10px] font-bold text-muted-foreground uppercase tracking-[0.15em] flex items-center justify-between">
+        <div className="mb-2.5 text-[10px] font-semibold text-primary flex items-center justify-between">
           <span>Worst offenders</span>
           <div
             className={cn(
-              "px-2 py-0.5 rounded text-[9px] border font-bold",
+              "px-2 py-0.5 rounded text-[9px] border font-bold bg-red-500/40!",
               badgeColor,
             )}
           >
@@ -204,12 +204,6 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
             })
           )}
         </div>
-
-        {/* {hiddenOffendersCount > 0 && (
-          <div className="text-[9px] text-neutral-600 mt-2 font-medium border-t border-neutral-800/40 pt-1.5">
-            + {hiddenOffendersCount} more hidden items
-          </div>
-        )} */}
       </div>
     </div>
   );

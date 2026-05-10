@@ -146,6 +146,14 @@ export const statusIcons: Record<string, React.ReactNode> = {
   completed: <CircleCheckBig className="w-3.5 h-3.5 text-green-500" />,
 };
 
+export const statusIconsNoColors: Record<string, React.ReactNode> = {
+  "not started": <Ellipsis className="w-3.5 h-3.5" />,
+  inprogress: <Loader className="w-3.5 h-3.5" />,
+  reviewing: <ScanSearch className="w-3.5 h-3.5" />,
+  testing: <BugPlay className="w-3.5 h-3.5" />,
+  completed: <CircleCheckBig className="w-3.5 h-3.5" />,
+};
+
 export const KANBAN_COLUMN_ICONS: Record<string, React.ReactNode> = {
   "not started": <Ellipsis className="w-4 h-4 text-white" />,
   inprogress: <Loader className="w-4 h-4 text-white" />,
@@ -274,3 +282,4 @@ export const SortPopover = ({
 );
 
 export const INVITE_LINK = "http://localhost:3000/";
+// export const INVITE_LINK = "https://wekraft-saas.vercel.app/";

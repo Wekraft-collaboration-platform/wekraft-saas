@@ -1,14 +1,15 @@
-import { Button } from "@/components/ui/button";
+import Hero from "@/modules/web/Hero";
+import Navbar from "@/modules/web/Navbar";
+import Section1 from "@/modules/web/Section1";
 import Link from "next/link";
 import React from "react";
 
 const WebPage = () => {
   return (
-    <div>
-      WebPage
-      <Link href="/auth">
-        <Button>Sign In</Button>
-      </Link>
+    <div className="bg-black scroll-smooth selection:bg-blue-500/30 min-h-screen">
+      <Navbar />
+      <Hero />
+      <Section1 />
     </div>
   );
 };

@@ -6,44 +6,6 @@ import {
   ForkAgentInputInternal,
 } from "./types";
 
-function parseSSEMessage<TAgentState, TInterruptValue>(
-  chunk: string,
-): AgentEvent<TAgentState, TInterruptValue>[] {
-  const messages: AgentEvent<TAgentState, TInterruptValue>[] = [];
-  const lines = chunk.split("\n");
-  let currentMessage: Partial<AgentEvent<TAgentState, TInterruptValue>> = {};
-
-  for (const line of lines) {
-    if (!line.trim()) {
-      if (Object.keys(currentMessage).length) {
-        messages.push(
-          currentMessage as AgentEvent<TAgentState, TInterruptValue>,
-        );
-        currentMessage = {};
-      }
-      continue;
-    }
-
-    const [field, ...valueArr] = line.split(":");
-    const value = valueArr.join(":").trim();
-
-    switch (field) {
-      case "event":
-        currentMessage.event = value;
-        break;
-      case "data":
-        currentMessage.data = JSON.parse(value);
-        break;
-    }
-  }
-
-  if (Object.keys(currentMessage).length) {
-    messages.push(currentMessage as AgentEvent<TAgentState, TInterruptValue>);
-  }
-
-  return messages;
-}
-
 export async function* callAgentRoute<
   TAgentState,
   TInterruptValue,
@@ -75,18 +37,63 @@ export async function* callAgentRoute<
     if (!reader) throw new Error("No reader available");
 
     const decoder = new TextDecoder();
+    let buffer = "";
+    let currentEvent: string | null = null;
+    let currentDataString = "";
 
     while (true) {
       const { done, value } = await reader.read();
       if (done) break;
 
-      const chunk = decoder.decode(value);
-      const parsedMessages = parseSSEMessage<TAgentState, TInterruptValue>(
-        chunk,
-      );
+      buffer += decoder.decode(value, { stream: true });
 
-      for (const msg of parsedMessages) {
-        yield msg;
+      let lineEnd;
+      while ((lineEnd = buffer.indexOf("\n")) !== -1) {
+        const line = buffer.substring(0, lineEnd);
+        buffer = buffer.substring(lineEnd + 1);
+
+        if (line.trim() === "") {
+          // Empty line signals end of event block
+          if (currentEvent || currentDataString) {
+            try {
+              const data = currentDataString
+                ? JSON.parse(currentDataString)
+                : undefined;
+              yield {
+                event: currentEvent || "message",
+                data,
+              } as AgentEvent<TAgentState, TInterruptValue>;
+            } catch (e) {
+              console.error("Failed to parse SSE data:", currentDataString, e);
+            }
+            currentEvent = null;
+            currentDataString = "";
+          }
+        } else {
+          const colonIndex = line.indexOf(":");
+          if (colonIndex !== -1) {
+            const field = line.substring(0, colonIndex).trim();
+            let val = line.substring(colonIndex + 1);
+            // SSE spec: remove leading space if present
+            if (val.startsWith(" ")) val = val.substring(1);
+
+            if (field === "event") {
+              currentEvent = val.trim();
+            } else if (field === "data") {
+              currentDataString += val;
+            }
+          }
+        }
+      }
+    }
+
+    // Final cleanup for any remaining data in the buffer
+    if (currentEvent || currentDataString) {
+      try {
+        const data = currentDataString ? JSON.parse(currentDataString) : undefined;
+        yield { event: currentEvent || "message", data } as AgentEvent<TAgentState, TInterruptValue>;
+      } catch (e) {
+        // Silently fail on cleanup if incomplete
       }
     }
   } catch (error) {
