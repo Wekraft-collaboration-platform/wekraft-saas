@@ -11,6 +11,7 @@ import { Spotlight } from "@/components/ui/spotlight";
 import Image from "next/image";
 import { FlipText } from "@/components/ui/flip-text";
 import { Button } from "@/components/ui/button";
+import { PlaneTakeoff } from "lucide-react";
 
 const Hero = () => {
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -65,15 +66,15 @@ const Hero = () => {
             </span>
           </div>
           <span className="text-blue-200 text-sm font-medium ml-3">
-            Introducing wekraft
+            Introducing wekraft <PlaneTakeoff className="w-4 h-4 inline ml-1"/>
           </span>
         </div>
 
-        <div className="flex flex-col gap-4 items-center justify-center font-pop relative px-4">
-          <h1 className="text-white font-sans tracking-tight text-6xl font-semibold">
+        <div className="flex flex-col  items-center justify-center font-pop relative px-4">
+          <h1 className="text-white font-sans tracking-tight text-[64px] font-semibold">
             Meet Your AI-Native Platform
           </h1>
-          <div className="flex items-center gap-3 text-white font-sans tracking-tight text-6xl font-semibold">
+          <div className="flex items-center gap-3 text-white font-sans tracking-tight text-[64px] font-semibold">
             <h1 className="mr-2">for Teams</h1>
             <FlipText className="" duration={3.5}>
               Building the Future.
