@@ -154,7 +154,7 @@ const TaskPage = () => {
             <Input
               type="text"
               placeholder="Search ..."
-              className="pl-9 h-9 w-[240px] border-border bg-neutral-900!"
+              className="pl-9 h-9 w-[240px] border-border dark:bg-neutral-900! bg-card"
             />
           </div>
           {/* Delete Button (Visible when tasks are selected) */}

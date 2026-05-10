@@ -43,6 +43,7 @@ export async function GET(req: NextRequest) {
     try {
       const cached = await redis.get<DashboardAnalyticsData>(cacheKey);
       if (cached) {
+        console.log("CACHED DATA -> CHARTS RETURNED FROM CACHE !!!")
         return NextResponse.json(cached);
       }
     } catch (e) {
@@ -71,6 +72,7 @@ export async function GET(req: NextRequest) {
     // 3. Store in Redis for 1 hour
     try {
       await redis.set(cacheKey, data, { ex: 3600 });
+      console.log("CHARTS DATA STORED IN CACHE FOR 1 HOUR !!!")
     } catch (e) {
       console.error("[Analytics] Redis set error:", e);
     }

@@ -94,7 +94,7 @@ export const TeamContributionRadarCard = ({
   }
 
   return (
-    <Card className="p-0! overflow-hidden shadow-sm bg-accent/30 border-accent h-[340px]">
+    <Card className="p-0! overflow-hidden shadow-sm  dark:bg-accent/30 bg-card dark:border-accent border-accent/50 h-[340px]">
       <CardHeader className=" px-4! pt-3! flex flex-row items-center justify-between">
         <div className="space-y-0.5">
           <CardTitle className="text-sm font-semibold text-primary flex items-center gap-2">
@@ -110,7 +110,7 @@ export const TeamContributionRadarCard = ({
           {contributions.map((user: any, index: number) => (
             <div key={user.userId} className="flex flex-col items-center gap-1">
               <Avatar
-                className="w-7 h-7 border"
+                className="w-8 h-8 border"
                 style={{ borderColor: `var(--chart-${(index % 5) + 1})` }}
               >
                 <AvatarImage src={user.avatar} />
@@ -118,7 +118,7 @@ export const TeamContributionRadarCard = ({
                   {user.name[0]}
                 </AvatarFallback>
               </Avatar>
-              <span className="text-[9px] font-medium text-muted-foreground truncate max-w-[45px]">
+              <span className="text-[11px] capitalize font-medium text-muted-foreground truncate max-w-[45px]">
                 {user.name.split(" ")[0]}
               </span>
             </div>
@@ -126,7 +126,7 @@ export const TeamContributionRadarCard = ({
         </div>
       </CardHeader>
 
-      <CardContent className=" pb-2 pt-0 h-[300px] -mt-10">
+      <CardContent className=" pb-2 pt-0 h-[300px] -mt-12">
         <ChartContainer
           config={chartConfig}
           className="mx-auto aspect-auto h-full"

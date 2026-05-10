@@ -125,7 +125,7 @@ export const ActivityOverviewCard = ({
 
   if (!tasks || !issues) {
     return (
-      <Card className="p-4! overflow-hidden shadow-sm bg-accent/30 border-accent">
+      <Card className="p-4! overflow-hidden shadow-sm  dark:bg-accent/30 bg-card dark:border-accent border-accent/50">
         <div className="space-y-4">
           <div className="flex justify-between items-center">
             <Skeleton className="h-6 w-32" />
@@ -138,7 +138,7 @@ export const ActivityOverviewCard = ({
   }
 
   return (
-    <Card className="p-4! overflow-hidden shadow-sm bg-accent/30 border-accent">
+    <Card className="p-4! overflow-hidden shadow-sm  dark:bg-accent/30 bg-card dark:border-accent border-accent/50">
       <CardHeader className="pb-0 px-0! flex flex-row items-center justify-between">
         <div className="space-y-1">
           <CardTitle className="text-sm font-semibold text-primary flex items-center gap-2">

@@ -49,14 +49,14 @@ const GithubIssueCard = ({ issue }: { issue: Issue }) => {
   const type = TYPE_CONFIG[issue.type];
 
   return (
-    <Card className="group cursor-pointer p-3! bg-sidebar border-accent hover:border-primary/30 transition-all rounded-xl shadow-xs">
+    <Card className="group cursor-pointer p-3! dark:bg-sidebar bg-card dark:border-accent border-neutral-200 dark:hover:border-primary/30 hover:border-neutral-300 transition-all rounded-xl shadow-xs">
       <div className="flex flex-col gap-3">
         {/* Top: Severity and Type */}
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-1.5">
             <span
               className={cn(
-                "text-[10px] font-medium px-2 py-1 rounded bg-muted border border-border text-neutral-400 flex items-center gap-1.5",
+                "text-[10px] font-medium px-2 py-1 rounded dark:bg-muted bg-neutral-100 dark:border-border border-neutral-200 text-neutral-400 flex items-center gap-1.5",
               )}
             >
               <span className={cn(severity.iconColor)}>
@@ -70,7 +70,7 @@ const GithubIssueCard = ({ issue }: { issue: Issue }) => {
             </span>
             <span
               className={cn(
-                "text-[10px] font-medium px-2 py-1 rounded bg-muted border border-border text-neutral-400 flex items-center gap-1.5",
+                "text-[10px] font-medium px-2 py-1 rounded dark:bg-muted bg-neutral-100 dark:border-border border-neutral-200 text-neutral-400 flex items-center gap-1.5",
               )}
             >
               <span className={cn(type.iconColor)}>
@@ -111,7 +111,7 @@ const GithubIssueCard = ({ issue }: { issue: Issue }) => {
         </div>
 
         {/* Name */}
-        <h4 className="text-[13px] font-medium text-neutral-200 line-clamp-2 leading-snug">
+        <h4 className="text-[13px] font-medium dark:text-neutral-200 text-foreground line-clamp-2 leading-snug">
           {issue.title}
         </h4>
 
@@ -130,7 +130,7 @@ const GithubIssueCard = ({ issue }: { issue: Issue }) => {
         </div>
 
         {/* Footer: Due Date and Assignee */}
-        <div className="flex items-center justify-between pt-2 border-t border-border/50 mt-1">
+        <div className="flex items-center justify-between pt-2 border-t dark:border-border/50 border-neutral-200 mt-1">
           <div className="flex items-center gap-1.5 text-neutral-500">
             <Calendar className="h-3.5 w-3.5" />
             <span className="text-[11px] font-medium">
@@ -142,10 +142,10 @@ const GithubIssueCard = ({ issue }: { issue: Issue }) => {
             {issue.assignedTo?.slice(0, 3).map((assignee, i) => (
               <Avatar
                 key={i}
-                className="h-5.5 w-5.5 border border-sidebar group-hover:border-neutral-800 transition-all"
+                className="h-5.5 w-5.5 border dark:border-sidebar border-neutral-200 dark:group-hover:border-neutral-800 group-hover:border-neutral-300 transition-all"
               >
                 <AvatarImage src={assignee.avatar} />
-                <AvatarFallback className="text-[8px] bg-neutral-800 text-neutral-400">
+                <AvatarFallback className="text-[8px] dark:bg-neutral-800 bg-neutral-200 dark:text-neutral-400 text-neutral-600">
                   {assignee.name[0]}
                 </AvatarFallback>
               </Avatar>
@@ -208,7 +208,7 @@ const IssuesPage = () => {
       </header>
 
       {/* ── Tabs + Controls ──────────────────────────── */}
-      <div className="flex items-center w-full justify-between gap-3 mt-6 border-b border-accent pb-2">
+      <div className="flex items-center w-full justify-between gap-3 mt-6 border-b dark:border-accent border-neutral-200 pb-2">
         <div className="flex items-center gap-6">
           <Button
             variant={"ghost"}
@@ -298,7 +298,7 @@ const IssuesPage = () => {
                 {[...Array(4)].map((_, i) => (
                   <div
                     key={i}
-                    className="min-w-[310px] w-[310px] h-[500px] rounded-xl bg-sidebar/50 border border-border/30 animate-pulse"
+                    className="min-w-[310px] w-[310px] h-[500px] rounded-xl dark:bg-sidebar/50 bg-neutral-100 dark:border-border/30 border-neutral-200 animate-pulse"
                   />
                 ))}
               </div>
@@ -399,7 +399,7 @@ const IssuesPage = () => {
                 {[...Array(4)].map((_, i) => (
                   <div
                     key={i}
-                    className="h-[200px] rounded-xl bg-sidebar/50 border border-border/30 animate-pulse"
+                    className="h-[200px] rounded-xl dark:bg-sidebar/50 bg-neutral-100 dark:border-border/30 border-neutral-200 animate-pulse"
                   />
                 ))}
               </div>

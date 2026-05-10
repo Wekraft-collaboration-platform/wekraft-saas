@@ -89,22 +89,22 @@ const ISSUE_COLUMNS: {
   {
     id: "not opened",
     label: "Not Opened",
-    icon: <Circle className="w-4 h-4 text-primary" />,
+    icon: <Circle className="w-4 h-4 dark:text-primary" />,
   },
   {
     id: "opened",
     label: "Opened",
-    icon: <AlertTriangle className="w-4 h-4 text-primary" />,
+    icon: <AlertTriangle className="w-4 h-4 dark:text-primary" />,
   },
   {
     id: "reopened",
     label: "Reopened",
-    icon: <RotateCcw className="w-4 h-4 text-primary" />,
+    icon: <RotateCcw className="w-4 h-4 dark:text-primary" />,
   },
   {
     id: "closed",
     label: "Closed",
-    icon: <CheckCircle2 className="w-4 h-4 text-primary" />,
+    icon: <CheckCircle2 className="w-4 h-4 dark:text-primary" />,
   },
 ];
 
@@ -337,10 +337,10 @@ const IssueColumn = ({
     <div
       ref={setNodeRef}
       className={cn(
-        "flex flex-col transition-all duration-300 rounded-lg border border-accent h-fit min-h-[500px] max-h-[800px]",
+        "flex flex-col transition-all duration-300 rounded-lg dark:border-accent border-neutral-200 h-fit min-h-[500px] max-h-[800px]",
         isCollapsed
-          ? "min-w-[56px] w-[56px] bg-sidebar border-border"
-          : "min-w-[300px] w-[300px] bg-sidebar",
+          ? "min-w-[56px] w-[56px] dark:bg-sidebar bg-neutral-100 dark:border-border border-neutral-200"
+          : "min-w-[300px] w-[300px] dark:bg-sidebar bg-neutral-100",
       )}
     >
       <div
@@ -355,10 +355,10 @@ const IssueColumn = ({
           {column.icon}
           {!isCollapsed && (
             <>
-              <span className="text-sm font-semibold text-neutral-200">
+              <span className="text-sm font-semibold dark:text-neutral-200 text-foreground">
                 {column.label}
               </span>
-              <span className="text-[11px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+              <span className="text-[11px] font-medium dark:text-primary text-primary/80 dark:bg-primary/10 bg-primary/5 px-2 py-0.5 rounded-full">
                 {issues.length}
               </span>
             </>
@@ -424,7 +424,7 @@ const IssueColumn = ({
         </SortableContext>
 
         {issues.length === 0 && (
-          <div className="flex flex-col items-center justify-center py-8 border border-dashed border-neutral-800 rounded-xl">
+          <div className="flex flex-col items-center justify-center py-8 border border-dashed dark:border-neutral-800 border-neutral-200 rounded-xl">
             <span className="text-[10px] text-muted-foreground font-medium italic">
               Empty
             </span>
@@ -455,7 +455,7 @@ const SortableIssue = ({ issue }: { issue: Issue }) => {
       <div
         ref={setNodeRef}
         style={style}
-        className="opacity-20 border-2 border-neutral-800 rounded-xl h-[130px] bg-neutral-900"
+        className="opacity-20 dark:border-2 dark:border-neutral-800 border-2 border-neutral-200 rounded-xl h-[130px] dark:bg-neutral-900 bg-neutral-100"
       />
     );
   }
@@ -488,8 +488,8 @@ export const IssueCard = ({
   return (
     <Card
       className={cn(
-        "group cursor-pointer p-2.5! bg-muted border-neutral-800 hover:border-neutral-700 transition-all rounded-xl shadow-sm",
-        isOverlay && "scale-[1.02] shadow-2xl border-neutral-700 bg-sidebar",
+        "group cursor-pointer p-2.5! dark:bg-muted bg-card dark:border-neutral-800 border-neutral-200 dark:hover:border-neutral-700 hover:border-neutral-300 transition-all rounded-xl shadow-sm",
+        isOverlay && "scale-[1.02] shadow-2xl dark:border-neutral-700 border-neutral-300 dark:bg-sidebar bg-card",
       )}
     >
       <div className="flex flex-col gap-3">
@@ -498,7 +498,7 @@ export const IssueCard = ({
           <div className="flex items-center gap-1.5">
             <span
               className={cn(
-                "text-[10px] font-medium px-2 py-1 rounded bg-sidebar border border-neutral-800 text-neutral-400 flex items-center gap-1.5",
+                "text-[10px] font-medium px-2 py-1 rounded dark:bg-sidebar bg-neutral-100 dark:border-neutral-800 border-neutral-200 dark:text-neutral-400 text-neutral-500 flex items-center gap-1.5",
               )}
             >
               <span className={cn(severity.iconColor)}>
@@ -512,7 +512,7 @@ export const IssueCard = ({
             </span>
             <span
               className={cn(
-                "text-[10px] font-medium px-2 py-1 rounded bg-sidebar border border-neutral-800 text-neutral-400 flex items-center gap-1.5",
+                "text-[10px] font-medium px-2 py-1 rounded dark:bg-sidebar bg-neutral-100 dark:border-neutral-800 border-neutral-200 dark:text-neutral-400 text-neutral-500 flex items-center gap-1.5",
               )}
             >
               <span className={cn(type.iconColor)}>
@@ -554,7 +554,7 @@ export const IssueCard = ({
         </div>
 
         {/* Name */}
-        <h4 className="text-[13px] font-medium text-neutral-200 line-clamp-2 leading-snug">
+        <h4 className="text-[13px] font-medium dark:text-neutral-200 text-foreground line-clamp-2 leading-snug">
           {issue.title}
         </h4>
 
@@ -573,7 +573,7 @@ export const IssueCard = ({
         </div>
 
         {/* Footer: Due Date and Assignee */}
-        <div className="flex items-center justify-between pt-1 border-t border-neutral-800/50 mt-1">
+        <div className="flex items-center justify-between pt-1 border-t dark:border-neutral-800/50 border-neutral-200 mt-1">
           <div className="flex items-center gap-1.5 text-neutral-500">
             <Calendar className="h-3.5 w-3.5" />
             <span className="text-[11px] font-medium">
@@ -588,7 +588,7 @@ export const IssueCard = ({
                 className="h-5 w-5 border border-sidebar group-hover:border-neutral-800 transition-all"
               >
                 <AvatarImage src={assignee.avatar} />
-                <AvatarFallback className="text-[8px] bg-neutral-800 text-neutral-400">
+                <AvatarFallback className="text-[8px] dark:bg-neutral-800 bg-neutral-200 dark:text-neutral-400 text-neutral-600">
                   {assignee.name[0]}
                 </AvatarFallback>
               </Avatar>

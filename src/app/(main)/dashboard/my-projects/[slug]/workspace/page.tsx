@@ -208,7 +208,7 @@ const ProjectWorkspace = () => {
           </Link>
 
           <Button
-            className="text-xs cursor-pointer font-sans font-medium! bg-linear-to-br from-transparent to-indigo-500"
+            className="text-xs cursor-pointer font-sans font-medium! text-primary bg-linear-to-br from-transparent to-indigo-500"
             variant="outline"
             size="sm"
           >
@@ -221,7 +221,7 @@ const ProjectWorkspace = () => {
       {/* TOP STATS CARDS */}
       <section className="grid grid-cols-3 gap-6 mt-10">
         {/* Project Deadline Card */}
-        <Card className="p-3! overflow-hidden shadow-sm bg-accent/30 border-accent">
+        <Card className="p-3! overflow-hidden shadow-sm dark:bg-accent/30 bg-card dark:border-accent border-accent/50">
           <CardHeader className="px-0 flex flex-row items-center justify-between">
             <CardTitle className="text-sm flex items-center gap-2">
               <AudioLines className="w-5 h-5!" /> Track Your Project
@@ -270,7 +270,7 @@ const ProjectWorkspace = () => {
                   size="sm"
                   variant={"outline"}
                   onClick={() => setIsDeadlineDialogOpen(true)}
-                  className="cursor-pointer text-[10px] bg-muted!"
+                  className="cursor-pointer text-[11px] dark:bg-muted! bg-muted/20"
                 >
                   Change <ClockFading className="w-3 h-3!" />
                 </Button>
@@ -363,24 +363,19 @@ const ProjectWorkspace = () => {
             )}
           </div>
         )}
+
+        {/* My Work Area */}
+        {!isChartView && (
+          <div className="mt-6">
+            <UserWorkTable
+              userName={user?.name}
+              projectId={projectId as Id<"projects">}
+            />
+          </div>
+        )}
       </section>
     </div>
   );
 };
 
 export default ProjectWorkspace;
-
-// <div className="flex flex-col space-y-6">
-//         {/* Scheduler Card */}
-//         <SchedulerCard scheduler={scheduler} />
-//         {/* Sprint bar graph */}
-//         <SprintBarChart projectId={projectId as Id<"projects">} />
-//       </div>
-
-//       {/* My all work Table */}
-//       <div className="col-span-2">
-//         <UserWorkTable
-//           userName={user?.name}
-//           projectId={projectId as Id<"projects">}
-//         />
-//       </div>

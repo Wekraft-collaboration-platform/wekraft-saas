@@ -158,7 +158,7 @@ export const TableTab = ({
         style={{ minHeight: "calc(100vh - 320px)" }}
       >
         <Table>
-          <TableHeader className="bg-neutral-900  z-10 ">
+          <TableHeader className="dark:bg-neutral-900 bg-neutral-100  z-10 ">
             <TableRow className="hover:bg-transparent border-none">
               <TableHead className="w-[50px] px-6 py-4">
                 <Checkbox
@@ -170,20 +170,20 @@ export const TableTab = ({
                   className="rounded border-neutral-500 data-[state=checked]:bg-primary"
                 />
               </TableHead>
-              <TableHead className="text-[15px] text-primary font-medium px-4 min-w-[180px]  border-r border-neutral-700">
+              <TableHead className="text-[15px] dark:text-primary text-foreground font-medium px-4 min-w-[180px]  border-r dark:border-neutral-700 border-neutral-200">
                 <div className="flex items-center gap-2">
                   <FolderPen className="w-4.5 h-4.5" /> Task Name
                 </div>
               </TableHead>
-              <TableHead className="text-[15px] text-primary font-medium  px-4 border-r border-neutral-700">
+              <TableHead className="text-[15px] dark:text-primary text-foreground font-medium  px-4 border-r dark:border-neutral-700 border-neutral-200">
                 <div className="flex items-center justify-between gap-2 overflow-hidden">
                   <div className="flex items-center gap-2">
                     <ChartPie className="w-4.5 h-4.5" /> Status
                   </div>
-                  <ChevronsUpDown className="w-4.5 h-4.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer shrink-0" />
+                  <ChevronsUpDown className="w-4.5 h-4.5 text-muted-foreground dark:hover:text-primary hover:text-primary/70 transition-colors cursor-pointer shrink-0" />
                 </div>
               </TableHead>
-              <TableHead className="text-[15px] text-primary font-medium  px-4  border-r  border-neutral-700">
+              <TableHead className="text-[15px] dark:text-primary text-foreground font-medium  px-4  border-r  dark:border-neutral-700 border-neutral-200">
                 <div className="flex items-center justify-center gap-2 overflow-hidden">
                   <div className="flex items-center gap-2">
                     <Hourglass className="w-4.5 h-4.5" /> Duration
@@ -192,7 +192,7 @@ export const TableTab = ({
                     title="Sort Duration"
                     icon={Calendar}
                     trigger={
-                      <ChevronsUpDown className="w-4.5 h-4.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer shrink-0" />
+                      <ChevronsUpDown className="w-4.5 h-4.5 text-muted-foreground dark:hover:text-primary hover:text-primary/70 transition-colors cursor-pointer shrink-0" />
                     }
                   >
                     <SortOption
@@ -215,20 +215,20 @@ export const TableTab = ({
                   </SortPopover>
                 </div>
               </TableHead>
-              <TableHead className="text-[15px] text-primary font-medium  px-4  border-r  border-neutral-700">
+              <TableHead className="text-[15px] dark:text-primary text-foreground font-medium  px-4  border-r  dark:border-neutral-700 border-neutral-200">
                 <div className="flex items-center justify-center gap-2 overflow-hidden">
                   <div className="flex items-center gap-2">
                     <Box className="w-4.5 h-4.5" /> Tags
                   </div>
-                  <ChevronsUpDown className="w-4.5 h-4.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer shrink-0" />
+                  <ChevronsUpDown className="w-4.5 h-4.5 text-muted-foreground dark:hover:text-primary hover:text-primary/70 transition-colors cursor-pointer shrink-0" />
                 </div>
               </TableHead>
-              <TableHead className="text-[15px] text-primary font-medium px-4  border-r  border-neutral-700">
+              <TableHead className="text-[15px] dark:text-primary text-foreground font-medium px-4  border-r  dark:border-neutral-700 border-neutral-200">
                 <div className="flex items-center gap-2">
                   <Users className="w-4.5 h-4.5" /> Assigned
                 </div>
               </TableHead>
-              <TableHead className="text-[15px] text-primary font-medium px-4 text-center border-r border-neutral-700">
+              <TableHead className="text-[15px] dark:text-primary text-foreground font-medium px-4 text-center border-r dark:border-neutral-700 border-neutral-200">
                 <div className="flex items-center justify-between gap-2 overflow-hidden">
                   <div className="flex items-center gap-2 justify-center">
                     <ChartNoAxesColumnIncreasing className="w-4.5 h-4.5" />{" "}
@@ -238,7 +238,7 @@ export const TableTab = ({
                     title="Sort Priority"
                     icon={ChartNoAxesColumnIncreasing}
                     trigger={
-                      <ChevronsUpDown className="w-4.5 h-4.5 text-muted-foreground hover:text-primary transition-colors cursor-pointer shrink-0" />
+                      <ChevronsUpDown className="w-4.5 h-4.5 text-muted-foreground dark:hover:text-primary hover:text-primary/70 transition-colors cursor-pointer shrink-0" />
                     }
                   >
                     <SortOption
@@ -304,7 +304,7 @@ export const TableTab = ({
                   <TableRow
                     key={task._id}
                     className={cn(
-                      "group border-b border-neutral-800 hover:bg-neutral-900 transition-all cursor-pointer",
+                      "group dark:border-b dark:border-neutral-800 border-b border-neutral-200 dark:hover:bg-neutral-900 hover:bg-neutral-100 transition-all cursor-pointer",
                       isSelected && "bg-primary/5",
                     )}
                     onClick={() => setSelectedTaskForSheet(task)}
@@ -321,9 +321,9 @@ export const TableTab = ({
                         className="rounded border-neutral-800 data-[state=checked]:bg-primary"
                       />
                     </TableCell>
-                    <TableCell className="px-4 text-sm   font-medium border-r border-b border-neutral-700  text-muted-foreground transition-colors">
+                    <TableCell className="px-4 text-sm   font-medium border-r border-b dark:border-neutral-700 border-neutral-200  text-muted-foreground transition-colors dark:group-hover:text-primary group-hover:text-foreground">
                       <div className="flex items-center gap-1.5 capitalize">
-                        <span className="text-primary">{task.title}</span>
+                        <span className="dark:text-primary text-foreground">{task.title}</span>
                         {task.isBlocked ? (
                           <Bug className="w-4 h-4 text-red-500/70 shrink-0 ml-auto" />
                         ) : (
@@ -335,17 +335,17 @@ export const TableTab = ({
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="px-4 border-r border-b border-neutral-700">
+                    <TableCell className="px-4 border-r border-b dark:border-neutral-700 border-neutral-200">
                       <Badge
                         className={cn(
-                          "px-2.5 py-0.5 rounded-full text-[12px] flex items-center gap-1.5 border font-medium capitalize whitespace-nowrap bg-primary/10 text-primary",
+                          "px-2.5 py-0.5 rounded-full text-[12px] flex items-center gap-1.5 border font-medium capitalize whitespace-nowrap dark:bg-primary/10 bg-primary/5 dark:text-primary text-primary/80",
                         )}
                       >
                         {statusIconsNoColors[task.status]}
                         {task.status}
                       </Badge>
                     </TableCell>
-                    <TableCell className="px-4 text-[12px] font-medium text-muted-foreground group-hover:text-primary transition-colors border-r border-b border-neutral-700">
+                    <TableCell className="px-4 text-[12px] font-medium text-muted-foreground dark:group-hover:text-primary group-hover:text-foreground transition-colors border-r border-b dark:border-neutral-700 border-neutral-200">
                       {task.estimation ? (
                         <span className="flex items-center justify-center gap-1.5 opacity-80">
                           {format(task.estimation.startDate, "MMM d")} —{" "}
@@ -357,7 +357,7 @@ export const TableTab = ({
                         </span>
                       )}
                     </TableCell>
-                    <TableCell className="px-4 border-r border-b border-neutral-700">
+                    <TableCell className="px-4 border-r border-b dark:border-neutral-700 border-neutral-200">
                       <div className="flex items-center justify-center gap-1.5 flex-wrap">
                         {task.type ? (
                           <div
@@ -394,7 +394,7 @@ export const TableTab = ({
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="px-4 border-r border-b border-neutral-700">
+                    <TableCell className="px-4 border-r border-b dark:border-neutral-700 border-neutral-200">
                       {task.assignees && task.assignees.length > 0 ? (
                         <div className="flex items-center justify-center -space-x-1">
                           {task.assignees.map((person, i) => (
@@ -411,18 +411,18 @@ export const TableTab = ({
                         </div>
                       ) : (
                         <div className="flex items-center justify-center w-full">
-                          <p className="text-[11px] text-muted-foreground group-hover:text-primary flex items-center gap-1 transition-colors">
+                          <p className="text-[11px] text-muted-foreground dark:group-hover:text-primary group-hover:text-foreground flex items-center gap-1 transition-colors">
                             <Minus className="w-3.5 h-3.5" />
                             Unassigned
                           </p>
                         </div>
                       )}
                     </TableCell>
-                    <TableCell className="px-4 border-r border-b text-muted-foreground group-hover:text-primary transition-colors border-neutral-700">
+                    <TableCell className="px-4 border-r border-b text-muted-foreground dark:group-hover:text-primary group-hover:text-foreground transition-colors dark:border-neutral-700 border-neutral-200">
                       <PriorityBadge priority={task.priority} />
                     </TableCell>
                     <TableCell
-                      className="px-4 text-right border-b border-neutral-700"
+                      className="px-4 text-right border-b dark:border-neutral-700 border-neutral-200"
                       onClick={(e) => e.stopPropagation()}
                     >
                       <DropdownMenu>
@@ -430,14 +430,14 @@ export const TableTab = ({
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 text-primary transition-all rounded hover:bg-neutral-800"
+                            className="h-7 w-7 dark:text-primary text-foreground transition-all rounded dark:hover:bg-neutral-800 hover:bg-neutral-100"
                           >
                             <MoreHorizontal size={14} />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent
                           align="end"
-                          className="bg-neutral-900 border-neutral-800 text-primary/80 min-w-[140px] rounded-xl shadow-2xl"
+                          className="dark:bg-neutral-900 bg-card dark:border-neutral-800 border-neutral-200 text-primary/80 min-w-[140px] rounded-xl shadow-2xl"
                         >
                           <DropdownMenuItem className="text-xs font-semibold py-2 cursor-pointer focus:bg-neutral-800 focus:text-primary gap-2">
                             <Edit size={14} className="opacity-50" /> Edit
@@ -457,7 +457,7 @@ export const TableTab = ({
       </div>
 
       {/* Simple Pagination */}
-      <div className="flex items-center justify-between px-6 py-4 border-t border-neutral-800/60">
+      <div className="flex items-center justify-between px-6 py-4 border-t dark:border-neutral-800/60 border-neutral-200">
         <div className="text-xs font-medium text-muted-foreground tracking-wider">
           Showing {page * PAGE_SIZE + 1}–
           {Math.min((page + 1) * PAGE_SIZE, tasks.length)} of {tasks.length}
@@ -470,7 +470,7 @@ export const TableTab = ({
             size="sm"
             disabled={!canGoPrev}
             onClick={() => setPage((p) => p - 1)}
-            className="h-7 px-3 text-[10px] font-semibold bg-transparent border-neutral-800 text-primary transition-all disabled:opacity-20"
+            className="h-7 px-3 text-[10px] font-semibold bg-transparent dark:border-neutral-800 border-neutral-200 dark:text-primary text-foreground transition-all disabled:opacity-20"
           >
             <ChevronLeft size={12} className="mr-1" /> Previous
           </Button>
@@ -478,7 +478,7 @@ export const TableTab = ({
             <Button
               variant="secondary"
               size="sm"
-              className="h-7 w-7 text-[10px] font-bold p-0 bg-primary/10 text-primary border border-primary/20 rounded-md"
+              className="h-7 w-7 text-[10px] font-bold p-0 dark:bg-primary/10 bg-primary/5 dark:text-primary text-primary/80 border dark:border-primary/20 border-primary/10 rounded-md"
             >
               {page + 1}
             </Button>
@@ -488,7 +488,7 @@ export const TableTab = ({
             size="sm"
             disabled={!canGoNext}
             onClick={handleNext}
-            className="h-7 px-3 text-[10px] font-semibold bg-transparent border-neutral-800 text-primary transition-all disabled:opacity-20"
+            className="h-7 px-3 text-[10px] font-semibold bg-transparent dark:border-neutral-800 border-neutral-200 dark:text-primary text-foreground transition-all disabled:opacity-20"
           >
             Next <ChevronRight size={12} className="ml-1" />
           </Button>

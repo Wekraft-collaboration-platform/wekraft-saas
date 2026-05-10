@@ -395,7 +395,7 @@ export const AppSidebar = () => {
                                     ))
                                 ) : (
                                   <span className="text-[10px] text-muted-foreground">
-                                    {project.totalMembers}
+                                    {project?.totalMembers}
                                   </span>
                                 )}
                               </div>
