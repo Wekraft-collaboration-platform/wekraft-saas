@@ -390,6 +390,7 @@ export const getProjectBySlug = query({
     const projectWithOwner = {
       ...project,
       ownerClerkId,
+      ownerAccountType: owner?.accountType,
     };
 
     // Security: Only return if public OR user is the owner OR user is a member
