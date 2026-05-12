@@ -61,6 +61,7 @@ export function CreateChannelDialog({ open, onOpenChange, onCreate }: Props) {
   const [loading, setLoading] = useState(false);
 
   const form = useForm<FormValues>({
+    // @ts-ignore
     resolver: zodResolver(schema),
     defaultValues: { name: "", description: "", type: "text" },
   });

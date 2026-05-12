@@ -117,7 +117,7 @@ const ProjectWorkspace = () => {
     if (projectId && isChartView && !cachedData) {
       fetchAnalytics(projectId).then(setCachedData).catch(console.error);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId, isChartView]);
 
   const handleRefresh = async () => {
@@ -221,7 +221,7 @@ const ProjectWorkspace = () => {
       {/* TOP STATS CARDS */}
       <section className="grid grid-cols-3 gap-6 mt-10">
         {/* Project Deadline Card */}
-        <Card className="p-3! overflow-hidden shadow-sm dark:bg-accent/30 bg-card dark:border-accent border-accent/50">
+        <Card className="p-3! overflow-hidden shadow-sm dark:bg-accent/20 bg-card dark:border-accent border-accent/50">
           <CardHeader className="px-0 flex flex-row items-center justify-between">
             <CardTitle className="text-sm flex items-center gap-2">
               <AudioLines className="w-5 h-5!" /> Track Your Project
@@ -318,7 +318,7 @@ const ProjectWorkspace = () => {
       <Separator className="bg-accent" />
 
       <section className="mt-4 w-full">
-          {isChartView && user?.accountType !== "free" && (
+        {isChartView && user?.accountType !== "free" && (
           <Button
             className={cn(
               "text-[10px] h-7 px-2 flex justify-end ml-auto mb-5 cursor-pointer transition-all",
@@ -329,7 +329,9 @@ const ProjectWorkspace = () => {
             onClick={handleRefresh}
             disabled={isRefreshing}
           >
-            <History className={cn("w-3 h-3 mr-1", isRefreshing && "animate-spin")} />
+            <History
+              className={cn("w-3 h-3 mr-1", isRefreshing && "animate-spin")}
+            />
             {isRefreshing ? "Refreshing..." : "Refresh Analytics"}
           </Button>
         )}
@@ -338,7 +340,34 @@ const ProjectWorkspace = () => {
           <div className="mt-6">
             {user?.accountType === "free" ? (
               <div className="flex flex-col items-center justify-center py-16 ">
-                free account
+                <div className="flex flex-col items-start gap-1.5 max-w-sm text-sm">
+                  <Image
+                    src="/pat103.svg"
+                    alt="locked features"
+                    width={100}
+                    height={100}
+                  />
+                  <h3>
+                    Upgrade Now for deeper Insights/ Analaysis and unlock your
+                    team true Potential.
+                  </h3>
+                  <div className="flex items-center gap-4 mt-3">
+                    <Button
+                      className="cursor-pointer"
+                      variant="default"
+                      size="sm"
+                    >
+                      Upgrade
+                    </Button>
+                    <Button
+                      className="cursor-pointer"
+                      variant="outline"
+                      size="sm"
+                    >
+                      Learn More
+                    </Button>
+                  </div>
+                </div>
               </div>
             ) : (
               <div className="grid grid-cols-2 gap-6">

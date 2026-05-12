@@ -78,8 +78,10 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { UserAvatar } from "@clerk/nextjs";
+import { UserAvatar, useUser } from "@clerk/nextjs";
 import { ThemeButtons } from "./ThemeButton";
+import { Badge } from "@/components/ui/badge";
+import { toast } from "sonner";
 
 export const AppSidebar = () => {
   const { theme, setTheme } = useTheme();
@@ -93,9 +95,42 @@ export const AppSidebar = () => {
   const ownerProjects = useQuery(api.project.getUserProjects);
   const teamProjects = useQuery(api.project.getJoinedProjects);
 
+  const { user: clerkUser } = useUser();
+
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  const handleConnectGithub = async () => {
+    try {
+      const existingGithub = clerkUser?.externalAccounts.find(
+        (acc) => acc.provider === "github",
+      );
+
+      if (
+        existingGithub &&
+        existingGithub.verification?.status !== "verified" &&
+        existingGithub.verification?.externalVerificationRedirectURL
+      ) {
+        window.location.href =
+          existingGithub.verification.externalVerificationRedirectURL.toString();
+        return;
+      }
+
+      const res = await clerkUser?.createExternalAccount({
+        strategy: "oauth_github",
+        redirectUrl: window.location.href,
+      });
+
+      if (res?.verification?.externalVerificationRedirectURL) {
+        window.location.href =
+          res.verification.externalVerificationRedirectURL.toString();
+      }
+    } catch (error: any) {
+      console.error("❌ Failed to connect GitHub:", error);
+      toast.error(error?.errors?.[0]?.message || "Something went wrong while connecting GitHub");
+    }
+  };
 
   const isActive = (url: string) => {
     return pathname === url || pathname.startsWith(url + "/dashbaord");
@@ -131,13 +166,30 @@ export const AppSidebar = () => {
               <AvatarFallback>UN</AvatarFallback>
             </Avatar>
 
-            <div className="flex flex-col space-y-0.5">
-              <h2 className="flex gap-2 text-sm items-center truncate">
-                <Github className="h-4 w-4 shrink-0" /> {user?.githubUsername}
-              </h2>
-              <p className="text-xs text-muted-foreground ml-3">
-                Account Synced
-              </p>
+            <div className="flex flex-col space-y-0.5 overflow-hidden">
+              {user?.githubUsername ? (
+                <>
+                  <h2 className="flex gap-2 text-sm items-center truncate">
+                    <Github className="h-4 w-4 shrink-0" />{" "}
+                    {user?.githubUsername}
+                  </h2>
+                  <p className="text-xs text-muted-foreground ml-6">
+                    Account Synced
+                  </p>
+                </>
+              ) : (
+                <>
+                  <Button
+                    onClick={handleConnectGithub}
+                    size="xs"
+                    variant="default"
+                    className="h-6 rounded! text-[10px] gap-1 px-4!"
+                  >
+                    <Github className="h-3 w-3" /> Connect GitHub
+                  </Button>
+                  <p className="text-[10px] ml-1 mt-1">No GitHub Account</p>
+                </>
+              )}
             </div>
           </div>
         )}
@@ -170,52 +222,52 @@ export const AppSidebar = () => {
             </Link>
           </SidebarMenuButton>
           {/* 2 */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <SidebarMenuButton
-                tooltip="Community"
-                isActive={isActive("/dashboard/community")}
-                className="group relative overflow-hidden"
+          <SidebarMenuButton
+            tooltip="Community"
+            isActive={isActive("/dashboard/community")}
+            className="group relative overflow-hidden"
+          >
+            <div className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center">
+              <Users className="h-5 w-5 shrink-0" />
+              <span className="text-sm group-data-[collapsible=icon]:hidden">
+                Community
+              </span>
+              <Badge
+                variant="default"
+                className="ml-auto text-[10px] h-4 px-1 group-data-[collapsible=icon]:hidden"
               >
-                <div className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center">
-                  <Users className="h-5 w-5 shrink-0" />
-                  <span className="text-sm group-data-[collapsible=icon]:hidden">
-                    Community
-                  </span>
-                  <ChevronRight className="h-4 w-4 ml-auto group-data-[collapsible=icon]:hidden" />
-                </div>
-              </SidebarMenuButton>
-            </PopoverTrigger>
+                Soon
+              </Badge>
+            </div>
+          </SidebarMenuButton>
 
-            <PopoverContent side="right" className="w-56 p-2">
-              <div className="flex flex-col gap-1">
-                <Link
-                  href="/dashboard/community?mode=discover"
-                  className="flex items-center gap-2 rounded px-2 py-1 text-sm hover:bg-accent"
-                >
-                  <Compass className="h-4 w-4" />
-                  Discover Projects
-                </Link>
-
-                <Link
-                  href="/dashboard/community?mode=bounties"
-                  className="flex items-center gap-2 rounded px-2 py-1 text-sm hover:bg-accent"
-                >
-                  <Gift className="h-4 w-4" />
-                  Open Bounties
-                </Link>
-
-                <Link
-                  href="/dashboard/community?mode=find-team"
-                  className="flex items-center gap-2 rounded px-2 py-1 text-sm hover:bg-accent"
-                >
-                  <UserPlus className="h-4 w-4" />
-                  Find Teammates
-                </Link>
-              </div>
-            </PopoverContent>
-          </Popover>
           {/* 3 */}
+          <SidebarMenuButton
+            asChild
+            tooltip="All Projects"
+            isActive={isActive("/dashboard/all-projects")}
+            className="group relative overflow-hidden"
+          >
+            <Link
+              href="/dashboard/all-projects"
+              className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
+            >
+              <FolderCode className="h-5 w-5" />
+              <span className="text-sm group-data-[collapsible=icon]:hidden">
+                All Projects
+              </span>
+              <span
+                className="
+        pointer-events-none absolute inset-0 -z-10
+        opacity-0 transition-opacity
+        group-data-[active=true]:opacity-100
+        bg-linear-to-l from-blue-600/80 dark:from-blue-600/50 via-blue-600/10  to-transparent
+      "
+              />
+            </Link>
+          </SidebarMenuButton>
+
+          {/* 4 */}
           <SidebarMenuButton
             asChild
             tooltip="Repositories"
@@ -240,7 +292,7 @@ export const AppSidebar = () => {
               />
             </Link>
           </SidebarMenuButton>
-          {/* 4 */}
+          {/* 5 */}
           <div className="px-1 my-2 group-data-[collapsible=icon]:hidden">
             <div className="flex items-center justify-center gap-2">
               <span className="w-10 h-px bg-muted-foreground/30"></span>
@@ -262,7 +314,7 @@ export const AppSidebar = () => {
 
               <div className="mt-2 p-1 h-[156px] overflow-y-auto rounded-md border bg-sidebar-accent/30">
                 {/* MY CREATIONS */}
-                <TabsContent value="my" className="m-0 p-2">
+                <TabsContent value="my" className="m-0 px-2 py-1">
                   <div className="flex flex-col gap-2 ">
                     {ownerProjects === undefined ? (
                       <div className="flex flex-col gap-2">
@@ -272,12 +324,12 @@ export const AppSidebar = () => {
                       </div>
                     ) : (
                       <>
-                        <div className="flex flex-col gap-1">
+                        <div className="flex flex-col gap-0.5">
                           {ownerProjects.map((project) => (
                             <Link
                               key={project._id}
                               href={`/dashboard/my-projects/${project.slug}/workspace`}
-                              className="flex items-center justify-between gap-2 p-1 rounded-md hover:bg-accent/40 cursor-pointer transition-all border border-transparent hover:border-sidebar-border"
+                              className="flex items-center justify-between gap-2 p-0.5 rounded-md hover:bg-accent/40 cursor-pointer transition-all border border-transparent hover:border-sidebar-border"
                             >
                               <div className="flex items-center gap-2 max-w-[130px]">
                                 <Folder className="h-3 w-3 text-primary shrink-0" />
@@ -327,7 +379,7 @@ export const AppSidebar = () => {
                         >
                           <Link href="/dashboard/my-projects">
                             <Layers3 className="h-4 w-4 mr-1" />
-                            View All Projects
+                            Create New
                           </Link>
                         </Button>
                       </>
@@ -356,10 +408,10 @@ export const AppSidebar = () => {
                           asChild
                           className="text-[10px] mt-2 h-7 w-full cursor-pointer"
                         >
-                          <Link href="/dashboard/community?mode=discover">
+                          {/* <Link href="/dashboard/community?mode=discover">
                             <Layers3 className="h-4 w-4 mr-1" />
                             Discover Projects
-                          </Link>
+                          </Link> */}
                         </Button>
                       </div>
                     ) : (
@@ -430,7 +482,7 @@ export const AppSidebar = () => {
             <span className="w-10 h-px bg-muted-foreground/30"></span>
           </div>
 
-          {/* 5 */}
+          {/* 6 */}
           <SidebarMenuButton
             asChild
             tooltip="My Profile"

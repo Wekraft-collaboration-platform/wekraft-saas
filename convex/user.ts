@@ -361,3 +361,29 @@ export const getUserByName = query({
       .unique();
   },
 });
+
+export const updateGithubUsername = mutation({
+  args: { githubUsername: v.string() },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    // console.log("Mutation args:", args);
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) throw new Error("User not found");
+
+    console.log("Found user in DB:", user);
+
+    await ctx.db.patch(user._id, {
+      githubUsername: args.githubUsername, 
+      updatedAt: Date.now(),
+    });
+  },
+});

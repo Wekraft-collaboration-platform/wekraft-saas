@@ -11,7 +11,7 @@ import { Spotlight } from "@/components/ui/spotlight";
 import Image from "next/image";
 import { FlipText } from "@/components/ui/flip-text";
 import { Button } from "@/components/ui/button";
-import { PlaneTakeoff } from "lucide-react";
+import { Megaphone, PlaneTakeoff, Speaker } from "lucide-react";
 
 const Hero = () => {
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -60,7 +60,7 @@ const Hero = () => {
       <main className="relative z-10 flex flex-col items-center pt-28 md:pt-40 pb-20 w-full">
         <div className="inline-flex items-center p-1 pr-4 border border-blue-500/30 rounded-full cursor-pointer transition-colors duration-200 mb-18 bg-blue-500/5 hover:bg-blue-500/10">
           <div className="bg-blue-600 px-5 py-1 rounded-full flex items-center gap-1.5">
-            <span className="text-[12px]">📣</span>
+            <span className="text-[12px]"><Megaphone className="w-4 h-4 inline"/></span>
             <span className="text-[11px] font-bold text-white uppercase tracking-wider leading-none">
               Announcement
             </span>

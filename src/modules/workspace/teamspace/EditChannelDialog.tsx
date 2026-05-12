@@ -56,6 +56,7 @@ export function EditChannelDialog({ open, onOpenChange, onUpdate, channel }: Pro
   const [loading, setLoading] = useState(false);
 
   const form = useForm<FormValues>({
+    // @ts-ignore
     resolver: zodResolver(schema),
     defaultValues: { name: "", description: "" },
   });
