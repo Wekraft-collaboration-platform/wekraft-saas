@@ -107,10 +107,9 @@ export const GetRepoStructure = ({
             element={
               <div className="flex items-center w-full group/folder">
                 <span className={cn("text-xs flex-1", selectedPath === element.id && "text-amber-500 font-semibold")}>{element.name}</span>
-                <Button 
-                  variant="ghost" 
-                  size="icon" 
-                  className="h-4 w-4 opacity-0 group-hover/folder:opacity-100 hover:text-amber-500 transition-opacity ml-4 mr-1"
+                <div 
+                  role="button"
+                  className="h-4 w-4 flex items-center justify-center opacity-0 group-hover/folder:opacity-100 hover:text-amber-500 transition-opacity ml-4 mr-1 cursor-pointer"
                   onClick={(e) => {
                     e.stopPropagation(); // Don't expand when clicking select
                     onSelect(element.id);
@@ -118,7 +117,7 @@ export const GetRepoStructure = ({
                   }}
                 >
                   <Link2 className="h-2.5 w-2.5" />
-                </Button>
+                </div>
               </div>
             }
             openIcon={<FolderOpenIcon className="size-4 text-amber-500" />}

@@ -288,10 +288,34 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
           layout: { duration: 0.2, ease: "easeOut" }
         }}
         className={cn(
-          "flex items-center gap-2 rounded-lg bg-accent/40 px-4 py-2 transition-all duration-200",
+          "flex items-center gap-2 rounded-lg bg-accent/40 px-4 py-2 transition-all duration-200 relative",
           disabled && "opacity-70 bg-secondary/30"
         )}
       >
+        {/* Code Linker Popover */}
+        <Popover open={showCodeLinker} onOpenChange={setShowCodeLinker}>
+          <PopoverTrigger asChild>
+            <div className="absolute top-0 left-4 w-0 h-0 pointer-events-none" />
+          </PopoverTrigger>
+          <PopoverContent className="w-[340px] p-0 border-border/40 bg-background/95 backdrop-blur-xl shadow-2xl rounded-xl overflow-hidden" side="top" align="start" sideOffset={10}>
+            <GetRepoStructure
+              repoFullName={project?.repoFullName}
+              ownerClerkId={project?.ownerClerkId}
+              selectedPath={selectedPath}
+              onSelect={(path) => {
+                if (path) {
+                  const before = content.substring(0, content.lastIndexOf("\\"));
+                  const after = content.substring(content.lastIndexOf("\\") + 1);
+                  const fileLink = `\`${path}\``;
+                  setContent(before + fileLink + " " + after);
+                  setShowCodeLinker(false);
+                  textareaRef.current?.focus();
+                }
+              }}
+            />
+          </PopoverContent>
+        </Popover>
+
         {/* Attachment menu */}
         <div className="flex items-center gap-1.5 shrink-0">
           <Popover>
@@ -537,29 +561,6 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
         onChange={handleMediaSelect} 
         accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.gif,.webp"
       />
-      {/* Code Linker Popover */}
-      <Popover open={showCodeLinker} onOpenChange={setShowCodeLinker}>
-        <PopoverTrigger asChild>
-          <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-0 h-0 pointer-events-none" />
-        </PopoverTrigger>
-        <PopoverContent className="w-[340px] p-0 border-border/40 bg-background/95 backdrop-blur-xl shadow-2xl rounded-xl overflow-hidden" side="top" align="center" sideOffset={10}>
-          <GetRepoStructure
-            repoFullName={project?.repoFullName}
-            ownerClerkId={project?.ownerClerkId}
-            selectedPath={selectedPath}
-            onSelect={(path) => {
-              if (path) {
-                const before = content.substring(0, content.lastIndexOf("\\"));
-                const after = content.substring(content.lastIndexOf("\\") + 1);
-                const fileLink = `\`${path}\``;
-                setContent(before + fileLink + " " + after);
-                setShowCodeLinker(false);
-                textareaRef.current?.focus();
-              }
-            }}
-          />
-        </PopoverContent>
-      </Popover>
 
       {/* File Preview Dialog */}
       <Dialog open={!!selectedMediaFile} onOpenChange={(open) => { if (!open) handleCancelMedia() }}>

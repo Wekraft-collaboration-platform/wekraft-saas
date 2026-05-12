@@ -36,6 +36,8 @@ import {
   X,
   Copy,
   Pin,
+  FileIcon,
+  Download,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -240,6 +242,25 @@ export function MessageItem({
     }
   };
 
+  const handleDownload = (e: React.MouseEvent, url: string, filename: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+    
+    // Proxy the download through our Next.js API route to bypass CORS 
+    // and force the Content-Disposition attachment header natively.
+    const proxyUrl = `/api/teamspace/download?url=${encodeURIComponent(url)}&filename=${encodeURIComponent(filename)}`;
+    
+    const link = document.createElement("a");
+    link.href = proxyUrl;
+    link.download = filename;
+    link.target = "_blank"; // Opens the download silently in the background
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    
+    toast.success(`Downloading ${filename}...`, { duration: 3000 });
+  };
+
   // Quoted-reply keyboard handler (div acting as interactive element).
   const handleQuoteKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === "Enter" || e.key === " ") {
@@ -423,17 +444,34 @@ export function MessageItem({
               </div>
             ) : (
               <div className="relative flex flex-col">
-                {message.content && (
-                  <div className="text-[14px] leading-snug break-all md:break-words whitespace-pre-wrap text-foreground/80 font-normal">
-                    {(() => {
+                {message.content && (() => {
+                  const s3Regex = /^(!?)\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)(?:\s+([\s\S]*))?$/;
+                  const match = message.content.match(s3Regex);
+                  
+                  let isMedia = false;
+                  let isImage = false;
+                  let fileName = "";
+                  let fileUrl = "";
+                  let captionText = message.content;
+
+                  if (match) {
+                     isMedia = true;
+                     isImage = match[1] === "!";
+                     fileName = match[2];
+                     fileUrl = match[3];
+                     captionText = match[4] || "";
+                  }
+
+                  const renderText = (text: string) => {
+                      if (!text) return null;
                       const mentionRegex = /(@[a-zA-Z0-9_]+)/g;
-                      const parts = message.content.split(mentionRegex);
+                      const parts = text.split(mentionRegex);
                       return parts.map((part, i) => {
                         if (part.startsWith("@")) {
                           const username = part.substring(1);
                           return (
                             <span
-                              key={i}
+                              key={`mention-${i}`}
                               className="font-bold hover:underline cursor-pointer transition-all"
                               style={{ color: getUserColor(username) }}
                             >
@@ -443,23 +481,79 @@ export function MessageItem({
                         }
                         return (
                           <Highlight
-                            key={i}
+                            key={`text-${i}`}
                             text={part}
                             term={highlightTerm}
                             messageId={message.id}
                           />
                         );
                       });
-                    })()}
-                    {message.edited_at && (
-                      <span className="text-[8px] ml-1.5 select-none opacity-40 italic">
-                        (edited)
-                      </span>
-                    )}
-                    {/* Invisible spacer to prevent text from overlapping the timestamp */}
-                    {!(message.poll && !message.content) && <span className="inline-block w-11 h-0" />}
-                  </div>
-                )}
+                  };
+
+                  const editedTag = message.edited_at && (
+                    <span className="text-[8px] ml-1.5 select-none opacity-40 italic">
+                      (edited)
+                    </span>
+                  );
+                  const timestampSpacer = !(message.poll && !message.content) && <span className="inline-block w-11 h-0" />;
+
+                  if (isMedia) {
+                     return (
+                        <div className="flex flex-col">
+                           {isImage ? (
+                              <div className={cn("mt-0.5", captionText ? "mb-1.5" : "mb-0.5")}>
+                                 <img 
+                                    src={fileUrl} 
+                                    alt={fileName} 
+                                    className="max-h-[140px] max-w-[160px] sm:max-h-[180px] sm:max-w-[220px] w-auto rounded-md object-contain"
+                                 />
+                              </div>
+                           ) : (
+                              <a 
+                                 href={fileUrl} 
+                                 target="_blank" 
+                                 rel="noopener noreferrer"
+                                 onClick={(e) => handleDownload(e, fileUrl, fileName)}
+                                 className="flex items-center gap-3 p-2.5 mt-0.5 mb-1 bg-black/5 dark:bg-white/5 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                              >
+                                 <div className="p-2 bg-primary/10 rounded-md">
+                                    <FileIcon className="h-6 w-6 text-primary" />
+                                 </div>
+                                 <div className="flex flex-col overflow-hidden min-w-[120px] max-w-[200px]">
+                                    <span className="text-sm font-medium truncate" title={fileName}>{fileName}</span>
+                                    <span className="text-[10px] text-muted-foreground uppercase mt-0.5">Document</span>
+                                 </div>
+                                 <div className="ml-2 p-1.5 rounded-full bg-black/5 dark:bg-white/5">
+                                    <Download className="h-3.5 w-3.5 text-muted-foreground" />
+                                 </div>
+                              </a>
+                           )}
+                           
+                           {(captionText || message.edited_at) && (
+                              <div className={cn("text-[14px] leading-snug break-all md:break-words whitespace-pre-wrap text-foreground/80 font-normal", !captionText && "min-h-4")}>
+                                 {renderText(captionText)}
+                                 {editedTag}
+                                 {timestampSpacer}
+                              </div>
+                           )}
+                           
+                           {/* Space for timestamp if no caption */}
+                           {!captionText && !message.edited_at && (
+                             <div className="h-3 w-11 mt-1" />
+                           )}
+                        </div>
+                     );
+                  }
+
+                  // Default text render
+                  return (
+                     <div className="text-[14px] leading-snug break-all md:break-words whitespace-pre-wrap text-foreground/80 font-normal">
+                        {renderText(message.content)}
+                        {editedTag}
+                        {timestampSpacer}
+                     </div>
+                  );
+                })()}
                 
                 {message.poll && (
                   <div className="mt-1 mb-2">
@@ -561,6 +655,22 @@ export function MessageItem({
                       <Reply className="h-4 w-4 mr-2 text-muted-foreground" aria-hidden="true" />
                       Reply
                     </DropdownMenuItem>
+                    {(() => {
+                      const s3Regex = /^(!?)\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)(?:\s+([\s\S]*))?$/;
+                      const match = message.content?.match(s3Regex);
+                      if (match) {
+                        return (
+                          <DropdownMenuItem
+                            onClick={(e) => handleDownload(e, match[3], match[2])}
+                            className="rounded-lg"
+                          >
+                            <Download className="h-4 w-4 mr-2 text-muted-foreground" aria-hidden="true" />
+                            Download
+                          </DropdownMenuItem>
+                        );
+                      }
+                      return null;
+                    })()}
                     {message.content?.trim() ? (
                       <DropdownMenuItem onClick={handleCopy} className="rounded-lg">
                         <Copy className="h-4 w-4 mr-2 text-muted-foreground" aria-hidden="true" />
