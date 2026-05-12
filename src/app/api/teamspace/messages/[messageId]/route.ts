@@ -174,14 +174,28 @@ export async function DELETE(
     await deleteFromS3(keysToDelete);
   }
 
+  // Soft delete message
+  const now = Date.now();
   await turso.execute({
-    sql: "DELETE FROM ts_messages WHERE id = ?",
+    sql: "UPDATE ts_messages SET content = ?, poll = NULL, is_pinned = 0, edited_at = ? WHERE id = ?",
+    args: ["$__DELETED__$", now, messageId],
+  });
+
+  // Delete all reactions for this message
+  await turso.execute({
+    sql: "DELETE FROM ts_reactions WHERE message_id = ?",
     args: [messageId],
   });
 
   // Notify subscribers
   const ablyChannel = ably.channels.get(`teamspace:${channelId}`);
-  await ablyChannel.publish("message.deleted", { id: messageId });
+  await ablyChannel.publish("message.updated", { 
+    id: messageId,
+    content: "$__DELETED__$",
+    poll: null,
+    is_pinned: 0,
+    edited_at: now
+  });
 
   return NextResponse.json({ success: true });
 }

@@ -38,6 +38,7 @@ import {
   Pin,
   FileIcon,
   Download,
+  Ban,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -173,7 +174,8 @@ export function MessageItem({
   }, [message.content, editing]);
 
   // Keep toolbar visible while any floating menu is open
-  const showToolbar = (hovered || dropdownOpen || emojiOpen) && !editing;
+  const isDeleted = message.content === "$__DELETED__$";
+  const showToolbar = (hovered || dropdownOpen || emojiOpen) && !editing && !isDeleted;
 
   const isOwn = message.user_id === currentUserId;
   // FIX: Separate canPin from canDelete — moderators may delete without
@@ -380,7 +382,7 @@ export function MessageItem({
 
 
             {/* Quoted reply block */}
-            {message.thread_parent_id &&
+            {!isDeleted && message.thread_parent_id &&
               (message.parent_content || message.parent_user_name) && (
                 // FIX: `div` was interactive but had no role/tabIndex/keyboard handler.
                 <div
@@ -400,13 +402,22 @@ export function MessageItem({
                     {message.parent_user_name ?? "Unknown"}
                   </div>
                   <div className="text-muted-foreground/80 line-clamp-2 leading-snug overflow-hidden text-ellipsis mt-0.5">
-                    {message.parent_content ?? "Message not found"}
+                    {message.parent_content === "$__DELETED__$" ? (
+                      <span className="italic flex items-center gap-1"><Ban className="h-2.5 w-2.5"/> This message was deleted</span>
+                    ) : (
+                      message.parent_content ?? "Message not found"
+                    )}
                   </div>
                 </div>
               )}
 
             {/* Message content / edit box */}
-            {editing ? (
+            {isDeleted ? (
+              <div className="flex items-center gap-1.5 text-muted-foreground/60 italic text-[13px] px-1 py-0.5 min-w-[140px]">
+                 <Ban className="h-3.5 w-3.5" />
+                 This message was deleted
+              </div>
+            ) : editing ? (
               <div className="min-w-[200px]">
                 <Textarea
                   value={editContent}
@@ -555,7 +566,7 @@ export function MessageItem({
                   );
                 })()}
                 
-                {message.poll && (
+                {message.poll && !isDeleted && (
                   <div className="mt-1 mb-2">
                     <PollBlock 
                       poll={message.poll}
