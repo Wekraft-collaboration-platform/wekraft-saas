@@ -28,9 +28,10 @@ const chartConfig = {
 
 export const EnvironmentalSeverityHeatmap = ({ projectId, data: providedData }: EnvironmentalSeverityHeatmapProps) => {
   const queryData = useQuery(api.workspace.getEnvironmentalSeverityHeatmap, { projectId });
-  const data = (providedData || queryData) as { environment: string; critical: number; medium: number; low: number; }[] | undefined;
+  const data = (providedData ?? queryData) as { environment: string; critical: number; medium: number; low: number; }[] | null | undefined;
 
-  if (!data) {
+  // Still loading
+  if (data === undefined) {
     return (
       <Card className="border shadow-sm bg-accent/30 border-accent h-[340px]">
         <CardHeader>
@@ -38,7 +39,32 @@ export const EnvironmentalSeverityHeatmap = ({ projectId, data: providedData }: 
           <Skeleton className="h-3 w-32 mt-2" />
         </CardHeader>
         <CardContent className="flex items-center justify-center h-[200px]">
-           <Activity className="w-8 h-8 animate-pulse text-muted-foreground/20" />
+          <Activity className="w-8 h-8 animate-pulse text-muted-foreground/20" />
+        </CardContent>
+      </Card>
+    );
+  }
+
+  // Loaded but no data
+  if (!data || data.length === 0) {
+    return (
+      <Card className="border shadow-sm dark:bg-accent/30 bg-card dark:border-accent border-accent/50 overflow-hidden h-[340px]">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-8">
+          <div className="space-y-1">
+            <CardTitle className="text-sm font-semibold text-primary flex items-center gap-2">
+              <LayoutDashboard className="w-4 h-4 text-muted-foreground" /> Environment Distribution
+            </CardTitle>
+            <CardDescription className="text-xs font-medium text-muted-foreground">
+              Active issue counts across infrastructure layers
+            </CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent className="flex flex-col items-center justify-center h-[220px] text-center p-6">
+          <Activity className="w-8 h-8 mb-2 text-muted-foreground/40" />
+          <p className="text-base font-medium text-muted-foreground">No environment data yet</p>
+          <p className="text-[10px] text-muted-foreground max-w-[200px] mt-1">
+            Create and track issues across environments to see distribution.
+          </p>
         </CardContent>
       </Card>
     );
