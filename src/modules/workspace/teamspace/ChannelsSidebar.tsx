@@ -158,7 +158,7 @@ export function ChannelsSidebar({
           </span>
 
           {/* Hover actions - 3 dot menu */}
-          {(canEdit || canDelete) && !channel.is_default && (
+          {(canEdit || (canDelete && !channel.is_default)) && (
             <div className={cn(
               "transition-opacity z-20 shrink-0",
               isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"
@@ -185,7 +185,7 @@ export function ChannelsSidebar({
                       Edit Channel
                     </DropdownMenuItem>
                   )}
-                  {canDelete && (
+                  {(canDelete && !channel.is_default) && (
                     <DropdownMenuItem
                       className="text-destructive focus:text-destructive"
                       onClick={(e) => {
@@ -330,7 +330,7 @@ export function ChannelsSidebar({
               backgroundColor: "var(--color-accent-60)",
             }}
             whileTap={{ scale: 0.98 }}
-            className="flex items-center justify-center gap-2.5 w-full py-2 rounded border border-border/40 bg-accent/20 hover:bg-accent/40 hover:border-border/80 hover:shadow-[0_0_20px_rgba(0,0,0,0.2)] transition-all duration-300 group relative overflow-hidden"
+            className="cursor-pointer flex items-center justify-center gap-2.5 w-full py-2 rounded border border-border/40 bg-accent/20 hover:bg-accent/40 hover:border-border/80 hover:shadow-[0_0_20px_rgba(0,0,0,0.2)] transition-all duration-300 group relative overflow-hidden"
           >
             <motion.div
               animate={{ rotate: 0 }}

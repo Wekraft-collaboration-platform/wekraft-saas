@@ -18,6 +18,7 @@ export async function GET() {
     capability: {
       "teamspace:*": ["subscribe", "publish", "presence"],
       "user:notifications:*": ["subscribe", "publish"],
+      "project:settings:*": ["subscribe", "publish"],
     },
     ttl: 3600 * 1000, // 1 hour in ms
   });
