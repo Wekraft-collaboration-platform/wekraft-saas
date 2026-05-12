@@ -23,14 +23,16 @@ import {
   SlidersHorizontal,
   Layers3,
   Github,
+  Loader2,
 } from "lucide-react";
 import { ProjectCards } from "./ProjectCards";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getActiveUserPlan, getPlanLimits } from "../../../../convex/pricing";
 import { Progress } from "@/components/ui/progress";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Button } from "@/components/ui/button";
+import { toast } from "sonner";
 import { cn } from "@/lib/utils";
 import ContributionGraph from "@/modules/dashboard/components/ContributionGraph";
 import {
@@ -47,73 +49,82 @@ export default function DashboardPage() {
   const updateGithubUsername = useMutation(api.user.updateGithubUsername);
   const { open: sidebarOpen } = useSidebar();
   const [activeTab, setActiveTab] = useState("stats");
+  const hasCheckedGithub = useRef(false);
 
-// =====================GITHUB CONNECTION=========================
-useEffect(() => {
-  if (!user || !clerkUser) return;
-  if (user.githubUsername) return;
+  useEffect(() => {
+    if (!user || !clerkUser) return;
+    if (user.githubUsername) return;
+    if (hasCheckedGithub.current) return;
+    hasCheckedGithub.current = true;
 
-  // Force reload clerkUser to get fresh data after OAuth redirect
-  const reloadAndCheck = async () => {
-    await clerkUser.reload(); // ← THIS IS THE KEY FIX
+    const reloadAndCheck = async () => {
+      await clerkUser.reload();
 
-    const githubAccount = clerkUser.externalAccounts.find(
-      (acc) => acc.provider === "github",
-    );
+      const githubAccount = clerkUser.externalAccounts.find(
+        (acc) => acc.provider === "github",
+      );
 
-    console.log("After reload — github account:", githubAccount);
-    console.log("After reload — username:", githubAccount?.username);
-    console.log("After reload — status:", githubAccount?.verification?.status);
+      // Show error if verification failed
+      if (githubAccount?.verification?.status === "failed") {
+        toast.error(
+          (githubAccount.verification as any)?.error?.longMessage ||
+            "This GitHub account is already linked to another user.",
+        );
+        return;
+      }
 
-    if (
-      githubAccount?.username &&
-      githubAccount?.verification?.status === "verified"
-    ) {
-      console.log("🚀 Calling mutation with:", githubAccount.username);
-      updateGithubUsername({ githubUsername: githubAccount.username });
+      if (
+        githubAccount?.username &&
+        githubAccount?.verification?.status === "verified"
+      ) {
+        console.log("🚀 Calling mutation with:", githubAccount.username);
+        updateGithubUsername({ githubUsername: githubAccount.username });
+      }
+    };
+
+    reloadAndCheck();
+  }, [user, clerkUser, updateGithubUsername]);
+
+  const handleConnectGithub = async () => {
+    try {
+      const existingGithub = clerkUser?.externalAccounts.find(
+        (acc) => acc.provider === "github",
+      );
+
+      if (
+        existingGithub &&
+        existingGithub.verification?.status !== "verified" &&
+        existingGithub.verification?.externalVerificationRedirectURL
+      ) {
+        console.log("Account unverified, redirecting to finish OAuth...");
+        window.location.href =
+          existingGithub.verification.externalVerificationRedirectURL.toString();
+        return;
+      }
+
+      // No github account yet — create one
+      const res = await clerkUser?.createExternalAccount({
+        strategy: "oauth_github",
+        redirectUrl: window.location.href,
+      });
+
+      if (res?.verification?.externalVerificationRedirectURL) {
+        window.location.href =
+          res.verification.externalVerificationRedirectURL.toString();
+      }
+    } catch (error: any) {
+      console.error("❌ Failed to connect GitHub:", error);
+      toast.error(
+        error?.errors?.[0]?.message ||
+          "Something went wrong while connecting GitHub",
+      );
     }
   };
-
-  reloadAndCheck();
-}, [user, clerkUser, updateGithubUsername]);
-
-const handleConnectGithub = async () => {
-  try {
-    const existingGithub = clerkUser?.externalAccounts.find(
-      (acc) => acc.provider === "github",
-    );
-
-    if (
-      existingGithub &&
-      existingGithub.verification?.status !== "verified" &&
-      existingGithub.verification?.externalVerificationRedirectURL
-    ) {
-      console.log("Account unverified, redirecting to finish OAuth...");
-      window.location.href =
-        existingGithub.verification.externalVerificationRedirectURL.toString();
-      return;
-    }
-
-    // No github account yet — create one
-    const res = await clerkUser?.createExternalAccount({
-      strategy: "oauth_github",
-      redirectUrl: window.location.href,
-    });
-
-    if (res?.verification?.externalVerificationRedirectURL) {
-      window.location.href =
-        res.verification.externalVerificationRedirectURL.toString();
-    }
-  } catch (error) {
-    console.error("❌ Failed to connect GitHub:", error);
-  }
-};
 
   const activePlan = user ? getActiveUserPlan(user as any) : "free";
   const limits = user ? getPlanLimits(user as any) : null;
   const showUpgrade =
     !!user && (activePlan === "free" || activePlan === "plus");
-
 
   // Query 1 : dashboardStats
   const {
@@ -132,21 +143,20 @@ const handleConnectGithub = async () => {
   return (
     <div className="w-full h-full p-6 2xl:py-7 2xl:px-10">
       <div className="px-4 flex items-center gap-8">
-        <h1 className="text-3xl font-bold tracking-tight ">
-          Welcome{" "}
-          {user?.name || (
-            <Skeleton className="h-8 w-40 inline-block align-bottom" />
-          )}
-        </h1>
         {user && !user.githubUsername && (
-          <Button
-            onClick={handleConnectGithub}
-            size="sm"
-            variant="outline"
-            className="gap-2"
-          >
-            <Github className="h-4 w-4" /> Connect GitHub
-          </Button>
+          <>
+            <h1 className="text-sm tracking-tight ">
+              It seems you havent connected your github account yet?
+            </h1>
+            <Button
+              onClick={handleConnectGithub}
+              size="sm"
+              variant="default"
+              className="gap-2"
+            >
+              <Github className="h-4 w-4" /> Connect GitHub
+            </Button>
+          </>
         )}
       </div>
 
@@ -161,20 +171,30 @@ const handleConnectGithub = async () => {
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between -mt-1">
-              <div className="flex flex-col">
-                <div className="text-2xl font-semibold">
-                  {isLoading ? (
-                    <Skeleton className="h-8 w-16" />
-                  ) : (
-                    (dashboardStats?.totalCommits ?? 0)
-                  )}
+              {!user?.githubUsername ? (
+                <div className="w-full text-center">
+                  <span className="text-sm font-medium text-destructive/80">
+                    GitHub not connected!
+                  </span>
                 </div>
-                <p className="text-sm text-muted-foreground">
-                  Last Year commits
-                </p>
-              </div>
-              <Separator orientation="vertical" className="mx-2" />
-              <LucideGitCommit className="h-10 w-10" />
+              ) : (
+                <>
+                  <div className="flex flex-col">
+                    <div className="text-2xl font-semibold">
+                      {isLoading ? (
+                        <Skeleton className="h-8 w-16" />
+                      ) : (
+                        (dashboardStats?.totalCommits ?? 0)
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground">
+                      Last Year commits
+                    </p>
+                  </div>
+                  <Separator orientation="vertical" className="mx-2" />
+                  <LucideGitCommit className="h-10 w-10" />
+                </>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -195,30 +215,40 @@ const handleConnectGithub = async () => {
           </CardHeader>
           <CardContent>
             <div className="flex items-center justify-between -mt-1">
-              <div className="flex flex-col">
-                <div className="text-2xl font-semibold">
-                  {isLoading ? (
-                    <Skeleton className="h-8 w-16" />
-                  ) : (
-                    (dashboardStats?.totalPRs ?? 0)
-                  )}
+              {!user?.githubUsername ? (
+                <div className="w-full text-center">
+                  <span className="text-sm font-medium text-destructive/80">
+                    GitHub not connected!
+                  </span>
                 </div>
-                <p className="text-sm text-muted-foreground">Total PRs</p>
-              </div>
-              <Separator
-                orientation="vertical"
-                className="mx-2 h-10! bg-accent"
-              />
-              <div className="flex flex-col">
-                <div className="text-2xl font-semibold">
-                  {isLoading ? (
-                    <Skeleton className="h-8 w-16" />
-                  ) : (
-                    (dashboardStats?.totalMergedPRs ?? 0)
-                  )}
-                </div>
-                <p className="text-sm text-muted-foreground">Merged PRs</p>
-              </div>
+              ) : (
+                <>
+                  <div className="flex flex-col">
+                    <div className="text-2xl font-semibold">
+                      {isLoading ? (
+                        <Skeleton className="h-8 w-16" />
+                      ) : (
+                        (dashboardStats?.totalPRs ?? 0)
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground">Total PRs</p>
+                  </div>
+                  <Separator
+                    orientation="vertical"
+                    className="mx-2 h-10! bg-accent"
+                  />
+                  <div className="flex flex-col">
+                    <div className="text-2xl font-semibold">
+                      {isLoading ? (
+                        <Skeleton className="h-8 w-16" />
+                      ) : (
+                        (dashboardStats?.totalMergedPRs ?? 0)
+                      )}
+                    </div>
+                    <p className="text-sm text-muted-foreground">Merged PRs</p>
+                  </div>
+                </>
+              )}
             </div>
           </CardContent>
         </Card>
@@ -329,29 +359,55 @@ const handleConnectGithub = async () => {
               >
                 {/* Left */}
                 <Card className="p-4 bg-linear-to-b from-accent/5 to-transparent dark:to-black">
-                  <CardContent className="pt-6">
-                    <ContributionGraph />
+                  <CardContent className="pt-6 h-full flex items-center justify-center min-h-[200px]">
+                    {!user?.githubUsername ? (
+                      <div className="flex flex-col items-center gap-2">
+                        <Github className="h-8 w-8 text-muted-foreground/50" />
+                        <p className="text-sm text-muted-foreground">
+                          No contribution data available
+                        </p>
+                      </div>
+                    ) : isLoading ? (
+                      <div className="flex items-center justify-center w-full h-full min-h-[200px]">
+                        <Loader2 className="animate-spin" />
+                      </div>
+                    ) : (
+                      <ContributionGraph />
+                    )}
                   </CardContent>
                 </Card>
 
                 {/* Right */}
                 <div className="w-full">
-                  {dashboardStats ? (
-                    <Card className="p-2 bg-linear-to-b from-accent/5 to-transparent dark:to-black">
-                      <CardContent>
-                        <PieChartVariant1 stats={dashboardStats} />
-                        <ScoreDetailsDialog stats={dashboardStats}>
-                          <p className="text-center text-[11px] mt-1.5 border py-1.5 px-4 rounded-md mx-auto w-fit text-muted-foreground hover:bg-accent cursor-pointer transition-colors">
-                            View Stats{" "}
-                            <Waypoints className="h-3 w-3 inline ml-1" />
+                  {user?.githubUsername ? (
+                    dashboardStats ? (
+                      <Card className="p-2 bg-linear-to-b from-accent/5 to-transparent dark:to-black">
+                        <CardContent>
+                          <PieChartVariant1 stats={dashboardStats} />
+                          <ScoreDetailsDialog stats={dashboardStats}>
+                            <p className="text-center text-[11px] mt-1.5 border py-1.5 px-4 rounded-md mx-auto w-fit text-muted-foreground hover:bg-accent cursor-pointer transition-colors">
+                              View Stats{" "}
+                              <Waypoints className="h-3 w-3 inline ml-1" />
+                            </p>
+                          </ScoreDetailsDialog>
+                        </CardContent>
+                      </Card>
+                    ) : (
+                      <div className="w-full border rounded-xl h-66 flex flex-col items-center justify-center">
+                        <Loader2 className="animate-spin" />
+                      </div>
+                    )
+                  ) : (
+                    <Card className="p-2 bg-linear-to-b from-accent/5 to-transparent dark:to-black h-full flex items-center justify-center min-h-[260px]">
+                      <CardContent className="flex flex-col items-center gap-2">
+                        <div className="flex flex-col items-center gap-2">
+                          <Github className="h-8 w-8 text-muted-foreground/50" />
+                          <p className="text-sm text-muted-foreground">
+                            Github not Connected
                           </p>
-                        </ScoreDetailsDialog>
+                        </div>
                       </CardContent>
                     </Card>
-                  ) : (
-                    <div>
-                      <Skeleton className="w-full h-60" />
-                    </div>
                   )}
                 </div>
               </div>
@@ -396,13 +452,7 @@ const handleConnectGithub = async () => {
                   >
                     <Layers3 className="h-4 w-4" /> View All Projects
                   </Button>
-                  <Button
-                    size="sm"
-                    variant={"outline"}
-                    className="gap-2 text-xs"
-                  >
-                    <SlidersHorizontal className="h-4 w-4" /> Filter
-                  </Button>
+
                   <CreateProjectDialog
                     trigger={
                       <Button size="sm" className="gap-2 text-xs">

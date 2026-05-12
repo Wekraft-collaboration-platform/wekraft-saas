@@ -23,11 +23,11 @@ interface ProjectCardsProps {
 
 export const ProjectCards = ({ projects }: ProjectCardsProps) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+    <div className="grid grid-cols-4 gap-5">
       {projects?.map((project) => (
         <Card
           key={project._id}
-          className="overflow-hidden bg-card border border-accent/20 flex flex-col h-full rounded-xl shadow-sm p-0"
+          className="overflow-hidden bg-card border border-border flex flex-col h-full rounded-xl shadow-sm p-0"
         >
           <div className="aspect-video w-full bg-accent/20 relative border-b border-accent/10 overflow-hidden">
             {project.thumbnailUrl ? (
