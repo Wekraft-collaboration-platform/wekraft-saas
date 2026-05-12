@@ -80,6 +80,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { UserAvatar } from "@clerk/nextjs";
 import { ThemeButtons } from "./ThemeButton";
+import { Badge } from "@/components/ui/badge";
 
 export const AppSidebar = () => {
   const { theme, setTheme } = useTheme();
@@ -170,52 +171,52 @@ export const AppSidebar = () => {
             </Link>
           </SidebarMenuButton>
           {/* 2 */}
-          <Popover>
-            <PopoverTrigger asChild>
-              <SidebarMenuButton
-                tooltip="Community"
-                isActive={isActive("/dashboard/community")}
-                className="group relative overflow-hidden"
+          <SidebarMenuButton
+            tooltip="Community"
+            isActive={isActive("/dashboard/community")}
+            className="group relative overflow-hidden"
+          >
+            <div className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center">
+              <Users className="h-5 w-5 shrink-0" />
+              <span className="text-sm group-data-[collapsible=icon]:hidden">
+                Community
+              </span>
+              <Badge
+                variant="default"
+                className="ml-auto text-[10px] h-4 px-1 group-data-[collapsible=icon]:hidden"
               >
-                <div className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center">
-                  <Users className="h-5 w-5 shrink-0" />
-                  <span className="text-sm group-data-[collapsible=icon]:hidden">
-                    Community
-                  </span>
-                  <ChevronRight className="h-4 w-4 ml-auto group-data-[collapsible=icon]:hidden" />
-                </div>
-              </SidebarMenuButton>
-            </PopoverTrigger>
+                Soon
+              </Badge>
+            </div>
+          </SidebarMenuButton>
 
-            <PopoverContent side="right" className="w-56 p-2">
-              <div className="flex flex-col gap-1">
-                <Link
-                  href="/dashboard/community?mode=discover"
-                  className="flex items-center gap-2 rounded px-2 py-1 text-sm hover:bg-accent"
-                >
-                  <Compass className="h-4 w-4" />
-                  Discover Projects
-                </Link>
-
-                <Link
-                  href="/dashboard/community?mode=bounties"
-                  className="flex items-center gap-2 rounded px-2 py-1 text-sm hover:bg-accent"
-                >
-                  <Gift className="h-4 w-4" />
-                  Open Bounties
-                </Link>
-
-                <Link
-                  href="/dashboard/community?mode=find-team"
-                  className="flex items-center gap-2 rounded px-2 py-1 text-sm hover:bg-accent"
-                >
-                  <UserPlus className="h-4 w-4" />
-                  Find Teammates
-                </Link>
-              </div>
-            </PopoverContent>
-          </Popover>
           {/* 3 */}
+          <SidebarMenuButton
+            asChild
+            tooltip="All Projects"
+            isActive={isActive("/dashboard/all-projects")}
+            className="group relative overflow-hidden"
+          >
+            <Link
+              href="/dashboard/all-projects"
+              className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
+            >
+              <FolderCode className="h-5 w-5" />
+              <span className="text-sm group-data-[collapsible=icon]:hidden">
+                All Projects
+              </span>
+              <span
+                className="
+        pointer-events-none absolute inset-0 -z-10
+        opacity-0 transition-opacity
+        group-data-[active=true]:opacity-100
+        bg-linear-to-l from-blue-600/80 dark:from-blue-600/50 via-blue-600/10  to-transparent
+      "
+              />
+            </Link>
+          </SidebarMenuButton>
+
+          {/* 4 */}
           <SidebarMenuButton
             asChild
             tooltip="Repositories"
@@ -240,7 +241,7 @@ export const AppSidebar = () => {
               />
             </Link>
           </SidebarMenuButton>
-          {/* 4 */}
+          {/* 5 */}
           <div className="px-1 my-2 group-data-[collapsible=icon]:hidden">
             <div className="flex items-center justify-center gap-2">
               <span className="w-10 h-px bg-muted-foreground/30"></span>
@@ -327,7 +328,7 @@ export const AppSidebar = () => {
                         >
                           <Link href="/dashboard/my-projects">
                             <Layers3 className="h-4 w-4 mr-1" />
-                            View All Projects
+                            Create New
                           </Link>
                         </Button>
                       </>
@@ -356,10 +357,10 @@ export const AppSidebar = () => {
                           asChild
                           className="text-[10px] mt-2 h-7 w-full cursor-pointer"
                         >
-                          <Link href="/dashboard/community?mode=discover">
+                          {/* <Link href="/dashboard/community?mode=discover">
                             <Layers3 className="h-4 w-4 mr-1" />
                             Discover Projects
-                          </Link>
+                          </Link> */}
                         </Button>
                       </div>
                     ) : (
@@ -430,7 +431,7 @@ export const AppSidebar = () => {
             <span className="w-10 h-px bg-muted-foreground/30"></span>
           </div>
 
-          {/* 5 */}
+          {/* 6 */}
           <SidebarMenuButton
             asChild
             tooltip="My Profile"
