@@ -116,6 +116,14 @@ export async function initTeamspaceDB() {
       created_at  INTEGER NOT NULL
     );
     CREATE INDEX IF NOT EXISTS idx_notifications_user ON ts_notifications(user_id, created_at);
+
+    CREATE TABLE IF NOT EXISTS ts_settings (
+      project_id TEXT PRIMARY KEY,
+      members_can_create_channels INTEGER NOT NULL DEFAULT 0,
+      members_can_edit_channels INTEGER NOT NULL DEFAULT 0,
+      members_can_delete_channels INTEGER NOT NULL DEFAULT 0,
+      updated_at INTEGER NOT NULL
+    );
   `);
 
   isDbInitialized = true;

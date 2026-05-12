@@ -79,9 +79,17 @@ export async function POST(req: NextRequest) {
   const access = await verifyProjectAccess(userId, projectId);
   if ("error" in access) return NextResponse.json({ error: access.error }, { status: access.status });
 
-  // ONLY OWNER OR ADMIN CAN CREATE CHANNELS
+  // Check if user is owner/admin or if members_can_create_channels is enabled
   if (!access.permissions.isOwner && !access.permissions.isAdmin) {
-    return NextResponse.json({ error: "Forbidden: Only owner or admin can create channels" }, { status: 403 });
+    await initTeamspaceDB();
+    const settings = await turso.execute({
+      sql: "SELECT members_can_create_channels FROM ts_settings WHERE project_id = ?",
+      args: [projectId],
+    });
+    const canCreate = settings.rows.length > 0 && settings.rows[0].members_can_create_channels === 1;
+    if (!canCreate) {
+      return NextResponse.json({ error: "Forbidden: Only owner or admin can create channels" }, { status: 403 });
+    }
   }
 
   await initTeamspaceDB();
