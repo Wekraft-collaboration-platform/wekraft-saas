@@ -35,7 +35,7 @@ export const WeeklyVelocityChart = ({ projectId, data: providedData }: WeeklyVel
 
   if (!data) {
     return (
-      <Card className="border shadow-sm bg-accent/30 border-accent h-[340px]">
+      <Card className="border shadow-sm bg-accent/20 border-accent h-[340px]">
         <CardHeader>
           <Skeleton className="h-4 w-48" />
           <Skeleton className="h-3 w-32 mt-2" />
@@ -50,7 +50,7 @@ export const WeeklyVelocityChart = ({ projectId, data: providedData }: WeeklyVel
   const totalThisWeek = data.reduce((acc, curr) => acc + curr.tasks + curr.issues, 0);
 
   return (
-    <Card className="border shadow-sm dark:bg-accent/30 bg-card dark:border-accent border-accent/50 overflow-hidden h-[340px]">
+    <Card className="border shadow-sm dark:bg-accent/20 bg-card dark:border-accent border-accent/50 overflow-hidden h-[340px]">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
         <div className="space-y-1">
           <CardTitle className="text-sm font-semibold text-primary flex items-center gap-2">

@@ -221,7 +221,7 @@ const ProjectWorkspace = () => {
       {/* TOP STATS CARDS */}
       <section className="grid grid-cols-3 gap-6 mt-10">
         {/* Project Deadline Card */}
-        <Card className="p-3! overflow-hidden shadow-sm dark:bg-accent/30 bg-card dark:border-accent border-accent/50">
+        <Card className="p-3! overflow-hidden shadow-sm dark:bg-accent/20 bg-card dark:border-accent border-accent/50">
           <CardHeader className="px-0 flex flex-row items-center justify-between">
             <CardTitle className="text-sm flex items-center gap-2">
               <AudioLines className="w-5 h-5!" /> Track Your Project

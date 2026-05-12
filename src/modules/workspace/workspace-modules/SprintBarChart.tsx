@@ -39,7 +39,7 @@ export const SprintBarChart = ({
 
   if (totalSprintsCount === 0) {
     return (
-      <Card className="border shadow-sm  dark:bg-accent/30 bg-card dark:border-accent border-accent/50 overflow-hidden h-[340px]">
+      <Card className="border shadow-sm  dark:bg-accent/20 bg-card dark:border-accent border-accent/50 overflow-hidden h-[340px]">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
           <div className="space-y-1">
             <CardTitle className="text-sm font-semibold text-primary flex items-center gap-2">
@@ -89,7 +89,7 @@ export const SprintBarChart = ({
   };
 
   return (
-    <Card className="border shadow-none  dark:bg-accent/30 bg-card dark:border-accent border-accent/50 overflow-hidden h-[340px]">
+    <Card className="border shadow-none  dark:bg-accent/20 bg-card dark:border-accent border-accent/50 overflow-hidden h-[340px]">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-0">
         <div className="space-y-1">
           <CardTitle className="text-sm font-semibold text-primary flex items-center gap-2">

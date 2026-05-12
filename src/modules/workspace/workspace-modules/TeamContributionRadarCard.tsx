@@ -86,7 +86,7 @@ export const TeamContributionRadarCard = ({
     // undefined = loading, null = no data (query returned null)
     if (queryData === undefined && !providedData) {
       return (
-        <Card className="p-4! overflow-hidden shadow-sm bg-accent/30 border-accent h-[320px]">
+        <Card className="p-4! overflow-hidden shadow-sm bg-accent/20 border-accent h-[320px]">
           <div className="space-y-4">
             <Skeleton className="h-4 w-32" />
             <Skeleton className="h-[200px] w-full rounded-full" />
@@ -120,7 +120,7 @@ export const TeamContributionRadarCard = ({
 
   if (contributions.length === 0) {
     return (
-      <Card className="p-0! overflow-hidden shadow-sm dark:bg-accent/30 bg-card dark:border-accent border-accent/50 h-[340px]">
+      <Card className="p-0! overflow-hidden shadow-sm dark:bg-accent/20 bg-card dark:border-accent border-accent/50 h-[340px]">
         <CardHeader className="px-4! pt-3! flex flex-row items-center justify-between">
           <div className="space-y-0.5">
             <CardTitle className="text-sm font-semibold text-primary flex items-center gap-2">
@@ -143,7 +143,7 @@ export const TeamContributionRadarCard = ({
   }
 
   return (
-    <Card className="p-0! overflow-hidden shadow-sm  dark:bg-accent/30 bg-card dark:border-accent border-accent/50 h-[340px]">
+    <Card className="p-0! overflow-hidden shadow-sm  dark:bg-accent/20 bg-card dark:border-accent border-accent/50 h-[340px]">
       <CardHeader className=" px-4! pt-3! flex flex-row items-center justify-between">
         <div className="space-y-0.5">
           <CardTitle className="text-sm font-semibold text-primary flex items-center gap-2">
