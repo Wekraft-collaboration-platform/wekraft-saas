@@ -11,7 +11,7 @@ const Section1 = () => {
   return (
     <section id="section1" className="bg-black py-24 px-6 md:px-12 font-sans">
       <div className="max-w-7xl mx-auto">
-        <div className="border border-white/10 rounded-xl overflow-hidden bg-neutral-950 ">
+        <div className="border border-b-0 border-white/10 rounded-t-xl overflow-hidden bg-neutral-950 ">
           {/* Main Heading Section */}
           <div className="p-12 md:p-12 text-center border-b border-white/10">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-blue-500/20 bg-blue-500/5 mb-8">
@@ -42,11 +42,11 @@ const Section1 = () => {
                 width={20}
                 height={20}
               />
-              
+
               {/* Side Decorations */}
-              <div className="absolute inset-y-0 left-0 w-8 border-r border-white/10 bg-neutral-950 z-20" />
+              <div className="absolute inset-y-0 left-0 w-8 border-r border-white/10 bg-neutral-900 z-20" />
               <div className="absolute inset-y-0 right-0 w-8 border-l border-white/10 bg-neutral-950 z-20" />
-              
+
               {/* Content Container */}
               <div className="px-12 md:px-20 py-12 flex-1 flex flex-col justify-between relative z-10">
                 <div className="w-full flex items-center justify-center scale-100">
@@ -81,11 +81,11 @@ const Section1 = () => {
                 maxOpacity={0.1}
                 flickerChance={0.1}
               />
-              
+
               {/* Side Decorations */}
               <div className="absolute inset-y-0 left-0 w-8 border-r border-white/10 bg-neutral-950 z-20" />
-              <div className="absolute inset-y-0 right-0 w-8 border-l border-white/10 bg-neutral-950 z-20" />
-              
+              <div className="absolute inset-y-0 right-0 w-8 border-l border-white/10 bg-neutral-900 z-20" />
+
               <div className="w-full px-12 md:px-20 relative z-10 flex items-center justify-center scale-100">
                 <NotificationCenter
                   cardTitle="Real-time project health"
@@ -113,11 +113,11 @@ const Section1 = () => {
                 maxOpacity={0.1}
                 flickerChance={0.1}
               />
-              
+
               {/* Side Decorations */}
-              <div className="absolute inset-y-0 left-0 w-8 border-r border-white/10 bg-neutral-950 z-20" />
+              <div className="absolute inset-y-0 left-0 w-8 border-r border-white/10 bg-neutral-900 z-20" />
               <div className="absolute inset-y-0 right-0 w-8 border-l border-white/10 bg-neutral-950 z-20" />
-              
+
               <div className="w-full px-12 md:px-20 relative z-10 flex items-center justify-center scale-100">
                 <VaultLock
                   cardTitle="Vault Access"
@@ -142,11 +142,11 @@ const Section1 = () => {
                 maxOpacity={0.1}
                 flickerChance={0.05}
               />
-              
+
               {/* Side Decorations */}
               <div className="absolute inset-y-0 left-0 w-8 border-r border-white/10 bg-neutral-950 z-20" />
-              <div className="absolute inset-y-0 right-0 w-8 border-l border-white/10 bg-neutral-950 z-20" />
-              
+              <div className="absolute inset-y-0 right-0 w-8 border-l  border-white/10 bg-neutral-900 z-20" />
+
               <div className="text-center relative z-10 px-12 md:px-20">
                 <p className="text-neutral-500 font-mono text-sm uppercase tracking-[0.2em] mb-4">
                   Feature 04
@@ -164,6 +164,28 @@ const Section1 = () => {
             </div>
 
             {/* If the user wants more, they can add them. I'll stick to 2 for now as they said grid-cols-2 and hinted at multiple elements */}
+          </div>
+        </div>
+        {/* FOUNDER THOUGHT */}
+        <div className="border border-white/10 border-t-0 rounded-b-xl bg-neutral-900 p-16 md:p-24 flex flex-col items-center text-center">
+          <p className="text-white text-2xl md:text-3xl font-medium max-w-4xl mb-12 leading-tight">
+            "Wekraft transformed the way our team executes projects. What once
+            felt chaotic is now automated, and AI-driven — helping us
+            move faster, and ship without missing deadlines."
+          </p>
+
+          <div className="flex items-center gap-4">
+            <img
+              src="/me3.jpg"
+              alt="rox"
+              className="w-12 h-12 rounded-full object-cover border border-white/10"
+            />
+            <div className="text-left">
+              <h4 className="text-white font-semibold text-lg">rox</h4>
+              <p className="text-neutral-500 text-sm">
+                founder of vrsa analytics
+              </p>
+            </div>
           </div>
         </div>
       </div>
