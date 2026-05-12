@@ -1,7 +1,8 @@
 "use client";
 
 import { useQuery } from "@tanstack/react-query";
-import { useQuery as useConvexQuery } from "convex/react";
+import { useUser } from "@clerk/nextjs";
+import { useQuery as useConvexQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { useSidebar } from "@/components/ui/sidebar";
 import { getDashboardStats } from "@/modules/dashboard/action/action";
@@ -21,13 +22,14 @@ import {
   Waypoints,
   SlidersHorizontal,
   Layers3,
+  Github,
 } from "lucide-react";
 import { ProjectCards } from "./ProjectCards";
 import Link from "next/link";
 import { Skeleton } from "@/components/ui/skeleton";
 import { getActiveUserPlan, getPlanLimits } from "../../../../convex/pricing";
 import { Progress } from "@/components/ui/progress";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import ContributionGraph from "@/modules/dashboard/components/ContributionGraph";
@@ -41,21 +43,77 @@ import CreateProjectDialog from "@/modules/project/CreateProjectDialog";
 export default function DashboardPage() {
   const user = useConvexQuery(api.user.getCurrentUser);
   const userProjects = useConvexQuery(api.project.getUserProjects);
+  const { user: clerkUser } = useUser();
+  const updateGithubUsername = useMutation(api.user.updateGithubUsername);
   const { open: sidebarOpen } = useSidebar();
   const [activeTab, setActiveTab] = useState("stats");
+
+// =====================GITHUB CONNECTION=========================
+useEffect(() => {
+  if (!user || !clerkUser) return;
+  if (user.githubUsername) return;
+
+  // Force reload clerkUser to get fresh data after OAuth redirect
+  const reloadAndCheck = async () => {
+    await clerkUser.reload(); // ← THIS IS THE KEY FIX
+
+    const githubAccount = clerkUser.externalAccounts.find(
+      (acc) => acc.provider === "github",
+    );
+
+    console.log("After reload — github account:", githubAccount);
+    console.log("After reload — username:", githubAccount?.username);
+    console.log("After reload — status:", githubAccount?.verification?.status);
+
+    if (
+      githubAccount?.username &&
+      githubAccount?.verification?.status === "verified"
+    ) {
+      console.log("🚀 Calling mutation with:", githubAccount.username);
+      updateGithubUsername({ githubUsername: githubAccount.username });
+    }
+  };
+
+  reloadAndCheck();
+}, [user, clerkUser, updateGithubUsername]);
+
+const handleConnectGithub = async () => {
+  try {
+    const existingGithub = clerkUser?.externalAccounts.find(
+      (acc) => acc.provider === "github",
+    );
+
+    if (
+      existingGithub &&
+      existingGithub.verification?.status !== "verified" &&
+      existingGithub.verification?.externalVerificationRedirectURL
+    ) {
+      console.log("Account unverified, redirecting to finish OAuth...");
+      window.location.href =
+        existingGithub.verification.externalVerificationRedirectURL.toString();
+      return;
+    }
+
+    // No github account yet — create one
+    const res = await clerkUser?.createExternalAccount({
+      strategy: "oauth_github",
+      redirectUrl: window.location.href,
+    });
+
+    if (res?.verification?.externalVerificationRedirectURL) {
+      window.location.href =
+        res.verification.externalVerificationRedirectURL.toString();
+    }
+  } catch (error) {
+    console.error("❌ Failed to connect GitHub:", error);
+  }
+};
 
   const activePlan = user ? getActiveUserPlan(user as any) : "free";
   const limits = user ? getPlanLimits(user as any) : null;
   const showUpgrade =
     !!user && (activePlan === "free" || activePlan === "plus");
 
-  // const demoDashboardStats: GitHubStats = {
-  //   totalCommits: 1000,
-  //   totalPRs: 80,
-  //   totalMergedPRs: 60,
-  //   totalIssuesClosed: 40,
-  //   totalReviews: 20,
-  // };
 
   // Query 1 : dashboardStats
   const {
@@ -80,6 +138,16 @@ export default function DashboardPage() {
             <Skeleton className="h-8 w-40 inline-block align-bottom" />
           )}
         </h1>
+        {user && !user.githubUsername && (
+          <Button
+            onClick={handleConnectGithub}
+            size="sm"
+            variant="outline"
+            className="gap-2"
+          >
+            <Github className="h-4 w-4" /> Connect GitHub
+          </Button>
+        )}
       </div>
 
       {/* =========CARDS============ */}

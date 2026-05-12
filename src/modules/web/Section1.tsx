@@ -4,6 +4,8 @@ import AIChatSimulation from "./AIChatSimulation";
 import { StripedPattern } from "@/components/magicui/striped-pattern";
 import { FlickeringGrid } from "@/components/ui/flickering-grid";
 import { HexagonPattern } from "@/components/ui/hexagon-pattern";
+import NotificationCenter from "@/components/forgeui/notification-center";
+import VaultLock from "@/components/forgeui/vault-lock";
 
 const Section1 = () => {
   return (
@@ -18,14 +20,14 @@ const Section1 = () => {
                 Purpose-built for engineering teams
               </span>
             </div>
-            
+
             <h2 className="text-5xl font-bold tracking-tight mb-8 leading-[1.1] max-w-4xl mx-auto">
               <span className="text-white">Build with clarity.</span> <br />
               <span className="text-neutral-500">Ship with confidence.</span>
             </h2>
-            
+
             <p className="text-neutral-400 text-lg max-w-2xl mx-auto leading-relaxed">
-              WeKraft combines intelligent PM, real-time collaboration, and deep 
+              WeKraft combines intelligent PM, real-time collaboration, and deep
               Analysis into one unified developer platform.
             </p>
           </div>
@@ -33,66 +35,132 @@ const Section1 = () => {
           {/* Feature Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2">
             {/* Element 1 */}
-            <div className="relative overflow-hidden p-12 md:p-16 border-b md:border-b md:border-r border-white/10 group hover:bg-white/2 transition-colors duration-500 min-h-[500px] flex flex-col items-start justify-between">
+            <div className="relative overflow-hidden border-b md:border-b md:border-r border-white/10 group hover:bg-white/[0.01] transition-colors duration-500 min-h-[500px] flex flex-col items-stretch justify-between">
+              {/* Background Pattern */}
               <StripedPattern
-                className="absolute inset-0 opacity-30 text-white/70 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]"
+                className="absolute inset-y-0 left-8 right-8 opacity-10 text-white/40 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]"
                 width={20}
                 height={20}
               />
-              <div className="w-full relative z-10">
-                <AIChatSimulation />
+              
+              {/* Side Decorations */}
+              <div className="absolute inset-y-0 left-0 w-8 border-r border-white/10 bg-neutral-950 z-20" />
+              <div className="absolute inset-y-0 right-0 w-8 border-l border-white/10 bg-neutral-950 z-20" />
+              
+              {/* Content Container */}
+              <div className="px-12 md:px-20 py-12 flex-1 flex flex-col justify-between relative z-10">
+                <div className="w-full flex items-center justify-center scale-100">
+                  <AIChatSimulation />
+                </div>
+                <div className="mt-12">
+                  <h3 className="text-white text-xl font-semibold mb-2">
+                    Meet your PM-Agent KAYA
+                  </h3>
+                  <p className="text-neutral-500 text-sm leading-relaxed max-w-md">
+                    Experience real-time assistance. Ask your AI Agent to
+                    coordinate tasks, answer questions, and maintain team
+                    alignment.
+                  </p>
+                </div>
               </div>
-              <div className="mt-8 relative z-10">
-                <h3 className="text-white text-xl font-semibold mb-2">Meet your PM-Agent KAYA</h3>
-                <p className="text-neutral-500 text-sm leading-relaxed max-w-md">
-                  Experience real-time assistance. Ask your AI Agent to coordinate tasks, answer questions, and maintain team alignment.
-                </p>
-              </div>
+
+              {/* Ticks/Markers */}
+              <div className="absolute top-0 left-8 w-px h-2 bg-white/20" />
+              <div className="absolute top-0 right-8 w-px h-2 bg-white/20" />
+              <div className="absolute bottom-0 left-8 w-px h-2 bg-white/20" />
+              <div className="absolute bottom-0 right-8 w-px h-2 bg-white/20" />
             </div>
 
             {/* Element 2 */}
-            <div className="relative overflow-hidden p-12 md:p-16 border-b border-white/10 group hover:bg-white/[0.02] transition-colors duration-500 min-h-[400px] flex items-center justify-center">
-               <FlickeringGrid
-                className="absolute inset-0 z-0 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]"
+            <div className="relative overflow-hidden border-b border-white/10 group hover:bg-white/[0.01] transition-colors duration-500 min-h-[500px] flex items-center justify-center">
+              <FlickeringGrid
+                className="absolute inset-y-0 left-8 right-8 z-0 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]"
                 squareSize={4}
                 gridGap={6}
-                color="#3b82f6"
-                maxOpacity={0.20}
+                color="#fff"
+                maxOpacity={0.1}
                 flickerChance={0.1}
               />
-               <div className="text-center relative z-10">
-                <p className="text-neutral-500 font-mono text-sm uppercase tracking-[0.2em] mb-4">Feature 02</p>
-                <p className="text-white/30 text-2xl font-semibold">element-2</p>
+              
+              {/* Side Decorations */}
+              <div className="absolute inset-y-0 left-0 w-8 border-r border-white/10 bg-neutral-950 z-20" />
+              <div className="absolute inset-y-0 right-0 w-8 border-l border-white/10 bg-neutral-950 z-20" />
+              
+              <div className="w-full px-12 md:px-20 relative z-10 flex items-center justify-center scale-100">
+                <NotificationCenter
+                  cardTitle="Real-time project health"
+                  cardDescription="Get instant updates from Kaya about deadlines, delays, and critical sprint updates."
+                  notificationTitle="Kaya PM"
+                  notificationDescription="Deadline Alert: Sprint 4 is at risk of a 2-day delay."
+                  notificationTime="Just now"
+                />
               </div>
+
+              {/* Ticks/Markers */}
+              <div className="absolute top-0 left-8 w-px h-2 bg-white/20" />
+              <div className="absolute top-0 right-8 w-px h-2 bg-white/20" />
+              <div className="absolute bottom-0 left-8 w-px h-2 bg-white/20" />
+              <div className="absolute bottom-0 right-8 w-px h-2 bg-white/20" />
             </div>
 
             {/* Element 3 */}
-            <div className="relative overflow-hidden p-12 md:p-16 border-b md:border-b-0 md:border-r border-white/10 group hover:bg-white/[0.02] transition-colors duration-500 min-h-[400px] flex items-center justify-center">
-              <HexagonPattern
-                className="absolute inset-0 opacity-[0.2] text-white/40 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]"
-                radius={24}
-                gap={4}
+            <div className="relative overflow-hidden border-b md:border-b-0 md:border-r border-white/10 group hover:bg-white/[0.01] transition-colors duration-500 min-h-[500px] flex items-center justify-center">
+              <FlickeringGrid
+                className="absolute inset-y-0 left-8 right-8 z-0 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]"
+                squareSize={4}
+                gridGap={6}
+                color="#fff"
+                maxOpacity={0.1}
+                flickerChance={0.1}
               />
-              <div className="text-center relative z-10">
-                <p className="text-neutral-500 font-mono text-sm uppercase tracking-[0.2em] mb-4">Feature 03</p>
-                <p className="text-white/30 text-2xl font-semibold">element-3</p>
+              
+              {/* Side Decorations */}
+              <div className="absolute inset-y-0 left-0 w-8 border-r border-white/10 bg-neutral-950 z-20" />
+              <div className="absolute inset-y-0 right-0 w-8 border-l border-white/10 bg-neutral-950 z-20" />
+              
+              <div className="w-full px-12 md:px-20 relative z-10 flex items-center justify-center scale-100">
+                <VaultLock
+                  cardTitle="Vault Access"
+                  cardDescription="Smooth and secure login experience, backed by encrypted access and seamless visual transitions"
+                />
               </div>
+
+              {/* Ticks/Markers */}
+              <div className="absolute top-0 left-8 w-px h-2 bg-white/20" />
+              <div className="absolute top-0 right-8 w-px h-2 bg-white/20" />
+              <div className="absolute bottom-0 left-8 w-px h-2 bg-white/20" />
+              <div className="absolute bottom-0 right-8 w-px h-2 bg-white/20" />
             </div>
 
             {/* Element 4 */}
-            <div className="relative overflow-hidden p-12 md:p-16 group hover:bg-white/[0.02] transition-colors duration-500 min-h-[400px] flex items-center justify-center">
-               <FlickeringGrid
-                className="absolute inset-0 z-0 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]"
+            <div className="relative overflow-hidden group hover:bg-white/[0.01] transition-colors duration-500 min-h-[500px] flex items-center justify-center">
+              <FlickeringGrid
+                className="absolute inset-y-0 left-8 right-8 z-0 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]"
                 squareSize={3}
                 gridGap={10}
                 color="#60a5fa"
                 maxOpacity={0.1}
                 flickerChance={0.05}
               />
-               <div className="text-center relative z-10">
-                <p className="text-neutral-500 font-mono text-sm uppercase tracking-[0.2em] mb-4">Feature 04</p>
-                <p className="text-white/30 text-2xl font-semibold">element-4</p>
+              
+              {/* Side Decorations */}
+              <div className="absolute inset-y-0 left-0 w-8 border-r border-white/10 bg-neutral-950 z-20" />
+              <div className="absolute inset-y-0 right-0 w-8 border-l border-white/10 bg-neutral-950 z-20" />
+              
+              <div className="text-center relative z-10 px-12 md:px-20">
+                <p className="text-neutral-500 font-mono text-sm uppercase tracking-[0.2em] mb-4">
+                  Feature 04
+                </p>
+                <p className="text-white/30 text-2xl font-semibold">
+                  element-4
+                </p>
               </div>
+
+              {/* Ticks/Markers */}
+              <div className="absolute top-0 left-8 w-px h-2 bg-white/20" />
+              <div className="absolute top-0 right-8 w-px h-2 bg-white/20" />
+              <div className="absolute bottom-0 left-8 w-px h-2 bg-white/20" />
+              <div className="absolute bottom-0 right-8 w-px h-2 bg-white/20" />
             </div>
 
             {/* If the user wants more, they can add them. I'll stick to 2 for now as they said grid-cols-2 and hinted at multiple elements */}

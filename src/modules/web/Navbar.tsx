@@ -132,7 +132,7 @@ const Navbar = () => {
                   >
                     Book a demo
                   </Button>
-                  <SignUpButton mode="modal">
+                  <SignUpButton>
                     <Button
                       size="sm"
                       className={clsx(
@@ -208,7 +208,7 @@ const Navbar = () => {
                     </div>
                   ) : (
                     <div className="flex flex-col gap-3 mt-2">
-                      <SignUpButton mode="modal">
+                      <SignUpButton forceRedirectUrl={"/auth"}>
                         <Button className="w-full bg-white text-black hover:bg-white/90">
                           Sign-up
                         </Button>

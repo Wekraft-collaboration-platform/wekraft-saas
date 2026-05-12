@@ -7,6 +7,7 @@ import { api } from "../../../../../convex/_generated/api";
 import { useEffect } from "react";
 import { getUserTopLanguages } from "@/modules/github/actions/action";
 import { toast } from "sonner";
+import OnboardCard from "@/components/forgeui/onboard-card";
 
 const AuthCallback = () => {
   const { isAuthenticated, isLoading: isStoreLoading } = useStoreUser();
@@ -61,7 +62,12 @@ const AuthCallback = () => {
 
   return (
     <div className="flex h-screen w-full items-center justify-center">
-      <div className="flex flex-col items-center gap-2">loading...</div>
+    <OnboardCard
+      duration={3000} // 3sec
+      step1="Welcome Aboard"
+      step2="Creating Environment"
+      step3="Checking auth-token"
+    />
     </div>
   );
 };
