@@ -49,6 +49,31 @@ export const WeeklyVelocityChart = ({ projectId, data: providedData }: WeeklyVel
 
   const totalThisWeek = data.reduce((acc, curr) => acc + curr.tasks + curr.issues, 0);
 
+  if (totalThisWeek === 0) {
+    return (
+      <Card className="border shadow-sm dark:bg-accent/20 bg-card dark:border-accent border-accent/50 overflow-hidden h-[340px]">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
+          <div className="space-y-1">
+            <CardTitle className="text-sm font-semibold text-primary flex items-center gap-2">
+              <Zap className="w-4 h-4" /> Weekly Velocity Breakdown
+            </CardTitle>
+            <CardDescription className="text-[10px] font-medium text-muted-foreground">
+              0 items completed this week (Mon - Sun)
+            </CardDescription>
+          </div>
+          <TrendingUp className="w-4 h-4 text-muted-foreground opacity-50" />
+        </CardHeader>
+        <CardContent className="flex flex-col items-center justify-center h-[220px] text-center p-6">
+          <TrendingUp className="w-8 h-8 mb-2 text-muted-foreground/40" />
+          <p className="text-base font-medium text-muted-foreground">No velocity data yet</p>
+          <p className="text-[10px] text-muted-foreground max-w-[200px] mt-1">
+            Complete tasks and resolve issues to see your weekly performance trends.
+          </p>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card className="border shadow-sm dark:bg-accent/20 bg-card dark:border-accent border-accent/50 overflow-hidden h-[340px]">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">

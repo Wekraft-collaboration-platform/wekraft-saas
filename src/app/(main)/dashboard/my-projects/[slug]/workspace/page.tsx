@@ -59,6 +59,7 @@ import { TeamContributionRadarCard } from "@/modules/workspace/workspace-modules
 import { Lock, Sparkles } from "lucide-react";
 import { EnvironmentalSeverityHeatmap } from "@/modules/workspace/workspace-modules/EnvironmentalSeverityHeatmap";
 import { WeeklyVelocityChart } from "@/modules/workspace/workspace-modules/WeeklyVelocityChart";
+import { MemberWorkloadCard } from "@/modules/workspace/workspace-modules/MemberWorkloadCard";
 
 const ProjectWorkspace = () => {
   const params = useParams();
@@ -370,7 +371,7 @@ const ProjectWorkspace = () => {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-2 gap-6 px-2">
                 <TeamContributionRadarCard
                   projectId={projectId as Id<"projects">}
                   data={cachedData?.contributions}
@@ -387,6 +388,11 @@ const ProjectWorkspace = () => {
                 <WeeklyVelocityChart
                   projectId={projectId as Id<"projects">}
                   data={cachedData?.velocity}
+                />
+
+                <MemberWorkloadCard
+                  projectId={projectId as Id<"projects">}
+                  data={cachedData?.workload}
                 />
               </div>
             )}
