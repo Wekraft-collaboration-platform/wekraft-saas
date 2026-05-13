@@ -18,7 +18,7 @@ const navLinks: { label: string; href: string }[] = [
   { label: "Pricing", href: "/pricing" },
   { label: "Reach us", href: "/reach-us" },
   { label: "Why us?", href: "/why-us" },
-  { label: "Docs", href: "/docs" },
+  { label: "Docs", href: "/web/docs" },
 ];
 
 const Navbar = () => {

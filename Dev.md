@@ -40,4 +40,4 @@ Right now, the "Timeline" chart is a sleek placeholder. It uses CSS to draw dyna
 3. Web app calls createHandshakeToken() → gets a 5-min token
 4. Browser redirects to: vscode://wekraft.wekraft-vscode/auth?token=<hex>
 5. Extension calls exchangeHandshakeToken({ token }) via Convex
-6. Gets back { userId, apiKey } — token is deleted immediately ✅
+6. Gets back { userId, apiKey } — token is deleted immediately 
