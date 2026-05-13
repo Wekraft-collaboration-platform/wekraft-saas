@@ -18,6 +18,9 @@ export interface DashboardAnalyticsData {
   heatmap: {
     environment: string;
     total: number;
+    critical: number;
+    medium: number;
+    low: number;
   }[];
   velocity: {
     day: string;

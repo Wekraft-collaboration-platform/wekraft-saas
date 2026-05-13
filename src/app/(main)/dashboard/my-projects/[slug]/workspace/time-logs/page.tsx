@@ -173,6 +173,7 @@ const TimeLogsPage = () => {
         onOpenChange={setIsDialogOpen}
         projectId={project._id}
         projectName={project.projectName}
+        projectCreatedAt={project.createdAt}
       />
     </div>
   );

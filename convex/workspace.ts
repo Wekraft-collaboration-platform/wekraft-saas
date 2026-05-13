@@ -794,6 +794,7 @@ export const getEnvironmentalSeverityHeatmap = query({
       const envIssues = issues.filter((i) => (i.environment || "dev") === env);
       return {
         environment: env.charAt(0).toUpperCase() + env.slice(1),
+        total: envIssues.length,
         critical: envIssues.filter((i) => i.severity === "critical").length,
         medium: envIssues.filter((i) => i.severity === "medium").length,
         low: envIssues.filter((i) => i.severity === "low").length,

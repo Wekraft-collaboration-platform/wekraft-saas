@@ -282,6 +282,7 @@ const ProjectWorkspace = () => {
                     onOpenChange={setIsDeadlineDialogOpen}
                     projectId={projectId as Id<"projects">}
                     projectName={project?.projectName}
+                    projectCreatedAt={project.createdAt}
                   />
                 )}
               </div>
