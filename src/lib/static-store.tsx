@@ -155,11 +155,11 @@ export const statusIconsNoColors: Record<string, React.ReactNode> = {
 };
 
 export const KANBAN_COLUMN_ICONS: Record<string, React.ReactNode> = {
-  "not started": <Ellipsis className="w-4 h-4 text-white" />,
-  inprogress: <Loader className="w-4 h-4 text-white" />,
-  reviewing: <ScanSearch className="w-4 h-4 text-white" />,
-  testing: <BugPlay className="w-4 h-4 text-white" />,
-  completed: <CircleCheckBig className="w-4 h-4 text-white" />,
+  "not started": <Ellipsis className="w-4 h-4 text-primary" />,
+  inprogress: <Loader className="w-4 h-4 text-primary" />,
+  reviewing: <ScanSearch className="w-4 h-4 text-primary" />,
+  testing: <BugPlay className="w-4 h-4 text-primary" />,
+  completed: <CircleCheckBig className="w-4 h-4 text-primary" />,
 };
 
 export const statusColors: Record<string, string> = {

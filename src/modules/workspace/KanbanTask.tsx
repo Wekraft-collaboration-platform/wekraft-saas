@@ -302,7 +302,7 @@ const Column = ({
           "p-2 flex border-b sticky top-0 z-10 transition-all duration-300",
           isCollapsed
             ? "flex-col items-center gap-4 h-full border-b-0 bg-transparent"
-            : "items-center justify-between dark:bg-card bg-neutral-100 backdrop-blur-md",
+            : "items-center justify-between dark:bg-card bg-neutral-200 backdrop-blur-md",
         )}
       >
         <div

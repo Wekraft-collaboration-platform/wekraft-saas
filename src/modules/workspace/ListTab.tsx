@@ -171,7 +171,7 @@ const TaskGroup = ({
 
   return (
     <div className="">
-      <div className="flex items-center justify-between mb-4 px-4 dark:bg-neutral-900 bg-neutral-100 py-1.5 rounded-md">
+      <div className="flex items-center justify-between mb-4 px-4 dark:bg-neutral-900 bg-neutral-200/55  py-1.5 rounded-md">
         <div
           className="flex items-center gap-3 cursor-pointer w-full select-none"
           onClick={() => setIsExpanded(!isExpanded)}

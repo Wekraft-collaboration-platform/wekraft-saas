@@ -158,7 +158,7 @@ export const TableTab = ({
         style={{ minHeight: "calc(100vh - 320px)" }}
       >
         <Table>
-          <TableHeader className="dark:bg-neutral-900 bg-neutral-100  z-10 ">
+          <TableHeader className="dark:bg-neutral-900 bg-neutral-200/55  z-10 ">
             <TableRow className="hover:bg-transparent border-none">
               <TableHead className="w-[50px] px-6 py-4">
                 <Checkbox
