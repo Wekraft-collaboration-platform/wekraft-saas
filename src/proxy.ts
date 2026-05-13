@@ -1,6 +1,13 @@
-import { clerkMiddleware } from '@clerk/nextjs/server'
+import { clerkMiddleware, createRouteMatcher } from '@clerk/nextjs/server'
 
-export default clerkMiddleware()
+// The /extension page must be public — IDE users land here before they log in
+const isPublicRoute = createRouteMatcher(['/extension(.*)'])
+
+export default clerkMiddleware(async (auth, req) => {
+  if (!isPublicRoute(req)) {
+    await auth.protect()
+  }
+})
 
 export const config = {
   matcher: [
