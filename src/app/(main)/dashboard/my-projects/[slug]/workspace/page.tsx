@@ -26,6 +26,7 @@ import {
   PlusCircle,
   ChartBar,
   Table,
+  Settings2,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -59,12 +60,13 @@ import { TeamContributionRadarCard } from "@/modules/workspace/workspace-modules
 import { Lock, Sparkles } from "lucide-react";
 import { EnvironmentalSeverityHeatmap } from "@/modules/workspace/workspace-modules/EnvironmentalSeverityHeatmap";
 import { WeeklyVelocityChart } from "@/modules/workspace/workspace-modules/WeeklyVelocityChart";
+import { MemberWorkloadCard } from "@/modules/workspace/workspace-modules/MemberWorkloadCard";
 
 const ProjectWorkspace = () => {
   const params = useParams();
   const slug = params.slug as string;
   const [isDeadlineDialogOpen, setIsDeadlineDialogOpen] = useState(false);
-  const [isChartView, setIsChartView] = useState(true);
+  const [activeTab, setActiveTab] = useState<"charts" | "work" | "config">("charts");
   const [cachedData, setCachedData] = useState<any>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -114,11 +116,11 @@ const ProjectWorkspace = () => {
   );
 
   useEffect(() => {
-    if (projectId && isChartView && !cachedData) {
+    if (projectId && activeTab === "charts" && !cachedData) {
       fetchAnalytics(projectId).then(setCachedData).catch(console.error);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectId, isChartView]);
+  }, [projectId, activeTab]);
 
   const handleRefresh = async () => {
     if (!projectId) return;
@@ -293,24 +295,33 @@ const ProjectWorkspace = () => {
       </section>
 
       {/* TABS: advance charts (scheduler + advance charts) / My work table */}
-      <div className="flex mt-8 mb-2 items-center justify-end gap-6 px-10">
-        <div className="flex items-center gap-2">
+      <div className="flex mt-8 mb-2 items-center justify-end px-10">
+        <div className="flex items-center gap-4">
           <Button
             className="text-xs cursor-pointer"
-            variant={isChartView ? "default" : "outline"}
+            variant={activeTab === "charts" ? "default" : "outline"}
             size={"sm"}
-            onClick={() => setIsChartView(true)}
+            onClick={() => setActiveTab("charts")}
           >
             Advance Charts <ChartBar />
           </Button>
 
           <Button
             className="text-xs cursor-pointer"
-            variant={isChartView ? "outline" : "default"}
+            variant={activeTab === "work" ? "default" : "outline"}
             size={"sm"}
-            onClick={() => setIsChartView(false)}
+            onClick={() => setActiveTab("work")}
           >
             My Work <Table />
+          </Button>
+
+          <Button
+            className="text-xs cursor-pointer"
+            variant={activeTab === "config" ? "default" : "outline"}
+            size={"sm"}
+            onClick={() => setActiveTab("config")}
+          >
+            Config <Settings2 />
           </Button>
         </div>
       </div>
@@ -318,27 +329,30 @@ const ProjectWorkspace = () => {
       <Separator className="bg-accent" />
 
       <section className="mt-4 w-full">
-        {isChartView && user?.accountType !== "free" && (
-          <Button
-            className={cn(
-              "text-[10px] h-7 px-2 flex justify-end ml-auto mb-5 cursor-pointer transition-all",
-              isRefreshing && "animate-pulse opacity-50",
-            )}
-            variant="default"
-            size="sm"
-            onClick={handleRefresh}
-            disabled={isRefreshing}
-          >
-            <History
-              className={cn("w-3 h-3 mr-1", isRefreshing && "animate-spin")}
-            />
-            {isRefreshing ? "Refreshing..." : "Refresh Analytics"}
-          </Button>
-        )}
+        {activeTab === "charts" &&
+          (user?.accountType !== "free" ||
+            (project as any)?.ownerAccountType !== "free") && (
+            <Button
+              className={cn(
+                "text-[10px] h-7 px-2 flex justify-end ml-auto mb-5 cursor-pointer transition-all",
+                isRefreshing && "animate-pulse opacity-50",
+              )}
+              variant="default"
+              size="sm"
+              onClick={handleRefresh}
+              disabled={isRefreshing}
+            >
+              <History
+                className={cn("w-3 h-3 mr-1", isRefreshing && "animate-spin")}
+              />
+              {isRefreshing ? "Refreshing..." : "Refresh Analytics"}
+            </Button>
+          )}
         {/* Advace charts area */}
-        {isChartView && (
+        {activeTab === "charts" && (
           <div className="mt-6">
-            {user?.accountType === "free" ? (
+            {user?.accountType === "free" &&
+            (project as any)?.ownerAccountType === "free" ? (
               <div className="flex flex-col items-center justify-center py-16 ">
                 <div className="flex flex-col items-start gap-1.5 max-w-sm text-sm">
                   <Image
@@ -370,7 +384,7 @@ const ProjectWorkspace = () => {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-6">
+              <div className="grid grid-cols-2 gap-6 px-2">
                 <TeamContributionRadarCard
                   projectId={projectId as Id<"projects">}
                   data={cachedData?.contributions}
@@ -388,18 +402,30 @@ const ProjectWorkspace = () => {
                   projectId={projectId as Id<"projects">}
                   data={cachedData?.velocity}
                 />
+
+                <MemberWorkloadCard
+                  projectId={projectId as Id<"projects">}
+                  data={cachedData?.workload}
+                />
               </div>
             )}
           </div>
         )}
 
         {/* My Work Area */}
-        {!isChartView && (
+        {activeTab === "work" && (
           <div className="mt-6">
             <UserWorkTable
               userName={user?.name}
               projectId={projectId as Id<"projects">}
             />
+          </div>
+        )}
+
+        {/* Config Area */}
+        {activeTab === "config" && (
+          <div className="mt-6 flex flex-col items-center justify-center py-20 text-muted-foreground italic">
+            Config details coming soon...
           </div>
         )}
       </section>

@@ -383,4 +383,21 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_project", ["projectId"])
     .index("by_issue_user", ["issueId", "userId"]),
+
+
+  // -------------- IDE Extension Support ---------------------
+  userApiKeys: defineTable({
+    userId: v.id("users"),
+    key: v.string(), // Secure, permanent API key
+    createdAt: v.number(),
+  })
+    .index("by_user", ["userId"])
+    .index("by_key", ["key"]),
+
+  handshakeTokens: defineTable({
+    token: v.string(), // Short-lived one-time token (5 min TTL)
+    userId: v.id("users"),
+    expiresAt: v.number(),
+  })
+    .index("by_token", ["token"]),
 });

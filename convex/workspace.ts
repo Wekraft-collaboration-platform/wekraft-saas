@@ -856,3 +856,78 @@ export const getWeeklyVelocity = query({
     });
   },
 });
+
+// =============================================
+// GET MEMBER WORKLOAD (For Resource Leveling)
+// =============================================
+export const getMemberWorkload = query({
+  args: {
+    projectId: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    // 1. Get all active tasks for the project
+    // We fetch each active status separately to leverage indexes
+    const activeStatuses = ["not started", "inprogress", "reviewing", "testing"];
+    
+    const activeTasksResults = await Promise.all(
+      activeStatuses.map((status) =>
+        ctx.db
+          .query("tasks")
+          .withIndex("by_project_status", (q) =>
+            q.eq("projectId", args.projectId).eq("status", status as any)
+          )
+          .collect()
+      )
+    );
+
+    const activeTasks = activeTasksResults.flat();
+    if (activeTasks.length === 0) return [];
+
+    const taskIds = activeTasks.map((t) => t._id);
+    const tasksMap = new Map(activeTasks.map((t) => [t._id, t]));
+
+    // 2. Get all assignees for these active tasks
+    // Fetching assignees for the project is faster than per task
+    const projectAssignees = await ctx.db
+      .query("taskAssignees")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
+    // 3. Aggregate workload
+    const memberWorkload: Record<string, { 
+      userId: string;
+      name: string; 
+      avatar: string; 
+      high: number; 
+      medium: number; 
+      low: number;
+      total: number;
+    }> = {};
+
+    projectAssignees.forEach((a) => {
+      const task = tasksMap.get(a.taskId);
+      if (!task) return; // Not an active task
+
+      if (!memberWorkload[a.userId]) {
+        memberWorkload[a.userId] = {
+          userId: a.userId,
+          name: a.name,
+          avatar: a.avatar || "",
+          high: 0,
+          medium: 0,
+          low: 0,
+          total: 0,
+        };
+      }
+
+      const priority = (task.priority || "low") as "high" | "medium" | "low";
+      memberWorkload[a.userId][priority]++;
+      memberWorkload[a.userId].total++;
+    });
+
+    // 4. Sort by total workload and take top 15 (max team size)
+    return Object.values(memberWorkload)
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 15);
+  },
+});

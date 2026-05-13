@@ -5,22 +5,9 @@ import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../../../../../convex/_generated/api";
 import { Id } from "../../../../../../convex/_generated/dataModel";
 
+import { verifyProjectAccess } from "@/modules/workspace/teamspace/lib/auth";
+
 type Params = { channelId: string };
-
-async function checkOwnership(userId: string, projectId: string) {
-  const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
-  const user = await convex.query(api.user.getUserByClerkToken, { clerkToken: userId });
-  if (!user) return { error: "User not found", status: 404 };
-
-  const project = await convex.query(api.project.getProjectById, { projectId: projectId as Id<"projects"> });
-  if (!project) return { error: "Project not found", status: 404 };
-
-  if (project.ownerId !== user._id) {
-    return { error: "Forbidden: Only owner can manage channels", status: 403 };
-  }
-
-  return { user, project };
-}
 
 // PATCH /api/teamspace/channels/[channelId]
 export async function PATCH(req: NextRequest, { params }: { params: Promise<Params> }) {
@@ -44,11 +31,19 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<Para
   }
 
   const projectId = existing.rows[0].project_id as string;
-  const isDefault = existing.rows[0].is_default as number === 1;
 
-  const ownership = await checkOwnership(userId, projectId);
-  if (ownership.error) {
-    return NextResponse.json({ error: ownership.error }, { status: ownership.status });
+  const access = await verifyProjectAccess(userId, projectId);
+  if ("error" in access) return NextResponse.json({ error: access.error }, { status: access.status });
+
+  if (!access.permissions.isOwner && !access.permissions.isAdmin) {
+    const settings = await turso.execute({
+      sql: "SELECT members_can_edit_channels FROM ts_settings WHERE project_id = ?",
+      args: [projectId],
+    });
+    const canEdit = settings.rows.length > 0 && settings.rows[0].members_can_edit_channels === 1;
+    if (!canEdit) {
+      return NextResponse.json({ error: "Forbidden: Only owner or admin can edit channels" }, { status: 403 });
+    }
   }
 
   const now = Date.now();
@@ -91,9 +86,18 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<Par
     return NextResponse.json({ error: "Cannot delete the default channel" }, { status: 400 });
   }
 
-  const ownership = await checkOwnership(userId, projectId);
-  if (ownership.error) {
-    return NextResponse.json({ error: ownership.error }, { status: ownership.status });
+  const access = await verifyProjectAccess(userId, projectId);
+  if ("error" in access) return NextResponse.json({ error: access.error }, { status: access.status });
+
+  if (!access.permissions.isOwner && !access.permissions.isAdmin) {
+    const settings = await turso.execute({
+      sql: "SELECT members_can_delete_channels FROM ts_settings WHERE project_id = ?",
+      args: [projectId],
+    });
+    const canDelete = settings.rows.length > 0 && settings.rows[0].members_can_delete_channels === 1;
+    if (!canDelete) {
+      return NextResponse.json({ error: "Forbidden: Only owner or admin can delete channels" }, { status: 403 });
+    }
   }
 
   await turso.execute({

@@ -18,7 +18,9 @@
 import { useState, useRef, useCallback, KeyboardEvent, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { SmilePlus, Plus, X, SendHorizontal, BarChart2, Code, AtSign } from "lucide-react";
+import { SmilePlus, Plus, X, SendHorizontal, BarChart2, Code, AtSign, Paperclip, Loader2, FileIcon } from "lucide-react";
+import { toast } from "sonner";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
@@ -61,6 +63,92 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
   const [mentionQuery, setMentionQuery] = useState("");
   const [showMentions, setShowMentions] = useState(false);
   const [mentionIndex, setMentionIndex] = useState(0);
+
+  const [uploadingMedia, setUploadingMedia] = useState(false);
+  const [selectedMediaFile, setSelectedMediaFile] = useState<File | null>(null);
+  const [mediaPreviewUrl, setMediaPreviewUrl] = useState<string | null>(null);
+  const [mediaCaption, setMediaCaption] = useState("");
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleMediaSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("File too large. Max 10MB allowed.");
+      if (fileInputRef.current) fileInputRef.current.value = "";
+      return;
+    }
+
+    setSelectedMediaFile(file);
+    if (file.type.startsWith("image/")) {
+      setMediaPreviewUrl(URL.createObjectURL(file));
+    } else {
+      setMediaPreviewUrl(null);
+    }
+    setMediaCaption("");
+  };
+
+  const uploadAndSendMedia = async () => {
+    if (!selectedMediaFile) return;
+
+    setUploadingMedia(true);
+    const formData = new FormData();
+    formData.append("file", selectedMediaFile);
+
+    try {
+      const res = await fetch("/api/teamspace/media", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        throw new Error(await res.text());
+      }
+
+      const data = await res.json();
+      if (data.url) {
+        const isImage = selectedMediaFile.type.startsWith("image/");
+        const markdownLink = isImage 
+          ? `![${selectedMediaFile.name}](${data.url})`
+          : `[${selectedMediaFile.name}](${data.url})`;
+        
+        let finalContent = markdownLink;
+        if (mediaCaption.trim()) {
+           finalContent += "\n\n" + mediaCaption.trim();
+        }
+        
+        await onSend(finalContent);
+        
+        setSelectedMediaFile(null);
+        if (mediaPreviewUrl) {
+          URL.revokeObjectURL(mediaPreviewUrl);
+          setMediaPreviewUrl(null);
+        }
+        setMediaCaption("");
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to upload media");
+    } finally {
+      setUploadingMedia(false);
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
+  const handleCancelMedia = () => {
+    setSelectedMediaFile(null);
+    if (mediaPreviewUrl) {
+      URL.revokeObjectURL(mediaPreviewUrl);
+      setMediaPreviewUrl(null);
+    }
+    setMediaCaption("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+  };
 
   // Code Linker state
   const [showCodeLinker, setShowCodeLinker] = useState(false);
@@ -200,10 +288,34 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
           layout: { duration: 0.2, ease: "easeOut" }
         }}
         className={cn(
-          "flex items-center gap-2 rounded-lg bg-accent/40 px-4 py-2 transition-all duration-200",
+          "flex items-center gap-2 rounded-lg bg-accent/40 px-4 py-2 transition-all duration-200 relative",
           disabled && "opacity-70 bg-secondary/30"
         )}
       >
+        {/* Code Linker Popover */}
+        <Popover open={showCodeLinker} onOpenChange={setShowCodeLinker}>
+          <PopoverTrigger asChild>
+            <div className="absolute top-0 left-4 w-0 h-0 pointer-events-none" />
+          </PopoverTrigger>
+          <PopoverContent className="w-[340px] p-0 border-border/40 bg-background/95 backdrop-blur-xl shadow-2xl rounded-xl overflow-hidden" side="top" align="start" sideOffset={10}>
+            <GetRepoStructure
+              repoFullName={project?.repoFullName}
+              ownerClerkId={project?.ownerClerkId}
+              selectedPath={selectedPath}
+              onSelect={(path) => {
+                if (path) {
+                  const before = content.substring(0, content.lastIndexOf("\\"));
+                  const after = content.substring(content.lastIndexOf("\\") + 1);
+                  const fileLink = `\`${path}\``;
+                  setContent(before + fileLink + " " + after);
+                  setShowCodeLinker(false);
+                  textareaRef.current?.focus();
+                }
+              }}
+            />
+          </PopoverContent>
+        </Popover>
+
         {/* Attachment menu */}
         <div className="flex items-center gap-1.5 shrink-0">
           <Popover>
@@ -227,6 +339,7 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
                 {[
                   { label: "Codebase", icon: Code, color: "bg-foreground text-background" },
                   { label: "Poll", icon: BarChart2, color: "bg-foreground text-background" },
+                  { label: "Media (Max 10MB)", icon: uploadingMedia ? Loader2 : Paperclip, color: "bg-foreground text-background" },
                 ].map((item) => (
                   <button 
                     key={item.label}
@@ -236,16 +349,20 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
                         setIsPollDialogOpen(true);
                       } else if (item.label === "Codebase") {
                         setShowCodeLinker(true);
+                      } else if (item.label === "Media (Max 10MB)") {
+                        fileInputRef.current?.click();
                       } else {
                         console.log("Clicked", item.label);
                       }
                     }}
+                    disabled={uploadingMedia && item.label === "Media (Max 10MB)"}
                   >
                     <div className={cn(
                       "h-10 w-10 rounded-full flex items-center justify-center shadow-sm transition-transform duration-200 group-hover:scale-110 group-active:scale-95",
-                      item.color
+                      item.color,
+                      uploadingMedia && item.label === "Media (Max 10MB)" && "opacity-70 cursor-not-allowed"
                     )}>
-                      <item.icon className="h-[18px] w-[18px]" />
+                      <item.icon className={cn("h-[18px] w-[18px]", uploadingMedia && item.label === "Media (Max 10MB)" && "animate-spin")} />
                     </div>
                     <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground transition-colors">
                       {item.label}
@@ -437,29 +554,74 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
           await onSend("", poll);
         }}
       />
-      {/* Code Linker Popover */}
-      <Popover open={showCodeLinker} onOpenChange={setShowCodeLinker}>
-        <PopoverTrigger asChild>
-          <div className="absolute bottom-12 left-1/2 -translate-x-1/2 w-0 h-0 pointer-events-none" />
-        </PopoverTrigger>
-        <PopoverContent className="w-[340px] p-0 border-border/40 bg-background/95 backdrop-blur-xl shadow-2xl rounded-xl overflow-hidden" side="top" align="center" sideOffset={10}>
-          <GetRepoStructure
-            repoFullName={project?.repoFullName}
-            ownerClerkId={project?.ownerClerkId}
-            selectedPath={selectedPath}
-            onSelect={(path) => {
-              if (path) {
-                const before = content.substring(0, content.lastIndexOf("\\"));
-                const after = content.substring(content.lastIndexOf("\\") + 1);
-                const fileLink = `\`${path}\``;
-                setContent(before + fileLink + " " + after);
-                setShowCodeLinker(false);
-                textareaRef.current?.focus();
-              }
-            }}
-          />
-        </PopoverContent>
-      </Popover>
+      <input 
+        type="file" 
+        className="hidden" 
+        ref={fileInputRef} 
+        onChange={handleMediaSelect} 
+        accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.gif,.webp"
+      />
+
+      {/* File Preview Dialog */}
+      <Dialog open={!!selectedMediaFile} onOpenChange={(open) => { if (!open) handleCancelMedia() }}>
+        <DialogContent className="sm:max-w-md" showCloseButton={!uploadingMedia}>
+          <DialogHeader>
+            <DialogTitle>Send File</DialogTitle>
+            <DialogDescription>
+              Preview and add a caption before sending.
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="flex flex-col items-center justify-center space-y-4 my-2">
+            {mediaPreviewUrl ? (
+              <div className="relative w-full max-h-[40vh] rounded-md overflow-hidden flex items-center justify-center bg-muted/50 border border-border/40">
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={mediaPreviewUrl} alt="Preview" className="max-h-[40vh] object-contain" />
+              </div>
+            ) : selectedMediaFile ? (
+              <div className="flex flex-col items-center justify-center p-8 bg-muted/30 w-full rounded-md border border-border/50">
+                <FileIcon className="h-16 w-16 text-muted-foreground mb-4" />
+                <span className="text-sm font-medium text-center break-all">{selectedMediaFile.name}</span>
+                <span className="text-xs text-muted-foreground mt-1">{(selectedMediaFile.size / 1024 / 1024).toFixed(2)} MB</span>
+              </div>
+            ) : null}
+            
+            <Textarea 
+               value={mediaCaption}
+               onChange={(e) => setMediaCaption(e.target.value)}
+               placeholder="Add a caption..."
+               disabled={uploadingMedia}
+               className="w-full resize-none min-h-[60px]"
+               rows={2}
+               onKeyDown={(e) => {
+                 if (e.key === "Enter" && !e.shiftKey) {
+                   e.preventDefault();
+                   uploadAndSendMedia();
+                 }
+               }}
+            />
+          </div>
+          
+          <DialogFooter className="sm:justify-end gap-2">
+             <Button variant="ghost" onClick={handleCancelMedia} disabled={uploadingMedia}>
+               Cancel
+             </Button>
+             <Button onClick={uploadAndSendMedia} disabled={uploadingMedia}>
+               {uploadingMedia ? (
+                 <>
+                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                   Sending...
+                 </>
+               ) : (
+                 <>
+                   <SendHorizontal className="mr-2 h-4 w-4" />
+                   Send
+                 </>
+               )}
+             </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

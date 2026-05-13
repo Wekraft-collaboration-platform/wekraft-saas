@@ -3,8 +3,41 @@ import { NextRequest, NextResponse } from "next/server";
 import { turso } from "@/lib/turso";
 import Ably from "ably";
 import { verifyProjectAccess } from "@/modules/workspace/teamspace/lib/auth";
+import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 
 const ably = new Ably.Rest(process.env.ABLY_API_KEY!);
+
+const s3Client = new S3Client({
+  credentials: {
+    accessKeyId: process.env.AWS_ACCES_KEY as string,
+    secretAccessKey: process.env.AWS_SECRET_KEY_S3 as string,
+  },
+  region: "ap-south-1",
+});
+
+const BUCKET_NAME = "wekraft-saas-upload-s3";
+
+function extractS3Keys(content: string): string[] {
+  if (!content) return [];
+  const regex = /https:\/\/wekraft-saas-upload-s3\.s3\.ap-south-1\.amazonaws\.com\/(teamspace-media\/[^\s)"\]]+)/g;
+  const keys: string[] = [];
+  let match;
+  while ((match = regex.exec(content)) !== null) {
+    keys.push(match[1]);
+  }
+  return keys;
+}
+
+async function deleteFromS3(keys: string[]) {
+  for (const key of keys) {
+    try {
+      await s3Client.send(new DeleteObjectCommand({ Bucket: BUCKET_NAME, Key: key }));
+      console.log("Deleted from S3:", key);
+    } catch (e) {
+      console.error("Failed to delete from S3:", key, e);
+    }
+  }
+}
 
 // PATCH /api/teamspace/messages/[messageId]
 export async function PATCH(
@@ -30,7 +63,7 @@ export async function PATCH(
 
   // Get existing message
   const existing = await turso.execute({
-    sql: "SELECT user_id, channel_id FROM ts_messages WHERE id = ?",
+    sql: "SELECT user_id, channel_id, content FROM ts_messages WHERE id = ?",
     args: [messageId],
   });
 
@@ -59,6 +92,15 @@ export async function PATCH(
   if (content !== undefined) {
     updates.push("content = ?, edited_at = ?");
     args.push(content.trim(), now);
+    
+    const oldContent = existing.rows[0].content as string;
+    const oldKeys = extractS3Keys(oldContent);
+    const newKeys = extractS3Keys(content);
+    
+    const keysToDelete = oldKeys.filter(k => !newKeys.includes(k));
+    if (keysToDelete.length > 0) {
+      await deleteFromS3(keysToDelete);
+    }
   }
   if (is_pinned !== undefined) {
     updates.push("is_pinned = ?");
@@ -108,7 +150,7 @@ export async function DELETE(
   if ("error" in access) return NextResponse.json({ error: access.error }, { status: access.status });
 
   const existing = await turso.execute({
-    sql: "SELECT user_id, channel_id FROM ts_messages WHERE id = ?",
+    sql: "SELECT user_id, channel_id, content FROM ts_messages WHERE id = ?",
     args: [messageId],
   });
 
@@ -126,14 +168,34 @@ export async function DELETE(
 
   const channelId = existing.rows[0].channel_id as string;
 
+  const oldContent = existing.rows[0].content as string;
+  const keysToDelete = extractS3Keys(oldContent);
+  if (keysToDelete.length > 0) {
+    await deleteFromS3(keysToDelete);
+  }
+
+  // Soft delete message
+  const now = Date.now();
   await turso.execute({
-    sql: "DELETE FROM ts_messages WHERE id = ?",
+    sql: "UPDATE ts_messages SET content = ?, poll = NULL, is_pinned = 0, edited_at = ? WHERE id = ?",
+    args: ["$__DELETED__$", now, messageId],
+  });
+
+  // Delete all reactions for this message
+  await turso.execute({
+    sql: "DELETE FROM ts_reactions WHERE message_id = ?",
     args: [messageId],
   });
 
   // Notify subscribers
   const ablyChannel = ably.channels.get(`teamspace:${channelId}`);
-  await ablyChannel.publish("message.deleted", { id: messageId });
+  await ablyChannel.publish("message.updated", { 
+    id: messageId,
+    content: "$__DELETED__$",
+    poll: null,
+    is_pinned: 0,
+    edited_at: now
+  });
 
   return NextResponse.json({ success: true });
 }

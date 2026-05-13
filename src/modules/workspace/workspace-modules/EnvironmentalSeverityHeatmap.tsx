@@ -5,7 +5,7 @@ import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
-import { Bar, BarChart, XAxis, YAxis, CartesianGrid, LabelList } from "recharts";
+import { Pie, PieChart, Cell, ResponsiveContainer } from "recharts";
 import { LayoutDashboard, Activity } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -18,6 +18,14 @@ interface EnvironmentalSeverityHeatmapProps {
     low: number;
   }[];
 }
+
+const COLORS = [
+  "#2563eb", // blue-600
+  "#3b82f6", // blue-500
+  "#60a5fa", // blue-400
+  "#93c5fd", // blue-300
+  "#1d4ed8", // blue-700
+];
 
 const chartConfig = {
   issues: {
@@ -45,8 +53,10 @@ export const EnvironmentalSeverityHeatmap = ({ projectId, data: providedData }: 
     );
   }
 
+  const totalIssues = data?.reduce((acc, curr) => acc + curr.critical + curr.medium + curr.low, 0) ?? 0;
+
   // Loaded but no data
-  if (!data || data.length === 0) {
+  if (!data || data.length === 0 || totalIssues === 0) {
     return (
       <Card className="border shadow-sm dark:bg-accent/20 bg-card dark:border-accent border-accent/50 overflow-hidden h-[340px]">
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-8">
@@ -70,15 +80,16 @@ export const EnvironmentalSeverityHeatmap = ({ projectId, data: providedData }: 
     );
   }
 
-  // Flatten data for a clean bar chart like the reference image
-  const processedData = data.map((item) => ({
-    env: item.environment.substring(0, 4), // Shorten for labels
-    issues: item.critical + item.medium + item.low,
+  // Process data for Pie Chart
+  const processedData = data.map((item, index) => ({
+    name: item.environment,
+    value: item.critical + item.medium + item.low,
+    fill: COLORS[index % COLORS.length],
   }));
 
   return (
-    <Card className="border shadow-sm  dark:bg-accent/20 bg-card dark:border-accent border-accent/50 overflow-hidden h-[340px]">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-8">
+    <Card className="border shadow-sm dark:bg-accent/20 bg-card dark:border-accent border-accent/50 overflow-hidden h-[340px]">
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <div className="space-y-1">
           <CardTitle className="text-sm font-semibold text-primary flex items-center gap-2">
             <LayoutDashboard className="w-4 h-4 text-muted-foreground" /> Environment Distribution
@@ -89,42 +100,38 @@ export const EnvironmentalSeverityHeatmap = ({ projectId, data: providedData }: 
         </div>
       </CardHeader>
       <CardContent className="pt-0">
-        <ChartContainer config={chartConfig} className="h-[200px] w-full">
-          <BarChart
-            data={processedData}
-            margin={{ top: 25, right: 30, left: 10, bottom: 10 }}
-          >
-            <CartesianGrid vertical={false} strokeDasharray="3 3" className="stroke-primary/30! dark:stroke-muted!" />
-            <XAxis 
-              dataKey="env" 
-              tickLine={false} 
-              tickMargin={10} 
-              axisLine={false}
-              fontSize={12}
-              fontWeight={500}
-            />
-            <YAxis hide />
-            <ChartTooltip
-              cursor={{ fill: "var(--accent)", opacity: 0.3 }}
-              content={<ChartTooltipContent hideLabel />}
-            />
-            <Bar
-              dataKey="issues"
-              fill="var(--chart-1)"
-              radius={[6, 6, 0, 0]}
-              animationDuration={1000}
-            >
-               <LabelList
-                  dataKey="issues"
-                  position="top"
-                  offset={12}
-                  className="fill-foreground font-bold"
-                  fontSize={13}
-                />
-            </Bar>
-          </BarChart>
+        <ChartContainer config={chartConfig} className="h-[240px] w-full">
+          <ResponsiveContainer width="100%" height="100%">
+            <PieChart>
+              <ChartTooltip
+                cursor={false}
+                content={<ChartTooltipContent hideLabel />}
+              />
+              <Pie
+                data={processedData}
+                dataKey="value"
+                nameKey="name"
+                cx="50%"
+                cy="50%"
+                outerRadius={75}
+                label={({ value }) => `${value}`}
+                labelLine={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1, opacity: 0.5 }}
+                animationDuration={1000}
+                stroke="none"
+              >
+                {processedData.map((entry, index) => (
+                  <Cell 
+                    key={`cell-${index}`} 
+                    fill={entry.fill}
+                    className="hover:opacity-80 transition-opacity cursor-pointer"
+                  />
+                ))}
+              </Pie>
+            </PieChart>
+          </ResponsiveContainer>
         </ChartContainer>
       </CardContent>
     </Card>
   );
 };
+

@@ -496,7 +496,11 @@ export function useMessages(channelId: string | null, projectId: string, current
   const deleteMessage = useCallback(
     async (messageId: string) => {
       const previousMessages = [...messages];
-      setMessages((prev) => prev.filter((m) => m.id !== messageId));
+      setMessages((prev) =>
+        prev.map((m) =>
+          m.id === messageId ? { ...m, content: "$__DELETED__$", poll: null, reactions: [], edited_at: Date.now() } : m
+        )
+      );
 
       try {
         const res = await fetch(`/api/teamspace/messages/${messageId}?projectId=${projectId}`, {

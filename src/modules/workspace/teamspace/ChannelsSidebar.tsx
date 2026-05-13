@@ -23,6 +23,8 @@ import { prefetchMessages } from "./hooks/useMessages";
 import { CreateChannelDialog } from "./CreateChannelDialog";
 import { EditChannelDialog } from "./EditChannelDialog";
 import { DeleteChannelDialog } from "./DeleteChannelDialog";
+import { useTeamspaceSettings } from "./hooks/useTeamspaceSettings";
+import { TeamspaceSettingsDialog } from "./TeamspaceSettingsDialog";
 import { cn } from "@/lib/utils";
 import {
   Hash,
@@ -90,7 +92,13 @@ export function ChannelsSidebar({
   const [createOpen, setCreateOpen] = useState(false);
   const [editOpen, setEditOpen] = useState(false);
   const [deleteOpen, setDeleteOpen] = useState(false);
+  const [settingsOpen, setSettingsOpen] = useState(false);
   const [targetChannel, setTargetChannel] = useState<Channel | null>(null);
+
+  const { settings } = useTeamspaceSettings(projectId);
+  const canCreate = isPower || settings?.members_can_create_channels === 1;
+  const canEdit = isPower || settings?.members_can_edit_channels === 1;
+  const canDelete = isPower || settings?.members_can_delete_channels === 1;
 
   const [announcementsExpanded, setAnnouncementsExpanded] = useState(true);
   const [chatExpanded, setChatExpanded] = useState(true);
@@ -150,7 +158,7 @@ export function ChannelsSidebar({
           </span>
 
           {/* Hover actions - 3 dot menu */}
-          {isPower && !channel.is_default && (
+          {(canEdit || (canDelete && !channel.is_default)) && (
             <div className={cn(
               "transition-opacity z-20 shrink-0",
               isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"
@@ -165,27 +173,31 @@ export function ChannelsSidebar({
                   </button>
                 </DropdownMenuTrigger>
                 <DropdownMenuContent align="end" className="w-40">
-                  <DropdownMenuItem
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setTargetChannel(channel);
-                      setEditOpen(true);
-                    }}
-                  >
-                    <Edit2 className="h-4 w-4 mr-2" />
-                    Edit Channel
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    className="text-destructive focus:text-destructive"
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      setTargetChannel(channel);
-                      setDeleteOpen(true);
-                    }}
-                  >
-                    <Trash2 className="h-4 w-4 mr-2" />
-                    Delete Channel
-                  </DropdownMenuItem>
+                  {canEdit && (
+                    <DropdownMenuItem
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setTargetChannel(channel);
+                        setEditOpen(true);
+                      }}
+                    >
+                      <Edit2 className="h-4 w-4 mr-2" />
+                      Edit Channel
+                    </DropdownMenuItem>
+                  )}
+                  {(canDelete && !channel.is_default) && (
+                    <DropdownMenuItem
+                      className="text-destructive focus:text-destructive"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        setTargetChannel(channel);
+                        setDeleteOpen(true);
+                      }}
+                    >
+                      <Trash2 className="h-4 w-4 mr-2" />
+                      Delete Channel
+                    </DropdownMenuItem>
+                  )}
                 </DropdownMenuContent>
               </DropdownMenu>
             </div>
@@ -212,7 +224,7 @@ export function ChannelsSidebar({
       </div>
 
       {/* Create Channel Action */}
-      {isPower && (
+      {canCreate && (
         <div className="px-3 pt-4 pb-0">
           <motion.button
             onClick={() => setCreateOpen(true)}
@@ -312,12 +324,13 @@ export function ChannelsSidebar({
       <div className="bg-background border-t border-border/60 shrink-0">
         <div className="p-3 relative z-10">
           <motion.button
+            onClick={() => setSettingsOpen(true)}
             whileHover={{
               scale: 1.02,
               backgroundColor: "var(--color-accent-60)",
             }}
             whileTap={{ scale: 0.98 }}
-            className="flex items-center justify-center gap-2.5 w-full py-2 rounded border border-border/40 bg-accent/20 hover:bg-accent/40 hover:border-border/80 hover:shadow-[0_0_20px_rgba(0,0,0,0.2)] transition-all duration-300 group relative overflow-hidden"
+            className="cursor-pointer flex items-center justify-center gap-2.5 w-full py-2 rounded border border-border/40 bg-accent/20 hover:bg-accent/40 hover:border-border/80 hover:shadow-[0_0_20px_rgba(0,0,0,0.2)] transition-all duration-300 group relative overflow-hidden"
           >
             <motion.div
               animate={{ rotate: 0 }}
@@ -356,6 +369,13 @@ export function ChannelsSidebar({
           }
         }}
         channel={targetChannel}
+      />
+
+      <TeamspaceSettingsDialog
+        projectId={projectId}
+        open={settingsOpen}
+        onOpenChange={setSettingsOpen}
+        isPower={isPower}
       />
     </div>
   );

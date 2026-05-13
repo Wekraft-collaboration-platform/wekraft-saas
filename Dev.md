@@ -35,19 +35,9 @@ Right now, the "Timeline" chart is a sleek placeholder. It uses CSS to draw dyna
 
 
 ## Extension
-The whole login UX in 4 seconds
-
-User installs extension, sees "Connect to WeKraft" button in sidebar
-Clicks it → browser opens → logs into their WeKraft account
-Browser auto-redirects → VS Code pops back up → sidebar fills with their projects
-Next time they open VS Code → already logged in, data loads instantly
-
-
-## kaya agent tools 
-# schema for scheduler
-{
-  "name": "string",
-  "frequencyDays": "number",
-  "recipientEmail": "string", (optional from user side)
-  "isActive": "boolean"
-}
+1. Extension opens: https://wekraft.com/extension?callback_url=vscode://wekraft.wekraft-vscode/auth
+2. User logs in (if needed) → clicks "Grant Access to IDE"
+3. Web app calls createHandshakeToken() → gets a 5-min token
+4. Browser redirects to: vscode://wekraft.wekraft-vscode/auth?token=<hex>
+5. Extension calls exchangeHandshakeToken({ token }) via Convex
+6. Gets back { userId, apiKey } — token is deleted immediately ✅
