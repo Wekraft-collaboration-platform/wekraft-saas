@@ -52,7 +52,7 @@ export const PaceTracker = ({
   // Amber (Yellow): You're slipping. There is a small gap (0-15%) between time spent and work done.
   // Rose (Red): Critical danger. The gap is >15%, meaning the deadline is severely at risk.
 
-  const isReady = totalTasks >= 6 && daysConsumed >= 1;
+  const isReady = totalTasks >= 6 && daysConsumed >= 3;
   let state = "empty";
   if (isReady) state = "ready";
   else if (totalTasks > 0) state = "growing";
