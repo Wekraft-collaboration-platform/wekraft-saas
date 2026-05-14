@@ -17,6 +17,13 @@ export const docsConfig: { [key: string]: DocItem[] } = {
       badge: "Updated",
     },
     {
+      title: "Shortcuts",
+      slug: "shortcuts",
+      description: "Master Wekraft with keyboard shortcuts for navigation and tasks.",
+      icon: "Command",
+      badge: "New",
+    },
+    {
       title: "VS Code Extension",
       slug: "extension",
       description: "Install, authenticate, and manage tasks without leaving your editor.",
@@ -51,6 +58,13 @@ export const docsConfig: { [key: string]: DocItem[] } = {
   ],
   "Advanced Tools": [
     {
+      title: "Kaya AI",
+      slug: "kaya-ai",
+      description: "Meet your AI partner for reporting, sprint planning, and automation.",
+      icon: "Sparkles",
+      badge: "New",
+    },
+    {
       title: "Time Logs",
       slug: "time-logs",
       description: "Auto-track time from the IDE or log manually. Export for reporting.",
@@ -74,11 +88,27 @@ export const docsConfig: { [key: string]: DocItem[] } = {
       description: "AI-powered workload analysis, burnout risk detection, and activity trends.",
       icon: "BarChart3",
     },
+  ],
+  "Platform": [
     {
       title: "Manage Teams",
       slug: "manage-teams",
       description: "Invite members, set roles, handle join requests, and configure permissions.",
       icon: "Settings",
+    },
+    {
+      title: "Security",
+      slug: "security",
+      description: "Understand project visibility, team roles, and data protection.",
+      icon: "ShieldCheck",
+      badge: "New",
+    },
+    {
+      title: "Billing",
+      slug: "billing",
+      description: "Detailed breakdown of Free, Plus, and Pro plans and usage limits.",
+      icon: "CreditCard",
+      badge: "New",
     },
   ],
 };
