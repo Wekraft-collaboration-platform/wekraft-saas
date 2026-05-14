@@ -136,7 +136,7 @@ function TimelineDayAxis({
   return (
     <div className="w-full min-w-0 overflow-x-auto dark:bg-card">
       <div
-        className="relative flex h-full min-h-[440px] max-h-[500px] w-full"
+        className="relative flex h-full min-h-[440px] max-h-[500px] w-full pl-0.5"
         style={{ width: `max(${trackWidth}px, 100%)` }}
         aria-label={`Timeline from ${format(days[0]!, "PPP")} to ${format(days[days.length - 1]!, "PPP")}, one column per day`}
       >
@@ -158,14 +158,14 @@ function TimelineDayAxis({
               key={day.toISOString()}
               style={{ width: `${columnWidthPercentage}%` }}
               className={cn(
-                "relative shrink-0 border-l border-border/70 first:border-l-0",
-                weekend && "bg-muted/35",
+                "relative shrink-0 border-l dark:border-border/70 border-border first:border-l-0",
+                weekend && "dark:bg-muted/35 bg-accent/50",
               )}
             >
               {/* TODAY  */}
               {isToday(day) && (
                 <div
-                  className="pointer-events-none absolute inset-y-0 left-1/2 z-10 w-0.5 -translate-x-1/2 bg-primary/60 shadow-[0_0_12px_hsl(var(--primary)/0.35)]"
+                  className="pointer-events-none absolute inset-y-0 left-1/2 z-10 w-0.5 -translate-x-1/2 bg-primary/70 shadow-[0_0_12px_hsl(var(--primary)/0.45)]"
                   aria-hidden
                 />
               )}
@@ -193,9 +193,9 @@ function TimelineDayAxis({
                       />
                       <span
                         className={cn(
-                          "mt-1.5 text-center text-[10px] font-medium leading-none text-muted-foreground tabular-nums",
-                          showMonth && "text-foreground/80",
-                          isDeadline && "font-semibold text-amber-700",
+                          "mt-1.5 text-center text-[10px] font-medium leading-none text-primary/80 tabular-nums",
+                          showMonth && "text-primary",
+                          isDeadline && "font-semibold text-rose-600",
                         )}
                       >
                         {showMonth ? format(day, "MMM d") : format(day, "d")}
@@ -246,24 +246,24 @@ function TimelineDayAxis({
               if (daysLeft < 0) {
                 return {
                   barClass:
-                    "bg-red-50 dark:bg-red-500/40 border-red-200 dark:border-red-500/30 text-white shadow-[0_2px_10px_-3px_rgba(239,68,68,0.2)]",
-                  icon: <AlertTriangle size={10} className="text-white" />,
+                    "dark:bg-accent bg-neutral-800 border border-primary/10 text-white  shadow-[0_2px_10px_-3px_rgba(239,68,68,0.2)]",
+                  icon: <AlertTriangle size={14} className="" />,
                   iconBg: "bg-red-500",
                 };
               }
               if (daysLeft <= 2) {
                 return {
                   barClass:
-                    "bg-amber-50 dark:bg-amber-500/40 border-amber-200 dark:border-amber-500/30 text-primary shadow-[0_2px_10px_-3px_rgba(234,179,8,0.2)]",
-                  icon: <AlertCircle size={10} className="text-white" />,
+                    "dark:bg-accent bg-neutral-800  border border-primary/10  text-white dark:text-primary shadow-[0_2px_10px_-3px_rgba(234,179,8,0.2)]",
+                  icon: <AlertCircle size={14} className="text-white" />,
                   iconBg: "bg-amber-500 shadow-[0_0_8px_rgba(234,179,8,0.4)]",
                 };
               }
               return {
                 barClass:
-                  "bg-neutral-800 border-border text-primary dark:text-zinc-200 shadow-sm",
-                icon: <ClipboardList size={10} className="text-black" />,
-                iconBg: "bg-primary",
+                  "dark:bg-accent bg-neutral-800  border border-primary/10  text-white dark:text-zinc-200 shadow-sm",
+                icon: <ClipboardList size={14} className="text-black" />,
+                iconBg: "dark:bg-primary bg-white",
               };
             };
 
@@ -299,13 +299,13 @@ function TimelineDayAxis({
                     </div>
 
                     {/* Title */}
-                    <span className="text-[11px] font-semibold capitalize truncate leading-none flex-1">
+                    <span className="text-[11px] font-inter capitalize truncate leading-none flex-1">
                       {task.title}
                     </span>
 
                     {/* Duration */}
                     {isMed && (
-                      <span className="text-[10px] font-bold  bg-muted px-1.5 py-0.5 rounded-full shrink-0 tabular-nums">
+                      <span className="text-[10px] font-bold text-black dark:text-white  bg-muted px-1.5 py-0.5 rounded-full shrink-0 tabular-nums">
                         {actualDurationDays}d
                       </span>
                     )}
