@@ -9,8 +9,36 @@ import Link from "next/link";
 import type { Components } from "react-markdown";
 import { TableOfContents } from "@/components/TableOfContents";
 
+import { Metadata } from "next";
+
 export async function generateStaticParams() {
   return allDocs.map((doc) => ({ slug: doc.slug }));
+}
+
+export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+  const { slug } = await params;
+  const doc = allDocs.find((d) => d.slug === slug);
+
+  if (!doc) {
+    return {
+      title: "Not Found",
+    };
+  }
+
+  return {
+    title: `${doc.title} | Documentation`,
+    description: doc.description,
+    openGraph: {
+      title: `${doc.title} | Wekraft Documentation`,
+      description: doc.description,
+      type: "article",
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: `${doc.title} | Wekraft Documentation`,
+      description: doc.description,
+    },
+  };
 }
 
 // Helper to generate IDs from text or React nodes
