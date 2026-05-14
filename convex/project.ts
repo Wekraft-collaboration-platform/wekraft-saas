@@ -966,3 +966,190 @@ export const updateProjectThumbnail = mutation({
     });
   },
 });
+
+// ====================================
+// GET TEAM PAGE DATA (Single efficient query)
+// ====================================
+export const getTeamPageData = query({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, args) => {
+    const project = await ctx.db.get(args.projectId);
+    if (!project) return null;
+
+    // 1. Get all members
+    const members = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
+    // Ensure owner is in the list
+    const hasOwner = members.some((m) => m.userId === project.ownerId);
+    if (!hasOwner) {
+      const ownerUser = await ctx.db.get(project.ownerId);
+      if (ownerUser) {
+        members.push({
+          projectId: project._id,
+          userId: project.ownerId,
+          userName: ownerUser.name || "Owner",
+          userImage: ownerUser.avatarUrl,
+          AccessRole: "owner",
+          joinedAt: project.createdAt,
+        } as any);
+      }
+    }
+
+    // 2. Get all task assignees and issue assignees for this project in one go
+    const taskAssignees = await ctx.db
+      .query("taskAssignees")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
+    const issueAssignees = await ctx.db
+      .query("issueAssignees")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
+    // 3. Count per user in memory
+    const taskCounts: Record<string, number> = {};
+    const issueCounts: Record<string, number> = {};
+
+    taskAssignees.forEach((a) => {
+      taskCounts[a.userId] = (taskCounts[a.userId] || 0) + 1;
+    });
+    issueAssignees.forEach((a) => {
+      issueCounts[a.userId] = (issueCounts[a.userId] || 0) + 1;
+    });
+
+    // 4. Role counts
+    let ownerCount = 0;
+    let adminCount = 0;
+    let memberCount = 0;
+
+    // 5. Enrich each member
+    const enrichedMembers = await Promise.all(
+      members.map(async (m) => {
+        const user = await ctx.db.get(m.userId);
+        const role =
+          m.AccessRole ||
+          (m.userId === project.ownerId ? "owner" : "member");
+
+        if (role === "owner") ownerCount++;
+        else if (role === "admin") adminCount++;
+        else memberCount++;
+
+        return {
+          _id: (m as any)._id || null,
+          userId: m.userId,
+          userName: user?.name || m.userName || "Anonymous",
+          userImage: user?.avatarUrl || m.userImage || "",
+          userEmail: user?.email || "",
+          AccessRole: role,
+          joinedAt: m.joinedAt || project.createdAt,
+          taskCount: taskCounts[m.userId] || 0,
+          issueCount: issueCounts[m.userId] || 0,
+        };
+      }),
+    );
+
+    return {
+      members: enrichedMembers,
+      total: enrichedMembers.length,
+      ownerCount,
+      adminCount,
+      memberCount,
+    };
+  },
+});
+
+// ====================================
+// REMOVE MEMBER FROM PROJECT
+// ====================================
+export const removeMember = mutation({
+  args: {
+    memberId: v.id("projectMembers"),
+    projectId: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthenticated");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier)
+      )
+      .unique();
+    if (!user) throw new Error("User not found");
+
+    const project = await ctx.db.get(args.projectId);
+    if (!project) throw new Error("Project not found");
+
+    // Only owner or admin can remove
+    const callerMembership = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .filter((q) => q.eq(q.field("userId"), user._id))
+      .unique();
+
+    const isPower =
+      project.ownerId === user._id ||
+      callerMembership?.AccessRole === "admin";
+    if (!isPower) throw new Error("Unauthorized");
+
+    const target = await ctx.db.get(args.memberId);
+    if (!target) throw new Error("Member not found");
+
+    // Cannot remove the owner
+    if (target.AccessRole === "owner") {
+      throw new Error("Cannot remove the project owner");
+    }
+
+    await ctx.db.delete(args.memberId);
+  },
+});
+
+// ====================================
+// UPDATE MEMBER ROLE
+// ====================================
+export const updateMemberRole = mutation({
+  args: {
+    memberId: v.id("projectMembers"),
+    projectId: v.id("projects"),
+    newRole: v.union(
+      v.literal("admin"),
+      v.literal("member"),
+      v.literal("viewer"),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthenticated");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier)
+      )
+      .unique();
+    if (!user) throw new Error("User not found");
+
+    const project = await ctx.db.get(args.projectId);
+    if (!project) throw new Error("Project not found");
+
+    // Only owner can change roles
+    if (project.ownerId !== user._id) {
+      throw new Error("Only the project owner can change roles");
+    }
+
+    const target = await ctx.db.get(args.memberId);
+    if (!target) throw new Error("Member not found");
+
+    if (target.AccessRole === "owner") {
+      throw new Error("Cannot change the owner's role");
+    }
+
+    await ctx.db.patch(args.memberId, {
+      AccessRole: args.newRole,
+    });
+  },
+});

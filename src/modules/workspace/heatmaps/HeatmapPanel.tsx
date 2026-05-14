@@ -27,6 +27,7 @@ import { getRepoStructure, getRecentlyChangedPaths, type FolderNode } from "./ac
 import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface HeatmapPanelProps {
   isOpen: boolean;
@@ -262,6 +263,9 @@ export const HeatmapPanel = memo(
   }: HeatmapPanelProps) => {
     const { setOpen: setSidebarOpen } = useSidebar();
     const [isLoading, setIsLoading] = useState(false);
+    const router = useRouter();
+
+    const project = useQuery(api.project.getProjectById, projectId ? { projectId } : "skip");
 
     // Track expanded paths for the issue tree separately
     const [issueExpandedPaths, setIssueExpandedPaths] = useState<Set<string>>(
@@ -423,7 +427,47 @@ export const HeatmapPanel = memo(
             </div>
 
             {/* BODY */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar px-4 py-6">
+            <div className="flex-1 overflow-y-auto custom-scrollbar px-4 py-4 space-y-4">
+              
+              {/* REPOSITORY INFO */}
+              <div className="space-y-4">
+                {project?.repoFullName ? (
+                  <div className="p-4 rounded-xl bg-neutral-900 border border-white/5 group hover:border-primary/30 transition-all duration-300">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                        <Github size={18} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white truncate">
+                          {project.repoFullName}
+                        </p>
+                        <p className="text-[10px] text-zinc-500 mt-0.5 flex items-center gap-1">
+                          <ExternalLink size={10} />
+                          github.com/{project.repoFullName}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-6 rounded-xl border border-dashed border-white/10 bg-zinc-900 text-center space-y-4">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="p-3 bg-zinc-800 rounded-full text-zinc-500">
+                        <Github size={24} className="" />
+                      </div>
+                      <p className="text-xs text-zinc-400">No repository connected to this project</p>
+                    </div>
+                    <Button 
+                      variant="default" 
+                      size="sm" 
+                      className="w-full h-9 text-xs"
+                      onClick={() => router.push("/dashboard/repositories")}
+                    >
+                      Connect Now
+                    </Button>
+                  </div>
+                )}
+              </div>
+
               {/* ISSUE BOX */}
               <div className="w-full space-y-4">
                 <Button
