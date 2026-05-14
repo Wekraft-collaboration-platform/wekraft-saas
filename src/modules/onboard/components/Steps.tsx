@@ -257,7 +257,7 @@ export function MultiStepOnboarding() {
       <main className="w-full relative h-full flex flex-col max-h-[500px] max-w-2xl overflow-hidden font-sans group">
         {/* Background & Border Layer with Fade/Blur Effect */}
         <div 
-          className="absolute inset-0 bg-neutral-900/80 border border-neutral-600 rounded-xl backdrop-blur-xl pointer-events-none transition-all duration-500"
+          className="absolute inset-0 bg-neutral-900/70 border border-neutral-800 rounded-xl backdrop-blur-xl pointer-events-none transition-all duration-500"
           style={{ 
             WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 60%, transparent 100%)',
             maskImage: 'linear-gradient(to bottom, black 0%, black 60%, transparent 100%)'
@@ -278,7 +278,7 @@ export function MultiStepOnboarding() {
               {/* ── STEP 1 : your Main purpose of using wekraft (SKIP) ── */}
               {currentStep === 1 && (
                 <div className="space-y-5 relative">
-                  <div className="text-center space-y-1 mb-5">
+                  <div className="text-center space-y-1 mb-10">
                     <h2 className="text-xl font-semibold tracking-tight text-white ">
                       What brings you to WeKraft{" "}
                       <HandHeart className="w-6 h-6 inline ml-2 text-white" />
@@ -288,7 +288,7 @@ export function MultiStepOnboarding() {
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-1 gap-3">
+                  <div className="grid grid-cols-1 gap-4">
                     {PURPOSES.map((p) => {
                       const selected = purposes.includes(p.id);
                       return (
@@ -296,10 +296,10 @@ export function MultiStepOnboarding() {
                           key={p.id}
                           onClick={() => togglePurpose(p.id)}
                           className={cn(
-                            "relative flex items-start gap-3 p-3 rounded-xl border text-left transition-all duration-200 group overflow-hidden",
+                            "relative flex items-start gap-3 p-2 rounded-lg border border-border cursor-pointer text-left transition-all duration-200 group overflow-hidden",
                             selected
-                              ? `bg-linear-to-br from-white/30 to-white/10 shadow-[0_0_20px_rgba(255,255,255,0.06)]`
-                              : "bg-neutral-800 border-white/10 hover:bg-white/[0.08] hover:border-white/20",
+                              ? `bg-accent`
+                              : "bg-neutral-900",
                           )}
                         >
                           {/* Icon bubble */}
@@ -307,7 +307,7 @@ export function MultiStepOnboarding() {
                             className={cn(
                               "shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200",
                               selected
-                                ? `bg-white/70 text-black border ${p.border}`
+                                ? `bg-white text-black border ${p.border}`
                                 : "bg-white/15 border-white/10 group-hover:scale-105",
                             )}
                           >
@@ -323,7 +323,7 @@ export function MultiStepOnboarding() {
                           <div className="min-w-0">
                             <p
                               className={cn(
-                                "text-sm font-semibold leading-tight",
+                                "text-sm  leading-tight",
                                 selected ? "text-white" : "text-white",
                               )}
                             >
@@ -365,12 +365,12 @@ export function MultiStepOnboarding() {
               {/* ── STEP 2 : Update User Name and Occupation ── */}
               {currentStep === 2 && (
                 <div className="space-y-4 relative">
-                  <div className="text-center space-y-1 mb-3">
+                  <div className="text-center space-y-1 mb-5">
                     <h2 className="text-xl font-semibold tracking-tight text-white ">
                       Let’s set up your identity
                       <UserRoundCog className="w-6 h-6 inline ml-2 text-white" />
                     </h2>
-                    <p className="text-white/70 text-sm px-8 text-center">
+                    <p className="text-neutral-200 text-sm px-8 text-center">
                       Choose unique name & Occupation — this is how people will
                       find you & build with you.
                     </p>
@@ -394,7 +394,7 @@ export function MultiStepOnboarding() {
                       Create your first project
                       <FolderGit className="w-6 h-6 " />
                     </h2>
-                    <p className="text-white/50 text-sm">
+                    <p className="text-white/80 text-sm">
                       Create your first project to sync and collab{" "}
                     </p>
                   </div>
@@ -403,14 +403,14 @@ export function MultiStepOnboarding() {
                     <div className="space-y-2">
                       <Label
                         htmlFor="projectName"
-                        className="text-sm text-white"
+                        className="text-xs text-white"
                       >
                         Project Name
                       </Label>
                       <Input
                         id="projectName"
                         placeholder={"Acme saas"}
-                        className="bg-white/10! border border-white/30! text-white placeholder:text-neutral-300"
+                        className="bg-accent/20! border text-white placeholder:text-neutral-300"
                         value={projectName}
                         onChange={(e) => setProjectName(e.target.value)}
                       />
@@ -438,7 +438,7 @@ export function MultiStepOnboarding() {
                               className={cn(
                                 "relative flex flex-col items-start gap-4 p-4 rounded-lg border text-left transition-all duration-300 overflow-hidden group h-20",
                                 isSelected
-                                  ? "bg-white/15 border-white text-white shadow-[0_0_20px_rgba(255,255,255,0.05)]"
+                                  ? "bg-white/10 border-white/50 text-white shadow-[0_0_20px_rgba(255,255,255,0.05)]"
                                   : "bg-white/5 border-white/10 text-neutral-400 hover:bg-white/5 hover:border-white/20 hover:text-white",
                               )}
                             >
@@ -483,21 +483,21 @@ export function MultiStepOnboarding() {
               )}
               {/* STEP 4 : THEME SELECTION --- */}
               {currentStep === 4 && (
-                <div className="space-y-6 relative">
-                  <div className="text-center space-y-2 mb-8">
-                    <h2 className="text-2xl font-semibold tracking-tight text-white flex items-center justify-center gap-2">
+                <div className="space-y-6 relative flex flex-col h-full">
+                  <div className="text-center space-y-2 mb-20">
+                    <h2 className="text-xl font-semibold tracking-tight text-white flex items-center justify-center gap-2">
                       Personalize your space
-                      <Palette className="w-6 h-6 text-blue-400" />
+                      <Palette className="w-6 h-6 " />
                     </h2>
-                    <p className="text-white/50 text-sm">
+                    <p className="text-white/80 text-sm">
                       Choose a theme that suits your working style
                     </p>
                   </div>
 
-                  <div className="grid grid-cols-3 gap-4">
+                  <div className="grid grid-cols-3 gap-4 mt-auto ">
                     {[
-                      { id: "light", label: "Light", icon: Sun, desc: "Clean & Bright" },
-                      { id: "dark", label: "Dark", icon: Moon, desc: "Sleek & Deep" },
+                      { id: "light", label: "Light", icon: Sun, desc: "Clean & Minimal" },
+                      { id: "dark", label: "Dark", icon: Moon, desc: "Sleek & Focused" },
                       { id: "system", label: "System", icon: Monitor, desc: "Auto sync" },
                     ].map((t) => {
                       const isSelected = theme === t.id;
@@ -506,9 +506,9 @@ export function MultiStepOnboarding() {
                           key={t.id}
                           onClick={() => setTheme(t.id)}
                           className={cn(
-                            "relative flex flex-col items-center gap-4 p-6 rounded-2xl border transition-all duration-300 group",
+                            "relative flex flex-col items-center gap-4 p-6 rounded-xl border transition-all duration-300 group",
                             isSelected
-                              ? "bg-white/10 border-white text-white shadow-[0_0_30px_rgba(255,255,255,0.05)] scale-[1.02]"
+                              ? "bg-white/5 border-white/50 text-white shadow-[0_0_30px_rgba(255,255,255,0.05)] scale-[1.02]"
                               : "bg-white/5 border-white/5 text-neutral-400 hover:bg-white/[0.08] hover:border-white/20 hover:text-white"
                           )}
                         >
@@ -521,13 +521,13 @@ export function MultiStepOnboarding() {
                           
                           <div className="text-center">
                             <p className="text-sm font-semibold">{t.label}</p>
-                            <p className="text-[10px] text-neutral-500 mt-1 uppercase tracking-widest">{t.desc}</p>
+                            <p className="text-xs mt-2 text-neutral-300">{t.desc}</p>
                           </div>
 
                           {isSelected && (
                             <motion.div
                               layoutId="theme-active"
-                              className="absolute inset-0 rounded-2xl border-2 border-white/20"
+                              className="absolute inset-0 rounded-xl border-2 border-white/20"
                               initial={false}
                             />
                           )}
@@ -541,7 +541,7 @@ export function MultiStepOnboarding() {
               {currentStep === 5 && (
                 <div className="space-y-6 relative">
                   <div className="text-center space-y-2 mb-8">
-                    <h2 className="text-2xl font-semibold tracking-tight text-white flex items-center justify-center gap-2">
+                    <h2 className="text-xl font-semibold tracking-tight text-white flex items-center justify-center gap-2">
                       Share invite link
                       <UserPlus className="w-6 h-6 " />
                     </h2>
@@ -551,7 +551,7 @@ export function MultiStepOnboarding() {
                     </p>
                   </div>
 
-                  <div className="bg-white/10 border border-white/10 rounded-2xl p-3 space-y-4">
+                  <div className="bg-accent/30 border rounded-lg p-3 space-y-4">
                     <div className="space-y-2">
                       <Label className="text-sm text-white">
                         Project Invite Link
@@ -580,7 +580,7 @@ export function MultiStepOnboarding() {
                     </div>
                   </div>
 
-                  <div className="flex items-center gap-4 my-5">
+                  <div className="flex items-center gap-4 mt-16 mb-4 px-10">
                     <div className="h-px flex-1 bg-white/30"></div>
                     <span className="text-sm text-white capitalize whitespace-nowrap">
                       share it via

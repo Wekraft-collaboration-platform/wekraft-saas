@@ -78,9 +78,9 @@ import { ThemeButtons } from "../dashboard/components/ThemeButton";
 
 const workspaceMenu = [
   {
-    label: "Calendar",
-    path: "workspace/calendar",
-    icon: Calendar,
+    label: "Manage Team",
+    path: "workspace/team",
+    icon: Users2,
   },
   {
     label: "Teamspace",
@@ -88,9 +88,9 @@ const workspaceMenu = [
     icon: PlaneTakeoff,
   },
   {
-    label: "Manage Team",
-    path: "workspace/team",
-    icon: Users2,
+    label: "Calendar",
+    path: "workspace/calendar",
+    icon: Calendar,
   },
   {
     label: "Heatmap",

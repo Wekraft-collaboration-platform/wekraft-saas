@@ -50,7 +50,6 @@ const ROLE_CONFIG: Record<string, { label: string; icon: typeof Crown }> = {
   owner: { label: "Owner", icon: Crown },
   admin: { label: "Admin", icon: Shield },
   member: { label: "Member", icon: User },
-  viewer: { label: "Viewer", icon: User },
 };
 
 export default function TeamPage() {
@@ -92,9 +91,9 @@ export default function TeamPage() {
 
   const handleRoleChange = async (
     memberId: Id<"projectMembers">,
-    newRole: "admin" | "member" | "viewer",
+    newRole: "admin" | "member",
     memberName: string,
-  ) => {
+) => {
     if (!project) return;
     try {
       await updateRole({
@@ -214,7 +213,7 @@ export default function TeamPage() {
               {canManage && (
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
-                    <button className="absolute top-3.5 right-3.5 p-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer">
+                    <button className="absolute top-3.5 right-3.5 p-1 rounded-md  text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer">
                       <MoreHorizontal className="w-4 h-4" />
                     </button>
                   </DropdownMenuTrigger>
@@ -226,7 +225,7 @@ export default function TeamPage() {
                           Change Role
                         </DropdownMenuSubTrigger>
                         <DropdownMenuSubContent>
-                          {(["admin", "member", "viewer"] as const).map(
+                          {(["admin", "member"] as const).map(
                             (role) => (
                               <DropdownMenuItem
                                 key={role}
@@ -291,7 +290,7 @@ export default function TeamPage() {
                       `/dashboard/my-projects/${slug}/workspace/teamspace`,
                     )
                   }
-                  className="absolute top-3.5 right-3.5 p-1 rounded-md opacity-0 group-hover:opacity-100 transition-opacity text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer"
+                  className="absolute top-3.5 right-3.5 p-1 rounded-md  text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer"
                 >
                   <MessageSquare className="w-4 h-4" />
                 </button>
