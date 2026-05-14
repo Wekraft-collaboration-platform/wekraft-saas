@@ -129,14 +129,14 @@ function SidebarContent({
   return (
     <div className="flex h-full flex-col">
       {/* Logo */}
-      <div className="flex items-center gap-2.5 px-5 pt-5 pb-4 border-b border-white/6">
-        <Link href="/" className="flex items-center gap-2 group">
-          <Image src="/logo.svg" alt="Wekraft" width={24} height={24} />
-          <span className="text-sm font-semibold text-white tracking-tight">Wekraft</span>
+      <div className="flex items-center justify-center gap-3 px-5 pt-5 pb-4 border-b border-white/6">
+        <Link href="/" className="flex items-center gap-2.5 group">
+          <Image src="/logo.svg" alt="Wekraft" width={24} height={24} className="shrink-0" />
+          <span className="text-sm font-semibold text-white tracking-tight leading-none mt-0.5">Wekraft</span>
         </Link>
-        <span className="ml-auto text-[10px] font-mono text-white/20 border border-white/10 rounded px-1.5 py-0.5">
+        <div className="flex items-center justify-center text-[10px] font-mono text-white/20 border border-white/10 rounded px-2 py-0.5 leading-none">
           Docs
-        </span>
+        </div>
       </div>
 
       {/* Search */}
@@ -302,7 +302,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
 
         {/* Main content */}
         <main className="flex-1 lg:pl-64 min-w-0">
-          <div className="mx-auto max-w-3xl px-5 py-10 lg:px-12 lg:py-14">
+          <div className="w-full px-6 py-12 lg:px-10 lg:py-14">
             {children}
           </div>
         </main>

@@ -29,7 +29,7 @@ export default function DocsIndexPage() {
   const popularItems = popularSlugs.map((s) => allItems.find((d) => d.slug === s)!).filter(Boolean);
 
   return (
-    <div className="max-w-3xl">
+    <div className="w-full max-w-4xl">
       {/* Hero */}
       <div className="mb-14">
         <div className="inline-flex items-center gap-2 text-[11px] font-mono text-white/25 border border-white/8 rounded-full px-3 py-1 mb-5">
