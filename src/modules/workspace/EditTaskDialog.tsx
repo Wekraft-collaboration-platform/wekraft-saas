@@ -101,6 +101,10 @@ export const EditTaskDialog = ({
   const [isUploading, setIsUploading] = useState(false);
 
   const members = useQuery(api.project.getProjectMembers, { projectId });
+  const project = useQuery(api.project.getProjectById, { projectId });
+  const projectDetails = useQuery(api.projectDetails.getProjectDetails, {
+    projectId,
+  });
   const existingTags = useQuery(api.workspace.getUniqueTags, { projectId });
 
   const defaultTags = [
@@ -423,6 +427,14 @@ export const EditTaskDialog = ({
                   selected={date}
                   onSelect={setDate}
                   numberOfMonths={1}
+                  disabled={[
+                    project?.createdAt
+                      ? { before: new Date(project.createdAt) }
+                      : undefined,
+                    projectDetails?.targetDate
+                      ? { after: new Date(projectDetails.targetDate) }
+                      : undefined,
+                  ].filter(Boolean) as any}
                   className="bg-[#1c1c1c] text-neutral-200"
                 />
               </PopoverContent>

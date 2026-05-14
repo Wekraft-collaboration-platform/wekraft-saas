@@ -52,12 +52,17 @@ import { TaskDetailSheet } from "./TaskDetailSheet";
 import { Task } from "@/types/types";
 import { Id } from "../../../convex/_generated/dataModel";
 import {
-  SortPopover,
   priorityIcons2,
   statusColors,
   statusIcons,
   statusIconsNoColors,
 } from "@/lib/static-store";
+import {
+  DurationSortPopover,
+  PrioritySortPopover,
+  TagFilterPopover,
+} from "./workspace-modules/TaskPopovers";
+import { SortConfig } from "./function/taskFilters";
 import { Separator } from "@/components/ui/separator";
 import Image from "next/image";
 
@@ -68,29 +73,17 @@ interface SortOptionProps {
   isActive?: boolean;
 }
 
-const SortOption = ({ label, icon, onClick, isActive }: SortOptionProps) => (
-  <button
-    onClick={onClick}
-    className={cn(
-      "flex items-center gap-3 w-full px-3 py-2 text-[11px] font-medium transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800/50 rounded-lg group",
-      isActive ? "text-primary bg-primary/5" : "text-muted-foreground",
-    )}
-  >
-    {icon && (
-      <div className="shrink-0 transition-transform group-hover:scale-110">
-        {icon}
-      </div>
-    )}
-    <span>{label}</span>
-  </button>
-);
-
 interface TableTabProps {
   tasks: Task[];
+  allTasks: Task[];
   onLoadMore: () => void;
   hasMore: boolean;
   selectedTaskIds: Id<"tasks">[];
   setSelectedTaskIds: React.Dispatch<React.SetStateAction<Id<"tasks">[]>>;
+  sortConfig: SortConfig;
+  setSortConfig: (config: SortConfig) => void;
+  tagFilter: string | null;
+  setTagFilter: (tag: string | null) => void;
 }
 
 const PriorityBadge = ({ priority = "none" }: { priority?: string }) => {
@@ -105,10 +98,15 @@ const PAGE_SIZE = 10;
 
 export const TableTab = ({
   tasks,
+  allTasks,
   onLoadMore,
   hasMore,
   selectedTaskIds,
   setSelectedTaskIds,
+  sortConfig,
+  setSortConfig,
+  tagFilter,
+  setTagFilter,
 }: TableTabProps) => {
   const [page, setPage] = useState(0);
 
@@ -184,43 +182,32 @@ export const TableTab = ({
                 </div>
               </TableHead>
               <TableHead className="text-[15px] dark:text-primary text-foreground font-medium  px-4  border-r  dark:border-neutral-700 border-neutral-200">
-                <div className="flex items-center justify-center gap-2 overflow-hidden">
+                <div className="flex items-center justify-between gap-2 overflow-hidden">
                   <div className="flex items-center gap-2">
                     <Hourglass className="w-4.5 h-4.5" /> Duration
                   </div>
-                  <SortPopover
-                    title="Sort Duration"
-                    icon={Calendar}
+                  <DurationSortPopover
+                    sortConfig={sortConfig}
+                    setSortConfig={setSortConfig}
                     trigger={
                       <ChevronsUpDown className="w-4.5 h-4.5 text-muted-foreground dark:hover:text-primary hover:text-primary/70 transition-colors cursor-pointer shrink-0" />
                     }
-                  >
-                    <SortOption
-                      label="Upcoming First"
-                      icon={<ArrowUpNarrowWide className="w-3 h-3" />}
-                    />
-                    <SortOption
-                      label="Latest First"
-                      icon={<ArrowDownWideNarrow className="w-3 h-3" />}
-                    />
-                    <Separator className="my-1.5 opacity-50" />
-                    <SortOption
-                      label="Shortest Duration"
-                      icon={<ArrowUpNarrowWide className="w-3 h-3" />}
-                    />
-                    <SortOption
-                      label="Longest Duration"
-                      icon={<ArrowDownWideNarrow className="w-3 h-3" />}
-                    />
-                  </SortPopover>
+                  />
                 </div>
               </TableHead>
               <TableHead className="text-[15px] dark:text-primary text-foreground font-medium  px-4  border-r  dark:border-neutral-700 border-neutral-200">
-                <div className="flex items-center justify-center gap-2 overflow-hidden">
+                <div className="flex items-center justify-between gap-2 overflow-hidden">
                   <div className="flex items-center gap-2">
                     <Box className="w-4.5 h-4.5" /> Tags
                   </div>
-                  <ChevronsUpDown className="w-4.5 h-4.5 text-muted-foreground dark:hover:text-primary hover:text-primary/70 transition-colors cursor-pointer shrink-0" />
+                  <TagFilterPopover
+                    tasks={allTasks}
+                    activeTag={tagFilter}
+                    setTagFilter={setTagFilter}
+                    trigger={
+                      <ChevronsUpDown className="w-4.5 h-4.5 text-muted-foreground dark:hover:text-primary hover:text-primary/70 transition-colors cursor-pointer shrink-0" />
+                    }
+                  />
                 </div>
               </TableHead>
               <TableHead className="text-[15px] dark:text-primary text-foreground font-medium px-4  border-r  dark:border-neutral-700 border-neutral-200">
@@ -234,22 +221,13 @@ export const TableTab = ({
                     <ChartNoAxesColumnIncreasing className="w-4.5 h-4.5" />{" "}
                     Priority
                   </div>
-                  <SortPopover
-                    title="Sort Priority"
-                    icon={ChartNoAxesColumnIncreasing}
+                  <PrioritySortPopover
+                    sortConfig={sortConfig}
+                    setSortConfig={setSortConfig}
                     trigger={
                       <ChevronsUpDown className="w-4.5 h-4.5 text-muted-foreground dark:hover:text-primary hover:text-primary/70 transition-colors cursor-pointer shrink-0" />
                     }
-                  >
-                    <SortOption
-                      label="High to Low"
-                      icon={<ArrowUpNarrowWide className="w-3 h-3" />}
-                    />
-                    <SortOption
-                      label="Low to High"
-                      icon={<ArrowDownWideNarrow className="w-3 h-3" />}
-                    />
-                  </SortPopover>
+                  />
                 </div>
               </TableHead>
               <TableHead className="w-[50px]"></TableHead>

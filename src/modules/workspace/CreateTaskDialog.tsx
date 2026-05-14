@@ -94,7 +94,10 @@ export const CreateTaskDialog = ({
   const [isUploading, setIsUploading] = useState(false);
 
   const members = useQuery(api.project.getProjectMembers, { projectId });
-  const projectDetails = useQuery(api.projectDetails.getProjectDetails, { projectId });
+  const project = useQuery(api.project.getProjectById, { projectId });
+  const projectDetails = useQuery(api.projectDetails.getProjectDetails, {
+    projectId,
+  });
 
   const createTask = useMutation(api.workspace.createTask);
   const existingTags = useQuery(api.workspace.getUniqueTags, { projectId });
@@ -405,11 +408,14 @@ export const CreateTaskDialog = ({
                   selected={date}
                   onSelect={setDate}
                   numberOfMonths={1}
-                  disabled={
+                  disabled={[
+                    project?.createdAt
+                      ? { before: new Date(project.createdAt) }
+                      : undefined,
                     projectDetails?.targetDate
                       ? { after: new Date(projectDetails.targetDate) }
-                      : undefined
-                  }
+                      : undefined,
+                  ].filter(Boolean) as any}
                   className="bg-[#1c1c1c] text-neutral-200"
                 />
               </PopoverContent>
@@ -607,9 +613,7 @@ export const CreateTaskDialog = ({
                             Save
                           </Button>
                         </div>
-                        <p className="text-[10px] text-muted-foreground ml-1 italic opacity-60">
-                          Press Enter or click Save
-                        </p>
+                    
                       </div>
                     </div>
                   )}

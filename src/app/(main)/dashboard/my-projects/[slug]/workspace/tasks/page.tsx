@@ -38,6 +38,7 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { SortConfig, applyTaskFilters } from "@/modules/workspace/function/taskFilters";
 
 const users = [
   { name: "Ritesh", img: "https://i.pravatar.cc/40?img=1" },
@@ -54,6 +55,8 @@ const TaskPage = () => {
   const [taskLimit, setTaskLimit] = useState(10);
   const [selectedTaskIds, setSelectedTaskIds] = useState<Id<"tasks">[]>([]);
   const { setIsOpen } = useKayaStore();
+  const [sortConfig, setSortConfig] = useState<SortConfig>(null);
+  const [tagFilter, setTagFilter] = useState<string | null>(null);
 
   const currentUser = useQuery(api.user.getCurrentUser);
   const project = useQuery(api.project.getProjectBySlug, { slug });
@@ -79,6 +82,8 @@ const TaskPage = () => {
   };
 
   const hasMoreTasks = tasks && tasks.length >= taskLimit;
+
+  const filteredTasks = applyTaskFilters(tasks || [], sortConfig, tagFilter);
 
   if (project === undefined || project === null)
     return (
@@ -227,18 +232,32 @@ const TaskPage = () => {
           <>
             {activeTab === "List" && (
               <ListTab
-                tasks={tasks || []}
+                tasks={filteredTasks}
+                allTasks={tasks || []}
                 selectedTaskIds={selectedTaskIds}
                 setSelectedTaskIds={setSelectedTaskIds}
+                projectId={project._id}
+                projectName={projectName || "Project"}
+                repoFullName={project.repoFullName}
+                ownerClerkId={(project as any).ownerClerkId}
+                sortConfig={sortConfig}
+                setSortConfig={setSortConfig}
+                tagFilter={tagFilter}
+                setTagFilter={setTagFilter}
               />
             )}
             {activeTab === "Table" && (
               <TableTab
-                tasks={tasks || []}
+                tasks={filteredTasks}
+                allTasks={tasks || []}
                 onLoadMore={() => setTaskLimit((p) => p + 10)}
                 hasMore={!!hasMoreTasks}
                 selectedTaskIds={selectedTaskIds}
                 setSelectedTaskIds={setSelectedTaskIds}
+                sortConfig={sortConfig}
+                setSortConfig={setSortConfig}
+                tagFilter={tagFilter}
+                setTagFilter={setTagFilter}
               />
             )}
             {activeTab === "Kanban" && (
