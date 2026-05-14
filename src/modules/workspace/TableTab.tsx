@@ -15,6 +15,12 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
   ChevronLeft,
   ChevronRight,
   MoreHorizontal,
@@ -178,7 +184,7 @@ export const TableTab = ({
                   <div className="flex items-center gap-2">
                     <ChartPie className="w-4.5 h-4.5" /> Status
                   </div>
-                  <ChevronsUpDown className="w-4.5 h-4.5 text-muted-foreground dark:hover:text-primary hover:text-primary/70 transition-colors cursor-pointer shrink-0" />
+                  {/* <ChevronsUpDown className="w-4.5 h-4.5 text-muted-foreground dark:hover:text-primary hover:text-primary/70 transition-colors cursor-pointer shrink-0" /> */}
                 </div>
               </TableHead>
               <TableHead className="text-[15px] dark:text-primary text-foreground font-medium  px-4  border-r  dark:border-neutral-700 border-neutral-200">
@@ -375,17 +381,25 @@ export const TableTab = ({
                     <TableCell className="px-4 border-r border-b dark:border-neutral-700 border-neutral-200">
                       {task.assignees && task.assignees.length > 0 ? (
                         <div className="flex items-center justify-center -space-x-1">
-                          {task.assignees.map((person, i) => (
-                            <Avatar
-                              key={i}
-                              className="w-7 h-7 border-2 border-background shadow-sm"
-                            >
-                              <AvatarImage src={person.avatar} className="" />
-                              <AvatarFallback className="text-[9px] bg-neutral-800 text-primary/40 font-bold uppercase">
-                                {person.name[0]}
-                              </AvatarFallback>
-                            </Avatar>
-                          ))}
+                          <TooltipProvider>
+                            {task.assignees.map((person, i) => (
+                              <Tooltip key={i}>
+                                <TooltipTrigger asChild>
+                                  <Avatar className="w-7 h-7 border-2 border-background shadow-sm hover:z-10 transition-transform hover:scale-110 cursor-pointer">
+                                    <AvatarImage src={person.avatar} className="" />
+                                    <AvatarFallback className="text-[9px] bg-neutral-800 text-primary/40 font-bold uppercase">
+                                      {person.name[0]}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="px-2 py-1">
+                                  <p className="text-[10px] font-medium">
+                                    {person.name}
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            ))}
+                          </TooltipProvider>
                         </div>
                       ) : (
                         <div className="flex items-center justify-center w-full">

@@ -43,6 +43,12 @@ import {
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Id } from "../../../convex/_generated/dataModel";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import {
   Table,
@@ -83,17 +89,17 @@ const priorityIcons: Record<string, React.ReactNode> = {
   low: (
     <div className="flex items-end gap-px h-3 mb-0.5">
       <div className="w-[4px] h-5 bg-yellow-500 rounded-px" />
-      <div className="w-[4px] h-4 dark:bg-neutral-400 bg-accent/20 rounded-px" />
-      <div className="w-[4px] h-3 dark:bg-neutral-400 bg-accent/20 rounded-px" />
-      <div className="w-[4px] h-[8px] dark:bg-neutral-400 bg-accent/20 rounded-px" />
+      <div className="w-[4px] h-4 dark:bg-neutral-400 bg-accent rounded-px" />
+      <div className="w-[4px] h-3 dark:bg-neutral-400 bg-accent rounded-px" />
+      <div className="w-[4px] h-[8px] dark:bg-neutral-400 bg-accent rounded-px" />
     </div>
   ),
   medium: (
     <div className="flex items-end gap-px h-3 mb-0.5">
       <div className="w-[4px] h-5 bg-green-500 rounded-px" />
       <div className="w-[4px] h-4 bg-green-500 rounded-px" />
-      <div className="w-[4px] h-3  dark:bg-neutral-400 bg-accent/20  rounded-px" />
-      <div className="w-[4px] h-[8px] dark:bg-neutral-400 bg-accent/20 rounded-px" />
+      <div className="w-[4px] h-3  dark:bg-neutral-400 bg-accent rounded-px" />
+      <div className="w-[4px] h-[8px] dark:bg-neutral-400 bg-accent rounded-px" />
     </div>
   ),
   high: (
@@ -101,7 +107,7 @@ const priorityIcons: Record<string, React.ReactNode> = {
       <div className="w-[4px] h-5 bg-red-500 rounded-px" />
       <div className="w-[4px] h-4 bg-red-500 rounded-px" />
       <div className="w-[4px] h-3 bg-red-500 rounded-px" />
-      <div className="w-[4px] h-[8px] dark:bg-neutral-400 bg-accent/20 rounded-px" />
+      <div className="w-[4px] h-[8px] dark:bg-neutral-400 bg-accent rounded-px" />
     </div>
   ),
 };
@@ -256,7 +262,7 @@ const TaskGroup = ({
                     <TextQuote className="w-4.5 h-4.5" /> Description
                   </div>
                 </TableHead>
-                <TableHead className="text-[13px] dark:text-primary text-foreground font-medium px-4 border-r dark:border-neutral-800 border-neutral-200">
+                <TableHead className="text-[13px] dark:text-primary text-foreground font-medium px-4 border-r border-b dark:border-neutral-800 border-neutral-200">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <Clock className="w-4 h-4" /> Duration
@@ -270,7 +276,7 @@ const TaskGroup = ({
                     />
                   </div>
                 </TableHead>
-                <TableHead className="text-[13px] dark:text-primary text-foreground font-medium px-4 border-r dark:border-neutral-800 border-neutral-200">
+                <TableHead className="text-[13px] dark:text-primary text-foreground font-medium px-4 border-r border-b dark:border-neutral-800 border-neutral-200">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <Tag className="w-4 h-4" /> Tags
@@ -285,12 +291,12 @@ const TaskGroup = ({
                     />
                   </div>
                 </TableHead>
-                <TableHead className="text-[13px] dark:text-primary text-foreground font-medium px-4 border-r dark:border-neutral-800 border-neutral-200">
+                <TableHead className="text-[13px] dark:text-primary text-foreground font-medium px-4 border-r border-b dark:border-neutral-800 border-neutral-200">
                   <div className="flex items-center gap-2">
                     <Users className="w-4 h-4" /> Assigned
                   </div>
                 </TableHead>
-                <TableHead className="text-[13px] dark:text-primary text-foreground font-medium px-4 text-center">
+                <TableHead className="text-[13px] dark:text-primary text-foreground font-medium px-4 text-center border-b dark:border-neutral-800 border-neutral-200">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 justify-center">
                       <ChartNoAxesColumnIncreasing className="w-4 h-4" />{" "}
@@ -416,24 +422,32 @@ const TaskGroup = ({
                             {task.type.label}
                           </div>
                         ) : (
-                          <span className="text-[10px] text-primary/10">—</span>
+                          <span className="text-[10px] text-muted-foreground">—</span>
                         )}
                       </div>
                     </TableCell>
                     <TableCell className="p-2.5 border-r border-b dark:border-neutral-800 border-neutral-200">
                       {task.assignees && task.assignees.length > 0 ? (
                         <div className="flex items-center justify-center -space-x-2">
-                          {task.assignees.map((person, i) => (
-                            <Avatar
-                              key={i}
-                              className="w-7 h-7 border-2 border-primary/50 shadow-sm hover:z-10 transition-transform hover:scale-110"
-                            >
-                              <AvatarImage src={person.avatar} />
-                              <AvatarFallback className="text-[10px] bg-primary text-primary-foreground">
-                                {person.name[0]}
-                              </AvatarFallback>
-                            </Avatar>
-                          ))}
+                          <TooltipProvider>
+                            {task.assignees.map((person, i) => (
+                              <Tooltip key={i}>
+                                <TooltipTrigger asChild>
+                                  <Avatar className="w-7 h-7 border-2 border-primary/50 shadow-sm hover:z-10 transition-transform hover:scale-110 cursor-pointer">
+                                    <AvatarImage src={person.avatar} />
+                                    <AvatarFallback className="text-[10px] bg-primary text-primary-foreground">
+                                      {person.name[0]}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="px-2 py-1">
+                                  <p className="text-[10px] font-medium">
+                                    {person.name}
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            ))}
+                          </TooltipProvider>
                         </div>
                       ) : (
                         <div className="flex items-center justify-center w-full">
