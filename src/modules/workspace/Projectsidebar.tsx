@@ -149,7 +149,7 @@ export default function ProjectSidebar() {
     return pathname === url;
   };
   return (
-    <Sidebar collapsible="icon" className="border-r-0">
+    <Sidebar collapsible="icon" className="border bg-white! dark:bg-sidebar!">
       {/* ───────── HEADER ───────── */}
       <SidebarHeader
         style={{ viewTransitionName: "site-header" }}
@@ -193,7 +193,7 @@ export default function ProjectSidebar() {
             >
               <Link
                 href={`/dashboard/my-projects/${slug}/inbox`}
-                className="relative z-10 flex items-center justify-center gap-3 w-full bg-secondary border dark:border-primary/30 bg-muted dark:data-[active=true]:text-white data-[active=true]:text-gray-700 group-data-[collapsible=icon]:justify-center"
+                className="relative z-10 flex items-center justify-center gap-3 w-full border dark:border-primary/30 border-border bg-accent/50! dark:data-[active=true]:text-white data-[active=true]:text-gray-700 group-data-[collapsible=icon]:justify-center"
               >
                 <Inbox className="h-5 w-5" />
                 <span className="text-sm group-data-[collapsible=icon]:hidden">

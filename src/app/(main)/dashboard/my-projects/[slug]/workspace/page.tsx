@@ -61,6 +61,7 @@ import { Lock, Sparkles } from "lucide-react";
 import { EnvironmentalSeverityHeatmap } from "@/modules/workspace/workspace-modules/EnvironmentalSeverityHeatmap";
 import { WeeklyVelocityChart } from "@/modules/workspace/workspace-modules/WeeklyVelocityChart";
 import { MemberWorkloadCard } from "@/modules/workspace/workspace-modules/MemberWorkloadCard";
+import { ProjectConfigTab } from "@/modules/workspace/workspace-modules/ProjectConfigTab";
 
 const ProjectWorkspace = () => {
   const params = useParams();
@@ -98,6 +99,13 @@ const ProjectWorkspace = () => {
     api.issue.getFilteredIssues,
     projectId ? { projectId: projectId as Id<"projects"> } : "skip",
   );
+
+  const scheduler = useQuery(
+    api.scheduler.getScheduler,
+    projectId ? { projectId: projectId as Id<"projects"> } : "skip",
+  );
+
+
   // const members = useQuery(
   //   api.project.getProjectMembers,
   //   projectId ? { projectId: projectId as Id<"projects"> } : "skip",
@@ -282,6 +290,7 @@ const ProjectWorkspace = () => {
                     onOpenChange={setIsDeadlineDialogOpen}
                     projectId={projectId as Id<"projects">}
                     projectName={project?.projectName}
+                    projectCreatedAt={project.createdAt}
                   />
                 )}
               </div>
@@ -423,10 +432,12 @@ const ProjectWorkspace = () => {
         )}
 
         {/* Config Area */}
-        {activeTab === "config" && (
-          <div className="mt-6 flex flex-col items-center justify-center py-20 text-muted-foreground italic">
-            Config details coming soon...
-          </div>
+        {activeTab === "config" && projectId && (
+          <ProjectConfigTab
+            projectId={projectId as Id<"projects">}
+            projectDetails={projectDetails}
+            scheduler={scheduler}
+          />
         )}
       </section>
     </div>

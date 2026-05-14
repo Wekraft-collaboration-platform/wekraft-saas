@@ -88,6 +88,10 @@ export const CreateIssueDialog = ({
   const [isPending, setIsPending] = useState(false);
 
   const members = useQuery(api.project.getProjectMembers, { projectId });
+  const project = useQuery(api.project.getProjectById, { projectId });
+  const projectDetails = useQuery(api.projectDetails.getProjectDetails, {
+    projectId,
+  });
   const createIssue = useMutation(api.issue.createIssue);
 
   const handleCreateIssue = async () => {
@@ -302,6 +306,14 @@ export const CreateIssueDialog = ({
                   selected={dueDate}
                   onSelect={setDueDate}
                   initialFocus
+                  disabled={[
+                    project?.createdAt
+                      ? { before: new Date(project.createdAt) }
+                      : undefined,
+                    projectDetails?.targetDate
+                      ? { after: new Date(projectDetails.targetDate) }
+                      : undefined,
+                  ].filter(Boolean) as any}
                   className="bg-[#1c1c1c] text-neutral-200"
                 />
               </PopoverContent>

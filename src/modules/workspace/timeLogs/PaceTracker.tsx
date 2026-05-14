@@ -2,7 +2,13 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import { Clock, Activity, AlertCircle, ArrowUpRight } from "lucide-react";
+import {
+  Clock,
+  Activity,
+  AlertCircle,
+  ArrowUpRight,
+  BadgeAlert,
+} from "lucide-react";
 import { Task } from "@/types/types";
 
 interface PaceTrackerProps {
@@ -36,8 +42,8 @@ export const PaceTracker = ({
 
   // -----------------------------------STATES--------------------------
   // empty: Initial state when no tasks exist.
-  // growing: Project has started (tasks > 0), but we need 7 tasks and 5 days of history to accurately calculate velocity.
-  // ready: Full intelligence mode. Threshold of 7 tasks and 5 days has been met.
+  // growing: Project has started (tasks > 0), but we need 6 tasks and 3 days of history to accurately calculate velocity.
+  // ready: Full intelligence mode. Threshold of 6 tasks and 3 days has been met.
 
   // THRESHOLD - project deadline should be >= 7 days (1 week) for this.
 
@@ -46,7 +52,7 @@ export const PaceTracker = ({
   // Amber (Yellow): You're slipping. There is a small gap (0-15%) between time spent and work done.
   // Rose (Red): Critical danger. The gap is >15%, meaning the deadline is severely at risk.
 
-  const isReady = totalTasks >= 7 && daysConsumed >= 5;
+  const isReady = totalTasks >= 6 && daysConsumed >= 3;
   let state = "empty";
   if (isReady) state = "ready";
   else if (totalTasks > 0) state = "growing";
@@ -55,12 +61,21 @@ export const PaceTracker = ({
 
   if (state === "empty") {
     return (
-      <div className="h-full w-full border border-neutral-800 rounded-xl bg-neutral-900/20 p-5 flex flex-col items-center justify-center text-center space-y-3">
-        <div>
-          <h3 className="text-sm font-semibold text-primary">Pace Tracker</h3>
-          <p className="text-[11px] text-muted-foreground mt-1 max-w-[220px] leading-relaxed">
-            Waiting for data. Create tasks and let the project run for a few
-            days to establish velocity.
+      <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-neutral-900/20 shadow-sm dark:shadow-none p-4 flex flex-col relative overflow-hidden">
+        <div className="flex items-center gap-2 mb-3">
+          <div className={cn("p-1.5 rounded-md border bg-muted/50")}>
+            <Activity className={cn("w-3.5 h-3.5 text-primary")} />
+          </div>
+          <h3 className="text-[13px] font-semibold tracking-tight text-neutral-900 dark:text-white/90">
+            Pace Tracker
+          </h3>
+        </div>
+        <div className="flex flex-col items-center justify-center space-y-3 mt-6">
+          <BadgeAlert className={cn("w-8 h-8 text-primary opacity-50")} />
+          <p className="text-[11px] text-muted-foreground leading-relaxed text-center px-7">
+            Your workspace atleast have{" "}
+            <span className="text-primary">6 tasks and 3 days of history</span>{" "}
+            to establish velocity.
           </p>
         </div>
       </div>
@@ -69,14 +84,21 @@ export const PaceTracker = ({
 
   if (state === "growing") {
     return (
-      <div className="h-full w-full border border-neutral-800 rounded-xl bg-neutral-900/20 p-5 flex flex-col items-center justify-center text-center space-y-3 relative overflow-hidden">
-        <div className="z-10">
-          <h3 className="text-sm font-semibold text-primary">
-            Calibrating Pace...
+      <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-accent/20 shadow-sm dark:shadow-none p-4 flex flex-col relative overflow-hidden">
+        <div className="flex items-center gap-2 mb-3">
+          <div className={cn("p-1.5 rounded-md border bg-muted/50")}>
+            <Activity className={cn("w-3.5 h-3.5 text-primary")} />
+          </div>
+          <h3 className="text-[13px] font-semibold tracking-tight text-neutral-900 dark:text-white/90">
+            Pace Tracker
           </h3>
-          <p className="text-[11px] text-muted-foreground mt-1 max-w-[220px] leading-relaxed">
-            Gathering baseline data. The tracker unlocks at 10 tasks and 5 days
-            of activity.
+        </div>
+        <div className="flex flex-col items-center justify-center space-y-3 mt-6">
+          <BadgeAlert className={cn("w-8 h-8 text-primary opacity-50")} />
+          <p className="text-[11px] text-muted-foreground leading-relaxed text-center px-7">
+            Your workspace atleast have{" "}
+            <span className="text-primary">6 tasks and 3 days of history</span>{" "}
+            to establish velocity.
           </p>
         </div>
       </div>
@@ -121,7 +143,7 @@ export const PaceTracker = ({
   };
 
   return (
-    <div className="h-full w-full border border-neutral-800 rounded-lg bg-accent/20 p-4 flex flex-col justify-between relative overflow-hidden">
+    <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-accent/20 shadow-sm dark:shadow-none p-4 flex flex-col justify-between relative overflow-hidden">
       {/* HEADER */}
       <div>
         <div className="flex items-center justify-between mb-4">
@@ -129,7 +151,7 @@ export const PaceTracker = ({
             <div className={cn("p-1.5 rounded-md border bg-muted/50")}>
               <Activity className={cn("w-3.5 h-3.5 text-primary")} />
             </div>
-            <h3 className="text-[13px] font-semibold tracking-tight text-white/90">
+            <h3 className="text-[13px] font-semibold tracking-tight text-neutral-900 dark:text-white/90">
               Pace Tracker
             </h3>
           </div>
@@ -158,7 +180,7 @@ export const PaceTracker = ({
         <div className="space-y-3">
           {/* TASK BAR */}
           <div className="space-y-1.5">
-            <div className="flex justify-between text-[10px] font-medium text-primary/70 uppercase tracking-widest">
+            <div className="flex justify-between text-[10px] font-medium text-primary uppercase tracking-widest">
               <span>Task Progress</span>
               <span className={cn(textColors[statusMode])}>
                 {taskCompletedPct.toFixed(0)}%
@@ -172,7 +194,7 @@ export const PaceTracker = ({
                     "flex-1 rounded-[1.5px] transition-colors",
                     i < taskBlocks
                       ? taskColors[statusMode]
-                      : "bg-neutral-800/60",
+                      : "bg-neutral-200 dark:bg-neutral-800",
                   )}
                 />
               ))}
@@ -181,7 +203,7 @@ export const PaceTracker = ({
 
           {/* TIME BAR */}
           <div className="space-y-1.5">
-            <div className="flex justify-between text-[10px] font-medium text-primary/70 uppercase tracking-widest">
+            <div className="flex justify-between text-[10px] font-medium text-primary uppercase tracking-widest">
               <span>Time Consumed</span>
               <span className="text-blue-400">
                 {timeConsumedPct.toFixed(0)}%
@@ -195,7 +217,7 @@ export const PaceTracker = ({
                     "flex-1 rounded-[1.5px] transition-colors",
                     i < timeBlocks
                       ? "bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.3)]"
-                      : "bg-neutral-800/60",
+                      : "bg-neutral-200 dark:bg-neutral-800",
                   )}
                 />
               ))}
@@ -216,15 +238,15 @@ export const PaceTracker = ({
           </div>
         ) : (
           <div className="grid grid-cols-4 gap-1.5">
-            <div className="bg-card rounded-lg p-2 border border-border max-h-[48px] flex flex-col justify-center">
-              <div className="text-base font-bold text-white tracking-tight leading-none mb-0.5">
+            <div className="bg-muted rounded-lg p-2 border border-border max-h-[48px] flex flex-col justify-center">
+              <div className="text-base font-bold text-neutral-900 dark:text-white tracking-tight leading-none mb-0.5">
                 {Math.ceil(daysRemaining)}
               </div>
               <div className="text-[9px] text-primary tracking-wider">
                 Days left
               </div>
             </div>
-            <div className="bg-card rounded-lg p-2 border border-border max-h-[48px] flex flex-col justify-center">
+            <div className="bg-muted rounded-lg p-2 border border-border max-h-[48px] flex flex-col justify-center">
               <div className="text-base font-bold text-primary tracking-tight leading-none mb-0.5">
                 {tasksRemaining}
               </div>
@@ -232,7 +254,7 @@ export const PaceTracker = ({
                 Tasks left
               </div>
             </div>
-            <div className="bg-card rounded-lg p-2 border border-border max-h-[48px] flex flex-col justify-center">
+            <div className="bg-muted rounded-lg p-2 border border-border max-h-[48px] flex flex-col justify-center">
               <div className="text-base font-bold text-primary tracking-tight leading-none mb-0.5 flex items-baseline">
                 {needPerDay}
                 <span className="text-[10px] ml-0.5 font-semibold">/day</span>
@@ -241,7 +263,7 @@ export const PaceTracker = ({
                 Need rate
               </div>
             </div>
-            <div className="bg-card rounded-lg p-2 border border-border max-h-[48px] flex flex-col justify-center">
+            <div className="bg-muted rounded-lg p-2 border border-border max-h-[48px] flex flex-col justify-center">
               <div className="text-base font-bold text-primary tracking-tight leading-none mb-0.5 flex items-baseline">
                 {currentPace}
                 <span className="text-[10px] ml-0.5 font-semibold">/day</span>

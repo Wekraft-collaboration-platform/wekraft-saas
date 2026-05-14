@@ -38,13 +38,14 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
+import { SortConfig, applyTaskFilters } from "@/modules/workspace/function/taskFilters";
 
-const users = [
-  { name: "Ritesh", img: "https://i.pravatar.cc/40?img=1" },
-  { name: "Mia", img: "https://i.pravatar.cc/40?img=2" },
-  { name: "Alex", img: "https://i.pravatar.cc/40?img=3" },
-  { name: "John", img: "https://i.pravatar.cc/40?img=4" },
-];
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const TaskPage = () => {
   const params = useParams();
@@ -54,6 +55,8 @@ const TaskPage = () => {
   const [taskLimit, setTaskLimit] = useState(10);
   const [selectedTaskIds, setSelectedTaskIds] = useState<Id<"tasks">[]>([]);
   const { setIsOpen } = useKayaStore();
+  const [sortConfig, setSortConfig] = useState<SortConfig>(null);
+  const [tagFilter, setTagFilter] = useState<string | null>(null);
 
   const currentUser = useQuery(api.user.getCurrentUser);
   const project = useQuery(api.project.getProjectBySlug, { slug });
@@ -64,6 +67,11 @@ const TaskPage = () => {
     project?._id
       ? { projectId: project._id as Id<"projects">, limit: taskLimit }
       : "skip",
+  );
+
+  const members = useQuery(
+    api.project.getProjectMembers,
+    project?._id ? { projectId: project._id as Id<"projects"> } : "skip",
   );
 
   const deleteTasks = useMutation(api.workspace.deleteTasks);
@@ -79,6 +87,8 @@ const TaskPage = () => {
   };
 
   const hasMoreTasks = tasks && tasks.length >= taskLimit;
+
+  const filteredTasks = applyTaskFilters(tasks || [], sortConfig, tagFilter);
 
   if (project === undefined || project === null)
     return (
@@ -96,16 +106,51 @@ const TaskPage = () => {
 
         <div className="flex items-center gap-5">
           {/* Avatar Stack */}
-          <div className="flex -space-x-3">
-            {users.map((user, i) => (
-              <Avatar
-                key={i}
-                className="w-8 h-8 border-2 border-background hover:z-10 transition"
-              >
-                <AvatarImage src={user.img} />
-                <AvatarFallback>{user.name[0]}</AvatarFallback>
-              </Avatar>
-            ))}
+          <div className="flex items-center">
+            {members && members.length > 0 ? (
+              <div className="flex -space-x-3 mr-2">
+                <TooltipProvider>
+                  {members.slice(0, 6).map((member, i) => (
+                    <Tooltip key={member.userId}>
+                      <TooltipTrigger asChild>
+                        <Avatar className="w-8 h-8 border-2 border-background hover:z-10 transition cursor-pointer">
+                          <AvatarImage src={member.userImage} />
+                          <AvatarFallback className="bg-neutral-800 text-[10px]">
+                            {member.userName?.[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                      </TooltipTrigger>
+                      <TooltipContent side="bottom" className="px-2 py-1">
+                        <p className="text-[10px] font-medium">
+                          {member.userName}
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                </TooltipProvider>
+
+                {members.length > 6 && (
+                  <div className="w-8 h-8 rounded-full border-2 border-background bg-neutral-900 flex items-center justify-center text-[10px] font-bold text-muted-foreground z-20">
+                    +{members.length - 6}
+                  </div>
+                )}
+              </div>
+            ) : members && members.length === 0 ? (
+              <div className="w-24 h-8 rounded-full border-2 border-dashed border-neutral-800 mr-2 flex items-center justify-center">
+                <span className="text-[10px] text-muted-foreground">
+                  No members
+                </span>
+              </div>
+            ) : (
+              <div className="flex -space-x-3 mr-2">
+                {[1, 2, 3].map((i) => (
+                  <div
+                    key={i}
+                    className="w-8 h-8 rounded-full border-2 border-background bg-neutral-800 animate-pulse"
+                  />
+                ))}
+              </div>
+            )}
           </div>
 
           {/* Invite Button */}
@@ -149,14 +194,14 @@ const TaskPage = () => {
         </div>
 
         <div className="flex items-center gap-3">
-          <div className="relative">
+          {/* <div className="relative">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="text"
               placeholder="Search ..."
               className="pl-9 h-9 w-[240px] border-border dark:bg-neutral-900! bg-card"
             />
-          </div>
+          </div> */}
           {/* Delete Button (Visible when tasks are selected) */}
           {selectedTaskIds.length > 0 && (
             <AlertDialog>
@@ -201,7 +246,7 @@ const TaskPage = () => {
             size="sm"
             variant={"outline"}
             onClick={() => setIsOpen(true)}
-            className="bg-linear-to-t from-indigo-600/30 via-purple-600/10 to-transparent text-xs cursor-pointer"
+            className="bg-linear-to-t from-indigo-600/30 via-purple-600/10 to-transparent text-xs cursor-pointer px-6!"
           >
             <Image src="/kaya.svg" alt="Kaya AI" width={18} height={18} />
             Ask Kaya
@@ -227,18 +272,32 @@ const TaskPage = () => {
           <>
             {activeTab === "List" && (
               <ListTab
-                tasks={tasks || []}
+                tasks={filteredTasks}
+                allTasks={tasks || []}
                 selectedTaskIds={selectedTaskIds}
                 setSelectedTaskIds={setSelectedTaskIds}
+                projectId={project._id}
+                projectName={projectName || "Project"}
+                repoFullName={project.repoFullName}
+                ownerClerkId={(project as any).ownerClerkId}
+                sortConfig={sortConfig}
+                setSortConfig={setSortConfig}
+                tagFilter={tagFilter}
+                setTagFilter={setTagFilter}
               />
             )}
             {activeTab === "Table" && (
               <TableTab
-                tasks={tasks || []}
+                tasks={filteredTasks}
+                allTasks={tasks || []}
                 onLoadMore={() => setTaskLimit((p) => p + 10)}
                 hasMore={!!hasMoreTasks}
                 selectedTaskIds={selectedTaskIds}
                 setSelectedTaskIds={setSelectedTaskIds}
+                sortConfig={sortConfig}
+                setSortConfig={setSortConfig}
+                tagFilter={tagFilter}
+                setTagFilter={setTagFilter}
               />
             )}
             {activeTab === "Kanban" && (

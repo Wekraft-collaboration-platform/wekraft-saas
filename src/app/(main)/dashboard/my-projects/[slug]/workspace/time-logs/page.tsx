@@ -22,6 +22,7 @@ import { SetTargetDateDialog } from "@/modules/workspace/SetTargetDateDialog";
 import { Button } from "@/components/ui/button";
 import { ProjectTimeline } from "@/modules/workspace/timeLogs/ProjectTimeline";
 import { PaceTracker } from "@/modules/workspace/timeLogs/PaceTracker";
+import { MilestoneTrajectory } from "@/modules/workspace/timeLogs/MilestoneTrajectory";
 import { DelayDebt } from "@/modules/workspace/timeLogs/DelayDebt";
 import Image from "next/image";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -106,7 +107,11 @@ const TimeLogsPage = () => {
           <div className="h-full">
             <div className="h-[240px] grid grid-cols-3 mb-14 gap-8">
               {/* CARD-1 */}
-              <div className="border rounded-xl bg-accent/20 p-4"></div>
+              <MilestoneTrajectory
+                tasks={tasks as any}
+                createdAt={project.createdAt}
+                deadline={projectDetails.targetDate}
+              />
               {/* CARD-2 */}
               <DelayDebt tasks={tasks as any} projectId={project._id} />
               {/* CARD-3 */}
@@ -168,6 +173,7 @@ const TimeLogsPage = () => {
         onOpenChange={setIsDialogOpen}
         projectId={project._id}
         projectName={project.projectName}
+        projectCreatedAt={project.createdAt}
       />
     </div>
   );

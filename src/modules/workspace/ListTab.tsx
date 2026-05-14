@@ -43,6 +43,12 @@ import {
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
 import { Id } from "../../../convex/_generated/dataModel";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 import {
   Table,
@@ -54,24 +60,46 @@ import {
 } from "@/components/ui/table";
 import { Task } from "@/types/types";
 import { SortPopover } from "@/lib/static-store";
+import {
+  DurationSortPopover,
+  PrioritySortPopover,
+  TagFilterPopover,
+} from "./workspace-modules/TaskPopovers";
+import { SortConfig } from "./function/taskFilters";
 import Image from "next/image";
+import { EditTaskDialog } from "./EditTaskDialog";
+import { MoveToSprintDialog } from "./MoveToSprintDialog";
+import { useMutation } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+import { toast } from "sonner";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 
 const priorityIcons: Record<string, React.ReactNode> = {
   none: <Minus className="w-3.5 h-3.5" />,
   low: (
     <div className="flex items-end gap-px h-3 mb-0.5">
       <div className="w-[4px] h-5 bg-yellow-500 rounded-px" />
-      <div className="w-[4px] h-4 dark:bg-neutral-400 bg-accent/20 rounded-px" />
-      <div className="w-[4px] h-3 dark:bg-neutral-400 bg-accent/20 rounded-px" />
-      <div className="w-[4px] h-[8px] dark:bg-neutral-400 bg-accent/20 rounded-px" />
+      <div className="w-[4px] h-4 dark:bg-neutral-400 bg-accent rounded-px" />
+      <div className="w-[4px] h-3 dark:bg-neutral-400 bg-accent rounded-px" />
+      <div className="w-[4px] h-[8px] dark:bg-neutral-400 bg-accent rounded-px" />
     </div>
   ),
   medium: (
     <div className="flex items-end gap-px h-3 mb-0.5">
       <div className="w-[4px] h-5 bg-green-500 rounded-px" />
       <div className="w-[4px] h-4 bg-green-500 rounded-px" />
-      <div className="w-[4px] h-3  dark:bg-neutral-400 bg-accent/20  rounded-px" />
-      <div className="w-[4px] h-[8px] dark:bg-neutral-400 bg-accent/20 rounded-px" />
+      <div className="w-[4px] h-3  dark:bg-neutral-400 bg-accent rounded-px" />
+      <div className="w-[4px] h-[8px] dark:bg-neutral-400 bg-accent rounded-px" />
     </div>
   ),
   high: (
@@ -79,7 +107,7 @@ const priorityIcons: Record<string, React.ReactNode> = {
       <div className="w-[4px] h-5 bg-red-500 rounded-px" />
       <div className="w-[4px] h-4 bg-red-500 rounded-px" />
       <div className="w-[4px] h-3 bg-red-500 rounded-px" />
-      <div className="w-[4px] h-[8px] dark:bg-neutral-400 bg-accent/20 rounded-px" />
+      <div className="w-[4px] h-[8px] dark:bg-neutral-400 bg-accent rounded-px" />
     </div>
   ),
 };
@@ -99,23 +127,6 @@ interface SortOptionProps {
   isActive?: boolean;
 }
 
-const SortOption = ({ label, icon, onClick, isActive }: SortOptionProps) => (
-  <button
-    onClick={onClick}
-    className={cn(
-      "flex items-center gap-3 w-full px-3 py-2 text-[11px] font-medium transition-colors hover:bg-zinc-100 dark:hover:bg-zinc-800/50 rounded-lg group",
-      isActive ? "text-primary bg-primary/5" : "text-muted-foreground",
-    )}
-  >
-    {icon && (
-      <div className="shrink-0 transition-transform group-hover:scale-110">
-        {icon}
-      </div>
-    )}
-    <span>{label}</span>
-  </button>
-);
-
 interface TaskGroupProps {
   title: string;
   tasks: Task[];
@@ -124,6 +135,15 @@ interface TaskGroupProps {
   onTaskClick: (task: Task) => void;
   selectedTaskIds: Id<"tasks">[];
   setSelectedTaskIds: React.Dispatch<React.SetStateAction<Id<"tasks">[]>>;
+  projectId: Id<"projects">;
+  projectName: string;
+  repoFullName?: string;
+  ownerClerkId?: string;
+  sortConfig: SortConfig;
+  setSortConfig: (config: SortConfig) => void;
+  tagFilter: string | null;
+  setTagFilter: (tag: string | null) => void;
+  allTasks: Task[];
 }
 
 const TaskGroup = ({
@@ -134,6 +154,15 @@ const TaskGroup = ({
   onTaskClick,
   selectedTaskIds,
   setSelectedTaskIds,
+  projectId,
+  projectName,
+  repoFullName,
+  ownerClerkId,
+  sortConfig,
+  setSortConfig,
+  tagFilter,
+  setTagFilter,
+  allTasks,
 }: TaskGroupProps) => {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
@@ -143,6 +172,17 @@ const TaskGroup = ({
         ? prev.filter((id) => id !== taskId)
         : [...prev, taskId],
     );
+  };
+
+  const deleteTasks = useMutation(api.workspace.deleteTasks);
+
+  const handleDeleteTask = async (taskId: Id<"tasks">) => {
+    try {
+      await deleteTasks({ taskIds: [taskId] });
+      toast.success("Task deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete task");
+    }
   };
 
   const toggleAll = () => {
@@ -171,7 +211,7 @@ const TaskGroup = ({
 
   return (
     <div className="">
-      <div className="flex items-center justify-between mb-4 px-4 dark:bg-neutral-900 bg-neutral-100 py-1.5 rounded-md">
+      <div className="flex items-center justify-between mb-4 px-4 dark:bg-neutral-900 bg-neutral-200/55  py-1.5 rounded-md">
         <div
           className="flex items-center gap-3 cursor-pointer w-full select-none"
           onClick={() => setIsExpanded(!isExpanded)}
@@ -222,88 +262,53 @@ const TaskGroup = ({
                     <TextQuote className="w-4.5 h-4.5" /> Description
                   </div>
                 </TableHead>
-                <TableHead className="px-4 text-sm dark:text-primary font-medium capitalize tracking-widest shrink-0 border-r border-b dark:border-neutral-800 border-neutral-200">
-                  <div className="flex items-center justify-center gap-2 overflow-hidden">
+                <TableHead className="text-[13px] dark:text-primary text-foreground font-medium px-4 border-r border-b dark:border-neutral-800 border-neutral-200">
+                  <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <Hourglass className="w-4.5 h-4.5" /> Duration
+                      <Clock className="w-4 h-4" /> Duration
                     </div>
-                    <SortPopover
-                      title="Sort Duration"
-                      icon={Calendar}
+                    <DurationSortPopover
+                      sortConfig={sortConfig}
+                      setSortConfig={setSortConfig}
                       trigger={
-                        <ChevronsUpDown className="w-3.5 h-3.5 text-muted-foreground dark:hover:text-primary hover:text-primary/70 transition-colors cursor-pointer shrink-0" />
+                        <ChevronsUpDown className="w-4 h-4 text-muted-foreground hover:text-primary transition-colors cursor-pointer" />
                       }
-                    >
-                      <SortOption
-                        label="Upcoming First"
-                        icon={<ArrowUpNarrowWide className="w-3 h-3" />}
-                      />
-                      <SortOption
-                        label="Latest First"
-                        icon={<ArrowDownWideNarrow className="w-3 h-3" />}
-                      />
-                      <Separator className="my-1.5 opacity-50" />
-                      <SortOption
-                        label="Shortest Duration"
-                        icon={<ArrowUpNarrowWide className="w-3 h-3" />}
-                      />
-                      <SortOption
-                        label="Longest Duration"
-                        icon={<ArrowDownWideNarrow className="w-3 h-3" />}
-                      />
-                    </SortPopover>
+                    />
                   </div>
                 </TableHead>
-                <TableHead className="px-4 text-sm dark:text-primary font-medium capitalize tracking-widest shrink-0 border-r border-b dark:border-neutral-800 border-neutral-200 min-w-[120px]">
-                  <div className="flex items-center justify-center gap-2 overflow-hidden">
+                <TableHead className="text-[13px] dark:text-primary text-foreground font-medium px-4 border-r border-b dark:border-neutral-800 border-neutral-200">
+                  <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
-                      <Box className="w-4.5 h-4.5" /> Tags
+                      <Tag className="w-4 h-4" /> Tags
                     </div>
-                    <SortPopover
-                      title="Filter & Sort"
-                      icon={Tag}
+                    <TagFilterPopover
+                      tasks={allTasks}
+                      activeTag={tagFilter}
+                      setTagFilter={setTagFilter}
                       trigger={
-                        <ChevronsUpDown className="w-3.5 h-3.5 text-muted-foreground dark:hover:text-primary hover:text-primary/70 transition-colors cursor-pointer shrink-0" />
+                        <ChevronsUpDown className="w-4 h-4 text-muted-foreground hover:text-primary transition-colors cursor-pointer" />
                       }
-                    >
-                      <SortOption
-                        label="Sort A-Z"
-                        icon={<ArrowUpNarrowWide className="w-3 h-3" />}
-                      />
-                      <SortOption
-                        label="Filter by Type"
-                        icon={<CircleDot className="w-3 h-3" />}
-                      />
-                    </SortPopover>
+                    />
                   </div>
                 </TableHead>
-                <TableHead className="px-4 text-sm dark:text-primary font-medium  capitalize tracking-widest shrink-0 border-r border-b dark:border-neutral-800 border-neutral-200">
+                <TableHead className="text-[13px] dark:text-primary text-foreground font-medium px-4 border-r border-b dark:border-neutral-800 border-neutral-200">
                   <div className="flex items-center gap-2">
-                    <Users className="w-4.5 h-4.5" /> Assigned
+                    <Users className="w-4 h-4" /> Assigned
                   </div>
                 </TableHead>
-                <TableHead className="px-4 text-sm dark:text-primary font-medium  capitalize tracking-widest shrink-0 border-b dark:border-neutral-800 border-neutral-200">
-                  <div className="flex items-center justify-between gap-2 overflow-hidden">
-                    <div className="flex items-center gap-2">
-                      <ChartNoAxesColumnIncreasing className="w-4.5 h-4.5" />{" "}
+                <TableHead className="text-[13px] dark:text-primary text-foreground font-medium px-4 text-center border-b dark:border-neutral-800 border-neutral-200">
+                  <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center gap-2 justify-center">
+                      <ChartNoAxesColumnIncreasing className="w-4 h-4" />{" "}
                       Priority
                     </div>
-                    <SortPopover
-                      title="Sort Priority"
-                      icon={ChartNoAxesColumnIncreasing}
+                    <PrioritySortPopover
+                      sortConfig={sortConfig}
+                      setSortConfig={setSortConfig}
                       trigger={
-                        <ChevronsUpDown className="w-3.5 h-3.5 text-muted-foreground dark:hover:text-primary hover:text-primary/70 transition-colors cursor-pointer shrink-0" />
+                        <ChevronsUpDown className="w-4 h-4 text-muted-foreground hover:text-primary transition-colors cursor-pointer" />
                       }
-                    >
-                      <SortOption
-                        label="High to Low"
-                        icon={<ArrowUpNarrowWide className="w-3 h-3" />}
-                      />
-                      <SortOption
-                        label="Low to High"
-                        icon={<ArrowDownWideNarrow className="w-3 h-3" />}
-                      />
-                    </SortPopover>
+                    />
                   </div>
                 </TableHead>
                 <TableHead className="w-[50px]"></TableHead>
@@ -417,24 +422,32 @@ const TaskGroup = ({
                             {task.type.label}
                           </div>
                         ) : (
-                          <span className="text-[10px] text-primary/10">—</span>
+                          <span className="text-[10px] text-muted-foreground">—</span>
                         )}
                       </div>
                     </TableCell>
                     <TableCell className="p-2.5 border-r border-b dark:border-neutral-800 border-neutral-200">
                       {task.assignees && task.assignees.length > 0 ? (
                         <div className="flex items-center justify-center -space-x-2">
-                          {task.assignees.map((person, i) => (
-                            <Avatar
-                              key={i}
-                              className="w-7 h-7 border-2 border-primary/50 shadow-sm hover:z-10 transition-transform hover:scale-110"
-                            >
-                              <AvatarImage src={person.avatar} />
-                              <AvatarFallback className="text-[10px] bg-primary text-primary-foreground">
-                                {person.name[0]}
-                              </AvatarFallback>
-                            </Avatar>
-                          ))}
+                          <TooltipProvider>
+                            {task.assignees.map((person, i) => (
+                              <Tooltip key={i}>
+                                <TooltipTrigger asChild>
+                                  <Avatar className="w-7 h-7 border-2 border-primary/50 shadow-sm hover:z-10 transition-transform hover:scale-110 cursor-pointer">
+                                    <AvatarImage src={person.avatar} />
+                                    <AvatarFallback className="text-[10px] bg-primary text-primary-foreground">
+                                      {person.name[0]}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="px-2 py-1">
+                                  <p className="text-[10px] font-medium">
+                                    {person.name}
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            ))}
+                          </TooltipProvider>
                         </div>
                       ) : (
                         <div className="flex items-center justify-center w-full">
@@ -463,20 +476,70 @@ const TaskGroup = ({
                             <MoreHorizontal className="w-4 h-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                        <DropdownMenuContent
-                          align="end"
-                          className="w-48 rounded-xl shadow-xl border-muted/50"
-                        >
-                          <DropdownMenuItem className="gap-2 focus:bg-primary/5 cursor-pointer">
-                            <Edit className="w-4 h-4" /> Edit Task
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="gap-2 focus:bg-primary/5 cursor-pointer">
-                            <Layout className="w-4 h-4" /> Move to Sprint
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="gap-2  cursor-pointer">
-                            <AlertCircle className="w-4 h-4" /> Delete Task
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
+                          <DropdownMenuContent
+                            align="end"
+                            className="w-48 rounded-xl shadow-xl border-muted/50"
+                          >
+                            <EditTaskDialog
+                              projectName={projectName}
+                              projectId={projectId}
+                              repoFullName={repoFullName}
+                              ownerClerkId={ownerClerkId}
+                              task={task}
+                              trigger={
+                                <DropdownMenuItem
+                                  onSelect={(e) => e.preventDefault()}
+                                  className="gap-2 focus:bg-primary/5 cursor-pointer"
+                                >
+                                  <Edit className="w-4 h-4" /> Edit Task
+                                </DropdownMenuItem>
+                              }
+                            />
+                            <MoveToSprintDialog
+                              trigger={
+                                <DropdownMenuItem
+                                  onSelect={(e) => e.preventDefault()}
+                                  className="gap-2 focus:bg-primary/5 cursor-pointer"
+                                >
+                                  <Layout className="w-4 h-4" /> Move to Sprint
+                                </DropdownMenuItem>
+                              }
+                            />
+                            <AlertDialog>
+                              <AlertDialogTrigger asChild>
+                                <DropdownMenuItem
+                                  onSelect={(e) => e.preventDefault()}
+                                  className="gap-2 focus:bg-red-500/10 text-red-500 cursor-pointer"
+                                >
+                                  <AlertCircle className="w-4 h-4" /> Delete
+                                  Task
+                                </DropdownMenuItem>
+                              </AlertDialogTrigger>
+                              <AlertDialogContent className="bg-neutral-900 border-neutral-800 shadow-2xl">
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle className="text-primary">
+                                    Are you absolutely sure?
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription className="text-muted-foreground">
+                                    This action cannot be undone. This will
+                                    permanently delete this task and remove all
+                                    associated data.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel className="bg-neutral-800 border-neutral-700 text-primary hover:bg-neutral-700">
+                                    Cancel
+                                  </AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDeleteTask(task._id)}
+                                    className="bg-red-600 text-white hover:bg-red-700"
+                                  >
+                                    Delete Permanently
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
+                          </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
                   </TableRow>
@@ -492,12 +555,30 @@ const TaskGroup = ({
 
 export const ListTab = ({
   tasks,
+  allTasks,
   selectedTaskIds,
   setSelectedTaskIds,
+  projectId,
+  projectName,
+  repoFullName,
+  ownerClerkId,
+  sortConfig,
+  setSortConfig,
+  tagFilter,
+  setTagFilter,
 }: {
   tasks: Task[];
+  allTasks: Task[];
   selectedTaskIds: Id<"tasks">[];
   setSelectedTaskIds: React.Dispatch<React.SetStateAction<Id<"tasks">[]>>;
+  projectId: Id<"projects">;
+  projectName: string;
+  repoFullName?: string;
+  ownerClerkId?: string;
+  sortConfig: SortConfig;
+  setSortConfig: (config: SortConfig) => void;
+  tagFilter: string | null;
+  setTagFilter: (tag: string | null) => void;
 }) => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -517,6 +598,15 @@ export const ListTab = ({
         onTaskClick={handleTaskClick}
         selectedTaskIds={selectedTaskIds}
         setSelectedTaskIds={setSelectedTaskIds}
+        projectId={projectId}
+        projectName={projectName}
+        repoFullName={repoFullName}
+        ownerClerkId={ownerClerkId}
+        sortConfig={sortConfig}
+        setSortConfig={setSortConfig}
+        tagFilter={tagFilter}
+        setTagFilter={setTagFilter}
+        allTasks={allTasks}
       />
       <TaskGroup
         title="In Progress"
@@ -525,6 +615,15 @@ export const ListTab = ({
         onTaskClick={handleTaskClick}
         selectedTaskIds={selectedTaskIds}
         setSelectedTaskIds={setSelectedTaskIds}
+        projectId={projectId}
+        projectName={projectName}
+        repoFullName={repoFullName}
+        ownerClerkId={ownerClerkId}
+        sortConfig={sortConfig}
+        setSortConfig={setSortConfig}
+        tagFilter={tagFilter}
+        setTagFilter={setTagFilter}
+        allTasks={allTasks}
       />
       <TaskGroup
         title="Reviewing"
@@ -533,6 +632,15 @@ export const ListTab = ({
         onTaskClick={handleTaskClick}
         selectedTaskIds={selectedTaskIds}
         setSelectedTaskIds={setSelectedTaskIds}
+        projectId={projectId}
+        projectName={projectName}
+        repoFullName={repoFullName}
+        ownerClerkId={ownerClerkId}
+        sortConfig={sortConfig}
+        setSortConfig={setSortConfig}
+        tagFilter={tagFilter}
+        setTagFilter={setTagFilter}
+        allTasks={allTasks}
       />
       <TaskGroup
         title="Testing"
@@ -541,6 +649,15 @@ export const ListTab = ({
         onTaskClick={handleTaskClick}
         selectedTaskIds={selectedTaskIds}
         setSelectedTaskIds={setSelectedTaskIds}
+        projectId={projectId}
+        projectName={projectName}
+        repoFullName={repoFullName}
+        ownerClerkId={ownerClerkId}
+        sortConfig={sortConfig}
+        setSortConfig={setSortConfig}
+        tagFilter={tagFilter}
+        setTagFilter={setTagFilter}
+        allTasks={allTasks}
       />
       <TaskGroup
         title="Completed"
@@ -549,6 +666,15 @@ export const ListTab = ({
         onTaskClick={handleTaskClick}
         selectedTaskIds={selectedTaskIds}
         setSelectedTaskIds={setSelectedTaskIds}
+        projectId={projectId}
+        projectName={projectName}
+        repoFullName={repoFullName}
+        ownerClerkId={ownerClerkId}
+        sortConfig={sortConfig}
+        setSortConfig={setSortConfig}
+        tagFilter={tagFilter}
+        setTagFilter={setTagFilter}
+        allTasks={allTasks}
       />
 
       <TaskDetailSheet

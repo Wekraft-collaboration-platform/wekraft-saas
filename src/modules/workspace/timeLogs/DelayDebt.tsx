@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { AlertCircle, Hourglass } from "lucide-react";
+import { AlertCircle, BadgeAlert, Hourglass } from "lucide-react";
 import { Task } from "@/types/types";
 import { useQuery } from "convex/react";
 import { Id } from "../../../../convex/_generated/dataModel";
@@ -60,12 +60,21 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
 
   if (!isReady) {
     return (
-      <div className="h-full w-full border border-neutral-800 rounded-xl bg-neutral-900/20 p-5 flex flex-col items-center justify-center text-center space-y-3">
-        <div>
-          <h3 className="text-sm font-semibold text-primary/80">Delay Debt</h3>
-          <p className="text-[11px] text-muted-foreground mt-1 max-w-[220px] leading-relaxed">
-            Not enough data yet. Add at least 5 tasks with due dates to unlock
-            Delay Debt tracking.
+      <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-neutral-900/20 shadow-sm dark:shadow-none p-4 flex flex-col relative overflow-hidden">
+        <div className="flex items-center gap-2 mb-3">
+          <div className={cn("p-1.5 rounded-md border bg-muted/50")}>
+            <Hourglass className={cn("w-3 h-3! text-primary")} />
+          </div>
+          <h3 className="text-[13px] font-bold tracking-tight text-neutral-900 dark:text-white/90">
+            Delay Debt
+          </h3>
+        </div>
+        <div className="flex flex-col items-center justify-center space-y-3 mt-6">
+          <BadgeAlert className={cn("w-8 h-8 text-primary opacity-50")} />
+          <p className="text-[11px] text-muted-foreground leading-relaxed text-center px-7">
+            Your workspace atleast have{" "}
+            <span className="text-primary">more than 5 tasks </span>{" "}
+            to establish delay debt tracking.
           </p>
         </div>
       </div>
@@ -86,20 +95,20 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
   const hiddenOffendersCount = Math.max(0, currentOverdueCount - 5);
 
   // Simple color logic - primary usage
-  let badgeColor = "text-muted-foreground border-neutral-800 bg-neutral-900/50";
+  let badgeColor = "text-muted-foreground border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900/50";
   if (currentOverdueCount > 0) {
     badgeColor = "text-primary border-primary/20 bg-primary/5";
   }
 
   return (
-    <div className="h-full w-full border border-border rounded-lg bg-accent/20 p-4 flex flex-col justify-start relative overflow-hidden">
+    <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-accent/20 shadow-sm dark:shadow-none p-4 flex flex-col justify-start relative overflow-hidden">
       {/* HEADER: Title & Compact Tabs */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <div className={cn("p-1.5 rounded-md border bg-muted/50")}>
             <Hourglass className={cn("w-3 h-3! text-primary")} />
           </div>
-          <h3 className="text-[13px] font-bold tracking-tight text-white/90">
+          <h3 className="text-[13px] font-bold tracking-tight text-neutral-900 dark:text-white/90">
             Delay Debt
           </h3>
         </div>
@@ -110,8 +119,8 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
             className={cn(
               "px-2 py-0.5 text-[10px] font-medium rounded transition-all",
               activeTab === "tasks"
-                ? "bg-neutral-800 text-white shadow-sm"
-                : "text-muted-foreground hover:text-neutral-300",
+                ? "bg-neutral-200 dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-sm"
+                : "text-muted-foreground hover:text-neutral-600 dark:hover:text-neutral-300",
             )}
           >
             Tasks
@@ -121,8 +130,8 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
             className={cn(
               "px-2 py-0.5 text-[10px] font-medium rounded transition-all",
               activeTab === "issues"
-                ? "bg-neutral-800 text-white shadow-sm"
-                : "text-muted-foreground hover:text-neutral-300",
+                ? "bg-neutral-200 dark:bg-neutral-800 text-neutral-900 dark:text-white shadow-sm"
+                : "text-muted-foreground hover:text-neutral-600 dark:hover:text-neutral-300",
             )}
           >
             Issues
@@ -132,7 +141,7 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
 
       {/* STAT CARDS: Compact & Simplified */}
       <div className="grid grid-cols-2 gap-2 mb-4">
-        <div className="bg-card rounded-lg p-2 border border-border">
+        <div className="bg-muted rounded-lg p-2 border border-border">
           <div
             className={cn(
               "text-xl font-bold tracking-tight leading-none mb-1 text-primary",
@@ -144,7 +153,7 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
             Days Overdue
           </div>
         </div>
-        <div className="bg-card rounded-lg p-2 border border-border relative">
+        <div className="bg-muted rounded-lg p-2 border border-border relative">
           <div
             className={cn(
               "text-xl font-bold tracking-tight leading-none mb-1 text-primary",
@@ -174,7 +183,7 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
 
         <div className="flex-1 space-y-2 overflow-y-auto pr-1">
           {worstOffenders.length === 0 ? (
-            <div className="text-[11px] text-neutral-500 italic py-6 flex flex-col items-center justify-center border border-dashed border-neutral-800/50 rounded-lg">
+            <div className="text-[11px] text-muted-foreground italic pt-4 flex flex-col items-center justify-center ">
               No overdue {activeTab} detected.
             </div>
           ) : (
@@ -186,7 +195,7 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
                   key={item.id}
                   className="flex items-center justify-between group py-0.5"
                 >
-                  <span className="text-[12px] text-neutral-300 truncate max-w-[150px] group-hover:text-white transition-colors">
+                  <span className="text-[12px] text-neutral-700 dark:text-neutral-300 truncate max-w-[150px] group-hover:text-neutral-900 dark:group-hover:text-white transition-colors">
                     {item.title}
                   </span>
                   <div className="flex items-center gap-2">
