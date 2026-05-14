@@ -12,6 +12,7 @@ import Image from "next/image";
 import { FlipText } from "@/components/ui/flip-text";
 import { Button } from "@/components/ui/button";
 import { Megaphone, PlaneTakeoff, Speaker } from "lucide-react";
+import Link from "next/link";
 
 const Hero = () => {
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -98,9 +99,11 @@ const Hero = () => {
 
         {/* CTA  */}
         <div className="flex flex-col sm:flex-row items-center gap-4 mt-20">
-          <Button className="rounded-md bg-blue-600 hover:bg-blue-700 text-white px-10 py-3 text-sm transition-all hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(37,99,235,0.2)]">
-            Try for Free
-          </Button>
+          <Link href={"/auth"}>
+            <Button className="rounded-md bg-blue-600 hover:bg-blue-700 text-white px-10 py-3 text-sm transition-all hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(37,99,235,0.2)]">
+              Try for Free
+            </Button>
+          </Link>
           <Button
             variant="outline"
             className="rounded-md border-white/10 bg-white/5 text-white  px-10 py-3 text-sm "
