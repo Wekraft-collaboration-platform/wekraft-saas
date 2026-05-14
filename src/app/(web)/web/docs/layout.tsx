@@ -7,15 +7,31 @@ import { usePathname } from "next/navigation";
 import {
   Search, ChevronRight, BookOpen, Terminal, Layers, Zap,
   Calendar, Users, BarChart3, Clock, Settings, AlertCircle,
-  CheckSquare, Menu, X, Command,
+  CheckSquare, Menu, X, Command, Sparkles, ShieldCheck, CreditCard,
+  FileText, Info,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState, useCallback, useRef } from "react";
 import { allDocs } from "@/lib/docs-config";
 
 const iconMap: { [key: string]: any } = {
-  BookOpen, Terminal, Layers, CheckSquare, AlertCircle,
-  Zap, Clock, Calendar, Users, BarChart3, Settings,
+  BookOpen,
+  Terminal,
+  Layers,
+  CheckSquare,
+  AlertCircle,
+  Zap,
+  Clock,
+  Calendar,
+  Users,
+  BarChart3,
+  Settings,
+  Command,
+  Sparkles,
+  ShieldCheck,
+  CreditCard,
+  FileText,
+  Info,
 };
 
 const badgeColors: Record<string, string> = {

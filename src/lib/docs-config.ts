@@ -13,7 +13,7 @@ export const docsConfig: { [key: string]: DocItem[] } = {
       title: "Overview",
       slug: "overview",
       description: "What Wekraft is, how it works end-to-end, and your plan limits.",
-      icon: "BookOpen",
+      icon: "FileText",
       badge: "Updated",
     },
     {
