@@ -25,6 +25,10 @@ export default defineSchema({
     planExpiry: v.optional(v.number()), // For temporary upgrades/coupons
     bio: v.optional(v.string()),
     socialLinks: v.optional(v.array(v.string())), // max 3 links (excluding github)
+
+    // Kaya AI usage tracking (Global)
+    kayaLimit: v.optional(v.number()), // Monthly limit (default 360)
+    kayaUsage: v.optional(v.number()), // Current usage count for this month
   })
     .index("by_token", ["clerkToken"])
     .index("by_accountType", ["accountType"])
@@ -266,7 +270,11 @@ export default defineSchema({
     projectId: v.id("projects"),
     repoId: v.optional(v.id("repositories")), // optional if project has connected repo.
     targetDate: v.optional(v.number()),
-    // healthscore to:do
+
+    // Project Configuration
+    memberCanCreate: v.optional(v.boolean()), // Members can create tasks/issues
+    memberUseKaya: v.optional(v.boolean()),   // Members can use Kaya AI
+    kayaThreshold: v.optional(v.number()),    // Max Kaya calls for this project
   })
     .index("by_project", ["projectId"])
     .index("by_repo", ["repoId"]),

@@ -54,3 +54,41 @@ export const updateTargetDate = mutation({
     }
   },
 });
+
+export const updateProjectConfig = mutation({
+  args: {
+    projectId: v.id("projects"),
+    memberCanCreate: v.optional(v.boolean()),
+    memberUseKaya: v.optional(v.boolean()),
+    kayaThreshold: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("projectDetails")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .unique();
+
+    const updates: {
+      memberCanCreate?: boolean;
+      memberUseKaya?: boolean;
+      kayaThreshold?: number;
+    } = {};
+
+    if (args.memberCanCreate !== undefined)
+      updates.memberCanCreate = args.memberCanCreate;
+    if (args.memberUseKaya !== undefined)
+      updates.memberUseKaya = args.memberUseKaya;
+    if (args.kayaThreshold !== undefined)
+      updates.kayaThreshold = args.kayaThreshold;
+
+    if (existing) {
+      await ctx.db.patch(existing._id, updates);
+      return existing._id;
+    } else {
+      return await ctx.db.insert("projectDetails", {
+        projectId: args.projectId,
+        ...updates,
+      });
+    }
+  },
+});

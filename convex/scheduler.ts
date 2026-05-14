@@ -254,6 +254,16 @@ async function getIssuesSummaryLogic(
   };
 }
 
+export const getScheduler = query({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("schedulers")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .unique();
+  },
+});
+
 // --- Public Queries (Client API) ---
 
 export const getMemberWorkload = query({
