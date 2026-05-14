@@ -21,6 +21,7 @@ import {
   Zap,
 } from "lucide-react";
 import { SchedulerCard } from "./SchedulerCard";
+import { KayaUsageRadial } from "./KayaUsageRadial";
 import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
 
@@ -51,34 +52,35 @@ export const ProjectConfigTab = ({
 
   return (
     <div className="mt-6 flex flex-col gap-6 max-w-5xl mx-auto w-full pb-20">
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Left Column - Scheduler */}
-        <div className="flex flex-col gap-4">
-         
-          {/* <SchedulerCard scheduler={scheduler} /> */}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6 items-stretch">
+        {/* Left Column - Kaya Usage */}
+        <div className="flex flex-col">
+          <KayaUsageRadial 
+            usage={projectDetails?.kayaUsage ?? 0} 
+            threshold={projectDetails?.kayaThreshold ?? 0} 
+          />
         </div>
 
         {/* Right Column - Member Permissions */}
-        <div className="flex flex-col gap-4">
-         
-          <Card className="border-border/50 bg-accent/5 overflow-hidden">
-            <CardHeader className="pb-4">
+        <div className="flex flex-col">
+          <Card className="border-border bg-accent/20 shadow-none overflow-hidden h-full">
+            <CardHeader className="">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 Project Policies
               </CardTitle>
-              <CardDescription className="text-[10px]">
-                Control how members interact with project resources.
+              <CardDescription className="text-[10px] uppercase tracking-widest font-medium opacity-60">
+                Member Governance & Access
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-6 px-6">
               {/* Member Create Toggle */}
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label className="text-xs flex items-center gap-2">
-                    <MessageSquarePlus className="w-3.5 h-3.5 text-blue-500" />
+                  <Label className="text-xs flex items-center gap-2 font-semibold">
+                    <MessageSquarePlus className="w-3.5 h-3.5 text-foreground" />
                     Member Task Creation
                   </Label>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-[10px] text-muted-foreground font-medium">
                     Allow team members to create new tasks and issues.
                   </p>
                 </div>
@@ -90,16 +92,16 @@ export const ProjectConfigTab = ({
                 />
               </div>
 
-              <Separator className="bg-border/40" />
+              <Separator className="bg-border/50" />
 
               {/* Member Kaya Toggle */}
               <div className="flex items-center justify-between">
                 <div className="space-y-0.5">
-                  <Label className="text-xs flex items-center gap-2">
-                    <BrainCircuit className="w-3.5 h-3.5 text-purple-500" />
+                  <Label className="text-xs flex items-center gap-2 font-semibold">
+                    <BrainCircuit className="w-3.5 h-3.5 text-foreground" />
                     Member AI Access (Kaya)
                   </Label>
-                  <p className="text-[10px] text-muted-foreground">
+                  <p className="text-[10px] text-muted-foreground font-medium">
                     Allow team members to use Kaya AI for insights and automation.
                   </p>
                 </div>
@@ -111,24 +113,24 @@ export const ProjectConfigTab = ({
                 />
               </div>
 
-              <Separator className="bg-border/40" />
+              <Separator className="bg-border/50" />
 
               {/* Kaya Threshold */}
               <div className="space-y-3">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label className="text-xs flex items-center gap-2">
-                      <Zap className="w-3.5 h-3.5 text-amber-500" />
+                    <Label className="text-xs flex items-center gap-2 font-semibold">
+                      <Zap className="w-3.5 h-3.5 text-foreground" />
                       Kaya Call Threshold
                     </Label>
-                    <p className="text-[10px] text-muted-foreground">
+                    <p className="text-[10px] text-muted-foreground font-medium">
                       Limit AI operations per project to control costs.
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <Input
                       type="number"
-                      className="h-8 w-20 text-xs font-bold text-center"
+                      className="h-8 w-20 text-xs font-semibold text-center bg-background/50 border-border"
                       defaultValue={projectDetails?.kayaThreshold ?? 0}
                       onBlur={(e) =>
                         handleUpdateConfig({
@@ -138,8 +140,8 @@ export const ProjectConfigTab = ({
                     />
                   </div>
                 </div>
-                <div className="p-2 bg-amber-500/5 border border-amber-500/10 rounded-md">
-                  <p className="text-[9px] text-amber-600 dark:text-amber-400 font-medium">
+                <div className="p-2 bg-foreground/5 border border-border rounded-md">
+                  <p className="text-[9px] text-muted-foreground font-medium">
                     Note: This is a soft threshold. Kaya will alert members when
                     this limit is reached.
                   </p>
