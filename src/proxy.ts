@@ -11,7 +11,7 @@ const isPublicRoute = createRouteMatcher([
   "/auth/callback(.*)",
   "/projects(.*)",
   "/api/public/(.*)",
-  // '/onboard/user(.*)',
+  "/invite(.*)",
   "/",
 ]);
 

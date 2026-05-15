@@ -8,6 +8,7 @@ import {
   FileCodeCorner,
   Filter,
   Github,
+  LucideLoader2,
   Search,
   Sparkles,
   UserPlus,
@@ -30,6 +31,12 @@ import { ImportGithubIssueDialog } from "@/modules/workspace/heatmaps/ImportGith
 import { Card } from "@/components/ui/card";
 import { format } from "date-fns";
 import { Calendar, ExternalLink, FileCode, MoreHorizontal } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const users = [
   { name: "Ritesh", img: "https://i.pravatar.cc/40?img=1" },
@@ -165,6 +172,11 @@ const IssuesPage = () => {
   const [activeTab, setActiveTab] = useState<"all" | "github">("all");
   const [searchQuery, setSearchQuery] = useState("");
   const { setIsOpen } = useKayaStore();
+  const currentUser = useQuery(api.user.getCurrentUser);
+  const members = useQuery(
+    api.project.getProjectMembers,
+    project?._id ? { projectId: project._id } : "skip",
+  );
 
   // Fetch all issues for the kanban board
   const issues = useQuery(
@@ -172,7 +184,32 @@ const IssuesPage = () => {
     project?._id ? { projectId: project._id } : "skip",
   );
 
+  const projectDetails = useQuery(
+    api.projectDetails.getProjectDetails,
+    project?._id ? { projectId: project._id as any } : "skip",
+  );
+
+  const isOwner = currentUser?._id === project?.ownerId;
+  const userMember = members?.find((m) => m.userId === currentUser?._id);
+  const isAdmin = userMember?.AccessRole === "admin";
+
+  const canCreate =
+    isOwner || isAdmin || projectDetails?.memberCanCreate !== false;
+
   const hasIssues = issues && issues.length > 0;
+
+  if (
+    project === undefined ||
+    project === null ||
+    currentUser === undefined ||
+    projectDetails === undefined
+  )
+    return (
+      <div className="h-screen w-full flex items-center justify-center gap-2 text-sm font-medium">
+        <LucideLoader2 className="animate-spin text-primary w-5 h-5" />
+        Loading Issues...
+      </div>
+    );
 
   return (
     <div className="w-full h-full p-6 2xl:p-8 flex flex-col">
@@ -278,10 +315,28 @@ const IssuesPage = () => {
               repoFullName={project.repoFullName}
               ownerClerkId={(project as any).ownerClerkId}
               trigger={
-                <Button size="sm" className="text-xs">
-                  New Issue
-                  <Bug className="w-5 h-5 mr-2" />
-                </Button>
+                canCreate ? (
+                  <Button size="sm" className="text-xs">
+                    New Issue
+                    <Bug className="w-5 h-5 mr-2" />
+                  </Button>
+                ) : (
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <span className="cursor-not-allowed">
+                          <Button size="sm" className="text-xs" disabled>
+                            New Issue
+                            <Bug className="w-5 h-5 mr-2" />
+                          </Button>
+                        </span>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Issue creation is restricted .</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )
               }
             />
           )}

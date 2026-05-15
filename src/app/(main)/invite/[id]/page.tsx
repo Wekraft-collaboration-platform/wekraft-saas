@@ -49,6 +49,7 @@ export default function InvitePage() {
   const [isOpen, setIsOpen] = React.useState(false);
   const [message, setMessage] = React.useState("");
   const [isSubmitting, setIsSubmitting] = React.useState(false);
+  const [requestSent, setRequestSent] = React.useState(false);
 
   const isLoading = project === undefined || isAuthLoading;
 
@@ -63,8 +64,7 @@ export default function InvitePage() {
       });
       toast.success("Join request sent successfully!");
       setIsOpen(false);
-      // Wait a bit before redirecting so user sees the toast
-      // router.push("/dashboard");
+      setRequestSent(true);
     } catch (error) {
       toast.error(
         error instanceof Error ? error.message : "Failed to send join request",
@@ -75,105 +75,143 @@ export default function InvitePage() {
   };
 
   return (
-    <div className="h-screen bg-black text-foreground flex flex-col relative overflow-hidden">
+    <div className="h-screen bg-background text-foreground flex flex-col relative overflow-hidden">
+      {/* BACKGROUND ASSET */}
+      <div className="absolute inset-0 z-0">
+        <Image
+          src="/bg-footer.jpg"
+          alt="Night Background"
+          fill
+          className="object-cover opacity-60"
+          priority
+        />
+        <div className="absolute inset-0 bg-gradient-to-b from-background/20 to-background/60 " />
+      </div>
+
       {/* HEADER */}
-      <header className="p-8 flex items-center justify-between z-10">
-        <Link href="/" className="flex items-center gap-2.5 group">
+      <header className="p-6 flex items-center justify-between z-10 relative">
+        <Link href="/" className="flex items-center gap-2 group">
           <Image
             src="/logo.svg"
             alt="logo"
-            width={26}
-            height={26}
+            width={24}
+            height={24}
             className="rounded-sm"
           />
-
-          <span className="text-xl font-bold tracking-tight text-primary">
+          <span className="text-lg font-bold tracking-tight text-primary">
             WeKraft
           </span>
         </Link>
       </header>
 
       {/* CONTENT */}
-      <main className="flex-1 flex items-center justify-center p-6 z-10">
-        <div className="w-full max-w-[420px]">
-          <div className="bg-sidebar border border-accent shadow-[0_20px_50px_rgba(0,0,0,0.1)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.3)] rounded-3xl overflow-hidden">
+      <main className="flex-1 flex items-center justify-center p-6 z-10 relative">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className="w-full max-w-[380px]"
+        >
+          <div className="bg-background/40 backdrop-blur-xl border border-white/10 shadow-[0_24px_80px_rgba(0,0,0,0.5)] rounded-2xl overflow-hidden">
             {isLoading ? (
-              <div className="p-10 space-y-6">
+              <div className="p-8 space-y-6">
                 <div className="flex justify-center">
-                  <Skeleton className="w-20 h-20 rounded-full" />
+                  <Skeleton className="w-16 h-16 rounded-2xl" />
                 </div>
-                <div className="space-y-3 text-center">
-                  <Skeleton className="h-6 w-3/4 mx-auto" />
-                  <Skeleton className="h-4 w-1/2 mx-auto" />
+                <div className="space-y-2 text-center">
+                  <Skeleton className="h-5 w-3/4 mx-auto" />
+                  <Skeleton className="h-3 w-1/2 mx-auto" />
                 </div>
-                <Skeleton className="h-12 w-full rounded-xl" />
+                <Skeleton className="h-10 w-full rounded-lg" />
               </div>
             ) : !project ? (
-              <div className="p-10 text-center space-y-6">
-                <div className="w-20 h-20 bg-red-500/10 rounded-full flex items-center justify-center mx-auto">
-                  <ShieldAlert className="w-10 h-10 text-red-500" />
+              <div className="p-8 text-center space-y-6">
+                <div className="w-16 h-16 bg-red-500/10 rounded-2xl flex items-center justify-center mx-auto border border-red-500/20">
+                  <ShieldAlert className="w-8 h-8 text-red-500" />
                 </div>
-                <div className="space-y-2">
-                  <h2 className="text-2xl font-bold">Invalid Invite</h2>
-                  <p className="text-muted-foreground text-sm">
-                    This invite link has expired or is no longer valid.
+                <div className="space-y-1.5">
+                  <h2 className="text-lg font-bold tracking-tight">
+                    Invalid Invite
+                  </h2>
+                  <p className="text-muted-foreground text-xs leading-relaxed">
+                    This link has expired or is no longer valid.
                   </p>
                 </div>
-                <Link href="/dashboard" className="block">
-                  <Button className="w-full h-12 rounded-xl">
-                    Go to Dashboard
-                  </Button>
-                </Link>
+                <Button
+                  className="w-full h-10 rounded-lg text-sm"
+                  onClick={() => router.push("/dashboard")}
+                >
+                  Go to Dashboard
+                </Button>
               </div>
+            ) : requestSent ? (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.95 }}
+                animate={{ opacity: 1, scale: 1 }}
+                className="p-8 text-center space-y-6"
+              >
+                <div className="w-16 h-16 bg-primary/10 rounded-2xl flex items-center justify-center mx-auto border border-primary/20">
+                  <CheckCircle2 className="w-8 h-8 text-primary" />
+                </div>
+                <div className="space-y-1.5">
+                  <h2 className="text-lg font-bold tracking-tight">
+                    Request Sent
+                  </h2>
+                  <p className="text-muted-foreground text-xs leading-relaxed px-4">
+                    Your request to join <b>"{project.projectName}"</b> has been
+                    sent to the owner.
+                  </p>
+                </div>
+                <Button
+                  className="w-full h-10 rounded-lg text-sm font-medium"
+                  onClick={() => router.push("/dashboard")}
+                >
+                  Return to Dashboard
+                </Button>
+              </motion.div>
             ) : (
               <div className="flex flex-col">
-                <div className="p-8 md:p-10 text-center space-y-6">
-                  {/* OWNER AVATAR */}
-                  <div className="relative mx-auto w-20 h-20">
+                <div className="p-8 text-center space-y-6">
+                  {/* PROJECT AVATAR */}
+                  <div className="relative mx-auto w-16 h-16 group">
+                    <div className="absolute -inset-1 bg-primary/20 rounded-2xl blur-md opacity-0 group-hover:opacity-100 transition duration-500" />
                     <Image
                       src={project.ownerImage || "/avatar-fallback.png"}
                       alt={project.ownerName}
                       fill
-                      className="rounded-xl object-cover ring-4 ring-background border-2 border-accent/10"
+                      className="rounded-2xl object-cover border border-white/10 shadow-lg relative z-10"
                     />
-                    <div className="absolute -bottom-2 -right-2 w-10 h-10 bg-primary rounded-full flex items-center justify-center shadow-lg border-2 border-background">
-                      <Users className="w-4 h-4 text-primary-foreground" />
+                    <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-primary rounded-lg flex items-center justify-center shadow-lg border border-background z-20">
+                      <Users className="w-3 h-3 text-primary-foreground" />
                     </div>
                   </div>
 
-                  <div className="space-y-3">
-                    <h2 className="text-xl font-bold tracking-tight">
+                  <div className="space-y-1.5">
+                    <h2 className="text-lg font-bold tracking-tight">
                       Project Invitation
                     </h2>
-                    <p className="text-muted-foreground text-sm leading-relaxed">
-                      you are invited to join & collaborate on
-                      <span className="block mt-1 font-bold text-lg text-foreground">
-                        "{project.projectName}"
+                    <p className="text-muted-foreground text-xs leading-relaxed">
+                      Collaborate on{" "}
+                      <span className="font-semibold text-foreground">
+                        {project.projectName}
                       </span>
                     </p>
                   </div>
 
                   {/* STATUS INDICATORS */}
-                  <div className="flex flex-col gap-3 py-2">
-                    <div className="flex items-center gap-3 p-3 bg-accent/30 rounded-xl border border-accent">
-                      <CheckCircle2 className="w-5 h-5 text-green-500 shrink-0" />
-                      <p className="text-[13px] text-left text-muted-foreground font-medium">
-                        Valid invitation detected
-                      </p>
-                    </div>
-
+                  <div className="flex flex-col gap-2 pt-2">
                     {isAuthenticated ? (
-                      <div className="flex items-center gap-3 p-3 bg-blue-500/5 rounded-xl border border-blue-500/10">
-                        <CheckCircle2 className="w-5 h-5 text-blue-500 shrink-0" />
-                        <p className="text-[13px] text-left text-muted-foreground font-medium">
-                          Session authenticated
+                      <div className="flex items-center gap-2.5 px-3 py-2 bg-white/5 rounded-xl border border-white/10">
+                        <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
+                        <p className="text-[11px] text-left text-muted-foreground font-medium">
+                          Signed in as {currentUser?.name || "Member"}
                         </p>
                       </div>
                     ) : (
-                      <div className="flex items-center gap-3 p-3 bg-yellow-500/5 rounded-xl border border-yellow-500/10">
-                        <LogIn className="w-5 h-5 text-yellow-500 shrink-0" />
-                        <p className="text-[13px] text-left text-muted-foreground font-medium">
-                          Login required to join
+                      <div className="flex items-center gap-2.5 px-3 py-2 bg-yellow-500/5 rounded-xl border border-yellow-500/10">
+                        <ShieldAlert className="w-4 h-4 text-yellow-500 shrink-0" />
+                        <p className="text-[11px] text-left text-muted-foreground font-medium">
+                          Login required to join project
                         </p>
                       </div>
                     )}
@@ -181,50 +219,44 @@ export default function InvitePage() {
                 </div>
 
                 {/* ACTION BAR */}
-                <div className="p-4 bg-accent/5 border-t border-accent/10">
+                <div className="p-4 bg-white/5 border-t border-white/5">
                   {isAuthenticated ? (
                     <>
                       {currentUser?._id === project.ownerId ? (
                         <Button
-                          className="w-full h-10 rounded-lg text-sm group relative overflow-hidden"
+                          className="w-full h-10 rounded-lg text-sm font-medium"
                           onClick={() =>
                             router.push(
                               `/dashboard/my-projects/${project.slug}`,
                             )
                           }
                         >
-                          <span className="relative z-10 flex items-center gap-2">
-                            Manage Project{" "}
-                            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                          </span>
+                          Manage Project
                         </Button>
                       ) : (
                         <Button
-                          className="w-full h-10 rounded-lg text-sm group relative overflow-hidden"
+                          className="w-full h-10 rounded-lg text-sm font-medium group"
                           onClick={() => setIsOpen(true)}
                         >
-                          <span className="relative z-10 flex items-center gap-2">
-                            Accept & Join{" "}
-                            <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
-                          </span>
+                          Accept & Join
+                          <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
                         </Button>
                       )}
 
                       <Dialog open={isOpen} onOpenChange={setIsOpen}>
-                        <DialogContent className="sm:max-w-[425px] bg-sidebar border-accent rounded-2xl">
+                        <DialogContent className="sm:max-w-[400px] bg-background border-border rounded-2xl shadow-2xl">
                           <DialogHeader>
-                            <DialogTitle className="text-xl font-bold tracking-tight">
+                            <DialogTitle className="text-lg font-bold tracking-tight">
                               Join Project
                             </DialogTitle>
-                            <DialogDescription className="text-muted-foreground">
-                              Write a short message to the project owner about
-                              why you want to join.
+                            <DialogDescription className="text-xs text-muted-foreground leading-relaxed">
+                              Introduce yourself to <b>{project.ownerName}</b>.
                             </DialogDescription>
                           </DialogHeader>
-                          <div className="grid gap-4 py-4">
+                          <div className="py-4">
                             <Textarea
-                              placeholder="Hello! I'd love to help with..."
-                              className="min-h-[120px] bg-accent/20 border-accent/30 focus:border-primary/50 transition-colors rounded-xl resize-none"
+                              placeholder="I'd love to help with this project..."
+                              className="min-h-[100px] bg-accent/10 border-border focus:border-primary/50 transition-all rounded-xl resize-none text-xs placeholder:text-muted-foreground/30"
                               value={message}
                               onChange={(e) => setMessage(e.target.value)}
                             />
@@ -232,7 +264,7 @@ export default function InvitePage() {
                           <DialogFooter>
                             <Button
                               type="submit"
-                              className="w-full h-11 rounded-xl font-medium"
+                              className="w-full h-10 rounded-lg font-medium text-sm"
                               disabled={isSubmitting}
                               onClick={handleJoin}
                             >
@@ -241,7 +273,7 @@ export default function InvitePage() {
                               ) : (
                                 <Rocket className="w-4 h-4 mr-2" />
                               )}
-                              Send Request
+                              Send Join Request
                             </Button>
                           </DialogFooter>
                         </DialogContent>
@@ -249,19 +281,18 @@ export default function InvitePage() {
                     </>
                   ) : (
                     <Button
-                      className="w-full h-12 rounded-xl text-sm font-semibold group"
+                      className="w-full h-10 rounded-lg text-sm font-semibold group bg-primary text-primary-foreground"
                       onClick={() => router.push("/auth")}
                     >
-                      <span className="flex items-center gap-2">
-                        Login to Continue <ArrowRight className="w-4 h-4" />
-                      </span>
+                      Login to Continue
+                      <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
                     </Button>
                   )}
                 </div>
               </div>
             )}
           </div>
-        </div>
+        </motion.div>
       </main>
     </div>
   );

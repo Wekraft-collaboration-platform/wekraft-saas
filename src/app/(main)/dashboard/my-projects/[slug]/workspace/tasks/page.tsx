@@ -14,6 +14,7 @@ import {
   Sparkle,
   Sparkles,
   Trash2,
+  LucideLoader2,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -76,6 +77,17 @@ const TaskPage = () => {
     api.project.getProjectMembers,
     project?._id ? { projectId: project._id as Id<"projects"> } : "skip",
   );
+ 
+  const projectDetails = useQuery(
+    api.projectDetails.getProjectDetails,
+    project?._id ? { projectId: project._id as Id<"projects"> } : "skip",
+  );
+ 
+  const isOwner = currentUser?._id === project?.ownerId;
+  const userMember = members?.find((m) => m.userId === currentUser?._id);
+  const isAdmin = userMember?.AccessRole === "admin";
+  
+  const canCreate = isOwner || isAdmin || projectDetails?.memberCanCreate !== false;
 
   const deleteTasks = useMutation(api.workspace.deleteTasks);
 
@@ -93,10 +105,16 @@ const TaskPage = () => {
 
   const filteredTasks = applyTaskFilters(tasks || [], sortConfig, tagFilter);
 
-  if (project === undefined || project === null)
+  if (
+    project === undefined ||
+    project === null ||
+    currentUser === undefined ||
+    projectDetails === undefined
+  )
     return (
-      <div className="h-screen w-full flex items-center justify-center">
-        Loading...
+      <div className="h-screen w-full flex items-center justify-center gap-2 text-sm font-medium">
+        <LucideLoader2 className="animate-spin text-primary w-5 h-5" />
+        Loading Workspace...
       </div>
     );
 
@@ -265,10 +283,28 @@ const TaskPage = () => {
             repoFullName={project.repoFullName}
             ownerClerkId={(project as any).ownerClerkId}
             trigger={
-              <Button size="sm" className="text-xs">
-                <Plus className="w-5 h-5 mr-2" />
-                New Task
-              </Button>
+              canCreate ? (
+                <Button size="sm" className="text-xs">
+                  <Plus className="w-5 h-5 mr-2" />
+                  New Task
+                </Button>
+              ) : (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="cursor-not-allowed">
+                        <Button size="sm" className="text-xs" disabled>
+                          <Plus className="w-5 h-5 mr-2" />
+                          New Task
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent>
+                      <p>Task creation is restricted.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )
             }
           />
         </div>
