@@ -63,10 +63,10 @@ interface PageData {
 
 // ── helpers ────────────────────────────────────────────────────────────────
 const ROLE_COLORS: Record<string, string> = {
-  owner: "bg-amber-500/15 text-amber-400 border-amber-500/30",
-  admin: "bg-violet-500/15 text-violet-400 border-violet-500/30",
-  member: "bg-zinc-500/15 text-zinc-400 border-zinc-500/30",
-  viewer: "bg-sky-500/15 text-sky-400 border-sky-500/30",
+  owner: "bg-zinc-500/15 text-neutral-200 border-neutral-200/30",
+  admin: "bg-zinc-500/15 text-neutral-200 border-neutral-200/30",
+  member: "bg-zinc-500/15 text-neutral-200 border-neutral-200/30",
+//   viewer: "bg-sky-500/15 text-sky-400 border-sky-500/30",
 };
 
 const LANG_COLORS = [
@@ -198,7 +198,7 @@ export default function PublicProjectPage({ params }: Props) {
   const canJoin = isSignedIn && !isPower;
 
   return (
-    <div className="min-h-screen bg-background">
+    <div className="min-h-screen bg-neutral-950">
       {/* ── Hero thumbnail ──────────────────────────────────────────────── */}
       <div className="relative w-full" style={{ minHeight: 280 }}>
         {profile.thumbnailUrl ? (
@@ -209,17 +209,18 @@ export default function PublicProjectPage({ params }: Props) {
             style={{ maxHeight: 420, minHeight: 280, width: "100%", display: "block" }}
           />
         ) : (
-          <div className="w-full bg-gradient-to-br from-zinc-900 to-zinc-800" style={{ height: 280 }} />
+          <div className="border-b border-neutral-500 h-[320px] overflow-hidden">
+            <img
+            src='/we-thumbnail.png'
+            alt='wekraft'
+            className="w-full object-cover"
+            style={{ maxHeight: 420, minHeight: 280, width: "100%", display: "block" }}
+          />
+          </div>
         )}
 
-        {/* gradient overlay */}
-        <div
-          className="absolute inset-0"
-          style={{
-            background:
-              "linear-gradient(to bottom, rgba(0,0,0,0.10) 0%, rgba(0,0,0,0.65) 70%, rgba(0,0,0,0.90) 100%)",
-          }}
-        />
+        {/* dark overlay so text is always readable */}
+        <div className="absolute inset-0 bg-black/55" />
 
         {/* info on top of thumbnail */}
         <div className="absolute bottom-0 left-0 right-0 px-6 pb-6 pt-10">
@@ -262,9 +263,9 @@ export default function PublicProjectPage({ params }: Props) {
                   />
                 )}
                 <span className="text-white/80 text-sm font-medium">{profile.ownerName}</span>
-                {profile.ownerOccupation && (
-                  <span className="text-white/40 text-xs hidden sm:inline">· {profile.ownerOccupation}</span>
-                )}
+                <span className="text-[11px] px-2 py-0.5 rounded-full bg-neutral-500/60 text-neutral-200 border-neutral-200/30">
+                  Owner
+                </span>
               </div>
 
               {/* upvote button */}
@@ -468,6 +469,19 @@ export default function PublicProjectPage({ params }: Props) {
                 Last commit: {new Date(health.lastCommitDate).toLocaleDateString()}
               </p>
             )}
+          </section>
+        )}
+
+        {/* ── No repo connected ─────────────────────────────────────────── */}
+        {!profile.repo && (
+          <section className="space-y-2">
+            <h2 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+              Repository
+            </h2>
+            <div className="flex items-center gap-3 rounded-xl border border-dashed border-border bg-muted/30 p-4 text-sm text-muted-foreground">
+              <span className="text-base">⌥</span>
+              No repository connected to this project.
+            </div>
           </section>
         )}
       </div>
