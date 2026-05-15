@@ -1,6 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { getPlanLimits } from "./pricing";
+import { getPlanLimits, getActiveUserPlan, PlanType } from "./pricing";
 import { customAlphabet } from "nanoid";
 
 const slugId = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 5);
@@ -674,11 +674,17 @@ export const getProjectJoinRequests = query({
       throw new Error("Unauthorized to view join requests");
     }
 
-    return await ctx.db
+    const requests = await ctx.db
       .query("projectJoinRequests")
       .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
-      .filter((q) => q.eq(q.field("status"), "pending"))
       .collect();
+
+    // Sort: Pending first, then by date descending
+    return requests.sort((a, b) => {
+      if (a.status === "pending" && b.status !== "pending") return -1;
+      if (a.status !== "pending" && b.status === "pending") return 1;
+      return b.updatedAt - a.updatedAt;
+    });
   },
 });
 
@@ -723,6 +729,22 @@ export const handleJoinRequest = mutation({
     }
 
     if (args.action === "accepted") {
+      // --- MEMBER LIMIT CHECK ---
+      const owner = await ctx.db.get(project.ownerId);
+      if (!owner) throw new Error("Project owner not found");
+
+      const limits = getPlanLimits(owner);
+      const members = await ctx.db
+        .query("projectMembers")
+        .withIndex("by_project", (q) => q.eq("projectId", request.projectId))
+        .collect();
+
+      if (members.length >= limits.members_per_project_limit) {
+        throw new Error(
+          `Member limit reached! Your ${owner.accountType || "free"} plan allows maximum ${limits.members_per_project_limit} members per project.`,
+        );
+      }
+
       // Add to projectMembers
       const existingMember = await ctx.db
         .query("projectMembers")
@@ -731,7 +753,6 @@ export const handleJoinRequest = mutation({
         .unique();
 
       if (!existingMember) {
-        const joiner = await ctx.db.get(request.userId);
         await ctx.db.insert("projectMembers", {
           projectId: request.projectId,
           userId: request.userId,
@@ -1051,12 +1072,24 @@ export const getTeamPageData = query({
       }),
     );
 
+    // 6. Get Owner's plan and limits
+    const owner = await ctx.db.get(project.ownerId);
+    let ownerPlan: PlanType = "free";
+    let memberLimit = 3;
+
+    if (owner) {
+      ownerPlan = getActiveUserPlan(owner);
+      memberLimit = getPlanLimits(owner).members_per_project_limit;
+    }
+
     return {
       members: enrichedMembers,
       total: enrichedMembers.length,
       ownerCount,
       adminCount,
       memberCount,
+      ownerPlan,
+      memberLimit,
     };
   },
 });
@@ -1290,6 +1323,7 @@ export const getPublicProjectProfile = query({
       ownerOccupation: owner?.occupation ?? null,
       ownerBio: owner?.bio ?? null,
       ownerGithubUsername: owner?.githubUsername ?? null,
+      ownerClerkId: owner?.clerkToken.split("|").pop() ?? null,
       // Team
       members: publicMembers,
       totalMembers: members.length,

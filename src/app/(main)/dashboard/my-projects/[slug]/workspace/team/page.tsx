@@ -42,9 +42,14 @@ import {
   CheckSquare,
   AlertCircle,
   CalendarDays,
+  Sparkles,
+  Zap,
+  TrendingUp,
+  ArrowUpRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
+import { InviteDialog } from "@/modules/project/inviteDilogag";
 
 const ROLE_CONFIG: Record<string, { label: string; icon: typeof Crown }> = {
   owner: { label: "Owner", icon: Crown },
@@ -93,7 +98,7 @@ export default function TeamPage() {
     memberId: Id<"projectMembers">,
     newRole: "admin" | "member",
     memberName: string,
-) => {
+  ) => {
     if (!project) return;
     try {
       await updateRole({
@@ -144,7 +149,7 @@ export default function TeamPage() {
     <div className="w-full h-full">
       <div className="bg-linear-to-br from-blue-500 to-blue-200 p-4 relative">
         {/* Header */}
-        <header className="flex items-center justify-between mb-8">
+        <header className="flex items-center justify-between mb-8 z-20 relative">
           <div>
             <h1 className="text-2xl font-semibold flex text-white items-center gap-2">
               <Users className="w-6 h-6 text-white" />
@@ -154,13 +159,18 @@ export default function TeamPage() {
               Manage your project members and roles
             </p>
           </div>
-          <Button
-            size="sm"
-            className="text-xs cursor-pointer px-6! bg-primary text-primary-foreground hover:bg-primary/90"
-          >
-            <UserPlus className="w-4 h-4 mr-1.5" />
-            Invite
-          </Button>
+          <InviteDialog
+            inviteLink={project?.inviteLink}
+            trigger={
+              <Button
+                size="sm"
+                className="text-xs cursor-pointer px-6! bg-primary text-primary-foreground hover:bg-primary/90"
+              >
+                <UserPlus className="w-4 h-4 mr-1.5" />
+                Invite
+              </Button>
+            }
+          />
         </header>
 
         {/* Stats Bar */}
@@ -196,6 +206,88 @@ export default function TeamPage() {
         />
       </div>
 
+      {/* Plan & Capacity Banner */}
+      <div className="px-6 mt-6">
+        <div className="relative overflow-hidden rounded-md border border-accent bg-accent/30 shadow">
+          <div className="flex flex-col md:flex-row items-center justify-between gap-4 py-3 px-8 relative z-10">
+            <div className="flex items-center gap-8 flex-wrap">
+              {/* Plan Info */}
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 rounded-full bg-accent flex items-center justify-center text-primary">
+                  <User className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-[10px] ">Owner Plan</p>
+                  <p className="text-sm capitalize flex items-center gap-1.5">
+                    {teamData.ownerPlan} Plan
+                    {teamData.ownerPlan === "pro" && (
+                      <Badge className="h-4 px-1 text-[8px] bg-amber-500/10 text-amber-500 border-amber-500/20">
+                        ELITE
+                      </Badge>
+                    )}
+                  </p>
+                </div>
+              </div>
+
+              {/* Capacity Info */}
+              <div className="h-8 w-[1px] bg-border hidden md:block" />
+
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center ">
+                  <Users className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-[10px]">Member Limit</p>
+                  <p className="text-sm font-semibold">
+                    {teamData.total}{" "}
+                    <span className="text-muted-foreground font-normal">
+                      of
+                    </span>{" "}
+                    {teamData.memberLimit}{" "}
+                    <span className="text-muted-foreground font-normal">
+                      seats
+                    </span>
+                  </p>
+                </div>
+              </div>
+
+              {/* Remaining Info */}
+              <div className="h-8 w-[1px] bg-border hidden md:block" />
+
+              <div className="flex items-center gap-3">
+                <div className="w-8 h-8 bg-accent rounded-full flex items-center justify-center ">
+                  <TrendingUp className="w-4 h-4" />
+                </div>
+                <div>
+                  <p className="text-[10px]">Availability</p>
+                  <p
+                    className={`text-sm text-primary`}
+                  >
+                    {teamData.memberLimit - teamData.total} Slots left
+                  </p>
+                </div>
+              </div>
+            </div>
+
+            {/* Upgrade Action */}
+            {isOwner && teamData.ownerPlan !== "pro" && (
+              <Button
+                variant="default"
+                size="sm"
+                onClick={() => router.push("/dashboard/pricing")}
+                className="rounded-full text-xs bg-blue-500 text-white hover:bg-blue-600"
+              >
+                Upgrade to Pro
+                <ArrowUpRight className="w-3.5 h-3.5 ml-1.5 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+              </Button>
+            )}
+          </div>
+
+          {/* Decorative background element */}
+          <div className="absolute top-0 right-0 w-80 h-full bg-linear-to-l from-blue-500/25 to-transparent pointer-events-none" />
+        </div>
+      </div>
+
       {/* Members Grid */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 px-6 py-5">
         {teamData.members.map((member) => {
@@ -225,30 +317,28 @@ export default function TeamPage() {
                           Change Role
                         </DropdownMenuSubTrigger>
                         <DropdownMenuSubContent>
-                          {(["admin", "member"] as const).map(
-                            (role) => (
-                              <DropdownMenuItem
-                                key={role}
-                                disabled={member.AccessRole === role}
-                                onClick={() =>
-                                  member._id &&
-                                  handleRoleChange(
-                                    member._id as Id<"projectMembers">,
-                                    role,
-                                    member.userName,
-                                  )
-                                }
-                                className="cursor-pointer"
-                              >
-                                {ROLE_CONFIG[role].label}
-                                {member.AccessRole === role && (
-                                  <span className="ml-auto text-xs text-muted-foreground">
-                                    Current
-                                  </span>
-                                )}
-                              </DropdownMenuItem>
-                            ),
-                          )}
+                          {(["admin", "member"] as const).map((role) => (
+                            <DropdownMenuItem
+                              key={role}
+                              disabled={member.AccessRole === role}
+                              onClick={() =>
+                                member._id &&
+                                handleRoleChange(
+                                  member._id as Id<"projectMembers">,
+                                  role,
+                                  member.userName,
+                                )
+                              }
+                              className="cursor-pointer"
+                            >
+                              {ROLE_CONFIG[role].label}
+                              {member.AccessRole === role && (
+                                <span className="ml-auto text-xs text-muted-foreground">
+                                  Current
+                                </span>
+                              )}
+                            </DropdownMenuItem>
+                          ))}
                         </DropdownMenuSubContent>
                       </DropdownMenuSub>
                     )}

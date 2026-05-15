@@ -258,10 +258,14 @@ export async function fetchUserContributions(token: string, username: string) {
 // commitsLast60Days
 // prMergeRate
 // ============================================
-export const getProjectHealthData = async (owner: string, repo: string) => {
+export const getProjectHealthData = async (
+  owner: string,
+  repo: string,
+  userId?: string,
+) => {
   console.log(`📊 Fetching health data for: ${owner}/${repo}`);
 
-  const token = await getGithubAccessToken();
+  const token = await getGithubAccessToken(userId);
   const octokit = new Octokit({ auth: token });
 
   const sixtyDaysAgo = new Date();
@@ -326,10 +330,14 @@ export const getProjectHealthData = async (owner: string, repo: string) => {
 // GETTING PROJECT LANGUAGES
 // Array of { name, bytes, percentage } sorted by usage
 // ============================================
-export const getProjectLanguages = async (owner: string, repo: string) => {
+export const getProjectLanguages = async (
+  owner: string,
+  repo: string,
+  userId?: string,
+) => {
   console.log(`🗣️ Fetching languages for: ${owner}/${repo}`);
 
-  const token = await getGithubAccessToken();
+  const token = await getGithubAccessToken(userId);
   const octokit = new Octokit({ auth: token });
 
   try {

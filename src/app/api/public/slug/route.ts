@@ -59,9 +59,11 @@ export async function GET(req: NextRequest) {
   let health = null;
 
   if (owner && repo) {
+    const ownerClerkId = profile.ownerClerkId;
+
     const [langResult, healthResult] = await Promise.allSettled([
-      getProjectLanguages(owner, repo),
-      getProjectHealthData(owner, repo),
+      getProjectLanguages(owner, repo, ownerClerkId),
+      getProjectHealthData(owner, repo, ownerClerkId),
     ]);
 
     if (langResult.status === "fulfilled") languages = langResult.value;

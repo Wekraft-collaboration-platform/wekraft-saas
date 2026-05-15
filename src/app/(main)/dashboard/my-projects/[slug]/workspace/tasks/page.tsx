@@ -47,6 +47,8 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 
+import { InviteDialog } from "@/modules/project/inviteDilogag";
+
 const TaskPage = () => {
   const params = useParams();
   const slug = params.slug as string;
@@ -61,6 +63,7 @@ const TaskPage = () => {
   const currentUser = useQuery(api.user.getCurrentUser);
   const project = useQuery(api.project.getProjectBySlug, { slug });
   const projectName = project?.projectName;
+  const projectInviteLink = project?.inviteLink;
 
   const tasks = useQuery(
     api.workspace.getTasks,
@@ -154,13 +157,18 @@ const TaskPage = () => {
           </div>
 
           {/* Invite Button */}
-          <Button
-            className="text-xs cursor-pointer px-4 bg-blue-600 text-white hover:bg-blue-700"
-            size="sm"
-          >
-            <UserPlus className="w-5 h-5 mr-1" />
-            Invite
-          </Button>
+          <InviteDialog
+            inviteLink={projectInviteLink}
+            trigger={
+              <Button
+                className="text-xs cursor-pointer px-4 bg-blue-600 text-white hover:bg-blue-700"
+                size="sm"
+              >
+                <UserPlus className="w-5 h-5 mr-1" />
+                Invite
+              </Button>
+            }
+          />
         </div>
       </header>
 
