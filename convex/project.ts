@@ -797,6 +797,7 @@ export const getProjectDetails = query({
 export const updateProject = mutation({
   args: {
     projectId: v.id("projects"),
+    projectName: v.optional(v.string()),
     description: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
     isPublic: v.optional(v.boolean()),

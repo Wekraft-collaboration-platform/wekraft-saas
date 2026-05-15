@@ -16,6 +16,8 @@ import { Separator } from "@/components/ui/separator";
 import { DashboardBreadcrumbs } from "@/modules/dashboard/components/HeaderCrumbs";
 import { CommunitySearchBar } from "@/modules/dashboard/components/SearchBar";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { BugPlay, Share2, SunMedium } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function Layout({
   children,
@@ -54,7 +56,7 @@ export default function Layout({
               {/* <div>
                 <CommunitySearchBar />
               </div> */}
-              <div className="flex items-center">
+              <div className="flex items-center gap-5">
                 {/* <UserButton
                   appearance={{
                     elements: {
@@ -62,6 +64,17 @@ export default function Layout({
                     },
                   }}
                 /> */}
+                <div className="flex items-center gap-3">
+                  <Button size="icon-sm" variant="outline">
+                    <BugPlay />
+                  </Button>
+                  <Button size="icon-sm" variant="outline">
+                    <SunMedium />
+                  </Button>
+                  <Button size="icon-sm" variant="outline">
+                    <Share2 />
+                  </Button>
+                </div>
                 <UserMenu />
               </div>
             </header>

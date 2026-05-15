@@ -103,7 +103,9 @@ const ProjectPage = () => {
       toast.success("Thumbnail updated successfully!", { id: toastId });
     } catch (error: any) {
       console.error("Upload error:", error);
-      toast.error(error.message || "Failed to upload thumbnail", { id: toastId });
+      toast.error(error.message || "Failed to upload thumbnail", {
+        id: toastId,
+      });
     } finally {
       setIsUploading(false);
     }
@@ -219,7 +221,7 @@ const ProjectPage = () => {
               <p>Uploading...</p>
             </div>
           ) : (
-            <label className="cursor-pointer flex flex-col items-center text-white">
+            <label className="cursor-pointer flex flex-col items-center justify-center w-full h-full text-white">
               <UploadCloud className="w-10 h-10 mb-2" />
               <span className="font-semibold">Click to Upload Thumbnail</span>
               <span className="text-xs text-white/70 mt-1">
@@ -237,8 +239,16 @@ const ProjectPage = () => {
       </div>
 
       {/* ---------------------TABS / SETTINGS BELOW---------------- */}
-      <div className="w-full flex items-center justify-end mb-6">
+      <div className="w-full flex items-center justify-end mb-10">
         <div className="flex items-center gap-5">
+          <Button
+            className="px-3! text-xs cursor-pointer"
+            size="sm"
+            variant={"outline"}
+          >
+            View Public Page <Globe className="ml-2 w-3.5 h-3.5" />
+          </Button>
+
           <InviteDialog
             inviteLink={projectInviteLink}
             trigger={
@@ -260,19 +270,12 @@ const ProjectPage = () => {
               <LucideExternalLink className="ml-2 w-3.5 h-3.5" />
             </Button>
           </Link>
-          <Button
-            className="px-3! text-xs cursor-pointer"
-            size="sm"
-            variant={"outline"}
-          >
-            View Public Page <Globe className="ml-2 w-3.5 h-3.5" />
-          </Button>
         </div>
       </div>
 
       {/* ---------------------------------------------------- */}
       {/* PARENT CONTAINER LEFT SIDE TABS || RIGHT SIDE PROJECT INFO */}
-      <div className="flex">
+      <div className="flex items-stretch">
         {/* LEFT SIDE 3 TABS */}
         <div className="w-[65%] h-full">
           {/* TABS */}
@@ -325,9 +328,9 @@ const ProjectPage = () => {
             )}
           </div>
         </div>
-        <Separator orientation="vertical" className="h-100!" />
+        <Separator orientation="vertical" className="h-auto! mx-2" />
         {/* RIGHT SIDE , Info */}
-        <div className="w-[30%] h-full pl-6">
+        <div className="w-[30%] h-full pl-6 mt-4">
           <ProjectInfo project={project as any} members={members} />
         </div>
       </div>

@@ -2,7 +2,7 @@ import React from "react";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
-import { Calendar, Clock, Users } from "lucide-react";
+import { Calendar, Clock, Users, Heart } from "lucide-react";
 import { format } from "date-fns";
 import { Id } from "../../../convex/_generated/dataModel";
 
@@ -29,6 +29,7 @@ interface ProjectInfoProps {
     ownerId: Id<"users">;
     ownerName: string;
     ownerImage: string;
+    projectUpvotes?: number;
   };
   members?: ProjectMember[];
 }
@@ -79,6 +80,19 @@ const ProjectInfo = ({ project, members }: ProjectInfoProps) => {
               No tags added
             </p>
           )}
+        </div>
+
+        {/* Upvotes */}
+        <div className="flex items-center gap-3">
+          <span className="text-sm text-primary font-semibold min-w-[100px]">
+            Upvotes:
+          </span>
+          <div className="flex items-center gap-1.5 text-rose-500 bg-rose-500/10 px-2.5 py-1 rounded-full border border-rose-500/20">
+            <Heart className="w-3.5 h-3.5 fill-current" />
+            <span className="text-xs font-bold">
+              {project.projectUpvotes || 0}
+            </span>
+          </div>
         </div>
       </div>
 
