@@ -85,24 +85,25 @@ export default function WhyUs() {
       {/* ── Problem ─────────────────────────────── */}
       <div>
         <motion.div {...fade()} className="mb-12">
-          <p className="text-xs text-white/30 uppercase tracking-widest mb-5">The problem</p>
-          <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-white mb-4">
+          <p className="text-xs text-white/40 uppercase tracking-widest mb-5 font-medium">The problem</p>
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-white to-neutral-400 mb-4">
             Every PM tool was built for someone else.
           </h2>
-          <p className="text-neutral-500 text-base max-w-lg leading-relaxed">
+          <p className="text-neutral-400 text-base max-w-lg leading-relaxed">
             Not for the engineer writing code at 11pm. Not for the team lead running standups without a dedicated PM. We know — we were those people.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-px bg-white/6 border border-white/6 rounded-xl overflow-hidden">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {painPoints.map((item, i) => (
             <motion.div
               key={item.competitor}
               {...fade(i * 0.06)}
-              className="bg-[#050505] p-6 hover:bg-white/[0.02] transition-colors duration-200"
+              className="relative overflow-hidden rounded-xl border border-white/[0.05] bg-[#0A0A0A] p-6 hover:border-white/[0.1] hover:bg-[#0F0F0F] transition-all duration-300 group"
             >
-              <p className="text-white/40 text-[11px] font-mono uppercase tracking-widest mb-3">{item.competitor}</p>
-              <p className="text-neutral-400 text-sm leading-relaxed">{item.pain}</p>
+              <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <p className="text-white/50 text-[11px] font-mono uppercase tracking-widest mb-3 group-hover:text-white/70 transition-colors">{item.competitor}</p>
+              <p className="text-neutral-400 text-sm leading-relaxed group-hover:text-neutral-300 transition-colors">{item.pain}</p>
             </motion.div>
           ))}
         </div>
@@ -111,25 +112,26 @@ export default function WhyUs() {
       {/* ── Pillars ──────────────────────────────── */}
       <div>
         <motion.div {...fade()} className="mb-12">
-          <p className="text-xs text-white/30 uppercase tracking-widest mb-5">What we do differently</p>
-          <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-white mb-4">
+          <p className="text-xs text-white/40 uppercase tracking-widest mb-5 font-medium">What we do differently</p>
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-white to-neutral-400 mb-4">
             Fewer tools. More shipping.
           </h2>
-          <p className="text-neutral-500 text-base max-w-lg leading-relaxed">
+          <p className="text-neutral-400 text-base max-w-lg leading-relaxed">
             Six things that make a measurable difference to how your team works, starting from day one.
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-white/6 border border-white/6 rounded-xl overflow-hidden">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {pillars.map((p, i) => (
             <motion.div
               key={p.title}
               {...fade(i * 0.06)}
-              className="bg-[#050505] p-7 hover:bg-white/[0.02] transition-colors duration-200"
+              className="relative overflow-hidden rounded-xl border border-white/[0.05] bg-[#0A0A0A] p-7 hover:border-white/[0.1] hover:bg-[#0F0F0F] transition-all duration-300 group"
             >
-              <p className="text-white/20 text-[10px] font-mono mb-4">0{i + 1}</p>
-              <h3 className="text-white font-medium text-base mb-2">{p.title}</h3>
-              <p className="text-neutral-500 text-sm leading-relaxed">{p.description}</p>
+              <div className="absolute inset-0 bg-gradient-to-br from-white/[0.02] to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              <p className="text-white/30 text-[10px] font-mono mb-4 group-hover:text-white/50 transition-colors">0{i + 1}</p>
+              <h3 className="text-white font-medium text-base mb-2 group-hover:text-white/90 transition-colors">{p.title}</h3>
+              <p className="text-neutral-400 text-sm leading-relaxed group-hover:text-neutral-300 transition-colors">{p.description}</p>
             </motion.div>
           ))}
         </div>
@@ -138,24 +140,24 @@ export default function WhyUs() {
       {/* ── Comparison ───────────────────────────── */}
       <div>
         <motion.div {...fade()} className="mb-12">
-          <p className="text-xs text-white/30 uppercase tracking-widest mb-5">Side by side</p>
-          <h2 className="text-3xl md:text-4xl font-semibold tracking-tight text-white mb-4">
+          <p className="text-xs text-white/40 uppercase tracking-widest mb-5 font-medium">Side by side</p>
+          <h2 className="text-3xl md:text-4xl font-bold tracking-tight text-transparent bg-clip-text bg-gradient-to-br from-white to-neutral-400 mb-4">
             How we compare.
           </h2>
-          <p className="text-neutral-500 text-base max-w-lg leading-relaxed">
+          <p className="text-neutral-400 text-base max-w-lg leading-relaxed">
             Out-of-the-box, without plugins or add-ons.
           </p>
         </motion.div>
 
-        <motion.div {...fade(0.1)} className="overflow-x-auto">
+        <motion.div {...fade(0.1)} className="overflow-x-auto rounded-xl border border-white/[0.05] bg-[#0A0A0A] p-6">
           <table className="w-full min-w-[700px] border-collapse">
             <thead>
-              <tr className="border-b border-white/8">
-                <th className="text-left text-[11px] text-white/25 font-normal pb-4 pr-6 w-[180px]">Feature</th>
+              <tr className="border-b border-white/[0.08]">
+                <th className="text-left text-[11px] text-white/40 font-medium pb-4 pr-6 w-[180px] uppercase tracking-wider">Feature</th>
                 {cols.map((c) => (
                   <th
                     key={c.key}
-                    className={`text-center text-[11px] font-semibold pb-4 px-3 ${c.key === "wekraft" ? "text-white" : "text-white/25 font-normal"}`}
+                    className={`text-center text-[11px] font-semibold pb-4 px-3 uppercase tracking-wider ${c.key === "wekraft" ? "text-white" : "text-white/40 font-medium"}`}
                   >
                     {c.label}
                   </th>
@@ -166,9 +168,9 @@ export default function WhyUs() {
               {features.map((f, i) => (
                 <tr
                   key={f.name}
-                  className={`border-b border-white/5 hover:bg-white/[0.015] transition-colors ${i === features.length - 1 ? "border-0" : ""}`}
+                  className={`border-b border-white/[0.03] hover:bg-white/[0.01] transition-colors ${i === features.length - 1 ? "border-0" : ""}`}
                 >
-                  <td className="text-white/60 text-sm py-4 pr-6">{f.name}</td>
+                  <td className="text-white/70 text-sm py-4 pr-6 font-medium">{f.name}</td>
                   {cols.map((c) => (
                     <td key={c.key} className="py-4 px-3 text-center">
                       <Cell val={f[c.key] as boolean | null} isWe={c.key === "wekraft"} />
@@ -178,10 +180,10 @@ export default function WhyUs() {
               ))}
             </tbody>
           </table>
-          <div className="flex items-center gap-5 mt-5 text-[11px] text-white/20">
-            <span className="flex items-center gap-1.5"><Check className="w-3 h-3" /> Native</span>
-            <span className="flex items-center gap-1.5"><Minus className="w-3 h-3" /> Partial / plugin</span>
-            <span className="flex items-center gap-1.5"><X className="w-3 h-3" /> Not available</span>
+          <div className="flex items-center gap-5 mt-5 text-[11px] text-white/30">
+            <span className="flex items-center gap-1.5"><Check className="w-3 h-3 text-white/50" /> Native</span>
+            <span className="flex items-center gap-1.5"><Minus className="w-3 h-3 text-white/30" /> Partial / plugin</span>
+            <span className="flex items-center gap-1.5"><X className="w-3 h-3 text-white/20" /> Not available</span>
           </div>
         </motion.div>
       </div>
