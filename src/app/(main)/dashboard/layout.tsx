@@ -5,7 +5,8 @@ import { Authenticated, Unauthenticated, useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { RedirectToSignIn, UserButton } from "@clerk/nextjs";
+import { RedirectToSignIn } from "@clerk/nextjs";
+import { UserMenu } from "@/modules/dashboard/components/UserMenu";
 import {
   SidebarInset,
   SidebarProvider,
@@ -54,13 +55,14 @@ export default function Layout({
                 <CommunitySearchBar />
               </div> */}
               <div className="flex items-center">
-                <UserButton
+                {/* <UserButton
                   appearance={{
                     elements: {
                       userButtonAvatarBox: "h-9 w-9",
                     },
                   }}
-                />
+                /> */}
+                <UserMenu />
               </div>
             </header>
             <div className="flex-1 min-h-0 overflow-hidden">

@@ -1,5 +1,6 @@
 "use client";
 
+import React, { useState } from "react";
 import AIChatSimulation from "./AIChatSimulation";
 import { StripedPattern } from "@/components/magicui/striped-pattern";
 import { FlickeringGrid } from "@/components/ui/flickering-grid";
@@ -8,6 +9,8 @@ import NotificationCenter from "@/components/forgeui/notification-center";
 import VaultLock from "@/components/forgeui/vault-lock";
 
 const Section1 = () => {
+  const [isHovered2, setIsHovered2] = useState(false);
+  const [isHovered3, setIsHovered3] = useState(false);
   return (
     <section id="section1" className="bg-black py-24 px-6 md:px-12 font-sans">
       <div className="max-w-7xl mx-auto">
@@ -16,19 +19,19 @@ const Section1 = () => {
           <div className="p-12 md:p-12 text-center border-b border-white/10">
             <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full border border-blue-500/20 bg-blue-500/5 mb-8">
               <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-              <span className="text-[10px] md:text-xs font-medium text-blue-400 uppercase tracking-widest">
+              <span className="text-sm font-medium text-blue-400 ">
                 Purpose-built for engineering teams
               </span>
             </div>
 
             <h2 className="text-5xl font-bold tracking-tight mb-8 leading-[1.1] max-w-4xl mx-auto">
-              <span className="text-white">Build with clarity.</span> <br />
-              <span className="text-neutral-500">Ship with confidence.</span>
+              <span className="text-white">Built for speed.</span> <br />
+              <span className="text-neutral-500">Designed for simplicity.</span>
             </h2>
 
             <p className="text-neutral-400 text-lg max-w-2xl mx-auto leading-relaxed">
-              WeKraft combines intelligent PM, real-time collaboration, and deep
-              Analysis into one unified developer platform.
+              The cleanest way to manage ambitious projects. WeKraft combines
+              intelligent PM with real-time collaboration.
             </p>
           </div>
 
@@ -72,7 +75,11 @@ const Section1 = () => {
             </div>
 
             {/* Element 2 */}
-            <div className="relative overflow-hidden border-b border-white/10 group hover:bg-white/[0.01] transition-colors duration-500 min-h-[500px] flex items-center justify-center">
+            <div 
+              onMouseEnter={() => setIsHovered2(true)}
+              onMouseLeave={() => setIsHovered2(false)}
+              className="relative overflow-hidden border-b border-white/10 group hover:bg-white/[0.01] transition-colors duration-500 min-h-[500px] flex items-center justify-center"
+            >
               <FlickeringGrid
                 className="absolute inset-y-0 left-8 right-8 z-0 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]"
                 squareSize={4}
@@ -88,6 +95,7 @@ const Section1 = () => {
 
               <div className="w-full px-12 md:px-20 relative z-10 flex items-center justify-center scale-100">
                 <NotificationCenter
+                  isHovered={isHovered2}
                   cardTitle="Real-time project health"
                   cardDescription="Get instant updates from Kaya about deadlines, delays, and critical sprint updates."
                   notificationTitle="Kaya PM"
@@ -104,7 +112,11 @@ const Section1 = () => {
             </div>
 
             {/* Element 3 */}
-            <div className="relative overflow-hidden border-b md:border-b-0 md:border-r border-white/10 group hover:bg-white/[0.01] transition-colors duration-500 min-h-[500px] flex items-center justify-center">
+            <div 
+              onMouseEnter={() => setIsHovered3(true)}
+              onMouseLeave={() => setIsHovered3(false)}
+              className="relative overflow-hidden border-b md:border-b-0 md:border-r border-white/10 group hover:bg-white/[0.01] transition-colors duration-500 min-h-[500px] flex items-center justify-center"
+            >
               <FlickeringGrid
                 className="absolute inset-y-0 left-8 right-8 z-0 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]"
                 squareSize={4}
@@ -120,6 +132,7 @@ const Section1 = () => {
 
               <div className="w-full px-12 md:px-20 relative z-10 flex items-center justify-center scale-100">
                 <VaultLock
+                  isHovered={isHovered3}
                   cardTitle="Vault Access"
                   cardDescription="Smooth and secure login experience, backed by encrypted access and seamless visual transitions"
                 />
