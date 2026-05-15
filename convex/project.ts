@@ -1153,3 +1153,201 @@ export const updateMemberRole = mutation({
     });
   },
 });
+
+// ====================================
+// GET PUBLIC PROJECT PROFILE
+// Single bundled query for /projects/[slug] public page
+// ====================================
+export const getPublicProjectProfile = query({
+  args: { slug: v.string() },
+  handler: async (ctx, args) => {
+    // 1. Find project by slug
+    const project = await ctx.db
+      .query("projects")
+      .withIndex("by_slug", (q) => q.eq("slug", args.slug))
+      .unique();
+
+    if (!project) return null;
+
+    // 2. Resolve current user (optional — public page works without auth)
+    const identity = await ctx.auth.getUserIdentity();
+    const currentUserDb = identity
+      ? await ctx.db
+          .query("users")
+          .withIndex("by_token", (q) =>
+            q.eq("clerkToken", identity.tokenIdentifier)
+          )
+          .unique()
+      : null;
+
+    const isOwner = !!currentUserDb && project.ownerId === currentUserDb._id;
+
+    // 3. Check membership for private project access
+    let membership = null;
+    if (currentUserDb) {
+      membership = await ctx.db
+        .query("projectMembers")
+        .withIndex("by_project", (q) => q.eq("projectId", project._id))
+        .filter((q) => q.eq(q.field("userId"), currentUserDb._id))
+        .unique();
+    }
+
+    const isMember = !!membership;
+
+    // 4. Access control: private project wall
+    if (!project.isPublic && !isOwner && !isMember) {
+      // Return sentinel so the UI can show the "Private Project" wall
+      return {
+        isPrivate: true as const,
+        projectName: project.projectName,
+        ownerName: project.ownerName,
+        ownerImage: project.ownerImage,
+      };
+    }
+
+    // 5. Fetch owner profile
+    const owner = await ctx.db.get(project.ownerId);
+
+    // 6. Fetch members (max 8 for the public card)
+    const members = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_project", (q) => q.eq("projectId", project._id))
+      .collect();
+
+    const publicMembers = members.slice(0, 8).map((m) => ({
+      userId: m.userId,
+      userName: m.userName,
+      userImage: m.userImage ?? null,
+      AccessRole: m.AccessRole ?? "member",
+      joinedAt: m.joinedAt ?? null,
+    }));
+
+    // 7. Fetch linked repo (if any)
+    let repo = null;
+    if (project.repositoryId) {
+      const repoDoc = await ctx.db.get(project.repositoryId);
+      if (repoDoc) {
+        repo = {
+          repoName: repoDoc.repoName,
+          repoOwner: repoDoc.repoOwner,
+          repoFullName: repoDoc.repoFullName,
+          repoUrl: repoDoc.repoUrl,
+          language: repoDoc.language ?? null,
+        };
+      }
+    }
+
+    // 8. Fetch deadline from projectDetails
+    const details = await ctx.db
+      .query("projectDetails")
+      .withIndex("by_project", (q) => q.eq("projectId", project._id))
+      .unique();
+
+    // 9. Current user context (upvote, pending request)
+    let currentUser = null;
+    if (currentUserDb) {
+      const upvoteRecord = await ctx.db
+        .query("projectUpvoteRecords")
+        .withIndex("by_project_user", (q) =>
+          q.eq("projectId", project._id).eq("userId", currentUserDb._id)
+        )
+        .unique();
+
+      const pendingRequest = await ctx.db
+        .query("projectJoinRequests")
+        .withIndex("by_project", (q) => q.eq("projectId", project._id))
+        .filter((q) => q.eq(q.field("userId"), currentUserDb._id))
+        .filter((q) => q.eq(q.field("status"), "pending"))
+        .unique();
+
+      currentUser = {
+        hasUpvoted: !!upvoteRecord,
+        isMember,
+        isOwner,
+        hasPendingRequest: !!pendingRequest,
+      };
+    }
+
+    return {
+      isPrivate: false as const,
+      // Project core
+      _id: project._id,
+      projectName: project.projectName,
+      slug: project.slug,
+      description: project.description ?? null,
+      tags: project.tags ?? [],
+      isPublic: project.isPublic,
+      thumbnailUrl: project.thumbnailUrl ?? null,
+      projectWorkStatus: project.projectWorkStatus ?? null,
+      projectUpvotes: project.projectUpvotes,
+      needDevs: project.needDevs ?? true,
+      projectLiveLink: project.projectLiveLink ?? null,
+      createdAt: project.createdAt,
+      // Owner info
+      ownerId: project.ownerId,
+      ownerName: project.ownerName,
+      ownerImage: project.ownerImage,
+      ownerOccupation: owner?.occupation ?? null,
+      ownerBio: owner?.bio ?? null,
+      ownerGithubUsername: owner?.githubUsername ?? null,
+      // Team
+      members: publicMembers,
+      totalMembers: members.length,
+      // Repo
+      repo,
+      // Deadline
+      targetDate: details?.targetDate ?? null,
+      // Current user context
+      currentUser,
+    };
+  },
+});
+
+// ====================================
+// TOGGLE PROJECT UPVOTE
+// Atomic toggle: insert/delete upvote record + update counter
+// ====================================
+export const toggleProjectUpvote = mutation({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Must be logged in to upvote");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier)
+      )
+      .unique();
+    if (!user) throw new Error("User not found");
+
+    const project = await ctx.db.get(args.projectId);
+    if (!project) throw new Error("Project not found");
+
+    // Check for existing upvote record
+    const existing = await ctx.db
+      .query("projectUpvoteRecords")
+      .withIndex("by_project_user", (q) =>
+        q.eq("projectId", args.projectId).eq("userId", user._id)
+      )
+      .unique();
+
+    if (existing) {
+      // Already upvoted → remove it
+      await ctx.db.delete(existing._id);
+      const newCount = Math.max(0, project.projectUpvotes - 1);
+      await ctx.db.patch(args.projectId, { projectUpvotes: newCount });
+      return { upvoted: false, newCount };
+    } else {
+      // Not upvoted → add it
+      await ctx.db.insert("projectUpvoteRecords", {
+        projectId: args.projectId,
+        userId: user._id,
+        createdAt: Date.now(),
+      });
+      const newCount = project.projectUpvotes + 1;
+      await ctx.db.patch(args.projectId, { projectUpvotes: newCount });
+      return { upvoted: true, newCount };
+    }
+  },
+});

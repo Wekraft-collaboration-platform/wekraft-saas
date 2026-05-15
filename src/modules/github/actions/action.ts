@@ -250,3 +250,121 @@ export async function fetchUserContributions(token: string, username: string) {
     return null;
   }
 }
+// ============================================
+// GETTING PROJECT HEALTH DATA
+// openIssuesCount
+// closedIssuesCount
+// lastCommitDate
+// commitsLast60Days
+// prMergeRate
+// ============================================
+export const getProjectHealthData = async (owner: string, repo: string) => {
+  console.log(`📊 Fetching health data for: ${owner}/${repo}`);
+
+  const token = await getGithubAccessToken();
+  const octokit = new Octokit({ auth: token });
+
+  const sixtyDaysAgo = new Date();
+  sixtyDaysAgo.setDate(sixtyDaysAgo.getDate() - 60);
+
+  try {
+    // 🚀 Execute ALL requests in parallel
+    const [
+      { data: openIssuesData },
+      { data: closedIssuesData },
+      { data: repoData },
+      { data: commits },
+      { data: allPRs },
+    ] = await Promise.all([
+      octokit.rest.issues.listForRepo({
+        owner,
+        repo,
+        state: "open",
+        per_page: 1,
+      }),
+      octokit.rest.issues.listForRepo({
+        owner,
+        repo,
+        state: "closed",
+        per_page: 1,
+      }),
+      octokit.rest.repos.get({ owner, repo }),
+      octokit.rest.repos.listCommits({
+        owner,
+        repo,
+        since: sixtyDaysAgo.toISOString(),
+        per_page: 100,
+      }),
+      octokit.rest.pulls.list({ owner, repo, state: "all", per_page: 100 }),
+    ]);
+
+    // Process results
+    const openIssuesCount = openIssuesData.length;
+    const closedIssuesCount = closedIssuesData.length;
+    const lastCommitDate = repoData.pushed_at;
+    const commitsLast60Days = commits.length;
+
+    const totalPRs = allPRs.length;
+    const mergedPRs = allPRs.filter((pr) => pr.merged_at !== null).length;
+    const prMergeRate = totalPRs > 0 ? (mergedPRs / totalPRs) * 100 : 0;
+
+    return {
+      openIssuesCount,
+      closedIssuesCount,
+      lastCommitDate,
+      commitsLast60Days,
+      totalPRs,
+      mergedPRs,
+      prMergeRate: Math.round(prMergeRate),
+    };
+  } catch (error) {
+    console.error("❌ Error fetching health data:", error);
+    throw new Error("Failed to fetch project health data");
+  }
+};
+// ============================================
+// GETTING PROJECT LANGUAGES
+// Array of { name, bytes, percentage } sorted by usage
+// ============================================
+export const getProjectLanguages = async (owner: string, repo: string) => {
+  console.log(`🗣️ Fetching languages for: ${owner}/${repo}`);
+
+  const token = await getGithubAccessToken();
+  const octokit = new Octokit({ auth: token });
+
+  try {
+    console.log("🔍 Fetching languages...");
+    const { data: languages } = await octokit.rest.repos.listLanguages({
+      owner,
+      repo,
+    });
+
+    console.log("✅ Raw language data:", languages);
+
+    // Calculate total bytes
+    const totalBytes = Object.values(languages).reduce(
+      (sum, bytes) => sum + bytes,
+      0,
+    );
+
+    // Convert to array with percentages
+    const languageData = Object.entries(languages).map(([name, bytes]) => ({
+      name,
+      bytes,
+      percentage: parseFloat(((bytes / totalBytes) * 100).toFixed(2)),
+    }));
+
+    // Sort by percentage descending
+    languageData.sort((a, b) => b.percentage - a.percentage);
+
+    console.log("✅ Languages with percentages:");
+    languageData.forEach((lang) => {
+      console.log(`   ${lang.name}: ${lang.percentage}%`);
+    });
+
+    return languageData;
+  } catch (error) {
+    console.error("❌ Error fetching languages:", error);
+    throw new Error("Failed to fetch project languages");
+  }
+};
