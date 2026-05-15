@@ -312,7 +312,11 @@ const ProjectPage = () => {
               </div>
             )}
             {homeTab === "requests" && (
-              <ProjectJoinRequests projectId={project._id} />
+              <ProjectJoinRequests
+                projectId={project._id}
+                currentMemberCount={(project as any).totalMemberCount}
+                memberLimit={(project as any).memberLimit}
+              />
             )}
             {homeTab === "community" && (
               <div className="py-10 text-center text-muted-foreground text-sm">

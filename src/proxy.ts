@@ -3,16 +3,17 @@ import { clerkMiddleware, createRouteMatcher } from "@clerk/nextjs/server";
 // The /extension page must be public — IDE users land here before they log in
 // const isPublicRoute = createRouteMatcher(["/extension(.*)", "/(web)(.*)"]);
 const isPublicRoute = createRouteMatcher([
-  '/extension(.*)',
-  '/auth(.*)',
-  '/sign-in(.*)',
-  '/sign-up(.*)',
-  '/(web)(.*)',
-  '/auth/callback(.*)',
-  '/onboard/user(.*)',
-  '/projects(.*)',
-  '/api/public/(.*)',
-])
+  "/extension(.*)",
+  "/auth(.*)",
+  "/sign-in(.*)",
+  "/sign-up(.*)",
+  "/(web)(.*)",
+  "/auth/callback(.*)",
+  "/projects(.*)",
+  "/api/public/(.*)",
+  // '/onboard/user(.*)',
+  "/",
+]);
 
 export default clerkMiddleware(async (auth, req) => {
   if (!isPublicRoute(req)) {

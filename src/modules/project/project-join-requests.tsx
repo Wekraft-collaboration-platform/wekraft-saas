@@ -3,7 +3,7 @@
 import { api } from "@/../convex/_generated/api";
 import { Id } from "@/../convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
-import { Check, X, User, MessageSquare, Loader2, User2 } from "lucide-react";
+import { Check, X, User, MessageSquare, Loader2, User2, AlertCircle, LucideHistory, LucideTimer } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useProjectPermissions } from "@/hooks/use-project-permissions";
@@ -19,10 +19,14 @@ import {
 
 interface ProjectJoinRequestsProps {
   projectId: Id<"projects">;
+  currentMemberCount?: number;
+  memberLimit?: number;
 }
 
 export const ProjectJoinRequests = ({
   projectId,
+  currentMemberCount,
+  memberLimit,
 }: ProjectJoinRequestsProps) => {
   const requests = useQuery(api.project.getProjectJoinRequests, { projectId });
   const handleRequest = useMutation(api.project.handleJoinRequest);
@@ -38,19 +42,26 @@ export const ProjectJoinRequests = ({
       toast.success(
         `Request ${action === "accepted" ? "accepted" : "rejected"} successfully`,
       );
-    } catch (error) {
-      toast.error("Failed to process request");
+    } catch (error: any) {
+      toast.error(error.data || error.message || "Failed to process request");
       console.error(error);
     }
   };
 
-  if (requests === undefined || isPermsLoading) {
+  if (
+    requests === undefined ||
+    isPermsLoading ||
+    currentMemberCount === undefined ||
+    memberLimit === undefined
+  ) {
     return (
       <div className="flex items-center justify-center py-10">
         <Loader2 className="w-6 h-6 animate-spin text-muted-foreground" />
       </div>
     );
   }
+
+  const isLimitReached = currentMemberCount >= memberLimit;
 
   if (requests.length === 0) {
     return (
@@ -66,10 +77,18 @@ export const ProjectJoinRequests = ({
 
   return (
     <div className="space-y-4 py-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+      {isLimitReached && pendingRequests.length > 0 && (
+        <div className="bg-amber-500/10 border border-amber-500/20 rounded-md p-3 mb-4 flex items-center gap-3">
+          <AlertCircle className="w-5 h-5 text-amber-500 shrink-0" />
+          <p className="text-xs font-medium">
+            Member limit reached ({currentMemberCount}/{memberLimit}). You cannot accept new members until you upgrade.
+          </p>
+        </div>
+      )}
       {pendingRequests.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
-            Pending Requests ({pendingRequests.length})
+          <h3 className="text-sm font-semibold text-muted-foreground  px-1 flex items-center gap-2">
+          <LucideTimer className="h-4 w-4"/>  Pending Requests ({pendingRequests.length})
           </h3>
           {pendingRequests.map((request) => (
             <RequestCard
@@ -77,6 +96,7 @@ export const ProjectJoinRequests = ({
               request={request}
               isPower={isPower}
               onAction={onAction}
+              isLimitReached={isLimitReached}
             />
           ))}
         </div>
@@ -84,8 +104,8 @@ export const ProjectJoinRequests = ({
 
       {historyRequests.length > 0 && (
         <div className="space-y-4 pt-4">
-          <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider px-1">
-            History
+          <h3 className="text-sm font-semibold text-muted-foreground px-1 flex items-center gap-2">
+           <LucideHistory className="h-4 w-4"/> History
           </h3>
           {historyRequests.map((request) => (
             <RequestCard
@@ -93,6 +113,7 @@ export const ProjectJoinRequests = ({
               request={request}
               isPower={isPower}
               onAction={onAction}
+              isLimitReached={isLimitReached}
             />
           ))}
         </div>
@@ -105,13 +126,14 @@ interface RequestCardProps {
   request: any;
   isPower: boolean;
   onAction: (id: Id<"projectJoinRequests">, action: "accepted" | "rejected") => void;
+  isLimitReached: boolean;
 }
 
-const RequestCard = ({ request, isPower, onAction }: RequestCardProps) => {
+const RequestCard = ({ request, isPower, onAction, isLimitReached }: RequestCardProps) => {
   const isPending = request.status === "pending";
 
   return (
-    <Card className={`group p-0 border border-border rounded-md bg-card transition-all duration-200 ${!isPending ? "opacity-70" : "hover:bg-accent/10"}`}>
+    <Card className={`group p-0 border border-border! rounded-md bg-accent/30 transition-all duration-200 ${!isPending ? "opacity-90" : "hover:bg-accent/40"}`}>
       <CardContent className="p-4 flex items-start justify-between ">
         <div className="flex gap-4 w-full">
           <ShoAvatar className="h-10 w-10 border border-border">
@@ -156,7 +178,8 @@ const RequestCard = ({ request, isPower, onAction }: RequestCardProps) => {
             <Button
               size="icon"
               variant="outline"
-              className="h-8 w-8 rounded-md px-6! border-green-500/20 text-green-500 hover:bg-green-500/10 hover:text-green-600 transition-all active:scale-95"
+              disabled={isLimitReached}
+              className={`h-8 w-8 rounded-md px-6! border-green-500/20 text-green-500 hover:bg-green-500/10 hover:text-green-600 transition-all active:scale-95 ${isLimitReached ? "opacity-50 cursor-not-allowed border-muted" : ""}`}
               onClick={() => onAction(request._id, "accepted")}
             >
               <Check className="h-4 w-4" />
