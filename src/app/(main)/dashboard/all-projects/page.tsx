@@ -52,7 +52,7 @@ const AllProjectsPage = () => {
         <div>
           <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
             Manage Projects
-            <LucideLayers3 className="h-8 w-8 text-primary animate-pulse" />
+            <LucideLayers3 className="h-8 w-8 text-primary" />
           </h1>
           <p className="text-muted-foreground mt-2 ">
             Keep track of your personal creations and the collaborative team projects you're part of.
@@ -90,7 +90,7 @@ const AllProjectsPage = () => {
             <Layers2 className="h-4 w-4 text-muted-foreground" />
           </div>
           <div className="flex flex-col">
-            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Project Limit</span>
+            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Project Created</span>
             <span className="text-sm ">
               {isLoading ? <Skeleton className="h-4 w-12" /> : `${createdCount} of ${creationLimit} slots`}
             </span>
@@ -99,15 +99,15 @@ const AllProjectsPage = () => {
 
         <Separator orientation="vertical" className="h-10 mx-4 opacity-50" />
 
-        {/* Segment 3: Availability */}
+        {/* Segment 3: Joined Projects */}
         <div className="flex items-center gap-3 min-w-fit">
           <div className="h-8 w-8 rounded-full bg-card flex items-center justify-center">
-            <TrendingUp className="h-4 w-4 text-muted-foreground" />
+            <Merge className="h-4 w-4 text-muted-foreground" />
           </div>
           <div className="flex flex-col">
-            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Availability</span>
+            <span className="text-[10px] font-medium text-muted-foreground uppercase tracking-wider">Joined Projects</span>
             <span className="text-sm ">
-              {isLoading ? <Skeleton className="h-4 w-12" /> : `${creationLimit - createdCount} Slots left`}
+              {isLoading ? <Skeleton className="h-4 w-12" /> : `${joinedCount} of ${joiningLimit} slots`}
             </span>
           </div>
         </div>
