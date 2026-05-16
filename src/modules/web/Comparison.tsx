@@ -3,6 +3,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Check, Minus, X, ChevronDown } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 const features = [
   { name: "AI PM Agent (native)", wekraft: "check", asana: "x", jira: "x", linear: "x", clickup: "x", monday: "x", atlassian: "x" },
@@ -69,8 +70,8 @@ const Comparison = () => {
           <br />
           <span className="text-neutral-500">against the alternatives.</span>
         </h2>
-        <p className="text-neutral-400 text-base max-w-2xl">
-          We're not claiming to be perfect for every team — we're claiming to be the best for <em className="text-white not-italic">software engineering teams</em>.
+        <p className="text-neutral-400 text-base max-w-3xl leading-relaxed">
+          Jira is powerful but bloated. Asana is too generic for developers. Linear is fast but rigid. We built WeKraft to give software engineering teams the <strong className="text-white font-medium">blazing speed</strong> they crave, with the <strong className="text-white font-medium">AI-driven depth</strong> they actually need.
         </p>
       </motion.div>
 
@@ -87,13 +88,23 @@ const Comparison = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.4, delay: i * 0.06 }}
-              className={`rounded-2xl p-4 text-center border ${isWe ? "bg-blue-500/10 border-blue-500/20" : "bg-white/[0.02] border-white/8"}`}
+              className={cn(
+                "rounded-2xl p-4 text-center border transition-all duration-300 relative overflow-hidden group",
+                isWe 
+                  ? "bg-gradient-to-br from-blue-500/20 to-blue-600/5 border-blue-500/30 shadow-[0_0_30px_rgba(59,130,246,0.15)]" 
+                  : "bg-white/[0.02] hover:bg-white/[0.04] border-white/10"
+              )}
             >
-              <p className={`text-xs font-semibold mb-2 ${isWe ? "text-blue-400" : "text-white/40"}`}>
+              {isWe && (
+                <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-blue-400/10 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+              )}
+              <p className={cn("text-xs font-semibold mb-2 relative z-10", isWe ? "text-blue-300" : "text-white/50")}>
                 {competitors[i]}
               </p>
-              <p className={`text-2xl font-bold ${isWe ? "text-white" : "text-white/30"}`}>{pct}%</p>
-              <p className="text-[10px] text-white/20 mt-1">match score</p>
+              <p className={cn("text-3xl font-bold tracking-tight relative z-10", isWe ? "text-white drop-shadow-md" : "text-white/40")}>
+                {pct}%
+              </p>
+              <p className="text-[10px] uppercase tracking-wider font-mono text-white/30 mt-2 relative z-10">match</p>
             </motion.div>
           );
         })}

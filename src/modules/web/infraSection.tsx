@@ -59,12 +59,12 @@ const GlassPlatform = ({
                 position: "absolute",
                 inset: 0,
                 background:
-                  "linear-gradient(135deg, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.05) 40%, rgba(255,255,255,0.01) 100%)",
-                border: "1px solid rgba(255,255,255,0.2)",
-                borderRadius: "12px",
+                  "linear-gradient(135deg, rgba(59,130,246,0.1) 0%, rgba(255,255,255,0.05) 40%, rgba(255,255,255,0.01) 100%)",
+                border: "1px solid rgba(255,255,255,0.15)",
+                borderRadius: "16px",
                 boxShadow:
-                  "0 40px 80px -15px rgba(0,0,0,0.7), 0 12px 30px rgba(0,0,0,0.4), inset 0 1.5px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(255,255,255,0.1)",
-                backdropFilter: "blur(12px)",
+                  "0 40px 80px -15px rgba(0,0,0,0.8), 0 12px 30px rgba(0,0,0,0.5), inset 0 1px 0 rgba(255,255,255,0.2), inset 0 -1px 0 rgba(255,255,255,0.05)",
+                backdropFilter: "blur(16px)",
               }}
             >
               {/* Top edge highlight */}
@@ -169,17 +169,17 @@ const InfraSection = () => {
       {/* ── Header ── */}
       <div className="relative z-10 text-center mb-24 px-6">
          <motion.div
-            className="inline-flex items-center gap-2 px-7 py-1 rounded-full border border-white/10 bg-blue-500/10 text-[13px] text-neutral-400 font-medium mb-6"
+            className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/5 backdrop-blur-md shadow-[0_0_20px_rgba(59,130,246,0.1)] px-4 py-1.5 text-sm font-semibold tracking-wide text-blue-300"
           >
-            <div className="w-1.5 h-1.5 rounded-full bg-blue-500" />
-            Infra you need
+            <span className="size-1.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.8)] animate-pulse" />
+            Seamless integrations
           </motion.div>
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="text-3xl md:text-4xl font-pop font-semibold leading-[1.15] bg-linear-to-b from-white via-white to-neutral-500 bg-clip-text text-transparent max-w-2xl mx-auto"
+          className="bg-gradient-to-b from-white via-white to-neutral-500 bg-clip-text text-4xl font-bold tracking-tight text-transparent md:text-6xl leading-tight max-w-3xl mx-auto"
         >
           Developer infrastructure
           <br />
@@ -191,9 +191,9 @@ const InfraSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="text-gray-500 text-lg mt-5 font-sans max-w-lg mx-auto tracking-tight"
+          className="mt-5 text-lg md:text-xl leading-relaxed text-neutral-400 max-w-2xl mx-auto"
         >
-          Wekraft works seamlessly with the technologies you already use
+          Wekraft works seamlessly with the technologies you already use, keeping your workflows intact and your tools synced.
         </motion.p>
       </div>
 
@@ -210,7 +210,8 @@ const InfraSection = () => {
         </motion.div>
 
         {/* Right — text features, vertically aligned with cards */}
-        <div className="flex flex-col justify-between text-center md:text-left gap-12 md:gap-16 md:py-0">
+        <div className="flex flex-col justify-between text-center md:text-left gap-12 md:gap-16 md:py-0 relative">
+          <div className="hidden md:block absolute left-[-40px] top-[10%] bottom-[10%] w-px bg-gradient-to-b from-transparent via-white/10 to-transparent" />
           {features.map((f, i) => (
             <motion.div
               key={f.title}
@@ -218,11 +219,13 @@ const InfraSection = () => {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.1 + 0.15 * i }}
+              className="group relative"
             >
-              <h3 className="text-white font-semibold text-xl md:text-[1.35rem] font-pop tracking-tight mb-2.5">
+              <div className="hidden md:block absolute left-[-45px] top-[8px] w-[11px] h-[11px] rounded-full border-[2px] border-black bg-white/20 group-hover:bg-blue-400 group-hover:shadow-[0_0_10px_rgba(96,165,250,0.8)] transition-all duration-300" />
+              <h3 className="text-white font-bold text-xl md:text-2xl tracking-tight mb-3 group-hover:text-blue-300 transition-colors duration-300">
                 {f.title}
               </h3>
-              <p className="text-gray-500 text-[15px] leading-relaxed max-w-sm font-sans">
+              <p className="text-neutral-400 text-base md:text-[17px] leading-relaxed max-w-md font-sans group-hover:text-neutral-300 transition-colors">
                 {f.description}
               </p>
             </motion.div>
