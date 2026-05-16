@@ -594,7 +594,7 @@ export function MultiStepOnboarding() {
                       className="h-18 flex flex-col items-center justify-center gap-2 bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 transition-all group"
                       onClick={() => {
                         navigator.clipboard.writeText(
-                          `${INVITE_LINK}${generatedInviteLink}`,
+                          `${INVITE_LINK}/invite/${generatedInviteLink}`,
                         );
                         toast.success("Link copied for WhatsApp!");
                       }}
