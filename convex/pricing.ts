@@ -13,7 +13,6 @@ export interface PlanLimits {
   message_before_join: boolean;
   project_heatmap: "limited" | "full";
   dedicated_support: "basic" | "priority";
-  sprint_creation: boolean;
   cloud_storage: "none" | "basic" | "higher";
   kaya_ai: "none" | "full";
   automated_reporting: boolean;
@@ -32,7 +31,6 @@ export const PLAN_CONFIGS: Record<PlanType, PlanLimits> = {
     message_before_join: false,
     project_heatmap: "limited",
     dedicated_support: "basic",
-    sprint_creation: false,
     cloud_storage: "none",
     kaya_ai: "none",
     automated_reporting: false,
@@ -49,7 +47,6 @@ export const PLAN_CONFIGS: Record<PlanType, PlanLimits> = {
     message_before_join: true,
     project_heatmap: "full",
     dedicated_support: "basic",
-    sprint_creation: true,
     cloud_storage: "basic",
     kaya_ai: "none",
     automated_reporting: false,
@@ -66,7 +63,6 @@ export const PLAN_CONFIGS: Record<PlanType, PlanLimits> = {
     message_before_join: true,
     project_heatmap: "full",
     dedicated_support: "priority",
-    sprint_creation: true,
     cloud_storage: "higher",
     kaya_ai: "full",
     automated_reporting: true,

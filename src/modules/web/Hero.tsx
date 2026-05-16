@@ -61,13 +61,15 @@ const Hero = () => {
       <main className="relative z-10 flex flex-col items-center pt-28 md:pt-40 pb-20 w-full">
         <div className="inline-flex items-center p-1 pr-4 border border-blue-500/30 rounded-full cursor-pointer transition-colors duration-200 mb-18 bg-blue-500/5 hover:bg-blue-500/10">
           <div className="bg-blue-600 px-5 py-1 rounded-full flex items-center gap-1.5">
-            <span className="text-[12px]"><Megaphone className="w-4 h-4 inline"/></span>
-            <span className="text-[11px] font-bold text-white uppercase tracking-wider leading-none">
-              Announcement
+            <span className="text-[12px]">
+              <Megaphone className="w-4 h-4 inline" />
+            </span>
+            <span className="text-sm font-medium text-white leading-none">
+              Less Managing
             </span>
           </div>
           <span className="text-blue-200 text-sm font-medium ml-3">
-            Introducing wekraft <PlaneTakeoff className="w-4 h-4 inline ml-1"/>
+            More Building <PlaneTakeoff className="w-4 h-4 inline ml-1" />
           </span>
         </div>
 
@@ -78,7 +80,7 @@ const Hero = () => {
           <div className="flex items-center gap-3 text-white font-sans tracking-tight text-[64px] font-semibold">
             <h1 className="mr-2">for Teams</h1>
             <FlipText className="" duration={3.5}>
-              Building the Future.
+              That Move Fast
             </FlipText>
           </div>
         </div>
@@ -91,9 +93,9 @@ const Hero = () => {
           <div className="absolute left-1/2 -translate-x-1/2 top-0 bg-linear-to-r from-transparent via-blue-500 to-transparent h-px w-1/4" />
 
           <p className="text-neutral-300 text-base md:text-[20px] max-w-3xl mx-auto mt-5 font-sans tracking-tight text-pretty text-center px-4">
-            Your AI-powered workspace for planning, tracking, and shipping
-            products faster. From weekend builds to growing startups — keep
-            every task, update, and deadline aligned.
+            Project management shouldn’t slow teams down. Wekraft keeps
+            everything simple, organized, and AI-assisted — so your team can
+            focus on building.
           </p>
         </div>
 

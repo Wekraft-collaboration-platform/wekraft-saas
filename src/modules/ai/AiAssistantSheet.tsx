@@ -563,7 +563,7 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
 
         {/* FOOTER */}
         <div className="px-4 py-6 bg-linear-to-b from-transparent via-indigo-200/10 to-purple-400/30">
-          {currentUser && currentUser.accountType !== "pro" ? (
+          {project && (project as any).ownerAccountType !== "pro" ? (
             <div className="flex flex-col items-center justify-center p-4 bg-card backdrop-blur-md rounded-xl border border-primary/20 shadow-lg">
               <div className="flex items-center gap-2 mb-2">
                 <Clover className="w-5 h-5 text-primary" />
@@ -572,7 +572,7 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                 </h4>
               </div>
               <p className="text-[11px] text-muted-foreground text-center mb-3 px-6">
-                Kaya is available for Pro users. Get advanced project analysis,
+                Kaya is available for Pro Plan Owner projects. Get advanced project analysis,
                 automated reporting, and more.
               </p>
               <Button size="sm" className="w-full text-sm">

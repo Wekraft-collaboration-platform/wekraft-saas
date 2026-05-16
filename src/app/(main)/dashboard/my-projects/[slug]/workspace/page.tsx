@@ -27,6 +27,7 @@ import {
   ChartBar,
   Table,
   Settings2,
+  Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -340,8 +341,7 @@ const ProjectWorkspace = () => {
 
       <section className="mt-4 w-full">
         {activeTab === "charts" &&
-          (user?.accountType !== "free" ||
-            (project as any)?.ownerAccountType !== "free") && (
+          (project as any)?.ownerAccountType !== "free" && (
             <Button
               className={cn(
                 "text-[10px] h-7 px-2 flex justify-end ml-auto mb-5 cursor-pointer transition-all",
@@ -361,8 +361,7 @@ const ProjectWorkspace = () => {
         {/* Advace charts area */}
         {activeTab === "charts" && (
           <div className="mt-6">
-            {user?.accountType === "free" &&
-            (project as any)?.ownerAccountType === "free" ? (
+            {(project as any)?.ownerAccountType === "free" ? (
               <div className="flex flex-col items-center justify-center py-16 ">
                 <div className="flex flex-col items-start gap-1.5 max-w-sm text-sm">
                   <Image
@@ -371,9 +370,8 @@ const ProjectWorkspace = () => {
                     width={100}
                     height={100}
                   />
-                  <h3>
-                    Upgrade Now for deeper Insights/ Analaysis and unlock your
-                    team true Potential.
+                  <h3 className="text-muted-foreground">
+                  Project Owner must upgrade in order to unlock advanced analytics / Team insights and much more.
                   </h3>
                   <div className="flex items-center gap-4 mt-3">
                     <Button
@@ -388,7 +386,7 @@ const ProjectWorkspace = () => {
                       variant="outline"
                       size="sm"
                     >
-                      Learn More
+                      Learn More <Plus className="w-3 h-3 ml-1" />
                     </Button>
                   </div>
                 </div>
