@@ -1,239 +1,227 @@
 "use client";
-
-import { useGSAP } from "@gsap/react";
+import { useEffect, useRef } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
-import { ArrowRight, CheckCheck, Sparkles, Upload } from "lucide-react";
-import { useRef } from "react";
 
-gsap.registerPlugin(ScrollTrigger, useGSAP);
+gsap.registerPlugin(ScrollTrigger);
 
-const CARD_HEIGHT = 560;
-const IMAGE_HEIGHT = 360;
+const CARD_H = 500;
+const CARD_CLOSED = 72;
+const GAP = 20;
 
 const steps = [
   {
-    number: "01",
-    title: "Import your projects",
-    description:
-      "Bring in GitHub repos, Notion docs, and team data. Wekraft unifies everything into one clean workspace.",
-    image:
-      "https://images.unsplash.com/photo-1498050108023-c5249f4df085?q=80&w=2072&auto=format&fit=crop",
-    numColor: "#38bdf8",
-    cardColor: "#dff2ff",
-    borderColor: "#add7ef",
-    accentText: "text-sky-500",
-    cta: "Connect your tools",
-    Icon: Upload,
+    num: "01",
+    bg: "#1a1a1a",
+    title: "Import projects or docs.",
+    text: "Flowgenix reads your briefs, chats, or Notion pages. Drop in a file, paste a link, or connect your workspace.",
+    img: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=700&q=80&auto=format&fit=crop",
   },
   {
-    number: "02",
-    title: "AI suggests workflow",
-    description:
-      "Kaya analyzes your team capacity, structures sprints, assigns deadlines, and flags bottlenecks.",
-    image:
-      "https://images.unsplash.com/photo-1551288049-bbbda536339a?q=80&w=2070&auto=format&fit=crop",
-    numColor: "#f6b80f",
-    cardColor: "#fff7bf",
-    borderColor: "#eadb83",
-    accentText: "text-amber-500",
-    cta: "See AI planning",
-    Icon: Sparkles,
+    num: "02",
+    bg: "#141414",
+    title: "AI suggests your workflow.",
+    text: "Let AI structure your tasks, estimate timelines, and assign owners. Get a full project plan in seconds.",
+    img: "https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=700&q=80&auto=format&fit=crop",
   },
   {
-    number: "03",
-    title: "Execute and optimize",
-    description:
-      "Track progress in real time, automate check-ins, and receive smart alerts. Ship faster while staying aligned.",
-    image:
-      "https://images.unsplash.com/photo-1460925895917-afdab827c52f?q=80&w=2015&auto=format&fit=crop",
-    numColor: "#35c979",
-    cardColor: "#d8f8df",
-    borderColor: "#a7dfb8",
-    accentText: "text-emerald-500",
-    cta: "Start shipping",
-    Icon: CheckCheck,
+    num: "03",
+    bg: "#0d0d0d",
+    title: "Execute and optimize.",
+    text: "Track progress, automate check-ins, and ship faster. Dashboards and smart nudges keep every project on track.",
+    img: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=700&q=80&auto=format&fit=crop",
   },
 ];
 
-const StepCard = ({ step }: { step: (typeof steps)[0] }) => (
-  <div
-    className="relative flex h-full w-full flex-col overflow-hidden rounded-[22px] border px-5 py-5 text-slate-950 md:px-7 md:py-6"
-    style={{
-      backgroundColor: step.cardColor,
-      borderColor: step.borderColor,
-      boxShadow:
-        "0 28px 70px rgba(15, 23, 42, 0.18), inset 0 1px 0 rgba(255,255,255,0.8)",
-    }}
-  >
-    <div className="flex flex-none flex-col items-center justify-start gap-3 text-center">
-      <h3 className="flex flex-wrap items-center justify-center gap-2 text-xl font-semibold leading-tight tracking-normal">
-        <span>{step.title.split(" ")[0]}</span>
-        <span className="grid size-10 place-items-center rounded-full bg-white shadow-sm">
-          <step.Icon className="size-5" style={{ color: step.numColor }} />
-        </span>
-        <span>{step.title.split(" ").slice(1).join(" ")}</span>
-      </h3>
-      <p className="max-w-2xl text-sm leading-relaxed text-slate-700">
-        {step.description}
-      </p>
-      <div
-        className={`inline-flex items-center gap-1.5 text-sm font-semibold ${step.accentText}`}
-      >
-        <span>{step.cta}</span>
-        <ArrowRight className="size-4" />
-      </div>
-    </div>
+export default function Section2() {
+  const sectionRef = useRef(null);
 
-    <div
-      className="mt-5 min-h-0 overflow-hidden rounded-2xl border border-white/60 bg-white shadow-sm"
-      style={{ height: IMAGE_HEIGHT }}
-    >
-      <img
-        src={step.image}
-        alt={step.title}
-        className="h-full w-full object-cover"
-      />
-    </div>
-  </div>
-);
-
-const StackLayer = ({
-  step,
-  index,
-  setRef,
-}: {
-  step: (typeof steps)[0];
-  index: number;
-  setRef: (el: HTMLDivElement | null) => void;
-}) => (
-  <div
-    ref={setRef}
-    className="absolute left-0 right-0 top-0 will-change-transform"
-    style={{ zIndex: 10 + index * 10 }}
-  >
-    <div
-      className="pointer-events-none relative z-0 -mb-8 select-none pl-3 font-black leading-none"
-      style={{
-        color: step.numColor,
-        fontSize: "clamp(4rem, 7vw, 6.75rem)",
-        textShadow: `4px 6px 0 ${step.numColor}22`,
-      }}
-    >
-      {step.number}
-    </div>
-    <div className="relative z-10" style={{ height: CARD_HEIGHT }}>
-      <StepCard step={step} />
-    </div>
-  </div>
-);
-
-const Section2 = () => {
-  const wrapperRef = useRef<HTMLDivElement>(null);
-  const stageRef = useRef<HTMLDivElement>(null);
-  const layerRefs = useRef<(HTMLDivElement | null)[]>([]);
-
-  useGSAP(
-    () => {
-      const layers = layerRefs.current.filter(Boolean) as HTMLDivElement[];
-      const stage = stageRef.current;
-      if (layers.length < steps.length || !stage) return;
-
-      const getBaseY = () => {
-        const stageHeight = stage.offsetHeight;
-        return Math.max(82, (stageHeight - CARD_HEIGHT) / 2);
-      };
-
-      const getStartY = (index: number) =>
-        stage.offsetHeight + CARD_HEIGHT * 0.35 + index * 120;
-
-      gsap.set(layers, {
-        x: 0,
-        y: (index) => (index === 0 ? getBaseY() : getStartY(index)),
-        transformOrigin: "50% 0%",
-      });
-
+  useEffect(() => {
+    const ctx = gsap.context(() => {
       const tl = gsap.timeline({
         scrollTrigger: {
-          trigger: wrapperRef.current,
-          start: "top top",
-          end: () => `+=${window.innerHeight * 2.35}`,
-          scrub: 0.7,
+          trigger: ".s2-accordions",
           pin: true,
-          anticipatePin: 1,
-          invalidateOnRefresh: true,
+          pinSpacing: false,
+          start: "top top",
+          // Fixed px — just enough to collapse all 3 cards, no dead space after
+          end: "+=900",
+          scrub: 1,
         },
       });
 
-      layers.slice(1).forEach((layer, index) => {
-        const incomingIndex = index + 1;
-        const at = index * 0.9;
-
-        tl.to(
-          layers.slice(0, incomingIndex),
-          {
-            x: (olderIndex) => -(incomingIndex - olderIndex) * 44,
-            y: (olderIndex) => getBaseY() - (incomingIndex - olderIndex) * 18,
-            duration: 0.9,
-            ease: "none",
-          },
-          at,
-        );
-
-        tl.to(
-          layer,
-          {
-            x: 0,
-            y: () => getBaseY() + incomingIndex * 34,
-            duration: 0.95,
-            ease: "none",
-          },
-          at,
-        );
+      tl.to(".s2-acc", {
+        height: CARD_CLOSED,
+        stagger: 0.8,
+        ease: "none",
       });
-    },
-    { scope: wrapperRef },
-  );
+      tl.to(
+        ".s2-body",
+        {
+          opacity: 0,
+          y: -10,
+          filter: "blur(6px)",
+          stagger: 0.8,
+          ease: "power2.out",
+        },
+        "<",
+      );
+      tl.to(
+        ".s2-acc-wrap",
+        {
+          marginBottom: -14,
+          stagger: 0.5,
+          ease: "none",
+        },
+        "<",
+      );
+    }, sectionRef);
+
+    return () => ctx.revert();
+  }, []);
 
   return (
-    <section
-      ref={wrapperRef}
-      id="section2"
-      className="relative mb-40 min-h-[1080px] overflow-visible bg-black font-sans"
-    >
-      <div className="mx-auto flex min-h-[1080px] max-w-6xl flex-col px-5 py-10 md:px-8">
-        <div className="shrink-0 text-center">
-          <div className="mb-2 inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1">
-            <div className="size-1.5 animate-pulse rounded-full bg-white/60" />
-            <span className="text-xs font-medium uppercase tracking-widest text-neutral-400">
-              How it works
-            </span>
-          </div>
-          <h2 className="text-3xl font-bold leading-[1.08] tracking-normal text-white md:text-5xl">
-            Chaos to clarity
-            <br />
-            <span className="text-neutral-500">in 3 simple steps.</span>
-          </h2>
-        </div>
+    <>
+      <style>{`
+        .s2-section {
+          background: #000;
+        }
 
-        <div
-          ref={stageRef}
-          className="relative mx-auto mt-8 min-h-[760px] w-full flex-1"
-        >
-          {steps.map((step, index) => (
-            <StackLayer
-              key={step.number}
-              step={step}
-              index={index}
-              setRef={(el) => {
-                layerRefs.current[index] = el;
-              }}
-            />
+        .s2-heading {
+          text-align: center;
+          padding: 80px 24px 60px;
+          font-size: clamp(28px, 4vw, 52px);
+          font-weight: 800;
+          letter-spacing: -1.5px;
+          line-height: 1.1;
+          color: white;
+          margin: 0;
+        }
+        .s2-heading span {
+          background: linear-gradient(90deg, #fff 0%, #555 100%);
+          -webkit-background-clip: text;
+          -webkit-text-fill-color: transparent;
+          background-clip: text;
+        }
+
+        .s2-accordions {
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          background: #000;
+          padding: 20px 0 40px;
+        }
+
+        .s2-acc-wrap {
+          position: relative;
+          width: min(760px, 94vw);
+          margin-bottom: ${GAP}px;
+          /* padding-top makes room for the number floating above */
+          padding-top: 44px;
+        }
+
+        /* Number — visible, above the card, left-aligned */
+        .s2-num {
+          position: absolute;
+          top: 0;
+          left: 2px;
+          font-size: 36px;
+          font-weight: 900;
+          line-height: 1;
+          letter-spacing: -1px;
+          color: rgba(255,255,255,0.55);
+          font-family: Georgia, serif;
+          user-select: none;
+          z-index: 2;
+        }
+
+        .s2-acc {
+          position: relative;
+          z-index: 1;
+          width: 100%;
+          height: ${CARD_H}px;
+          border-radius: 20px;
+          overflow: hidden;
+          box-sizing: border-box;
+          display: flex;
+          flex-direction: column;
+          box-shadow: 0 24px 60px -10px rgba(0,0,0,0.7);
+          border: 1px solid #2a2a2a;
+        }
+
+        .s2-title-bar {
+          flex-shrink: 0;
+          padding: 22px 28px 16px;
+        }
+
+        .s2-title {
+          font-size: clamp(18px, 2.2vw, 24px);
+          font-weight: 800;
+          color: #fff;
+          line-height: 1.2;
+          margin: 0;
+          letter-spacing: -0.3px;
+        }
+
+        .s2-body {
+          flex: 1;
+          display: flex;
+          flex-direction: column;
+          padding: 0 28px 24px;
+          min-height: 0;
+        }
+
+        .s2-text {
+          font-size: 13px;
+          line-height: 1.7;
+          color: rgba(255,255,255,0.4);
+          margin: 0 0 18px;
+          flex-shrink: 0;
+        }
+
+        .s2-img-wrap {
+          flex: 1;
+          border-radius: 12px;
+          overflow: hidden;
+          min-height: 0;
+        }
+
+        .s2-img-wrap img {
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          filter: grayscale(100%) contrast(1.05);
+          opacity: 0.65;
+          display: block;
+        }
+      `}</style>
+
+      <div className="s2-section" ref={sectionRef}>
+        <h2 className="s2-heading">
+          Powerful enough to scale.
+          <br />
+          <span>Simple enough to love.</span>
+        </h2>
+
+        <div className="s2-accordions">
+          {steps.map((step, i) => (
+            <div className="s2-acc-wrap" key={i}>
+              <div className="s2-num">{step.num}</div>
+              <div className="s2-acc" style={{ background: step.bg }}>
+                <div className="s2-title-bar">
+                  <h3 className="s2-title">{step.title}</h3>
+                </div>
+                <div className="s2-body">
+                  <p className="s2-text">{step.text}</p>
+                  <div className="s2-img-wrap">
+                    <img src={step.img} alt={step.title} loading="lazy" />
+                  </div>
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       </div>
-    </section>
+    </>
   );
-};
-
-export default Section2;
+}
