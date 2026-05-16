@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React from "react";
 import { motion } from "framer-motion";
 import {
   Check,
@@ -22,10 +22,10 @@ import {
   Map
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { useConvexAuth } from "convex/react";
+import { useConvexAuth, useAction, useQuery } from "convex/react";
 import { toast } from "sonner";
+import { api } from "../../../convex/_generated/api";
+import { useRazorpay } from "@/modules/razorpay";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -41,6 +41,7 @@ interface Plan {
   name: string;
   badge?: string;
   priceLabel: string;
+  oldPrice?: string;
   priceSub?: string;
   description: string;
   cta: string;
@@ -109,6 +110,7 @@ const plans: Plan[] = [
     name: "Plus",
     badge: "40% OFF",
     priceLabel: "$6",
+    oldPrice: "$10",
     priceSub: "Serious team building",
     description: "Serious team building",
     cta: "Upgrade to Plus",
@@ -122,6 +124,7 @@ const plans: Plan[] = [
     name: "Pro",
     badge: "25% OFF",
     priceLabel: "$15",
+    oldPrice: "$20",
     priceSub: "Growing startup needs intelligence",
     description: "Growing startup needs intelligence.",
     cta: "Get Pro",
@@ -179,10 +182,19 @@ const FeatureValue = ({ value }: { value: string | boolean }) => {
 
 const Pricing = () => {
   const { isAuthenticated } = useConvexAuth();
+  const user = useQuery(api.user.getCurrentUser);
+  const createOrder = useAction((api as any).payments.createPaymentOrder);
+  const { initiatePayment, isLoading, isScriptLoaded } = useRazorpay({
+    onSuccess: () => {
+      toast.success("Payment successful! Your plan will be updated shortly.");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Failed to initiate payment");
+    },
+  });
 
   return (
     <div className="bg-[#050505] min-h-screen w-full selection:bg-white/20 font-sans antialiased relative overflow-hidden">
-      
       {/* ── Background Grid & Glow ── */}
       <div className="absolute inset-0 pointer-events-none z-0">
         <div 
@@ -259,6 +271,9 @@ const Pricing = () => {
 
                   {/* Price */}
                   <div className="flex items-baseline gap-1 mb-2">
+                    {plan.oldPrice && (
+                      <span className="text-xl font-medium tracking-tight text-gray-500 line-through mr-2">{plan.oldPrice}</span>
+                    )}
                     <span className="text-4xl font-medium tracking-tight text-white">{plan.priceLabel}</span>
                     <span className="text-sm text-gray-500 font-normal">/month</span>
                   </div>
@@ -271,21 +286,62 @@ const Pricing = () => {
                   {/* CTA Button */}
                   <div className="w-full mb-6 block">
                     <button
-                      onClick={() => {
+                      onClick={async () => {
+                        if (isLoading) return;
+                        
                         if (!isAuthenticated) {
                           toast.error("Please login to upgrade your plan");
-                        } else {
-                          if (plan.ctaHref !== "#") {
-                            window.location.href = plan.ctaHref;
+                          return;
+                        }
+                        
+                        if (plan.key === "free") {
+                          toast.info("You are already on the free plan");
+                          return;
+                        }
+
+                        if (!user) {
+                          toast.error("User data not loaded yet");
+                          return;
+                        }
+
+                        if (!isScriptLoaded) {
+                          toast.error("Payment system is still loading, please wait.");
+                          return;
+                        }
+
+                        try {
+                          const order = await createOrder({ plan: plan.key as "plus" | "pro", userId: user._id, provider: "razorpay" });
+                          
+                          if (order.provider === "razorpay") {
+                            await initiatePayment({
+                              key: order.key as string,
+                              amount: order.amount,
+                              currency: order.currency,
+                              name: "Wekraft",
+                              description: `Upgrade to ${plan.name}`,
+                              order_id: order.id,
+                              prefill: {
+                                name: user.name || "",
+                                email: user.email || "",
+                              },
+                              theme: {
+                                color: "#000000",
+                              },
+                            });
                           }
+                        } catch (e) {
+                          console.error("Payment failed", e);
+                          toast.error("Failed to process order creation");
                         }
                       }}
+                      disabled={isLoading}
                       className={cn(
                         "w-full py-2 px-4 rounded-full font-medium text-sm transition-all duration-300 shadow-sm flex items-center justify-center gap-2 cursor-pointer",
-                        "bg-[#1c1c1c] border border-white/10 text-gray-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] hover:bg-white hover:text-black"
+                        "bg-[#1c1c1c] border border-white/10 text-gray-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] hover:bg-white hover:text-black",
+                        isLoading && "opacity-50 cursor-not-allowed"
                       )}
                     >
-                      {plan.cta}
+                      {isLoading ? "Processing..." : plan.cta}
                     </button>
                   </div>
 
