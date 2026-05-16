@@ -961,6 +961,7 @@ export const getProjectById = query({
     return {
       ...project,
       ownerClerkId,
+      ownerAccountType: owner?.accountType || "free",
     };
   },
 });

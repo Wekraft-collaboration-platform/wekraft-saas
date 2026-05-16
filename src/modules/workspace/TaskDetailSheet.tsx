@@ -589,6 +589,13 @@ export const TaskDetailSheet = ({
 
                 <TabsContent value="attachments" className="pt-2">
                   <div className="p-2 ">
+                    {project?.ownerAccountType === "free" && (
+                      <div className="mb-4 p-3 rounded-md bg-blue-500/5 border border-blue-500/20 text-center">
+                        <p className="text-xs font-medium">
+                          Project owner must be Plus account to use attachments.
+                        </p>
+                      </div>
+                    )}
                     {currentTask.attachments &&
                     currentTask.attachments.length > 0 ? (
                       <div className="grid grid-cols-1 gap-2 w-full">
@@ -621,6 +628,7 @@ export const TaskDetailSheet = ({
                                 size="icon"
                                 className="h-8 w-8 text-muted-foreground hover:text-destructive"
                                 onClick={() => handleRemoveAttachment(file.url)}
+                                disabled={project?.ownerAccountType === "free"}
                               >
                                 <Trash2 size={14} />
                               </Button>
@@ -631,7 +639,7 @@ export const TaskDetailSheet = ({
                           variant="outline"
                           size="sm"
                           className="h-9 px-3 text-xs bg-muted/30 border-border text-muted-foreground hover:text-foreground rounded-xl gap-2 mt-2 border-dashed"
-                          disabled={isUploading}
+                          disabled={isUploading || project?.ownerAccountType === "free"}
                           onClick={() =>
                             document
                               .getElementById("detail-file-upload")
@@ -659,7 +667,7 @@ export const TaskDetailSheet = ({
                           variant="outline"
                           size="sm"
                           className="h-9 px-4 text-xs bg-muted/30 border-border text-muted-foreground hover:text-foreground rounded-xl gap-2 mt-2"
-                          disabled={isUploading}
+                          disabled={isUploading || project?.ownerAccountType === "free"}
                           onClick={() =>
                             document
                               .getElementById("detail-file-upload")

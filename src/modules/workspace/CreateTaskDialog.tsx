@@ -431,8 +431,9 @@ export const CreateTaskDialog = ({
                   attachments.length > 0 &&
                     "text-blue-400 border-blue-900/40 bg-blue-900/10",
                 )}
-                disabled={isUploading}
+                disabled={isUploading || project?.ownerAccountType === "free"}
                 onClick={() => document.getElementById("file-upload")?.click()}
+                title={project?.ownerAccountType === "free" ? "Upgrade to Plus to use attachments" : ""}
               >
                 {isUploading ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
