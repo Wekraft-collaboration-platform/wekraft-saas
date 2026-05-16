@@ -29,12 +29,14 @@ interface ProjectConfigTabProps {
   projectId: Id<"projects">;
   projectDetails: any;
   scheduler: any;
+  isOwner: boolean;
 }
 
 export const ProjectConfigTab = ({
   projectId,
   projectDetails,
   scheduler,
+  isOwner,
 }: ProjectConfigTabProps) => {
   const updateProjectConfig = useMutation(api.projectDetails.updateProjectConfig);
 
@@ -63,7 +65,7 @@ export const ProjectConfigTab = ({
 
         {/* Right Column - Member Permissions */}
         <div className="flex flex-col">
-          <Card className="border-border bg-accent/20 shadow-none overflow-hidden h-full">
+          <Card className="border-sidebar-border bg-sidebar shadow-none overflow-hidden h-full">
             <CardHeader className="">
               <CardTitle className="text-sm font-semibold flex items-center gap-2">
                 Project Policies
@@ -85,6 +87,7 @@ export const ProjectConfigTab = ({
                   </p>
                 </div>
                 <Switch
+                  disabled={!isOwner}
                   checked={projectDetails?.memberCanCreate ?? true}
                   onCheckedChange={(checked) =>
                     handleUpdateConfig({ memberCanCreate: checked })
@@ -92,7 +95,7 @@ export const ProjectConfigTab = ({
                 />
               </div>
 
-              <Separator className="bg-border/50" />
+              <Separator className="bg-sidebar-border" />
 
               {/* Member Kaya Toggle */}
               <div className="flex items-center justify-between">
@@ -106,6 +109,7 @@ export const ProjectConfigTab = ({
                   </p>
                 </div>
                 <Switch
+                  disabled={!isOwner}
                   checked={projectDetails?.memberUseKaya ?? true}
                   onCheckedChange={(checked) =>
                     handleUpdateConfig({ memberUseKaya: checked })
@@ -113,7 +117,7 @@ export const ProjectConfigTab = ({
                 />
               </div>
 
-              <Separator className="bg-border/50" />
+              <Separator className="bg-sidebar-border" />
 
               {/* Kaya Threshold */}
               <div className="space-y-3">
@@ -129,8 +133,9 @@ export const ProjectConfigTab = ({
                   </div>
                   <div className="flex items-center gap-2">
                     <Input
+                      disabled={!isOwner}
                       type="number"
-                      className="h-8 w-20 text-xs font-semibold text-center bg-background/50 border-border"
+                      className="h-8 w-20 text-xs font-semibold text-center bg-background/50 border-sidebar-border"
                       defaultValue={projectDetails?.kayaThreshold ?? 0}
                       onBlur={(e) =>
                         handleUpdateConfig({
@@ -140,12 +145,25 @@ export const ProjectConfigTab = ({
                     />
                   </div>
                 </div>
-                <div className="p-2 bg-foreground/5 border border-border rounded-md">
+              </div>
+
+              <Separator className="bg-sidebar-border" />
+
+              {/* Note and Restriction Message at the bottom */}
+              <div className="space-y-3 pt-2">
+                <div className="p-2 bg-foreground/5 border border-sidebar-border/50 rounded-md">
                   <p className="text-[9px] text-muted-foreground font-medium">
                     Note: This is a soft threshold. Kaya will alert members when
                     this limit is reached.
                   </p>
                 </div>
+                
+                {!isOwner && (
+                  <p className="text-[10px] font-semibold flex items-center gap-2 bg-accent/30 p-2 rounded-md border border-sidebar-border">
+                    <ShieldCheck className="w-3 h-3" />
+                    Only the project owner can manage policies.
+                  </p>
+                )}
               </div>
             </CardContent>
           </Card>

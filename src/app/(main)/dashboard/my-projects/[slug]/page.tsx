@@ -57,6 +57,8 @@ const ProjectPage = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [homeTab, setHomeTab] = useState("settings");
 
+  const isOwner = !!project && !!user && project.ownerId === user._id;
+
   const updateThumbnail = useMutation(api.project.updateProjectThumbnail);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -111,7 +113,7 @@ const ProjectPage = () => {
     }
   };
 
-  if (project === undefined) {
+  if (project === undefined || user === undefined) {
     return <ProjectSkeleton />;
   }
 
@@ -210,32 +212,34 @@ const ProjectPage = () => {
         )}
 
         {/* Overlay for upload */}
-        <div
-          className={`absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
-            isUploading ? "opacity-100" : ""
-          }`}
-        >
-          {isUploading ? (
-            <div className="flex flex-col items-center text-white">
-              <Loader2 className="w-8 h-8 animate-spin mb-2" />
-              <p>Uploading...</p>
-            </div>
-          ) : (
-            <label className="cursor-pointer flex flex-col items-center justify-center w-full h-full text-white">
-              <UploadCloud className="w-10 h-10 mb-2" />
-              <span className="font-semibold">Click to Upload Thumbnail</span>
-              <span className="text-xs text-white/70 mt-1">
-                1080 x 260 Recommended (Max 1MB)
-              </span>
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleFileChange}
-              />
-            </label>
-          )}
-        </div>
+        {isOwner && (
+          <div
+            className={`absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
+              isUploading ? "opacity-100" : ""
+            }`}
+          >
+            {isUploading ? (
+              <div className="flex flex-col items-center text-white">
+                <Loader2 className="w-8 h-8 animate-spin mb-2" />
+                <p>Uploading...</p>
+              </div>
+            ) : (
+              <label className="cursor-pointer flex flex-col items-center justify-center w-full h-full text-white">
+                <UploadCloud className="w-10 h-10 mb-2" />
+                <span className="font-semibold">Click to Upload Thumbnail</span>
+                <span className="text-xs text-white/70 mt-1">
+                  1080 x 260 Recommended (Max 1MB)
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+              </label>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ---------------------TABS / SETTINGS BELOW---------------- */}
@@ -311,7 +315,22 @@ const ProjectPage = () => {
           <div className="px-4">
             {homeTab === "settings" && (
               <div className="py-10">
-                <SettingTab project={project as any} />
+                {isOwner ? (
+                  <SettingTab project={project as any} />
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 border border-dashed border-border rounded-xl bg-accent/20">
+                    <div className="bg-accent/70 p-4 rounded-full">
+                      <GlobeLock className="w-7 h-7" />
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="text-base font-bold">Settings Restricted</h3>
+                      <p className="text-muted-foreground max-w-xs mx-auto text-sm">
+                        Only the project owner has the power to update settings.
+                        Please contact the owner for any modifications.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
             {homeTab === "requests" && (

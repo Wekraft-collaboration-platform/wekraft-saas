@@ -337,10 +337,10 @@ const IssueColumn = ({
     <div
       ref={setNodeRef}
       className={cn(
-        "flex flex-col transition-all duration-300 rounded-lg dark:border-accent border-neutral-200 h-fit min-h-[500px] max-h-[800px]",
+        "flex flex-col transition-all border duration-300 rounded-lg h-fit min-h-[500px] max-h-[800px]",
         isCollapsed
           ? "min-w-[56px] w-[56px] dark:bg-sidebar bg-neutral-100 dark:border-border border-neutral-200"
-          : "min-w-[300px] w-[300px] dark:bg-sidebar bg-neutral-100",
+          : "min-w-[300px] w-[300px] dark:bg-sidebar bg-neutral-100 border-accent! ",
       )}
     >
       <div

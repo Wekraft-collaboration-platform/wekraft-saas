@@ -46,13 +46,16 @@ const SprintPage = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const { setIsOpen } = useKayaStore();
 
+  const user = useQuery(api.user.getCurrentUser);
   const project = useQuery(api.project.getProjectBySlug, { slug });
+  const isOwner = !!project && !!user && project.ownerId === user._id;
+  const isFreeTier = (project as any)?.ownerAccountType === "free";
   const sprints = useQuery(
     api.sprint.getSprintsByProject,
     project?._id ? { projectId: project._id as Id<"projects"> } : "skip",
   );
 
-  if (!project || sprints === undefined) {
+  if (!project || sprints === undefined || user === undefined) {
     return (
       <div className="p-6 space-y-6">
         {/* Header */}
@@ -114,6 +117,14 @@ const SprintPage = () => {
             <Skeleton className="w-8 h-8 rounded-full" />
           </div>
         </div>
+      </div>
+    );
+  }
+
+  if (isFreeTier) {
+    return (
+      <div className="flex flex-col items-center justify-center h-[80vh] px-4 text-center">
+       free / ask ownr to upgrade
       </div>
     );
   }

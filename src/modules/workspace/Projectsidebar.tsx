@@ -422,6 +422,14 @@ export default function ProjectSidebar() {
                               {item.label}
                             </span>
 
+                            {item.label === "Sprint" &&
+                              (project as any)?.ownerAccountType ===
+                                "free" && (
+                                <Badge variant={'outline'} className="ml-auto h-4 px-1.5 text-[8px] font-bold text-white border-none rounded-sm">
+                                  PRO
+                                </Badge>
+                              )}
+
                             <span
                               className="
                       pointer-events-none absolute inset-y-0 right-0 left-[-13px] -z-10
