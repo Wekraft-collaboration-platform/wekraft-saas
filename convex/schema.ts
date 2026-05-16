@@ -80,8 +80,8 @@ export default defineSchema({
     ownerId: v.id("users"),
     ownerName: v.string(),
     ownerImage: v.string(),
-    // about: v.optional(v.string()),
-    projectUpvotes: v.number(),
+    needDevs: v.optional(v.boolean()), // default true.
+    projectUpvotes: v.number(), // denormalized counter — source of truth is projectUpvoteRecords
     inviteLink: v.optional(v.string()),
     projectWorkStatus: v.optional(
       v.union(
@@ -409,4 +409,14 @@ export default defineSchema({
     expiresAt: v.number(),
   })
     .index("by_token", ["token"]),
+
+  // -------------- Project Upvotes (per-user join table) ---------------------
+  projectUpvoteRecords: defineTable({
+    projectId: v.id("projects"),
+    userId: v.id("users"),
+    createdAt: v.number(),
+  })
+    .index("by_project", ["projectId"])
+    .index("by_user", ["userId"])
+    .index("by_project_user", ["projectId", "userId"]),
 });

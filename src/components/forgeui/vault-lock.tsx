@@ -7,13 +7,18 @@ import { motion, Variants } from "motion/react";
 type VaultLockProps = {
   cardTitle?: string;
   cardDescription?: string;
+  isHovered?: boolean;
+  showText?: boolean;
 };
 
 const VaultLock = ({
   cardTitle = "Vault Access",
   cardDescription = "Smooth and secure login experience, backed by encrypted access and seamless visual transitions",
+  isHovered: externalHovered,
+  showText = true,
 }: VaultLockProps) => {
-  const [isHovered, setIsHovered] = useState(false);
+  const [internalHovered, setInternalHovered] = useState(false);
+  const isHovered = externalHovered ?? internalHovered;
 
   const vaultVariant: Variants = {
     open: {
@@ -112,21 +117,21 @@ const VaultLock = ({
 
   return (
     <motion.div
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={() => setInternalHovered(true)}
+      onMouseLeave={() => setInternalHovered(false)}
       initial="close"
       animate={isHovered ? "open" : "close"}
       className={cn(
         "group relative",
         "h-72 w-full max-w-[420px]",
-        "rounded-md border border-neutral-800 bg-neutral-900 p-8",
+        "bg-transparent p-8",
       )}
     >
       <motion.div
         variants={vaultVariant}
         className={cn(
           "absolute inset-x-0 mx-auto",
-          "top-24 h-40 w-[95%] max-w-[20rem] p-6",
+          "top-16 h-40 w-[95%] max-w-[20rem] p-6",
           "border-t border-neutral-700/70 bg-linear-to-b from-neutral-800 to-neutral-900 text-white shadow-lg",
         )}
         style={{
@@ -138,7 +143,7 @@ const VaultLock = ({
         variants={vaultVariant}
         className={cn(
           "absolute inset-x-0 mx-auto",
-          "top-12 flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-neutral-950 p-1",
+          "top-4 flex h-20 w-20 items-center justify-center overflow-hidden rounded-full bg-neutral-950 p-1",
         )}
       >
         <motion.div
@@ -169,13 +174,13 @@ const VaultLock = ({
       </motion.div>
       <motion.div
         variants={vaultVariant}
-        className="absolute inset-x-0 top-12 mx-auto flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-b-[3px] border-neutral-700/70"
+        className="absolute inset-x-0 top-4 mx-auto flex h-20 w-20 items-center justify-center overflow-hidden rounded-full border-b-[3px] border-neutral-700/70"
       />
       <motion.div
         variants={inputVariant}
         className={cn(
           "absolute inset-x-0 mx-auto",
-          "top-40 flex w-[95%] max-w-72 items-center justify-between",
+          "top-32 flex w-[95%] max-w-72 items-center justify-between",
           "rounded-md border border-neutral-900 bg-neutral-800/90 p-3",
           "drop-shadow-[0_2px_5px_rgba(15,15,15,0.50)] transition-all duration-300",
           "group-hover:border-cyan-500 group-hover:[box-shadow:inset_0_0_5px_#06b6d4] group-hover:filter-[drop-shadow(0_0_2px_#06b6d4)]",
@@ -194,10 +199,12 @@ const VaultLock = ({
           ))}
         </div>
       </motion.div>
-      <div className="absolute bottom-6 left-0 w-full px-8 text-center">
-        <h3 className="text-base font-semibold text-white">{cardTitle}</h3>
-        <p className="mt-2 text-sm text-neutral-400">{cardDescription}</p>
-      </div>
+      {showText && (
+        <div className="absolute bottom-4 left-0 w-full px-8 text-center">
+          <h3 className="text-base font-semibold text-white">{cardTitle}</h3>
+          <p className="mt-1 text-xs text-neutral-400">{cardDescription}</p>
+        </div>
+      )}
     </motion.div>
   );
 };

@@ -71,6 +71,10 @@ const ProjectWorkspace = () => {
   const [cachedData, setCachedData] = useState<any>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  const project = useQuery(api.project.getProjectBySlug, { slug });
+  const user = useQuery(api.user.getCurrentUser);
+  const isOwner = !!project && !!user && project.ownerId === user._id;
+
   const fetchAnalytics = async (projectId: string, forceRefresh = false) => {
     const params = new URLSearchParams({ projectId });
     if (forceRefresh) params.set("forceRefresh", "true");
@@ -79,10 +83,7 @@ const ProjectWorkspace = () => {
     return res.json();
   };
 
-  const project = useQuery(api.project.getProjectBySlug, { slug });
   const projectId = project?._id;
-
-  const user = useQuery(api.user.getCurrentUser);
 
   const projectDetails = useQuery(
     api.projectDetails.getProjectDetails,
@@ -437,6 +438,7 @@ const ProjectWorkspace = () => {
             projectId={projectId as Id<"projects">}
             projectDetails={projectDetails}
             scheduler={scheduler}
+            isOwner={isOwner}
           />
         )}
       </section>

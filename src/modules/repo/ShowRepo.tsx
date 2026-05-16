@@ -37,8 +37,11 @@ import type { Doc, Id } from "../../../convex/_generated/dataModel";
 import { Repository } from "@/types/types";
 import { createWebhook } from "../github/actions/action";
 import { ConnectRepo } from "./action";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery as useConvexQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
+import { useUser } from "@clerk/nextjs";
+import { useEffect, useRef } from "react";
+import { Github } from "lucide-react";
 
 interface RepositoryListProps {
   searchQuery: string;
@@ -70,6 +73,81 @@ const ShowRepo = ({
     isFetching,
     error,
   } = useRepositories(currentPage, ITEMS_PER_PAGE);
+
+  const user = useConvexQuery(api.user.getCurrentUser);
+  const { user: clerkUser } = useUser();
+  const updateGithubUsername = useMutation(api.user.updateGithubUsername);
+  const hasCheckedGithub = useRef(false);
+
+  useEffect(() => {
+    if (!user || !clerkUser) return;
+    if (user.githubUsername) return;
+    if (hasCheckedGithub.current) return;
+    hasCheckedGithub.current = true;
+
+    const reloadAndCheck = async () => {
+      await clerkUser.reload();
+
+      const githubAccount = clerkUser.externalAccounts.find(
+        (acc) => acc.provider === "github",
+      );
+
+      // Show error if verification failed
+      if (githubAccount?.verification?.status === "failed") {
+        toast.error(
+          (githubAccount.verification as any)?.error?.longMessage ||
+            "This GitHub account is already linked to another user.",
+        );
+        return;
+      }
+
+      if (
+        githubAccount?.username &&
+        githubAccount?.verification?.status === "verified"
+      ) {
+        console.log("🚀 Calling mutation with:", githubAccount.username);
+        updateGithubUsername({ githubUsername: githubAccount.username });
+      }
+    };
+
+    reloadAndCheck();
+  }, [user, clerkUser, updateGithubUsername]);
+
+  const handleConnectGithub = async () => {
+    try {
+      const existingGithub = clerkUser?.externalAccounts.find(
+        (acc) => acc.provider === "github",
+      );
+
+      if (
+        existingGithub &&
+        existingGithub.verification?.status !== "verified" &&
+        existingGithub.verification?.externalVerificationRedirectURL
+      ) {
+        console.log("Account unverified, redirecting to finish OAuth...");
+        window.location.href =
+          existingGithub.verification.externalVerificationRedirectURL.toString();
+        return;
+      }
+
+      // No github account yet — create one
+      const res = await clerkUser?.createExternalAccount({
+        strategy: "oauth_github",
+        redirectUrl: window.location.href,
+      });
+
+      if (res?.verification?.externalVerificationRedirectURL) {
+        window.location.href =
+          res.verification.externalVerificationRedirectURL.toString();
+      }
+    } catch (error: any) {
+      console.error("❌ Failed to connect GitHub:", error);
+      toast.error(
+        error?.errors?.[0]?.message ||
+          "Something went wrong while connecting GitHub",
+      );
+    }
+  };
 
   const conectAndUpdateRepoMutation = useMutation(api.repo.connectRepository);
 
@@ -156,11 +234,28 @@ const ShowRepo = ({
     );
   }
 
-  if (error) {
+  if (error || (user && !user.githubUsername)) {
     return (
-      <div className="text-red-400 text-sm p-4 bg-red-500/10 rounded-lg border border-red-500/20">
-        <p className="font-semibold mb-1">Error</p>
-        Failed to load repositories. Please ensure your GitHub token is valid.
+      <div className="flex flex-col items-center justify-center p-8 mt-20 bg-accent/30 rounded-xl border border-primary/10 text-center space-y-4">
+        <div className="size-12 rounded-full bg-primary/10 flex items-center justify-center">
+          <Github className="size-6 text-primary" />
+        </div>
+        <div className="space-y-2">
+          <p className="font-semibold text-lg">Connect GitHub Account</p>
+          <p className="text-sm text-muted-foreground max-w-[300px]">
+            {user && !user.githubUsername
+              ? "You haven't connected your GitHub account yet. Connect it to view and manage your repositories."
+              : "Failed to load repositories. Your GitHub token might be expired or invalid."}
+          </p>
+        </div>
+        <Button
+          onClick={handleConnectGithub}
+          className="gap-2 px-8"
+          size="sm"
+        >
+          <Github className="size-4" />
+          Connect GitHub
+        </Button>
       </div>
     );
   }

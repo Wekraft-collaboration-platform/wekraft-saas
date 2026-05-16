@@ -77,23 +77,27 @@ const Features = () => {
       id="features"
       className="bg-black py-14 px-6 md:px-12 font-sans text-white overflow-hidden"
     >
-      <div className="max-w-7xl mx-auto">
-        {/* Header Section */}
-        <div className="text-center mb-20">
-          <h2 className="text-5xl font-bold tracking-tight mb-8 leading-[1.1] max-w-4xl mx-auto">
-            <span className="text-white">Simple</span> {" "}
-            <span className="text-neutral-500">Seamless. Smart.</span>
+      {/* badge */}
+      <div className="flex items-center justify-center w-fit mx-auto gap-2 px-3 py-1 rounded-full border border-blue-500/20 bg-blue-500/5 ">
+        <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
+        <span className="text-sm font-medium text-blue-400 ">
+          Where productivity feels natural.
+        </span>
+      </div>
+
+      <div className="max-w-7xl mx-auto border border-accent rounded-2xl p-14 relative mt-14 bg-linear-to-b from-black to-neutral-900">
+        {/* Header Section - Positioned on the border */}
+        <div className="absolute -top-5 left-0 right-0 flex justify-center">
+          <h2 className="relative z-10 inline-block px-10 bg-black text-5xl font-bold text-center tracking-tight leading-[1.1]">
+            <span className="text-white">Project management</span> <br />
+            <span className="text-neutral-500 ">made beautifully simple.</span>
           </h2>
-          <p className="text-neutral-400 text-lg  mx-auto">
-            Discover how Wekraft transforms your productivity into action in
-            five easy steps
-          </p>
         </div>
 
         {/* Interactive Section */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-12 items-center">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-10 items-center mt-20">
           {/* Left Side: Steps List */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             {steps.map((step, index) => {
               const isActive = activeStep === index;
               return (
@@ -101,7 +105,7 @@ const Features = () => {
                   key={index}
                   onClick={() => handleStepClick(index)}
                   className={cn(
-                    "relative p-6 rounded-2xl overflow-hidden cursor-pointer transition-all duration-300 border border-transparent",
+                    "relative p-5 rounded-xl overflow-hidden cursor-pointer transition-all duration-300 border border-transparent",
                     isActive
                       ? "bg-white/5 border-white/10"
                       : "hover:bg-white/[0.02]",
@@ -109,7 +113,7 @@ const Features = () => {
                 >
                   <h3
                     className={cn(
-                      "text-xl font-semibold mb-2 transition-colors duration-300",
+                      "text-lg font-semibold mb-1 transition-colors duration-300",
                       isActive ? "text-white" : "text-neutral-500",
                     )}
                   >
@@ -125,11 +129,11 @@ const Features = () => {
                         transition={{ duration: 0.3 }}
                         className="overflow-hidden"
                       >
-                        <p className="text-neutral-400 text-sm leading-relaxed mb-4">
+                        <p className="text-neutral-500 text-xs leading-relaxed mb-3">
                           {step.description}
                         </p>
                         {/* Progress Bar Container */}
-                        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-white/10 overflow-hidden rounded-b-2xl">
+                        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-white/10 overflow-hidden rounded-b-xl">
                           <motion.div
                             className="h-full bg-blue-500"
                             style={{ width: `${progress}%` }}
@@ -144,22 +148,22 @@ const Features = () => {
           </div>
 
           {/* Right Side: Image/Preview Area */}
-          <div className="relative aspect-video lg:aspect-auto lg:h-[600px] w-full">
-            <div className="absolute inset-0 bg-blue-500/10 blur-[120px] rounded-full pointer-events-none" />
-            <div className="relative h-full w-full rounded-3xl border border-white/10 overflow-hidden bg-neutral-900 group">
+          <div className="relative aspect-video lg:aspect-auto lg:h-[420px] w-full">
+            <div className="absolute inset-0 bg-blue-500/10 blur-[100px] rounded-full pointer-events-none" />
+            <div className="relative h-full w-full rounded-2xl border border-white/10 overflow-hidden bg-neutral-900 group">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeStep}
-                  initial={{ opacity: 0, scale: 1.05 }}
+                  initial={{ opacity: 0, scale: 1.02 }}
                   animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.95 }}
+                  exit={{ opacity: 0, scale: 0.98 }}
                   transition={{ duration: 0.5, ease: "easeInOut" }}
                   className="absolute inset-0"
                 >
                   <img
                     src={steps[activeStep].image}
                     alt={steps[activeStep].title}
-                    className="w-full h-full object-cover opacity-80 group-hover:opacity-100 transition-opacity duration-700"
+                    className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity duration-700"
                   />
                   {/* Overlay for better text readability and styling */}
                   <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
@@ -167,10 +171,10 @@ const Features = () => {
               </AnimatePresence>
 
               {/* Decorative corners like the image */}
-              <div className="absolute top-4 left-4 w-2 h-2 border-t border-l border-white/20" />
-              <div className="absolute top-4 right-4 w-2 h-2 border-t border-r border-white/20" />
-              <div className="absolute bottom-4 left-4 w-2 h-2 border-b border-l border-white/20" />
-              <div className="absolute bottom-4 right-4 w-2 h-2 border-b border-r border-white/20" />
+              <div className="absolute top-3 left-3 w-1.5 h-1.5 border-t border-l border-white" />
+              <div className="absolute top-3 right-3 w-1.5 h-1.5 border-t border-r border-white" />
+              <div className="absolute bottom-3 left-3 w-1.5 h-1.5 border-b border-l border-white" />
+              <div className="absolute bottom-3 right-3 w-1.5 h-1.5 border-b border-r border-white" />
             </div>
           </div>
         </div>

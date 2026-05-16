@@ -74,7 +74,7 @@ export function IdentityPicker({
   return (
     <div className="space-y-1.5">
       <div className="flex items-center justify-between">
-        <Label htmlFor="username" className="text-sm text-white">
+        <Label htmlFor="username" className="text-xs text-white">
           Username
         </Label>
       </div>
@@ -85,7 +85,7 @@ export function IdentityPicker({
           autoComplete="off"
           spellCheck={false}
           className={cn(
-            "bg-white/10! border border-white/30! text-white placeholder:text-neutral-300 transition-all",
+            "bg-accent/30! border text-white placeholder:text-neutral-300 transition-all",
             (value.length >= 3 && isAvailable === false && !isTyping) ||
               (value.length > 0 && !isLengthValid)
               ? "border-destructive/50! focus-visible:ring-destructive/20!"

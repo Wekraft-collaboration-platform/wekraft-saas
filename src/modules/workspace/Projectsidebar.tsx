@@ -78,9 +78,9 @@ import { ThemeButtons } from "../dashboard/components/ThemeButton";
 
 const workspaceMenu = [
   {
-    label: "Calendar",
-    path: "workspace/calendar",
-    icon: Calendar,
+    label: "Manage Team",
+    path: "workspace/team",
+    icon: Users2,
   },
   {
     label: "Teamspace",
@@ -88,9 +88,9 @@ const workspaceMenu = [
     icon: PlaneTakeoff,
   },
   {
-    label: "Manage Team",
-    path: "workspace/team",
-    icon: Users2,
+    label: "Calendar",
+    path: "workspace/calendar",
+    icon: Calendar,
   },
   {
     label: "Heatmap",
@@ -421,6 +421,14 @@ export default function ProjectSidebar() {
                             >
                               {item.label}
                             </span>
+
+                            {item.label === "Sprint" &&
+                              (project as any)?.ownerAccountType ===
+                                "free" && (
+                                <Badge variant={'outline'} className="ml-auto h-4 px-1.5 text-[8px] font-bold text-white border-none rounded-sm">
+                                  PRO
+                                </Badge>
+                              )}
 
                             <span
                               className="
