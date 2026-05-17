@@ -14,7 +14,7 @@ const steps = [
     num: "01",
     bg: "#1a1a1a",
     title: "Import projects or docs.",
-    text: "Flowgenix reads your briefs, chats, or Notion pages. Drop in a file, paste a link, or connect your workspace.",
+    text: "WeKraft reads your briefs, chats, or Notion pages. Drop in a file, paste a link, or connect your workspace.",
     img: "https://images.unsplash.com/photo-1618005182384-a83a8bd57fbe?w=700&q=80&auto=format&fit=crop",
   },
   {
@@ -98,7 +98,7 @@ export default function Section2() {
           margin: 0;
         }
         .s2-heading span {
-          background: linear-gradient(90deg, #fff 0%, #555 100%);
+          background: linear-gradient(90deg, #a3a3a3 0%, #525252 100%);
           -webkit-background-clip: text;
           -webkit-text-fill-color: transparent;
           background-clip: text;
@@ -126,11 +126,10 @@ export default function Section2() {
           top: 0;
           left: 2px;
           font-size: 36px;
-          font-weight: 900;
+          font-weight: 800;
           line-height: 1;
           letter-spacing: -1px;
-          color: rgba(255,255,255,0.55);
-          font-family: Georgia, serif;
+          color: rgba(255,255,255,0.15);
           user-select: none;
           z-index: 2;
         }
@@ -140,13 +139,14 @@ export default function Section2() {
           z-index: 1;
           width: 100%;
           height: ${CARD_H}px;
-          border-radius: 20px;
+          border-radius: 24px;
           overflow: hidden;
           box-sizing: border-box;
           display: flex;
           flex-direction: column;
-          box-shadow: 0 24px 60px -10px rgba(0,0,0,0.7);
-          border: 1px solid #2a2a2a;
+          box-shadow: 0 24px 60px -10px rgba(0,0,0,0.8), inset 0 1px 0 rgba(255,255,255,0.05);
+          border: 1px solid rgba(255,255,255,0.1);
+          background-image: linear-gradient(180deg, rgba(255,255,255,0.03) 0%, transparent 100%);
         }
 
         .s2-title-bar {
@@ -155,12 +155,12 @@ export default function Section2() {
         }
 
         .s2-title {
-          font-size: clamp(18px, 2.2vw, 24px);
-          font-weight: 800;
+          font-size: clamp(20px, 2.5vw, 28px);
+          font-weight: 700;
           color: #fff;
           line-height: 1.2;
           margin: 0;
-          letter-spacing: -0.3px;
+          letter-spacing: -0.5px;
         }
 
         .s2-body {
@@ -172,27 +172,36 @@ export default function Section2() {
         }
 
         .s2-text {
-          font-size: 13px;
-          line-height: 1.7;
-          color: rgba(255,255,255,0.4);
-          margin: 0 0 18px;
+          font-size: 15px;
+          line-height: 1.6;
+          color: rgba(255,255,255,0.5);
+          margin: 0 0 24px;
           flex-shrink: 0;
+          max-width: 90%;
         }
 
         .s2-img-wrap {
           flex: 1;
-          border-radius: 12px;
+          border-radius: 16px;
           overflow: hidden;
           min-height: 0;
+          border: 1px solid rgba(255,255,255,0.05);
         }
 
         .s2-img-wrap img {
           width: 100%;
           height: 100%;
           object-fit: cover;
-          filter: grayscale(100%) contrast(1.05);
-          opacity: 0.65;
+          filter: grayscale(80%) contrast(1.1);
+          opacity: 0.8;
           display: block;
+          transition: all 0.5s ease;
+        }
+        
+        .s2-acc:hover .s2-img-wrap img {
+          filter: grayscale(0%) contrast(1.0);
+          opacity: 1;
+          transform: scale(1.02);
         }
       `}</style>
 

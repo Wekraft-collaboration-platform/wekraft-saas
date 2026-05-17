@@ -53,13 +53,13 @@ const Navbar = () => {
   return (
     <header
       className={clsx(
-        "fixed top-2 left-1/2 -translate-x-1/2 z-50 transition-all duration-300 ease-linear",
+        "fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 ease-out",
         scrolled || isMenuOpen || isLightSection
           ? clsx(
-              "backdrop-blur-md shadow-lg max-w-4xl w-[95%] md:w-full rounded-xl",
+              "backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] max-w-4xl w-[95%] md:w-full rounded-2xl border",
               isLightSection
-                ? "bg-black/80 border border-white/10"
-                : "bg-white/15",
+                ? "bg-neutral-950/80 border-white/10"
+                : "bg-neutral-900/50 border-white/10",
             )
           : "bg-transparent w-full",
       )}
@@ -81,14 +81,14 @@ const Navbar = () => {
 
         {/* Desktop Links */}
         <div className={clsx(
-          "hidden md:flex text-sm text-white/80 shrink-0",
-          scrolled || isLightSection ? "gap-5" : "gap-8"
+          "hidden md:flex text-sm font-medium shrink-0 items-center bg-white/[0.03] rounded-full px-2 py-1 border border-white/5",
+          scrolled || isLightSection ? "gap-1" : "gap-2"
         )}>
           {navLinks.map(({ label, href }) => (
             <Link
               key={label}
               href={href}
-              className="relative cursor-pointer transition-colors duration-200 hover:text-white after:absolute after:left-0 after:-bottom-1 after:h-[2px] after:w-0 after:bg-white after:transition-all after:duration-300 hover:after:w-full"
+              className="relative cursor-pointer transition-all duration-300 text-neutral-400 hover:text-white px-4 py-1.5 rounded-full hover:bg-white/10"
             >
               {label}
             </Link>
@@ -110,8 +110,8 @@ const Navbar = () => {
                     <Button
                       size="sm"
                       className={clsx(
-                        "duration-300 hover:scale-105 transition-all cursor-pointer font-inter text-sm text-white bg-blue-600 hover:bg-blue-700 border-none shadow-[0_0_20px_rgba(37,99,235,0.3)]",
-                        (scrolled || isLightSection) && "px-4 py-1.5 text-xs",
+                        "duration-300 hover:scale-105 transition-all cursor-pointer font-medium text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 border-none shadow-[0_0_20px_rgba(37,99,235,0.4)] rounded-full",
+                        (scrolled || isLightSection) ? "px-4 py-1.5 text-xs" : "px-5 py-2 text-sm",
                       )}
                     >
                       Dashboard <ArrowRight className="ml-2 w-4 h-4" />
@@ -123,7 +123,7 @@ const Navbar = () => {
                   <Button
                     size="sm"
                     variant="ghost"
-                    className="text-white/80 hover:text-white hover:bg-white/10 text-sm font-medium"
+                    className="text-neutral-300 hover:text-white hover:bg-white/10 text-sm font-medium rounded-full px-4"
                     onClick={() =>
                       document
                         .getElementById("footer")
@@ -136,8 +136,8 @@ const Navbar = () => {
                     <Button
                       size="sm"
                       className={clsx(
-                        "duration-300 hover:scale-105 transition-all cursor-pointer font-inter text-sm text-white bg-white/10 hover:bg-white/20 border border-white/30 backdrop-blur-sm",
-                        (scrolled || isLightSection) && "px-4 py-1.5 text-xs",
+                        "duration-300 hover:scale-105 transition-all cursor-pointer font-medium text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 border-none shadow-[0_0_20px_rgba(37,99,235,0.4)] rounded-full",
+                        (scrolled || isLightSection) ? "px-4 py-1.5 text-xs" : "px-5 py-2 text-sm",
                       )}
                     >
                       Sign-up
