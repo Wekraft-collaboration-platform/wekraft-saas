@@ -10,6 +10,18 @@ let isDbInitialized = false;
 export async function initTeamspaceDB() {
   if (isDbInitialized) return;
 
+  try {
+    // Fast path: Check if main table exists. If it does, we assume DB is initialized.
+    // This saves executing 15+ DDL statements on every serverless cold start.
+    const check = await turso.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='ts_messages';");
+    if (check.rows.length > 0) {
+      isDbInitialized = true;
+      return;
+    }
+  } catch (e) {
+    // Ignore error and fall through to initialization
+  }
+
   // 1. Ensure migrations are applied (e.g. adding columns to existing tables)
   try {
     await turso.execute(

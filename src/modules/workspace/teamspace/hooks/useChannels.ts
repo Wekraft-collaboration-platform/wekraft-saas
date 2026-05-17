@@ -52,7 +52,14 @@ export function useChannels(projectId: string) {
     try {
       const res = await fetch(`/api/teamspace/channels?projectId=${projectId}`);
       const data = await res.json();
-      setChannels(data.channels ?? []);
+      
+      // Deduplicate channels by id to prevent React key warnings
+      const uniqueChannels = (data.channels ?? []).filter(
+        (channel: Channel, index: number, self: Channel[]) =>
+          index === self.findIndex((c) => c.id === channel.id)
+      );
+      
+      setChannels(uniqueChannels);
     } catch (e) {
       console.error("Failed to fetch channels", e);
     } finally {
@@ -108,7 +115,10 @@ export function useChannels(projectId: string) {
       });
       const data = await res.json();
       if (data.channel) {
-        setChannels((prev) => [...prev, data.channel]);
+        setChannels((prev) => {
+          if (prev.some(c => c.id === data.channel.id)) return prev;
+          return [...prev, data.channel];
+        });
         return data.channel as Channel;
       }
     },

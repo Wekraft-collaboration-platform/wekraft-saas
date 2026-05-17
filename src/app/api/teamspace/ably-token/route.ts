@@ -1,4 +1,4 @@
-import { auth, currentUser } from "@clerk/nextjs/server";
+import { auth } from "@clerk/nextjs/server";
 import { NextResponse } from "next/server";
 import Ably from "ably";
 
@@ -9,15 +9,13 @@ export async function GET() {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const user = await currentUser();
-
   const ably = new Ably.Rest(process.env.ABLY_API_KEY!);
 
   const tokenRequest = await ably.auth.createTokenRequest({
     clientId: userId,
     capability: {
       "teamspace:*": ["subscribe", "publish", "presence"],
-      "user:notifications:*": ["subscribe", "publish"],
+      [`user:notifications:${userId}`]: ["subscribe", "publish"],
       "project:*": ["subscribe", "publish", "presence"],
     },
     ttl: 3600 * 1000, // 1 hour in ms
