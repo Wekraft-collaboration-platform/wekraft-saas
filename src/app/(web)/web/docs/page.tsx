@@ -1,16 +1,46 @@
 import Link from "next/link";
 import { docsConfig } from "@/lib/docs-config";
 import {
-  BookOpen, Terminal, Layers, CheckSquare, AlertCircle,
-  Zap, Clock, Calendar, Users, BarChart3, Settings,
-  ArrowRight, Command, Sparkles, ShieldCheck, CreditCard,
-  FileText, Compass, Cpu, Wrench, LayoutGrid,
+  BookOpen,
+  Terminal,
+  Layers,
+  CheckSquare,
+  AlertCircle,
+  Zap,
+  Clock,
+  Calendar,
+  Users,
+  BarChart3,
+  Settings,
+  ArrowRight,
+  Command,
+  Sparkles,
+  ShieldCheck,
+  CreditCard,
+  FileText,
+  Compass,
+  Cpu,
+  Wrench,
+  LayoutGrid,
 } from "lucide-react";
 
 const iconMap: { [key: string]: any } = {
-  BookOpen, Terminal, Layers, CheckSquare, AlertCircle,
-  Zap, Clock, Calendar, Users, BarChart3, Settings,
-  Command, Sparkles, ShieldCheck, CreditCard, FileText,
+  BookOpen,
+  Terminal,
+  Layers,
+  CheckSquare,
+  AlertCircle,
+  Zap,
+  Clock,
+  Calendar,
+  Users,
+  BarChart3,
+  Settings,
+  Command,
+  Sparkles,
+  ShieldCheck,
+  CreditCard,
+  FileText,
 };
 
 const badgeColors: Record<string, string> = {
@@ -23,13 +53,15 @@ const categoryIcons: Record<string, any> = {
   "Getting Started": Compass,
   "Core Features": Cpu,
   "Advanced Tools": Wrench,
-  "Platform": LayoutGrid,
+  Platform: LayoutGrid,
 };
 
 export default function DocsIndexPage() {
   const allItems = Object.values(docsConfig).flat();
   const popularSlugs = ["overview", "extension", "tasks", "sprints"];
-  const popularItems = popularSlugs.map((s) => allItems.find((d) => d.slug === s)!).filter(Boolean);
+  const popularItems = popularSlugs
+    .map((s) => allItems.find((d) => d.slug === s)!)
+    .filter(Boolean);
 
   return (
     <div className="w-full max-w-4xl">
@@ -43,8 +75,8 @@ export default function DocsIndexPage() {
           Wekraft Docs
         </h1>
         <p className="text-lg text-white/45 leading-relaxed max-w-xl">
-          Everything you need to build, ship, and manage projects with your team.
-          From your first sprint to AI-powered analytics.
+          Everything you need to build, ship, and manage projects with your
+          team. From your first sprint to AI-powered analytics.
         </p>
       </div>
 
@@ -71,7 +103,9 @@ export default function DocsIndexPage() {
                       {doc.title}
                     </span>
                     {doc.badge && (
-                      <span className={`text-[9px] font-semibold rounded px-1.5 py-0.5 leading-none ${badgeColors[doc.badge]}`}>
+                      <span
+                        className={`text-[9px] font-semibold rounded px-1.5 py-0.5 leading-none ${badgeColors[doc.badge]}`}
+                      >
                         {doc.badge}
                       </span>
                     )}
@@ -97,7 +131,9 @@ export default function DocsIndexPage() {
                 <div className="w-6 h-6 rounded-md bg-white/5 flex items-center justify-center">
                   <CatIcon className="h-3.5 w-3.5 text-white/40" />
                 </div>
-                <h2 className="text-sm font-semibold text-white/70">{category}</h2>
+                <h2 className="text-sm font-semibold text-white/70">
+                  {category}
+                </h2>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {items.map((doc) => {
@@ -113,7 +149,9 @@ export default function DocsIndexPage() {
                         {doc.title}
                       </span>
                       {doc.badge && (
-                        <span className={`text-[9px] font-semibold rounded px-1.5 py-0.5 leading-none shrink-0 ${badgeColors[doc.badge]}`}>
+                        <span
+                          className={`text-[9px] font-semibold rounded px-1.5 py-0.5 leading-none shrink-0 ${badgeColors[doc.badge]}`}
+                        >
                           {doc.badge}
                         </span>
                       )}
@@ -130,7 +168,10 @@ export default function DocsIndexPage() {
       {/* Footer hint */}
       <div className="mt-16 pt-8 border-t border-white/6 flex items-center justify-between text-xs text-white/20">
         <span>Wekraft Documentation</span>
-        <Link href="/web/docs/overview" className="hover:text-white/40 transition-colors flex items-center gap-1">
+        <Link
+          href="/web/docs/overview"
+          className="hover:text-white/40 transition-colors flex items-center gap-1"
+        >
           Get started <ArrowRight className="h-3 w-3" />
         </Link>
       </div>

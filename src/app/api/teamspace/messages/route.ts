@@ -272,10 +272,10 @@ export async function POST(req: NextRequest) {
     });
 
     const isEveryoneMentioned = content.toLowerCase().includes("@everyone");
-    
+
     // Match @Username in content or use all members if @everyone
-    const mentionedMembers = isEveryoneMentioned 
-      ? projectMembers.filter(m => m.clerkUserId !== userId) // Everyone except sender
+    const mentionedMembers = isEveryoneMentioned
+      ? projectMembers.filter((m) => m.clerkUserId !== userId) // Everyone except sender
       : projectMembers.filter((member) => {
           if (!member.userName) return false;
           const mentionTag = `@${member.userName}`;

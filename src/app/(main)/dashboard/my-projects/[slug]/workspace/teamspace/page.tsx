@@ -73,10 +73,5 @@ export default function TeamspacePage() {
     );
   }
 
-  return (
-    <TeamspaceView
-      projectSlug={slug}
-      projectId={project._id}
-    />
-  );
+  return <TeamspaceView projectSlug={slug} projectId={project._id} />;
 }

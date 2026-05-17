@@ -45,7 +45,10 @@ export async function GET(req: NextRequest) {
   const forceRefresh = searchParams.get("forceRefresh") === "true";
 
   if (!projectId) {
-    return NextResponse.json({ error: "projectId is required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "projectId is required" },
+      { status: 400 },
+    );
   }
 
   const cacheKey = `dashboard_analytics:${projectId}`;
@@ -55,7 +58,7 @@ export async function GET(req: NextRequest) {
     try {
       const cached = await redis.get<DashboardAnalyticsData>(cacheKey);
       if (cached) {
-        console.log("CACHED DATA -> CHARTS RETURNED FROM CACHE !!!")
+        console.log("CACHED DATA -> CHARTS RETURNED FROM CACHE !!!");
         return NextResponse.json(cached);
       }
     } catch (e) {
@@ -66,13 +69,16 @@ export async function GET(req: NextRequest) {
 
   // 2. Cache miss or force refresh — fetch from Convex
   try {
-    const [contributions, sprints, heatmap, velocity, workload] = await Promise.all([
-      fetchQuery(api.workspace.getProjectContributions, { projectId }),
-      fetchQuery(api.sprint.getSprintsByProject, { projectId }),
-      fetchQuery(api.workspace.getEnvironmentalSeverityHeatmap, { projectId }),
-      fetchQuery(api.workspace.getWeeklyVelocity, { projectId }),
-      fetchQuery(api.workspace.getMemberWorkload, { projectId }),
-    ]);
+    const [contributions, sprints, heatmap, velocity, workload] =
+      await Promise.all([
+        fetchQuery(api.workspace.getProjectContributions, { projectId }),
+        fetchQuery(api.sprint.getSprintsByProject, { projectId }),
+        fetchQuery(api.workspace.getEnvironmentalSeverityHeatmap, {
+          projectId,
+        }),
+        fetchQuery(api.workspace.getWeeklyVelocity, { projectId }),
+        fetchQuery(api.workspace.getMemberWorkload, { projectId }),
+      ]);
 
     const data: DashboardAnalyticsData = {
       contributions: contributions as any,
@@ -86,7 +92,7 @@ export async function GET(req: NextRequest) {
     // 3. Store in Redis for 1 hour
     try {
       await redis.set(cacheKey, data, { ex: 3600 });
-      console.log("CHARTS DATA STORED IN CACHE FOR 1 HOUR !!!")
+      console.log("CHARTS DATA STORED IN CACHE FOR 1 HOUR !!!");
     } catch (e) {
       console.error("[Analytics] Redis set error:", e);
     }
@@ -94,6 +100,9 @@ export async function GET(req: NextRequest) {
     return NextResponse.json(data);
   } catch (e) {
     console.error("[Analytics] Convex fetch error:", e);
-    return NextResponse.json({ error: "Failed to fetch analytics" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch analytics" },
+      { status: 500 },
+    );
   }
 }

@@ -5,13 +5,19 @@ import { verifyProjectAccess } from "@/modules/workspace/teamspace/lib/auth";
 
 export async function GET(req: NextRequest) {
   const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!userId)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const projectId = req.nextUrl.searchParams.get("projectId");
-  if (!projectId) return NextResponse.json({ error: "projectId required" }, { status: 400 });
+  if (!projectId)
+    return NextResponse.json({ error: "projectId required" }, { status: 400 });
 
   const access = await verifyProjectAccess(userId, projectId);
-  if ("error" in access) return NextResponse.json({ error: access.error }, { status: access.status });
+  if ("error" in access)
+    return NextResponse.json(
+      { error: access.error },
+      { status: access.status },
+    );
 
   await initTeamspaceDB();
 
@@ -27,7 +33,7 @@ export async function GET(req: NextRequest) {
         members_can_create_channels: 0,
         members_can_edit_channels: 0,
         members_can_delete_channels: 0,
-      }
+      },
     });
   }
 
@@ -36,18 +42,32 @@ export async function GET(req: NextRequest) {
 
 export async function PATCH(req: NextRequest) {
   const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!userId)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const { projectId, members_can_create_channels, members_can_edit_channels, members_can_delete_channels } = body;
+  const {
+    projectId,
+    members_can_create_channels,
+    members_can_edit_channels,
+    members_can_delete_channels,
+  } = body;
 
-  if (!projectId) return NextResponse.json({ error: "projectId required" }, { status: 400 });
+  if (!projectId)
+    return NextResponse.json({ error: "projectId required" }, { status: 400 });
 
   const access = await verifyProjectAccess(userId, projectId);
-  if ("error" in access) return NextResponse.json({ error: access.error }, { status: access.status });
+  if ("error" in access)
+    return NextResponse.json(
+      { error: access.error },
+      { status: access.status },
+    );
 
   if (!access.permissions.isOwner && !access.permissions.isAdmin) {
-    return NextResponse.json({ error: "Forbidden: Only owner or admin can update settings" }, { status: 403 });
+    return NextResponse.json(
+      { error: "Forbidden: Only owner or admin can update settings" },
+      { status: 403 },
+    );
   }
 
   await initTeamspaceDB();
@@ -63,7 +83,13 @@ export async function PATCH(req: NextRequest) {
     await turso.execute({
       sql: `INSERT INTO ts_settings (project_id, members_can_create_channels, members_can_edit_channels, members_can_delete_channels, updated_at)
             VALUES (?, ?, ?, ?, ?)`,
-      args: [projectId, members_can_create_channels ? 1 : 0, members_can_edit_channels ? 1 : 0, members_can_delete_channels ? 1 : 0, now],
+      args: [
+        projectId,
+        members_can_create_channels ? 1 : 0,
+        members_can_edit_channels ? 1 : 0,
+        members_can_delete_channels ? 1 : 0,
+        now,
+      ],
     });
   } else {
     await turso.execute({
@@ -74,11 +100,23 @@ export async function PATCH(req: NextRequest) {
               updated_at = ?
             WHERE project_id = ?`,
       args: [
-        members_can_create_channels !== undefined ? (members_can_create_channels ? 1 : 0) : null,
-        members_can_edit_channels !== undefined ? (members_can_edit_channels ? 1 : 0) : null,
-        members_can_delete_channels !== undefined ? (members_can_delete_channels ? 1 : 0) : null,
+        members_can_create_channels !== undefined
+          ? members_can_create_channels
+            ? 1
+            : 0
+          : null,
+        members_can_edit_channels !== undefined
+          ? members_can_edit_channels
+            ? 1
+            : 0
+          : null,
+        members_can_delete_channels !== undefined
+          ? members_can_delete_channels
+            ? 1
+            : 0
+          : null,
         now,
-        projectId
+        projectId,
       ],
     });
   }

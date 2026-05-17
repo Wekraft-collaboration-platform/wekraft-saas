@@ -9,6 +9,7 @@
  */
 
 import type * as agentTools from "../agentTools.js";
+import type * as announcement from "../announcement.js";
 import type * as apiKeys from "../apiKeys.js";
 import type * as calendar from "../calendar.js";
 import type * as http from "../http.js";
@@ -33,6 +34,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   agentTools: typeof agentTools;
+  announcement: typeof announcement;
   apiKeys: typeof apiKeys;
   calendar: typeof calendar;
   http: typeof http;

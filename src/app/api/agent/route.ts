@@ -103,10 +103,10 @@ export async function POST(request: NextRequest) {
         });
 
         // Write an error message to the stream before closing
-        const errorData = JSON.stringify({ 
-          error: error.message || "Error in agent stream processing" 
+        const errorData = JSON.stringify({
+          error: error.message || "Error in agent stream processing",
         });
-        
+
         try {
           await writer.write(
             new TextEncoder().encode(`event: error\ndata: ${errorData}\n\n`),

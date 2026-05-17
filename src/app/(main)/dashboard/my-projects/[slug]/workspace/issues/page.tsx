@@ -46,7 +46,13 @@ const users = [
   { name: "John", img: "https://i.pravatar.cc/40?img=4" },
 ];
 
-const GithubIssueCard = ({ issue, onClick }: { issue: Issue; onClick?: () => void }) => {
+const GithubIssueCard = ({
+  issue,
+  onClick,
+}: {
+  issue: Issue;
+  onClick?: () => void;
+}) => {
   const severity = issue.severity
     ? SEVERITY_CONFIG[issue.severity]
     : {
@@ -175,7 +181,9 @@ const IssuesPage = () => {
   const projectName = project?.projectName;
   const [activeTab, setActiveTab] = useState<"all" | "github">("all");
   const [searchQuery, setSearchQuery] = useState("");
-  const [selectedIssueForSheet, setSelectedIssueForSheet] = useState<any | null>(null);
+  const [selectedIssueForSheet, setSelectedIssueForSheet] = useState<
+    any | null
+  >(null);
   const { setIsOpen } = useKayaStore();
   const currentUser = useQuery(api.user.getCurrentUser);
   const members = useQuery(

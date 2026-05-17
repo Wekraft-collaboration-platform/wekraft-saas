@@ -10,16 +10,24 @@ const ably = new Ably.Rest(process.env.ABLY_API_KEY!);
 // POST /api/teamspace/reactions
 export async function POST(req: NextRequest) {
   const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!userId)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { projectId, messageId, emoji, channelId } = await req.json();
   if (!projectId || !messageId || !emoji || !channelId) {
-    return NextResponse.json({ error: "projectId, messageId, emoji and channelId required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "projectId, messageId, emoji and channelId required" },
+      { status: 400 },
+    );
   }
 
   // --- ACCESS CHECK ---
   const access = await verifyProjectAccess(userId, projectId);
-  if ("error" in access) return NextResponse.json({ error: access.error }, { status: access.status });
+  if ("error" in access)
+    return NextResponse.json(
+      { error: access.error },
+      { status: access.status },
+    );
 
   await initTeamspaceDB();
 
@@ -43,7 +51,12 @@ export async function POST(req: NextRequest) {
     for (const row of existing.rows) {
       const oldEmoji = row.emoji as string;
       if (oldEmoji === emoji) continue;
-      await ablyChannel.publish("reaction.updated", { messageId, userId, emoji: oldEmoji, action: "remove" });
+      await ablyChannel.publish("reaction.updated", {
+        messageId,
+        userId,
+        emoji: oldEmoji,
+        action: "remove",
+      });
     }
   }
 
@@ -55,7 +68,12 @@ export async function POST(req: NextRequest) {
   });
 
   // Broadcast addition
-  await ablyChannel.publish("reaction.updated", { messageId, userId, emoji, action: "add" });
+  await ablyChannel.publish("reaction.updated", {
+    messageId,
+    userId,
+    emoji,
+    action: "add",
+  });
 
   return NextResponse.json({ success: true });
 }
@@ -63,16 +81,24 @@ export async function POST(req: NextRequest) {
 // DELETE /api/teamspace/reactions
 export async function DELETE(req: NextRequest) {
   const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!userId)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { projectId, messageId, emoji, channelId } = await req.json();
   if (!projectId || !messageId || !emoji || !channelId) {
-    return NextResponse.json({ error: "projectId, messageId, emoji and channelId required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "projectId, messageId, emoji and channelId required" },
+      { status: 400 },
+    );
   }
 
   // --- ACCESS CHECK ---
   const access = await verifyProjectAccess(userId, projectId);
-  if ("error" in access) return NextResponse.json({ error: access.error }, { status: access.status });
+  if ("error" in access)
+    return NextResponse.json(
+      { error: access.error },
+      { status: access.status },
+    );
 
   await turso.execute({
     sql: "DELETE FROM ts_reactions WHERE message_id = ? AND user_id = ? AND emoji = ?",
@@ -80,8 +106,12 @@ export async function DELETE(req: NextRequest) {
   });
 
   const ablyChannel = ably.channels.get(`teamspace:${channelId}`);
-  await ablyChannel.publish("reaction.updated", { messageId, userId, emoji, action: "remove" });
+  await ablyChannel.publish("reaction.updated", {
+    messageId,
+    userId,
+    emoji,
+    action: "remove",
+  });
 
   return NextResponse.json({ success: true });
 }
-

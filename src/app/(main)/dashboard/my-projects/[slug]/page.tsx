@@ -265,11 +265,7 @@ const ProjectPage = () => {
             }
           />
           <Link href={`/dashboard/my-projects/${project?.slug}/workspace`}>
-            <Button
-              size="sm"
-              className=" px-4! text-xs"
-              variant={"default"}
-            >
+            <Button size="sm" className=" px-4! text-xs" variant={"default"}>
               Share Project
               <LucideExternalLink className="ml-2 w-3.5 h-3.5" />
             </Button>
@@ -323,7 +319,9 @@ const ProjectPage = () => {
                       <GlobeLock className="w-7 h-7" />
                     </div>
                     <div className="space-y-2">
-                      <h3 className="text-base font-bold">Settings Restricted</h3>
+                      <h3 className="text-base font-bold">
+                        Settings Restricted
+                      </h3>
                       <p className="text-muted-foreground max-w-xs mx-auto text-sm">
                         Only the project owner has the power to update settings.
                         Please contact the owner for any modifications.

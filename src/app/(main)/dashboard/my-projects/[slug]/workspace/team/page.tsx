@@ -130,7 +130,11 @@ export default function TeamPage() {
   };
 
   // Loading state
-  if (project === undefined || teamData === undefined || currentUser === undefined) {
+  if (
+    project === undefined ||
+    teamData === undefined ||
+    currentUser === undefined
+  ) {
     return (
       <div className="w-full h-full p-6 2xl:p-8">
         <div className="flex items-center justify-between mb-8">
@@ -277,9 +281,7 @@ export default function TeamPage() {
                 </div>
                 <div>
                   <p className="text-[10px]">Availability</p>
-                  <p
-                    className={`text-sm text-primary`}
-                  >
+                  <p className={`text-sm text-primary`}>
                     {teamData.memberLimit - teamData.total} Slots left
                   </p>
                 </div>
@@ -312,7 +314,8 @@ export default function TeamPage() {
             ROLE_CONFIG[member.AccessRole] || ROLE_CONFIG.member;
           const RoleIcon = roleConfig.icon;
           const isCurrentUser = member.userId === currentUser?._id;
-          const canManage = isPower && member.AccessRole !== "owner" && !isCurrentUser;
+          const canManage =
+            isPower && member.AccessRole !== "owner" && !isCurrentUser;
 
           return (
             <div
@@ -412,18 +415,20 @@ export default function TeamPage() {
               )}
 
               {/* Non-manageable members just get Message */}
-              {!canManage && member.AccessRole !== "owner" && !isCurrentUser && (
-                <button
-                  onClick={() =>
-                    router.push(
-                      `/dashboard/my-projects/${slug}/workspace/teamspace`,
-                    )
-                  }
-                  className="absolute top-3.5 right-3.5 p-1 rounded-md  text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer"
-                >
-                  <MessageSquare className="w-4 h-4" />
-                </button>
-              )}
+              {!canManage &&
+                member.AccessRole !== "owner" &&
+                !isCurrentUser && (
+                  <button
+                    onClick={() =>
+                      router.push(
+                        `/dashboard/my-projects/${slug}/workspace/teamspace`,
+                      )
+                    }
+                    className="absolute top-3.5 right-3.5 p-1 rounded-md  text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer"
+                  >
+                    <MessageSquare className="w-4 h-4" />
+                  </button>
+                )}
 
               {/* Avatar + Name + Role */}
               <div className="flex items-start gap-3 mb-4">
@@ -541,7 +546,9 @@ export default function TeamPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Leave project</AlertDialogTitle>
             <AlertDialogDescription>
-              Are you sure you want to leave this project? This will permanently remove all your assigned tasks and issues, and you will lose access. This action cannot be undone.
+              Are you sure you want to leave this project? This will permanently
+              remove all your assigned tasks and issues, and you will lose
+              access. This action cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>

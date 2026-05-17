@@ -1,9 +1,7 @@
-import React from 'react'
+import React from "react";
 
 const MeetPage = () => {
-  return (
-    <div>MeetPage</div>
-  )
-}
+  return <div>MeetPage</div>;
+};
 
-export default MeetPage
+export default MeetPage;

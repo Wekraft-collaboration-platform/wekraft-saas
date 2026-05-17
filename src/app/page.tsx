@@ -44,7 +44,9 @@ const Home = () => {
             height={40}
             className="rounded-lg"
           />
-          <h1 className="text-2xl text-white font-semibold font-pop">WeKraft</h1>
+          <h1 className="text-2xl text-white font-semibold font-pop">
+            WeKraft
+          </h1>
         </motion.div>
 
         <motion.h3
@@ -62,9 +64,11 @@ const Home = () => {
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut", delay: 0.3 }}
         >
-          <span className="">Redirecting...</span>{" "}
-          If u havent redirected visit{" "}
-          <Link href="/web" className="text-blue-500 underline underline-offset-2">
+          <span className="">Redirecting...</span> If u havent redirected visit{" "}
+          <Link
+            href="/web"
+            className="text-blue-500 underline underline-offset-2"
+          >
             here
           </Link>
         </motion.p>

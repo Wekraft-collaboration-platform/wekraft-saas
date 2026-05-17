@@ -7,7 +7,8 @@ import Ably from "ably";
 // The raw ABLY_API_KEY never reaches the browser.
 export async function GET() {
   const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!userId)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const user = await currentUser();
 

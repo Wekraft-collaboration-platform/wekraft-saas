@@ -9,12 +9,13 @@ import { api } from "../../../../../../../../convex/_generated/api";
 import { HeatmapPanel } from "@/modules/workspace/heatmaps/HeatmapPanel";
 import { FolderNode } from "@/modules/workspace/heatmaps/action";
 
-
 const HeatmapPage = () => {
   const { open: sidebarOpen, setOpen: setSidebarOpen } = useSidebar();
   const [isPanelOpen, setIsPanelOpen] = useState(false);
   const [structure, setStructure] = useState<FolderNode | null>(null);
-  const [recentlyChangedPaths, setRecentlyChangedPaths] = useState<string[]>([]);
+  const [recentlyChangedPaths, setRecentlyChangedPaths] = useState<string[]>(
+    [],
+  );
 
   const params = useParams();
   const slug = params.slug as string;
@@ -24,8 +25,11 @@ const HeatmapPage = () => {
   const projectId = project?._id;
 
   // Fetch issues for the project
-  const issues = useQuery(api.issue.getFilteredIssues, projectId ? { projectId } : "skip");
-  
+  const issues = useQuery(
+    api.issue.getFilteredIssues,
+    projectId ? { projectId } : "skip",
+  );
+
   // Extract file paths from non-closed issues
   const issuePaths = useMemo(() => {
     if (!issues) return [];
@@ -71,9 +75,9 @@ const HeatmapPage = () => {
       />
       {/* REACT FLOW MAP */}
       <div className="flex-1 relative overflow-hidden">
-        <HeatmapFlow 
-          structure={structure} 
-          issuePaths={issuePaths} 
+        <HeatmapFlow
+          structure={structure}
+          issuePaths={issuePaths}
           recentlyChangedPaths={recentlyChangedPaths}
           isFreeTier={isFreeTier}
         />
@@ -81,6 +85,5 @@ const HeatmapPage = () => {
     </div>
   );
 };
-
 
 export default HeatmapPage;

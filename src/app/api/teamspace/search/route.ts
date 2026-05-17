@@ -5,26 +5,34 @@ import { verifyProjectAccess } from "@/modules/workspace/teamspace/lib/auth";
 
 export async function GET(req: NextRequest) {
   const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!userId)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const query = req.nextUrl.searchParams.get("q");
   const projectId = req.nextUrl.searchParams.get("projectId");
   const channelId = req.nextUrl.searchParams.get("channelId");
 
   if (!query || !projectId) {
-    return NextResponse.json({ error: "query and projectId required" }, { status: 400 });
+    return NextResponse.json(
+      { error: "query and projectId required" },
+      { status: 400 },
+    );
   }
 
   // --- ACCESS CHECK ---
   const access = await verifyProjectAccess(userId, projectId);
-  if ("error" in access) return NextResponse.json({ error: access.error }, { status: access.status });
+  if ("error" in access)
+    return NextResponse.json(
+      { error: access.error },
+      { status: access.status },
+    );
 
   await initTeamspaceDB();
 
   try {
     // Search using FTS5 MATCH query
     // snippet(table, column_index, start, end, ellipsis, tokens)
-    const sql = channelId 
+    const sql = channelId
       ? `
         SELECT 
           m.*, 
@@ -46,18 +54,22 @@ export async function GET(req: NextRequest) {
         LIMIT 20
       `;
 
-    const args = channelId ? [projectId, channelId, `${query}*`] : [projectId, `${query}*`];
+    const args = channelId
+      ? [projectId, channelId, `${query}*`]
+      : [projectId, `${query}*`];
 
     const result = await turso.execute({
       sql,
-      args, 
+      args,
     });
 
-    return NextResponse.json({ 
-      results: result.rows.map(m => ({
+    return NextResponse.json({
+      results: result.rows.map((m) => ({
         ...m,
-        link_preview: m.link_preview ? JSON.parse(m.link_preview as string) : null,
-      }))
+        link_preview: m.link_preview
+          ? JSON.parse(m.link_preview as string)
+          : null,
+      })),
     });
   } catch (error) {
     console.error("Search failed:", error);

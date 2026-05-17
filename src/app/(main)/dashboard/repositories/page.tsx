@@ -1,5 +1,12 @@
 "use client";
-import { FolderGit2, GitBranch, Layers2, LayoutGrid, LucideGitBranch, Search } from "lucide-react";
+import {
+  FolderGit2,
+  GitBranch,
+  Layers2,
+  LayoutGrid,
+  LucideGitBranch,
+  Search,
+} from "lucide-react";
 import React, { useState } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../../../../convex/_generated/api";
@@ -97,7 +104,8 @@ const RepositoriesPage = () => {
                           <div className="flex items-start justify-between gap-2">
                             <div className="min-w-0">
                               <p className="text-xs font-semibold truncate font-inter capitalize">
-                               <Layers2 className="size-3 text-primary inline mr-1" /> {repo.projectName}
+                                <Layers2 className="size-3 text-primary inline mr-1" />{" "}
+                                {repo.projectName}
                               </p>
                               <div className="flex items-center gap-1.5 mt-2">
                                 <Badge

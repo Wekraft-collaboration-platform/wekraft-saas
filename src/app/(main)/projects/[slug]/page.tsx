@@ -15,7 +15,11 @@ interface Member {
   AccessRole: string;
 }
 
-interface Language { name: string; percentage: number; bytes: number }
+interface Language {
+  name: string;
+  percentage: number;
+  bytes: number;
+}
 
 interface Health {
   openIssuesCount: number;
@@ -66,12 +70,18 @@ const ROLE_COLORS: Record<string, string> = {
   owner: "bg-zinc-500/15 text-neutral-200 border-neutral-200/30",
   admin: "bg-zinc-500/15 text-neutral-200 border-neutral-200/30",
   member: "bg-zinc-500/15 text-neutral-200 border-neutral-200/30",
-//   viewer: "bg-sky-500/15 text-sky-400 border-sky-500/30",
+  //   viewer: "bg-sky-500/15 text-sky-400 border-sky-500/30",
 };
 
 const LANG_COLORS = [
-  "#6366f1", "#8b5cf6", "#06b6d4", "#10b981",
-  "#f59e0b", "#ef4444", "#ec4899", "#84cc16",
+  "#6366f1",
+  "#8b5cf6",
+  "#06b6d4",
+  "#10b981",
+  "#f59e0b",
+  "#ef4444",
+  "#ec4899",
+  "#84cc16",
 ];
 
 function timeAgo(ms: number) {
@@ -83,7 +93,9 @@ function timeAgo(ms: number) {
 }
 
 // ── component ──────────────────────────────────────────────────────────────
-interface Props { params: Promise<{ slug: string }> }
+interface Props {
+  params: Promise<{ slug: string }>;
+}
 
 export default function PublicProjectPage({ params }: Props) {
   const { slug } = use(params);
@@ -93,7 +105,9 @@ export default function PublicProjectPage({ params }: Props) {
   const [loading, setLoading] = useState(true);
   const [upvotes, setUpvotes] = useState(0);
   const [hasUpvoted, setHasUpvoted] = useState(false);
-  const [joiningState, setJoiningState] = useState<"idle" | "loading" | "sent">("idle");
+  const [joiningState, setJoiningState] = useState<"idle" | "loading" | "sent">(
+    "idle",
+  );
 
   const toggleUpvote = useMutation(api.project.toggleProjectUpvote);
   const createJoinRequest = useMutation(api.project.createJoinRequest);
@@ -101,9 +115,10 @@ export default function PublicProjectPage({ params }: Props) {
   // Live auth-aware query — NOT cached, always reflects current user
   const liveProfile = useQuery(
     api.project.getPublicProjectProfile,
-    data?.profile?.slug ? { slug: data.profile.slug } : "skip"
+    data?.profile?.slug ? { slug: data.profile.slug } : "skip",
   );
-  const currentUser = (liveProfile && !liveProfile.isPrivate) ? liveProfile.currentUser : null;
+  const currentUser =
+    liveProfile && !liveProfile.isPrivate ? liveProfile.currentUser : null;
 
   useEffect(() => {
     fetch(`/api/public/slug?slug=${slug}`)
@@ -118,7 +133,8 @@ export default function PublicProjectPage({ params }: Props) {
 
   // Sync upvote state from live query once available
   useEffect(() => {
-    if (currentUser?.hasUpvoted !== undefined) setHasUpvoted(currentUser.hasUpvoted);
+    if (currentUser?.hasUpvoted !== undefined)
+      setHasUpvoted(currentUser.hasUpvoted);
     if (currentUser?.hasPendingRequest) setJoiningState("sent");
   }, [currentUser?.hasUpvoted, currentUser?.hasPendingRequest]);
 
@@ -154,7 +170,10 @@ export default function PublicProjectPage({ params }: Props) {
     if (!data?.profile?._id) return;
     setJoiningState("loading");
     try {
-      await createJoinRequest({ projectId: data.profile._id, source: "manual" });
+      await createJoinRequest({
+        projectId: data.profile._id,
+        source: "manual",
+      });
       setJoiningState("sent");
       toast.success("Join request sent!");
     } catch (e: any) {
@@ -187,7 +206,9 @@ export default function PublicProjectPage({ params }: Props) {
       <div className="min-h-screen flex flex-col items-center justify-center gap-3">
         <span className="text-4xl">🔒</span>
         <h1 className="text-xl font-semibold">{profile.projectName}</h1>
-        <p className="text-muted-foreground text-sm">This project is private.</p>
+        <p className="text-muted-foreground text-sm">
+          This project is private.
+        </p>
       </div>
     );
   }
@@ -206,16 +227,26 @@ export default function PublicProjectPage({ params }: Props) {
             src={profile.thumbnailUrl}
             alt={profile.projectName}
             className="w-full object-cover"
-            style={{ maxHeight: 420, minHeight: 280, width: "100%", display: "block" }}
+            style={{
+              maxHeight: 420,
+              minHeight: 280,
+              width: "100%",
+              display: "block",
+            }}
           />
         ) : (
           <div className="border-b border-neutral-500 h-[320px] overflow-hidden">
             <img
-            src='/we-thumbnail.png'
-            alt='wekraft'
-            className="w-full object-cover"
-            style={{ maxHeight: 420, minHeight: 280, width: "100%", display: "block" }}
-          />
+              src="/we-thumbnail.png"
+              alt="wekraft"
+              className="w-full object-cover"
+              style={{
+                maxHeight: 420,
+                minHeight: 280,
+                width: "100%",
+                display: "block",
+              }}
+            />
           </div>
         )}
 
@@ -234,7 +265,9 @@ export default function PublicProjectPage({ params }: Props) {
                     : "bg-zinc-500/20 text-zinc-300 border-zinc-500/30"
                 }`}
               >
-                <span className={`w-1.5 h-1.5 rounded-full ${profile.isPublic ? "bg-emerald-400" : "bg-zinc-400"}`} />
+                <span
+                  className={`w-1.5 h-1.5 rounded-full ${profile.isPublic ? "bg-emerald-400" : "bg-zinc-400"}`}
+                />
                 {profile.isPublic ? "Public" : "Private"}
               </span>
 
@@ -244,7 +277,9 @@ export default function PublicProjectPage({ params }: Props) {
                 </span>
               )}
 
-              <span className="text-white/50 text-xs">{timeAgo(profile.createdAt)}</span>
+              <span className="text-white/50 text-xs">
+                {timeAgo(profile.createdAt)}
+              </span>
             </div>
 
             {/* project name */}
@@ -262,7 +297,9 @@ export default function PublicProjectPage({ params }: Props) {
                     className="w-7 h-7 rounded-full ring-2 ring-white/20 object-cover"
                   />
                 )}
-                <span className="text-white/80 text-sm font-medium">{profile.ownerName}</span>
+                <span className="text-white/80 text-sm font-medium">
+                  {profile.ownerName}
+                </span>
                 <span className="text-[11px] px-2 py-0.5 rounded-full bg-neutral-500/60 text-neutral-200 border-neutral-200/30">
                   Owner
                 </span>
@@ -287,19 +324,23 @@ export default function PublicProjectPage({ params }: Props) {
 
       {/* ── Body ─────────────────────────────────────────────────────────── */}
       <div className="max-w-4xl mx-auto px-4 sm:px-6 py-8 space-y-8">
-
         {/* description + join */}
         <div className="flex items-start justify-between gap-4">
           <div className="space-y-3 flex-1">
             {profile.description && (
-              <p className="text-muted-foreground leading-relaxed">{profile.description}</p>
+              <p className="text-muted-foreground leading-relaxed">
+                {profile.description}
+              </p>
             )}
 
             {/* tags */}
             {profile.tags?.length > 0 && (
               <div className="flex flex-wrap gap-2">
                 {profile.tags.map((tag) => (
-                  <span key={tag} className="px-2.5 py-0.5 rounded-full bg-muted border border-border text-xs text-muted-foreground">
+                  <span
+                    key={tag}
+                    className="px-2.5 py-0.5 rounded-full bg-muted border border-border text-xs text-muted-foreground"
+                  >
                     {tag}
                   </span>
                 ))}
@@ -349,20 +390,22 @@ export default function PublicProjectPage({ params }: Props) {
                 joiningState === "sent"
                   ? "bg-emerald-500/15 border-emerald-500/30 text-emerald-400 cursor-default"
                   : joiningState === "loading"
-                  ? "opacity-60 cursor-wait bg-muted border-border text-muted-foreground"
-                  : "bg-primary text-primary-foreground hover:opacity-90 border-transparent"
+                    ? "opacity-60 cursor-wait bg-muted border-border text-muted-foreground"
+                    : "bg-primary text-primary-foreground hover:opacity-90 border-transparent"
               }`}
             >
               {joiningState === "sent"
                 ? "✓ Request in progress"
                 : joiningState === "loading"
-                ? "Sending…"
-                : "Request to join"}
+                  ? "Sending…"
+                  : "Request to join"}
             </button>
           ) : (
             // Not logged in
             <button
-              onClick={() => toast.error("Sign in to request joining this project")}
+              onClick={() =>
+                toast.error("Sign in to request joining this project")
+              }
               className="shrink-0 px-4 py-2 rounded-lg text-sm font-medium border bg-primary text-primary-foreground hover:opacity-90 border-transparent"
             >
               Request to join
@@ -423,7 +466,10 @@ export default function PublicProjectPage({ params }: Props) {
                 <div
                   key={l.name}
                   title={`${l.name} ${l.percentage}%`}
-                  style={{ width: `${l.percentage}%`, background: LANG_COLORS[i % LANG_COLORS.length] }}
+                  style={{
+                    width: `${l.percentage}%`,
+                    background: LANG_COLORS[i % LANG_COLORS.length],
+                  }}
                 />
               ))}
             </div>
@@ -435,7 +481,9 @@ export default function PublicProjectPage({ params }: Props) {
                     style={{ background: LANG_COLORS[i % LANG_COLORS.length] }}
                   />
                   <span className="font-medium">{l.name}</span>
-                  <span className="text-muted-foreground text-xs">{l.percentage}%</span>
+                  <span className="text-muted-foreground text-xs">
+                    {l.percentage}%
+                  </span>
                 </div>
               ))}
             </div>
@@ -466,7 +514,8 @@ export default function PublicProjectPage({ params }: Props) {
             </div>
             {health.lastCommitDate && (
               <p className="text-xs text-muted-foreground">
-                Last commit: {new Date(health.lastCommitDate).toLocaleDateString()}
+                Last commit:{" "}
+                {new Date(health.lastCommitDate).toLocaleDateString()}
               </p>
             )}
           </section>

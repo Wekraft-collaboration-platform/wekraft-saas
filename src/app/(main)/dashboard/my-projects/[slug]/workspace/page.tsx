@@ -68,7 +68,9 @@ const ProjectWorkspace = () => {
   const params = useParams();
   const slug = params.slug as string;
   const [isDeadlineDialogOpen, setIsDeadlineDialogOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"charts" | "work" | "config">("charts");
+  const [activeTab, setActiveTab] = useState<"charts" | "work" | "config">(
+    "charts",
+  );
   const [cachedData, setCachedData] = useState<any>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -106,7 +108,6 @@ const ProjectWorkspace = () => {
     api.scheduler.getScheduler,
     projectId ? { projectId: projectId as Id<"projects"> } : "skip",
   );
-
 
   // const members = useQuery(
   //   api.project.getProjectMembers,
@@ -371,7 +372,8 @@ const ProjectWorkspace = () => {
                     height={120}
                   />
                   <h3 className="text-muted-foreground">
-                  Project Owner must upgrade in order to unlock advanced analytics / Team insights and much more.
+                    Project Owner must upgrade in order to unlock advanced
+                    analytics / Team insights and much more.
                   </h3>
                   <div className="flex items-center gap-4 mt-3">
                     <Button

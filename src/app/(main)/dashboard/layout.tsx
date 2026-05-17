@@ -19,6 +19,7 @@ import { ShareProjectDialog } from "@/modules/dashboard/components/ShareProjectD
 import { UserMenu } from "@/modules/dashboard/components/UserMenu";
 import { api } from "../../../../convex/_generated/api";
 import Link from "next/link";
+import { AnnouncementBanner } from "@/modules/dashboard/components/AnnouncementBanner";
 
 export default function Layout({
   children,
@@ -122,8 +123,9 @@ export default function Layout({
                 <UserMenu />
               </div>
             </header>
-            <div className="flex-1 min-h-0 overflow-hidden">
-              <ScrollArea className="h-full scroll-smooth scrollbar-hide">
+            <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+              <AnnouncementBanner />
+              <ScrollArea className="flex-1 scroll-smooth scrollbar-hide">
                 {children}
               </ScrollArea>
             </div>
