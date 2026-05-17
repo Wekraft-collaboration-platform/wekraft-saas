@@ -73,6 +73,9 @@ interface Props {
   projectId: string;
   projectSlug: string;
   onToggleMembers: () => void;
+  onSelectChannelId?: (channelId: string, messageId?: string) => void;
+  targetMessageId?: string | null;
+  onClearTargetMessageId?: () => void;
 }
 
 function DateDivider({ timestamp }: { timestamp: number }) {
@@ -100,6 +103,9 @@ export function MessageFeed({
   projectId,
   projectSlug,
   onToggleMembers,
+  onSelectChannelId,
+  targetMessageId,
+  onClearTargetMessageId,
 }: Props) {
   const { isOwner, isPower } = useProjectPermissions(
     projectId as Id<"projects">,
@@ -133,7 +139,17 @@ export function MessageFeed({
     projectId,
     currentUserId,
     currentUserName,
-  );
+  )
+
+  // Trigger jumpToMessage when navigated from a notification
+  useEffect(() => {
+    if (targetMessageId && !loading && messages.length > 0) {
+      jumpToMessage(targetMessageId);
+      if (onClearTargetMessageId) {
+        onClearTargetMessageId();
+      }
+    }
+  }, [targetMessageId, loading, messages.length, onClearTargetMessageId]);
 
   // --- WHATSAPP-STYLE SEARCH LOGIC ---
   useEffect(() => {
@@ -176,7 +192,7 @@ export function MessageFeed({
     return () => clearTimeout(timer);
   }, [searchQuery, projectId, channel?.id]);
 
-  const jumpToMessage = (messageId: string) => {
+  const jumpToMessage = useCallback((messageId: string) => {
     // Attempt multiple times to handle cases where the DOM might be updating
     const attemptScroll = (count = 0) => {
       const wordEl = document.getElementById(`search-match-${messageId}`);
@@ -184,6 +200,10 @@ export function MessageFeed({
       const target = wordEl || messageEl;
 
       if (target) {
+        // Clear previous highlights
+        document.querySelectorAll(".premium-message-highlight").forEach((el) => {
+          el.classList.remove("premium-message-highlight");
+        });
         document.querySelectorAll(".search-highlight-pulse").forEach((el) => {
           el.classList.remove(
             "search-highlight-pulse",
@@ -192,27 +212,17 @@ export function MessageFeed({
             "bg-primary/5",
           );
         });
+
         target.scrollIntoView({ behavior: "smooth", block: "center" });
-        // Add a visual pulse to the message container
+        
+        // Add a visual premium pulse to the message container
         const container =
           messageEl || (wordEl?.closest('[id^="message-"]') as HTMLElement);
         if (container) {
-          container.classList.add(
-            "search-highlight-pulse",
-            "ring-2",
-            "ring-primary/40",
-            "bg-primary/5",
-            "transition-all",
-            "duration-500",
-          );
+          container.classList.add("premium-message-highlight");
           setTimeout(() => {
-            container.classList.remove(
-              "ring-2",
-              "ring-primary/40",
-              "bg-primary/5",
-              "search-highlight-pulse",
-            );
-          }, 1500);
+            container.classList.remove("premium-message-highlight");
+          }, 3500);
         }
       } else if (count < 5) {
         // If not found, try again in 150ms (useful if message was just loaded)
@@ -223,24 +233,27 @@ export function MessageFeed({
     };
 
     attemptScroll();
-  };
+  }, []);
 
-  const handleNextMatch = () => {
+  const handleNextMatch = useCallback(() => {
     if (searchResults.length === 0) return;
-    // Go to NEWER message (decrement index towards 0 if 0 is newest, or cyclic)
-    const nextIdx =
-      (currentSearchIndex - 1 + searchResults.length) % searchResults.length;
-    setCurrentSearchIndex(nextIdx);
-    jumpToMessage(searchResults[nextIdx]);
-  };
+    // Go to next match sequentially (increments index: 1 -> 2 -> 3)
+    setCurrentSearchIndex((prevIdx) => {
+      const nextIdx = (prevIdx + 1) % searchResults.length;
+      jumpToMessage(searchResults[nextIdx]);
+      return nextIdx;
+    });
+  }, [searchResults, jumpToMessage]);
 
-  const handlePrevMatch = () => {
+  const handlePrevMatch = useCallback(() => {
     if (searchResults.length === 0) return;
-    // Go to OLDER message (increment index away from 0)
-    const prevIdx = (currentSearchIndex + 1) % searchResults.length;
-    setCurrentSearchIndex(prevIdx);
-    jumpToMessage(searchResults[prevIdx]);
-  };
+    // Go to previous match sequentially (decrements index: 3 -> 2 -> 1)
+    setCurrentSearchIndex((prevIdx) => {
+      const nextIdx = (prevIdx - 1 + searchResults.length) % searchResults.length;
+      jumpToMessage(searchResults[nextIdx]);
+      return nextIdx;
+    });
+  }, [searchResults, jumpToMessage]);
 
   // Keyboard shortcuts for search
   useEffect(() => {
@@ -265,24 +278,24 @@ export function MessageFeed({
       if (e.key === "Enter" && !e.shiftKey) {
         if (isSearchInput) {
           e.preventDefault();
-          handlePrevMatch(); // ENTER usually goes to OLDER match (UP)
+          handleNextMatch(); // ENTER -> Next Match (forward)
         }
       } else if (e.key === "Enter" && e.shiftKey) {
         if (isSearchInput) {
           e.preventDefault();
-          handleNextMatch(); // SHIFT+ENTER goes to NEWER match (DOWN)
+          handlePrevMatch(); // SHIFT+ENTER -> Previous Match (backward)
         }
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
-        handlePrevMatch();
+        handlePrevMatch(); // ArrowUp -> Previous Match
       } else if (e.key === "ArrowDown") {
         e.preventDefault();
-        handleNextMatch();
+        handleNextMatch(); // ArrowDown -> Next Match
       }
     };
     window.addEventListener("keydown", handleKeys);
     return () => window.removeEventListener("keydown", handleKeys);
-  }, [searchResults, currentSearchIndex]);
+  }, [searchResults, handleNextMatch, handlePrevMatch]);
 
   const pinnedMessages = messages.filter((m) => m.is_pinned === 1);
 
@@ -348,7 +361,7 @@ export function MessageFeed({
   };
 
   const isAnnouncement = channel?.type === "announcement";
-  const canSend = !isAnnouncement || isOwner;
+  const canSend = !isAnnouncement || isPower;
 
   // Group messages by date for date dividers
   const withDividers: Array<Message | { type: "divider"; date: number }> = [];
@@ -401,7 +414,10 @@ export function MessageFeed({
             <div className="flex items-center gap-3 text-muted-foreground">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <NotificationCenter userId={currentUserId} />
+                  <NotificationCenter 
+                    userId={currentUserId} 
+                    onSelectChannel={onSelectChannelId}
+                  />
                 </TooltipTrigger>
                 <TooltipContent>Notifications</TooltipContent>
               </Tooltip>

@@ -16,13 +16,14 @@
  */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { useChannels } from "./hooks/useChannels";
 import { ChannelsSidebar } from "./ChannelsSidebar";
 import { MessageFeed } from "./MessageFeed";
 import { MembersPanel } from "./MembersPanel";
+import { usePresence } from "./hooks/usePresence";
 import { Channel } from "./hooks/useChannels";
 import { Message } from "./hooks/useMessages";
 import { motion, AnimatePresence } from "framer-motion";
@@ -38,28 +39,40 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
   const user = useQuery(api.user.getCurrentUser);
   const { userId: clerkUserId } = useAuth();
 
-  const { channels, loading, createChannel, updateChannel, deleteChannel } =
-    useChannels(projectId);
   const [activeChannel, setActiveChannel] = useState<Channel | null>(null);
+  const [targetMessageId, setTargetMessageId] = useState<string | null>(null);
   const [showMembers, setShowMembers] = useState(false);
+
+  const { channels: channelsList, loading, createChannel, updateChannel, deleteChannel, markChannelAsRead } =
+    useChannels(projectId, clerkUserId, activeChannel?.id);
 
   // Auto-select default channel once loaded
   const resolvedChannel =
     activeChannel ??
-    channels.find((c) => c.is_default === 1) ??
-    channels[0] ??
+    channelsList.find((c) => c.is_default === 1) ??
+    channelsList[0] ??
     null;
 
   const currentUserId = clerkUserId ?? "";
+
+  // Mark channel as read when channel changes
+  useEffect(() => {
+    if (resolvedChannel?.id && markChannelAsRead) {
+      markChannelAsRead(resolvedChannel.id);
+    }
+  }, [resolvedChannel?.id, markChannelAsRead]);
   const currentUserName = user?.name ?? user?.githubUsername ?? "User";
   const currentUserImage = user?.avatarUrl ?? null;
+
+  // Track project-wide user presence
+  const { onlineIds } = usePresence(projectId, currentUserId, currentUserName);
 
   return (
     <div className="flex h-[calc(100vh-72px)] overflow-hidden bg-sidebar">
       {/* Left: Channels */}
       <ChannelsSidebar
         projectId={projectId}
-        channels={channels}
+        channels={channelsList}
         loading={loading}
         activeChannelId={resolvedChannel?.id ?? null}
         onSelect={(ch) => {
@@ -72,6 +85,7 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
 
       {/* Center: Message feed */}
       <MessageFeed
+        key={resolvedChannel?.id || "empty"}
         channel={resolvedChannel}
         currentUserId={currentUserId}
         currentUserName={currentUserName}
@@ -79,6 +93,17 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
         projectId={projectId}
         projectSlug={projectSlug}
         onToggleMembers={() => setShowMembers((prev) => !prev)}
+        onSelectChannelId={(channelId, messageId) => {
+          const target = channelsList.find((c) => c.id === channelId);
+          if (target) {
+            setActiveChannel(target);
+            if (messageId) {
+              setTargetMessageId(messageId);
+            }
+          }
+        }}
+        targetMessageId={targetMessageId}
+        onClearTargetMessageId={() => setTargetMessageId(null)}
       />
 
       {/* Right: Members panel */}
@@ -93,7 +118,7 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
           >
             <MembersPanel
               projectId={projectId}
-              channelId={resolvedChannel?.id ?? null}
+              onlineIds={onlineIds}
               currentUserId={currentUserId}
               currentUserName={currentUserName}
             />

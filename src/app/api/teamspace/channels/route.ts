@@ -3,6 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { turso, initTeamspaceDB } from "@/lib/turso";
 import { randomUUID } from "crypto";
 import { verifyProjectAccess } from "@/modules/workspace/teamspace/lib/auth";
+import Ably from "ably";
+
+const ably = new Ably.Rest(process.env.ABLY_API_KEY!);
 
 // GET /api/teamspace/channels?projectId=xxx
 export async function GET(req: NextRequest) {
@@ -24,9 +27,45 @@ export async function GET(req: NextRequest) {
 
   await initTeamspaceDB();
 
+  // Run migration to rename old default channels if any exist
+  try {
+    await turso.execute({
+      sql: "UPDATE ts_channels SET name = 'general' WHERE is_default = 1 AND project_id = ?",
+      args: [projectId],
+    });
+  } catch (e) {
+    // Ignore migration failures
+  }
+
+  const querySql = `
+    SELECT 
+      c.*,
+      (
+        SELECT COUNT(*) 
+        FROM ts_messages m
+        WHERE m.channel_id = c.id
+          AND m.user_id != ?
+          AND m.created_at > COALESCE(
+            (SELECT r.last_read_at FROM ts_channel_reads r WHERE r.user_id = ? AND r.channel_id = c.id),
+            0
+          )
+      ) AS unread_count,
+      (
+        SELECT COUNT(*) 
+        FROM ts_notifications n
+        WHERE n.channel_id = c.id
+          AND n.user_id = ?
+          AND n.type = 'mention'
+          AND n.is_read = 0
+      ) AS mention_count
+    FROM ts_channels c
+    WHERE c.project_id = ?
+    ORDER BY c.is_default DESC, c.created_at ASC
+  `;
+
   const result = await turso.execute({
-    sql: "SELECT * FROM ts_channels WHERE project_id = ? ORDER BY is_default DESC, created_at ASC",
-    args: [projectId],
+    sql: querySql,
+    args: [userId, userId, userId, projectId],
   });
 
   let channels = result.rows;
@@ -55,7 +94,7 @@ export async function GET(req: NextRequest) {
     if (!hasDefaultAnnouncement) {
       await turso.execute({
         sql: `INSERT INTO ts_channels (id, project_id, name, description, type, is_default, created_by, created_at, updated_at)
-              VALUES (?, ?, 'announcements', 'Important updates and announcements', 'announcement', 1, ?, ?, ?)`,
+              VALUES (?, ?, 'general', 'Important updates and announcements', 'announcement', 1, ?, ?, ?)`,
         args: [randomUUID(), projectId, userId, now, now],
       });
       madeChanges = true;
@@ -63,8 +102,8 @@ export async function GET(req: NextRequest) {
 
     if (madeChanges) {
       const refetch = await turso.execute({
-        sql: "SELECT * FROM ts_channels WHERE project_id = ? ORDER BY is_default DESC, created_at ASC",
-        args: [projectId],
+        sql: querySql,
+        args: [userId, userId, userId, projectId],
       });
       channels = refetch.rows;
     }
@@ -144,5 +183,11 @@ export async function POST(req: NextRequest) {
     args: [id],
   });
 
-  return NextResponse.json({ channel: result.rows[0] }, { status: 201 });
+  const newChannel = result.rows[0];
+
+  // Publish to Ably
+  const ablyChannel = ably.channels.get(`project:${projectId}:channels`);
+  await ablyChannel.publish("channel.created", newChannel);
+
+  return NextResponse.json({ channel: newChannel }, { status: 201 });
 }

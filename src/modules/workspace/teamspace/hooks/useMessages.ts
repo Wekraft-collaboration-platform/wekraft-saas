@@ -124,11 +124,26 @@ export async function prefetchMessages(projectId: string, channelId: string, thr
 }
 
 export function useMessages(channelId: string | null, projectId: string, currentUserId: string, currentUserName?: string, threadParentId?: string) {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [messages, setMessages] = useState<Message[]>(() => {
+    if (channelId && memoryCache[channelId] && Date.now() - memoryCache[channelId].timestamp < 60000) {
+      return memoryCache[channelId].messages;
+    }
+    return [];
+  });
+  const [loading, setLoading] = useState(() => {
+    if (!channelId) return false;
+    if (memoryCache[channelId] && Date.now() - memoryCache[channelId].timestamp < 60000) {
+      return false;
+    }
+    return true;
+  });
+  const [nextCursor, setNextCursor] = useState<string | null>(() => {
+    if (channelId && memoryCache[channelId] && Date.now() - memoryCache[channelId].timestamp < 60000) {
+      return memoryCache[channelId].nextCursor;
+    }
+    return null;
+  });
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
-  const [onlineIds, setOnlineIds] = useState<Set<string>>(new Set());
   
   const subscriptionRef = useRef<Ably.RealtimeChannel | null>(null);
   const typingTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -214,26 +229,13 @@ export function useMessages(channelId: string | null, projectId: string, current
     [channelId, projectId, threadParentId]
   );
 
-  // Ably real-time subscription & presence
+  // Ably real-time subscription
   useEffect(() => {
     if (!channelId) return;
 
     const ably = getAblyClient();
     const ch = ably.channels.get(`teamspace:${channelId}`);
     subscriptionRef.current = ch;
-
-    // Presence & Typing logic
-    ch.presence.enter({ userId: currentUserId, userName: currentUserName });
-    
-    const updatePresence = () => {
-      ch.presence.get().then((members) => {
-        setOnlineIds(new Set(members.map((m) => m.clientId)));
-      }).catch(console.error);
-    };
-
-    ch.presence.subscribe("enter", updatePresence);
-    ch.presence.subscribe("leave", updatePresence);
-    updatePresence();
 
     const onNewMsg = (msg: Ably.Message) => {
       const newMsg = msg.data as Message;
@@ -360,7 +362,6 @@ export function useMessages(channelId: string | null, projectId: string, current
     fetchMessages();
 
     return () => {
-      ch.presence.leave();
       ch.unsubscribe();
       subscriptionRef.current = null;
     };
@@ -636,7 +637,6 @@ export function useMessages(channelId: string | null, projectId: string, current
     loading,
     hasMore: !!nextCursor,
     typingUsers,
-    onlineIds,
     sendMessage,
     setTypingStatus,
     editMessage,

@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Ably from "ably";
+import { toast } from "sonner";
 
 export interface Notification {
   id: string;
@@ -12,6 +13,7 @@ export interface Notification {
   sender_image: string | null;
   project_id: string;
   channel_id?: string;
+  channel_name?: string;
   message_id?: string;
   content?: string;
   is_read: number;
@@ -62,6 +64,13 @@ export function useNotifications(userId: string) {
       const notification = msg.data as Notification;
       setNotifications((prev) => [notification, ...prev].slice(0, 50));
       setUnreadCount((prev) => prev + 1);
+
+      if (notification.type === "mention") {
+        toast(`✨ Mentioned in #${notification.channel_name || "channel"}`, {
+          description: `${notification.sender_name}: "${notification.content || "Mentioned you in a message."}"`,
+          duration: 5000,
+        });
+      }
     };
 
     channel.subscribe("notification.new", onNewNotification);
