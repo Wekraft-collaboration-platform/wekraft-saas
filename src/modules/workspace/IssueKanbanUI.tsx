@@ -46,6 +46,13 @@ import { useSidebar } from "@/components/ui/sidebar";
 import { Button } from "@/components/ui/button";
 import { CreateIssueDialog } from "./CreateIssueDialog";
 import { ISSUE_SEVERITY_ICONS } from "@/lib/static-store";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { useProjectPermissions } from "@/hooks/use-project-permissions";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -157,6 +164,7 @@ interface IssueKanbanUIProps {
   projectName?: string;
   repoFullName?: string;
   ownerClerkId?: string;
+  onIssueClick?: (issue: Issue) => void;
 }
 
 export const IssueKanbanUI = ({
@@ -164,6 +172,7 @@ export const IssueKanbanUI = ({
   projectName,
   repoFullName,
   ownerClerkId,
+  onIssueClick,
 }: IssueKanbanUIProps) => {
   const { open: sidebarOpen } = useSidebar();
   const issues = useQuery(api.issue.getIssuesForKanban, { projectId }) ?? [];
@@ -291,6 +300,7 @@ export const IssueKanbanUI = ({
             projectName={projectName}
             repoFullName={repoFullName}
             ownerClerkId={ownerClerkId}
+            onIssueClick={onIssueClick}
           />
         ))}
         <DragOverlay>
@@ -316,6 +326,7 @@ interface IssueColumnProps {
   projectName?: string;
   repoFullName?: string;
   ownerClerkId?: string;
+  onIssueClick?: (issue: Issue) => void;
 }
 
 const IssueColumn = ({
@@ -327,6 +338,7 @@ const IssueColumn = ({
   projectName,
   repoFullName,
   ownerClerkId,
+  onIssueClick,
 }: IssueColumnProps) => {
   const { setNodeRef } = useSortable({
     id: column.id,
@@ -419,7 +431,7 @@ const IssueColumn = ({
           strategy={verticalListSortingStrategy}
         >
           {issues.map((issue) => (
-            <SortableIssue key={issue._id} issue={issue} />
+            <SortableIssue key={issue._id} issue={issue} onClick={() => onIssueClick?.(issue)} />
           ))}
         </SortableContext>
 
@@ -435,7 +447,7 @@ const IssueColumn = ({
   );
 };
 
-const SortableIssue = ({ issue }: { issue: Issue }) => {
+const SortableIssue = ({ issue, onClick }: { issue: Issue; onClick?: () => void }) => {
   const {
     attributes,
     listeners,
@@ -461,7 +473,16 @@ const SortableIssue = ({ issue }: { issue: Issue }) => {
   }
 
   return (
-    <div ref={setNodeRef} style={style} {...attributes} {...listeners}>
+    <div
+      ref={setNodeRef}
+      style={style}
+      {...attributes}
+      {...listeners}
+      onClick={(e) => {
+        e.stopPropagation();
+        onClick?.();
+      }}
+    >
       <IssueCard issue={issue} />
     </div>
   );
@@ -476,6 +497,10 @@ export const IssueCard = ({
   issue: Issue;
   isOverlay?: boolean;
 }) => {
+  const { isPower } = useProjectPermissions(issue.projectId);
+  const updateIssueStatus = useMutation(api.issue.updateIssueStatus);
+  const deleteIssue = useMutation(api.issue.deleteIssue);
+
   const severity = issue.severity
     ? SEVERITY_CONFIG[issue.severity]
     : {
@@ -484,6 +509,51 @@ export const IssueCard = ({
         icon: null,
       };
   const type = TYPE_CONFIG[issue.type];
+
+  const handleMarkAsClosed = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toast.promise(
+      updateIssueStatus({
+        issueId: issue._id,
+        status: "closed",
+      }),
+      {
+        loading: "Closing issue...",
+        success: "Issue marked as closed",
+        error: "Failed to close issue",
+      }
+    );
+  };
+
+  const handleMarkAsReopened = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    toast.promise(
+      updateIssueStatus({
+        issueId: issue._id,
+        status: "reopened",
+      }),
+      {
+        loading: "Reopening issue...",
+        success: "Issue marked as reopened",
+        error: "Failed to reopen issue",
+      }
+    );
+  };
+
+  const handleDelete = async (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (!isPower) return;
+    toast.promise(
+      deleteIssue({
+        issueId: issue._id,
+      }),
+      {
+        loading: "Deleting issue...",
+        success: "Issue deleted successfully",
+        error: "Failed to delete issue",
+      }
+    );
+  };
 
   return (
     <Card
@@ -543,13 +613,58 @@ export const IssueCard = ({
                 </Button>
               </a>
             )}
-            <Button
-              variant="ghost"
-              size="icon"
-              className="h-5 w-5 opacity-0 group-hover:opacity-100 transition-opacity text-neutral-500"
-            >
-              <MoreHorizontal className="h-3 w-3" />
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  size="icon-sm"
+                  className="h-5 w-5 p-2"
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    e.preventDefault();
+                  }}
+                  onPointerDown={(e) => {
+                    e.stopPropagation();
+                  }}
+                >
+                  <MoreHorizontal className="h-3 w-3" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent
+                className="bg-popover border-border text-popover-foreground w-40"
+                onClick={(e) => e.stopPropagation()}
+                onPointerDown={(e) => e.stopPropagation()}
+              >
+                {issue.status !== "closed" ? (
+                  <DropdownMenuItem
+                    onClick={handleMarkAsClosed}
+                    className="text-xs cursor-pointer flex items-center gap-2"
+                  >
+                    <CheckCircle2 className="w-3.5 h-3.5" />
+                    <span>Mark as Closed</span>
+                  </DropdownMenuItem>
+                ) : (
+                  <DropdownMenuItem
+                    onClick={handleMarkAsReopened}
+                    className="text-xs cursor-pointer flex items-center gap-2"
+                  >
+                    <RotateCcw className="w-3.5 h-3.5" />
+                    <span>Mark as Reopened</span>
+                  </DropdownMenuItem>
+                )}
+                <DropdownMenuItem
+                  onClick={handleDelete}
+                  disabled={!isPower}
+                  className={cn(
+                    "text-xs cursor-pointer flex items-center gap-2 text-rose-500 hover:text-rose-400 hover:bg-rose-500/10",
+                    !isPower && "opacity-50 cursor-not-allowed pointer-events-none"
+                  )}
+                >
+                  <Bug className="w-3.5 h-3.5 text-rose-500" />
+                  <span>Delete Issue</span>
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
         </div>
 
