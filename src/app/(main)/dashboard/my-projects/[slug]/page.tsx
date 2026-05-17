@@ -185,7 +185,7 @@ const ProjectPage = () => {
           </Link>
 
           <Link href={`/dashboard/my-projects/${project?.slug}/workspace`}>
-            <Button size="sm" className="px-4! text-[10px]" variant={"default"}>
+            <Button size="sm" className="px-6! text-xs" variant={"default"}>
               Visit workspace{" "}
               <LucideExternalLink className="ml-2 w-3.5 h-3.5" />
             </Button>
@@ -248,7 +248,7 @@ const ProjectPage = () => {
           <Button
             className="px-3! text-xs cursor-pointer"
             size="sm"
-            variant={"outline"}
+            variant={"default"}
           >
             View Public Page <Globe className="ml-2 w-3.5 h-3.5" />
           </Button>
@@ -267,10 +267,10 @@ const ProjectPage = () => {
           <Link href={`/dashboard/my-projects/${project?.slug}/workspace`}>
             <Button
               size="sm"
-              className=" px-4! text-[10px]"
+              className=" px-4! text-xs"
               variant={"default"}
             >
-              Visit workspace{" "}
+              Share Project
               <LucideExternalLink className="ml-2 w-3.5 h-3.5" />
             </Button>
           </Link>

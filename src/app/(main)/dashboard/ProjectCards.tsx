@@ -10,6 +10,7 @@ import {
   Globe,
   Lock,
   LucideLayers2,
+  LucideLayers3,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -23,15 +24,18 @@ interface ProjectCardsProps {
   hideCreateCard?: boolean;
 }
 
-export const ProjectCards = ({ projects, hideCreateCard = false }: ProjectCardsProps) => {
+export const ProjectCards = ({
+  projects,
+  hideCreateCard = false,
+}: ProjectCardsProps) => {
   return (
     <div className="grid grid-cols-4 gap-5">
       {projects?.map((project) => (
         <Card
           key={project._id}
-          className="overflow-hidden bg-card border border-border flex flex-col h-full rounded-xl shadow-sm p-0"
+          className="overflow-hidden bg-sidebar border border-border! flex flex-col h-full rounded-lg shadow-sm p-0"
         >
-          <div className="aspect-video w-full bg-accent/20 relative border-b border-accent/10 overflow-hidden">
+          <div className="aspect-video w-full bg-muted relative border-b border-accent/10 overflow-hidden">
             {project.thumbnailUrl ? (
               <img
                 src={project.thumbnailUrl}
@@ -40,7 +44,7 @@ export const ProjectCards = ({ projects, hideCreateCard = false }: ProjectCardsP
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-accent/10">
-                <LucideLayers2 className="h-10 w-10 text-muted-foreground/20" />
+                <LucideLayers3 className="h-10 w-10 text-muted-foreground/80" />
               </div>
             )}
             <div className="absolute top-2 left-2">
@@ -171,4 +175,3 @@ export const ProjectCards = ({ projects, hideCreateCard = false }: ProjectCardsP
     </div>
   );
 };
-

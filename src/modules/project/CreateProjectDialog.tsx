@@ -196,23 +196,23 @@ const CreateProjectDialog = ({
       if (!val) resetForm();
     }}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-      <DialogContent className="w-full max-w-[480px] p-0 overflow-hidden border bg-card text-neutral-200 shadow-2xl">
+      <DialogContent className="w-full max-w-[520px] p-0 overflow-hidden bg-sidebar border border-accent">
         
         {step === 1 && (
           <div className="relative h-[160px] w-full overflow-hidden shrink-0">
             <img 
-              src="/2.svg" 
+              src="/3.svg" 
               alt="Create Project" 
               className="w-full h-full object-cover"
             />
-            <div className="absolute inset-0 bg-linear-to-t from-[#0A0A0B] to-transparent" />
+            <div className="absolute inset-0 bg-linear-to-t from-black via-black/60 to-transparent" />
             <div className="absolute bottom-3 left-5 flex flex-col">
               <div className="flex items-center gap-2 text-primary font-medium mb-1">
-                <Rocket className="size-3.5" />
-                <span className="text-[9px] uppercase tracking-widest font-bold opacity-70">Step 1 of 2</span>
+                <Rocket className="size-4" />
+                <span className="text-[10px] uppercase tracking-widest font-bold opacity-70">Step 1 of 2</span>
               </div>
               <h2 className="text-xl font-bold tracking-tight">Start New Project</h2>
-              <p className="text-[10px] text-muted-foreground/80 line-clamp-1">Define your vision and set the stage for collaboration.</p>
+              <p className="text-xs text-muted-foreground line-clamp-1">Define your vision and set the stage for collaboration.</p>
             </div>
           </div>
         )}
@@ -233,10 +233,10 @@ const CreateProjectDialog = ({
             <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
               {/* Title Section */}
               <div className="flex flex-col space-y-1.5">
-                <Label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1">Project Name</Label>
+                <Label className="text-sm font-medium text-muted-foreground ml-1">Project Name</Label>
                 <Input
                   placeholder="e.g. My Awesome Startup"
-                  className="text-lg font-medium border-none bg-transparent p-1 h-auto focus-visible:ring-0 placeholder:text-neutral-700"
+                  className="text-lg font-medium border bg-transparent p-1 h-9! focus-visible:ring-0 placeholder:text-neutral-700"
                   value={projectName}
                   onChange={(e) => setProjectName(e.target.value)}
                 />
@@ -245,7 +245,7 @@ const CreateProjectDialog = ({
               {/* Action Buttons Row */}
               <div className="flex items-center gap-3">
                  <div className="flex flex-col space-y-2">
-                    <p className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1">Settings & Visibility</p>
+                    <p className="text-sm font-medium text-muted-foreground ml-1">Settings & Visibility</p>
                     <div className="flex items-center gap-2">
                          {/* Visibility Toggle */}
                         <DropdownMenu>
@@ -312,10 +312,10 @@ const CreateProjectDialog = ({
 
               {/* Description Section */}
               <div className="flex flex-col space-y-1.5">
-                <Label className="text-[11px] font-bold uppercase tracking-widest text-muted-foreground/60 ml-1">Project Brief</Label>
+                <Label className="text-sm font-medium text-muted-foreground ml-1">Project Brief</Label>
                 <Textarea
                   placeholder="Tell us what you're building..."
-                  className="bg-transparent border-none p-1 focus-visible:ring-0 transition-all h-[100px] resize-none font-inter text-sm leading-relaxed placeholder:text-neutral-700"
+                  className="bg-transparent border p-1 focus-visible:ring-0 transition-all h-[100px] resize-none font-inter text-sm leading-relaxed placeholder:text-neutral-700"
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
                 />

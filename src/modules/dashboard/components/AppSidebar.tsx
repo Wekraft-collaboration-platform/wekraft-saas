@@ -333,7 +333,7 @@ export const AppSidebar = () => {
                           {ownerProjects.map((project) => (
                             <Link
                               key={project._id}
-                              href={`/dashboard/my-projects/${project.slug}/workspace`}
+                              href={`/dashboard/my-projects/${project.slug}`}
                               className="flex items-center justify-between gap-2 p-0.5 rounded-md hover:bg-accent/40 cursor-pointer transition-all border border-transparent hover:border-sidebar-border"
                             >
                               <div className="flex items-center gap-2 max-w-[130px]">
@@ -424,21 +424,21 @@ export const AppSidebar = () => {
                         <div className="flex flex-col gap-1">
                           {teamProjects.map((project) => (
                             <Link
-                              key={project._id}
-                              href={`/dashboard/my-projects/${project.slug}`}
+                              key={project?._id}
+                              href={`/dashboard/my-projects/${project?.slug}/workspace`}
                               className="flex items-center justify-between gap-2 p-1 rounded-md hover:bg-accent/40 cursor-pointer transition-all border border-transparent hover:border-sidebar-border"
                             >
                               <div className="flex items-center gap-2 max-w-[130px]">
                                 <FolderCode className="h-3 w-3 text-primary shrink-0" />
                                 <span className="text-xs font-medium truncate">
-                                  {project.projectName}
+                                  {project?.projectName}
                                 </span>
                               </div>
 
                               <div className="flex -space-x-1.5 overflow-hidden">
-                                {project.members &&
-                                project.members.length > 0 ? (
-                                  project.members
+                                {project?.members &&
+                                project?.members.length > 0 ? (
+                                  project?.members
                                     .slice(0, 3)
                                     .map((member, idx) => (
                                       <Avatar key={idx} className="h-5 w-5">

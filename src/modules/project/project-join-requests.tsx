@@ -66,8 +66,9 @@ export const ProjectJoinRequests = ({
   if (requests.length === 0) {
     return (
       <div className="flex flex-col items-center justify-center border-dashed border mt-8 rounded-md border-accent py-20 text-muted-foreground space-y-2">
-        <User className="w-10 h-10 opacity-20" />
+        <User className="w-10 h-10 opacity-80" />
         <p className="text-sm">No join requests yet</p>
+        <p className="text-xs">Try to invite more members to see upcoming Requests</p>
       </div>
     );
   }
