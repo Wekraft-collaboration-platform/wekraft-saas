@@ -22,7 +22,9 @@ export async function GET(req: NextRequest) {
   try {
     const cached = await redis.get(cacheKey);
     if (cached) {
-      console.log(`=================[PublicProject] Cache hit for slug: ${slug}======================`);
+      console.log(
+        `=================[PublicProject] Cache hit for slug: ${slug}======================`,
+      );
       return NextResponse.json(cached);
     }
   } catch (e) {
@@ -35,7 +37,10 @@ export async function GET(req: NextRequest) {
     profile = await fetchQuery(api.project.getPublicProjectProfile, { slug });
   } catch (e) {
     console.error("[PublicProject] Convex fetch error:", e);
-    return NextResponse.json({ error: "Failed to fetch project" }, { status: 500 });
+    return NextResponse.json(
+      { error: "Failed to fetch project" },
+      { status: 500 },
+    );
   }
 
   if (!profile) {
@@ -78,7 +83,9 @@ export async function GET(req: NextRequest) {
   // 5. Store in Redis for 30 min
   try {
     await redis.set(cacheKey, data, { ex: CACHE_TTL });
-    console.log(`=================[PublicProject] Cached for slug: ${slug}======================`);
+    console.log(
+      `=================[PublicProject] Cached for slug: ${slug}======================`,
+    );
   } catch (e) {
     console.error("[PublicProject] Redis set error:", e);
   }

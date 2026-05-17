@@ -39,7 +39,10 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { toast } from "sonner";
-import { SortConfig, applyTaskFilters } from "@/modules/workspace/function/taskFilters";
+import {
+  SortConfig,
+  applyTaskFilters,
+} from "@/modules/workspace/function/taskFilters";
 
 import {
   Tooltip,
@@ -77,17 +80,18 @@ const TaskPage = () => {
     api.project.getProjectMembers,
     project?._id ? { projectId: project._id as Id<"projects"> } : "skip",
   );
- 
+
   const projectDetails = useQuery(
     api.projectDetails.getProjectDetails,
     project?._id ? { projectId: project._id as Id<"projects"> } : "skip",
   );
- 
+
   const isOwner = currentUser?._id === project?.ownerId;
   const userMember = members?.find((m) => m.userId === currentUser?._id);
   const isAdmin = userMember?.AccessRole === "admin";
-  
-  const canCreate = isOwner || isAdmin || projectDetails?.memberCanCreate !== false;
+
+  const canCreate =
+    isOwner || isAdmin || projectDetails?.memberCanCreate !== false;
   const canDelete = isOwner || isAdmin;
 
   const deleteTasks = useMutation(api.workspace.deleteTasks);

@@ -5,10 +5,27 @@ import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
 import {
-  Search, ChevronRight, BookOpen, Terminal, Layers, Zap,
-  Calendar, Users, BarChart3, Clock, Settings, AlertCircle,
-  CheckSquare, Menu, X, Command, Sparkles, ShieldCheck, CreditCard,
-  FileText, Info,
+  Search,
+  ChevronRight,
+  BookOpen,
+  Terminal,
+  Layers,
+  Zap,
+  Calendar,
+  Users,
+  BarChart3,
+  Clock,
+  Settings,
+  AlertCircle,
+  CheckSquare,
+  Menu,
+  X,
+  Command,
+  Sparkles,
+  ShieldCheck,
+  CreditCard,
+  FileText,
+  Info,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useEffect, useState, useCallback, useRef } from "react";
@@ -41,17 +58,24 @@ const badgeColors: Record<string, string> = {
 };
 
 // ─── Search Dialog ──────────────────────────────────────────────────────────
-function SearchDialog({ open, onClose }: { open: boolean; onClose: () => void }) {
+function SearchDialog({
+  open,
+  onClose,
+}: {
+  open: boolean;
+  onClose: () => void;
+}) {
   const [query, setQuery] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const results = query.trim().length > 0
-    ? allDocs.filter(
-        (doc) =>
-          doc.title.toLowerCase().includes(query.toLowerCase()) ||
-          doc.description.toLowerCase().includes(query.toLowerCase())
-      )
-    : [];
+  const results =
+    query.trim().length > 0
+      ? allDocs.filter(
+          (doc) =>
+            doc.title.toLowerCase().includes(query.toLowerCase()) ||
+            doc.description.toLowerCase().includes(query.toLowerCase()),
+        )
+      : [];
 
   useEffect(() => {
     if (open) {
@@ -120,7 +144,9 @@ function SearchDialog({ open, onClose }: { open: boolean; onClose: () => void })
                   <p className="text-sm text-white/80 group-hover:text-white font-medium truncate transition-colors">
                     {doc.title}
                   </p>
-                  <p className="text-xs text-white/30 truncate">{doc.description}</p>
+                  <p className="text-xs text-white/30 truncate">
+                    {doc.description}
+                  </p>
                 </div>
                 <ChevronRight className="h-3.5 w-3.5 text-white/20 ml-auto shrink-0" />
               </Link>
@@ -147,8 +173,16 @@ function SidebarContent({
       {/* Logo */}
       <div className="flex items-center justify-center gap-3 px-5 pt-5 pb-4 border-b border-white/6">
         <Link href="/" className="flex items-center gap-2.5 group">
-          <Image src="/logo.svg" alt="Wekraft" width={24} height={24} className="shrink-0" />
-          <span className="text-sm font-semibold text-white tracking-tight leading-none mt-0.5">Wekraft</span>
+          <Image
+            src="/logo.svg"
+            alt="Wekraft"
+            width={24}
+            height={24}
+            className="shrink-0"
+          />
+          <span className="text-sm font-semibold text-white tracking-tight leading-none mt-0.5">
+            Wekraft
+          </span>
         </Link>
         <div className="flex items-center justify-center text-[10px] font-mono text-white/20 border border-white/10 rounded px-2 py-0.5 leading-none">
           Docs
@@ -179,7 +213,9 @@ function SidebarContent({
             <ul className="space-y-0.5">
               {items.map((item) => {
                 const Icon = iconMap[item.icon ?? ""] || BookOpen;
-                const isActive = pathname === `/web/docs/${item.slug}` || pathname.endsWith(`/web/docs/${item.slug}`);
+                const isActive =
+                  pathname === `/web/docs/${item.slug}` ||
+                  pathname.endsWith(`/web/docs/${item.slug}`);
                 return (
                   <li key={item.slug}>
                     <Link
@@ -189,18 +225,25 @@ function SidebarContent({
                         "group flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all duration-150",
                         isActive
                           ? "bg-white/8 text-white font-medium border border-white/10"
-                          : "text-white/45 hover:bg-white/4 hover:text-white/80"
+                          : "text-white/45 hover:bg-white/4 hover:text-white/80",
                       )}
                     >
                       <Icon
                         className={cn(
                           "h-3.5 w-3.5 shrink-0 transition-colors",
-                          isActive ? "text-white/90" : "text-white/25 group-hover:text-white/50"
+                          isActive
+                            ? "text-white/90"
+                            : "text-white/25 group-hover:text-white/50",
                         )}
                       />
                       <span className="flex-1 leading-none">{item.title}</span>
                       {item.badge && (
-                        <span className={cn("text-[9px] font-semibold rounded px-1.5 py-0.5 leading-none", badgeColors[item.badge])}>
+                        <span
+                          className={cn(
+                            "text-[9px] font-semibold rounded px-1.5 py-0.5 leading-none",
+                            badgeColors[item.badge],
+                          )}
+                        >
                           {item.badge}
                         </span>
                       )}
@@ -230,7 +273,11 @@ function SidebarContent({
 }
 
 // ─── Main Layout ─────────────────────────────────────────────────────────────
-export default function DocsLayout({ children }: { children: React.ReactNode }) {
+export default function DocsLayout({
+  children,
+}: {
+  children: React.ReactNode;
+}) {
   const pathname = usePathname();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
@@ -300,7 +347,10 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
             </button>
             <SidebarContent
               pathname={pathname}
-              onSearchOpen={() => { setMobileOpen(false); setSearchOpen(true); }}
+              onSearchOpen={() => {
+                setMobileOpen(false);
+                setSearchOpen(true);
+              }}
               onNavClick={() => setMobileOpen(false)}
             />
           </aside>
@@ -318,9 +368,7 @@ export default function DocsLayout({ children }: { children: React.ReactNode }) 
 
         {/* Main content */}
         <main className="flex-1 lg:pl-64 min-w-0">
-          <div className="w-full px-6 py-12 lg:px-10 lg:py-14">
-            {children}
-          </div>
+          <div className="w-full px-6 py-12 lg:px-10 lg:py-14">{children}</div>
         </main>
       </div>
     </div>

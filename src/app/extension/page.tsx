@@ -31,7 +31,7 @@ function ExtensionPageInner() {
   async function handleGrantAccess() {
     if (!callbackUrl) {
       setErrorMsg(
-        "No callback URL provided. Please launch this flow from your IDE extension."
+        "No callback URL provided. Please launch this flow from your IDE extension.",
       );
       setState("error");
       return;
@@ -49,7 +49,7 @@ function ExtensionPageInner() {
       }, 1200);
     } catch (err: unknown) {
       setErrorMsg(
-        err instanceof Error ? err.message : "Something went wrong. Try again."
+        err instanceof Error ? err.message : "Something went wrong. Try again.",
       );
       setState("error");
     }
@@ -244,9 +244,7 @@ function ExtensionPageInner() {
 
         {/* Footer */}
         <div className="ext-footer">
-          <span>
-            Your API key is never exposed in the browser or URL bar.
-          </span>
+          <span>Your API key is never exposed in the browser or URL bar.</span>
         </div>
       </div>
 

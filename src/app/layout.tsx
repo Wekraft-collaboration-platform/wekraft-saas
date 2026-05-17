@@ -16,8 +16,16 @@ export const metadata: Metadata = {
     template: "%s | Wekraft",
     default: "Wekraft | Unified Software Team Collaboration Platform",
   },
-  description: "Wekraft is the all-in-one workspace for software teams. Manage tasks, issues, sprints, and team capacity with AI-powered insights and deep VS Code integration.",
-  keywords: ["project management", "software development", "collaboration", "sprints", "AI project manager", "VS Code extension"],
+  description:
+    "Wekraft is the all-in-one workspace for software teams. Manage tasks, issues, sprints, and team capacity with AI-powered insights and deep VS Code integration.",
+  keywords: [
+    "project management",
+    "software development",
+    "collaboration",
+    "sprints",
+    "AI project manager",
+    "VS Code extension",
+  ],
 };
 
 export default function RootLayout({

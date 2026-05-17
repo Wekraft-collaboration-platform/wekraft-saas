@@ -221,7 +221,7 @@
   }
 
   .scrollbar-hide::-webkit-scrollbar {
-    display: none !important; 
+    display: none !important;
   }
 
   .scrollbar-hide [data-slot="scroll-area-scrollbar"] {
@@ -243,16 +243,28 @@
     --fc-border-color: color-mix(in oklab, var(--border) 78%, black);
     --fc-page-bg-color: transparent;
     --fc-neutral-bg-color: color-mix(in oklab, var(--background) 92%, white);
-    --fc-list-event-hover-bg-color: color-mix(in oklab, var(--accent) 55%, black);
+    --fc-list-event-hover-bg-color: color-mix(
+      in oklab,
+      var(--accent) 55%,
+      black
+    );
     --fc-event-bg-color: color-mix(in oklab, var(--primary) 80%, #334155);
     --fc-event-border-color: transparent;
     --fc-today-bg-color: color-mix(in oklab, #2563eb 9%, transparent);
     --fc-button-bg-color: color-mix(in oklab, var(--secondary) 90%, black);
     --fc-button-border-color: color-mix(in oklab, var(--border) 85%, black);
     --fc-button-hover-bg-color: color-mix(in oklab, var(--accent) 72%, black);
-    --fc-button-hover-border-color: color-mix(in oklab, var(--border) 75%, black);
+    --fc-button-hover-border-color: color-mix(
+      in oklab,
+      var(--border) 75%,
+      black
+    );
     --fc-button-active-bg-color: color-mix(in oklab, var(--accent) 62%, black);
-    --fc-button-active-border-color: color-mix(in oklab, var(--border) 72%, black);
+    --fc-button-active-border-color: color-mix(
+      in oklab,
+      var(--border) 72%,
+      black
+    );
   }
 
   .fc-theme .fc {
@@ -394,193 +406,238 @@
   }
 
   /* View Transitions API Animations */
-::view-transition-group(*) {
-  animation-duration: 400ms;
-}
-
-::view-transition-group(.morph) {
-  animation-duration: 400ms;
-}
-
-::view-transition-image-pair(.morph) {
-  animation-name: via-blur;
-}
-
-@keyframes via-blur {
-  30% { filter: blur(3px); }
-}
-
-::view-transition-old(.slide-down) {
-  animation: 200ms ease-out both fade reverse, 200ms ease-out both slide-y reverse;
-}
-
-::view-transition-new(.slide-up) {
-  animation: 300ms ease-in 150ms both fade, 400ms ease-in both slide-y;
-}
-
-@keyframes fade {
-  from { opacity: 0; filter: blur(3px); }
-  to { opacity: 1; filter: blur(0); }
-}
-
-@keyframes slide-y {
-  from { transform: translateY(10px); }
-  to { transform: translateY(0); }
-}
-
-::view-transition-old(.nav-forward) {
-  --slide-offset: -60px;
-  animation: 150ms ease-in both fade reverse, 400ms ease-in-out both slide reverse;
-}
-::view-transition-new(.nav-forward) {
-  --slide-offset: 60px;
-  animation: 210ms ease-out 150ms both fade, 400ms ease-in-out both slide;
-}
-
-::view-transition-old(.nav-back) {
-  --slide-offset: 60px;
-  animation: 150ms ease-in both fade reverse, 400ms ease-in-out both slide reverse;
-}
-::view-transition-new(.nav-back) {
-  --slide-offset: -60px;
-  animation: 210ms ease-out 150ms both fade, 400ms ease-in-out both slide;
-}
-
-@keyframes slide {
-  from { translate: var(--slide-offset); }
-  to { translate: 0; }
-}
-
-/* Tab content — clean Linear-style crossfade */
-@keyframes tab-fade {
-  from { opacity: 0; }
-  to   { opacity: 1; }
-}
-
-::view-transition-old(tab-content) {
-  animation: 90ms ease-in both tab-fade reverse;
-}
-
-::view-transition-new(tab-content) {
-  animation: 160ms ease-out 60ms both tab-fade;
-}
-
-/* Anchoring Header if needed */
-::view-transition-group(site-header) {
-  animation: none;
-  z-index: 100;
-}
-::view-transition-old(site-header) {
-  display: none;
-}
-::view-transition-new(site-header) {
-  animation: none;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  ::view-transition-old(*),
-  ::view-transition-new(*),
   ::view-transition-group(*) {
-    animation-duration: 0s !important;
-    animation-delay: 0s !important;
+    animation-duration: 400ms;
   }
-}
 
-@keyframes spotlight {
-  0% {
-    opacity: 0;
-    transform: translate(-72%, -62%) scale(0.5);
+  ::view-transition-group(.morph) {
+    animation-duration: 400ms;
   }
-  100% {
-    opacity: 1;
-    transform: translate(-50%, -40%) scale(1);
-  }
-}
 
-/* FlipText Component Animations */
-.flip-text-wrapper {
-  perspective: 1200px;
-}
+  ::view-transition-image-pair(.morph) {
+    animation-name: via-blur;
+  }
 
-.flip-char {
-  position: relative;
-  display: inline-block;
-  color: inherit;
-  -webkit-text-fill-color: transparent;
-  height: 1.2em;
-  line-height: 1.2em;
-  vertical-align: middle;
-  transform-style: preserve-3d;
-  animation: flip var(--flip-duration, 2.2s) var(--flip-delay, 0s) var(--flip-iteration, infinite) cubic-bezier(0.76, 0, 0.24, 1);
-}
+  @keyframes via-blur {
+    30% {
+      filter: blur(3px);
+    }
+  }
 
-.flip-char::before,
-.flip-char::after {
-  content: attr(data-char);
-  position: absolute;
-  top: 0;
-  left: 0;
-  height: 100%;
-  width: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  backface-visibility: hidden;
-  -webkit-text-fill-color: currentColor;
-  transition: opacity 0.3s ease;
-}
+  ::view-transition-old(.slide-down) {
+    animation:
+      200ms ease-out both fade reverse,
+      200ms ease-out both slide-y reverse;
+  }
 
-/* Front Face */
-.flip-char::after {
-  transform: translateZ(0.55em);
-  animation: face-fade-out var(--flip-duration, 2.2s) var(--flip-delay, 0s) var(--flip-iteration, infinite) cubic-bezier(0.76, 0, 0.24, 1);
-}
+  ::view-transition-new(.slide-up) {
+    animation:
+      300ms ease-in 150ms both fade,
+      400ms ease-in both slide-y;
+  }
 
-/* Bottom Face (Rotates in) */
-.flip-char::before {
-  transform: rotateX(-90deg) translateZ(0.55em);
-  animation: face-fade-in var(--flip-duration, 2.2s) var(--flip-delay, 0s) var(--flip-iteration, infinite) cubic-bezier(0.76, 0, 0.24, 1);
-}
+  @keyframes fade {
+    from {
+      opacity: 0;
+      filter: blur(3px);
+    }
+    to {
+      opacity: 1;
+      filter: blur(0);
+    }
+  }
 
-@keyframes flip {
-  0%, 15% {
-    transform: rotateX(0deg);
+  @keyframes slide-y {
+    from {
+      transform: translateY(10px);
+    }
+    to {
+      transform: translateY(0);
+    }
   }
-  40%, 65% {
-    transform: rotateX(90deg);
-  }
-  85%, 100% {
-    transform: rotateX(0deg);
-  }
-}
 
-@keyframes face-fade-out {
-  0%, 15% {
-    opacity: 1;
-    filter: brightness(1);
+  ::view-transition-old(.nav-forward) {
+    --slide-offset: -60px;
+    animation:
+      150ms ease-in both fade reverse,
+      400ms ease-in-out both slide reverse;
   }
-  40%, 65% {
-    opacity: 0;
-    filter: brightness(0.5);
+  ::view-transition-new(.nav-forward) {
+    --slide-offset: 60px;
+    animation:
+      210ms ease-out 150ms both fade,
+      400ms ease-in-out both slide;
   }
-  85%, 100% {
-    opacity: 1;
-    filter: brightness(1);
-  }
-}
 
-@keyframes face-fade-in {
-  0%, 15% {
-    opacity: 0;
-    filter: brightness(0.5);
+  ::view-transition-old(.nav-back) {
+    --slide-offset: 60px;
+    animation:
+      150ms ease-in both fade reverse,
+      400ms ease-in-out both slide reverse;
   }
-  40%, 65% {
-    opacity: 1;
-    filter: brightness(1);
+  ::view-transition-new(.nav-back) {
+    --slide-offset: -60px;
+    animation:
+      210ms ease-out 150ms both fade,
+      400ms ease-in-out both slide;
   }
-  85%, 100% {
-    opacity: 0;
-    filter: brightness(0.5);
+
+  @keyframes slide {
+    from {
+      translate: var(--slide-offset);
+    }
+    to {
+      translate: 0;
+    }
+  }
+
+  /* Tab content — clean Linear-style crossfade */
+  @keyframes tab-fade {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  ::view-transition-old(tab-content) {
+    animation: 90ms ease-in both tab-fade reverse;
+  }
+
+  ::view-transition-new(tab-content) {
+    animation: 160ms ease-out 60ms both tab-fade;
+  }
+
+  /* Anchoring Header if needed */
+  ::view-transition-group(site-header) {
+    animation: none;
+    z-index: 100;
+  }
+  ::view-transition-old(site-header) {
+    display: none;
+  }
+  ::view-transition-new(site-header) {
+    animation: none;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    ::view-transition-old(*),
+    ::view-transition-new(*),
+    ::view-transition-group(*) {
+      animation-duration: 0s !important;
+      animation-delay: 0s !important;
+    }
+  }
+
+  @keyframes spotlight {
+    0% {
+      opacity: 0;
+      transform: translate(-72%, -62%) scale(0.5);
+    }
+    100% {
+      opacity: 1;
+      transform: translate(-50%, -40%) scale(1);
+    }
+  }
+
+  /* FlipText Component Animations */
+  .flip-text-wrapper {
+    perspective: 1200px;
+  }
+
+  .flip-char {
+    position: relative;
+    display: inline-block;
+    color: inherit;
+    -webkit-text-fill-color: transparent;
+    height: 1.2em;
+    line-height: 1.2em;
+    vertical-align: middle;
+    transform-style: preserve-3d;
+    animation: flip var(--flip-duration, 2.2s) var(--flip-delay, 0s)
+      var(--flip-iteration, infinite) cubic-bezier(0.76, 0, 0.24, 1);
+  }
+
+  .flip-char::before,
+  .flip-char::after {
+    content: attr(data-char);
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    backface-visibility: hidden;
+    -webkit-text-fill-color: currentColor;
+    transition: opacity 0.3s ease;
+  }
+
+  /* Front Face */
+  .flip-char::after {
+    transform: translateZ(0.55em);
+    animation: face-fade-out var(--flip-duration, 2.2s) var(--flip-delay, 0s)
+      var(--flip-iteration, infinite) cubic-bezier(0.76, 0, 0.24, 1);
+  }
+
+  /* Bottom Face (Rotates in) */
+  .flip-char::before {
+    transform: rotateX(-90deg) translateZ(0.55em);
+    animation: face-fade-in var(--flip-duration, 2.2s) var(--flip-delay, 0s)
+      var(--flip-iteration, infinite) cubic-bezier(0.76, 0, 0.24, 1);
+  }
+
+  @keyframes flip {
+    0%,
+    15% {
+      transform: rotateX(0deg);
+    }
+    40%,
+    65% {
+      transform: rotateX(90deg);
+    }
+    85%,
+    100% {
+      transform: rotateX(0deg);
+    }
+  }
+
+  @keyframes face-fade-out {
+    0%,
+    15% {
+      opacity: 1;
+      filter: brightness(1);
+    }
+    40%,
+    65% {
+      opacity: 0;
+      filter: brightness(0.5);
+    }
+    85%,
+    100% {
+      opacity: 1;
+      filter: brightness(1);
+    }
+  }
+
+  @keyframes face-fade-in {
+    0%,
+    15% {
+      opacity: 0;
+      filter: brightness(0.5);
+    }
+    40%,
+    65% {
+      opacity: 1;
+      filter: brightness(1);
+    }
+    85%,
+    100% {
+      opacity: 0;
+      filter: brightness(0.5);
+    }
   }
 }
 

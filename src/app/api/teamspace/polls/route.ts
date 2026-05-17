@@ -9,17 +9,25 @@ const ably = new Ably.Rest(process.env.ABLY_API_KEY!);
 
 export async function POST(req: NextRequest) {
   const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!userId)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { projectId, messageId, optionId, channelId } = await req.json();
 
   if (!projectId || !messageId || !optionId || !channelId) {
-    return NextResponse.json({ error: "Missing required fields" }, { status: 400 });
+    return NextResponse.json(
+      { error: "Missing required fields" },
+      { status: 400 },
+    );
   }
 
   // --- ACCESS CHECK ---
   const access = await verifyProjectAccess(userId, projectId);
-  if ("error" in access) return NextResponse.json({ error: access.error }, { status: access.status });
+  if ("error" in access)
+    return NextResponse.json(
+      { error: access.error },
+      { status: access.status },
+    );
 
   const { user } = access;
 
@@ -66,7 +74,15 @@ export async function POST(req: NextRequest) {
     await turso.execute({
       sql: `INSERT INTO ts_poll_votes (id, message_id, option_id, user_id, user_name, user_image, created_at)
             VALUES (?, ?, ?, ?, ?, ?, ?)`,
-      args: [randomUUID(), messageId, optionId, userId, user.name, user.avatarUrl ?? null, Date.now()],
+      args: [
+        randomUUID(),
+        messageId,
+        optionId,
+        userId,
+        user.name,
+        user.avatarUrl ?? null,
+        Date.now(),
+      ],
     });
   }
 
@@ -79,7 +95,7 @@ export async function POST(req: NextRequest) {
     userName: user.name,
     userImage: user.avatarUrl ?? null,
     action,
-    allowMultiple
+    allowMultiple,
   });
 
   return NextResponse.json({ success: true, action });

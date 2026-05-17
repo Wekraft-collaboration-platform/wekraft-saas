@@ -1,23 +1,25 @@
 "use client";
 
-import { useStoreUser } from "@/hooks/use-user-store";
-import { Authenticated, Unauthenticated, useQuery } from "convex/react";
-import { api } from "../../../../convex/_generated/api";
-import { useRouter } from "next/navigation";
-import { useEffect } from "react";
 import { RedirectToSignIn } from "@clerk/nextjs";
-import { UserMenu } from "@/modules/dashboard/components/UserMenu";
+import { Authenticated, Unauthenticated, useQuery } from "convex/react";
+import { BugPlay, Home, Moon, Share2, SunMedium, Video } from "lucide-react";
+import { useParams, usePathname, useRouter } from "next/navigation";
+import { useTheme } from "next-themes";
+import { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger,
 } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
+import { useStoreUser } from "@/hooks/use-user-store";
 import { DashboardBreadcrumbs } from "@/modules/dashboard/components/HeaderCrumbs";
-import { CommunitySearchBar } from "@/modules/dashboard/components/SearchBar";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { BugPlay, Share2, SunMedium } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ShareProjectDialog } from "@/modules/dashboard/components/ShareProjectDialog";
+import { UserMenu } from "@/modules/dashboard/components/UserMenu";
+import { api } from "../../../../convex/_generated/api";
+import Link from "next/link";
+import { AnnouncementBanner } from "@/modules/dashboard/components/AnnouncementBanner";
 
 export default function Layout({
   children,
@@ -29,6 +31,19 @@ export default function Layout({
   const { isLoading: isStoreLoading } = useStoreUser();
   const user = useQuery(api.user.getCurrentUser);
   const router = useRouter();
+  const pathname = usePathname();
+  const params = useParams();
+
+  const { theme, setTheme } = useTheme();
+  const [mounted, setMounted] = useState(false);
+  const [isShareOpen, setIsShareOpen] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const isWorkspaceRoute = pathname?.includes("/workspace");
+  const slug = params?.slug as string | undefined;
 
   useEffect(() => {
     if (isStoreLoading) return;
@@ -65,25 +80,63 @@ export default function Layout({
                   }}
                 /> */}
                 <div className="flex items-center gap-3">
-                  <Button size="icon-sm" variant="outline">
-                    <BugPlay />
+                  <Button
+                    size="icon-sm"
+                    variant="outline"
+                    onClick={() =>
+                      setTheme(theme === "dark" ? "light" : "dark")
+                    }
+                    aria-label="Toggle theme"
+                  >
+                    {!mounted || theme === "light" ? (
+                      <SunMedium className="h-4 w-4" />
+                    ) : (
+                      <Moon className="h-4 w-4" />
+                    )}
                   </Button>
-                  <Button size="icon-sm" variant="outline">
-                    <SunMedium />
-                  </Button>
-                  <Button size="icon-sm" variant="outline">
-                    <Share2 />
-                  </Button>
+                  {/* Only when workspace ! */}
+                  {isWorkspaceRoute && (
+                    <>
+                      <Button
+                        size="icon-sm"
+                        variant="outline"
+                        onClick={() => setIsShareOpen(true)}
+                        aria-label="Share project"
+                      >
+                        <Share2 className="h-4 w-4" />
+                      </Button>
+                      <Button
+                        size="icon-sm"
+                        variant="outline"
+                        aria-label="Start video call"
+                      >
+                        <Video className="h-4 w-4" />
+                      </Button>
+                      <Link href={`/dashboard/my-projects/${slug}`}>
+                        <Button size="icon-sm" variant="outline">
+                          <Home />
+                        </Button>
+                      </Link>
+                    </>
+                  )}
                 </div>
                 <UserMenu />
               </div>
             </header>
             <div className="flex-1 min-h-0 overflow-hidden">
+              <AnnouncementBanner />
               <ScrollArea className="h-full scroll-smooth scrollbar-hide">
                 {children}
               </ScrollArea>
             </div>
           </SidebarInset>
+          {slug && (
+            <ShareProjectDialog
+              isOpen={isShareOpen}
+              onClose={() => setIsShareOpen(false)}
+              projectSlug={slug}
+            />
+          )}
         </SidebarProvider>
       </Authenticated>
     </div>

@@ -17,7 +17,7 @@ const AuthCallback = () => {
 
   useEffect(() => {
     //Wait for syncing to finish
-    if (isStoreLoading) return; 
+    if (isStoreLoading) return;
 
     if (!isAuthenticated) {
       router.push("/");
@@ -62,12 +62,12 @@ const AuthCallback = () => {
 
   return (
     <div className="flex h-screen w-full items-center justify-center">
-    <OnboardCard
-      duration={3000} // 3sec
-      step1="Welcome Aboard"
-      step2="Creating Environment"
-      step3="Checking auth-token"
-    />
+      <OnboardCard
+        duration={3000} // 3sec
+        step1="Welcome Aboard"
+        step2="Creating Environment"
+        step3="Checking auth-token"
+      />
     </div>
   );
 };

@@ -191,7 +191,7 @@ const TaskGroup = ({
           loading: "Marking task as complete...",
           success: "Task marked as complete successfully!",
           error: "Failed to mark task as complete",
-        }
+        },
       );
     } catch (error) {
       console.error(error);
@@ -229,11 +229,12 @@ const TaskGroup = ({
   };
 
   const isAllGroupSelected =
-    tasks.length > 0 && tasks.every((t) => selectedTaskIds.includes(t._id as Id<"tasks">));
+    tasks.length > 0 &&
+    tasks.every((t) => selectedTaskIds.includes(t._id as Id<"tasks">));
 
   return (
     <div className="">
-      <div className="flex items-center justify-between mb-4 px-4 dark:bg-neutral-900 bg-neutral-200/55  py-1.5 rounded-md">
+      <div className="flex items-center justify-between mb-4 px-4 dark:bg-neutral-800 bg-neutral-200/55  py-1.5 rounded-md">
         <div
           className="flex items-center gap-3 cursor-pointer w-full select-none"
           onClick={() => setIsExpanded(!isExpanded)}
@@ -264,9 +265,9 @@ const TaskGroup = ({
 
       {isExpanded && (
         <div className="overflow-hidden w-full dark:bg-background bg-card mt-2">
-          <Table className="border-t border-b dark:border-neutral-800 border-neutral-200">
+          <Table className="border-t border-b dark:border-neutral-700 border-neutral-200">
             <TableHeader className=" border-none">
-              <TableRow className="hover:bg-transparent dark:bg-neutral-950 bg-neutral-100 border-none">
+              <TableRow className="hover:bg-transparent dark:bg-neutral-900 bg-neutral-100 border-none">
                 <TableHead className="w-[50px] px-4">
                   <Checkbox
                     checked={isAllGroupSelected}
@@ -274,17 +275,17 @@ const TaskGroup = ({
                     className="rounded border-muted-foreground/30 data-[state=checked]:bg-primary"
                   />
                 </TableHead>
-                <TableHead className="px-4 text-sm font-medium dark:text-primary capitalize tracking-widest min-w-[200px]  border-r border-b dark:border-neutral-800 border-neutral-200">
+                <TableHead className="px-4 text-sm font-medium dark:text-primary capitalize tracking-widest min-w-[200px]  border-r border-b dark:border-neutral-700 border-neutral-200">
                   <div className="flex items-center gap-2">
                     <FolderPen className="w-4.5 h-4.5" /> Task Name
                   </div>
                 </TableHead>
-                <TableHead className="px-4 text-sm font-medium capitalize tracking-widest min-w-[300px] border-r border-b dark:border-neutral-800 border-neutral-200">
+                <TableHead className="px-4 text-sm font-medium capitalize tracking-widest min-w-[300px] border-r border-b dark:border-neutral-700 border-neutral-200">
                   <div className="flex items-center gap-2">
                     <TextQuote className="w-4.5 h-4.5" /> Description
                   </div>
                 </TableHead>
-                <TableHead className="text-[13px] dark:text-primary text-foreground font-medium px-4 border-r border-b dark:border-neutral-800 border-neutral-200">
+                <TableHead className="text-[13px] dark:text-primary text-foreground font-medium px-4 border-r border-b dark:border-neutral-700 border-neutral-200">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <Clock className="w-4 h-4" /> Duration
@@ -298,7 +299,7 @@ const TaskGroup = ({
                     />
                   </div>
                 </TableHead>
-                <TableHead className="text-[13px] dark:text-primary text-foreground font-medium px-4 border-r border-b dark:border-neutral-800 border-neutral-200">
+                <TableHead className="text-[13px] dark:text-primary text-foreground font-medium px-4 border-r border-b dark:border-neutral-700 border-neutral-200">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2">
                       <Tag className="w-4 h-4" /> Tags
@@ -313,12 +314,12 @@ const TaskGroup = ({
                     />
                   </div>
                 </TableHead>
-                <TableHead className="text-[13px] dark:text-primary text-foreground font-medium px-4 border-r border-b dark:border-neutral-800 border-neutral-200">
+                <TableHead className="text-[13px] dark:text-primary text-foreground font-medium px-4 border-r border-b dark:border-neutral-700 border-neutral-200">
                   <div className="flex items-center gap-2">
                     <Users className="w-4 h-4" /> Assigned
                   </div>
                 </TableHead>
-                <TableHead className="text-[13px] dark:text-primary text-foreground font-medium px-4 text-center border-b dark:border-neutral-800 border-neutral-200">
+                <TableHead className="text-[13px] dark:text-primary text-foreground font-medium px-4 text-center border-b dark:border-neutral-700 border-neutral-200">
                   <div className="flex items-center justify-between gap-2">
                     <div className="flex items-center gap-2 justify-center">
                       <ChartNoAxesColumnIncreasing className="w-4 h-4" />{" "}
@@ -374,14 +375,12 @@ const TaskGroup = ({
                     >
                       <Checkbox
                         checked={selectedTaskIds.includes(task._id)}
-                        onCheckedChange={() =>
-                          toggleTask(task._id)
-                        }
+                        onCheckedChange={() => toggleTask(task._id)}
                         className="rounded border-muted-foreground/30 data-[state=checked]:bg-primary"
                       />
                     </TableCell>
 
-                    <TableCell className="p-2.5 border-r border-b dark:border-neutral-800 border-neutral-200  max-w-[180px] truncate">
+                    <TableCell className="p-2.5 border-r border-b dark:border-neutral-700 border-neutral-200  max-w-[180px] truncate">
                       <span className="text-sm font-medium dark:text-primary text-foreground capitalize flex items-center gap-1.5 transition-colors">
                         {task.title}
                         {task.isBlocked ? (
@@ -395,12 +394,12 @@ const TaskGroup = ({
                         )}
                       </span>
                     </TableCell>
-                    <TableCell className="p-2.5 border-r border-b dark:border-neutral-800 border-neutral-200">
+                    <TableCell className="p-2.5 border-r border-b dark:border-neutral-700 border-neutral-200">
                       <p className="text-xs text-muted-foreground dark:group-hover:text-primary group-hover:text-foreground transition-colors line-clamp-1 max-w-[280px] truncate">
                         {task.description || "No description provided yet..."}
                       </p>
                     </TableCell>
-                    <TableCell className="p-2.5 whitespace-nowrap text-xs text-muted-foreground dark:group-hover:text-primary group-hover:text-foreground border-r border-b dark:border-neutral-800 border-neutral-200 transition-colors">
+                    <TableCell className="p-2.5 whitespace-nowrap text-xs text-muted-foreground dark:group-hover:text-primary group-hover:text-foreground border-r border-b dark:border-neutral-700 border-neutral-200 transition-colors">
                       <div className="flex items-center justify-center gap-2">
                         <Clock className="w-3.5 h-3.5" />
                         {task.estimation ? (
@@ -413,42 +412,34 @@ const TaskGroup = ({
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="p-2.5 whitespace-nowrap border-r border-b dark:border-neutral-800 border-neutral-200">
+                    <TableCell className="p-2.5 whitespace-nowrap border-r border-b dark:border-neutral-700 border-neutral-200">
                       <div className="flex items-center justify-center gap-1.5 flex-wrap">
                         {task.type ? (
                           <div
                             className={cn(
-                              "flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold font-inter capitalize tracking-wide border",
+                              "flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium font-inter capitalize tracking-wide border",
                               task.type.color === "green" &&
-                                "bg-emerald-500/10 text-emerald-400 border-emerald-400/20",
+                                "bg-emerald-500/10  text-primary/80 border-emerald-400/20",
                               task.type.color === "yellow" &&
-                                "bg-yellow-500/10 text-yellow-400 border-yellow-400/20",
+                                "bg-yellow-500/10  text-primary/80 border-yellow-400/20",
                               task.type.color === "purple" &&
-                                "bg-purple-500/10 text-purple-400 border-purple-400/20",
+                                "bg-purple-500/10  text-primary/80 border-purple-400/20",
                               task.type.color === "blue" &&
-                                "bg-blue-500/10 text-blue-400 border-blue-400/20",
+                                "bg-blue-500/20  text-primary/80 border-blue-400/20",
                               task.type.color === "grey" &&
-                                "bg-neutral-500/10 text-neutral-400 border-neutral-400/20",
+                                "bg-neutral-500/10  text-primary/80 border-neutral-400/20",
                             )}
                           >
-                            <div
-                              className={cn(
-                                "w-1 h-1 rounded-full",
-                                task.type.color === "green" && "bg-emerald-400",
-                                task.type.color === "yellow" && "bg-yellow-400",
-                                task.type.color === "purple" && "bg-purple-400",
-                                task.type.color === "blue" && "bg-blue-400",
-                                task.type.color === "grey" && "bg-neutral-400",
-                              )}
-                            />
                             {task.type.label}
                           </div>
                         ) : (
-                          <span className="text-[10px] text-muted-foreground">—</span>
+                          <span className="text-[10px] text-muted-foreground">
+                            —
+                          </span>
                         )}
                       </div>
                     </TableCell>
-                    <TableCell className="p-2.5 border-r border-b dark:border-neutral-800 border-neutral-200">
+                    <TableCell className="p-2.5 border-r border-b dark:border-neutral-700 border-neutral-200">
                       {task.assignees && task.assignees.length > 0 ? (
                         <div className="flex items-center justify-center -space-x-2">
                           <TooltipProvider>
@@ -462,7 +453,10 @@ const TaskGroup = ({
                                     </AvatarFallback>
                                   </Avatar>
                                 </TooltipTrigger>
-                                <TooltipContent side="top" className="px-2 py-1">
+                                <TooltipContent
+                                  side="top"
+                                  className="px-2 py-1"
+                                >
                                   <p className="text-[10px] font-medium">
                                     {person.name}
                                   </p>
@@ -480,7 +474,7 @@ const TaskGroup = ({
                         </div>
                       )}
                     </TableCell>
-                    <TableCell className="p-2.5 border-b dark:border-neutral-800 border-neutral-200 text-muted-foreground dark:group-hover:text-primary group-hover:text-foreground whitespace-nowrap transition-colors">
+                    <TableCell className="p-2.5 border-b dark:border-neutral-700 border-neutral-200 text-muted-foreground dark:group-hover:text-primary group-hover:text-foreground whitespace-nowrap transition-colors">
                       <PriorityBadge priority={task.priority} />
                     </TableCell>
 
@@ -498,76 +492,77 @@ const TaskGroup = ({
                             <MoreHorizontal className="w-4 h-4" />
                           </Button>
                         </DropdownMenuTrigger>
-                          <DropdownMenuContent
-                            align="end"
-                            className="w-48 rounded-xl shadow-xl border-muted/50"
-                          >
-                            <EditTaskDialog
-                              projectName={projectName}
-                              projectId={projectId}
-                              repoFullName={repoFullName}
-                              ownerClerkId={ownerClerkId}
-                              task={task}
-                              trigger={
+                        <DropdownMenuContent
+                          align="end"
+                          className="w-48 rounded-xl shadow-xl border-muted/50"
+                        >
+                          <EditTaskDialog
+                            projectName={projectName}
+                            projectId={projectId}
+                            repoFullName={repoFullName}
+                            ownerClerkId={ownerClerkId}
+                            task={task}
+                            trigger={
+                              <DropdownMenuItem
+                                onSelect={(e) => e.preventDefault()}
+                                className="gap-2 focus:bg-primary/5 cursor-pointer"
+                              >
+                                <Edit className="w-4 h-4" /> Edit Task
+                              </DropdownMenuItem>
+                            }
+                          />
+                          {task.status !== "completed" && (
+                            <DropdownMenuItem
+                              onSelect={() => handleMarkAsComplete(task._id)}
+                              className="gap-2 focus:bg-primary/5 cursor-pointer text-xs  py-2 "
+                            >
+                              <Check className="w-4 h-4" /> Mark as Complete
+                            </DropdownMenuItem>
+                          )}
+                          <AlertDialog>
+                            {canDelete ? (
+                              <AlertDialogTrigger asChild>
                                 <DropdownMenuItem
                                   onSelect={(e) => e.preventDefault()}
-                                  className="gap-2 focus:bg-primary/5 cursor-pointer"
+                                  className="gap-2 focus:bg-red-500/10 text-red-500 cursor-pointer text-xs font-semibold py-2"
                                 >
-                                  <Edit className="w-4 h-4" /> Edit Task
+                                  <AlertCircle className="w-4 h-4" /> Delete
+                                  Task
                                 </DropdownMenuItem>
-                              }
-                            />
-                            {task.status !== "completed" && (
+                              </AlertDialogTrigger>
+                            ) : (
                               <DropdownMenuItem
-                                onSelect={() => handleMarkAsComplete(task._id)}
-                                className="gap-2 focus:bg-primary/5 cursor-pointer text-xs  py-2 "
+                                className="gap-2 opacity-50 cursor-not-allowed text-red-500 text-xs font-semibold py-2"
+                                disabled
                               >
-                                <Check className="w-4 h-4" /> Mark as Complete
+                                <AlertCircle className="w-4 h-4" /> Delete Task
                               </DropdownMenuItem>
                             )}
-                            <AlertDialog>
-                              {canDelete ? (
-                                <AlertDialogTrigger asChild>
-                                  <DropdownMenuItem
-                                    onSelect={(e) => e.preventDefault()}
-                                    className="gap-2 focus:bg-red-500/10 text-red-500 cursor-pointer text-xs font-semibold py-2"
-                                  >
-                                    <AlertCircle className="w-4 h-4" /> Delete Task
-                                  </DropdownMenuItem>
-                                </AlertDialogTrigger>
-                              ) : (
-                                <DropdownMenuItem
-                                  className="gap-2 opacity-50 cursor-not-allowed text-red-500 text-xs font-semibold py-2"
-                                  disabled
+                            <AlertDialogContent className="bg-neutral-900 border-neutral-800 shadow-2xl">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle className="text-primary">
+                                  Are you absolutely sure?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription className="text-muted-foreground">
+                                  This action cannot be undone. This will
+                                  permanently delete this task and remove all
+                                  associated data.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel className="bg-neutral-800 border-neutral-700 text-primary hover:bg-neutral-700">
+                                  Cancel
+                                </AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDeleteTask(task._id)}
+                                  className="bg-red-600 text-white hover:bg-red-700"
                                 >
-                                  <AlertCircle className="w-4 h-4" /> Delete Task
-                                </DropdownMenuItem>
-                              )}
-                              <AlertDialogContent className="bg-neutral-900 border-neutral-800 shadow-2xl">
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle className="text-primary">
-                                    Are you absolutely sure?
-                                  </AlertDialogTitle>
-                                  <AlertDialogDescription className="text-muted-foreground">
-                                    This action cannot be undone. This will
-                                    permanently delete this task and remove all
-                                    associated data.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel className="bg-neutral-800 border-neutral-700 text-primary hover:bg-neutral-700">
-                                    Cancel
-                                  </AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => handleDeleteTask(task._id)}
-                                    className="bg-red-600 text-white hover:bg-red-700"
-                                  >
-                                    Delete Permanently
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
-                          </DropdownMenuContent>
+                                  Delete Permanently
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
                   </TableRow>

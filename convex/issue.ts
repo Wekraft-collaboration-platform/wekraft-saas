@@ -385,3 +385,125 @@ export const updateIssue = mutation({
     return issueId;
   },
 });
+
+// =============================
+// 7. CREATE ISSUE COMMENT
+// =============================
+export const createIssueComment = mutation({
+  args: {
+    issueId: v.id("issues"),
+    comment: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) throw new Error("User not found");
+
+    const commentId = await ctx.db.insert("issueComments", {
+      issueId: args.issueId,
+      userId: user._id,
+      userName: user.name || "Anonymous",
+      userImage: user.avatarUrl,
+      comment: args.comment,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+
+    return commentId;
+  },
+});
+
+// =============================
+// 8. GET ISSUE COMMENTS
+// =============================
+export const getIssueComments = query({
+  args: {
+    issueId: v.id("issues"),
+  },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("issueComments")
+      .withIndex("by_issue", (q) => q.eq("issueId", args.issueId))
+      .order("desc")
+      .collect();
+  },
+});
+
+// =============================
+// 9. DELETE ISSUE
+// =============================
+export const deleteIssue = mutation({
+  args: {
+    issueId: v.id("issues"),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) throw new Error("User not found");
+
+    const issue = await ctx.db.get(args.issueId);
+    if (!issue) throw new Error("Issue not found");
+
+    // Check project permissions
+    const membership = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_project", (q) => q.eq("projectId", issue.projectId))
+      .filter((q) => q.eq(q.field("userId"), user._id))
+      .unique();
+
+    const project = await ctx.db.get(issue.projectId);
+    const isOwner = project?.ownerId === user._id;
+    const isAdmin = membership?.AccessRole === "admin";
+
+    if (!isOwner && !isAdmin) {
+      throw new Error("Only the project owner or admin can delete this issue.");
+    }
+
+    // Unblock task if it was a task-issue
+    if (issue.type === "task-issue" && issue.taskId) {
+      const linkedTask = await ctx.db.get(issue.taskId);
+      if (linkedTask && linkedTask.isBlocked) {
+        await ctx.db.patch(issue.taskId, {
+          isBlocked: false,
+          updatedAt: Date.now(),
+        });
+      }
+    }
+
+    // Cascade delete assignees
+    const assignees = await ctx.db
+      .query("issueAssignees")
+      .withIndex("by_issue", (q) => q.eq("issueId", args.issueId))
+      .collect();
+    await Promise.all(assignees.map((a) => ctx.db.delete(a._id)));
+
+    // Cascade delete comments
+    const comments = await ctx.db
+      .query("issueComments")
+      .withIndex("by_issue", (q) => q.eq("issueId", args.issueId))
+      .collect();
+    await Promise.all(comments.map((c) => ctx.db.delete(c._id)));
+
+    // Delete issue
+    await ctx.db.delete(args.issueId);
+
+    return args.issueId;
+  },
+});
+

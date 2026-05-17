@@ -166,7 +166,7 @@ export const TableTab = ({
           loading: "Marking task as complete...",
           success: "Task marked as complete successfully!",
           error: "Failed to mark task as complete",
-        }
+        },
       );
     } catch (error) {
       console.error(error);
@@ -219,7 +219,7 @@ export const TableTab = ({
         style={{ minHeight: "calc(100vh - 320px)" }}
       >
         <Table>
-          <TableHeader className="dark:bg-neutral-900 bg-neutral-200/55  z-10 ">
+          <TableHeader className="dark:bg-neutral-800 bg-neutral-200/50  z-10 ">
             <TableRow className="hover:bg-transparent border-none">
               <TableHead className="w-[50px] px-6 py-4">
                 <Checkbox
@@ -364,7 +364,9 @@ export const TableTab = ({
                     </TableCell>
                     <TableCell className="px-4 text-sm   font-medium border-r border-b dark:border-neutral-700 border-neutral-200  text-muted-foreground transition-colors dark:group-hover:text-primary group-hover:text-foreground">
                       <div className="flex items-center gap-1.5 capitalize">
-                        <span className="dark:text-primary text-foreground">{task.title}</span>
+                        <span className="dark:text-primary text-foreground">
+                          {task.title}
+                        </span>
                         {task.isBlocked ? (
                           <Bug className="w-4 h-4 text-red-500/70 shrink-0 ml-auto" />
                         ) : (
@@ -403,29 +405,19 @@ export const TableTab = ({
                         {task.type ? (
                           <div
                             className={cn(
-                              "flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold font-inter capitalize tracking-wide border",
+                              "flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium font-inter capitalize tracking-wide border",
                               task.type.color === "green" &&
-                                "bg-emerald-500/10 text-emerald-400 border-emerald-400/20",
+                                "bg-emerald-500/10 text-primary/80 border-emerald-400/20",
                               task.type.color === "yellow" &&
-                                "bg-yellow-500/10 text-yellow-400 border-yellow-400/20",
+                                "bg-yellow-500/10  text-primary/80 border-yellow-400/20",
                               task.type.color === "purple" &&
-                                "bg-purple-500/10 text-purple-400 border-purple-400/20",
+                                "bg-purple-500/10  text-primary/80 border-purple-400/20",
                               task.type.color === "blue" &&
-                                "bg-blue-500/10 text-blue-400 border-blue-400/20",
+                                "bg-blue-500/20  text-primary/80 border-blue-400/20",
                               task.type.color === "grey" &&
-                                "bg-neutral-500/10 text-neutral-400 border-neutral-400/20",
+                                "bg-neutral-500/10  text-primary/80 border-neutral-400/20",
                             )}
                           >
-                            <div
-                              className={cn(
-                                "w-1 h-1 rounded-full",
-                                task.type.color === "green" && "bg-emerald-400",
-                                task.type.color === "yellow" && "bg-yellow-400",
-                                task.type.color === "purple" && "bg-purple-400",
-                                task.type.color === "blue" && "bg-blue-400",
-                                task.type.color === "grey" && "bg-neutral-400",
-                              )}
-                            />
                             {task.type.label}
                           </div>
                         ) : (
@@ -443,13 +435,19 @@ export const TableTab = ({
                               <Tooltip key={i}>
                                 <TooltipTrigger asChild>
                                   <Avatar className="w-7 h-7 border-2 border-background shadow-sm hover:z-10 transition-transform hover:scale-110 cursor-pointer">
-                                    <AvatarImage src={person.avatar} className="" />
+                                    <AvatarImage
+                                      src={person.avatar}
+                                      className=""
+                                    />
                                     <AvatarFallback className="text-[9px] bg-neutral-800 text-primary/40 font-bold uppercase">
                                       {person.name[0]}
                                     </AvatarFallback>
                                   </Avatar>
                                 </TooltipTrigger>
-                                <TooltipContent side="top" className="px-2 py-1">
+                                <TooltipContent
+                                  side="top"
+                                  className="px-2 py-1"
+                                >
                                   <p className="text-[10px] font-medium">
                                     {person.name}
                                   </p>
@@ -511,48 +509,49 @@ export const TableTab = ({
                               <Check className="w-4 h-4" /> Mark as Complete
                             </DropdownMenuItem>
                           )}
-                           <AlertDialog>
-                              {canDelete ? (
-                                <AlertDialogTrigger asChild>
-                                  <DropdownMenuItem
-                                    onSelect={(e) => e.preventDefault()}
-                                    className="gap-2 focus:bg-red-500/10 text-red-500 cursor-pointer text-xs font-semibold py-2"
-                                  >
-                                    <AlertCircle className="w-4 h-4" /> Delete Task
-                                  </DropdownMenuItem>
-                                </AlertDialogTrigger>
-                              ) : (
+                          <AlertDialog>
+                            {canDelete ? (
+                              <AlertDialogTrigger asChild>
                                 <DropdownMenuItem
-                                  className="gap-2 opacity-50 cursor-not-allowed text-red-500 text-xs font-semibold py-2"
-                                  disabled
+                                  onSelect={(e) => e.preventDefault()}
+                                  className="gap-2 focus:bg-red-500/10 text-red-500 cursor-pointer text-xs font-semibold py-2"
                                 >
-                                  <AlertCircle className="w-4 h-4" /> Delete Task
+                                  <AlertCircle className="w-4 h-4" /> Delete
+                                  Task
                                 </DropdownMenuItem>
-                              )}
-                              <AlertDialogContent className="bg-neutral-900 border-neutral-800 shadow-2xl">
-                                <AlertDialogHeader>
-                                  <AlertDialogTitle className="text-primary">
-                                    Are you absolutely sure?
-                                  </AlertDialogTitle>
-                                  <AlertDialogDescription className="text-muted-foreground">
-                                    This action cannot be undone. This will
-                                    permanently delete this task and remove all
-                                    associated data.
-                                  </AlertDialogDescription>
-                                </AlertDialogHeader>
-                                <AlertDialogFooter>
-                                  <AlertDialogCancel className="bg-neutral-800 border-neutral-700 text-primary hover:bg-neutral-700">
-                                    Cancel
-                                  </AlertDialogCancel>
-                                  <AlertDialogAction
-                                    onClick={() => handleDeleteTask(task._id)}
-                                    className="bg-red-600 text-white hover:bg-red-700"
-                                  >
-                                    Delete Permanently
-                                  </AlertDialogAction>
-                                </AlertDialogFooter>
-                              </AlertDialogContent>
-                            </AlertDialog>
+                              </AlertDialogTrigger>
+                            ) : (
+                              <DropdownMenuItem
+                                className="gap-2 opacity-50 cursor-not-allowed text-red-500 text-xs font-semibold py-2"
+                                disabled
+                              >
+                                <AlertCircle className="w-4 h-4" /> Delete Task
+                              </DropdownMenuItem>
+                            )}
+                            <AlertDialogContent className="bg-neutral-900 border-neutral-800 shadow-2xl">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle className="text-primary">
+                                  Are you absolutely sure?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription className="text-muted-foreground">
+                                  This action cannot be undone. This will
+                                  permanently delete this task and remove all
+                                  associated data.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel className="bg-neutral-800 border-neutral-700 text-primary hover:bg-neutral-700">
+                                  Cancel
+                                </AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDeleteTask(task._id)}
+                                  className="bg-red-600 text-white hover:bg-red-700"
+                                >
+                                  Delete Permanently
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -611,4 +610,3 @@ export const TableTab = ({
     </div>
   );
 };
-

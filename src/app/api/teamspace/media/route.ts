@@ -90,10 +90,7 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ success: true });
     } else {
       console.warn("Invalid key or not a teamspace media key");
-      return NextResponse.json(
-        { error: "Invalid media URL" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid media URL" }, { status: 400 });
     }
   } catch (error) {
     console.error("Error deleting teamspace media:", error);

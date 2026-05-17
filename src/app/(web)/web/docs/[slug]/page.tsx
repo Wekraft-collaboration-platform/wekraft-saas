@@ -15,7 +15,11 @@ export async function generateStaticParams() {
   return allDocs.map((doc) => ({ slug: doc.slug }));
 }
 
-export async function generateMetadata({ params }: { params: { slug: string } }): Promise<Metadata> {
+export async function generateMetadata({
+  params,
+}: {
+  params: { slug: string };
+}): Promise<Metadata> {
   const { slug } = await params;
   const doc = allDocs.find((d) => d.slug === slug);
 
@@ -43,9 +47,9 @@ export async function generateMetadata({ params }: { params: { slug: string } })
 
 // Helper to generate IDs from text or React nodes
 const slugify = (text: any): string => {
-  if (typeof text !== 'string') {
+  if (typeof text !== "string") {
     if (Array.isArray(text)) {
-      text = text.map(t => typeof t === 'string' ? t : '').join('');
+      text = text.map((t) => (typeof t === "string" ? t : "")).join("");
     } else {
       text = String(text);
     }
@@ -117,7 +121,9 @@ const markdownComponents: Components = {
     );
   },
   p: ({ children }) => (
-    <p className="text-[0.925rem] text-white/55 leading-[1.8] mb-5">{children}</p>
+    <p className="text-[0.925rem] text-white/55 leading-[1.8] mb-5">
+      {children}
+    </p>
   ),
   a: ({ href, children }) => (
     <a
@@ -127,11 +133,11 @@ const markdownComponents: Components = {
       {children}
     </a>
   ),
-  ul: ({ children }) => (
-    <ul className="my-5 space-y-2.5">{children}</ul>
-  ),
+  ul: ({ children }) => <ul className="my-5 space-y-2.5">{children}</ul>,
   ol: ({ children }) => (
-    <ol className="my-5 space-y-2.5 list-none counter-reset-item">{children}</ol>
+    <ol className="my-5 space-y-2.5 list-none counter-reset-item">
+      {children}
+    </ol>
   ),
   li: ({ children }) => (
     <li className="flex items-start gap-3 text-[0.925rem] text-white/55 leading-[1.7]">
@@ -156,7 +162,10 @@ const markdownComponents: Components = {
       );
     }
     return (
-      <code className="text-[0.8rem] font-mono text-white/75 leading-6" {...props}>
+      <code
+        className="text-[0.8rem] font-mono text-white/75 leading-6"
+        {...props}
+      >
         {children}
       </code>
     );
@@ -168,7 +177,9 @@ const markdownComponents: Components = {
   ),
   table: ({ children }) => (
     <div className="my-6 overflow-x-auto rounded-xl border border-white/8 shadow-sm">
-      <table className="w-full text-[0.875rem] border-collapse">{children}</table>
+      <table className="w-full text-[0.875rem] border-collapse">
+        {children}
+      </table>
     </div>
   ),
   thead: ({ children }) => (
@@ -193,12 +204,14 @@ const markdownComponents: Components = {
   strong: ({ children }) => (
     <strong className="font-semibold text-white/85">{children}</strong>
   ),
-  em: ({ children }) => (
-    <em className="italic text-white/50">{children}</em>
-  ),
+  em: ({ children }) => <em className="italic text-white/50">{children}</em>,
 };
 
-export default async function DocPage({ params }: { params: { slug: string } }) {
+export default async function DocPage({
+  params,
+}: {
+  params: { slug: string };
+}) {
   const { slug } = await params;
   const filePath = path.join(process.cwd(), "src/content/docs", `${slug}.md`);
 
@@ -216,7 +229,7 @@ export default async function DocPage({ params }: { params: { slug: string } }) 
 
   // Find category
   const category = Object.entries(docsConfig).find(([, items]) =>
-    items.some((i) => i.slug === slug)
+    items.some((i) => i.slug === slug),
   )?.[0];
 
   return (
@@ -262,11 +275,17 @@ export default async function DocPage({ params }: { params: { slug: string } }) 
             >
               <ChevronLeft className="h-4 w-4 text-white/30 group-hover:text-white/60 group-hover:-translate-x-0.5 transition-all shrink-0" />
               <div>
-                <div className="text-[10px] text-white/60 mb-0.5 uppercase tracking-widest font-medium">Previous</div>
-                <div className="text-sm font-medium text-white group-hover:text-white transition-colors">{prevDoc.title}</div>
+                <div className="text-[10px] text-white/60 mb-0.5 uppercase tracking-widest font-medium">
+                  Previous
+                </div>
+                <div className="text-sm font-medium text-white group-hover:text-white transition-colors">
+                  {prevDoc.title}
+                </div>
               </div>
             </Link>
-          ) : <div />}
+          ) : (
+            <div />
+          )}
 
           {nextDoc ? (
             <Link
@@ -274,19 +293,23 @@ export default async function DocPage({ params }: { params: { slug: string } }) 
               className="group flex items-center gap-3 rounded-xl border border-white/8 bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/14 px-4 py-3 transition-all text-right ml-auto"
             >
               <div>
-                <div className="text-[10px] text-white/60 mb-0.5 uppercase tracking-widest font-medium">Next</div>
-                <div className="text-sm font-medium text-white group-hover:text-white transition-colors">{nextDoc.title}</div>
+                <div className="text-[10px] text-white/60 mb-0.5 uppercase tracking-widest font-medium">
+                  Next
+                </div>
+                <div className="text-sm font-medium text-white group-hover:text-white transition-colors">
+                  {nextDoc.title}
+                </div>
               </div>
               <ChevronRight className="h-4 w-4 text-white/30 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all shrink-0" />
             </Link>
-          ) : <div />}
+          ) : (
+            <div />
+          )}
         </div>
       </div>
 
       {/* Right TOC — hidden on small screens */}
-      {headings.length > 0 && (
-        <TableOfContents headings={headings} />
-      )}
+      {headings.length > 0 && <TableOfContents headings={headings} />}
     </div>
   );
 }

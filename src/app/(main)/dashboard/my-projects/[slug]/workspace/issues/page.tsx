@@ -28,6 +28,7 @@ import {
   Issue,
 } from "@/modules/workspace/IssueKanbanUI";
 import { ImportGithubIssueDialog } from "@/modules/workspace/heatmaps/ImportGithubIssueDialog";
+import { IssueDetailSheet } from "@/modules/workspace/IssueDetailSheet";
 import { Card } from "@/components/ui/card";
 import { format } from "date-fns";
 import { Calendar, ExternalLink, FileCode, MoreHorizontal } from "lucide-react";
@@ -45,7 +46,13 @@ const users = [
   { name: "John", img: "https://i.pravatar.cc/40?img=4" },
 ];
 
-const GithubIssueCard = ({ issue }: { issue: Issue }) => {
+const GithubIssueCard = ({
+  issue,
+  onClick,
+}: {
+  issue: Issue;
+  onClick?: () => void;
+}) => {
   const severity = issue.severity
     ? SEVERITY_CONFIG[issue.severity]
     : {
@@ -56,7 +63,10 @@ const GithubIssueCard = ({ issue }: { issue: Issue }) => {
   const type = TYPE_CONFIG[issue.type];
 
   return (
-    <Card className="group cursor-pointer p-3! dark:bg-sidebar bg-card dark:border-accent border-neutral-200 dark:hover:border-primary/30 hover:border-neutral-300 transition-all rounded-xl shadow-xs">
+    <Card
+      onClick={onClick}
+      className="group cursor-pointer p-3! dark:bg-sidebar bg-card dark:border-accent border-neutral-200 dark:hover:border-primary/30 hover:border-neutral-300 transition-all rounded-xl shadow-xs"
+    >
       <div className="flex flex-col gap-3">
         {/* Top: Severity and Type */}
         <div className="flex items-center justify-between">
@@ -171,6 +181,9 @@ const IssuesPage = () => {
   const projectName = project?.projectName;
   const [activeTab, setActiveTab] = useState<"all" | "github">("all");
   const [searchQuery, setSearchQuery] = useState("");
+  const [selectedIssueForSheet, setSelectedIssueForSheet] = useState<
+    any | null
+  >(null);
   const { setIsOpen } = useKayaStore();
   const currentUser = useQuery(api.user.getCurrentUser);
   const members = useQuery(
@@ -416,6 +429,7 @@ const IssuesPage = () => {
                 projectName={projectName}
                 repoFullName={project.repoFullName}
                 ownerClerkId={(project as any).ownerClerkId}
+                onIssueClick={setSelectedIssueForSheet}
               />
             )}
           </>
@@ -473,13 +487,23 @@ const IssuesPage = () => {
                 {issues
                   .filter((i) => i.type === "github")
                   .map((issue) => (
-                    <GithubIssueCard key={issue._id} issue={issue as any} />
+                    <GithubIssueCard
+                      key={issue._id}
+                      issue={issue as any}
+                      onClick={() => setSelectedIssueForSheet(issue)}
+                    />
                   ))}
               </div>
             )}
           </div>
         )}
       </main>
+
+      <IssueDetailSheet
+        issue={selectedIssueForSheet}
+        isOpen={!!selectedIssueForSheet}
+        onClose={() => setSelectedIssueForSheet(null)}
+      />
     </div>
   );
 };

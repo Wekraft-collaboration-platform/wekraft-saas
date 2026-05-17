@@ -120,8 +120,6 @@ const SprintPage = () => {
     );
   }
 
-
-
   const filteredSprints = sprints?.filter((s) => {
     const matchesSearch = s.sprintName
       .toLowerCase()
