@@ -15,9 +15,10 @@ import { cn } from "@/lib/utils";
 
 interface NotificationCenterProps {
   userId: string;
+  onSelectChannel?: (channelId: string) => void;
 }
 
-export function NotificationCenter({ userId }: NotificationCenterProps) {
+export function NotificationCenter({ userId, onSelectChannel }: NotificationCenterProps) {
   const { notifications, unreadCount, markAsRead } = useNotifications(userId);
 
   return (
@@ -76,7 +77,12 @@ export function NotificationCenter({ userId }: NotificationCenterProps) {
                     "p-4 border-b border-border/30 hover:bg-accent/40 cursor-pointer transition-colors group relative",
                     n.is_read === 0 && "bg-blue-500/5",
                   )}
-                  onClick={() => markAsRead(n.id)}
+                  onClick={() => {
+                    markAsRead(n.id);
+                    if (onSelectChannel && n.channel_id) {
+                      onSelectChannel(n.channel_id);
+                    }
+                  }}
                 >
                   <div className="flex gap-3">
                     <Avatar className="h-9 w-9 border border-border/50 shrink-0">

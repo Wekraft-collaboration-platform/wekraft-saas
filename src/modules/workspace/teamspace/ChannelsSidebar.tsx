@@ -72,7 +72,9 @@ interface Props {
 
 const channelColors: Record<string, string> = {
   general: "text-emerald-500",
+  "general-chat": "text-emerald-500",
   announcements: "text-amber-500",
+  "general-announcement": "text-amber-500",
   announcement: "text-amber-500",
 };
 
@@ -103,8 +105,11 @@ export function ChannelsSidebar({
   const [announcementsExpanded, setAnnouncementsExpanded] = useState(true);
   const [chatExpanded, setChatExpanded] = useState(true);
 
-  const getChannelColor = (name: string) => {
-    return channelColors[name.toLowerCase()] ?? "text-blue-500";
+  const getChannelColor = (channel: Channel) => {
+    if (channel.type === "announcement") {
+      return "text-amber-500";
+    }
+    return "text-emerald-500";
   };
 
   const announcementChannels = channels.filter(
@@ -115,7 +120,11 @@ export function ChannelsSidebar({
   const renderChannel = (channel: Channel) => {
     const isActive = channel.id === activeChannelId;
     const Icon = channel.type === "announcement" ? Megaphone : Hash;
-    const color = getChannelColor(channel.name);
+    const color = getChannelColor(channel);
+    
+    // Cast counts strictly to numbers to prevent any Turso/Ably string comparison issues
+    const unreadCount = Number(channel.unread_count ?? 0);
+    const mentionCount = Number(channel.mention_count ?? 0);
 
     return (
       <li key={channel.id} className="relative group px-2">
@@ -153,9 +162,23 @@ export function ChannelsSidebar({
               isActive ? color : "text-muted-foreground/50 group-hover:text-foreground",
             )}
           />
-          <span className="truncate leading-tight flex-1 min-w-0 max-w-[120px]">
+          <span className={cn(
+            "truncate leading-tight flex-1 min-w-0 max-w-[120px] transition-all",
+            (unreadCount > 0 || mentionCount > 0) && !isActive && "font-bold text-foreground"
+          )}>
             {channel.name}
           </span>
+
+          {/* Live unread & mention counters */}
+          {mentionCount > 0 && !isActive ? (
+            <span className="inline-flex items-center justify-center shrink-0 min-w-[20px] h-[20px] rounded-full text-[10px] font-bold bg-rose-500 text-white px-1.5 shadow-sm ring-1 ring-rose-500/20 animate-pulse z-10 mr-1">
+              @ +{Math.max(unreadCount, mentionCount)}
+            </span>
+          ) : unreadCount > 0 && !isActive ? (
+            <span className="inline-flex items-center justify-center shrink-0 min-w-[20px] h-[20px] rounded-full text-[10px] font-semibold bg-emerald-500/20 text-emerald-500 dark:bg-emerald-500/10 dark:text-emerald-400 border border-emerald-500/30 px-1.5 shadow-sm z-10 mr-1">
+              +{unreadCount}
+            </span>
+          ) : null}
 
           {/* Hover actions - 3 dot menu */}
           {(canEdit || (canDelete && !channel.is_default)) && (

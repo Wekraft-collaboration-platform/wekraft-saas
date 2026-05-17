@@ -73,6 +73,7 @@ interface Props {
   projectId: string;
   projectSlug: string;
   onToggleMembers: () => void;
+  onSelectChannelId?: (channelId: string) => void;
 }
 
 function DateDivider({ timestamp }: { timestamp: number }) {
@@ -100,6 +101,7 @@ export function MessageFeed({
   projectId,
   projectSlug,
   onToggleMembers,
+  onSelectChannelId,
 }: Props) {
   const { isOwner, isPower } = useProjectPermissions(
     projectId as Id<"projects">,
@@ -401,7 +403,10 @@ export function MessageFeed({
             <div className="flex items-center gap-3 text-muted-foreground">
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <NotificationCenter userId={currentUserId} />
+                  <NotificationCenter 
+                    userId={currentUserId} 
+                    onSelectChannel={onSelectChannelId}
+                  />
                 </TooltipTrigger>
                 <TooltipContent>Notifications</TooltipContent>
               </Tooltip>

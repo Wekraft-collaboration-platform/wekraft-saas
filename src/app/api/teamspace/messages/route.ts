@@ -285,71 +285,119 @@ export async function POST(req: NextRequest) {
   const ablyChannel = ably.channels.get(`teamspace:${channelId}`);
   await ablyChannel.publish("message.new", message);
 
-  // --- MENTION NOTIFICATIONS ---
+  // Publish lightweight message metadata to project-wide messages channel for unread count tracking
   try {
-    const projectMembers = await convex.query(api.project.getProjectMembers, {
-      projectId: projectId as any,
+    const projectMsgsChannel = ably.channels.get(`project:${projectId}:messages`);
+    await projectMsgsChannel.publish("message.new", {
+      id,
+      channel_id: channelId,
+      user_id: userId,
+      created_at: now,
     });
+  } catch (e) {
+    console.error("Failed to publish to project messages channel:", e);
+  }
 
-    const isEveryoneMentioned = content.toLowerCase().includes("@everyone");
-    
-    // Match @Username in content or use all members if @everyone
-    const mentionedMembers = isEveryoneMentioned 
-      ? projectMembers.filter(m => m.clerkUserId !== userId) // Everyone except sender
-      : projectMembers.filter((member) => {
-          if (!member.userName) return false;
-          const mentionTag = `@${member.userName}`;
-          const escapedTag = mentionTag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-          const regex = new RegExp(`${escapedTag}(\\s|$)`, "i");
-          return regex.test(content);
+  // --- MENTION NOTIFICATIONS (NON-BLOCKING BACKGROUND EXECUTION) ---
+  const hasMentionSymbol = content && content.includes("@");
+  if (hasMentionSymbol) {
+    // Run in the background without blocking the HTTP response to the client
+    (async () => {
+      try {
+        const projectMembers = await convex.query(api.project.getProjectMembers, {
+          projectId: projectId as any,
         });
 
-    for (const member of mentionedMembers) {
-      if (member.clerkUserId && member.clerkUserId !== userId) {
-        const notificationId = randomUUID();
-        const notification = {
-          id: notificationId,
-          user_id: member.clerkUserId,
-          type: "mention",
-          sender_id: userId,
-          sender_name: user.name,
-          sender_image: user.avatarUrl,
-          project_id: projectId,
-          channel_id: channelId,
-          message_id: id,
-          content: content.trim().substring(0, 100),
-          is_read: 0,
-          created_at: now,
+        const isEveryoneMentioned = content.toLowerCase().includes("@everyone");
+        
+        // Robust helper to check if a project member is mentioned in the content
+        const isMemberMentioned = (member: any, text: string) => {
+          if (!member.userName) return false;
+          
+          const tagsToTry = [member.userName];
+          
+          const noSpaces = member.userName.replace(/\s+/g, "");
+          if (noSpaces && noSpaces !== member.userName) {
+            tagsToTry.push(noSpaces);
+          }
+          
+          const firstName = member.userName.split(" ")[0];
+          if (firstName && firstName.length >= 3 && firstName !== member.userName) {
+            tagsToTry.push(firstName);
+          }
+          
+          if (member.githubUsername) {
+            tagsToTry.push(member.githubUsername);
+          }
+          
+          return tagsToTry.some(tag => {
+            const escapedTag = tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+            const regex = new RegExp(`@${escapedTag}(\\b|\\s|[.,!?;:]|$)`, "i");
+            return regex.test(text);
+          });
         };
 
-        // 1. Save to Turso
-        await turso.execute({
-          sql: `INSERT INTO ts_notifications (id, user_id, type, sender_id, sender_name, sender_image, project_id, channel_id, message_id, content, created_at)
-                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-          args: [
-            notification.id,
-            notification.user_id,
-            notification.type,
-            notification.sender_id,
-            notification.sender_name,
-            notification.sender_image,
-            notification.project_id,
-            notification.channel_id,
-            notification.message_id,
-            notification.content,
-            notification.created_at,
-          ],
+        // Match @Username in content or use all members if @everyone, strictly filtering out self-mentions
+        const mentionedMembers = isEveryoneMentioned 
+          ? projectMembers.filter(m => m.clerkUserId !== userId) // Everyone except sender
+          : projectMembers.filter((member) => {
+              if (member.clerkUserId === userId) return false;
+              return isMemberMentioned(member, content);
+            });
+
+        // Parallelize Turso inserts and Ably publications for maximum throughput
+        const notificationPromises = mentionedMembers.map(async (member) => {
+          if (member.clerkUserId && member.clerkUserId !== userId) {
+            const notificationId = randomUUID();
+            const notification = {
+              id: notificationId,
+              user_id: member.clerkUserId,
+              type: "mention",
+              sender_id: userId,
+              sender_name: user.name,
+              sender_image: user.avatarUrl,
+              project_id: projectId,
+              channel_id: channelId,
+              message_id: id,
+              content: content.trim().substring(0, 100),
+              is_read: 0,
+              created_at: now,
+            };
+
+            // Save to Turso and publish to Ably concurrently
+            await Promise.all([
+              turso.execute({
+                sql: `INSERT INTO ts_notifications (id, user_id, type, sender_id, sender_name, sender_image, project_id, channel_id, message_id, content, created_at)
+                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+                args: [
+                  notification.id,
+                  notification.user_id,
+                  notification.type,
+                  notification.sender_id,
+                  notification.sender_name,
+                  notification.sender_image,
+                  notification.project_id,
+                  notification.channel_id,
+                  notification.message_id,
+                  notification.content,
+                  notification.created_at,
+                ],
+              }),
+              (async () => {
+                const userNotifyChannel = ably.channels.get(
+                  `user:notifications:${member.clerkUserId}`,
+                );
+                await userNotifyChannel.publish("notification.new", notification);
+              })()
+            ]);
+          }
         });
 
-        // 2. Publish to Ably (User-specific channel)
-        const userNotifyChannel = ably.channels.get(
-          `user:notifications:${member.clerkUserId}`,
-        );
-        await userNotifyChannel.publish("notification.new", notification);
+        await Promise.all(notificationPromises);
+      } catch (e) {
+        console.error("Failed to process mentions in background:", e);
       }
-    }
-  } catch (e) {
-    console.error("Failed to process mentions:", e);
+    })();
   }
 
   return NextResponse.json({ message }, { status: 201 });

@@ -16,7 +16,7 @@
  */
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { useChannels } from "./hooks/useChannels";
@@ -39,19 +39,27 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
   const user = useQuery(api.user.getCurrentUser);
   const { userId: clerkUserId } = useAuth();
 
-  const { channels, loading, createChannel, updateChannel, deleteChannel } =
-    useChannels(projectId);
   const [activeChannel, setActiveChannel] = useState<Channel | null>(null);
   const [showMembers, setShowMembers] = useState(false);
+
+  const { channels: channelsList, loading, createChannel, updateChannel, deleteChannel, markChannelAsRead } =
+    useChannels(projectId, clerkUserId, activeChannel?.id);
 
   // Auto-select default channel once loaded
   const resolvedChannel =
     activeChannel ??
-    channels.find((c) => c.is_default === 1) ??
-    channels[0] ??
+    channelsList.find((c) => c.is_default === 1) ??
+    channelsList[0] ??
     null;
 
   const currentUserId = clerkUserId ?? "";
+
+  // Mark channel as read when channel changes
+  useEffect(() => {
+    if (resolvedChannel?.id && markChannelAsRead) {
+      markChannelAsRead(resolvedChannel.id);
+    }
+  }, [resolvedChannel?.id, markChannelAsRead]);
   const currentUserName = user?.name ?? user?.githubUsername ?? "User";
   const currentUserImage = user?.avatarUrl ?? null;
 
@@ -63,7 +71,7 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
       {/* Left: Channels */}
       <ChannelsSidebar
         projectId={projectId}
-        channels={channels}
+        channels={channelsList}
         loading={loading}
         activeChannelId={resolvedChannel?.id ?? null}
         onSelect={(ch) => {
@@ -83,6 +91,12 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
         projectId={projectId}
         projectSlug={projectSlug}
         onToggleMembers={() => setShowMembers((prev) => !prev)}
+        onSelectChannelId={(channelId) => {
+          const target = channelsList.find((c) => c.id === channelId);
+          if (target) {
+            setActiveChannel(target);
+          }
+        }}
       />
 
       {/* Right: Members panel */}

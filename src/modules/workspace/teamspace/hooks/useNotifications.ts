@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Ably from "ably";
+import { toast } from "sonner";
 
 export interface Notification {
   id: string;
@@ -62,6 +63,13 @@ export function useNotifications(userId: string) {
       const notification = msg.data as Notification;
       setNotifications((prev) => [notification, ...prev].slice(0, 50));
       setUnreadCount((prev) => prev + 1);
+
+      if (notification.type === "mention") {
+        toast(`✨ New Mention by ${notification.sender_name}`, {
+          description: notification.content || "Mentioned you in a message.",
+          duration: 5000,
+        });
+      }
     };
 
     channel.subscribe("notification.new", onNewNotification);
