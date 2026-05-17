@@ -124,9 +124,25 @@ export async function prefetchMessages(projectId: string, channelId: string, thr
 }
 
 export function useMessages(channelId: string | null, projectId: string, currentUserId: string, currentUserName?: string, threadParentId?: string) {
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [nextCursor, setNextCursor] = useState<string | null>(null);
+  const [messages, setMessages] = useState<Message[]>(() => {
+    if (channelId && memoryCache[channelId] && Date.now() - memoryCache[channelId].timestamp < 60000) {
+      return memoryCache[channelId].messages;
+    }
+    return [];
+  });
+  const [loading, setLoading] = useState(() => {
+    if (!channelId) return false;
+    if (memoryCache[channelId] && Date.now() - memoryCache[channelId].timestamp < 60000) {
+      return false;
+    }
+    return true;
+  });
+  const [nextCursor, setNextCursor] = useState<string | null>(() => {
+    if (channelId && memoryCache[channelId] && Date.now() - memoryCache[channelId].timestamp < 60000) {
+      return memoryCache[channelId].nextCursor;
+    }
+    return null;
+  });
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
   
   const subscriptionRef = useRef<Ably.RealtimeChannel | null>(null);

@@ -85,6 +85,7 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
 
       {/* Center: Message feed */}
       <MessageFeed
+        key={resolvedChannel?.id || "empty"}
         channel={resolvedChannel}
         currentUserId={currentUserId}
         currentUserName={currentUserName}
