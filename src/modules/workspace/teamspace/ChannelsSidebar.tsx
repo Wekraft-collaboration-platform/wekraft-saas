@@ -203,7 +203,7 @@ export function ChannelsSidebar({
             </div>
           )}
 
-          {channel.type === "announcement" && !isOwner && (
+          {channel.type === "announcement" && !isPower && (
             <Lock className="h-3 w-3 ml-auto shrink-0 opacity-40 group-hover:opacity-70 transition-opacity" />
           )}
         </div>

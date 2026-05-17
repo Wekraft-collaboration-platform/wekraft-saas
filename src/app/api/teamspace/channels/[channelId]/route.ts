@@ -1,11 +1,11 @@
 import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { turso, initTeamspaceDB } from "@/lib/turso";
-import { ConvexHttpClient } from "convex/browser";
-import { api } from "../../../../../../convex/_generated/api";
-import { Id } from "../../../../../../convex/_generated/dataModel";
+import Ably from "ably";
 
 import { verifyProjectAccess } from "@/modules/workspace/teamspace/lib/auth";
+
+const ably = new Ably.Rest(process.env.ABLY_API_KEY!);
 
 type Params = { channelId: string };
 
@@ -51,11 +51,14 @@ export async function PATCH(req: NextRequest, { params }: { params: Promise<Para
 
   // Prevent renaming #general? Usually okay to rename, but maybe keep name for default.
   // Requirement says "only owner can edit", so we allow it.
-
   await turso.execute({
     sql: `UPDATE ts_channels SET name = COALESCE(?, name), description = COALESCE(?, description), updated_at = ? WHERE id = ?`,
     args: [cleanName, description ?? null, now, channelId],
   });
+
+  // Publish update to Ably
+  const ablyChannel = ably.channels.get(`project:${projectId}:channels`);
+  await ablyChannel.publish("channel.updated", { id: channelId, name: cleanName, description });
 
   return NextResponse.json({ success: true });
 }
@@ -99,11 +102,14 @@ export async function DELETE(req: NextRequest, { params }: { params: Promise<Par
       return NextResponse.json({ error: "Forbidden: Only owner or admin can delete channels" }, { status: 403 });
     }
   }
-
   await turso.execute({
     sql: "DELETE FROM ts_channels WHERE id = ?",
     args: [channelId],
   });
+
+  // Publish deletion to Ably
+  const ablyChannel = ably.channels.get(`project:${projectId}:channels`);
+  await ablyChannel.publish("channel.deleted", { id: channelId });
 
   // Turso schema has ON DELETE CASCADE for messages and reactions.
   

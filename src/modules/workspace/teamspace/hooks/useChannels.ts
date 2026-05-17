@@ -16,6 +16,7 @@
 "use client";
 
 import { useState, useEffect, useCallback } from "react";
+import Ably from "ably";
 
 export interface Channel {
   id: string;
@@ -27,6 +28,18 @@ export interface Channel {
   created_by: string;
   created_at: number;
   updated_at: number;
+}
+
+let ablyClient: Ably.Realtime | null = null;
+
+function getAblyClient(): Ably.Realtime {
+  if (!ablyClient) {
+    ablyClient = new Ably.Realtime({
+      authUrl: "/api/teamspace/ably-token",
+      authMethod: "GET",
+    });
+  }
+  return ablyClient;
 }
 
 export function useChannels(projectId: string) {
@@ -50,6 +63,41 @@ export function useChannels(projectId: string) {
   useEffect(() => {
     fetchChannels();
   }, [fetchChannels]);
+
+  useEffect(() => {
+    if (!projectId) return;
+
+    const ably = getAblyClient();
+    const ch = ably.channels.get(`project:${projectId}:channels`);
+
+    const onChannelCreated = (msg: Ably.Message) => {
+      const newChannel = msg.data as Channel;
+      setChannels((prev) => {
+        if (prev.find((c) => c.id === newChannel.id)) return prev;
+        return [...prev, newChannel];
+      });
+    };
+
+    const onChannelUpdated = (msg: Ably.Message) => {
+      const { id, name, description } = msg.data;
+      setChannels((prev) =>
+        prev.map((c) => (c.id === id ? { ...c, name: name ?? c.name, description: description ?? c.description } : c))
+      );
+    };
+
+    const onChannelDeleted = (msg: Ably.Message) => {
+      const { id } = msg.data;
+      setChannels((prev) => prev.filter((c) => c.id !== id));
+    };
+
+    ch.subscribe("channel.created", onChannelCreated);
+    ch.subscribe("channel.updated", onChannelUpdated);
+    ch.subscribe("channel.deleted", onChannelDeleted);
+
+    return () => {
+      ch.unsubscribe();
+    };
+  }, [projectId]);
 
   const createChannel = useCallback(
     async (name: string, description: string, type: "text" | "announcement" = "text") => {

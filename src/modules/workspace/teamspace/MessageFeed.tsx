@@ -348,7 +348,7 @@ export function MessageFeed({
   };
 
   const isAnnouncement = channel?.type === "announcement";
-  const canSend = !isAnnouncement || isOwner;
+  const canSend = !isAnnouncement || isPower;
 
   // Group messages by date for date dividers
   const withDividers: Array<Message | { type: "divider"; date: number }> = [];

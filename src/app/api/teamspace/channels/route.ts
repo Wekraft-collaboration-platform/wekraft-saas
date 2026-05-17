@@ -3,6 +3,9 @@ import { NextRequest, NextResponse } from "next/server";
 import { turso, initTeamspaceDB } from "@/lib/turso";
 import { randomUUID } from "crypto";
 import { verifyProjectAccess } from "@/modules/workspace/teamspace/lib/auth";
+import Ably from "ably";
+
+const ably = new Ably.Rest(process.env.ABLY_API_KEY!);
 
 // GET /api/teamspace/channels?projectId=xxx
 export async function GET(req: NextRequest) {
@@ -109,6 +112,12 @@ export async function POST(req: NextRequest) {
     args: [id],
   });
 
-  return NextResponse.json({ channel: result.rows[0] }, { status: 201 });
+  const newChannel = result.rows[0];
+
+  // Publish to Ably
+  const ablyChannel = ably.channels.get(`project:${projectId}:channels`);
+  await ablyChannel.publish("channel.created", newChannel);
+
+  return NextResponse.json({ channel: newChannel }, { status: 201 });
 }
 

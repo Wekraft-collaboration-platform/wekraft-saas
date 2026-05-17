@@ -135,7 +135,7 @@ function MemberRow({
       </div>
       <div className="min-w-0 flex-1">
         <p className={cn("text-xs truncate font-medium", online ? "text-foreground" : "text-muted-foreground")}>
-          {isCurrentUser ? "you" : member.userName}
+          {isCurrentUser ? "You" : member.userName}
         </p>
         {member.AccessRole && (
           <p className="text-[9px] text-muted-foreground/60 truncate capitalize">

@@ -267,7 +267,7 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
   };
 
   const placeholder = disabled && isAnnouncement
-    ? "Only project owners can send messages in this channel"
+    ? "Only project owners and admins can send messages in this channel"
     : `Message #${channelName}`;
 
   return (

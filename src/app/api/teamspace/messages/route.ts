@@ -197,6 +197,26 @@ export async function POST(req: NextRequest) {
 
   await initTeamspaceDB();
 
+  // --- CHANNEL TYPE & PERMISSION VERIFICATION ---
+  const channelRes = await turso.execute({
+    sql: `SELECT type FROM ts_channels WHERE id = ? AND project_id = ?`,
+    args: [channelId, projectId],
+  });
+
+  if (channelRes.rows.length === 0) {
+    return NextResponse.json({ error: "Channel not found" }, { status: 404 });
+  }
+
+  const channelType = channelRes.rows[0].type as string;
+  if (channelType === "announcement") {
+    if (!access.permissions.isOwner && !access.permissions.isAdmin) {
+      return NextResponse.json(
+        { error: "Forbidden: Only project owners and admins can post in announcement channels" },
+        { status: 403 }
+      );
+    }
+  }
+
   const id = clientId || randomUUID();
   const now = Date.now();
 
