@@ -16,9 +16,11 @@ export async function GET(req: NextRequest) {
   await initTeamspaceDB();
 
   const result = await turso.execute({
-    sql: `SELECT * FROM ts_notifications 
-          WHERE user_id = ? 
-          ORDER BY created_at DESC LIMIT ?`,
+    sql: `SELECT n.*, c.name AS channel_name 
+          FROM ts_notifications n
+          LEFT JOIN ts_channels c ON n.channel_id = c.id
+          WHERE n.user_id = ? 
+          ORDER BY n.created_at DESC LIMIT ?`,
     args: [userId, limit],
   });
 

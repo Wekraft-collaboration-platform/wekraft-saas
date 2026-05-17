@@ -199,7 +199,7 @@ export async function POST(req: NextRequest) {
 
   // --- CHANNEL TYPE & PERMISSION VERIFICATION ---
   const channelRes = await turso.execute({
-    sql: `SELECT type FROM ts_channels WHERE id = ? AND project_id = ?`,
+    sql: `SELECT name, type FROM ts_channels WHERE id = ? AND project_id = ?`,
     args: [channelId, projectId],
   });
 
@@ -207,6 +207,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Channel not found" }, { status: 404 });
   }
 
+  const channelName = channelRes.rows[0].name as string;
   const channelType = channelRes.rows[0].type as string;
   if (channelType === "announcement") {
     if (!access.permissions.isOwner && !access.permissions.isAdmin) {
@@ -358,6 +359,7 @@ export async function POST(req: NextRequest) {
               sender_image: user.avatarUrl,
               project_id: projectId,
               channel_id: channelId,
+              channel_name: channelName,
               message_id: id,
               content: content.trim().substring(0, 100),
               is_read: 0,

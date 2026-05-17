@@ -13,6 +13,7 @@ export interface Notification {
   sender_image: string | null;
   project_id: string;
   channel_id?: string;
+  channel_name?: string;
   message_id?: string;
   content?: string;
   is_read: number;
@@ -65,8 +66,8 @@ export function useNotifications(userId: string) {
       setUnreadCount((prev) => prev + 1);
 
       if (notification.type === "mention") {
-        toast(`✨ New Mention by ${notification.sender_name}`, {
-          description: notification.content || "Mentioned you in a message.",
+        toast(`✨ Mentioned in #${notification.channel_name || "channel"}`, {
+          description: `${notification.sender_name}: "${notification.content || "Mentioned you in a message."}"`,
           duration: 5000,
         });
       }

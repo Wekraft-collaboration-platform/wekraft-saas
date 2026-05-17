@@ -97,7 +97,10 @@ export function NotificationCenter({ userId, onSelectChannel }: NotificationCent
                           {n.sender_name}
                         </span>
                         <span className="text-[11px] text-muted-foreground">
-                          mentioned you
+                          mentioned you in
+                        </span>
+                        <span className="text-[10px] font-semibold text-blue-500 bg-blue-500/10 px-1.5 py-0.5 rounded-md hover:bg-blue-500/20 transition-colors">
+                          #{n.channel_name || "channel"}
                         </span>
                       </div>
                       {n.content && (
@@ -120,7 +123,24 @@ export function NotificationCenter({ userId, onSelectChannel }: NotificationCent
                     </div>
                   </div>
                   {n.is_read === 0 && (
-                    <div className="absolute top-4 right-4 h-2 w-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)]" />
+                    <div className="absolute top-4 right-4 flex items-center justify-center h-6 w-6">
+                      {/* Default blue dot, hidden when check button is hovered */}
+                      <div className="h-2 w-2 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.5)] group-hover:scale-0 transition-transform duration-200" />
+                      
+                      {/* Check button appearing on hover */}
+                      <Button
+                        size="icon"
+                        variant="ghost"
+                        className="h-6 w-6 rounded-full absolute scale-0 group-hover:scale-100 hover:bg-blue-500/20 hover:text-blue-500 text-blue-500/70 transition-all duration-200 flex items-center justify-center border border-blue-500/10 bg-background/95 backdrop-blur-md shadow-sm"
+                        title="Mark as read"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          markAsRead(n.id);
+                        }}
+                      >
+                        <Check className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   )}
                 </div>
               ))}
