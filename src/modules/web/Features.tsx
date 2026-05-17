@@ -78,9 +78,9 @@ const Features = () => {
       className="bg-black py-14 px-6 md:px-12 font-sans text-white overflow-hidden"
     >
       {/* badge */}
-      <div className="flex items-center justify-center w-fit mx-auto gap-2 px-3 py-1 rounded-full border border-blue-500/20 bg-blue-500/5 ">
-        <div className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-        <span className="text-sm font-medium text-blue-400 ">
+      <div className="flex items-center justify-center w-fit mx-auto gap-2 px-4 py-1.5 rounded-full border border-blue-500/20 backdrop-blur-md bg-blue-500/5 shadow-[0_0_20px_rgba(59,130,246,0.1)] mb-14">
+        <div className="w-1.5 h-1.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.8)] animate-pulse" />
+        <span className="text-sm font-semibold text-blue-300 tracking-wide">
           Where productivity feels natural.
         </span>
       </div>
@@ -105,16 +105,16 @@ const Features = () => {
                   key={index}
                   onClick={() => handleStepClick(index)}
                   className={cn(
-                    "relative p-5 rounded-xl overflow-hidden cursor-pointer transition-all duration-300 border border-transparent",
+                    "relative p-5 rounded-2xl overflow-hidden cursor-pointer transition-all duration-500 border",
                     isActive
-                      ? "bg-white/5 border-white/10"
-                      : "hover:bg-white/[0.02]",
+                      ? "bg-gradient-to-br from-white/10 to-white/5 border-white/20 shadow-[0_8px_30px_rgba(0,0,0,0.2)]"
+                      : "bg-transparent border-transparent hover:bg-white/[0.03] hover:border-white/5",
                   )}
                 >
                   <h3
                     className={cn(
-                      "text-lg font-semibold mb-1 transition-colors duration-300",
-                      isActive ? "text-white" : "text-neutral-500",
+                      "text-[17px] font-semibold mb-2 transition-colors duration-300",
+                      isActive ? "text-white" : "text-neutral-500 group-hover:text-neutral-300",
                     )}
                   >
                     {step.title}
@@ -129,13 +129,13 @@ const Features = () => {
                         transition={{ duration: 0.3 }}
                         className="overflow-hidden"
                       >
-                        <p className="text-neutral-500 text-xs leading-relaxed mb-3">
+                        <p className="text-neutral-400 text-sm leading-relaxed mb-4 font-normal">
                           {step.description}
                         </p>
                         {/* Progress Bar Container */}
-                        <div className="absolute bottom-0 left-0 right-0 h-[2px] bg-white/10 overflow-hidden rounded-b-xl">
+                        <div className="absolute bottom-0 left-0 right-0 h-[3px] bg-white/5 overflow-hidden rounded-b-2xl">
                           <motion.div
-                            className="h-full bg-blue-500"
+                            className="h-full bg-gradient-to-r from-blue-600 to-blue-400 shadow-[0_0_10px_rgba(96,165,250,0.5)]"
                             style={{ width: `${progress}%` }}
                           />
                         </div>
@@ -148,33 +148,34 @@ const Features = () => {
           </div>
 
           {/* Right Side: Image/Preview Area */}
-          <div className="relative aspect-video lg:aspect-auto lg:h-[420px] w-full">
-            <div className="absolute inset-0 bg-blue-500/10 blur-[100px] rounded-full pointer-events-none" />
-            <div className="relative h-full w-full rounded-2xl border border-white/10 overflow-hidden bg-neutral-900 group">
+          <div className="relative aspect-video lg:aspect-auto lg:h-[500px] w-full mt-8 lg:mt-0">
+            <div className="absolute inset-0 bg-blue-500/20 blur-[120px] rounded-full pointer-events-none transition-opacity duration-700" />
+            <div className="relative h-full w-full rounded-3xl border border-white/10 overflow-hidden bg-neutral-950 shadow-[0_0_50px_rgba(0,0,0,0.4)] group">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeStep}
-                  initial={{ opacity: 0, scale: 1.02 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.98 }}
-                  transition={{ duration: 0.5, ease: "easeInOut" }}
+                  initial={{ opacity: 0, scale: 1.05, filter: "blur(4px)" }}
+                  animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
+                  exit={{ opacity: 0, scale: 0.95, filter: "blur(4px)" }}
+                  transition={{ duration: 0.6, ease: [0.22, 1, 0.36, 1] }}
                   className="absolute inset-0"
                 >
                   <img
                     src={steps[activeStep].image}
                     alt={steps[activeStep].title}
-                    className="w-full h-full object-cover opacity-70 group-hover:opacity-90 transition-opacity duration-700"
+                    className="w-full h-full object-cover opacity-80 group-hover:opacity-100 group-hover:scale-105 transition-all duration-1000 ease-out"
                   />
                   {/* Overlay for better text readability and styling */}
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent pointer-events-none" />
+                  <div className="absolute inset-0 ring-1 ring-inset ring-white/10 rounded-3xl pointer-events-none" />
                 </motion.div>
               </AnimatePresence>
 
               {/* Decorative corners like the image */}
-              <div className="absolute top-3 left-3 w-1.5 h-1.5 border-t border-l border-white" />
-              <div className="absolute top-3 right-3 w-1.5 h-1.5 border-t border-r border-white" />
-              <div className="absolute bottom-3 left-3 w-1.5 h-1.5 border-b border-l border-white" />
-              <div className="absolute bottom-3 right-3 w-1.5 h-1.5 border-b border-r border-white" />
+              <div className="absolute top-4 left-4 w-2 h-2 border-t-2 border-l-2 border-white/50" />
+              <div className="absolute top-4 right-4 w-2 h-2 border-t-2 border-r-2 border-white/50" />
+              <div className="absolute bottom-4 left-4 w-2 h-2 border-b-2 border-l-2 border-white/50" />
+              <div className="absolute bottom-4 right-4 w-2 h-2 border-b-2 border-r-2 border-white/50" />
             </div>
           </div>
         </div>

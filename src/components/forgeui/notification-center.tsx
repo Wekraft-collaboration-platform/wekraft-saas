@@ -144,7 +144,7 @@ const NotificationCenter = ({
         className="relative mx-auto h-[320px] w-[290px] rounded-[44px] bg-neutral-300 p-1.5 dark:bg-neutral-800 -translate-y-8"
       >
         <div className="relative h-[328px] overflow-hidden rounded-[38px] bg-neutral-200 dark:bg-neutral-950/50">
-          <div className="absolute left-8 top-3.5 text-[9px] text-neutral-500">
+          <div className="absolute left-8 top-3.5 text-[9px] text-neutral-500" suppressHydrationWarning={true}>
             {new Date().toLocaleTimeString([], {
               hour: "2-digit",
               minute: "2-digit",

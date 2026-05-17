@@ -3,12 +3,14 @@ import { docsConfig } from "@/lib/docs-config";
 import {
   BookOpen, Terminal, Layers, CheckSquare, AlertCircle,
   Zap, Clock, Calendar, Users, BarChart3, Settings,
-  ArrowRight,
+  ArrowRight, Command, Sparkles, ShieldCheck, CreditCard,
+  FileText, Compass, Cpu, Wrench, LayoutGrid,
 } from "lucide-react";
 
 const iconMap: { [key: string]: any } = {
   BookOpen, Terminal, Layers, CheckSquare, AlertCircle,
   Zap, Clock, Calendar, Users, BarChart3, Settings,
+  Command, Sparkles, ShieldCheck, CreditCard, FileText,
 };
 
 const badgeColors: Record<string, string> = {
@@ -18,9 +20,10 @@ const badgeColors: Record<string, string> = {
 };
 
 const categoryIcons: Record<string, any> = {
-  "Getting Started": BookOpen,
-  "Core Features": Zap,
-  "Advanced Tools": BarChart3,
+  "Getting Started": Compass,
+  "Core Features": Cpu,
+  "Advanced Tools": Wrench,
+  "Platform": LayoutGrid,
 };
 
 export default function DocsIndexPage() {

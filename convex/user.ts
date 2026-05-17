@@ -1,4 +1,4 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
 import { getPlanLimits } from "./pricing";
 
@@ -385,5 +385,15 @@ export const updateGithubUsername = mutation({
       githubUsername: args.githubUsername, 
       updatedAt: Date.now(),
     });
+  },
+});
+
+export const updatePlanInternal = internalMutation({
+  args: { userId: v.id("users"), plan: v.string() },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.userId, {
+      accountType: args.plan as "free" | "plus" | "pro",
+    });
+    console.log(`[Payments] Updated user ${args.userId} to plan ${args.plan}`);
   },
 });
