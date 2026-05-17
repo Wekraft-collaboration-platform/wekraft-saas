@@ -5,12 +5,12 @@ import { verifyProjectAccess } from "@/modules/workspace/teamspace/lib/auth";
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: { channelId: string } }
+  { params }: { params: Promise<{ channelId: string }> }
 ) {
   const { userId } = await auth();
   if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
-  const { channelId } = params;
+  const { channelId } = await params;
   if (!channelId) {
     return NextResponse.json({ error: "channelId required" }, { status: 400 });
   }
