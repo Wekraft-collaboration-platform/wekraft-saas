@@ -17,6 +17,7 @@ export const useProjectPermissions = (projectId: Id<"projects"> | undefined) => 
     isViewer: permissions?.isViewer ?? false,
     isPower: permissions?.isPower ?? false, // owner or admin
     role: permissions?.role ?? null,
+    userId: permissions?.userId,
     isLoading: permissions === undefined,
   };
 };

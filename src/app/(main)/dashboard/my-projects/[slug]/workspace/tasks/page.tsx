@@ -342,6 +342,10 @@ const TaskPage = () => {
                 setSortConfig={setSortConfig}
                 tagFilter={tagFilter}
                 setTagFilter={setTagFilter}
+                projectId={project._id}
+                projectName={projectName || "Project"}
+                repoFullName={project.repoFullName}
+                ownerClerkId={(project as any).ownerClerkId}
               />
             )}
             {activeTab === "Kanban" && (

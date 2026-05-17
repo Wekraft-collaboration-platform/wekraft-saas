@@ -365,10 +365,10 @@ const ProjectWorkspace = () => {
               <div className="flex flex-col items-center justify-center py-16 ">
                 <div className="flex flex-col items-start gap-1.5 max-w-sm text-sm">
                   <Image
-                    src="/pat103.svg"
+                    src="/pat104.svg"
                     alt="locked features"
-                    width={100}
-                    height={100}
+                    width={120}
+                    height={120}
                   />
                   <h3 className="text-muted-foreground">
                   Project Owner must upgrade in order to unlock advanced analytics / Team insights and much more.

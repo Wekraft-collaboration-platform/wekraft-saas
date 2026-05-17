@@ -8,6 +8,7 @@ import {
   Eye,
   Lock,
   Globe,
+  LucideLayersPlus,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -41,7 +42,7 @@ import { useMutation, useQuery as useConvexQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
 import { useEffect, useRef } from "react";
-import { Github } from "lucide-react";
+import { Github, FolderGit2 } from "lucide-react";
 
 interface RepositoryListProps {
   searchQuery: string;
@@ -449,13 +450,15 @@ const ShowRepo = ({
           }
         }}
       >
-        <DialogContent className="sm:max-w-md">
-          <DialogHeader>
-            <DialogTitle>Connect repository</DialogTitle>
-            <DialogDescription>
+        <DialogContent className="sm:max-w-md bg-sidebar! border-border shadow-2xl rounded-xl p-5 gap-6">
+          <DialogHeader className="gap-1">
+            <DialogTitle className="text-xl font-bold tracking-tight text-primary flex items-center gap-2">
+              Connect repository <FolderGit2 className="size-5 text-primary" />
+            </DialogTitle>
+            <DialogDescription className="text-muted-foreground text-sm">
               Choose a project without a linked repo.{" "}
               {repoToConnect && (
-                <span className="text-foreground font-medium">
+                <span className="text-foreground font-semibold bg-accent/30 px-1.5 py-0.5 rounded border border-accent/25">
                   {repoToConnect.full_name}
                 </span>
               )}
@@ -472,39 +475,57 @@ const ShowRepo = ({
               first, then connect it here.
             </p>
           ) : (
-            <ScrollArea className="max-h-[min(320px,50vh)] pr-3">
-              <RadioGroup
-                value={selectedProjectId}
-                onValueChange={(v) => setSelectedProjectId(v as Id<"projects">)}
-                className="gap-2"
-              >
-                {unlinkedProjects.map((project) => (
-                  <div
-                    key={project._id}
-                    className={cn(
-                      "flex items-center gap-3 rounded-lg border p-3 transition-colors",
-                      selectedProjectId === project._id
-                        ? "border-primary/50 bg-accent/50"
-                        : "border-border hover:bg-muted/50",
-                    )}
-                  >
-                    <RadioGroupItem
-                      value={project._id}
-                      id={`unlink-project-${project._id}`}
-                    />
-                    <Label
-                      htmlFor={`unlink-project-${project._id}`}
-                      className="flex-1 cursor-pointer text-sm font-medium leading-none"
+            <ScrollArea className="max-h-[min(320px,50vh)] pr-3 my-2">
+              <div className="flex flex-col gap-2">
+                {unlinkedProjects.map((project) => {
+                  const isSelected = selectedProjectId === project._id;
+                  return (
+                    <button
+                      key={project._id}
+                      type="button"
+                      onClick={() => setSelectedProjectId(project._id)}
+                      className={cn(
+                        "w-full text-left flex items-center justify-between rounded-md border p-2",
+                        isSelected
+                          ? "border-primary/20 bg-primary/5"
+                          : "border-accent/30 bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-accent/40 hover:border-accent"
+                      )}
                     >
-                      {project.projectName}
-                    </Label>
-                  </div>
-                ))}
-              </RadioGroup>
+                      <div className="flex items-center gap-3 min-w-0">
+                        <div className={cn(
+                          "size-8 rounded-md flex items-center justify-center shrink-0 transition-colors",
+                          isSelected ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
+                        )}>
+                          <FolderGit2 className="size-4" />
+                        </div>
+                        <span className="text-sm font-semibold truncate capitalize">
+                          {project.projectName}
+                        </span>
+                      </div>
+                      {isSelected && (
+                        <div className="flex items-center justify-center size-5 rounded-full bg-primary text-primary-foreground shrink-0 animate-in zoom-in duration-200">
+                          <svg
+                            className="size-3 stroke-[3]"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                          >
+                            <path
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                              d="M5 13l4 4L19 7"
+                            />
+                          </svg>
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
             </ScrollArea>
           )}
 
-          <DialogFooter className="gap-2 sm:gap-0">
+          <DialogFooter className="gap-5 mt-2">
             <Button
               type="button"
               variant="outline"
@@ -514,6 +535,8 @@ const ShowRepo = ({
             </Button>
             <Button
               type="button"
+              size='sm'
+              className="cursor-pointer text-xs"
               disabled={
                 !selectedProjectId ||
                 unlinkedProjects === undefined ||
@@ -521,7 +544,7 @@ const ShowRepo = ({
               }
               onClick={handleConfirmConnect}
             >
-              Connect
+              Connect <LucideLayersPlus/>
             </Button>
           </DialogFooter>
         </DialogContent>

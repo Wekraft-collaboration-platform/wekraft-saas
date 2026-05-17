@@ -71,14 +71,17 @@ export default function TeamPage() {
     api.project.getTeamPageData,
     project?._id ? { projectId: project._id as Id<"projects"> } : "skip",
   );
+  const currentUser = useQuery(api.user.getCurrentUser);
 
   const removeMember = useMutation(api.project.removeMember);
+  const leaveTeam = useMutation(api.project.leaveProject);
   const updateRole = useMutation(api.project.updateMemberRole);
 
   const [removeTarget, setRemoveTarget] = useState<{
     id: Id<"projectMembers">;
     name: string;
   } | null>(null);
+  const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
 
   const handleRemove = async () => {
     if (!removeTarget || !project) return;
@@ -92,6 +95,20 @@ export default function TeamPage() {
       toast.error(e.message || "Failed to remove member");
     }
     setRemoveTarget(null);
+  };
+
+  const handleLeave = async () => {
+    if (!project) return;
+    try {
+      await leaveTeam({
+        projectId: project._id as Id<"projects">,
+      });
+      toast.success("Successfully left the project");
+      router.push("/dashboard/my-projects");
+    } catch (e: any) {
+      toast.error(e.message || "Failed to leave the project");
+    }
+    setShowLeaveConfirm(false);
   };
 
   const handleRoleChange = async (
@@ -113,7 +130,7 @@ export default function TeamPage() {
   };
 
   // Loading state
-  if (project === undefined || teamData === undefined) {
+  if (project === undefined || teamData === undefined || currentUser === undefined) {
     return (
       <div className="w-full h-full p-6 2xl:p-8">
         <div className="flex items-center justify-between mb-8">
@@ -294,7 +311,8 @@ export default function TeamPage() {
           const roleConfig =
             ROLE_CONFIG[member.AccessRole] || ROLE_CONFIG.member;
           const RoleIcon = roleConfig.icon;
-          const canManage = isPower && member.AccessRole !== "owner";
+          const isCurrentUser = member.userId === currentUser?._id;
+          const canManage = isPower && member.AccessRole !== "owner" && !isCurrentUser;
 
           return (
             <div
@@ -372,8 +390,29 @@ export default function TeamPage() {
                 </DropdownMenu>
               )}
 
+              {/* Actions Menu for current user (Leave only, no other actions) */}
+              {isCurrentUser && member.AccessRole !== "owner" && (
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <button className="absolute top-3.5 right-3.5 p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer">
+                      <MoreHorizontal className="w-4 h-4" />
+                    </button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-44">
+                    <DropdownMenuItem
+                      variant="destructive"
+                      onClick={() => setShowLeaveConfirm(true)}
+                      className="cursor-pointer"
+                    >
+                      <Trash2 className="w-4 h-4 mr-2" />
+                      Leave Project
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              )}
+
               {/* Non-manageable members just get Message */}
-              {!canManage && member.AccessRole !== "owner" && (
+              {!canManage && member.AccessRole !== "owner" && !isCurrentUser && (
                 <button
                   onClick={() =>
                     router.push(
@@ -488,6 +527,32 @@ export default function TeamPage() {
               className="bg-destructive text-white hover:bg-destructive/90 cursor-pointer"
             >
               Remove
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Leave Confirmation Dialog */}
+      <AlertDialog
+        open={showLeaveConfirm}
+        onOpenChange={(open) => setShowLeaveConfirm(open)}
+      >
+        <AlertDialogContent className="bg-card border-border shadow-2xl">
+          <AlertDialogHeader>
+            <AlertDialogTitle>Leave project</AlertDialogTitle>
+            <AlertDialogDescription>
+              Are you sure you want to leave this project? This will permanently remove all your assigned tasks and issues, and you will lose access. This action cannot be undone.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel className="cursor-pointer">
+              Cancel
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleLeave}
+              className="bg-destructive text-white hover:bg-destructive/90 cursor-pointer"
+            >
+              Leave
             </AlertDialogAction>
           </AlertDialogFooter>
         </AlertDialogContent>

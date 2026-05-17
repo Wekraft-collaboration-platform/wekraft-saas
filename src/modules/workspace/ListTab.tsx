@@ -26,6 +26,7 @@ import {
   CircleDot,
   Bug,
   Info,
+  Check,
 } from "lucide-react";
 
 import { Separator } from "@/components/ui/separator";
@@ -175,6 +176,25 @@ const TaskGroup = ({
   };
 
   const deleteTasks = useMutation(api.workspace.deleteTasks);
+  const updateStatus = useMutation(api.workspace.updateTaskStatus);
+
+  const handleMarkAsComplete = async (taskId: Id<"tasks">) => {
+    try {
+      toast.promise(
+        updateStatus({
+          taskId,
+          status: "completed",
+        }),
+        {
+          loading: "Marking task as complete...",
+          success: "Task marked as complete successfully!",
+          error: "Failed to mark task as complete",
+        }
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const handleDeleteTask = async (taskId: Id<"tasks">) => {
     try {
@@ -495,16 +515,14 @@ const TaskGroup = ({
                                 </DropdownMenuItem>
                               }
                             />
-                            <MoveToSprintDialog
-                              trigger={
-                                <DropdownMenuItem
-                                  onSelect={(e) => e.preventDefault()}
-                                  className="gap-2 focus:bg-primary/5 cursor-pointer"
-                                >
-                                  <Layout className="w-4 h-4" /> Move to Sprint
-                                </DropdownMenuItem>
-                              }
-                            />
+                            {task.status !== "completed" && (
+                              <DropdownMenuItem
+                                onSelect={() => handleMarkAsComplete(task._id)}
+                                className="gap-2 focus:bg-primary/5 cursor-pointer text-xs  py-2 "
+                              >
+                                <Check className="w-4 h-4" /> Mark as Complete
+                              </DropdownMenuItem>
+                            )}
                             <AlertDialog>
                               <AlertDialogTrigger asChild>
                                 <DropdownMenuItem

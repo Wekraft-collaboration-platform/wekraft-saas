@@ -46,6 +46,8 @@ import {
   FileCodeCorner,
   Bug,
   Info,
+  Check,
+  AlertCircle,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import {
@@ -57,6 +59,21 @@ import {
 import { TaskDetailSheet } from "./TaskDetailSheet";
 import { Task } from "@/types/types";
 import { Id } from "../../../convex/_generated/dataModel";
+import { useMutation } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+import { toast } from "sonner";
+import { EditTaskDialog } from "./EditTaskDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
 import {
   priorityIcons2,
   statusColors,
@@ -90,6 +107,10 @@ interface TableTabProps {
   setSortConfig: (config: SortConfig) => void;
   tagFilter: string | null;
   setTagFilter: (tag: string | null) => void;
+  projectId: Id<"projects">;
+  projectName: string;
+  repoFullName?: string;
+  ownerClerkId?: string;
 }
 
 const PriorityBadge = ({ priority = "none" }: { priority?: string }) => {
@@ -113,8 +134,42 @@ export const TableTab = ({
   setSortConfig,
   tagFilter,
   setTagFilter,
+  projectId,
+  projectName,
+  repoFullName,
+  ownerClerkId,
 }: TableTabProps) => {
   const [page, setPage] = useState(0);
+
+  const deleteTasks = useMutation(api.workspace.deleteTasks);
+  const updateStatus = useMutation(api.workspace.updateTaskStatus);
+
+  const handleDeleteTask = async (taskId: Id<"tasks">) => {
+    try {
+      await deleteTasks({ taskIds: [taskId] });
+      toast.success("Task deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete task");
+    }
+  };
+
+  const handleMarkAsComplete = async (taskId: Id<"tasks">) => {
+    try {
+      toast.promise(
+        updateStatus({
+          taskId,
+          status: "completed",
+        }),
+        {
+          loading: "Marking task as complete...",
+          success: "Task marked as complete successfully!",
+          error: "Failed to mark task as complete",
+        }
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   // Client-side pagination: slice the loaded tasks
   const totalPages = Math.ceil(tasks.length / PAGE_SIZE);
@@ -422,21 +477,71 @@ export const TableTab = ({
                           <Button
                             variant="ghost"
                             size="icon"
-                            className="h-7 w-7 dark:text-primary text-foreground transition-all rounded dark:hover:bg-neutral-800 hover:bg-neutral-100"
+                            className="h-7 w-7 rounded-lg "
                           >
-                            <MoreHorizontal size={14} />
+                            <MoreHorizontal className="w-4 h-4" />
                           </Button>
                         </DropdownMenuTrigger>
                         <DropdownMenuContent
                           align="end"
-                          className="dark:bg-neutral-900 bg-card dark:border-neutral-800 border-neutral-200 text-primary/80 min-w-[140px] rounded-xl shadow-2xl"
+                          className="w-48 rounded-xl shadow-xl border-muted/50"
                         >
-                          <DropdownMenuItem className="text-xs font-semibold py-2 cursor-pointer focus:bg-neutral-800 focus:text-primary gap-2">
-                            <Edit size={14} className="opacity-50" /> Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem className="text-xs font-semibold py-2 cursor-pointer focus:bg-rose-500/10 focus:text-rose-500 text-rose-500/80 gap-2">
-                            <Trash2 size={14} /> Delete
-                          </DropdownMenuItem>
+                          <EditTaskDialog
+                            projectName={projectName}
+                            projectId={projectId}
+                            repoFullName={repoFullName}
+                            ownerClerkId={ownerClerkId}
+                            task={task}
+                            trigger={
+                              <DropdownMenuItem
+                                onSelect={(e) => e.preventDefault()}
+                                className="gap-2 focus:bg-primary/5 cursor-pointer text-xs font-semibold py-2"
+                              >
+                                <Edit className="w-4 h-4" /> Edit Task
+                              </DropdownMenuItem>
+                            }
+                          />
+                          {task.status !== "completed" && (
+                            <DropdownMenuItem
+                              onSelect={() => handleMarkAsComplete(task._id)}
+                              className="gap-2 focus:bg-primary/5 cursor-pointer text-xs py-2"
+                            >
+                              <Check className="w-4 h-4" /> Mark as Complete
+                            </DropdownMenuItem>
+                          )}
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <DropdownMenuItem
+                                onSelect={(e) => e.preventDefault()}
+                                className="gap-2 focus:bg-red-500/10 text-red-500 cursor-pointer text-xs font-semibold py-2"
+                              >
+                                <AlertCircle className="w-4 h-4" /> Delete Task
+                              </DropdownMenuItem>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent className="bg-neutral-900 border-neutral-800 shadow-2xl">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle className="text-primary">
+                                  Are you absolutely sure?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription className="text-muted-foreground">
+                                  This action cannot be undone. This will
+                                  permanently delete this task and remove all
+                                  associated data.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel className="bg-neutral-800 border-neutral-700 text-primary hover:bg-neutral-700">
+                                  Cancel
+                                </AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDeleteTask(task._id)}
+                                  className="bg-red-600 text-white hover:bg-red-700"
+                                >
+                                  Delete Permanently
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>

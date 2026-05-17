@@ -564,6 +564,7 @@ export const getProjectPermissions = query({
         isMember: false,
         isViewer: false,
         isPower: false,
+        userId: undefined,
       };
 
     const user = await ctx.db
@@ -580,6 +581,7 @@ export const getProjectPermissions = query({
         isMember: false,
         isViewer: false,
         isPower: false,
+        userId: undefined,
       };
 
     const project = await ctx.db.get(args.projectId);
@@ -590,6 +592,7 @@ export const getProjectPermissions = query({
         isMember: false,
         isViewer: false,
         isPower: false,
+        userId: undefined,
       };
 
     const isOwner = project.ownerId === user._id;
@@ -612,6 +615,7 @@ export const getProjectPermissions = query({
       isViewer,
       isPower,
       role: isOwner ? "owner" : membership?.AccessRole || null,
+      userId: user._id,
     };
   },
 });
@@ -645,6 +649,7 @@ export const getProjectPermissionsById = query({
       isViewer,
       isPower,
       role: isOwner ? "owner" : membership?.AccessRole || null,
+      userId: user._id,
     };
   },
 });
@@ -1105,7 +1110,7 @@ export const getTeamPageData = query({
 });
 
 // ====================================
-// REMOVE MEMBER FROM PROJECT
+//------------------- REMOVE MEMBER FROM PROJECT-----------------------------
 // ====================================
 export const removeMember = mutation({
   args: {
@@ -1147,7 +1152,92 @@ export const removeMember = mutation({
       throw new Error("Cannot remove the project owner");
     }
 
+    // Cannot remove yourself
+    if (target.userId === user._id) {
+      throw new Error("You cannot remove yourself from the project");
+    }
+
+    // Clean up task assignments
+    const userTasks = await ctx.db
+      .query("taskAssignees")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .filter((q) => q.eq(q.field("userId"), target.userId))
+      .collect();
+    for (const t of userTasks) {
+      await ctx.db.delete(t._id);
+    }
+
+    // Clean up issue assignments
+    const userIssues = await ctx.db
+      .query("issueAssignees")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .filter((q) => q.eq(q.field("userId"), target.userId))
+      .collect();
+    for (const i of userIssues) {
+      await ctx.db.delete(i._id);
+    }
+
     await ctx.db.delete(args.memberId);
+  },
+});
+
+// ====================================
+// --------------------------LEAVE PROJECT------------------------------------
+// ====================================
+export const leaveProject = mutation({
+  args: {
+    projectId: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthenticated");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier)
+      )
+      .unique();
+    if (!user) throw new Error("User not found");
+
+    const project = await ctx.db.get(args.projectId);
+    if (!project) throw new Error("Project not found");
+
+    // Owners cannot leave
+    if (project.ownerId === user._id) {
+      throw new Error("As the project owner, you cannot leave the project.");
+    }
+
+    const membership = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .filter((q) => q.eq(q.field("userId"), user._id))
+      .unique();
+
+    if (!membership) throw new Error("You are not a member of this project");
+
+    // Clean up task assignments
+    const userTasks = await ctx.db
+      .query("taskAssignees")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .filter((q) => q.eq(q.field("userId"), user._id))
+      .collect();
+    for (const t of userTasks) {
+      await ctx.db.delete(t._id);
+    }
+
+    // Clean up issue assignments
+    const userIssues = await ctx.db
+      .query("issueAssignees")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .filter((q) => q.eq(q.field("userId"), user._id))
+      .collect();
+    for (const i of userIssues) {
+      await ctx.db.delete(i._id);
+    }
+
+    await ctx.db.delete(membership._id);
+    return { success: true };
   },
 });
 
