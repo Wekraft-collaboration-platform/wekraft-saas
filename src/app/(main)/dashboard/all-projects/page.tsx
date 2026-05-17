@@ -128,7 +128,7 @@ const AllProjectsPage = () => {
             <button 
               onClick={() => setActiveTab("creations")}
               className={cn(
-                "text-lg font-semibold tracking-tight flex items-center gap-3 transition-colors relative pb-4 -mb-4",
+                "text-base font-medium tracking-tight flex items-center gap-3 transition-colors relative pb-4 -mb-4",
                 activeTab === "creations" ? "text-primary" : "text-muted-foreground hover:text-primary"
               )}
             >
@@ -144,7 +144,7 @@ const AllProjectsPage = () => {
             <button 
               onClick={() => setActiveTab("team")}
               className={cn(
-                "text-lg font-semibold tracking-tight flex items-center gap-3 transition-colors relative pb-4 -mb-4",
+                "text-base font-medium tracking-tight flex items-center gap-3 transition-colors relative pb-4 -mb-4",
                 activeTab === "team" ? "text-primary" : "text-muted-foreground hover:text-primary"
               )}
             >
