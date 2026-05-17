@@ -46,13 +46,15 @@ const SprintPage = () => {
   const [statusFilter, setStatusFilter] = useState<string>("all");
   const { setIsOpen } = useKayaStore();
 
+  const user = useQuery(api.user.getCurrentUser);
   const project = useQuery(api.project.getProjectBySlug, { slug });
+  const isOwner = !!project && !!user && project.ownerId === user._id;
   const sprints = useQuery(
     api.sprint.getSprintsByProject,
     project?._id ? { projectId: project._id as Id<"projects"> } : "skip",
   );
 
-  if (!project || sprints === undefined) {
+  if (!project || sprints === undefined || user === undefined) {
     return (
       <div className="p-6 space-y-6">
         {/* Header */}
@@ -117,6 +119,8 @@ const SprintPage = () => {
       </div>
     );
   }
+
+
 
   const filteredSprints = sprints?.filter((s) => {
     const matchesSearch = s.sprintName
@@ -207,7 +211,7 @@ const SprintPage = () => {
       </header>
 
       {sprints?.length === 0 ? (
-        <div className="mt-20">
+        <div className="mt-28">
           {/* Empty State */}
           <div className="flex flex-col items-start justify-center space-y-1.5 p-4 w-[360px] mx-auto">
             <Image

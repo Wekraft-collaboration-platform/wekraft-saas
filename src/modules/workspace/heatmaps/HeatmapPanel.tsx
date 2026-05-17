@@ -10,6 +10,8 @@ import {
   Info,
   Package,
   Bug,
+  GitCommit,
+  Clover,
 } from "lucide-react";
 import {
   FileIcon as FileSymbol,
@@ -23,10 +25,17 @@ import { useQuery } from "convex/react";
 import { ExternalLink, Github } from "lucide-react";
 import { Id } from "../../../../convex/_generated/dataModel";
 import { api } from "../../../../convex/_generated/api";
-import { getRepoStructure, getRecentlyChangedPaths, type FolderNode } from "./action";
+import {
+  getRepoStructure,
+  getRecentlyChangedPaths,
+  getLatestCommits,
+  type FolderNode,
+  type CommitInfo,
+} from "./action";
 import { motion, AnimatePresence } from "framer-motion";
 import { formatDistanceToNow } from "date-fns";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface HeatmapPanelProps {
   isOpen: boolean;
@@ -38,6 +47,7 @@ interface HeatmapPanelProps {
   recentlyChangedPaths?: string[];
   setRecentlyChangedPaths?: (paths: string[]) => void;
   setStructure: (structure: FolderNode | null) => void;
+  isFreeTier?: boolean;
 }
 
 // Helper to filter the tree for issues
@@ -259,9 +269,16 @@ export const HeatmapPanel = memo(
     recentlyChangedPaths = [],
     setRecentlyChangedPaths,
     setStructure,
+    isFreeTier,
   }: HeatmapPanelProps) => {
     const { setOpen: setSidebarOpen } = useSidebar();
     const [isLoading, setIsLoading] = useState(false);
+    const router = useRouter();
+
+    const project = useQuery(
+      api.project.getProjectById,
+      projectId ? { projectId } : "skip",
+    );
 
     // Track expanded paths for the issue tree separately
     const [issueExpandedPaths, setIssueExpandedPaths] = useState<Set<string>>(
@@ -269,6 +286,9 @@ export const HeatmapPanel = memo(
     );
 
     const [isIssuesOpen, setIsIssuesOpen] = useState(true);
+    const [isCommitsOpen, setIsCommitsOpen] = useState(true);
+    const [commits, setCommits] = useState<CommitInfo[]>([]);
+    const [isCommitsLoading, setIsCommitsLoading] = useState(false);
 
     const [lastUpdated, setLastUpdated] = useState<number | null>(null);
 
@@ -314,7 +334,7 @@ export const HeatmapPanel = memo(
             force,
             repository.ownerClerkId,
           );
-          
+
           const churnData = await getRecentlyChangedPaths(
             repository.repoOwner,
             repository.repoName,
@@ -348,11 +368,59 @@ export const HeatmapPanel = memo(
       [repository, setStructure],
     );
 
+    const loadCommits = useCallback(
+      async (force = false) => {
+        if (!repository?.repoOwner || !repository?.repoName) return;
+
+        setIsCommitsLoading(true);
+        try {
+          const result = await getLatestCommits(
+            repository.repoOwner,
+            repository.repoName,
+            force,
+            repository.ownerClerkId,
+          );
+
+          if (result.rateLimited) {
+            toast.error(
+              "Rate limit hit! Please wait 5 minutes between refreshes.",
+            );
+            return;
+          }
+
+          if (result.error) {
+            toast.error(result.error);
+            return;
+          }
+
+          if (result.data) {
+            setCommits(result.data);
+            if (force) toast.success("Commits updated!");
+          }
+        } catch (error) {
+          toast.error("Failed to load commits");
+        } finally {
+          setIsCommitsLoading(false);
+        }
+      },
+      [repository],
+    );
+
     useEffect(() => {
       if (isOpen && !structure && repository) {
         loadStructure();
       }
-    }, [isOpen, structure, repository, loadStructure]);
+      if (isOpen && commits.length === 0 && repository) {
+        loadCommits();
+      }
+    }, [
+      isOpen,
+      structure,
+      repository,
+      loadStructure,
+      loadCommits,
+      commits.length,
+    ]);
 
     const toggleIssuePath = (path: string) => {
       const next = new Set(issueExpandedPaths);
@@ -423,94 +491,264 @@ export const HeatmapPanel = memo(
             </div>
 
             {/* BODY */}
-            <div className="flex-1 overflow-y-auto custom-scrollbar px-4 py-6">
-              {/* ISSUE BOX */}
-              <div className="w-full space-y-4">
-                <Button
-                  className="w-full flex items-center justify-center relative px-10"
-                  variant={"secondary"}
-                  onClick={() => setIsIssuesOpen(!isIssuesOpen)}
-                >
-                  <span className="flex items-center gap-2">
-                    <Bug size={18} />
-                    Issues
-                  </span>
-
-                  <ChevronDown
-                    className={cn(
-                      "absolute right-4 transition-transform duration-200",
-                      isIssuesOpen && "rotate-180",
-                    )}
-                    size={18}
-                  />
-                </Button>
-
-                <AnimatePresence>
-                  {isIssuesOpen && (
-                    <motion.div
-                      initial={{ height: 0, opacity: 0 }}
-                      animate={{ height: "auto", opacity: 1 }}
-                      exit={{ height: 0, opacity: 0 }}
-                      className="overflow-hidden space-y-2"
+            <div className="flex-1 overflow-y-auto custom-scrollbar px-4 py-4 space-y-4">
+              {/* REPOSITORY INFO */}
+              <div className="space-y-4">
+                {project?.repoFullName ? (
+                  <div className="p-4 rounded-xl bg-neutral-900 border border-white/5 group hover:border-primary/30 transition-all duration-300">
+                    <div className="flex items-center gap-3">
+                      <div className="p-2 bg-primary/10 rounded-lg text-primary">
+                        <Github size={18} />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-white truncate">
+                          {project.repoFullName}
+                        </p>
+                        <p className="text-[10px] text-zinc-500 mt-0.5 flex items-center gap-1">
+                          <ExternalLink size={10} />
+                          github.com/{project.repoFullName}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="p-6 rounded-xl border border-dashed border-white/10 bg-zinc-900 text-center space-y-4">
+                    <div className="flex flex-col items-center gap-2">
+                      <div className="p-3 bg-zinc-800 rounded-full text-zinc-500">
+                        <Github size={24} className="" />
+                      </div>
+                      <p className="text-xs text-zinc-400">
+                        No repository connected to this project
+                      </p>
+                    </div>
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="w-full h-9 text-xs"
+                      onClick={() => router.push("/dashboard/repositories")}
                     >
-                      {linkedIssues.length > 0 ? (
-                        linkedIssues.map((issue) => (
-                          <div
-                            key={issue._id}
-                            className="p-2.5! rounded-xl border border-border bg-accent/20 hover:bg-accent/40 transition-colors group"
-                          >
-                            <div className="flex items-start justify-between gap-3">
-                              <div className="flex-1 min-w-0">
-                                <h3 className="text-xs capitalize font-medium text-white truncate group-hover:text-primary transition-colors">
-                                  {issue.title}
-                                </h3>
-                                <p className="text-[11px] text-zinc-500 mt-1 flex items-center gap-1.5">
-                                  <FileSymbol
-                                    fileName={
-                                      issue.fileLinked?.split("/").pop() || ""
-                                    }
-                                    width={12}
-                                    height={12}
-                                  />
-                                  <span className="truncate">
-                                    {issue.fileLinked}
-                                  </span>
+                      Connect Now
+                    </Button>
+                  </div>
+                )}
+              </div>
+
+              {isFreeTier ? (
+                <div className="py-10 text-center">
+                  <p className="text-sm text-muted-foreground font-medium">
+                    This is Premium Feature. <br />
+                    <span className="text-primary">Upgrade to Plus</span> to
+                    see insights / errors and more.
+                  </p>
+
+                  <Button className="text-xs cursor-pointer mt-4" size='sm'>
+                    Upgrade Now <Clover/>
+                  </Button>
+                </div>
+              ) : (
+                <>
+                  {/* ISSUE BOX */}
+                  <div className="w-full space-y-4">
+                    <Button
+                      className="w-full flex items-center justify-center relative px-10"
+                      variant={"secondary"}
+                      onClick={() => setIsIssuesOpen(!isIssuesOpen)}
+                    >
+                      <span className="flex items-center gap-2">
+                        <Bug size={18} />
+                        Issues
+                      </span>
+
+                      <ChevronDown
+                        className={cn(
+                          "absolute right-4 transition-transform duration-200",
+                          isIssuesOpen && "rotate-180",
+                        )}
+                        size={18}
+                      />
+                    </Button>
+
+                    <AnimatePresence>
+                      {isIssuesOpen && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="max-h-[320px] overflow-y-auto custom-scrollbar space-y-2 pr-1">
+                            {linkedIssues.length > 0 ? (
+                              linkedIssues.map((issue) => (
+                                <div
+                                  key={issue._id}
+                                  className="p-2.5! rounded-xl border border-border bg-accent/20 hover:bg-accent/40 transition-colors group"
+                                >
+                                  <div className="flex items-start justify-between gap-3">
+                                    <div className="flex-1 min-w-0">
+                                      <h3 className="text-xs capitalize font-medium text-white truncate group-hover:text-primary transition-colors">
+                                        {issue.title}
+                                      </h3>
+                                      <p className="text-[11px] text-zinc-500 mt-1 flex items-center gap-1.5">
+                                        <FileSymbol
+                                          fileName={
+                                            issue.fileLinked
+                                              ?.split("/")
+                                              .pop() || ""
+                                          }
+                                          width={12}
+                                          height={12}
+                                        />
+                                        <span className="truncate">
+                                          {issue.fileLinked}
+                                        </span>
+                                      </p>
+                                    </div>
+
+                                    <div className="flex -space-x-2 shrink-0">
+                                      {issue.assignedTo?.map((assignee) => (
+                                        <div
+                                          key={assignee._id}
+                                          className="w-6 h-6 rounded-full border-2 border-[#030303] bg-zinc-800 overflow-hidden"
+                                          title={assignee.name}
+                                        >
+                                          {assignee.avatar ? (
+                                            <img
+                                              src={assignee.avatar}
+                                              alt={assignee.name}
+                                              className="w-full h-full object-cover"
+                                            />
+                                          ) : (
+                                            <div className="w-full h-full flex items-center justify-center text-[10px] text-white">
+                                              {assignee.name.charAt(0)}
+                                            </div>
+                                          )}
+                                        </div>
+                                      ))}
+                                    </div>
+                                  </div>
+                                </div>
+                              ))
+                            ) : (
+                              <div className="text-center py-8 text-zinc-500 text-sm italic">
+                                No linked issues found
+                              </div>
+                            )}
+                          </div>
+                        </motion.div>
+                      )}
+                    </AnimatePresence>
+                  </div>
+
+                  {/* COMMITS BOX */}
+                  <div className="w-full space-y-4 pt-2">
+                    <div className="flex items-center gap-2">
+                      <Button
+                        className="flex-1 flex items-center justify-center relative px-10"
+                        variant={"secondary"}
+                        onClick={() => setIsCommitsOpen(!isCommitsOpen)}
+                      >
+                        <span className="flex items-center gap-2">
+                          <GitCommit size={18} />
+                          Latest Commits
+                        </span>
+
+                        <ChevronDown
+                          className={cn(
+                            "absolute right-4 transition-transform duration-200",
+                            isCommitsOpen && "rotate-180",
+                          )}
+                          size={18}
+                        />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="icon-sm"
+                        className="h-8 w-8 shrink-0"
+                        onClick={() => loadCommits(true)}
+                        disabled={isCommitsLoading}
+                      >
+                        <RefreshCw
+                          size={14}
+                          className={cn(isCommitsLoading && "animate-spin")}
+                        />
+                      </Button>
+                    </div>
+
+                    <AnimatePresence>
+                      {isCommitsOpen && (
+                        <motion.div
+                          initial={{ height: 0, opacity: 0 }}
+                          animate={{ height: "auto", opacity: 1 }}
+                          exit={{ height: 0, opacity: 0 }}
+                          className="overflow-hidden"
+                        >
+                          <div className="max-h-[320px] overflow-y-auto custom-scrollbar space-y-2 pr-2 pl-1">
+                            {commits.length > 0 ? (
+                              commits.map((commit) => (
+                                <div
+                                  key={commit.sha}
+                                  className="p-2.5 rounded-lg border border-border bg-accent/10 hover:bg-accent/20 transition-all group"
+                                >
+                                  <div className="flex items-start gap-3">
+                                    <div className="w-8 h-8 rounded-full overflow-hidden border border-white/10 shrink-0">
+                                      {commit.author.avatar ? (
+                                        <img
+                                          src={commit.author.avatar}
+                                          alt={commit.author.name}
+                                          className="w-full h-full object-cover"
+                                        />
+                                      ) : (
+                                        <div className="w-full h-full flex items-center justify-center bg-zinc-800 text-[10px]">
+                                          {commit.author.name.charAt(0)}
+                                        </div>
+                                      )}
+                                    </div>
+                                    <div className="flex-1 min-w-0">
+                                      <p className="text-[11px] font-medium text-white line-clamp-2 leading-snug group-hover:text-primary transition-colors">
+                                        {commit.message}
+                                      </p>
+                                      <div className="flex items-center gap-2 mt-1.5">
+                                        <span className="text-[10px] font-mono text-zinc-500 bg-zinc-900 px-1.5 py-0.5 rounded border border-white/5">
+                                          {commit.sha}
+                                        </span>
+                                        <span className="text-[10px] text-zinc-600">
+                                          {formatDistanceToNow(
+                                            new Date(commit.date),
+                                            { addSuffix: true },
+                                          )}
+                                        </span>
+                                      </div>
+                                    </div>
+                                    <a
+                                      href={commit.url}
+                                      target="_blank"
+                                      rel="noopener noreferrer"
+                                      className="opacity-0 group-hover:opacity-100 transition-opacity p-1 hover:bg-white/10 rounded text-zinc-400 hover:text-white"
+                                    >
+                                      <ExternalLink size={12} />
+                                    </a>
+                                  </div>
+                                </div>
+                              ))
+                            ) : isCommitsLoading ? (
+                              <div className="flex flex-col items-center justify-center py-10 space-y-3">
+                                <RefreshCw className="w-5 h-5 animate-spin text-primary/50" />
+                                <p className="text-xs text-zinc-500 italic">
+                                  Fetching latest commits...
                                 </p>
                               </div>
-
-                              <div className="flex -space-x-2 shrink-0">
-                                {issue.assignedTo?.map((assignee) => (
-                                  <div
-                                    key={assignee._id}
-                                    className="w-6 h-6 rounded-full border-2 border-[#030303] bg-zinc-800 overflow-hidden"
-                                    title={assignee.name}
-                                  >
-                                    {assignee.avatar ? (
-                                      <img
-                                        src={assignee.avatar}
-                                        alt={assignee.name}
-                                        className="w-full h-full object-cover"
-                                      />
-                                    ) : (
-                                      <div className="w-full h-full flex items-center justify-center text-[10px] text-white">
-                                        {assignee.name.charAt(0)}
-                                      </div>
-                                    )}
-                                  </div>
-                                ))}
+                            ) : (
+                              <div className="text-center py-8 text-zinc-500 text-xs italic">
+                                No commits found
                               </div>
-                            </div>
+                            )}
                           </div>
-                        ))
-                      ) : (
-                        <div className="text-center py-8 text-zinc-500 text-sm italic">
-                          No linked issues found
-                        </div>
+                        </motion.div>
                       )}
-                    </motion.div>
-                  )}
-                </AnimatePresence>
-              </div>
+                    </AnimatePresence>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         </div>

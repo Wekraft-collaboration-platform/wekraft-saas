@@ -28,6 +28,7 @@ import {
   Check,
   FileText,
   Trash2,
+  AlertCircle,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -94,7 +95,10 @@ export const CreateTaskDialog = ({
   const [isUploading, setIsUploading] = useState(false);
 
   const members = useQuery(api.project.getProjectMembers, { projectId });
-  const projectDetails = useQuery(api.projectDetails.getProjectDetails, { projectId });
+  const project = useQuery(api.project.getProjectById, { projectId });
+  const projectDetails = useQuery(api.projectDetails.getProjectDetails, {
+    projectId,
+  });
 
   const createTask = useMutation(api.workspace.createTask);
   const existingTags = useQuery(api.workspace.getUniqueTags, { projectId });
@@ -405,11 +409,14 @@ export const CreateTaskDialog = ({
                   selected={date}
                   onSelect={setDate}
                   numberOfMonths={1}
-                  disabled={
+                  disabled={[
+                    project?.createdAt
+                      ? { before: new Date(project.createdAt) }
+                      : undefined,
                     projectDetails?.targetDate
                       ? { after: new Date(projectDetails.targetDate) }
-                      : undefined
-                  }
+                      : undefined,
+                  ].filter(Boolean) as any}
                   className="bg-[#1c1c1c] text-neutral-200"
                 />
               </PopoverContent>
@@ -425,8 +432,9 @@ export const CreateTaskDialog = ({
                   attachments.length > 0 &&
                     "text-blue-400 border-blue-900/40 bg-blue-900/10",
                 )}
-                disabled={isUploading}
+                disabled={isUploading || project?.ownerAccountType === "free"}
                 onClick={() => document.getElementById("file-upload")?.click()}
+                title={project?.ownerAccountType === "free" ? "Upgrade to Plus to use attachments" : ""}
               >
                 {isUploading ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -607,9 +615,7 @@ export const CreateTaskDialog = ({
                             Save
                           </Button>
                         </div>
-                        <p className="text-[10px] text-muted-foreground ml-1 italic opacity-60">
-                          Press Enter or click Save
-                        </p>
+                    
                       </div>
                     </div>
                   )}
@@ -681,7 +687,14 @@ export const CreateTaskDialog = ({
           )}
         </div>
 
-        <div className="p-4 border-t border-[#2b2b2b] flex items-center justify-end">
+        <div className="p-4 border-t border-[#2b2b2b] flex items-center justify-between">
+          <div>
+            {!projectDetails?.targetDate && (
+              <span className="text-xs font-medium flex items-center gap-1.5">
+                <AlertCircle className="w-3.5 h-3.5" /> Project deadline is not set! Don't forget to configure it in settings.
+              </span>
+            )}
+          </div>
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"

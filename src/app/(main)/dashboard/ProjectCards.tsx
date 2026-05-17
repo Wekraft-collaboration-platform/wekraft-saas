@@ -10,26 +10,32 @@ import {
   Globe,
   Lock,
   LucideLayers2,
+  LucideLayers3,
 } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { ProjectQuickStats } from "@/types/types";
+import CreateProjectDialog from "@/modules/project/CreateProjectDialog";
 
 interface ProjectCardsProps {
   projects: ProjectQuickStats[] | undefined;
+  hideCreateCard?: boolean;
 }
 
-export const ProjectCards = ({ projects }: ProjectCardsProps) => {
+export const ProjectCards = ({
+  projects,
+  hideCreateCard = false,
+}: ProjectCardsProps) => {
   return (
     <div className="grid grid-cols-4 gap-5">
       {projects?.map((project) => (
         <Card
           key={project._id}
-          className="overflow-hidden bg-card border border-border flex flex-col h-full rounded-xl shadow-sm p-0"
+          className="overflow-hidden bg-sidebar border border-border! flex flex-col h-full rounded-lg shadow-sm p-0"
         >
-          <div className="aspect-video w-full bg-accent/20 relative border-b border-accent/10 overflow-hidden">
+          <div className="aspect-video w-full bg-muted relative border-b border-accent/10 overflow-hidden">
             {project.thumbnailUrl ? (
               <img
                 src={project.thumbnailUrl}
@@ -38,7 +44,7 @@ export const ProjectCards = ({ projects }: ProjectCardsProps) => {
               />
             ) : (
               <div className="w-full h-full flex items-center justify-center bg-accent/10">
-                <LucideLayers2 className="h-10 w-10 text-muted-foreground/20" />
+                <LucideLayers3 className="h-10 w-10 text-muted-foreground/80" />
               </div>
             )}
             <div className="absolute top-2 left-2">
@@ -147,17 +153,25 @@ export const ProjectCards = ({ projects }: ProjectCardsProps) => {
       ))}
 
       {/* Dashed Create Card */}
-      <div className="flex flex-col border-2 border-dashed border-accent transition-all rounded-xl cursor-pointer items-center justify-center p-8 gap-3 min-h-[200px] bg-accent/5 hover:bg-accent/30 group">
-        <div className="h-10 w-10 rounded-full border border-accent flex items-center justify-center group-hover:bg-primary group-hover:text-accent transition-all">
-          <Plus className="h-5 w-5" />
-        </div>
-        <div className="text-center">
-          <p className="text-sm font-semibold text-primary">Create Project</p>
-          <p className="text-[11px] text-muted-foreground">
-            Start a new venture
-          </p>
-        </div>
-      </div>
+      {!hideCreateCard && (
+        <CreateProjectDialog
+          trigger={
+            <div className="flex flex-col border-2 border-dashed border-accent transition-all rounded-xl cursor-pointer items-center justify-center p-8 gap-3 min-h-[200px] bg-accent/5 hover:bg-accent/30 group">
+              <div className="h-10 w-10 rounded-full border border-accent flex items-center justify-center group-hover:bg-primary group-hover:text-accent transition-all">
+                <Plus className="h-5 w-5" />
+              </div>
+              <div className="text-center">
+                <p className="text-sm font-semibold text-primary">
+                  Create Project
+                </p>
+                <p className="text-[11px] text-muted-foreground">
+                  Start a new venture
+                </p>
+              </div>
+            </div>
+          }
+        />
+      )}
     </div>
   );
 };

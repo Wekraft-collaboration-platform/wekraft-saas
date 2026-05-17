@@ -1,9 +1,12 @@
+import CustomerStories from "@/modules/web/CustomerStories";
+import Features from "@/modules/web/Features";
 import Hero from "@/modules/web/Hero";
+import InfraSection from "@/modules/web/infraSection";
 import Navbar from "@/modules/web/Navbar";
 import Section1 from "@/modules/web/Section1";
-import Features from "@/modules/web/Features";
-import Link from "next/link";
-import React from "react";
+import Section2 from "@/modules/web/Section2";
+import WallOfLove from "@/modules/web/WallOfLove";
+import WhyUs from "@/modules/web/WhyUs";
 
 const WebPage = () => {
   return (
@@ -12,6 +15,11 @@ const WebPage = () => {
       <Hero />
       <Section1 />
       <Features />
+      <WhyUs />
+      <Section2 />
+      <CustomerStories />
+      <WallOfLove />
+      <InfraSection />
     </div>
   );
 };

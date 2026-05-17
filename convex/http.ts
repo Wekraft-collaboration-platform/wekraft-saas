@@ -388,4 +388,28 @@ http.route({
   }),
 });
 
+http.route({
+  path: "/razorpay-webhook",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const signature = request.headers.get("x-razorpay-signature");
+    const payload = await request.text();
+
+    if (!signature) {
+      return new Response("Missing signature", { status: 400 });
+    }
+
+    const success = await ctx.runAction(internal.razorpayWebhook.processWebhook, {
+      signature,
+      payload,
+    });
+
+    if (success) {
+      return new Response("OK", { status: 200 });
+    } else {
+      return new Response("Webhook Error", { status: 400 });
+    }
+  }),
+});
+
 export default http;

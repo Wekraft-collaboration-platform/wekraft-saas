@@ -255,7 +255,7 @@ export const TaskDetailSheet = ({
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="sm:max-w-lg w-full p-0 border-l border-neutral-800 bg-sidebar">
+      <SheetContent className="sm:max-w-lg w-full p-0 border-l border-border bg-sidebar">
         <div className="flex flex-col h-full">
           {/* Top Actions */}
           <div className="flex items-center justify-between px-6 py-4 border-b border-accent">
@@ -316,7 +316,7 @@ export const TaskDetailSheet = ({
                         currentTask.type.color === "blue" &&
                           "bg-blue-500/10 text-blue-400 border-blue-400/20 shadow-[0_0_10px_rgba(96,165,250,0.05)]",
                         currentTask.type.color === "grey" &&
-                          "bg-neutral-500/10 text-neutral-400 border-neutral-400/20",
+                          "bg-muted text-muted-foreground border-border",
                       )}
                     >
                       <div
@@ -346,7 +346,7 @@ export const TaskDetailSheet = ({
                   </span>
                   <Avatar className="w-6 h-6 border">
                     <AvatarImage src={creator?.avatarUrl || ""} />
-                    <AvatarFallback className="text-sm bg-neutral-800 text-neutral-400">
+                    <AvatarFallback className="text-sm bg-muted text-muted-foreground">
                       {creator?.name?.[0] || "?"}
                     </AvatarFallback>
                   </Avatar>
@@ -423,14 +423,14 @@ export const TaskDetailSheet = ({
                             <Button
                               variant="outline"
                               size="sm"
-                              className="h-6 px-2 text-[10px] bg-neutral-800/30 border-neutral-700/50 text-neutral-400 hover:text-white rounded-lg gap-1"
+                              className="h-6 px-2 text-[10px] bg-muted/50 border-border/50 text-muted-foreground hover:text-foreground rounded-lg gap-1"
                             >
                               <Plus size={10} /> Unassigned
                             </Button>
                           )}
                         </div>
                       </DropdownMenuTrigger>
-                      <DropdownMenuContent className="bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200 w-48">
+                      <DropdownMenuContent className="bg-popover border-border text-popover-foreground w-48">
                         <div className="text-xs text-center font-medium p-2 border-b border-accent">
                           Assign Members
                         </div>
@@ -503,7 +503,8 @@ export const TaskDetailSheet = ({
                 ) : (
                   <div>
                     <p className="text-xs text-muted-foreground">
-                      No codebase linked
+                      <GitBranch size={12} className="inline mr-1" /> No codebase
+                      linked
                     </p>
                   </div>
                 )}
@@ -516,7 +517,7 @@ export const TaskDetailSheet = ({
                   <p className="text-xs text-muted-foreground flex items-center">
                     <Check size={16} className="mr-2 text-emerald-500" />
                     Completed at:
-                    <span className="text-xs font-semibold ml-3 text-emerald-500">
+                    <span className="text-xs font-semibold ml-3 text-primary">
                       {currentTask.finalCompletedAt
                         ? format(currentTask.finalCompletedAt, "d MMMM, yyyy")
                         : format(currentTask.updatedAt, "d MMMM, yyyy")}
@@ -528,7 +529,7 @@ export const TaskDetailSheet = ({
                     </span>
                     <Avatar className="w-5 h-5 border border-emerald-500/30">
                       <AvatarImage src={completer?.avatarUrl || ""} />
-                      <AvatarFallback className="text-[8px] bg-neutral-800 text-neutral-400">
+                      <AvatarFallback className="text-[8px] bg-muted text-muted-foreground">
                         {completer?.name?.[0] || "?"}
                       </AvatarFallback>
                     </Avatar>
@@ -564,16 +565,37 @@ export const TaskDetailSheet = ({
                   </TabsTrigger>
                 </TabsList>
 
-                <TabsContent value="description" className=" pt-2">
-                  <div className="p-4 border-2 border-dashed border-neutral-800/80 rounded-2xl bg-neutral-900/40">
-                    <p className="text-primary/80 text-sm leading-relaxed whitespace-pre-wrap h-[70px]">
-                      {currentTask.description || "No description provided."}
-                    </p>
-                  </div>
+                <TabsContent value="description" className="pt-4">
+                  {currentTask.description ? (
+                    <div className="p-5 rounded-2xl bg-accent/30 border border-border backdrop-blur-sm shadow-inner group">
+                      <p className="text-foreground/90 text-sm leading-relaxed whitespace-pre-wrap min-h-[100px] selection:bg-primary/20">
+                        {currentTask.description}
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-border rounded-2xl bg-accent/10 ">
+                      <div className="p-3 rounded-full bg-muted/50 text-muted-foreground  transition-all duration-300 shadow-lg">
+                        <FileText size={24} />
+                      </div>
+                      <p className="mt-4 text-sm font-medium text-foreground/70">
+                        No description provided
+                      </p>
+                      <p className="mt-1 text-[11px] text-muted-foreground">
+                        Click "Edit Task" above to add more details.
+                      </p>
+                    </div>
+                  )}
                 </TabsContent>
 
                 <TabsContent value="attachments" className="pt-2">
                   <div className="p-2 ">
+                    {project?.ownerAccountType === "free" && (
+                      <div className="mb-4 p-3 rounded-md bg-blue-500/5 border border-blue-500/20 text-center">
+                        <p className="text-xs font-medium">
+                          Project owner must be Plus account to use attachments.
+                        </p>
+                      </div>
+                    )}
                     {currentTask.attachments &&
                     currentTask.attachments.length > 0 ? (
                       <div className="grid grid-cols-1 gap-2 w-full">
@@ -596,7 +618,7 @@ export const TaskDetailSheet = ({
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-neutral-400 hover:text-blue-400 hover:bg-blue-400/10"
+                                className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
                                 onClick={() => window.open(file.url, "_blank")}
                               >
                                 <ExternalLink size={14} />
@@ -604,8 +626,9 @@ export const TaskDetailSheet = ({
                               <Button
                                 variant="ghost"
                                 size="icon"
-                                className="h-8 w-8 text-neutral-400 hover:text-red-400"
+                                className="h-8 w-8 text-muted-foreground hover:text-destructive"
                                 onClick={() => handleRemoveAttachment(file.url)}
+                                disabled={project?.ownerAccountType === "free"}
                               >
                                 <Trash2 size={14} />
                               </Button>
@@ -615,8 +638,8 @@ export const TaskDetailSheet = ({
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-9 px-3 text-xs bg-neutral-800/30 border-neutral-800 text-primary/60 hover:text-primary rounded-xl gap-2 mt-2 border-dashed"
-                          disabled={isUploading}
+                          className="h-9 px-3 text-xs bg-muted/30 border-border text-muted-foreground hover:text-foreground rounded-xl gap-2 mt-2 border-dashed"
+                          disabled={isUploading || project?.ownerAccountType === "free"}
                           onClick={() =>
                             document
                               .getElementById("detail-file-upload")
@@ -635,16 +658,16 @@ export const TaskDetailSheet = ({
                       <div className="text-center space-y-3 py-4 w-full">
                         <Paperclip
                           size={32}
-                          className="text-primary/10 mx-auto"
+                          className="text-muted-foreground/20 mx-auto"
                         />
-                        <p className="text-primary/40 text-xs font-medium">
+                        <p className="text-muted-foreground text-xs font-medium">
                           No attachments yet
                         </p>
                         <Button
                           variant="outline"
                           size="sm"
-                          className="h-9 px-4 text-xs bg-neutral-800/30 border-neutral-800 text-primary/60 hover:text-primary rounded-xl gap-2 mt-2"
-                          disabled={isUploading}
+                          className="h-9 px-4 text-xs bg-muted/30 border-border text-muted-foreground hover:text-foreground rounded-xl gap-2 mt-2"
+                          disabled={isUploading || project?.ownerAccountType === "free"}
                           onClick={() =>
                             document
                               .getElementById("detail-file-upload")
@@ -672,29 +695,29 @@ export const TaskDetailSheet = ({
                 <TabsContent value="comments" className="pt-2">
                   <div className="pt-2">
                     {comments && comments.length > 0 ? (
-                      <div className="border border-border/60 rounded-xl overflow-hidden divide-y divide-border/40 bg-card/30 backdrop-blur-sm max-h-[260px] py-6 overflow-y-auto">
+                      <div className="border border-border rounded-lg overflow-hidden divide-y divide-border bg-accent/5 backdrop-blur-sm max-h-[350px] overflow-y-auto custom-scrollbar">
                         {comments.map((comment) => (
                           <div
                             key={comment._id}
-                            className="group relative flex gap-3 px-3 py-2.5 hover:bg-accent/30 transition-colors duration-150"
+                            className="group relative flex gap-4 px-4 py-2 hover:bg-accent/10 transition-colors duration-150"
                           >
-                            <Avatar className="h-5 w-5 border border-border/70 shrink-0 mt-0.5">
+                            <Avatar className="h-8 w-8 border border-border/50 shrink-0 shadow-sm">
                               <AvatarImage src={comment.userImage} />
-                              <AvatarFallback className="bg-muted text-muted-foreground text-[9px] uppercase font-bold">
+                              <AvatarFallback className="bg-muted text-muted-foreground text-[10px] font-bold">
                                 {comment.userName.charAt(0)}
                               </AvatarFallback>
                             </Avatar>
-
+ 
                             <div className="flex-1 min-w-0">
-                              <div className="flex items-baseline gap-1.5 mb-0.5">
-                                <span className="text-[11px] font-semibold text-primary/90 truncate max-w-[120px] font-mono">
+                              <div className="flex items-center justify-between mb-1">
+                                <span className="text-xs font-semibold text-foreground capitalize truncate font-inter">
                                   {comment.userName}
                                 </span>
-                                <span className="text-[9px] text-muted-foreground/50 whitespace-nowrap tabular-nums">
+                                <span className="text-[10px] text-muted-foreground/60 font-mono">
                                   {format(comment.createdAt, "MMM d, h:mm a")}
                                 </span>
                               </div>
-                              <p className="text-[11px] text-muted-foreground leading-relaxed break-words">
+                              <p className="text-[12px] text-muted-foreground leading-relaxed break-words font-inter">
                                 {comment.comment}
                               </p>
                             </div>
@@ -702,13 +725,15 @@ export const TaskDetailSheet = ({
                         ))}
                       </div>
                     ) : (
-                      <div className="flex flex-col items-center border border-dashed border-border/60 p-6 rounded-xl justify-center text-center bg-accent/10 gap-2">
-                        <MessagesSquare className="w-8 h-8 text-muted-foreground/30" />
+                      <div className="flex flex-col items-center border border-dashed border-accent p-10 rounded-2xl justify-center text-center bg-accent/10">
+                        <div className="p-3 rounded-full bg-muted/50 text-muted-foreground/40 group-hover:scale-110 transition-transform">
+                          <MessagesSquare className="w-7 h-7" />
+                        </div>
                         <div>
-                          <p className="text-xs text-primary/70 font-medium">
+                          <p className="text-sm text-foreground/70 font-medium">
                             No comments yet
                           </p>
-                          <p className="text-[10px] text-muted-foreground/50 mt-0.5">
+                          <p className="text-xs text-muted-foreground mt-1">
                             Be the first to start the discussion
                           </p>
                         </div>
@@ -721,28 +746,39 @@ export const TaskDetailSheet = ({
           </div>
 
           {activeTab === "comments" && (
-            <div className="px-3 py-4 border-t border-border/60 bg-card/80 backdrop-blur-sm sticky bottom-0">
-              <div className="flex items-center gap-2">
-                <Input
-                  placeholder="Type your message..."
-                  value={commentText}
-                  onChange={(e) => setCommentText(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !e.shiftKey) {
-                      e.preventDefault();
-                      handleSendComment();
-                    }
-                  }}
-                  className="flex-1 bg-transparent border-border/60 focus-visible:ring-0 focus-visible:ring-offset-0 text-[11px] h-8 px-3 placeholder:text-muted-foreground/30 rounded-lg"
-                />
-                <Button
-                  size="icon"
-                  onClick={handleSendComment}
-                  disabled={!commentText.trim()}
-                  className="h-8 w-8 shrink-0 rounded-lg disabled:opacity-30 disabled:cursor-not-allowed"
-                >
-                  <Send size={12} />
-                </Button>
+            <div className="px-4 py-5 border-t border-border/50 bg-background/95 backdrop-blur-md sticky bottom-0 z-20">
+              <div className="relative">
+                <div className="relative flex items-center bg-accent/40 border border-border rounded-xl overflow-hidden focus-within:border-primary/20 transition-all duration-300">
+                  <Input
+                    placeholder="Drop a comment or update..."
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    onKeyDown={(e) => {
+                      if (e.key === "Enter" && !e.shiftKey) {
+                        e.preventDefault();
+                        handleSendComment();
+                      }
+                    }}
+                    className="flex-1 bg-transparent border-none focus-visible:ring-0 focus-visible:ring-offset-0 text-xs h-10 px-5 placeholder:text-muted-foreground/40"
+                  />
+                  <div className="pr-2">
+                    <Button
+                      size="icon"
+                      onClick={handleSendComment}
+                      disabled={!commentText.trim()}
+                      className={cn(
+                        "h-8 w-8 rounded-lg transition-all duration-300",
+                      )}
+                    >
+                      <Send
+                        size={14}
+                        className={cn(
+                          "transition-transform",
+                        )}
+                      />
+                    </Button>
+                  </div>
+                </div>
               </div>
             </div>
           )}

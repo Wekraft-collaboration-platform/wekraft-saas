@@ -5,7 +5,8 @@ import { Authenticated, Unauthenticated, useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { useRouter } from "next/navigation";
 import { useEffect } from "react";
-import { RedirectToSignIn, UserButton } from "@clerk/nextjs";
+import { RedirectToSignIn } from "@clerk/nextjs";
+import { UserMenu } from "@/modules/dashboard/components/UserMenu";
 import {
   SidebarInset,
   SidebarProvider,
@@ -15,6 +16,8 @@ import { Separator } from "@/components/ui/separator";
 import { DashboardBreadcrumbs } from "@/modules/dashboard/components/HeaderCrumbs";
 import { CommunitySearchBar } from "@/modules/dashboard/components/SearchBar";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { BugPlay, Share2, SunMedium } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 export default function Layout({
   children,
@@ -53,14 +56,26 @@ export default function Layout({
               {/* <div>
                 <CommunitySearchBar />
               </div> */}
-              <div className="flex items-center">
-                <UserButton
+              <div className="flex items-center gap-5">
+                {/* <UserButton
                   appearance={{
                     elements: {
                       userButtonAvatarBox: "h-9 w-9",
                     },
                   }}
-                />
+                /> */}
+                <div className="flex items-center gap-3">
+                  <Button size="icon-sm" variant="outline">
+                    <BugPlay />
+                  </Button>
+                  <Button size="icon-sm" variant="outline">
+                    <SunMedium />
+                  </Button>
+                  <Button size="icon-sm" variant="outline">
+                    <Share2 />
+                  </Button>
+                </div>
+                <UserMenu />
               </div>
             </header>
             <div className="flex-1 min-h-0 overflow-hidden">

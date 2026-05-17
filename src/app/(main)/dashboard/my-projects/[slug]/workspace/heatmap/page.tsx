@@ -50,6 +50,8 @@ const HeatmapPage = () => {
     }
   }, [sidebarOpen, isPanelOpen]);
 
+  const isFreeTier = (project as any)?.ownerAccountType === "free";
+
   return (
     <div className="flex min-h-svh w-full overflow-hidden bg-background">
       <HeatmapPanel
@@ -61,6 +63,7 @@ const HeatmapPage = () => {
         recentlyChangedPaths={recentlyChangedPaths}
         setRecentlyChangedPaths={setRecentlyChangedPaths}
         setStructure={setStructure}
+        isFreeTier={isFreeTier}
         onToggle={(open) => {
           setIsPanelOpen(open);
           if (open) setSidebarOpen(false);
@@ -72,6 +75,7 @@ const HeatmapPage = () => {
           structure={structure} 
           issuePaths={issuePaths} 
           recentlyChangedPaths={recentlyChangedPaths}
+          isFreeTier={isFreeTier}
         />
       </div>
     </div>

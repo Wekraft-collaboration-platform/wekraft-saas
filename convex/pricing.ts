@@ -5,66 +5,68 @@ export type PlanType = "free" | "plus" | "pro";
 export interface PlanLimits {
   project_creation_limit: number;
   project_joining_limit: number;
+  members_per_project_limit: number;
   team_insights: "limited" | "full";
   pm_agent: "none" | "limited" | "full";
-  ai_code_review: "none" | "limited" | "higher";
-  members_per_project_limit: number;
   user_profile_limit: "limited" | "full";
   community_insights: "limited" | "full";
   message_before_join: boolean;
-  ai_tools_access: "none" | "limited" | "full";
-  ai_tools_limit?: number;
   project_heatmap: "limited" | "full";
   dedicated_support: "basic" | "priority";
-  vs_code_extension: "limited" | "full";
+  cloud_storage: "none" | "basic" | "higher";
+  kaya_ai: "none" | "full";
+  automated_reporting: boolean;
+  experimental_features: boolean;
 }
 
 export const PLAN_CONFIGS: Record<PlanType, PlanLimits> = {
   free: {
     project_creation_limit: 2,
     project_joining_limit: 2,
+    members_per_project_limit: 3,
     team_insights: "limited",
     pm_agent: "none",
-    ai_code_review: "none",
-    members_per_project_limit: 3,
     user_profile_limit: "limited",
     community_insights: "limited",
     message_before_join: false,
-    ai_tools_access: "none",
     project_heatmap: "limited",
     dedicated_support: "basic",
-    vs_code_extension: "limited",
+    cloud_storage: "none",
+    kaya_ai: "none",
+    automated_reporting: false,
+    experimental_features: false,
   },
   plus: {
-    project_creation_limit: 3,
+    project_creation_limit: 5,
     project_joining_limit: 5,
-    team_insights: "full", 
+    members_per_project_limit: 6,
+    team_insights: "full",
     pm_agent: "none",
-    ai_code_review: "none",
-    members_per_project_limit: 5,
     user_profile_limit: "full",
     community_insights: "full",
     message_before_join: true,
-    ai_tools_access: "none",
-    project_heatmap: "limited",
+    project_heatmap: "full",
     dedicated_support: "basic",
-    vs_code_extension: "limited",
+    cloud_storage: "basic",
+    kaya_ai: "none",
+    automated_reporting: false,
+    experimental_features: false,
   },
   pro: {
-    project_creation_limit: 10,
-    project_joining_limit: 100, 
-    team_insights: "full",
-    pm_agent: "limited",
-    ai_code_review: "limited",
+    project_creation_limit: 15,
+    project_joining_limit: 15,
     members_per_project_limit: 15,
+    team_insights: "full",
+    pm_agent: "full",
     user_profile_limit: "full",
     community_insights: "full",
     message_before_join: true,
-    ai_tools_access: "limited",
-    ai_tools_limit: 50,
     project_heatmap: "full",
     dedicated_support: "priority",
-    vs_code_extension: "full",
+    cloud_storage: "higher",
+    kaya_ai: "full",
+    automated_reporting: true,
+    experimental_features: true,
   },
 };
 

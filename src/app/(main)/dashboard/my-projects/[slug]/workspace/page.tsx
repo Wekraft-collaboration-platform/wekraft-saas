@@ -27,6 +27,7 @@ import {
   ChartBar,
   Table,
   Settings2,
+  Plus,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -61,6 +62,7 @@ import { Lock, Sparkles } from "lucide-react";
 import { EnvironmentalSeverityHeatmap } from "@/modules/workspace/workspace-modules/EnvironmentalSeverityHeatmap";
 import { WeeklyVelocityChart } from "@/modules/workspace/workspace-modules/WeeklyVelocityChart";
 import { MemberWorkloadCard } from "@/modules/workspace/workspace-modules/MemberWorkloadCard";
+import { ProjectConfigTab } from "@/modules/workspace/workspace-modules/ProjectConfigTab";
 
 const ProjectWorkspace = () => {
   const params = useParams();
@@ -70,6 +72,10 @@ const ProjectWorkspace = () => {
   const [cachedData, setCachedData] = useState<any>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
+  const project = useQuery(api.project.getProjectBySlug, { slug });
+  const user = useQuery(api.user.getCurrentUser);
+  const isOwner = !!project && !!user && project.ownerId === user._id;
+
   const fetchAnalytics = async (projectId: string, forceRefresh = false) => {
     const params = new URLSearchParams({ projectId });
     if (forceRefresh) params.set("forceRefresh", "true");
@@ -78,10 +84,7 @@ const ProjectWorkspace = () => {
     return res.json();
   };
 
-  const project = useQuery(api.project.getProjectBySlug, { slug });
   const projectId = project?._id;
-
-  const user = useQuery(api.user.getCurrentUser);
 
   const projectDetails = useQuery(
     api.projectDetails.getProjectDetails,
@@ -98,6 +101,13 @@ const ProjectWorkspace = () => {
     api.issue.getFilteredIssues,
     projectId ? { projectId: projectId as Id<"projects"> } : "skip",
   );
+
+  const scheduler = useQuery(
+    api.scheduler.getScheduler,
+    projectId ? { projectId: projectId as Id<"projects"> } : "skip",
+  );
+
+
   // const members = useQuery(
   //   api.project.getProjectMembers,
   //   projectId ? { projectId: projectId as Id<"projects"> } : "skip",
@@ -282,6 +292,7 @@ const ProjectWorkspace = () => {
                     onOpenChange={setIsDeadlineDialogOpen}
                     projectId={projectId as Id<"projects">}
                     projectName={project?.projectName}
+                    projectCreatedAt={project.createdAt}
                   />
                 )}
               </div>
@@ -330,8 +341,7 @@ const ProjectWorkspace = () => {
 
       <section className="mt-4 w-full">
         {activeTab === "charts" &&
-          (user?.accountType !== "free" ||
-            (project as any)?.ownerAccountType !== "free") && (
+          (project as any)?.ownerAccountType !== "free" && (
             <Button
               className={cn(
                 "text-[10px] h-7 px-2 flex justify-end ml-auto mb-5 cursor-pointer transition-all",
@@ -351,19 +361,17 @@ const ProjectWorkspace = () => {
         {/* Advace charts area */}
         {activeTab === "charts" && (
           <div className="mt-6">
-            {user?.accountType === "free" &&
-            (project as any)?.ownerAccountType === "free" ? (
+            {(project as any)?.ownerAccountType === "free" ? (
               <div className="flex flex-col items-center justify-center py-16 ">
                 <div className="flex flex-col items-start gap-1.5 max-w-sm text-sm">
                   <Image
-                    src="/pat103.svg"
+                    src="/pat104.svg"
                     alt="locked features"
-                    width={100}
-                    height={100}
+                    width={120}
+                    height={120}
                   />
-                  <h3>
-                    Upgrade Now for deeper Insights/ Analaysis and unlock your
-                    team true Potential.
+                  <h3 className="text-muted-foreground">
+                  Project Owner must upgrade in order to unlock advanced analytics / Team insights and much more.
                   </h3>
                   <div className="flex items-center gap-4 mt-3">
                     <Button
@@ -378,7 +386,7 @@ const ProjectWorkspace = () => {
                       variant="outline"
                       size="sm"
                     >
-                      Learn More
+                      Learn More <Plus className="w-3 h-3 ml-1" />
                     </Button>
                   </div>
                 </div>
@@ -423,10 +431,13 @@ const ProjectWorkspace = () => {
         )}
 
         {/* Config Area */}
-        {activeTab === "config" && (
-          <div className="mt-6 flex flex-col items-center justify-center py-20 text-muted-foreground italic">
-            Config details coming soon...
-          </div>
+        {activeTab === "config" && projectId && (
+          <ProjectConfigTab
+            projectId={projectId as Id<"projects">}
+            projectDetails={projectDetails}
+            scheduler={scheduler}
+            isOwner={isOwner}
+          />
         )}
       </section>
     </div>

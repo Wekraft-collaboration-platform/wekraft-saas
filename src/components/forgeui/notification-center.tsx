@@ -24,16 +24,21 @@ type NotificationCardProps = {
   notificationTitle?: string;
   notificationDescription?: string;
   notificationTime?: string;
+  isHovered?: boolean;
+  showText?: boolean;
 };
 
 const NotificationCenter = ({
   cardTitle = "Real-time project health",
   cardDescription = "Get instant updates from Kaya about deadlines, delays, and critical sprint updates.",
   notificationTitle = "Kaya PM",
-  notificationDescription = "Deadline Alert: Sprint 4 is at risk of a 2-day delay.",
+  notificationDescription = "Deadline Alert: Project is Delayed.",
   notificationTime = "Just now",
+  isHovered: externalHovered,
+  showText = true,
 }: NotificationCardProps) => {
-  const [isHovered, setIsHovered] = useState(false);
+  const [internalHovered, setInternalHovered] = useState(false);
+  const isHovered = externalHovered ?? internalHovered;
 
   const phoneVariant: Variants = {
     open: {
@@ -123,24 +128,23 @@ const NotificationCenter = ({
 
   return (
     <motion.div
-      onClick={() => setIsHovered((prev) => !prev)}
-      onMouseEnter={() => setIsHovered(true)}
-      onMouseLeave={() => setIsHovered(false)}
+      onMouseEnter={() => setInternalHovered(true)}
+      onMouseLeave={() => setInternalHovered(false)}
       initial="close"
       animate={isHovered ? "open" : "close"}
       variants={parentvariant}
       className={cn(
         "relative",
         "flex max-w-[400px] w-full items-center justify-center",
-        "rounded-lg bg-neutral-950 border pt-4",
+        "bg-transparent pt-4",
       )}
     >
       <motion.div
         variants={phoneVariant}
-        className="relative mx-auto h-[320px] w-[290px] rounded-[44px] bg-neutral-300 p-1.5 dark:bg-neutral-800"
+        className="relative mx-auto h-[320px] w-[290px] rounded-[44px] bg-neutral-300 p-1.5 dark:bg-neutral-800 -translate-y-8"
       >
         <div className="relative h-[328px] overflow-hidden rounded-[38px] bg-neutral-200 dark:bg-neutral-950/50">
-          <div className="absolute left-8 top-3.5 text-[9px] text-neutral-500">
+          <div className="absolute left-8 top-3.5 text-[9px] text-neutral-500" suppressHydrationWarning={true}>
             {new Date().toLocaleTimeString([], {
               hour: "2-digit",
               minute: "2-digit",
@@ -261,12 +265,16 @@ const NotificationCenter = ({
         </div>
       </motion.div>
 
-      <div className="absolute bottom-0 left-0 hidden h-[190px] w-full rounded-b-lg [background-image:linear-gradient(to_top,#0a0a0a_60%,transparent_100%)] dark:block" />
-      <div className="absolute bottom-0 left-0 block h-[190px] w-full rounded-b-lg [background-image:linear-gradient(to_top,#f5f5f5_60%,transparent_100%)] dark:hidden" />
-      <div className="absolute bottom-6 left-0 w-full px-8 text-center">
-        <h3 className="text-base font-semibold text-primary">{cardTitle}</h3>
-        <p className="mt-2 text-sm text-neutral-500">{cardDescription}</p>
-      </div>
+      {showText && (
+        <>
+          <div className="absolute bottom-0 left-0 hidden h-[140px] w-full rounded-b-lg [background-image:linear-gradient(to_top,#0a0a0a_40%,transparent_100%)] dark:block" />
+          <div className="absolute bottom-0 left-0 block h-[140px] w-full rounded-b-lg [background-image:linear-gradient(to_top,#f5f5f5_40%,transparent_100%)] dark:hidden" />
+          <div className="absolute bottom-4 left-0 w-full px-8 text-center">
+            <h3 className="text-base font-semibold text-primary">{cardTitle}</h3>
+            <p className="mt-1 text-xs text-neutral-500">{cardDescription}</p>
+          </div>
+        </>
+      )}
     </motion.div>
   );
 };

@@ -101,6 +101,10 @@ export const EditTaskDialog = ({
   const [isUploading, setIsUploading] = useState(false);
 
   const members = useQuery(api.project.getProjectMembers, { projectId });
+  const project = useQuery(api.project.getProjectById, { projectId });
+  const projectDetails = useQuery(api.projectDetails.getProjectDetails, {
+    projectId,
+  });
   const existingTags = useQuery(api.workspace.getUniqueTags, { projectId });
 
   const defaultTags = [
@@ -423,6 +427,14 @@ export const EditTaskDialog = ({
                   selected={date}
                   onSelect={setDate}
                   numberOfMonths={1}
+                  disabled={[
+                    project?.createdAt
+                      ? { before: new Date(project.createdAt) }
+                      : undefined,
+                    projectDetails?.targetDate
+                      ? { after: new Date(projectDetails.targetDate) }
+                      : undefined,
+                  ].filter(Boolean) as any}
                   className="bg-[#1c1c1c] text-neutral-200"
                 />
               </PopoverContent>
@@ -438,8 +450,9 @@ export const EditTaskDialog = ({
                   attachments.length > 0 &&
                     "text-blue-400 border-blue-900/40 bg-blue-900/10",
                 )}
-                disabled={isUploading}
+                disabled={isUploading || project?.ownerAccountType === "free"}
                 onClick={() => document.getElementById("file-upload-edit")?.click()}
+                title={project?.ownerAccountType === "free" ? "Upgrade to Plus to use attachments" : ""}
               >
                 {isUploading ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />

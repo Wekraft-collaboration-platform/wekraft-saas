@@ -21,6 +21,18 @@ interface RepoStructure {
   lastUpdated: number;
 }
 
+export interface CommitInfo {
+  sha: string;
+  message: string;
+  author: {
+    name: string;
+    avatar: string;
+    username: string;
+  };
+  date: string;
+  url: string;
+}
+
 const CACHE_TTL = 30 * 60;
 const REFRESH_COOLDOWN = 5 * 60;
 
@@ -207,5 +219,73 @@ export async function getRecentlyChangedPaths(
   } catch (error) {
     console.error(`[Heatmap] Error fetching recently changed paths:`, error);
     return [];
+  }
+}
+
+export async function getLatestCommits(
+  owner: string,
+  repo: string,
+  forceRefresh: boolean = false,
+  ownerClerkId?: string,
+): Promise<{
+  data: CommitInfo[] | null;
+  error?: string;
+  rateLimited?: boolean;
+}> {
+  try {
+    const { userId } = await auth();
+    if (!userId) throw new Error("Unauthorized");
+
+    const cacheKey = `wekraft:repo-commits:${owner}:${repo}`;
+    const rateLimitKey = `wekraft:repo-commits-refresh-limit:${userId}:${owner}:${repo}`;
+
+    if (forceRefresh) {
+      const acquired = await redis.set(rateLimitKey, "1", {
+        nx: true,
+        ex: REFRESH_COOLDOWN,
+      });
+      if (!acquired) {
+        return { data: null, rateLimited: true };
+      }
+    }
+
+    if (!forceRefresh) {
+      const cachedData = await redis.get<CommitInfo[]>(cacheKey);
+      if (cachedData) {
+        return { data: cachedData };
+      }
+    }
+
+    const accessToken = await getGithubAccessToken(ownerClerkId);
+    const octokit = new Octokit({ auth: accessToken });
+
+    const { data: commits } = await octokit.rest.repos.listCommits({
+      owner,
+      repo,
+      per_page: 10,
+    });
+
+    const commitData: CommitInfo[] = commits.map((commit) => ({
+      sha: commit.sha.substring(0, 7),
+      message: commit.commit.message.split("\n")[0],
+      author: {
+        name: commit.commit.author?.name || "Unknown",
+        avatar: commit.author?.avatar_url || "",
+        username: commit.author?.login || "unknown",
+      },
+      date: commit.commit.author?.date || "",
+      url: commit.html_url,
+    }));
+
+    await redis.set(cacheKey, commitData, { ex: CACHE_TTL });
+
+    return { data: commitData };
+  } catch (error) {
+    console.error(`[Heatmap] Error fetching commits:`, error);
+    return {
+      data: null,
+      error:
+        error instanceof Error ? error.message : "Failed to fetch commits",
+    };
   }
 }

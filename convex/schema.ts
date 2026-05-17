@@ -25,6 +25,10 @@ export default defineSchema({
     planExpiry: v.optional(v.number()), // For temporary upgrades/coupons
     bio: v.optional(v.string()),
     socialLinks: v.optional(v.array(v.string())), // max 3 links (excluding github)
+
+    // Kaya AI usage tracking (Global)
+    kayaLimit: v.optional(v.number()), // Monthly limit (default 360)
+    kayaUsage: v.optional(v.number()), // Current usage count for this month
   })
     .index("by_token", ["clerkToken"])
     .index("by_accountType", ["accountType"])
@@ -76,8 +80,8 @@ export default defineSchema({
     ownerId: v.id("users"),
     ownerName: v.string(),
     ownerImage: v.string(),
-    // about: v.optional(v.string()),
-    projectUpvotes: v.number(),
+    needDevs: v.optional(v.boolean()), // default true.
+    projectUpvotes: v.number(), // denormalized counter — source of truth is projectUpvoteRecords
     inviteLink: v.optional(v.string()),
     projectWorkStatus: v.optional(
       v.union(
@@ -266,7 +270,12 @@ export default defineSchema({
     projectId: v.id("projects"),
     repoId: v.optional(v.id("repositories")), // optional if project has connected repo.
     targetDate: v.optional(v.number()),
-    // healthscore to:do
+
+    // Project Configuration
+    memberCanCreate: v.optional(v.boolean()), // Members can create tasks/issues
+    memberUseKaya: v.optional(v.boolean()),   // Members can use Kaya AI
+    kayaThreshold: v.optional(v.number()),    // Max Kaya calls for this project
+    kayaUsage: v.optional(v.number()),        // Current usage for this project
   })
     .index("by_project", ["projectId"])
     .index("by_repo", ["repoId"]),
@@ -400,4 +409,14 @@ export default defineSchema({
     expiresAt: v.number(),
   })
     .index("by_token", ["token"]),
+
+  // -------------- Project Upvotes (per-user join table) ---------------------
+  projectUpvoteRecords: defineTable({
+    projectId: v.id("projects"),
+    userId: v.id("users"),
+    createdAt: v.number(),
+  })
+    .index("by_project", ["projectId"])
+    .index("by_user", ["userId"])
+    .index("by_project_user", ["projectId", "userId"]),
 });

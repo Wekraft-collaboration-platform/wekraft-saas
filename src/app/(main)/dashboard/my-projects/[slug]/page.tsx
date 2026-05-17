@@ -57,6 +57,8 @@ const ProjectPage = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [homeTab, setHomeTab] = useState("settings");
 
+  const isOwner = !!project && !!user && project.ownerId === user._id;
+
   const updateThumbnail = useMutation(api.project.updateProjectThumbnail);
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -103,13 +105,15 @@ const ProjectPage = () => {
       toast.success("Thumbnail updated successfully!", { id: toastId });
     } catch (error: any) {
       console.error("Upload error:", error);
-      toast.error(error.message || "Failed to upload thumbnail", { id: toastId });
+      toast.error(error.message || "Failed to upload thumbnail", {
+        id: toastId,
+      });
     } finally {
       setIsUploading(false);
     }
   };
 
-  if (project === undefined) {
+  if (project === undefined || user === undefined) {
     return <ProjectSkeleton />;
   }
 
@@ -181,7 +185,7 @@ const ProjectPage = () => {
           </Link>
 
           <Link href={`/dashboard/my-projects/${project?.slug}/workspace`}>
-            <Button size="sm" className="px-4! text-[10px]" variant={"default"}>
+            <Button size="sm" className="px-6! text-xs" variant={"default"}>
               Visit workspace{" "}
               <LucideExternalLink className="ml-2 w-3.5 h-3.5" />
             </Button>
@@ -208,37 +212,47 @@ const ProjectPage = () => {
         )}
 
         {/* Overlay for upload */}
-        <div
-          className={`absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
-            isUploading ? "opacity-100" : ""
-          }`}
-        >
-          {isUploading ? (
-            <div className="flex flex-col items-center text-white">
-              <Loader2 className="w-8 h-8 animate-spin mb-2" />
-              <p>Uploading...</p>
-            </div>
-          ) : (
-            <label className="cursor-pointer flex flex-col items-center text-white">
-              <UploadCloud className="w-10 h-10 mb-2" />
-              <span className="font-semibold">Click to Upload Thumbnail</span>
-              <span className="text-xs text-white/70 mt-1">
-                1080 x 260 Recommended (Max 1MB)
-              </span>
-              <input
-                type="file"
-                accept="image/*"
-                className="hidden"
-                onChange={handleFileChange}
-              />
-            </label>
-          )}
-        </div>
+        {isOwner && (
+          <div
+            className={`absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
+              isUploading ? "opacity-100" : ""
+            }`}
+          >
+            {isUploading ? (
+              <div className="flex flex-col items-center text-white">
+                <Loader2 className="w-8 h-8 animate-spin mb-2" />
+                <p>Uploading...</p>
+              </div>
+            ) : (
+              <label className="cursor-pointer flex flex-col items-center justify-center w-full h-full text-white">
+                <UploadCloud className="w-10 h-10 mb-2" />
+                <span className="font-semibold">Click to Upload Thumbnail</span>
+                <span className="text-xs text-white/70 mt-1">
+                  1080 x 260 Recommended (Max 1MB)
+                </span>
+                <input
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={handleFileChange}
+                />
+              </label>
+            )}
+          </div>
+        )}
       </div>
 
       {/* ---------------------TABS / SETTINGS BELOW---------------- */}
-      <div className="w-full flex items-center justify-end mb-6">
+      <div className="w-full flex items-center justify-end mb-10">
         <div className="flex items-center gap-5">
+          <Button
+            className="px-3! text-xs cursor-pointer"
+            size="sm"
+            variant={"default"}
+          >
+            View Public Page <Globe className="ml-2 w-3.5 h-3.5" />
+          </Button>
+
           <InviteDialog
             inviteLink={projectInviteLink}
             trigger={
@@ -253,26 +267,19 @@ const ProjectPage = () => {
           <Link href={`/dashboard/my-projects/${project?.slug}/workspace`}>
             <Button
               size="sm"
-              className=" px-4! text-[10px]"
+              className=" px-4! text-xs"
               variant={"default"}
             >
-              Visit workspace{" "}
+              Share Project
               <LucideExternalLink className="ml-2 w-3.5 h-3.5" />
             </Button>
           </Link>
-          <Button
-            className="px-3! text-xs cursor-pointer"
-            size="sm"
-            variant={"outline"}
-          >
-            View Public Page <Globe className="ml-2 w-3.5 h-3.5" />
-          </Button>
         </div>
       </div>
 
       {/* ---------------------------------------------------- */}
       {/* PARENT CONTAINER LEFT SIDE TABS || RIGHT SIDE PROJECT INFO */}
-      <div className="flex">
+      <div className="flex items-stretch">
         {/* LEFT SIDE 3 TABS */}
         <div className="w-[65%] h-full">
           {/* TABS */}
@@ -308,11 +315,30 @@ const ProjectPage = () => {
           <div className="px-4">
             {homeTab === "settings" && (
               <div className="py-10">
-                <SettingTab project={project as any} />
+                {isOwner ? (
+                  <SettingTab project={project as any} />
+                ) : (
+                  <div className="flex flex-col items-center justify-center py-20 text-center space-y-4 border border-dashed border-border rounded-xl bg-accent/20">
+                    <div className="bg-accent/70 p-4 rounded-full">
+                      <GlobeLock className="w-7 h-7" />
+                    </div>
+                    <div className="space-y-2">
+                      <h3 className="text-base font-bold">Settings Restricted</h3>
+                      <p className="text-muted-foreground max-w-xs mx-auto text-sm">
+                        Only the project owner has the power to update settings.
+                        Please contact the owner for any modifications.
+                      </p>
+                    </div>
+                  </div>
+                )}
               </div>
             )}
             {homeTab === "requests" && (
-              <ProjectJoinRequests projectId={project._id} />
+              <ProjectJoinRequests
+                projectId={project._id}
+                currentMemberCount={(project as any).totalMemberCount}
+                memberLimit={(project as any).memberLimit}
+              />
             )}
             {homeTab === "community" && (
               <div className="py-10 text-center text-muted-foreground text-sm">
@@ -321,9 +347,9 @@ const ProjectPage = () => {
             )}
           </div>
         </div>
-        <Separator orientation="vertical" className="h-100!" />
+        <Separator orientation="vertical" className="h-auto! mx-2" />
         {/* RIGHT SIDE , Info */}
-        <div className="w-[30%] h-full pl-6">
+        <div className="w-[30%] h-full pl-6 mt-4">
           <ProjectInfo project={project as any} members={members} />
         </div>
       </div>

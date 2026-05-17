@@ -132,7 +132,7 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
     const Icon = state.icon;
 
     return (
-      <div className=" flex flex-col items-center justify-center text-center p-12 mt-20 dark:bg-muted/40 bg-accent/10 rounded-xl border border-dashed border-accent transition-all duration-300">
+      <div className=" flex flex-col items-center justify-center text-center p-12 mt-20 dark:bg-sidebar bg-accent/10 rounded-xl border border-dashed border-accent transition-all duration-300">
         <Icon className="w-10 h-10 text-primary opacity-50 mb-5" />
 
         <h3 className="text-sm font-semibold tracking-tight text-primary">
@@ -394,7 +394,7 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
   };
 
   return (
-    <Card className="border border-border shadow-none overflow-hidden dark:bg-accent/20 bg-card h-[620px]">
+    <Card className="border border-accent shadow-none overflow-hidden dark:bg-sidebar bg-card h-[620px]">
       <CardHeader className="flex  items-center justify-between space-y-0 ">
         <div className="space-y-1">
           <CardTitle className="text-base font-semibold  text-primary flex items-center gap-2">

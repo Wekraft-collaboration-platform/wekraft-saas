@@ -13,6 +13,7 @@ interface EnvironmentalSeverityHeatmapProps {
   projectId: Id<"projects">;
   data?: {
     environment: string;
+    total: number;
     critical: number;
     medium: number;
     low: number;
@@ -36,7 +37,7 @@ const chartConfig = {
 
 export const EnvironmentalSeverityHeatmap = ({ projectId, data: providedData }: EnvironmentalSeverityHeatmapProps) => {
   const queryData = useQuery(api.workspace.getEnvironmentalSeverityHeatmap, { projectId });
-  const data = (providedData ?? queryData) as { environment: string; critical: number; medium: number; low: number; }[] | null | undefined;
+  const data = (providedData ?? queryData) as { environment: string; total: number; critical: number; medium: number; low: number; }[] | null | undefined;
 
   // Still loading
   if (data === undefined) {
@@ -53,7 +54,7 @@ export const EnvironmentalSeverityHeatmap = ({ projectId, data: providedData }: 
     );
   }
 
-  const totalIssues = data?.reduce((acc, curr) => acc + curr.critical + curr.medium + curr.low, 0) ?? 0;
+  const totalIssues = data?.reduce((acc, curr) => acc + (curr.total ?? 0), 0) ?? 0;
 
   // Loaded but no data
   if (!data || data.length === 0 || totalIssues === 0) {
@@ -80,12 +81,14 @@ export const EnvironmentalSeverityHeatmap = ({ projectId, data: providedData }: 
     );
   }
 
-  // Process data for Pie Chart
-  const processedData = data.map((item, index) => ({
-    name: item.environment,
-    value: item.critical + item.medium + item.low,
-    fill: COLORS[index % COLORS.length],
-  }));
+  // Process data for Pie Chart - Filter out zeros to avoid UI clutter
+  const processedData = data
+    .filter((item) => (item.total ?? 0) > 0)
+    .map((item, index) => ({
+      name: item.environment,
+      value: item.total,
+      fill: COLORS[index % COLORS.length],
+    }));
 
   return (
     <Card className="border shadow-sm dark:bg-accent/20 bg-card dark:border-accent border-accent/50 overflow-hidden h-[340px]">

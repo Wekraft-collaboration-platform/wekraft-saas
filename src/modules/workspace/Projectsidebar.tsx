@@ -55,6 +55,9 @@ import {
   ContactRound,
   Users2,
   Palette,
+  LogOut,
+  Settings2,
+  Compass,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
@@ -75,12 +78,14 @@ import { Kbd } from "@/components/ui/kbd";
 import { Badge } from "@/components/ui/badge";
 import { Separator } from "@/components/ui/separator";
 import { ThemeButtons } from "../dashboard/components/ThemeButton";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useClerk } from "@clerk/nextjs";
 
 const workspaceMenu = [
   {
-    label: "Calendar",
-    path: "workspace/calendar",
-    icon: Calendar,
+    label: "Manage Team",
+    path: "workspace/team",
+    icon: Users2,
   },
   {
     label: "Teamspace",
@@ -88,9 +93,9 @@ const workspaceMenu = [
     icon: PlaneTakeoff,
   },
   {
-    label: "Manage Team",
-    path: "workspace/team",
-    icon: Users2,
+    label: "Calendar",
+    path: "workspace/calendar",
+    icon: Calendar,
   },
   {
     label: "Heatmap",
@@ -130,6 +135,7 @@ export default function ProjectSidebar() {
   const slug = params.slug as string;
   const router = useRouter();
   const [assistantOpen, setAssistantOpen] = useState(false);
+  const { signOut } = useClerk();
 
   const user: Doc<"users"> | undefined | null = useQuery(
     api.user.getCurrentUser,
@@ -149,7 +155,7 @@ export default function ProjectSidebar() {
     return pathname === url;
   };
   return (
-    <Sidebar collapsible="icon" className="border-r-0">
+    <Sidebar collapsible="icon" className="border bg-white! dark:bg-sidebar!">
       {/* ───────── HEADER ───────── */}
       <SidebarHeader
         style={{ viewTransitionName: "site-header" }}
@@ -193,7 +199,7 @@ export default function ProjectSidebar() {
             >
               <Link
                 href={`/dashboard/my-projects/${slug}/inbox`}
-                className="relative z-10 flex items-center justify-center gap-3 w-full bg-secondary border dark:border-primary/30 bg-muted dark:data-[active=true]:text-white data-[active=true]:text-gray-700 group-data-[collapsible=icon]:justify-center"
+                className="relative z-10 flex items-center justify-center gap-3 w-full border dark:border-primary/30 border-border bg-accent/50! dark:data-[active=true]:text-white data-[active=true]:text-gray-700 group-data-[collapsible=icon]:justify-center"
               >
                 <Inbox className="h-5 w-5" />
                 <span className="text-sm group-data-[collapsible=icon]:hidden">
@@ -577,26 +583,121 @@ export default function ProjectSidebar() {
       {/* ───────── FOOTER ───────── */}
       <SidebarFooter className="border-t border-accent px-2 group-data-[collapsible=icon]:hidden">
         {/* =======USER PLAN========= */}
-        <div className="my-2 border p-3 rounded-md bg-linear-to-br from-card via-card to-blue-600/70">
-          <div className="flex items-center gap-2">
-            <div className="h-7 w-7 rounded-full bg-blue-600/20 flex items-center justify-center">
-              <Clover className="h-4 w-4 text-primary" />
+        {user && (
+          <div className="flex flex-col gap-2">
+            <div className="my-2 border p-3 rounded-md bg-linear-to-br from-card via-card to-blue-600/70">
+              <div className="flex items-center gap-2">
+                <div className="h-7 w-7 rounded-full bg-blue-600/20 flex items-center justify-center">
+                  <Clover className="h-4 w-4 text-primary" />
+                </div>
+                <div className="flex flex-col">
+                  <h3 className="text-sm font-medium">Current Plan</h3>
+                  <p className="text-xs text-muted-foreground capitalize">
+                    {user.accountType || "Free"}
+                  </p>
+                </div>
+              </div>
+              <p className="text-[11px] text-muted-foreground text-left my-1.5 leading-relaxed">
+                {user.accountType === "pro"
+                  ? "You have full access to all premium features."
+                  : user.accountType === "plus"
+                    ? "Upgrade to Pro to unlock Kaya and Other AI features."
+                    : "Upgrade to Plus to unlock AI and boost your productivity."}
+              </p>
+              {user.accountType !== "pro" && (
+                <Link href="/dashboard/pricing">
+                  <Button
+                    className="text-[10px] cursor-pointer w-full my-1.5 font-medium"
+                    size="xs"
+                  >
+                    {user.accountType === "plus"
+                      ? "Upgrade to Pro"
+                      : "Upgrade Now"}
+                  </Button>
+                </Link>
+              )}
             </div>
-            <div className="flex flex-col">
-              <h3 className="text-sm font-medium">Current Plan</h3>
-              <p className="text-xs text-muted-foreground">Free</p>
-            </div>
+
+            {user.accountType === "pro" && (
+              <div className="flex items-center gap-3 p-2 rounded-md border border-accent bg-muted transition-all cursor-pointer group">
+                <Avatar className="h-8 w-8 shrink-0 border border-primary/20">
+                  <AvatarImage src={user.avatarUrl} />
+                  <AvatarFallback className="text-[10px]">
+                    {user.name?.substring(0, 1).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+
+                <div className="flex flex-col min-w-0 flex-1">
+                  <span className="text-xs font-semibold truncate leading-tight">
+                    {user.name}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground truncate leading-tight">
+                    {user.email}
+                  </span>
+                </div>
+
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="ghost"
+                      size="icon-xs"
+                      className="h-7 w-7 shrink-0"
+                    >
+                      <ChevronsUpDown className="h-3 w-3 text-muted-foreground group-hover:text-primary transition-colors" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    side="right"
+                    align="end"
+                    className="w-56 p-1 bg-card/95 backdrop-blur-md border-primary/10 shadow-xl"
+                  >
+                    <div className="flex flex-col gap-0.5">
+                      <p className="px-2 py-1.5 text-[10px] font-medium text-muted-foreground uppercase tracking-wider">
+                        Quick Actions
+                      </p>
+                      <Separator className="mb-1 opacity-50" />
+
+                      <Link
+                        href="/dashboard/settings"
+                        className="flex items-center gap-2 px-2 py-2 rounded-sm text-xs hover:bg-accent transition-colors"
+                      >
+                        <Settings2 className="h-3.5 w-3.5" />
+                        <span>Settings</span>
+                      </Link>
+
+                      <Link
+                        href="/dashboard/support"
+                        className="flex items-center gap-2 px-2 py-2 rounded-sm text-xs hover:bg-accent transition-colors"
+                      >
+                        <Compass className="h-3.5 w-3.5" />
+                        <span>Support</span>
+                      </Link>
+
+                      <Link
+                        href="/dashboard/report-bug"
+                        className="flex items-center gap-2 px-2 py-2 rounded-sm text-xs hover:bg-accent transition-colors"
+                      >
+                        <Bug className="h-3.5 w-3.5" />
+                        <span>Report Bug</span>
+                      </Link>
+
+                      <Separator className="my-1 opacity-50" />
+
+                      <Button
+                        variant="ghost"
+                        className="w-full justify-start gap-2 h-9 text-xs text-destructive hover:text-destructive hover:bg-destructive/10"
+                        onClick={() => signOut({ redirectUrl: "/" })}
+                      >
+                        <LogOut className="h-3.5 w-3.5" />
+                        <span>Logout</span>
+                      </Button>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            )}
           </div>
-          <p className="text-xs text-muted-foreground text-left my-1.5">
-            Upgrade to Pro to unlock AI to boost productivity.
-          </p>
-          <Button
-            className="text-[10px] cursor-pointer w-full my-1.5 font-medium"
-            size="xs"
-          >
-            Upgrade to Pro
-          </Button>
-        </div>
+        )}
       </SidebarFooter>
       {/* <AiAssistantSheet open={assistantOpen} onOpenChange={setAssistantOpen} /> */}
     </Sidebar>

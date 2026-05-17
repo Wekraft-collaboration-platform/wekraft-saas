@@ -38,6 +38,7 @@ interface SetTargetDateDialogProps {
   onOpenChange: (open: boolean) => void;
   projectId: Id<"projects">;
   projectName: string;
+  projectCreatedAt: number;
 }
 
 const patterns = [
@@ -53,6 +54,7 @@ export const SetTargetDateDialog = ({
   onOpenChange,
   projectId,
   projectName,
+  projectCreatedAt,
 }: SetTargetDateDialogProps) => {
   const [date, setDate] = useState<Date>();
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -67,16 +69,36 @@ export const SetTargetDateDialog = ({
     }
 
     setIsSubmitting(true);
-    const normalizedDate = new Date(
+    const targetTime = new Date(
       date.getFullYear(),
       date.getMonth(),
       date.getDate(),
     ).getTime();
 
+    // Validation: 1 week - 1 year
+    const MS_IN_DAY = 24 * 60 * 60 * 1000;
+    const durationDays = (targetTime - projectCreatedAt) / MS_IN_DAY;
+
+    if (durationDays < 7) {
+      toast.error("Project duration must be at least 7 days from creation", {
+        description: "Wekraft is designed for projects that span at least a week.",
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
+    if (durationDays > 365) {
+      toast.error("Deadline exceeds 1 year threshold", {
+        description: "Small teams usually focus on yearly goals. Try a shorter target!",
+      });
+      setIsSubmitting(false);
+      return;
+    }
+
     try {
       await updateDeadline({
         projectId,
-        targetDate: normalizedDate,
+        targetDate: targetTime,
       });
       toast.success("Project baseline established!");
       onOpenChange(false);
@@ -89,7 +111,7 @@ export const SetTargetDateDialog = ({
 
   return (
     <Dialog open={isOpen} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[420px] p-0 overflow-hidden border-neutral-800 bg-zinc-950 shadow-2xl">
+      <DialogContent className="sm:max-w-[420px] p-0 overflow-hidden border dark:bg-sidebar bg-background shadow-2xl">
         {/* Header Image */}
         <div className="relative h-[180px] w-full overflow-hidden">
           <img
@@ -97,7 +119,7 @@ export const SetTargetDateDialog = ({
             alt="Pattern Header"
             className="w-full h-full object-cover"
           />
-          <div className="absolute inset-0 bg-linear-to-t from-zinc-950  to-transparent" />
+          <div className="absolute inset-0 bg-linear-to-t from-background to-transparent" />
           <div className="absolute bottom-4 left-6 flex items-center gap-3">
             <div className="p-2 bg-primary rounded-lg shadow-lg">
               <ClipboardClock className="w-5 h-5 text-primary-foreground" />
@@ -115,7 +137,7 @@ export const SetTargetDateDialog = ({
 
         <div className="px-8 pt-6 pb-8 space-y-6">
           <div className="space-y-2">
-            <h3 className="text-xl font-bold tracking-tight text-white leading-none capitalize">
+            <h3 className="text-xl font-bold tracking-tight text-foreground leading-none capitalize">
               Set Target for {projectName}
             </h3>
             <p className="text-[13px] text-muted-foreground leading-relaxed">
@@ -125,10 +147,10 @@ export const SetTargetDateDialog = ({
           </div>
 
           <div className="space-y-4">
-            <div className="flex items-center justify-between p-2.5 rounded-xl border border-neutral-800 bg-neutral-900/40 backdrop-blur-sm ">
+            <div className="flex items-center justify-between p-2.5 rounded-xl border bg-muted backdrop-blur-sm ">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-zinc-800 rounded-lg group-hover:bg-amber-500/10 transition-colors">
-                  <Clock className="w-4 h-4 text-neutral-400 group-hover:text-amber-500" />
+                <div className="p-2 bg-card border rounded-lg group-hover:bg-primary/10 transition-colors">
+                  <Clock className="w-4 h-4 text-muted-foreground group-hover:text-primary" />
                 </div>
                 <div>
                   <p className="text-xs font-medium text-muted-foreground ">
@@ -145,13 +167,13 @@ export const SetTargetDateDialog = ({
                   <Button
                     variant="outline"
                     size="icon"
-                    className="h-8 w-8 rounded-lg border-neutral-800 bg-zinc-900/50 hover:bg-neutral-800 cursor-pointer"
+                    className="h-8 w-8 rounded-lg border bg-background hover:bg-muted cursor-pointer"
                   >
                     <CalendarIcon className="w-3.5 h-3.5" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent
-                  className="w-auto p-0 border-neutral-800 bg-zinc-950"
+                  className="w-auto p-0 border bg-background"
                   align="end"
                 >
                   <Calendar
@@ -159,7 +181,10 @@ export const SetTargetDateDialog = ({
                     selected={date}
                     onSelect={setDate}
                     initialFocus
-                    className="bg-zinc-950"
+                    disabled={(date) =>
+                      date < new Date(new Date().setHours(0, 0, 0, 0))
+                    }
+                    className="bg-background"
                   />
                 </PopoverContent>
               </Popover>

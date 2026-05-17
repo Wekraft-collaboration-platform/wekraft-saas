@@ -184,12 +184,14 @@ interface HeatmapFlowProps {
   structure: FolderNode | null;
   issuePaths?: string[];
   recentlyChangedPaths?: string[];
+  isFreeTier?: boolean;
 }
 
 const HeatmapFlowInner = ({
   structure,
   issuePaths = [],
   recentlyChangedPaths = [],
+  isFreeTier = false,
 }: HeatmapFlowProps) => {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
@@ -298,7 +300,7 @@ const HeatmapFlowInner = ({
       const hasIssueChild = Object.values(node.children).some((child) =>
         containsIssue(child.path),
       );
-      const shouldBeRed = nodeHasIssue && (!isExpanded || !hasIssueChild);
+      const shouldBeRed = !isFreeTier && nodeHasIssue && (!isExpanded || !hasIssueChild);
 
       // Vertical Centering Logic:
       // Offset y by half of the total height at this level
@@ -316,7 +318,7 @@ const HeatmapFlowInner = ({
           folderCount: node.folderCount,
           fileCount: node.fileCount,
           hasIssue: shouldBeRed,
-          isChangedRecently: recentlyChangedPaths.includes(node.path || ""),
+          isChangedRecently: !isFreeTier && recentlyChangedPaths.includes(node.path || ""),
         },
         position: { x, y },
       });
@@ -330,9 +332,9 @@ const HeatmapFlowInner = ({
           animated: true,
           style: {
             stroke:
-              nodeHasIssue && !expandedPaths.has(id)
+              !isFreeTier && nodeHasIssue && !expandedPaths.has(id)
                 ? "rgba(239, 68, 68, 0.5)"
-                : recentlyChangedPaths.includes(node.path || "") &&
+                : !isFreeTier && recentlyChangedPaths.includes(node.path || "") &&
                     !expandedPaths.has(id)
                   ? "rgba(234, 179, 8, 0.5)"
                   : "rgba(59, 130, 246, 0.5)",
@@ -375,6 +377,7 @@ const HeatmapFlowInner = ({
     fitView,
     containsIssue,
     recentlyChangedPaths,
+    isFreeTier,
   ]);
 
   return (
@@ -408,7 +411,7 @@ const HeatmapFlowInner = ({
           className="mt-5 ml-5 flex items-stretch gap-2.5 select-none scale-90 origin-top-left xl:scale-100"
         >
           {/* Docked Control Strip */}
-          <div className="bg-[#050505]/80 backdrop-blur-2xl p-1 rounded-[1.5rem] border border-white/10 flex flex-col gap-0.5 shadow-2xl justify-center">
+          <div className="bg-[#050505]/80 backdrop-blur-2xl p-1 rounded-2xl border border-white/10 flex flex-col gap-0.5 shadow-2xl justify-center">
             <button
               onClick={() => fitView({ duration: 800, padding: 0.8 })}
               className="p-2.5 hover:bg-white/5 text-zinc-500 hover:text-white rounded-xl transition-all duration-200 group/btn"
@@ -473,18 +476,22 @@ const HeatmapFlowInner = ({
                 </div>
 
                 <div className="space-y-3 pt-1">
-                  <div className="flex items-center gap-3">
-                    <div className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)] shrink-0" />
-                    <span className="text-[11px] font-medium text-zinc-300">
-                      Active Issues / Errors
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3">
-                    <div className="w-2.5 h-2.5 rounded-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)] shrink-0" />
-                    <span className="text-[11px] font-medium text-zinc-300">
-                      Modified (Last 7 Days)
-                    </span>
-                  </div>
+                  {!isFreeTier && (
+                    <>
+                      <div className="flex items-center gap-3">
+                        <div className="w-2.5 h-2.5 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.5)] shrink-0" />
+                        <span className="text-[11px] font-medium text-zinc-300">
+                          Active Issues / Errors
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-3">
+                        <div className="w-2.5 h-2.5 rounded-full bg-yellow-500 shadow-[0_0_10px_rgba(234,179,8,0.5)] shrink-0" />
+                        <span className="text-[11px] font-medium text-zinc-300">
+                          Modified (Last 7 Days)
+                        </span>
+                      </div>
+                    </>
+                  )}
                   <div className="flex items-center gap-3">
                     <div className="w-2.5 h-2.5 rounded-full bg-blue-500/50 border border-blue-500/30 shrink-0" />
                     <span className="text-[11px] font-medium text-zinc-500">
@@ -513,6 +520,7 @@ export const HeatmapFlow = ({
   structure,
   issuePaths,
   recentlyChangedPaths,
+  isFreeTier,
 }: HeatmapFlowProps) => {
   return (
     <ReactFlowProvider>
@@ -520,6 +528,7 @@ export const HeatmapFlow = ({
         structure={structure}
         issuePaths={issuePaths}
         recentlyChangedPaths={recentlyChangedPaths}
+        isFreeTier={isFreeTier}
       />
     </ReactFlowProvider>
   );

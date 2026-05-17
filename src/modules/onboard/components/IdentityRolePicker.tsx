@@ -59,17 +59,17 @@ export function IdentityRolePicker({
       />
 
       <div className="">
-        <Label htmlFor="role-search" className="text-sm text-white mb-1.5">
+        <Label htmlFor="role-search" className="text-xs text-white mb-1.5">
           Occupation
         </Label>
 
-        <div className="border border-white/30! rounded-xl overflow-hidden">
+        <div className="border  rounded-xl overflow-hidden">
           <div className="relative">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-white" />
             <Input
               id="role-search"
               placeholder="Search role..."
-              className="pl-9 bg-neutral-800! h-10 rounded-none border-b border-white/30!  text-white placeholder:text-neutral-300"
+              className="pl-9 bg-neutral-800! h-10 rounded-none border-none   text-white placeholder:text-neutral-300"
               value={roleSearch}
               onChange={(e) => setRoleSearch(e.target.value)}
             />
@@ -88,8 +88,8 @@ export function IdentityRolePicker({
                       className={cn(
                         "w-full flex items-center justify-between rounded-lg border px-3 py-2.5 text-left text-xs tracking-wide font-medium capitalize transition-all",
                         isSelected
-                          ? "bg-white/30 border-white/70 text-white"
-                          : "bg-white/5 border-white/30 text-neutral-300 hover:bg-white/10 hover:border-white/20",
+                          ? "bg-accent/40 border-white/30 text-white"
+                          : "bg-accent/20!  text-neutral-300 border-white/5",
                       )}
                     >
                       <span>{role}</span>

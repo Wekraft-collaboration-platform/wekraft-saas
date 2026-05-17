@@ -1,14 +1,31 @@
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
-import { FolderIcon, FileCode, ArrowLeft, Loader2, ChevronRight, X, Search, FolderOpenIcon, Link2 } from "lucide-react";
+import {
+  FolderIcon,
+  FileCode,
+  ArrowLeft,
+  Loader2,
+  ChevronRight,
+  X,
+  Search,
+  FolderOpenIcon,
+  Link2,
+  GitBranch,
+  ExternalLink,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
 import { getRepoTree, type TreeNode } from "./function/index";
-import { Tree, Folder, File, type TreeViewElement } from "@/components/ui/file-tree";
-
+import {
+  Tree,
+  Folder,
+  File,
+  type TreeViewElement,
+} from "@/components/ui/file-tree";
+import Link from "next/link";
 
 interface GetRepoStructureProps {
   repoFullName?: string;
@@ -28,18 +45,21 @@ export const GetRepoStructure = ({
   const [searchQuery, setSearchQuery] = useState("");
 
   // Helper to map TreeNode to TreeViewElement
-  const mapToTreeElement = useCallback((node: TreeNode): TreeViewElement => ({
-    id: node.path,
-    name: node.path.split("/").pop() || "",
-    type: node.type === "tree" ? "folder" : "file",
-    children: node.type === "tree" ? [] : undefined,
-  }), []);
- 
+  const mapToTreeElement = useCallback(
+    (node: TreeNode): TreeViewElement => ({
+      id: node.path,
+      name: node.path.split("/").pop() || "",
+      type: node.type === "tree" ? "folder" : "file",
+      children: node.type === "tree" ? [] : undefined,
+    }),
+    [],
+  );
+
   // Root loading on mount
   useEffect(() => {
     const loadRoot = async () => {
       if (!repoFullName || elements.length > 0) return;
-      
+
       const [owner, repo] = repoFullName.split("/");
       if (!owner || !repo) return;
 
@@ -56,16 +76,16 @@ export const GetRepoStructure = ({
 
   const fetchChildren = async (path: string) => {
     const [owner, repo] = repoFullName!.split("/");
-    
-    setLoadingMap(prev => ({ ...prev, [path]: true }));
+
+    setLoadingMap((prev) => ({ ...prev, [path]: true }));
     const result = await getRepoTree(owner, repo, path, ownerClerkId);
-    
+
     if (result.success) {
       const children = result.data.map(mapToTreeElement);
-      
+
       // Update the elements tree
       const updateTree = (items: TreeViewElement[]): TreeViewElement[] => {
-        return items.map(item => {
+        return items.map((item) => {
           if (item.id === path) {
             return { ...item, children };
           }
@@ -75,12 +95,12 @@ export const GetRepoStructure = ({
           return item;
         });
       };
-      
-      setElements(prev => updateTree(prev));
+
+      setElements((prev) => updateTree(prev));
     } else {
       toast.error(result.error);
     }
-    setLoadingMap(prev => ({ ...prev, [path]: false }));
+    setLoadingMap((prev) => ({ ...prev, [path]: false }));
   };
 
   const handleFolderClick = (element: TreeViewElement) => {
@@ -93,8 +113,12 @@ export const GetRepoStructure = ({
   // Dedicated recursive rendering function for lazy loading
   const renderTree = (elements: TreeViewElement[]) => {
     // Basic filter logic to keep folders visible if children are matches
-    const filteredElements = searchQuery 
-      ? elements.filter(el => el.name.toLowerCase().includes(searchQuery.toLowerCase()) || el.type === "folder")
+    const filteredElements = searchQuery
+      ? elements.filter(
+          (el) =>
+            el.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            el.type === "folder",
+        )
       : elements;
 
     return filteredElements.map((element) => {
@@ -106,8 +130,16 @@ export const GetRepoStructure = ({
             value={element.id}
             element={
               <div className="flex items-center w-full group/folder">
-                <span className={cn("text-xs flex-1", selectedPath === element.id && "text-amber-500 font-semibold")}>{element.name}</span>
-                <div 
+                <span
+                  className={cn(
+                    "text-xs flex-1",
+                    selectedPath === element.id &&
+                      "text-amber-500 font-semibold",
+                  )}
+                >
+                  {element.name}
+                </span>
+                <div
                   role="button"
                   className="h-4 w-4 flex items-center justify-center opacity-0 group-hover/folder:opacity-100 hover:text-amber-500 transition-opacity ml-4 mr-1 cursor-pointer"
                   onClick={(e) => {
@@ -130,19 +162,22 @@ export const GetRepoStructure = ({
                 Loading...
               </div>
             )}
-            {element.children && element.children.length > 0 && renderTree(element.children)}
+            {element.children &&
+              element.children.length > 0 &&
+              renderTree(element.children)}
           </Folder>
         );
       }
       return (
-        <File 
-          key={element.id} 
-          value={element.id} 
+        <File
+          key={element.id}
+          value={element.id}
           onClick={() => onSelect(element.id)}
           fileIcon={<FileCode className="h-4 w-4 text-blue-500" />}
           className={cn(
-            selectedPath === element.id && "bg-blue-500/10 text-blue-400 font-semibold",
-            "text-xs tracking-tight px-1 py-0.5 rounded-sm hover:bg-[#252525] w-full text-left transition-colors"
+            selectedPath === element.id &&
+              "bg-blue-500/10 text-blue-400 font-semibold",
+            "text-xs tracking-tight px-1 py-0.5 rounded-sm hover:bg-[#252525] w-full text-left transition-colors",
           )}
         >
           {element.name}
@@ -154,14 +189,18 @@ export const GetRepoStructure = ({
   return (
     <div className="flex flex-col h-[340px] overflow-hidden bg-[#1c1c1c]">
       <div className="p-3 border-b border-[#2b2b2b] flex items-center justify-between bg-[#222]">
-        <span className="text-xs font-semibold text-neutral-300">Repository Structure</span>
-        {loadingMap.root && <Loader2 className="h-4 w-4 animate-spin text-blue-500" />}
+        <span className="text-xs font-semibold text-neutral-300">
+          Repository Structure
+        </span>
+        {loadingMap.root && (
+          <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+        )}
       </div>
 
       <div className="p-2 border-b border-[#2b2b2b]">
         <div className="relative">
           <Search className="absolute left-2.5 top-1/2 -translate-y-1/2 h-3.5 w-3.5 text-neutral-500" />
-          <Input 
+          <Input
             placeholder="Search items..."
             value={searchQuery}
             onChange={(e) => setSearchQuery(e.target.value)}
@@ -171,29 +210,40 @@ export const GetRepoStructure = ({
       </div>
 
       <div className="flex-1 min-h-0">
-        <Tree 
-          elements={elements} 
-          initialSelectedId={selectedPath || undefined} 
+        <Tree
+          elements={elements}
+          initialSelectedId={selectedPath || undefined}
           className="p-2 h-full"
         >
-          {elements.length > 0 ? renderTree(elements) : !loadingMap.root && (
-            <div className="h-full flex items-center justify-center text-xs text-neutral-500 py-20">
-              No items found.
-            </div>
-          )}
+          {elements.length > 0
+            ? renderTree(elements)
+            : !loadingMap.root && (
+                <div className="h-full flex flex-col gap-4 items-center justify-center text-xs text-neutral-500 py-20">
+                  <p>
+                    <GitBranch className="w-4 h-4 inline" /> No items found
+                  </p>
+                  <Link href="/dashboard/repositories">
+                  <Button className="text-[10px] rounded" size={'xs'}>Link Repo now <ExternalLink className="h-3 w-3 ml-2"/></Button>
+                  </Link>
+                </div>
+              )}
         </Tree>
       </div>
 
       {selectedPath && (
         <div className="p-3 border-t border-[#2b2b2b] bg-[#1c1c1c]">
-          <div className="text-[10px] text-neutral-500 mb-1 leading-none uppercase tracking-tighter opacity-50 font-bold">Linked Resource:</div>
+          <div className="text-[10px] text-neutral-500 mb-1 leading-none uppercase tracking-tighter opacity-50 font-bold">
+            Linked Resource:
+          </div>
           <div className="text-xs text-blue-400 font-medium truncate flex items-center gap-2">
             {!selectedPath.includes(".") ? (
               <FolderIcon className="h-3 w-3 text-amber-500" />
             ) : (
               <FileCode className="h-3 w-3 text-blue-500" />
             )}
-            <span className={cn(!selectedPath.includes(".") && "text-amber-500")}>
+            <span
+              className={cn(!selectedPath.includes(".") && "text-amber-500")}
+            >
               {selectedPath}
             </span>
             <Button

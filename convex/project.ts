@@ -1,6 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { getPlanLimits } from "./pricing";
+import { getPlanLimits, getActiveUserPlan, PlanType } from "./pricing";
 import { customAlphabet } from "nanoid";
 
 const slugId = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 5);
@@ -386,11 +386,19 @@ export const getProjectBySlug = query({
 
     const owner = await ctx.db.get(project.ownerId);
     const ownerClerkId = owner?.clerkToken.split("|").pop();
+    const limits = owner ? getPlanLimits(owner) : null;
+
+    const membersTable = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_project", (q) => q.eq("projectId", project._id))
+      .collect();
 
     const projectWithOwner = {
       ...project,
       ownerClerkId,
       ownerAccountType: owner?.accountType,
+      memberLimit: limits?.members_per_project_limit ?? 3,
+      totalMemberCount: membersTable.length + 1,
     };
 
     // Security: Only return if public OR user is the owner OR user is a member
@@ -556,6 +564,7 @@ export const getProjectPermissions = query({
         isMember: false,
         isViewer: false,
         isPower: false,
+        userId: undefined,
       };
 
     const user = await ctx.db
@@ -572,6 +581,7 @@ export const getProjectPermissions = query({
         isMember: false,
         isViewer: false,
         isPower: false,
+        userId: undefined,
       };
 
     const project = await ctx.db.get(args.projectId);
@@ -582,6 +592,7 @@ export const getProjectPermissions = query({
         isMember: false,
         isViewer: false,
         isPower: false,
+        userId: undefined,
       };
 
     const isOwner = project.ownerId === user._id;
@@ -604,6 +615,7 @@ export const getProjectPermissions = query({
       isViewer,
       isPower,
       role: isOwner ? "owner" : membership?.AccessRole || null,
+      userId: user._id,
     };
   },
 });
@@ -637,6 +649,7 @@ export const getProjectPermissionsById = query({
       isViewer,
       isPower,
       role: isOwner ? "owner" : membership?.AccessRole || null,
+      userId: user._id,
     };
   },
 });
@@ -674,11 +687,17 @@ export const getProjectJoinRequests = query({
       throw new Error("Unauthorized to view join requests");
     }
 
-    return await ctx.db
+    const requests = await ctx.db
       .query("projectJoinRequests")
       .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
-      .filter((q) => q.eq(q.field("status"), "pending"))
       .collect();
+
+    // Sort: Pending first, then by date descending
+    return requests.sort((a, b) => {
+      if (a.status === "pending" && b.status !== "pending") return -1;
+      if (a.status !== "pending" && b.status === "pending") return 1;
+      return b.updatedAt - a.updatedAt;
+    });
   },
 });
 
@@ -723,6 +742,22 @@ export const handleJoinRequest = mutation({
     }
 
     if (args.action === "accepted") {
+      // --- MEMBER LIMIT CHECK ---
+      const owner = await ctx.db.get(project.ownerId);
+      if (!owner) throw new Error("Project owner not found");
+
+      const limits = getPlanLimits(owner);
+      const members = await ctx.db
+        .query("projectMembers")
+        .withIndex("by_project", (q) => q.eq("projectId", request.projectId))
+        .collect();
+
+      if (members.length + 1 >= limits.members_per_project_limit) {
+        throw new Error(
+          `Member limit reached! Your ${owner.accountType || "free"} plan allows maximum ${limits.members_per_project_limit} seats (including you).`,
+        );
+      }
+
       // Add to projectMembers
       const existingMember = await ctx.db
         .query("projectMembers")
@@ -731,7 +766,6 @@ export const handleJoinRequest = mutation({
         .unique();
 
       if (!existingMember) {
-        const joiner = await ctx.db.get(request.userId);
         await ctx.db.insert("projectMembers", {
           projectId: request.projectId,
           userId: request.userId,
@@ -768,6 +802,7 @@ export const getProjectDetails = query({
 export const updateProject = mutation({
   args: {
     projectId: v.id("projects"),
+    projectName: v.optional(v.string()),
     description: v.optional(v.string()),
     tags: v.optional(v.array(v.string())),
     isPublic: v.optional(v.boolean()),
@@ -931,6 +966,7 @@ export const getProjectById = query({
     return {
       ...project,
       ownerClerkId,
+      ownerAccountType: owner?.accountType || "free",
     };
   },
 });
@@ -964,5 +1000,488 @@ export const updateProjectThumbnail = mutation({
       thumbnailUrl: args.thumbnailUrl,
       updatedAt: Date.now(),
     });
+  },
+});
+
+// ====================================
+// GET TEAM PAGE DATA (Single efficient query)
+// ====================================
+export const getTeamPageData = query({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, args) => {
+    const project = await ctx.db.get(args.projectId);
+    if (!project) return null;
+
+    // 1. Get all members
+    const members = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
+    // Ensure owner is in the list
+    const hasOwner = members.some((m) => m.userId === project.ownerId);
+    if (!hasOwner) {
+      const ownerUser = await ctx.db.get(project.ownerId);
+      if (ownerUser) {
+        members.push({
+          projectId: project._id,
+          userId: project.ownerId,
+          userName: ownerUser.name || "Owner",
+          userImage: ownerUser.avatarUrl,
+          AccessRole: "owner",
+          joinedAt: project.createdAt,
+        } as any);
+      }
+    }
+
+    // 2. Get all task assignees and issue assignees for this project in one go
+    const taskAssignees = await ctx.db
+      .query("taskAssignees")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
+    const issueAssignees = await ctx.db
+      .query("issueAssignees")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
+    // 3. Count per user in memory
+    const taskCounts: Record<string, number> = {};
+    const issueCounts: Record<string, number> = {};
+
+    taskAssignees.forEach((a) => {
+      taskCounts[a.userId] = (taskCounts[a.userId] || 0) + 1;
+    });
+    issueAssignees.forEach((a) => {
+      issueCounts[a.userId] = (issueCounts[a.userId] || 0) + 1;
+    });
+
+    // 4. Role counts
+    let ownerCount = 0;
+    let adminCount = 0;
+    let memberCount = 0;
+
+    // 5. Enrich each member
+    const enrichedMembers = await Promise.all(
+      members.map(async (m) => {
+        const user = await ctx.db.get(m.userId);
+        const role =
+          m.AccessRole ||
+          (m.userId === project.ownerId ? "owner" : "member");
+
+        if (role === "owner") ownerCount++;
+        else if (role === "admin") adminCount++;
+        else memberCount++;
+
+        return {
+          _id: (m as any)._id || null,
+          userId: m.userId,
+          userName: user?.name || m.userName || "Anonymous",
+          userImage: user?.avatarUrl || m.userImage || "",
+          userEmail: user?.email || "",
+          AccessRole: role,
+          joinedAt: m.joinedAt || project.createdAt,
+          taskCount: taskCounts[m.userId] || 0,
+          issueCount: issueCounts[m.userId] || 0,
+        };
+      }),
+    );
+
+    // 6. Get Owner's plan and limits
+    const owner = await ctx.db.get(project.ownerId);
+    let ownerPlan: PlanType = "free";
+    let memberLimit = 3;
+
+    if (owner) {
+      ownerPlan = getActiveUserPlan(owner);
+      memberLimit = getPlanLimits(owner).members_per_project_limit;
+    }
+
+    return {
+      members: enrichedMembers,
+      total: enrichedMembers.length,
+      ownerCount,
+      adminCount,
+      memberCount,
+      ownerPlan,
+      memberLimit,
+    };
+  },
+});
+
+// ====================================
+//------------------- REMOVE MEMBER FROM PROJECT-----------------------------
+// ====================================
+export const removeMember = mutation({
+  args: {
+    memberId: v.id("projectMembers"),
+    projectId: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthenticated");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier)
+      )
+      .unique();
+    if (!user) throw new Error("User not found");
+
+    const project = await ctx.db.get(args.projectId);
+    if (!project) throw new Error("Project not found");
+
+    // Only owner or admin can remove
+    const callerMembership = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .filter((q) => q.eq(q.field("userId"), user._id))
+      .unique();
+
+    const isPower =
+      project.ownerId === user._id ||
+      callerMembership?.AccessRole === "admin";
+    if (!isPower) throw new Error("Unauthorized");
+
+    const target = await ctx.db.get(args.memberId);
+    if (!target) throw new Error("Member not found");
+
+    // Cannot remove the owner
+    if (target.AccessRole === "owner") {
+      throw new Error("Cannot remove the project owner");
+    }
+
+    // Cannot remove yourself
+    if (target.userId === user._id) {
+      throw new Error("You cannot remove yourself from the project");
+    }
+
+    // Clean up task assignments
+    const userTasks = await ctx.db
+      .query("taskAssignees")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .filter((q) => q.eq(q.field("userId"), target.userId))
+      .collect();
+    for (const t of userTasks) {
+      await ctx.db.delete(t._id);
+    }
+
+    // Clean up issue assignments
+    const userIssues = await ctx.db
+      .query("issueAssignees")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .filter((q) => q.eq(q.field("userId"), target.userId))
+      .collect();
+    for (const i of userIssues) {
+      await ctx.db.delete(i._id);
+    }
+
+    await ctx.db.delete(args.memberId);
+  },
+});
+
+// ====================================
+// --------------------------LEAVE PROJECT------------------------------------
+// ====================================
+export const leaveProject = mutation({
+  args: {
+    projectId: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthenticated");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier)
+      )
+      .unique();
+    if (!user) throw new Error("User not found");
+
+    const project = await ctx.db.get(args.projectId);
+    if (!project) throw new Error("Project not found");
+
+    // Owners cannot leave
+    if (project.ownerId === user._id) {
+      throw new Error("As the project owner, you cannot leave the project.");
+    }
+
+    const membership = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .filter((q) => q.eq(q.field("userId"), user._id))
+      .unique();
+
+    if (!membership) throw new Error("You are not a member of this project");
+
+    // Clean up task assignments
+    const userTasks = await ctx.db
+      .query("taskAssignees")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .filter((q) => q.eq(q.field("userId"), user._id))
+      .collect();
+    for (const t of userTasks) {
+      await ctx.db.delete(t._id);
+    }
+
+    // Clean up issue assignments
+    const userIssues = await ctx.db
+      .query("issueAssignees")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .filter((q) => q.eq(q.field("userId"), user._id))
+      .collect();
+    for (const i of userIssues) {
+      await ctx.db.delete(i._id);
+    }
+
+    await ctx.db.delete(membership._id);
+    return { success: true };
+  },
+});
+
+// ====================================
+// UPDATE MEMBER ROLE
+// ====================================
+export const updateMemberRole = mutation({
+  args: {
+    memberId: v.id("projectMembers"),
+    projectId: v.id("projects"),
+    newRole: v.union(
+      v.literal("admin"),
+      v.literal("member"),
+      v.literal("viewer"),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthenticated");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier)
+      )
+      .unique();
+    if (!user) throw new Error("User not found");
+
+    const project = await ctx.db.get(args.projectId);
+    if (!project) throw new Error("Project not found");
+
+    // Only owner can change roles
+    if (project.ownerId !== user._id) {
+      throw new Error("Only the project owner can change roles");
+    }
+
+    const target = await ctx.db.get(args.memberId);
+    if (!target) throw new Error("Member not found");
+
+    if (target.AccessRole === "owner") {
+      throw new Error("Cannot change the owner's role");
+    }
+
+    await ctx.db.patch(args.memberId, {
+      AccessRole: args.newRole,
+    });
+  },
+});
+
+// ====================================
+// GET PUBLIC PROJECT PROFILE
+// Single bundled query for /projects/[slug] public page
+// ====================================
+export const getPublicProjectProfile = query({
+  args: { slug: v.string() },
+  handler: async (ctx, args) => {
+    // 1. Find project by slug
+    const project = await ctx.db
+      .query("projects")
+      .withIndex("by_slug", (q) => q.eq("slug", args.slug))
+      .unique();
+
+    if (!project) return null;
+
+    // 2. Resolve current user (optional — public page works without auth)
+    const identity = await ctx.auth.getUserIdentity();
+    const currentUserDb = identity
+      ? await ctx.db
+          .query("users")
+          .withIndex("by_token", (q) =>
+            q.eq("clerkToken", identity.tokenIdentifier)
+          )
+          .unique()
+      : null;
+
+    const isOwner = !!currentUserDb && project.ownerId === currentUserDb._id;
+
+    // 3. Check membership for private project access
+    let membership = null;
+    if (currentUserDb) {
+      membership = await ctx.db
+        .query("projectMembers")
+        .withIndex("by_project", (q) => q.eq("projectId", project._id))
+        .filter((q) => q.eq(q.field("userId"), currentUserDb._id))
+        .unique();
+    }
+
+    const isMember = !!membership;
+
+    // 4. Access control: private project wall
+    if (!project.isPublic && !isOwner && !isMember) {
+      // Return sentinel so the UI can show the "Private Project" wall
+      return {
+        isPrivate: true as const,
+        projectName: project.projectName,
+        ownerName: project.ownerName,
+        ownerImage: project.ownerImage,
+      };
+    }
+
+    // 5. Fetch owner profile
+    const owner = await ctx.db.get(project.ownerId);
+
+    // 6. Fetch members (max 8 for the public card)
+    const members = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_project", (q) => q.eq("projectId", project._id))
+      .collect();
+
+    const publicMembers = members.slice(0, 8).map((m) => ({
+      userId: m.userId,
+      userName: m.userName,
+      userImage: m.userImage ?? null,
+      AccessRole: m.AccessRole ?? "member",
+      joinedAt: m.joinedAt ?? null,
+    }));
+
+    // 7. Fetch linked repo (if any)
+    let repo = null;
+    if (project.repositoryId) {
+      const repoDoc = await ctx.db.get(project.repositoryId);
+      if (repoDoc) {
+        repo = {
+          repoName: repoDoc.repoName,
+          repoOwner: repoDoc.repoOwner,
+          repoFullName: repoDoc.repoFullName,
+          repoUrl: repoDoc.repoUrl,
+          language: repoDoc.language ?? null,
+        };
+      }
+    }
+
+    // 8. Fetch deadline from projectDetails
+    const details = await ctx.db
+      .query("projectDetails")
+      .withIndex("by_project", (q) => q.eq("projectId", project._id))
+      .unique();
+
+    // 9. Current user context (upvote, pending request)
+    let currentUser = null;
+    if (currentUserDb) {
+      const upvoteRecord = await ctx.db
+        .query("projectUpvoteRecords")
+        .withIndex("by_project_user", (q) =>
+          q.eq("projectId", project._id).eq("userId", currentUserDb._id)
+        )
+        .unique();
+
+      const pendingRequest = await ctx.db
+        .query("projectJoinRequests")
+        .withIndex("by_project", (q) => q.eq("projectId", project._id))
+        .filter((q) => q.eq(q.field("userId"), currentUserDb._id))
+        .filter((q) => q.eq(q.field("status"), "pending"))
+        .unique();
+
+      currentUser = {
+        hasUpvoted: !!upvoteRecord,
+        isMember,
+        isOwner,
+        hasPendingRequest: !!pendingRequest,
+      };
+    }
+
+    return {
+      isPrivate: false as const,
+      // Project core
+      _id: project._id,
+      projectName: project.projectName,
+      slug: project.slug,
+      description: project.description ?? null,
+      tags: project.tags ?? [],
+      isPublic: project.isPublic,
+      thumbnailUrl: project.thumbnailUrl ?? null,
+      projectWorkStatus: project.projectWorkStatus ?? null,
+      projectUpvotes: project.projectUpvotes,
+      needDevs: project.needDevs ?? true,
+      projectLiveLink: project.projectLiveLink ?? null,
+      createdAt: project.createdAt,
+      // Owner info
+      ownerId: project.ownerId,
+      ownerName: project.ownerName,
+      ownerImage: project.ownerImage,
+      ownerOccupation: owner?.occupation ?? null,
+      ownerBio: owner?.bio ?? null,
+      ownerGithubUsername: owner?.githubUsername ?? null,
+      ownerClerkId: owner?.clerkToken.split("|").pop() ?? null,
+      // Team
+      members: publicMembers,
+      totalMembers: members.length,
+      // Repo
+      repo,
+      // Deadline
+      targetDate: details?.targetDate ?? null,
+      // Current user context
+      currentUser,
+    };
+  },
+});
+
+// ====================================
+// TOGGLE PROJECT UPVOTE
+// Atomic toggle: insert/delete upvote record + update counter
+// ====================================
+export const toggleProjectUpvote = mutation({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Must be logged in to upvote");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier)
+      )
+      .unique();
+    if (!user) throw new Error("User not found");
+
+    const project = await ctx.db.get(args.projectId);
+    if (!project) throw new Error("Project not found");
+
+    // Check for existing upvote record
+    const existing = await ctx.db
+      .query("projectUpvoteRecords")
+      .withIndex("by_project_user", (q) =>
+        q.eq("projectId", args.projectId).eq("userId", user._id)
+      )
+      .unique();
+
+    if (existing) {
+      // Already upvoted → remove it
+      await ctx.db.delete(existing._id);
+      const newCount = Math.max(0, project.projectUpvotes - 1);
+      await ctx.db.patch(args.projectId, { projectUpvotes: newCount });
+      return { upvoted: false, newCount };
+    } else {
+      // Not upvoted → add it
+      await ctx.db.insert("projectUpvoteRecords", {
+        projectId: args.projectId,
+        userId: user._id,
+        createdAt: Date.now(),
+      });
+      const newCount = project.projectUpvotes + 1;
+      await ctx.db.patch(args.projectId, { projectUpvotes: newCount });
+      return { upvoted: true, newCount };
+    }
   },
 });

@@ -83,6 +83,7 @@ const SettingTab = ({ project }: { project: ProjectData }) => {
   const updateProject = useMutation(api.project.updateProject);
 
   // Local state for form fields
+  const [projectName, setProjectName] = useState(project.projectName);
   const [description, setDescription] = useState(project.description);
   const [selectedTags, setSelectedTags] = useState<string[]>(
     project.tags || [],
@@ -141,6 +142,7 @@ const SettingTab = ({ project }: { project: ProjectData }) => {
     try {
       await updateProject({
         projectId: project._id,
+        projectName,
         description,
         tags: selectedTags,
         isPublic,
@@ -178,6 +180,17 @@ const SettingTab = ({ project }: { project: ProjectData }) => {
           </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="projectName">Project Title</Label>
+            <Input
+              id="projectName"
+              placeholder="Enter project name..."
+              value={projectName}
+              onChange={(e) => setProjectName(e.target.value)}
+              className="font-medium"
+            />
+          </div>
+
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
             <Textarea
@@ -267,7 +280,7 @@ const SettingTab = ({ project }: { project: ProjectData }) => {
                       variant={
                         selectedTags.includes(tag) ? "default" : "outline"
                       }
-                      className={`cursor-pointer transition-all hover:scale-105 active:scale-95 text-[11px] px-4 py-3 ${
+                      className={`cursor-pointer transition-all hover:scale-105 active:scale-95 text-[11px] px-4 py-1.5 ${
                         selectedTags.includes(tag)
                           ? "bg-primary text-primary-foreground"
                           : "hover:bg-accent"
