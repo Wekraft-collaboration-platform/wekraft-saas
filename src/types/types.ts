@@ -1,4 +1,4 @@
-import { Id } from "../../convex/_generated/dataModel";
+import type { Id } from "../../convex/_generated/dataModel";
 
 export interface Repository {
   id: number;
@@ -85,6 +85,15 @@ export type MyTaskItem = {
   status: "not started" | "inprogress" | "reviewing" | "testing" | "completed";
   estimation: { startDate: number; endDate: number };
   isBlocked?: boolean;
+  creator?: {
+    name?: string;
+    avatarUrl?: string;
+  };
+  assignees?: {
+    userId: Id<"users">;
+    name: string;
+    avatarUrl?: string;
+  }[];
 };
 
 export type MyIssueItem = {
@@ -96,6 +105,15 @@ export type MyIssueItem = {
   due_date?: number;
   environment?: "local" | "dev" | "staging" | "production";
   type: "manual" | "task-issue" | "github";
+  creator?: {
+    name?: string;
+    avatarUrl?: string;
+  };
+  assignees?: {
+    userId: Id<"users">;
+    name: string;
+    avatarUrl?: string;
+  }[];
 };
 
 export type PaginatedResult<T> = {

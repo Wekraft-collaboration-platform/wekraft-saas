@@ -543,15 +543,40 @@ export const getMyTasks = query({
     // 4. Paginate over activeTasks
     const paginatedTasks = activeTasks.slice(skip, skip + limit);
 
-    const items = paginatedTasks.map((task) => ({
-      _id: task._id,
-      title: task.title,
-      description: task.description,
-      priority: task.priority,
-      status: task.status,
-      estimation: task.estimation,
-      isBlocked: task.isBlocked,
-    }));
+    const items = await Promise.all(
+      paginatedTasks.map(async (task) => {
+        const creator = await ctx.db.get(task.createdByUserId as Id<"users">);
+        const assignees = await ctx.db
+          .query("taskAssignees")
+          .withIndex("by_task", (q) => q.eq("taskId", task._id))
+          .collect();
+
+        const assigneesWithAvatars = await Promise.all(
+          assignees.map(async (a) => {
+            const u = await ctx.db.get(a.userId);
+            return {
+              userId: a.userId,
+              name: u?.name || a.name,
+              avatar: u?.avatarUrl || a.avatar,
+            };
+          }),
+        );
+
+        return {
+          _id: task._id,
+          title: task.title,
+          description: task.description,
+          priority: task.priority,
+          status: task.status,
+          estimation: task.estimation,
+          isBlocked: task.isBlocked,
+          creator: creator
+            ? { name: creator.name, avatar: creator.avatarUrl }
+            : undefined,
+          assignees: assigneesWithAvatars,
+        };
+      }),
+    );
 
     const nextCursor = skip + limit < activeTasks.length ? skip + limit : null;
 
@@ -603,6 +628,13 @@ export const getMyIssues = query({
         paginatedIds.map(async (issueId) => {
           const issue = await ctx.db.get(issueId);
           if (!issue) return null;
+
+          const creator = await ctx.db.get(issue.createdByUserId);
+          const assignees = await ctx.db
+            .query("issueAssignees")
+            .withIndex("by_issue", (q) => q.eq("issueId", issue._id))
+            .collect();
+
           return {
             _id: issue._id,
             title: issue.title,
@@ -612,6 +644,19 @@ export const getMyIssues = query({
             due_date: issue.due_date,
             environment: issue.environment,
             type: issue.type,
+            creator: creator
+              ? { name: creator.name, avatar: creator.avatarUrl }
+              : undefined,
+            assignees: await Promise.all(
+              assignees.map(async (a) => {
+                const u = await ctx.db.get(a.userId);
+                return {
+                  userId: a.userId,
+                  name: u?.name || a.name,
+                  avatar: u?.avatarUrl || a.avatar,
+                };
+              }),
+            ),
           };
         }),
       )
@@ -756,14 +801,14 @@ export const getProjectContributions = query({
         const userId = uidStr as Id<"users">;
         const user = await ctx.db.get(userId);
         const stats = userStats[uidStr];
-        
+
         return {
           userId,
           name: user?.name || "Unknown",
           avatar: user?.avatarUrl || "",
           tasks: stats.tasks,
           issues: stats.issues,
-          speed: Math.min(10, stats.tasks + 2), 
+          speed: Math.min(10, stats.tasks + 2),
           reliability: Math.min(10, stats.tasks + stats.issues),
         };
       }),
@@ -788,7 +833,7 @@ export const getEnvironmentalSeverityHeatmap = query({
 
     // 2. Define environments and severities
     const envs = ["production", "staging", "dev", "local"];
-    
+
     // 3. Count issues per environment/severity
     return envs.map((env) => {
       const envIssues = issues.filter((i) => (i.environment || "dev") === env);
@@ -848,10 +893,12 @@ export const getWeeklyVelocity = query({
       return {
         day: name,
         tasks: tasks.filter(
-          (t) => t.finalCompletedAt! >= dayStart && t.finalCompletedAt! < dayEnd,
+          (t) =>
+            t.finalCompletedAt! >= dayStart && t.finalCompletedAt! < dayEnd,
         ).length,
         issues: issues.filter(
-          (i) => i.finalCompletedAt! >= dayStart && i.finalCompletedAt! < dayEnd,
+          (i) =>
+            i.finalCompletedAt! >= dayStart && i.finalCompletedAt! < dayEnd,
         ).length,
       };
     });
@@ -868,17 +915,22 @@ export const getMemberWorkload = query({
   handler: async (ctx, args) => {
     // 1. Get all active tasks for the project
     // We fetch each active status separately to leverage indexes
-    const activeStatuses = ["not started", "inprogress", "reviewing", "testing"];
-    
+    const activeStatuses = [
+      "not started",
+      "inprogress",
+      "reviewing",
+      "testing",
+    ];
+
     const activeTasksResults = await Promise.all(
       activeStatuses.map((status) =>
         ctx.db
           .query("tasks")
           .withIndex("by_project_status", (q) =>
-            q.eq("projectId", args.projectId).eq("status", status as any)
+            q.eq("projectId", args.projectId).eq("status", status as any),
           )
-          .collect()
-      )
+          .collect(),
+      ),
     );
 
     const activeTasks = activeTasksResults.flat();
@@ -895,15 +947,18 @@ export const getMemberWorkload = query({
       .collect();
 
     // 3. Aggregate workload
-    const memberWorkload: Record<string, { 
-      userId: string;
-      name: string; 
-      avatar: string; 
-      high: number; 
-      medium: number; 
-      low: number;
-      total: number;
-    }> = {};
+    const memberWorkload: Record<
+      string,
+      {
+        userId: string;
+        name: string;
+        avatar: string;
+        high: number;
+        medium: number;
+        low: number;
+        total: number;
+      }
+    > = {};
 
     projectAssignees.forEach((a) => {
       const task = tasksMap.get(a.taskId);

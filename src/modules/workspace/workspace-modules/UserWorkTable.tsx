@@ -1,31 +1,38 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import { useQuery } from "convex/react";
 import { format } from "date-fns";
 import {
-  ClipboardList,
-  Bug,
-  Ticket,
-  CalendarDays,
-  Layers2,
-  FastForward,
-  Loader2,
-  ChevronDown,
   AlertTriangle,
-  ClockAlert,
+  Bug,
+  CalendarDays,
+  ChevronDown,
+  ClipboardList,
   Clock12,
+  ClockAlert,
+  FastForward,
+  Layers2,
+  Loader2,
+  Ticket,
 } from "lucide-react";
-import { useKayaStore } from "@/store/useKayaStore";
-import { cn } from "@/lib/utils";
 import Image from "next/image";
-import { useQuery } from "convex/react";
-import { api } from "../../../../convex/_generated/api";
-import { Id } from "../../../../convex/_generated/dataModel";
-import type { MyTaskItem, MyIssueItem } from "@/types/types";
-import { priorityIcons, statusColors } from "@/lib/static-store";
 import { useParams, useRouter } from "next/navigation";
+import { useEffect, useRef, useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { priorityIcons, statusColors } from "@/lib/static-store";
+import { cn } from "@/lib/utils";
+import { useKayaStore } from "@/store/useKayaStore";
+import type { MyIssueItem, MyTaskItem } from "@/types/types";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 interface UserWorkTableProps {
   userName?: string;
@@ -99,7 +106,6 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
   const tabs = [
     { id: "tasks", label: "Tasks", icon: ClipboardList },
     { id: "issues", label: "Issues", icon: Bug },
-    { id: "sprints", label: "Sprints", icon: FastForward },
     { id: "tickets", label: "Tickets", icon: Ticket },
   ];
 
@@ -115,11 +121,6 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
         icon: Bug,
         title: "No issues assigned",
         desc: "Great job! There are no critical bugs requiring your immediate attention.",
-      },
-      sprints: {
-        icon: FastForward,
-        title: "No active sprints",
-        desc: "You are not part of any active sprints currently. Check with your team lead.",
       },
       tickets: {
         icon: Ticket,
@@ -161,7 +162,7 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
       <div className="flex flex-col h-full">
         <div
           ref={taskScrollRef}
-          className="flex-1 overflow-y-auto space-y-2.5 pr-1"
+          className="grid grid-cols-2 gap-6 flex-1 overflow-y-auto space-y-2.5 items-center"
         >
           {allTasks.map((task) => {
             const daysLeft = Math.ceil(
@@ -177,7 +178,7 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
                     `/dashboard/my-projects/${slug}/workspace/tasks?task=${task._id}`,
                   )
                 }
-                className="bg-muted/30 border border-border rounded-lg p-3 cursor-pointer hover:bg-muted/50 transition-colors"
+                className="bg-muted border border-accent! px-2.5 py-3 rounded-lg"
               >
                 {/* Row 1 — Title + Estimation */}
                 <div className="flex items-start justify-between gap-4">
@@ -191,14 +192,14 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
                   </div>
 
                   <div className="flex flex-col items-end shrink-0">
-                    <span className="text-[10px] flex items-center text-muted-foreground font-medium tabular-nums">
+                    <span className="text-xs flex items-center text-primary font-medium tabular-nums">
                       <Clock12 className="w-3 h-3 mr-2" />
                       {format(task.estimation.startDate, "MMM d")} –{" "}
                       {format(task.estimation.endDate, "MMM d")}
                     </span>
                     <span
                       className={cn(
-                        "text-[10px] font-semibold tabular-nums mt-0.5",
+                        "text-sm tabular-nums mt-0.5",
                         isOverdue ? "text-red-400" : "text-muted-foreground",
                       )}
                     >
@@ -232,6 +233,63 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
                   >
                     {task.status}
                   </span>
+
+                  {task.creator && (
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-muted-foreground font-medium">
+                        Created by:
+                      </span>
+                      {/* Creator */}
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Avatar className="w-6 h-6 border border-border shrink-0">
+                              <AvatarImage
+                                src={task.creator.avatarUrl}
+                                alt={task.creator.name}
+                              />
+                              <AvatarFallback className="text-[12px] font-semibold">
+                                {task.creator.name?.charAt(0).toUpperCase() ||
+                                  "?"}
+                              </AvatarFallback>
+                            </Avatar>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="text-[10px]">
+                              {task.creator.name || "Unknown"}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-2 ml-auto">
+                    {task.assignees && task.assignees.length > 0 && (
+                      <div className="flex items-center -space-x-1.5 ml-1">
+                        <TooltipProvider>
+                          {task.assignees.map((assignee) => (
+                            <Tooltip key={assignee.userId}>
+                              <TooltipTrigger asChild>
+                                <Avatar className="w-6 h-6 border border-background shadow-xs hover:z-10 transition-transform duration-200 shrink-0">
+                                  <AvatarImage
+                                    src={assignee.avatarUrl}
+                                    alt={assignee.name}
+                                  />
+                                  <AvatarFallback className="text-[11px] font-semibold">
+                                    {assignee.name.charAt(0).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p className="text-[10px]">{assignee.name}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          ))}
+                        </TooltipProvider>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             );
@@ -251,9 +309,11 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
               Load more
             </Button>
           ) : (
-            <span className="text-[11px] text-muted-foreground/50 font-medium">
-              No more tasks
-            </span>
+            <div className="flex justify-center items-center my-6 text-center w-full">
+              <span className="text-sm text-muted-foreground font-medium">
+                No more tasks assigned to you.
+              </span>
+            </div>
           )}
         </div>
       </div>
@@ -276,7 +336,7 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
       <div className="flex flex-col h-full">
         <div
           ref={issueScrollRef}
-          className="flex-1 overflow-y-auto space-y-2.5 pr-1"
+          className="grid grid-cols-2 gap-6 flex-1 overflow-y-auto space-y-2.5 items-center"
         >
           {allIssues.map((issue) => {
             const s = issue.severity ? severityConfig[issue.severity] : null;
@@ -317,7 +377,7 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
                   {dueLabel && (
                     <span
                       className={cn(
-                        "text-[10px] font-semibold tabular-nums shrink-0",
+                        "text-sm tabular-nums shrink-0",
                         isOverdue ? "text-red-400" : "text-muted-foreground",
                       )}
                     >
@@ -353,6 +413,62 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
                   >
                     {issue.status}
                   </span>
+
+                  {issue.creator && (
+                    <div className="flex items-center gap-1">
+                      <span className="text-xs text-muted-foreground font-medium">
+                        Created by:
+                      </span>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Avatar className="w-6 h-6 border border-border shrink-0">
+                              <AvatarImage
+                                src={issue.creator.avatarUrl}
+                                alt={issue.creator.name}
+                              />
+                              <AvatarFallback className="text-[11px] font-semibold">
+                                {issue.creator.name?.charAt(0).toUpperCase() ||
+                                  "?"}
+                              </AvatarFallback>
+                            </Avatar>
+                          </TooltipTrigger>
+                          <TooltipContent>
+                            <p className="text-[10px]">
+                              {issue.creator.name || "Unknown"}
+                            </p>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  )}
+
+                  <div className="flex items-center gap-2 ml-auto">
+                    {issue.assignees && issue.assignees.length > 0 && (
+                      <div className="flex items-center -space-x-1.5 ml-1">
+                        <TooltipProvider>
+                          {issue.assignees.map((assignee) => (
+                            <Tooltip key={assignee.userId}>
+                              <TooltipTrigger asChild>
+                                <Avatar className="w-6 h-6 border border-background shadow-xs hover:z-10 transition-transform duration-200 shrink-0">
+                                  <AvatarImage
+                                    src={assignee.avatarUrl}
+                                    alt={assignee.name}
+                                  />
+                                  <AvatarFallback className="text-[11px] font-semibold">
+                                    {assignee.name.charAt(0).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                              </TooltipTrigger>
+                              <TooltipContent>
+                                <p className="text-[10px]">{assignee.name}</p>
+                              </TooltipContent>
+                            </Tooltip>
+                          ))}
+                        </TooltipProvider>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </div>
             );
@@ -372,9 +488,11 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
               Load more
             </Button>
           ) : (
-            <span className="text-[11px] text-muted-foreground/50 font-medium">
-              No more issues
-            </span>
+            <div className="flex justify-center items-center my-6 text-center w-full">
+              <span className="text-sm text-muted-foreground font-medium">
+                No more Issues assigned to you.
+              </span>
+            </div>
           )}
         </div>
       </div>
@@ -397,15 +515,15 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
     <Card className="border border-accent shadow-none overflow-hidden dark:bg-sidebar bg-card h-[620px]">
       <CardHeader className="flex  items-center justify-between space-y-0 ">
         <div className="space-y-1">
-          <CardTitle className="text-base font-semibold  text-primary flex items-center gap-2">
+          <CardTitle className="text-lg font-semibold  text-primary flex items-center gap-2">
             <Layers2 className="w-5 h-5! text-primary" />
-            Your work,
-            <span className="text-primary font-bold text-xl capitalize">
-              {userName}
+            Have a Look at your work,
+            <span className="text-primary font-bold text-lg capitalize">
+              {userName} !
             </span>
           </CardTitle>
         </div>
-        <div className="flex items-center gap-1.5 text-xs tracking-tight font-medium text-muted-foreground">
+        <div className="flex items-center gap-1.5 text-xs tracking-tight font-medium text-primary">
           <CalendarDays className="w-3 h-3" />
           {today}
         </div>
@@ -421,7 +539,7 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
                 variant="ghost"
                 size="sm"
                 className={cn(
-                  "h-10 text-xs font-semibold px-4 transition-all relative cursor-pointer rounded-t-lg rounded-b-none border-b-2",
+                  "h-10 text-base px-4 transition-all relative cursor-pointer rounded-t-lg rounded-b-none border-b-2",
                   activeTab === tab.id
                     ? "border-b-primary text-primary bg-transparent"
                     : "border-b-transparent text-muted-foreground hover:text-foreground hover:bg-transparent",
@@ -444,7 +562,7 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
             onClick={toggleKaya}
             variant="outline"
             size="sm"
-            className="h-8 text-[10px] gap-2 rounded-md border-primary/20 hover:border-primary/40 hover:bg-primary/5 text-primary transition-all cursor-pointer shadow-none"
+            className="h-8 text-xs bg-linear-to-br from-transparent to-indigo-500"
           >
             <Image src="/kaya.svg" alt="kaya" width={20} height={20} />
             Ask for Standup

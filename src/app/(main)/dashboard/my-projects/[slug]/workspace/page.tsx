@@ -422,7 +422,7 @@ const ProjectWorkspace = () => {
 
         {/* My Work Area */}
         {activeTab === "work" && (
-          <div className="mt-6">
+          <div className="mt-6 px-8">
             <UserWorkTable
               userName={user?.name}
               projectId={projectId as Id<"projects">}
