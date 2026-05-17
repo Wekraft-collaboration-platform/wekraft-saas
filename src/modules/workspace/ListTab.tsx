@@ -145,6 +145,7 @@ interface TaskGroupProps {
   tagFilter: string | null;
   setTagFilter: (tag: string | null) => void;
   allTasks: Task[];
+  canDelete?: boolean;
 }
 
 const TaskGroup = ({
@@ -164,6 +165,7 @@ const TaskGroup = ({
   tagFilter,
   setTagFilter,
   allTasks,
+  canDelete = false,
 }: TaskGroupProps) => {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
@@ -524,15 +526,23 @@ const TaskGroup = ({
                               </DropdownMenuItem>
                             )}
                             <AlertDialog>
-                              <AlertDialogTrigger asChild>
+                              {canDelete ? (
+                                <AlertDialogTrigger asChild>
+                                  <DropdownMenuItem
+                                    onSelect={(e) => e.preventDefault()}
+                                    className="gap-2 focus:bg-red-500/10 text-red-500 cursor-pointer text-xs font-semibold py-2"
+                                  >
+                                    <AlertCircle className="w-4 h-4" /> Delete Task
+                                  </DropdownMenuItem>
+                                </AlertDialogTrigger>
+                              ) : (
                                 <DropdownMenuItem
-                                  onSelect={(e) => e.preventDefault()}
-                                  className="gap-2 focus:bg-red-500/10 text-red-500 cursor-pointer"
+                                  className="gap-2 opacity-50 cursor-not-allowed text-red-500 text-xs font-semibold py-2"
+                                  disabled
                                 >
-                                  <AlertCircle className="w-4 h-4" /> Delete
-                                  Task
+                                  <AlertCircle className="w-4 h-4" /> Delete Task
                                 </DropdownMenuItem>
-                              </AlertDialogTrigger>
+                              )}
                               <AlertDialogContent className="bg-neutral-900 border-neutral-800 shadow-2xl">
                                 <AlertDialogHeader>
                                   <AlertDialogTitle className="text-primary">
@@ -584,6 +594,7 @@ export const ListTab = ({
   setSortConfig,
   tagFilter,
   setTagFilter,
+  canDelete = false,
 }: {
   tasks: Task[];
   allTasks: Task[];
@@ -597,6 +608,7 @@ export const ListTab = ({
   setSortConfig: (config: SortConfig) => void;
   tagFilter: string | null;
   setTagFilter: (tag: string | null) => void;
+  canDelete?: boolean;
 }) => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -625,6 +637,7 @@ export const ListTab = ({
         tagFilter={tagFilter}
         setTagFilter={setTagFilter}
         allTasks={allTasks}
+        canDelete={canDelete}
       />
       <TaskGroup
         title="In Progress"
@@ -642,6 +655,7 @@ export const ListTab = ({
         tagFilter={tagFilter}
         setTagFilter={setTagFilter}
         allTasks={allTasks}
+        canDelete={canDelete}
       />
       <TaskGroup
         title="Reviewing"
@@ -659,6 +673,7 @@ export const ListTab = ({
         tagFilter={tagFilter}
         setTagFilter={setTagFilter}
         allTasks={allTasks}
+        canDelete={canDelete}
       />
       <TaskGroup
         title="Testing"
@@ -676,6 +691,7 @@ export const ListTab = ({
         tagFilter={tagFilter}
         setTagFilter={setTagFilter}
         allTasks={allTasks}
+        canDelete={canDelete}
       />
       <TaskGroup
         title="Completed"
@@ -693,6 +709,7 @@ export const ListTab = ({
         tagFilter={tagFilter}
         setTagFilter={setTagFilter}
         allTasks={allTasks}
+        canDelete={canDelete}
       />
 
       <TaskDetailSheet

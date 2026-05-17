@@ -2,7 +2,7 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import { Compass, BadgeAlert } from "lucide-react";
+import { Compass, BadgeAlert, LucideAlertTriangle } from "lucide-react";
 import { Task } from "@/types/types";
 import { format } from "date-fns";
 
@@ -32,7 +32,7 @@ export const MilestoneTrajectory = ({
 
   if (!isReady) {
     return (
-      <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-neutral-900/20 shadow-sm dark:shadow-none p-4 flex flex-col relative overflow-hidden">
+      <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-neutral-900/70 shadow-sm dark:shadow-none p-4 flex flex-col relative overflow-hidden">
         <div className="flex items-center gap-2 mb-3">
           <div className={cn("p-1.5 rounded-md border bg-muted/50")}>
             <Compass className={cn("w-3.5 h-3.5 text-primary")} />
@@ -42,7 +42,7 @@ export const MilestoneTrajectory = ({
           </h3>
         </div>
         <div className="flex flex-col items-center justify-center space-y-3 mt-6">
-          <BadgeAlert className={cn("w-8 h-8 text-primary opacity-50")} />
+          <LucideAlertTriangle className={cn("w-8 h-8 text-primary opacity-50")} />
           <p className="text-[11px] text-muted-foreground leading-relaxed text-center px-7">
             Your workspace atleast have{" "}
             <span className="text-primary">6 tasks and 3 days of history</span>{" "}
@@ -74,7 +74,7 @@ export const MilestoneTrajectory = ({
   const currentPos = ((now - createdAt) / totalDuration) * 100;
 
   return (
-    <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-accent/20 shadow-sm dark:shadow-none p-4 flex flex-col justify-between relative overflow-hidden">
+    <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-neutral-900/70 shadow-sm dark:shadow-none p-4 flex flex-col justify-between relative overflow-hidden">
       <div>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">

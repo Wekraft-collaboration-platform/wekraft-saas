@@ -30,7 +30,7 @@ export default function WorkspaceLayout({
   // 1. Loading State
   if (project === undefined || (project && permissions === undefined)) {
     return (
-      <div className="flex h-screen w-screen items-center justify-center bg-background text-foreground">
+      <div className="flex h-screen items-center justify-center bg-background text-foreground">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="h-10 w-10 animate-spin text-primary" />
           <p className="text-sm text-muted-foreground animate-pulse">
@@ -44,7 +44,7 @@ export default function WorkspaceLayout({
   // 2. Project not found state
   if (!project) {
     return (
-      <div className="flex h-screen w-screen flex-col items-center justify-center bg-background p-4 text-center">
+      <div className="flex h-screen flex-col items-center justify-center bg-background p-4 text-center">
         <ShieldAlert className="h-16 w-16 text-destructive mb-4 animate-bounce" />
         <h1 className="text-2xl font-bold text-foreground">
           Project Not Found

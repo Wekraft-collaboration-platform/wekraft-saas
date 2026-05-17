@@ -8,6 +8,7 @@ import {
   AlertCircle,
   ArrowUpRight,
   BadgeAlert,
+  LucideAlertTriangle,
 } from "lucide-react";
 import { Task } from "@/types/types";
 
@@ -61,7 +62,7 @@ export const PaceTracker = ({
 
   if (state === "empty") {
     return (
-      <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-neutral-900/20 shadow-sm dark:shadow-none p-4 flex flex-col relative overflow-hidden">
+      <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-neutral-900/70 shadow-sm dark:shadow-none p-4 flex flex-col relative overflow-hidden">
         <div className="flex items-center gap-2 mb-3">
           <div className={cn("p-1.5 rounded-md border bg-muted/50")}>
             <Activity className={cn("w-3.5 h-3.5 text-primary")} />
@@ -71,7 +72,7 @@ export const PaceTracker = ({
           </h3>
         </div>
         <div className="flex flex-col items-center justify-center space-y-3 mt-6">
-          <BadgeAlert className={cn("w-8 h-8 text-primary opacity-50")} />
+          <LucideAlertTriangle className={cn("w-8 h-8 text-primary opacity-50")} />
           <p className="text-[11px] text-muted-foreground leading-relaxed text-center px-7">
             Your workspace atleast have{" "}
             <span className="text-primary">6 tasks and 3 days of history</span>{" "}
@@ -84,7 +85,7 @@ export const PaceTracker = ({
 
   if (state === "growing") {
     return (
-      <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-accent/20 shadow-sm dark:shadow-none p-4 flex flex-col relative overflow-hidden">
+      <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-neutral-900/70 shadow-sm dark:shadow-none p-4 flex flex-col relative overflow-hidden">
         <div className="flex items-center gap-2 mb-3">
           <div className={cn("p-1.5 rounded-md border bg-muted/50")}>
             <Activity className={cn("w-3.5 h-3.5 text-primary")} />
@@ -94,7 +95,7 @@ export const PaceTracker = ({
           </h3>
         </div>
         <div className="flex flex-col items-center justify-center space-y-3 mt-6">
-          <BadgeAlert className={cn("w-8 h-8 text-primary opacity-50")} />
+          <LucideAlertTriangle className={cn("w-8 h-8 text-primary opacity-50")} />
           <p className="text-[11px] text-muted-foreground leading-relaxed text-center px-7">
             Your workspace atleast have{" "}
             <span className="text-primary">6 tasks and 3 days of history</span>{" "}
@@ -143,7 +144,7 @@ export const PaceTracker = ({
   };
 
   return (
-    <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-accent/20 shadow-sm dark:shadow-none p-4 flex flex-col justify-between relative overflow-hidden">
+    <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-neutral-900/70 shadow-sm dark:shadow-none p-4 flex flex-col justify-between relative overflow-hidden">
       {/* HEADER */}
       <div>
         <div className="flex items-center justify-between mb-4">

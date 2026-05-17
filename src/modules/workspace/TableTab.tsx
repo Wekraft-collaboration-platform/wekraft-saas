@@ -111,6 +111,7 @@ interface TableTabProps {
   projectName: string;
   repoFullName?: string;
   ownerClerkId?: string;
+  canDelete?: boolean;
 }
 
 const PriorityBadge = ({ priority = "none" }: { priority?: string }) => {
@@ -138,6 +139,7 @@ export const TableTab = ({
   projectName,
   repoFullName,
   ownerClerkId,
+  canDelete = false,
 }: TableTabProps) => {
   const [page, setPage] = useState(0);
 
@@ -226,7 +228,7 @@ export const TableTab = ({
                     paginatedTasks.length > 0
                   }
                   onCheckedChange={toggleAll}
-                  className="rounded border-neutral-500 data-[state=checked]:bg-primary"
+                  className="rounded  border-neutral-500 data-[state=checked]:bg-primary"
                 />
               </TableHead>
               <TableHead className="text-[15px] dark:text-primary text-foreground font-medium px-4 min-w-[180px]  border-r dark:border-neutral-700 border-neutral-200">
@@ -509,39 +511,48 @@ export const TableTab = ({
                               <Check className="w-4 h-4" /> Mark as Complete
                             </DropdownMenuItem>
                           )}
-                          <AlertDialog>
-                            <AlertDialogTrigger asChild>
-                              <DropdownMenuItem
-                                onSelect={(e) => e.preventDefault()}
-                                className="gap-2 focus:bg-red-500/10 text-red-500 cursor-pointer text-xs font-semibold py-2"
-                              >
-                                <AlertCircle className="w-4 h-4" /> Delete Task
-                              </DropdownMenuItem>
-                            </AlertDialogTrigger>
-                            <AlertDialogContent className="bg-neutral-900 border-neutral-800 shadow-2xl">
-                              <AlertDialogHeader>
-                                <AlertDialogTitle className="text-primary">
-                                  Are you absolutely sure?
-                                </AlertDialogTitle>
-                                <AlertDialogDescription className="text-muted-foreground">
-                                  This action cannot be undone. This will
-                                  permanently delete this task and remove all
-                                  associated data.
-                                </AlertDialogDescription>
-                              </AlertDialogHeader>
-                              <AlertDialogFooter>
-                                <AlertDialogCancel className="bg-neutral-800 border-neutral-700 text-primary hover:bg-neutral-700">
-                                  Cancel
-                                </AlertDialogCancel>
-                                <AlertDialogAction
-                                  onClick={() => handleDeleteTask(task._id)}
-                                  className="bg-red-600 text-white hover:bg-red-700"
+                           <AlertDialog>
+                              {canDelete ? (
+                                <AlertDialogTrigger asChild>
+                                  <DropdownMenuItem
+                                    onSelect={(e) => e.preventDefault()}
+                                    className="gap-2 focus:bg-red-500/10 text-red-500 cursor-pointer text-xs font-semibold py-2"
+                                  >
+                                    <AlertCircle className="w-4 h-4" /> Delete Task
+                                  </DropdownMenuItem>
+                                </AlertDialogTrigger>
+                              ) : (
+                                <DropdownMenuItem
+                                  className="gap-2 opacity-50 cursor-not-allowed text-red-500 text-xs font-semibold py-2"
+                                  disabled
                                 >
-                                  Delete Permanently
-                                </AlertDialogAction>
-                              </AlertDialogFooter>
-                            </AlertDialogContent>
-                          </AlertDialog>
+                                  <AlertCircle className="w-4 h-4" /> Delete Task
+                                </DropdownMenuItem>
+                              )}
+                              <AlertDialogContent className="bg-neutral-900 border-neutral-800 shadow-2xl">
+                                <AlertDialogHeader>
+                                  <AlertDialogTitle className="text-primary">
+                                    Are you absolutely sure?
+                                  </AlertDialogTitle>
+                                  <AlertDialogDescription className="text-muted-foreground">
+                                    This action cannot be undone. This will
+                                    permanently delete this task and remove all
+                                    associated data.
+                                  </AlertDialogDescription>
+                                </AlertDialogHeader>
+                                <AlertDialogFooter>
+                                  <AlertDialogCancel className="bg-neutral-800 border-neutral-700 text-primary hover:bg-neutral-700">
+                                    Cancel
+                                  </AlertDialogCancel>
+                                  <AlertDialogAction
+                                    onClick={() => handleDeleteTask(task._id)}
+                                    className="bg-red-600 text-white hover:bg-red-700"
+                                  >
+                                    Delete Permanently
+                                  </AlertDialogAction>
+                                </AlertDialogFooter>
+                              </AlertDialogContent>
+                            </AlertDialog>
                         </DropdownMenuContent>
                       </DropdownMenu>
                     </TableCell>
@@ -554,7 +565,7 @@ export const TableTab = ({
       </div>
 
       {/* Simple Pagination */}
-      <div className="flex items-center justify-between px-6 py-4 border-t dark:border-neutral-800/60 border-neutral-200">
+      <div className="flex items-center justify-between px-6 py-4 border-t dark:border-neutral-800! border-neutral-200">
         <div className="text-xs font-medium text-muted-foreground tracking-wider">
           Showing {page * PAGE_SIZE + 1}–
           {Math.min((page + 1) * PAGE_SIZE, tasks.length)} of {tasks.length}

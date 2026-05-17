@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { AlertCircle, BadgeAlert, Hourglass } from "lucide-react";
+import { AlertCircle, BadgeAlert, Hourglass, LucideAlertTriangle } from "lucide-react";
 import { Task } from "@/types/types";
 import { useQuery } from "convex/react";
 import { Id } from "../../../../convex/_generated/dataModel";
@@ -60,7 +60,7 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
 
   if (!isReady) {
     return (
-      <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-neutral-900/20 shadow-sm dark:shadow-none p-4 flex flex-col relative overflow-hidden">
+      <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-neutral-900/70 shadow-sm dark:shadow-none p-4 flex flex-col relative overflow-hidden">
         <div className="flex items-center gap-2 mb-3">
           <div className={cn("p-1.5 rounded-md border bg-muted/50")}>
             <Hourglass className={cn("w-3 h-3! text-primary")} />
@@ -70,7 +70,7 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
           </h3>
         </div>
         <div className="flex flex-col items-center justify-center space-y-3 mt-6">
-          <BadgeAlert className={cn("w-8 h-8 text-primary opacity-50")} />
+          <LucideAlertTriangle className={cn("w-8 h-8 text-primary opacity-50")} />
           <p className="text-[11px] text-muted-foreground leading-relaxed text-center px-7">
             Your workspace atleast have{" "}
             <span className="text-primary">more than 5 tasks </span>{" "}
@@ -95,7 +95,7 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
   const hiddenOffendersCount = Math.max(0, currentOverdueCount - 5);
 
   // Simple color logic - primary usage
-  let badgeColor = "text-muted-foreground border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900/50";
+  let badgeColor = "text-muted-foreground border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900/70";
   if (currentOverdueCount > 0) {
     badgeColor = "text-primary border-primary/20 bg-primary/5";
   }

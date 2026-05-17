@@ -88,6 +88,7 @@ const TaskPage = () => {
   const isAdmin = userMember?.AccessRole === "admin";
   
   const canCreate = isOwner || isAdmin || projectDetails?.memberCanCreate !== false;
+  const canDelete = isOwner || isAdmin;
 
   const deleteTasks = useMutation(api.workspace.deleteTasks);
 
@@ -231,16 +232,28 @@ const TaskPage = () => {
           {/* Delete Button (Visible when tasks are selected) */}
           {selectedTaskIds.length > 0 && (
             <AlertDialog>
-              <AlertDialogTrigger asChild>
+              {canDelete ? (
+                <AlertDialogTrigger asChild>
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    className="text-xs animate-in fade-in zoom-in duration-200"
+                  >
+                    <Trash2 className="w-4 h-4 mr-2" />
+                    Delete {selectedTaskIds.length} Tasks
+                  </Button>
+                </AlertDialogTrigger>
+              ) : (
                 <Button
                   variant="destructive"
                   size="sm"
-                  className="text-xs animate-in fade-in zoom-in duration-200"
+                  disabled
+                  className="text-xs animate-in fade-in zoom-in duration-200 opacity-50 cursor-not-allowed"
                 >
                   <Trash2 className="w-4 h-4 mr-2" />
                   Delete {selectedTaskIds.length} Tasks
                 </Button>
-              </AlertDialogTrigger>
+              )}
               <AlertDialogContent className="bg-neutral-900 border-neutral-800 shadow-2xl">
                 <AlertDialogHeader>
                   <AlertDialogTitle className="text-primary">
@@ -328,6 +341,7 @@ const TaskPage = () => {
                 setSortConfig={setSortConfig}
                 tagFilter={tagFilter}
                 setTagFilter={setTagFilter}
+                canDelete={canDelete}
               />
             )}
             {activeTab === "Table" && (
@@ -346,6 +360,7 @@ const TaskPage = () => {
                 projectName={projectName || "Project"}
                 repoFullName={project.repoFullName}
                 ownerClerkId={(project as any).ownerClerkId}
+                canDelete={canDelete}
               />
             )}
             {activeTab === "Kanban" && (

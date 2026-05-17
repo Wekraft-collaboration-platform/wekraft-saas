@@ -28,6 +28,7 @@ import {
   Check,
   FileText,
   Trash2,
+  AlertCircle,
 } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
@@ -686,7 +687,14 @@ export const CreateTaskDialog = ({
           )}
         </div>
 
-        <div className="p-4 border-t border-[#2b2b2b] flex items-center justify-end">
+        <div className="p-4 border-t border-[#2b2b2b] flex items-center justify-between">
+          <div>
+            {!projectDetails?.targetDate && (
+              <span className="text-xs font-medium flex items-center gap-1.5">
+                <AlertCircle className="w-3.5 h-3.5" /> Project deadline is not set! Don't forget to configure it in settings.
+              </span>
+            )}
+          </div>
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
