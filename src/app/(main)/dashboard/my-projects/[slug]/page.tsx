@@ -50,9 +50,10 @@ const ProjectPage = () => {
   const project = useQuery(api.project.getProjectBySlug, { slug });
   const projectInviteLink = project?.inviteLink;
   const user = useQuery(api.user.getCurrentUser);
-  const members = useQuery(api.project.getProjectMembers, {
-    projectId: project?._id as Id<"projects">,
-  });
+  const members = useQuery(
+    api.project.getProjectMembers,
+    project?._id ? { projectId: project._id as Id<"projects"> } : "skip"
+  );
 
   const [isUploading, setIsUploading] = useState(false);
   const [homeTab, setHomeTab] = useState("settings");

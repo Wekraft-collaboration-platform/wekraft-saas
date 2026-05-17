@@ -23,27 +23,17 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
-import Ably from "ably";
 import { cn } from "@/lib/utils";
 import { Users } from "lucide-react";
 
-interface PresenceMember {
-  clientId: string;
-  data: { userId: string; userName: string };
-}
-
-import { usePresence } from "./hooks/usePresence";
-
 interface Props {
   projectId: string;
-  channelId: string | null;
+  onlineIds: Set<string>;
   currentUserId: string;
   currentUserName: string;
 }
 
-export function MembersPanel({ projectId, channelId, currentUserId, currentUserName }: Props) {
-  const { onlineIds } = usePresence(channelId, currentUserId, currentUserName);
-  
+export function MembersPanel({ projectId, onlineIds, currentUserId, currentUserName }: Props) {
   const members = useQuery(
     api.project.getProjectMembers,
     projectId ? { projectId: projectId as Id<"projects"> } : "skip",
@@ -82,7 +72,12 @@ export function MembersPanel({ projectId, channelId, currentUserId, currentUserN
                 </p>
                 <div className="flex flex-col gap-0.5">
                   {online.map((m) => (
-                    <MemberRow key={m.userId} member={m} online />
+                    <MemberRow 
+                      key={m.userId} 
+                      member={m} 
+                      online 
+                      isCurrentUser={m.clerkUserId === currentUserId} 
+                    />
                   ))}
                 </div>
               </div>
@@ -96,7 +91,12 @@ export function MembersPanel({ projectId, channelId, currentUserId, currentUserN
                 </p>
                 <div className="flex flex-col gap-0.5">
                   {offline.map((m) => (
-                    <MemberRow key={m.userId} member={m} online={false} />
+                    <MemberRow 
+                      key={m.userId} 
+                      member={m} 
+                      online={false} 
+                      isCurrentUser={m.clerkUserId === currentUserId} 
+                    />
                   ))}
                 </div>
               </div>
@@ -111,9 +111,11 @@ export function MembersPanel({ projectId, channelId, currentUserId, currentUserN
 function MemberRow({
   member,
   online,
+  isCurrentUser,
 }: {
   member: { userId: string; userName: string; userImage?: string; AccessRole?: string };
   online: boolean;
+  isCurrentUser: boolean;
 }) {
   return (
     <div className="flex items-center gap-2 px-1 py-1 rounded-md hover:bg-accent/50 transition-colors">
@@ -132,8 +134,8 @@ function MemberRow({
         />
       </div>
       <div className="min-w-0 flex-1">
-        <p className={cn("text-xs truncate", online ? "text-foreground" : "text-muted-foreground")}>
-          {member.userName}
+        <p className={cn("text-xs truncate font-medium", online ? "text-foreground" : "text-muted-foreground")}>
+          {isCurrentUser ? "you" : member.userName}
         </p>
         {member.AccessRole && (
           <p className="text-[9px] text-muted-foreground/60 truncate capitalize">

@@ -55,7 +55,6 @@ interface Props {
 
 export function MessageComposer({ channelName, projectId, replyingTo, onClearReply, onSend, onTyping, disabled, isAnnouncement, currentUserId, projectSlug }: Props) {
   const [content, setContent] = useState("");
-  const [sending, setSending] = useState(false);
   const [isPollDialogOpen, setIsPollDialogOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -158,9 +157,10 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
   const [mentionStartIndex, setMentionStartIndex] = useState(-1);
 
   // Fetch project members for mentions
-  const members = useQuery(api.project.getProjectMembers, {
-    projectId: projectId as Id<"projects">,
-  });
+  const members = useQuery(
+    api.project.getProjectMembers,
+    projectId ? { projectId: projectId as Id<"projects"> } : "skip"
+  );
 
   const filteredMembers = [
     ...(mentionQuery.toLowerCase() === "e" || mentionQuery.toLowerCase() === "ev" || "everyone".includes(mentionQuery.toLowerCase()) 
@@ -194,17 +194,21 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
 
   const handleSend = useCallback(async () => {
     const trimmed = content.trim();
-    if (!trimmed || sending) return;
+    if (!trimmed) return;
 
-    setSending(true);
+    setContent("");
+    
+    if (textareaRef.current) {
+      textareaRef.current.style.height = "auto";
+      textareaRef.current.focus();
+    }
+
     try {
       await onSend(trimmed);
-      setContent("");
-      textareaRef.current?.focus();
-    } finally {
-      setSending(false);
+    } catch (err) {
+      console.error("Error in onSend:", err);
     }
-  }, [content, onSend, sending]);
+  }, [content, onSend]);
 
   const handleKeyDown = (e: KeyboardEvent<HTMLTextAreaElement>) => {
     if (showMentions && filteredMembers.length > 0) {
@@ -534,7 +538,7 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
             whileHover={content.trim() ? { scale: 1.1 } : {}}
             whileTap={content.trim() ? { scale: 0.9 } : {}}
             onClick={handleSend}
-            disabled={disabled || sending || !content.trim()} 
+            disabled={disabled || !content.trim()} 
             className={cn(
               "p-1.5 rounded-md transition-all duration-200",
               content.trim() 

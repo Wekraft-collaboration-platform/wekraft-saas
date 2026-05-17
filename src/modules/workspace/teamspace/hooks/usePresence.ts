@@ -21,14 +21,14 @@ function getAblyClient(): Ably.Realtime {
   return ablyClient;
 }
 
-export function usePresence(channelId: string | null, currentUserId: string, currentUserName?: string) {
+export function usePresence(projectId: string | null, currentUserId: string, currentUserName?: string) {
   const [onlineIds, setOnlineIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
-    if (!channelId) return;
+    if (!projectId) return;
 
     const ably = getAblyClient();
-    const ch = ably.channels.get(`teamspace:${channelId}`);
+    const ch = ably.channels.get(`teamspace:presence:${projectId}`);
 
     ch.presence.enter({ userId: currentUserId, userName: currentUserName });
     
@@ -47,7 +47,7 @@ export function usePresence(channelId: string | null, currentUserId: string, cur
       ch.presence.leave();
       ch.presence.unsubscribe();
     };
-  }, [channelId, currentUserId, currentUserName]);
+  }, [projectId, currentUserId, currentUserName]);
 
   return { onlineIds };
 }

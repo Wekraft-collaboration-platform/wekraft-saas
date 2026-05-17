@@ -23,6 +23,7 @@ import { useChannels } from "./hooks/useChannels";
 import { ChannelsSidebar } from "./ChannelsSidebar";
 import { MessageFeed } from "./MessageFeed";
 import { MembersPanel } from "./MembersPanel";
+import { usePresence } from "./hooks/usePresence";
 import { Channel } from "./hooks/useChannels";
 import { Message } from "./hooks/useMessages";
 import { motion, AnimatePresence } from "framer-motion";
@@ -53,6 +54,9 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
   const currentUserId = clerkUserId ?? "";
   const currentUserName = user?.name ?? user?.githubUsername ?? "User";
   const currentUserImage = user?.avatarUrl ?? null;
+
+  // Track project-wide user presence
+  const { onlineIds } = usePresence(projectId, currentUserId, currentUserName);
 
   return (
     <div className="flex h-[calc(100vh-72px)] overflow-hidden bg-sidebar">
@@ -93,7 +97,7 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
           >
             <MembersPanel
               projectId={projectId}
-              channelId={resolvedChannel?.id ?? null}
+              onlineIds={onlineIds}
               currentUserId={currentUserId}
               currentUserName={currentUserName}
             />
