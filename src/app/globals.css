@@ -583,4 +583,32 @@
     filter: brightness(0.5);
   }
 }
+
+/* Premium Message Highlight Pulse */
+@keyframes premium-message-pulse {
+  0% {
+    background-color: transparent;
+    box-shadow: inset 3px 0 0 0 transparent;
+  }
+  20% {
+    background-color: color-mix(in oklab, var(--foreground) 5%, transparent);
+    box-shadow: inset 3.5px 0 0 0 color-mix(in oklab, var(--foreground) 25%, transparent);
+  }
+  45% {
+    background-color: transparent;
+    box-shadow: inset 3px 0 0 0 transparent;
+  }
+  70% {
+    background-color: color-mix(in oklab, var(--foreground) 5%, transparent);
+    box-shadow: inset 3.5px 0 0 0 color-mix(in oklab, var(--foreground) 25%, transparent);
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: inset 3px 0 0 0 transparent;
+  }
+}
+
+.premium-message-highlight {
+  animation: premium-message-pulse 3.8s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
 }

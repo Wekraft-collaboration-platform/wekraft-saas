@@ -40,6 +40,7 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
   const { userId: clerkUserId } = useAuth();
 
   const [activeChannel, setActiveChannel] = useState<Channel | null>(null);
+  const [targetMessageId, setTargetMessageId] = useState<string | null>(null);
   const [showMembers, setShowMembers] = useState(false);
 
   const { channels: channelsList, loading, createChannel, updateChannel, deleteChannel, markChannelAsRead } =
@@ -91,12 +92,17 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
         projectId={projectId}
         projectSlug={projectSlug}
         onToggleMembers={() => setShowMembers((prev) => !prev)}
-        onSelectChannelId={(channelId) => {
+        onSelectChannelId={(channelId, messageId) => {
           const target = channelsList.find((c) => c.id === channelId);
           if (target) {
             setActiveChannel(target);
+            if (messageId) {
+              setTargetMessageId(messageId);
+            }
           }
         }}
+        targetMessageId={targetMessageId}
+        onClearTargetMessageId={() => setTargetMessageId(null)}
       />
 
       {/* Right: Members panel */}

@@ -73,7 +73,9 @@ interface Props {
   projectId: string;
   projectSlug: string;
   onToggleMembers: () => void;
-  onSelectChannelId?: (channelId: string) => void;
+  onSelectChannelId?: (channelId: string, messageId?: string) => void;
+  targetMessageId?: string | null;
+  onClearTargetMessageId?: () => void;
 }
 
 function DateDivider({ timestamp }: { timestamp: number }) {
@@ -102,6 +104,8 @@ export function MessageFeed({
   projectSlug,
   onToggleMembers,
   onSelectChannelId,
+  targetMessageId,
+  onClearTargetMessageId,
 }: Props) {
   const { isOwner, isPower } = useProjectPermissions(
     projectId as Id<"projects">,
@@ -135,7 +139,17 @@ export function MessageFeed({
     projectId,
     currentUserId,
     currentUserName,
-  );
+  )
+
+  // Trigger jumpToMessage when navigated from a notification
+  useEffect(() => {
+    if (targetMessageId && !loading && messages.length > 0) {
+      jumpToMessage(targetMessageId);
+      if (onClearTargetMessageId) {
+        onClearTargetMessageId();
+      }
+    }
+  }, [targetMessageId, loading, messages.length, onClearTargetMessageId]);
 
   // --- WHATSAPP-STYLE SEARCH LOGIC ---
   useEffect(() => {
@@ -186,6 +200,10 @@ export function MessageFeed({
       const target = wordEl || messageEl;
 
       if (target) {
+        // Clear previous highlights
+        document.querySelectorAll(".premium-message-highlight").forEach((el) => {
+          el.classList.remove("premium-message-highlight");
+        });
         document.querySelectorAll(".search-highlight-pulse").forEach((el) => {
           el.classList.remove(
             "search-highlight-pulse",
@@ -194,27 +212,17 @@ export function MessageFeed({
             "bg-primary/5",
           );
         });
+
         target.scrollIntoView({ behavior: "smooth", block: "center" });
-        // Add a visual pulse to the message container
+        
+        // Add a visual premium pulse to the message container
         const container =
           messageEl || (wordEl?.closest('[id^="message-"]') as HTMLElement);
         if (container) {
-          container.classList.add(
-            "search-highlight-pulse",
-            "ring-2",
-            "ring-primary/40",
-            "bg-primary/5",
-            "transition-all",
-            "duration-500",
-          );
+          container.classList.add("premium-message-highlight");
           setTimeout(() => {
-            container.classList.remove(
-              "ring-2",
-              "ring-primary/40",
-              "bg-primary/5",
-              "search-highlight-pulse",
-            );
-          }, 1500);
+            container.classList.remove("premium-message-highlight");
+          }, 3500);
         }
       } else if (count < 5) {
         // If not found, try again in 150ms (useful if message was just loaded)
