@@ -2,7 +2,7 @@
 
 import { RedirectToSignIn } from "@clerk/nextjs";
 import { Authenticated, Unauthenticated, useQuery } from "convex/react";
-import { BugPlay, Moon, Share2, SunMedium, Video } from "lucide-react";
+import { BugPlay, Home, Moon, Share2, SunMedium, Video } from "lucide-react";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
@@ -18,6 +18,7 @@ import { DashboardBreadcrumbs } from "@/modules/dashboard/components/HeaderCrumb
 import { ShareProjectDialog } from "@/modules/dashboard/components/ShareProjectDialog";
 import { UserMenu } from "@/modules/dashboard/components/UserMenu";
 import { api } from "../../../../convex/_generated/api";
+import Link from "next/link";
 
 export default function Layout({
   children,
@@ -78,9 +79,6 @@ export default function Layout({
                   }}
                 /> */}
                 <div className="flex items-center gap-3">
-                  <Button size="icon-sm" variant="outline">
-                    <BugPlay />
-                  </Button>
                   <Button
                     size="icon-sm"
                     variant="outline"
@@ -113,6 +111,11 @@ export default function Layout({
                       >
                         <Video className="h-4 w-4" />
                       </Button>
+                      <Link href={`/dashboard/my-projects/${slug}`}>
+                        <Button size="icon-sm" variant="outline">
+                          <Home />
+                        </Button>
+                      </Link>
                     </>
                   )}
                 </div>
