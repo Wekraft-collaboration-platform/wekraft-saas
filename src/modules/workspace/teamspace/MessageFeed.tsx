@@ -192,7 +192,7 @@ export function MessageFeed({
     return () => clearTimeout(timer);
   }, [searchQuery, projectId, channel?.id]);
 
-  const jumpToMessage = (messageId: string) => {
+  const jumpToMessage = useCallback((messageId: string) => {
     // Attempt multiple times to handle cases where the DOM might be updating
     const attemptScroll = (count = 0) => {
       const wordEl = document.getElementById(`search-match-${messageId}`);
@@ -233,24 +233,27 @@ export function MessageFeed({
     };
 
     attemptScroll();
-  };
+  }, []);
 
-  const handleNextMatch = () => {
+  const handleNextMatch = useCallback(() => {
     if (searchResults.length === 0) return;
-    // Go to NEWER message (decrement index towards 0 if 0 is newest, or cyclic)
-    const nextIdx =
-      (currentSearchIndex - 1 + searchResults.length) % searchResults.length;
-    setCurrentSearchIndex(nextIdx);
-    jumpToMessage(searchResults[nextIdx]);
-  };
+    // Go to next match sequentially (increments index: 1 -> 2 -> 3)
+    setCurrentSearchIndex((prevIdx) => {
+      const nextIdx = (prevIdx + 1) % searchResults.length;
+      jumpToMessage(searchResults[nextIdx]);
+      return nextIdx;
+    });
+  }, [searchResults, jumpToMessage]);
 
-  const handlePrevMatch = () => {
+  const handlePrevMatch = useCallback(() => {
     if (searchResults.length === 0) return;
-    // Go to OLDER message (increment index away from 0)
-    const prevIdx = (currentSearchIndex + 1) % searchResults.length;
-    setCurrentSearchIndex(prevIdx);
-    jumpToMessage(searchResults[prevIdx]);
-  };
+    // Go to previous match sequentially (decrements index: 3 -> 2 -> 1)
+    setCurrentSearchIndex((prevIdx) => {
+      const nextIdx = (prevIdx - 1 + searchResults.length) % searchResults.length;
+      jumpToMessage(searchResults[nextIdx]);
+      return nextIdx;
+    });
+  }, [searchResults, jumpToMessage]);
 
   // Keyboard shortcuts for search
   useEffect(() => {
@@ -275,24 +278,24 @@ export function MessageFeed({
       if (e.key === "Enter" && !e.shiftKey) {
         if (isSearchInput) {
           e.preventDefault();
-          handlePrevMatch(); // ENTER usually goes to OLDER match (UP)
+          handleNextMatch(); // ENTER -> Next Match (forward)
         }
       } else if (e.key === "Enter" && e.shiftKey) {
         if (isSearchInput) {
           e.preventDefault();
-          handleNextMatch(); // SHIFT+ENTER goes to NEWER match (DOWN)
+          handlePrevMatch(); // SHIFT+ENTER -> Previous Match (backward)
         }
       } else if (e.key === "ArrowUp") {
         e.preventDefault();
-        handlePrevMatch();
+        handlePrevMatch(); // ArrowUp -> Previous Match
       } else if (e.key === "ArrowDown") {
         e.preventDefault();
-        handleNextMatch();
+        handleNextMatch(); // ArrowDown -> Next Match
       }
     };
     window.addEventListener("keydown", handleKeys);
     return () => window.removeEventListener("keydown", handleKeys);
-  }, [searchResults, currentSearchIndex]);
+  }, [searchResults, handleNextMatch, handlePrevMatch]);
 
   const pinnedMessages = messages.filter((m) => m.is_pinned === 1);
 
