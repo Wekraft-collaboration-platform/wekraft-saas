@@ -245,13 +245,20 @@ const ProjectPage = () => {
       {/* ---------------------TABS / SETTINGS BELOW---------------- */}
       <div className="w-full flex items-center justify-end mb-10">
         <div className="flex items-center gap-5">
-          <Button
+          {/* <Button
             className="px-3! text-xs cursor-pointer"
             size="sm"
-            variant={"default"}
+            variant={"outline"}
           >
             View Public Page <Globe className="ml-2 w-3.5 h-3.5" />
-          </Button>
+          </Button> */}
+
+          <Link href={`/dashboard/my-projects/${project?.slug}/workspace`}>
+            <Button size="sm" className=" px-4! text-xs" variant={"outline"}>
+              Share Project
+              <LucideExternalLink className="ml-2 w-3.5 h-3.5" />
+            </Button>
+          </Link>
 
           <InviteDialog
             inviteLink={projectInviteLink}
@@ -264,12 +271,6 @@ const ProjectPage = () => {
               </Button>
             }
           />
-          <Link href={`/dashboard/my-projects/${project?.slug}/workspace`}>
-            <Button size="sm" className=" px-4! text-xs" variant={"default"}>
-              Share Project
-              <LucideExternalLink className="ml-2 w-3.5 h-3.5" />
-            </Button>
-          </Link>
         </div>
       </div>
 

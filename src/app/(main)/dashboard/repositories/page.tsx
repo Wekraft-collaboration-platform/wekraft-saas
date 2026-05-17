@@ -41,7 +41,7 @@ const RepositoriesPage = () => {
 
   return (
     <div className="w-full h-full animate-in fade-in duration-700 p-6 2xl:p-10 2xl:py-7">
-      <h1 className="text-3xl font-bold tracking-tight">
+      <h1 className="text-2xl font-semibold tracking-tight">
         Manage Repositories
         <FolderGit2 className="h-7 w-7 inline ml-2" />
       </h1>

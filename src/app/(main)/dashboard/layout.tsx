@@ -123,9 +123,9 @@ export default function Layout({
                 <UserMenu />
               </div>
             </header>
-            <div className="flex-1 min-h-0 overflow-hidden flex flex-col">
+            <div className="flex-1 min-h-0 overflow-hidden">
               <AnnouncementBanner />
-              <ScrollArea className="flex-1 scroll-smooth scrollbar-hide">
+              <ScrollArea className="h-full scroll-smooth scrollbar-hide">
                 {children}
               </ScrollArea>
             </div>

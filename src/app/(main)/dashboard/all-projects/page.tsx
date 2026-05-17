@@ -51,11 +51,11 @@ const AllProjectsPage = () => {
   return (
     <div className="w-full h-full animate-in fade-in slide-in-from-bottom-4 duration-700 p-6 2xl:p-10 2xl:py-7 overflow-y-auto custom-scrollbar">
       {/* Header Section */}
-      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8">
+      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-8 ">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight flex items-center gap-3">
+          <h1 className="text-2xl font-semibold tracking-tight flex items-center gap-3">
             Manage Projects
-            <LucideLayers3 className="h-8 w-8 text-primary" />
+            <LucideLayers3 className="h-7 w-7 text-primary" />
           </h1>
           <p className="text-muted-foreground mt-2 ">
             Keep track of your personal creations and the collaborative team
