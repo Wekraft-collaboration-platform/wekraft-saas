@@ -492,6 +492,54 @@ export const notifyCriticalIssue = internalMutation({
   },
 });
 
+/**
+ * notifyTeamspaceMention (PUBLIC mutation)
+ * Called from the /api/teamspace/messages REST route when someone @mentions
+ * a user in a channel message. Accepts Convex user IDs (already resolved by
+ * getProjectMembers) and writes into the unified Convex notifications table
+ * so @mentions in chat appear in the same header bell as all other events.
+ */
+export const notifyTeamspaceMention = mutation({
+  args: {
+    // Convex user ID of the message author
+    actorId: v.id("users"),
+    // Convex user IDs of everyone mentioned (de-duped, no self-mentions)
+    mentionedUserIds: v.array(v.id("users")),
+    projectId: v.id("projects"),
+    channelId: v.string(),
+    channelName: v.string(),
+    messageId: v.string(),
+    // Preview snippet (first ~120 chars of message)
+    snippet: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const actor = await ctx.db.get(args.actorId);
+    if (!actor) return;
+
+    const project = await ctx.db.get(args.projectId);
+    const projectName = project?.projectName ?? "the project";
+
+    await Promise.all(
+      args.mentionedUserIds
+        .filter((id) => id !== args.actorId)
+        .map((recipientId) =>
+          insertNotification(ctx, {
+            recipientId,
+            senderId: args.actorId,
+            senderName: actor.name ?? "Someone",
+            senderAvatar: actor.avatarUrl,
+            projectId: args.projectId,
+            projectName,
+            type: "mentioned",
+            body: `**${actor.name ?? "Someone"}** mentioned you in **#${args.channelName}** — "${args.snippet}"`,
+            entityId: args.channelId,
+            entityTitle: `#${args.channelName}`,
+          }),
+        ),
+    );
+  },
+});
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // PUBLIC QUERIES — consumed by the frontend
 // ═══════════════════════════════════════════════════════════════════════════════
