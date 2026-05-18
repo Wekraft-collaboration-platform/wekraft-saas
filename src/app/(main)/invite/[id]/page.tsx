@@ -62,6 +62,7 @@ export default function InvitePage() {
         message: message.trim(),
         source: "invited",
       });
+
       toast.success("Join request sent successfully!");
       setIsOpen(false);
       setRequestSent(true);

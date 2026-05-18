@@ -152,12 +152,27 @@ export function useChannels(
       notifyCh.subscribe("notification.new", onNotificationNew);
     }
 
+    // 4. Listen for read receipts to clear the unread count on other tabs
+    const readsCh = ably.channels.get(`project:${projectId}:reads`);
+    const onChannelRead = (msg: Ably.Message) => {
+      const data = msg.data as { userId: string; channelId: string; lastReadAt: number };
+      if (data.userId === currentUserId) {
+        setChannels((prev) =>
+          prev.map((c) =>
+            c.id === data.channelId ? { ...c, unread_count: 0, mention_count: 0 } : c
+          )
+        );
+      }
+    };
+    readsCh.subscribe("channel.read", onChannelRead);
+
     return () => {
       ch.unsubscribe();
       msgsCh.unsubscribe();
       if (notifyCh) {
         notifyCh.unsubscribe();
       }
+      readsCh.unsubscribe();
     };
   }, [projectId, currentUserId]);
 

@@ -28,6 +28,8 @@ import { Channel } from "./hooks/useChannels";
 import { Message } from "./hooks/useMessages";
 import { motion, AnimatePresence } from "framer-motion";
 
+import { useSearchParams } from "next/navigation";
+
 import { useAuth } from "@clerk/nextjs";
 
 interface Props {
@@ -38,6 +40,9 @@ interface Props {
 export function TeamspaceView({ projectSlug, projectId }: Props) {
   const user = useQuery(api.user.getCurrentUser);
   const { userId: clerkUserId } = useAuth();
+  const searchParams = useSearchParams();
+  const urlChannelId = searchParams.get("channelId");
+  const urlMessageId = searchParams.get("messageId");
 
   const [activeChannel, setActiveChannel] = useState<Channel | null>(null);
   const [targetMessageId, setTargetMessageId] = useState<string | null>(null);
@@ -54,6 +59,21 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
     null;
 
   const currentUserId = clerkUserId ?? "";
+
+  // Handle URL parameters for navigation
+  useEffect(() => {
+    if (urlChannelId && channelsList.length > 0) {
+      const target = channelsList.find((c) => c.id === urlChannelId);
+      if (target && target.id !== activeChannel?.id) {
+        setActiveChannel(target);
+        if (urlMessageId) {
+          setTargetMessageId(urlMessageId);
+        }
+      } else if (target && urlMessageId && urlMessageId !== targetMessageId) {
+        setTargetMessageId(urlMessageId);
+      }
+    }
+  }, [urlChannelId, urlMessageId, channelsList, activeChannel?.id, targetMessageId]);
 
   // Mark channel as read when channel changes
   useEffect(() => {

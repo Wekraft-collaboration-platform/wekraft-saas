@@ -231,9 +231,11 @@ export async function POST(req: NextRequest) {
     }
   }
 
+  const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+
   await turso.execute({
-    sql: `INSERT INTO ts_messages (id, channel_id, project_id, user_id, user_name, user_image, content, link_preview, poll, thread_parent_id, created_at)
-          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+    sql: `INSERT INTO ts_messages (id, channel_id, project_id, user_id, user_name, user_image, content, link_preview, poll, thread_parent_id, created_at, expires_at)
+          VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       id,
       channelId,
@@ -246,6 +248,7 @@ export async function POST(req: NextRequest) {
       poll ? JSON.stringify(poll) : null,
       threadParentId ?? null,
       now,
+      now + THIRTY_DAYS_MS,
     ],
   });
 
@@ -299,107 +302,76 @@ export async function POST(req: NextRequest) {
     console.error("Failed to publish to project messages channel:", e);
   }
 
-  // --- MENTION NOTIFICATIONS (NON-BLOCKING BACKGROUND EXECUTION) ---
+  // --- MENTION NOTIFICATIONS → Convex (unified notification bell) ---
   const hasMentionSymbol = content && content.includes("@");
   if (hasMentionSymbol) {
-    // Run in the background without blocking the HTTP response to the client
-    (async () => {
-      try {
-        const projectMembers = await convex.query(api.project.getProjectMembers, {
-          projectId: projectId as any,
-        });
+    try {
+      const projectMembers = await convex.query(api.project.getProjectMembers, {
+        projectId: projectId as any,
+      });
 
-        const isEveryoneMentioned = content.toLowerCase().includes("@everyone");
-        
-        // Robust helper to check if a project member is mentioned in the content
-        const isMemberMentioned = (member: any, text: string) => {
-          if (!member.userName) return false;
-          
-          const tagsToTry = [member.userName];
-          
-          const noSpaces = member.userName.replace(/\s+/g, "");
-          if (noSpaces && noSpaces !== member.userName) {
-            tagsToTry.push(noSpaces);
-          }
-          
-          const firstName = member.userName.split(" ")[0];
-          if (firstName && firstName.length >= 3 && firstName !== member.userName) {
-            tagsToTry.push(firstName);
-          }
-          
-          if (member.githubUsername) {
-            tagsToTry.push(member.githubUsername);
-          }
-          
-          return tagsToTry.some(tag => {
-            const escapedTag = tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-            const regex = new RegExp(`@${escapedTag}(\\b|\\s|[.,!?;:]|$)`, "i");
-            return regex.test(text);
+      const isEveryoneMentioned = content.toLowerCase().includes("@everyone");
+
+      // Robust helper: checks userName, no-space variant, first name, githubUsername
+      const isMemberMentioned = (member: any, text: string) => {
+        if (!member.userName) return false;
+        const tagsToTry = [member.userName];
+        const noSpaces = member.userName.replace(/\s+/g, "");
+        if (noSpaces && noSpaces !== member.userName) tagsToTry.push(noSpaces);
+        const firstName = member.userName.split(" ")[0];
+        if (firstName && firstName.length >= 3 && firstName !== member.userName) tagsToTry.push(firstName);
+        if (member.githubUsername) tagsToTry.push(member.githubUsername);
+        return tagsToTry.some((tag) => {
+          const escaped = tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+          return new RegExp(`@${escaped}(\\b|\\s|[.,!?;:]|$)`, "i").test(text);
+        });
+      };
+
+      // Collect mentioned members, excluding the sender
+      const mentionedMembers = isEveryoneMentioned
+        ? projectMembers.filter((m: any) => m.clerkUserId !== userId)
+        : projectMembers.filter((member: any) => {
+            if (member.clerkUserId === userId) return false;
+            return isMemberMentioned(member, content);
           });
-        };
 
-        // Match @Username in content or use all members if @everyone, strictly filtering out self-mentions
-        const mentionedMembers = isEveryoneMentioned 
-          ? projectMembers.filter(m => m.clerkUserId !== userId) // Everyone except sender
-          : projectMembers.filter((member) => {
-              if (member.clerkUserId === userId) return false;
-              return isMemberMentioned(member, content);
+      if (mentionedMembers.length > 0) {
+        // Get the Clerk session token to authenticate the Convex mutation
+        const { getToken } = await auth();
+        const convexToken = await getToken({ template: "convex" });
+
+        if (convexToken) {
+          // Re-use the existing convex client with auth
+          const authedConvex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+          authedConvex.setAuth(convexToken);
+
+          // Fetch the actor's Convex user record (suffix-match on clerkToken)
+          const actorConvexUser = await convex.query(api.user.getUserByClerkToken, {
+            clerkToken: userId,
+          });
+
+          if (actorConvexUser) {
+            // mentionedMembers have userId (Convex user ID) from getProjectMembers
+            const mentionedUserIds = mentionedMembers
+              .map((m: any) => m.userId)
+              .filter(Boolean);
+
+            await authedConvex.mutation(api.notifications.notifyTeamspaceMention, {
+              actorId: actorConvexUser._id,
+              mentionedUserIds,
+              projectId: projectId as any,
+              channelId,
+              channelName,
+              messageId: id,
+              snippet: (content ?? "").trim().substring(0, 120),
             });
-
-        // Parallelize Turso inserts and Ably publications for maximum throughput
-        const notificationPromises = mentionedMembers.map(async (member) => {
-          if (member.clerkUserId && member.clerkUserId !== userId) {
-            const notificationId = randomUUID();
-            const notification = {
-              id: notificationId,
-              user_id: member.clerkUserId,
-              type: "mention",
-              sender_id: userId,
-              sender_name: user.name,
-              sender_image: user.avatarUrl,
-              project_id: projectId,
-              channel_id: channelId,
-              channel_name: channelName,
-              message_id: id,
-              content: content.trim().substring(0, 100),
-              is_read: 0,
-              created_at: now,
-            };
-
-            // Save to Turso and publish to Ably concurrently
-            await Promise.all([
-              turso.execute({
-                sql: `INSERT INTO ts_notifications (id, user_id, type, sender_id, sender_name, sender_image, project_id, channel_id, message_id, content, created_at)
-                      VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-                args: [
-                  notification.id,
-                  notification.user_id,
-                  notification.type,
-                  notification.sender_id,
-                  notification.sender_name,
-                  notification.sender_image,
-                  notification.project_id,
-                  notification.channel_id,
-                  notification.message_id,
-                  notification.content,
-                  notification.created_at,
-                ],
-              }),
-              (async () => {
-                const userNotifyChannel = ably.channels.get(
-                  `user:notifications:${member.clerkUserId}`,
-                );
-                await userNotifyChannel.publish("notification.new", notification);
-              })()
-            ]);
           }
-        });
-
-        await Promise.all(notificationPromises);
-      } catch (e) {
-        console.error("Failed to process mentions in background:", e);
+        }
       }
-    })();
+    } catch (e) {
+      // Non-fatal: notification failure should never block message delivery
+      console.error("Failed to process mention notifications:", e);
+    }
   }
 
   return NextResponse.json({ message }, { status: 201 });

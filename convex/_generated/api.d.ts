@@ -14,6 +14,7 @@ import type * as apiKeys from "../apiKeys.js";
 import type * as calendar from "../calendar.js";
 import type * as http from "../http.js";
 import type * as issue from "../issue.js";
+import type * as notifications from "../notifications.js";
 import type * as payments from "../payments.js";
 import type * as pricing from "../pricing.js";
 import type * as project from "../project.js";
@@ -39,6 +40,7 @@ declare const fullApi: ApiFromModules<{
   calendar: typeof calendar;
   http: typeof http;
   issue: typeof issue;
+  notifications: typeof notifications;
   payments: typeof payments;
   pricing: typeof pricing;
   project: typeof project;

@@ -70,6 +70,31 @@ export function useNotifications(userId: string) {
           description: `${notification.sender_name}: "${notification.content || "Mentioned you in a message."}"`,
           duration: 5000,
         });
+      } else if (notification.type === "join") {
+        toast(`👥 Joined Project`, {
+          description: notification.content || `${notification.sender_name} joined the project.`,
+          duration: 5000,
+        });
+      } else if (notification.type === "leave") {
+        toast(`🚪 Left Project`, {
+          description: notification.content || `${notification.sender_name} left the project.`,
+          duration: 5000,
+        });
+      } else if (notification.type === "remove") {
+        toast(`❌ Removed from Project`, {
+          description: notification.content || `${notification.sender_name} was removed from the project.`,
+          duration: 5000,
+        });
+      } else if (notification.type === "join_request") {
+        toast(`⏳ Join Request`, {
+          description: notification.content || `${notification.sender_name} requested to join the project.`,
+          duration: 5000,
+        });
+      } else if (notification.type === "request_accepted") {
+        toast(`🎉 Request Accepted`, {
+          description: notification.content || "Welcome to the team!",
+          duration: 5000,
+        });
       }
     };
 

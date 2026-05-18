@@ -42,8 +42,6 @@ import {
   CheckSquare,
   AlertCircle,
   CalendarDays,
-  Sparkles,
-  Zap,
   TrendingUp,
   ArrowUpRight,
 } from "lucide-react";
@@ -80,6 +78,8 @@ export default function TeamPage() {
   const [removeTarget, setRemoveTarget] = useState<{
     id: Id<"projectMembers">;
     name: string;
+    clerkUserId?: string;
+    userImage?: string;
   } | null>(null);
   const [showLeaveConfirm, setShowLeaveConfirm] = useState(false);
 
@@ -382,6 +382,8 @@ export default function TeamPage() {
                         setRemoveTarget({
                           id: member._id as Id<"projectMembers">,
                           name: member.userName,
+                          clerkUserId: member.clerkUserId,
+                          userImage: member.userImage,
                         })
                       }
                       className="cursor-pointer"

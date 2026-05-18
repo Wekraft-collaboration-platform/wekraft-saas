@@ -54,7 +54,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { NotificationCenter } from "./NotificationCenter";
 import { PollBlock } from "./PollBlock";
 import {
   Popover,
@@ -64,6 +63,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useProjectPermissions } from "@/hooks/use-project-permissions";
 import { Id } from "../../../../convex/_generated/dataModel";
+import { useQuery } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
+import { useChannelReads } from "./hooks/useChannelReads";
 
 interface Props {
   channel: Channel | null;
@@ -140,6 +142,12 @@ export function MessageFeed({
     currentUserId,
     currentUserName,
   )
+
+  const projectMembers = useQuery(api.project.getProjectMembers, {
+    projectId: projectId as Id<"projects">,
+  });
+
+  const { reads: channelReads } = useChannelReads(projectId, channel?.id);
 
   // Trigger jumpToMessage when navigated from a notification
   useEffect(() => {
@@ -412,15 +420,6 @@ export function MessageFeed({
         <div className="flex items-center gap-4 ml-4 shrink-0">
           <TooltipProvider delayDuration={400}>
             <div className="flex items-center gap-3 text-muted-foreground">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <NotificationCenter 
-                    userId={currentUserId} 
-                    onSelectChannel={onSelectChannelId}
-                  />
-                </TooltipTrigger>
-                <TooltipContent>Notifications</TooltipContent>
-              </Tooltip>
               <Popover>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -710,6 +709,8 @@ export function MessageFeed({
                   onPollVote={togglePollVote}
                   onEditPoll={editPoll}
                   highlightTerm={searchQuery}
+                  projectMembers={projectMembers}
+                  channelReads={channelReads}
                 />
               );
             })}

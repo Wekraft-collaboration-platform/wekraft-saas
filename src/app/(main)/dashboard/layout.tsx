@@ -20,6 +20,7 @@ import { UserMenu } from "@/modules/dashboard/components/UserMenu";
 import { api } from "../../../../convex/_generated/api";
 import Link from "next/link";
 import { AnnouncementBanner } from "@/modules/dashboard/components/AnnouncementBanner";
+import { NotificationCenter } from "@/modules/dashboard/components/NotificationCenter";
 
 export default function Layout({
   children,
@@ -35,6 +36,7 @@ export default function Layout({
   const params = useParams();
 
   const { theme, setTheme } = useTheme();
+
   const [mounted, setMounted] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
 
@@ -44,6 +46,7 @@ export default function Layout({
 
   const isWorkspaceRoute = pathname?.includes("/workspace");
   const slug = params?.slug as string | undefined;
+
 
   useEffect(() => {
     if (isStoreLoading) return;
@@ -80,6 +83,7 @@ export default function Layout({
                   }}
                 /> */}
                 <div className="flex items-center gap-3">
+                  <NotificationCenter />
                   <Button
                     size="icon-sm"
                     variant="outline"

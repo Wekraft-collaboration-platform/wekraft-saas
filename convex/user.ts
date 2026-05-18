@@ -348,6 +348,7 @@ export const getUserById = query({
       name: user.name ?? "Unknown",
       avatarUrl: user.avatarUrl ?? null,
       accountType: user.accountType,
+      clerkToken: user.clerkToken,
     };
   },
 });
