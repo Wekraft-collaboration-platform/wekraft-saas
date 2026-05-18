@@ -3,7 +3,7 @@
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Doc, Id } from "../../../../convex/_generated/dataModel";
-import { Bell, BellRing, Check, CheckCheck, Trash2, X } from "lucide-react";
+import { Bell, BellRing, Check, CheckCheck, Trash2, X, FolderKanban } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -184,6 +184,14 @@ function NotificationItem({
 
       {/* Body & Metadata */}
       <div className="flex-1 min-w-0 pr-12">
+        {notif.projectName && (
+          <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
+            <span className="inline-flex items-center gap-1 text-[9.5px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 px-2 py-0.5 rounded-md border border-indigo-100 dark:border-indigo-900/40 tracking-wide shadow-sm">
+              <FolderKanban className="h-3 w-3 text-indigo-500/80 dark:text-indigo-400/80 shrink-0" />
+              <span className="truncate max-w-[180px]">{notif.projectName}</span>
+            </span>
+          </div>
+        )}
         <p className="text-[12.5px] leading-relaxed text-foreground/80 font-normal">
           {renderBody(notif.body)}
         </p>
@@ -273,7 +281,15 @@ export function NotificationCenter() {
             }}
             className="cursor-pointer w-full h-full"
           >
-            {renderBody(n.body)}
+            {n.projectName && (
+              <span className="inline-flex items-center gap-1 text-[9.5px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 px-2 py-0.5 rounded-md border border-indigo-100 dark:border-indigo-900/40 tracking-wide mb-1.5 shadow-sm">
+                <FolderKanban className="h-3 w-3 text-indigo-500/80 dark:text-indigo-400/80 shrink-0" />
+                <span className="truncate max-w-[180px]">{n.projectName}</span>
+              </span>
+            )}
+            <div className="text-sm font-normal">
+              {renderBody(n.body)}
+            </div>
           </div>,
           {
             icon: typeEmoji[n.type] ?? "🔔",
