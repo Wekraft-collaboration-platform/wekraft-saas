@@ -61,9 +61,9 @@ const ContributionGraph = () => {
 
   return (
     <div className="flex w-full flex-col items-center gap-4">
-      <div className="flex items-center gap-2 mb-1 px-3 py-1 bg-accent/30 rounded-full border border-border/40 shadow-xs">
-        <Github className="w-3.5 h-3.5 text-muted-foreground" />
-        <span className="text-[12px] font-semibold tracking-wide text-muted-foreground uppercase">
+      <div className="flex items-center gap-2 -mt-2">
+        <Github className="w-4 h-4 text-muted-foreground" />
+        <span className="text-sm">
           Contribution Graph
         </span>
       </div>

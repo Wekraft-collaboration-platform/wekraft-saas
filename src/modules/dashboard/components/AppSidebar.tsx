@@ -166,9 +166,7 @@ export const AppSidebar = () => {
               height={30}
               className="cursor-pointer shrink-0"
             />
-            <h1 className="font-bold font-pop text-xl">
-              WeKraft
-            </h1>
+            <h1 className="font-bold font-pop text-xl">WeKraft</h1>
           </div>
         )}
         {user === undefined ? (
@@ -180,7 +178,7 @@ export const AppSidebar = () => {
             </div>
           </div>
         ) : (
-          <div className="flex items-center gap-4 my-2 mx-auto border px-6 py-2 bg-accent/40 rounded-md w-[calc(100%-1.5rem)] group-data-[collapsible=icon]:hidden font-sans">
+          <div className="flex items-center gap-4 my-2 mx-auto border border-border! px-6 py-2 bg-accent/45 rounded-md w-[calc(100%-1.5rem)] group-data-[collapsible=icon]:hidden font-sans">
             <Avatar className="h-10 w-10 shrink-0">
               <AvatarImage src={user?.avatarUrl} />
               <AvatarFallback>UN</AvatarFallback>
@@ -214,6 +212,7 @@ export const AppSidebar = () => {
           </div>
         )}
       </SidebarHeader>
+
       <SidebarContent className="flex flex-col px-3 py-5 relative overflow-y-auto scroll-smooth group-data-[collapsible=icon]:px-0">
         <SidebarMenu className="flex flex-col gap-2">
           {/* 1 */}

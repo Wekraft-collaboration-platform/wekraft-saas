@@ -81,16 +81,17 @@ const Navbar = () => {
 
         {/* Desktop Links */}
         <div className={clsx(
-          "hidden md:flex text-sm font-medium shrink-0 items-center bg-white/[0.03] rounded-full px-2 py-1 border border-white/5",
+          "hidden md:flex text-sm font-medium shrink-0 items-center ",
           scrolled || isLightSection ? "gap-1" : "gap-2"
         )}>
           {navLinks.map(({ label, href }) => (
             <Link
               key={label}
               href={href}
-              className="relative cursor-pointer transition-all duration-300 text-neutral-400 hover:text-white px-4 py-1.5 rounded-full hover:bg-white/10"
+              className="relative cursor-pointer transition-all duration-300 text-neutral-200 hover:text-white px-4 py-1.5 group"
             >
-              {label}
+              <span>{label}</span>
+              <span className="absolute bottom-0 left-1/2 w-0 h-[2px] bg-white transition-all duration-300 ease-out -translate-x-1/2 group-hover:w-[calc(100%-2rem)]" />
             </Link>
           ))}
         </div>
@@ -136,7 +137,7 @@ const Navbar = () => {
                     <Button
                       size="sm"
                       className={clsx(
-                        "duration-300 hover:scale-105 transition-all cursor-pointer font-medium text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 border-none shadow-[0_0_20px_rgba(37,99,235,0.4)] rounded-full",
+                        "duration-300 hover:scale-105 transition-all cursor-pointer font-medium text-white bg-blue-600 hover:bg-blue-500",
                         (scrolled || isLightSection) ? "px-4 py-1.5 text-xs" : "px-5 py-2 text-sm",
                       )}
                     >
