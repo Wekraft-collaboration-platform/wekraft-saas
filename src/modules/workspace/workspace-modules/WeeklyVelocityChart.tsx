@@ -57,7 +57,7 @@ export const WeeklyVelocityChart = ({ projectId, data: providedData }: WeeklyVel
             <CardTitle className="text-sm font-semibold text-primary flex items-center gap-2">
               <Zap className="w-4 h-4" /> Weekly Velocity Breakdown
             </CardTitle>
-            <CardDescription className="text-[10px] font-medium text-muted-foreground">
+            <CardDescription className="text-xs font-medium text-muted-foreground">
               0 items completed this week (Mon - Sun)
             </CardDescription>
           </div>

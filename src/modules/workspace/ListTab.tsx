@@ -596,13 +596,13 @@ const TaskGroup = ({
           {hasMoreTasks && tasks.length > 0 && (
             <div className="flex items-center justify-center gap-2 py-3 bg-neutral-900/10 dark:bg-neutral-900/30 border-b border-t dark:border-neutral-800/80 border-neutral-200/80">
               <span className="text-xs text-muted-foreground">
-                Showing loaded tasks. More tasks may exist.
+                More tasks may exist.
               </span>
               <Button
                 variant="ghost"
                 size="sm"
                 onClick={onLoadMore}
-                className="text-xs text-blue-500 hover:text-blue-400 hover:bg-blue-500/10 h-7 px-3 rounded-full cursor-pointer"
+                className="text-xs text-blue-500 hover:text-blue-400 hover:bg-blue-500/10 h-7 px-2 rounded-full cursor-pointer"
               >
                 Load More
               </Button>
