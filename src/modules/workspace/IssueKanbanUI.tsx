@@ -279,8 +279,10 @@ export const IssueKanbanUI = ({
   return (
     <div
       className={cn(
-        "flex gap-4 w-full overflow-x-auto pb-10 custom-scrollbar scroll-smooth pt-4",
-        sidebarOpen ? "max-w-[calc(100vw-360px)]" : "max-w-[calc(100vw-160px)]",
+        "flex w-full overflow-x-auto pb-10 custom-scrollbar scroll-smooth pt-4 transition-all duration-300",
+        sidebarOpen
+          ? "gap-6 max-w-[calc(100vw-360px)]"
+          : "gap-12 max-w-[calc(100vw-160px)]",
       )}
     >
       <DndContext

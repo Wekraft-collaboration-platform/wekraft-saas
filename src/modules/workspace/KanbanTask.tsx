@@ -89,6 +89,7 @@ export const KanbanTask = ({
       );
     }
   });
+
   const [activeId, setActiveId] = useState<string | null>(null);
   const [activeTask, setActiveTask] = useState<Task | null>(null);
   const [selectedTaskForSheet, setSelectedTaskForSheet] = useState<Task | null>(
@@ -190,8 +191,10 @@ export const KanbanTask = ({
   return (
     <div
       className={cn(
-        "flex gap-6 w-full overflow-x-auto mx-auto pb-10 custom-scrollbar scroll-smooth",
-        sidebarOpen ? "max-w-[calc(100vw-360px)]" : "max-w-[calc(100vw-160px)]",
+        "flex w-full overflow-x-auto mx-auto pb-10 custom-scrollbar scroll-smooth transition-all duration-300",
+        sidebarOpen
+          ? "gap-6 max-w-[calc(100vw-360px)]"
+          : "gap-12 max-w-[calc(100vw-160px)]",
         tasks.length === 0 && "items-center justify-center min-h-[500px]",
       )}
     >
@@ -302,29 +305,42 @@ const Column = ({
           "p-2 flex border-b sticky top-0 z-10 transition-all duration-300",
           isCollapsed
             ? "flex-col items-center gap-4 h-full border-b-0 bg-transparent"
-            : "items-center justify-between dark:bg-card bg-neutral-200 backdrop-blur-md",
+            : cn(
+                "items-center justify-between font-bold",
+                column.id === "completed"
+                  ? "bg-green-500 dark:bg-green-600 text-white"
+                  : "dark:bg-muted bg-accent dark:text-white text-black",
+              ),
         )}
       >
         <div
           className={cn(
             "flex items-center gap-2.5",
+            !isCollapsed && column.id === "completed" && "[&_svg]:text-white",
             isCollapsed && "flex-col mt-2",
           )}
         >
           {!isCollapsed && KANBAN_COLUMN_ICONS[column.id]}
           <h3
             className={cn(
-              "font-semibold tracking-tight capitalize dark:text-primary text-foreground transition-all duration-300",
+              "font-semibold tracking-tight capitalize transition-all duration-300",
               isCollapsed
-                ? "[writing-mode:vertical-lr] rotate-180 text-lg py-4"
-                : "text-base",
+                ? "dark:text-white text-black [writing-mode:vertical-lr] rotate-180 text-lg py-4"
+                : column.id === "completed"
+                  ? "text-white text-sm font-bold"
+                  : "dark:text-white text-black text-sm font-bold",
             )}
           >
             {column.label}
           </h3>
           <Badge
             variant="secondary"
-            className="dark:bg-primary/5 bg-primary/10 dark:text-primary/60 text-primary font-bold h-5 w-5 rounded-full border-none flex items-center justify-center p-0"
+            className={cn(
+              "font-bold h-5 w-5 rounded-full border-none flex items-center justify-center p-0 text-xs",
+              isCollapsed || column.id !== "completed"
+                ? "dark:bg-primary/5 bg-primary/10 dark:text-primary/60 text-primary"
+                : "bg-white/20 text-white",
+            )}
           >
             {tasks.length}
           </Badge>
@@ -333,13 +349,19 @@ const Column = ({
         <div
           className={cn(
             "flex items-center gap-3",
+            !isCollapsed && column.id === "completed" && "[&_svg]:text-white",
             isCollapsed && "order-first",
           )}
         >
           {!isCollapsed && (
             <button
               aria-label="Column menu"
-              className="dark:text-primary text-foreground transition-colors p-1.5 rounded-lg dark:hover:bg-primary/5 hover:bg-neutral-200"
+              className={cn(
+                "transition-colors p-1.5 rounded-lg",
+                column.id === "completed"
+                  ? "text-white hover:bg-white/10"
+                  : "dark:text-primary text-foreground dark:hover:bg-primary/5 hover:bg-neutral-200",
+              )}
             >
               <ArrowDownNarrowWideIcon className="w-5 h-5" />
             </button>
@@ -347,7 +369,12 @@ const Column = ({
           <button
             onClick={onToggle}
             aria-label="Column menu"
-            className="dark:text-primary text-foreground transition-colors p-1.5 rounded-lg dark:hover:bg-primary/5 hover:bg-neutral-200"
+            className={cn(
+              "transition-colors p-1.5 rounded-lg",
+              isCollapsed || column.id !== "completed"
+                ? "dark:text-primary text-foreground dark:hover:bg-primary/5 hover:bg-neutral-200"
+                : "text-white hover:bg-white/10",
+            )}
           >
             <SeparatorVertical className="w-5 h-5" />
           </button>
@@ -435,7 +462,7 @@ const TaskCard = ({ task, isOverlay }: { task: Task; isOverlay?: boolean }) => {
   return (
     <Card
       className={cn(
-        "group cursor-pointer p-0 transition-all duration-300 border-none shadow-sm hover:shadow-xl dark:bg-background bg-card backdrop-blur-sm rounded-md",
+        "group cursor-pointer p-0 transition-all duration-300 border border-border shadow-sm hover:shadow-xl dark:bg-muted bg-card backdrop-blur-sm rounded-md",
         isOverlay &&
           "border-primary shadow-2xl ring-4 ring-primary/5 scale-[1.02]",
       )}
@@ -469,35 +496,29 @@ const TaskCard = ({ task, isOverlay }: { task: Task; isOverlay?: boolean }) => {
               {task.type ? (
                 <div
                   className={cn(
-                    "flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-semibold font-inter capitalize tracking-wide border",
+                    "flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium font-inter capitalize tracking-wide border",
                     task.type.color === "green" &&
-                      "bg-emerald-500/10 text-emerald-400 border-emerald-400/20",
+                      "bg-emerald-500/10 text-primary/80 border-emerald-400/20",
                     task.type.color === "yellow" &&
-                      "bg-yellow-500/10 text-yellow-400 border-yellow-400/20",
-                    task.type.color === "blue" &&
-                      "bg-sky-500/10 text-sky-400 border-sky-400/20",
-                    task.type.color === "indigo" &&
-                      "bg-indigo-500/10 text-indigo-400 border-indigo-400/20",
-                    task.type.color === "orange" &&
-                      "bg-orange-500/10 text-orange-400 border-orange-400/20",
-                    task.type.color === "red" &&
-                      "bg-red-500/10 text-red-400 border-red-400/20",
+                      "bg-yellow-500/10  text-primary/80 border-yellow-400/20",
                     task.type.color === "purple" &&
-                      "bg-purple-500/10 text-purple-400 border-purple-400/20",
-                    task.type.color === "gray" &&
-                      "bg-gray-500/10 text-gray-400 border-gray-400/20",
+                      "bg-purple-500/10  text-primary/80 border-purple-400/20",
+                    task.type.color === "blue" &&
+                      "bg-blue-500/20  text-primary/80 border-blue-400/20",
+                    task.type.color === "grey" &&
+                      "bg-neutral-500/10  text-primary/80 border-neutral-400/20",
                   )}
                 >
                   {task.type.label}
                 </div>
               ) : (
-                <span className="text-[10px] border border-border p-1 rounded-md text-muted-foreground/80 font-medium whitespace-nowrap">
+                <div className="flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-bold font-inter capitalize tracking-wide border border-accent">
                   No Tag
-                </span>
+                </div>
               )}
             </div>
 
-            <div className="flex items-center gap-2 px-2 py-1 rounded dark:bg-secondary/70 bg-neutral-100 border border-border/30 text-[10px] dark:text-primary/60 text-primary font-bold dark:group-hover:bg-primary/5 group-hover:bg-primary/10 dark:group-hover:text-primary group-hover:text-primary transition-all shrink-0">
+            <div className="flex items-center gap-2 px-2 py-1 rounded dark:bg-card bg-neutral-100 border border-border/30 text-[10px] dark:text-primary/60 text-primary font-bold dark:group-hover:bg-primary/5 group-hover:bg-primary/10 dark:group-hover:text-primary group-hover:text-primary transition-all shrink-0">
               <Calendar className="w-3 h-3 mb-0.5" />
               <span>{format(task.estimation.endDate, "dd MMM")}</span>
             </div>
