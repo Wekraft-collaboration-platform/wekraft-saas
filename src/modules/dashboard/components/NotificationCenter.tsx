@@ -96,11 +96,12 @@ function getNotificationRedirectUrl(notif: {
         return `${workspaceBase}/tasks`;
       }
 
+    case "request_accepted":
     case "member_joined":
+      return workspaceBase;
+
     case "member_left":
     case "member_removed":
-    case "request_accepted":
-    case "request_rejected":
     case "role_changed":
       return `${workspaceBase}/team`;
 
