@@ -224,6 +224,24 @@ export const projectInitOnboarding = mutation({
         updatedAt: Date.now(),
       });
 
+      // Ensure the owner is added to projectMembers if not already present
+      const existingMember = await ctx.db
+        .query("projectMembers")
+        .withIndex("by_project", (q) => q.eq("projectId", existingDraft._id))
+        .filter((q) => q.eq(q.field("userId"), user._id))
+        .unique();
+
+      if (!existingMember) {
+        await ctx.db.insert("projectMembers", {
+          projectId: existingDraft._id,
+          userId: user._id,
+          userName: user.name ?? "Owner",
+          userImage: user.avatarUrl,
+          AccessRole: "owner",
+          joinedAt: Date.now(),
+        });
+      }
+
       return existingDraft._id;
     }
 
@@ -258,7 +276,7 @@ export const projectInitOnboarding = mutation({
       throw new Error("Could not create a unique project slug. Please retry.");
     }
 
-    return await ctx.db.insert("projects", {
+    const projectId = await ctx.db.insert("projects", {
       projectName: args.projectName,
       slug,
       description: args.description,
@@ -272,6 +290,17 @@ export const projectInitOnboarding = mutation({
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
+
+    await ctx.db.insert("projectMembers", {
+      projectId,
+      userId: user._id,
+      userName: user.name ?? "Owner",
+      userImage: user.avatarUrl,
+      AccessRole: "owner",
+      joinedAt: Date.now(),
+    });
+
+    return projectId;
   },
 });
 

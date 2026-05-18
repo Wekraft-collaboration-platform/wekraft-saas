@@ -44,6 +44,7 @@ import {
   CalendarDays,
   TrendingUp,
   ArrowUpRight,
+  Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
 import Image from "next/image";
@@ -104,7 +105,6 @@ export default function TeamPage() {
         projectId: project._id as Id<"projects">,
       });
       toast.success("Successfully left the project");
-      router.push("/dashboard/my-projects");
     } catch (e: any) {
       toast.error(e.message || "Failed to leave the project");
     }
@@ -531,7 +531,8 @@ export default function TeamPage() {
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleRemove}
-              className="bg-destructive text-white hover:bg-destructive/90 cursor-pointer"
+              variant="destructive"
+              className="cursor-pointer"
             >
               Remove
             </AlertDialogAction>
@@ -559,7 +560,8 @@ export default function TeamPage() {
             </AlertDialogCancel>
             <AlertDialogAction
               onClick={handleLeave}
-              className="bg-destructive text-white hover:bg-destructive/90 cursor-pointer"
+              variant="destructive"
+              className="cursor-pointer"
             >
               Leave
             </AlertDialogAction>

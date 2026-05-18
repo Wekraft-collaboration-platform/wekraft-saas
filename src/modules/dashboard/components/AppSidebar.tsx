@@ -8,6 +8,7 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
 
@@ -88,6 +89,8 @@ export const AppSidebar = () => {
   const { theme, setTheme } = useTheme();
   const [mounted, setMounted] = useState(false);
   const pathname = usePathname();
+  const { state } = useSidebar();
+  const isCollapsed = state === "collapsed";
 
   const user: Doc<"users"> | undefined | null = useQuery(
     api.user.getCurrentUser,
@@ -144,18 +147,30 @@ export const AppSidebar = () => {
   return (
     <Sidebar collapsible="icon" className="">
       <SidebarHeader className="p-0 gap-0">
-        <div className="flex items-center justify-center gap-3 px-3 h-18 border-b group-data-[collapsible=icon]:px-0 shrink-0">
-          <Image
-            src="/logo.svg"
-            alt="Logo"
-            width={30}
-            height={30}
-            className="cursor-pointer shrink-0"
-          />
-          <h1 className="font-bold font-pop text-xl group-data-[collapsible=icon]:hidden">
-            WeKraft
-          </h1>
-        </div>
+        {isCollapsed ? (
+          <div className="flex items-center justify-center h-18 border-b w-full shrink-0">
+            <Image
+              src="/logo.svg"
+              alt="Logo"
+              width={30}
+              height={30}
+              className="cursor-pointer shrink-0"
+            />
+          </div>
+        ) : (
+          <div className="flex items-center justify-center gap-3 px-3 h-18 border-b shrink-0">
+            <Image
+              src="/logo.svg"
+              alt="Logo"
+              width={30}
+              height={30}
+              className="cursor-pointer shrink-0"
+            />
+            <h1 className="font-bold font-pop text-xl">
+              WeKraft
+            </h1>
+          </div>
+        )}
         {user === undefined ? (
           <div className="flex items-center gap-4 my-2 mx-auto border px-6 py-2 bg-sidebar-accent/30 rounded-md w-[calc(100%-1.5rem)] group-data-[collapsible=icon]:hidden">
             <Skeleton className="h-10 w-10 rounded-full shrink-0" />

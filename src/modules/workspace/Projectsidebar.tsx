@@ -71,6 +71,12 @@ import {
   useSidebar,
 } from "@/components/ui/sidebar";
 import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { api } from "../../../convex/_generated/api";
 import type { Doc } from "../../../convex/_generated/dataModel";
 import { ThemeButtons } from "../dashboard/components/ThemeButton";
@@ -272,31 +278,54 @@ export default function ProjectSidebar() {
         style={{ viewTransitionName: "site-header" }}
         className="h-18 justify-center flex-none border-b"
       >
-        <div className="flex items-center justify-between gap-4 px-3 group-data-[collapsible=icon]:justify-center group-data-[collapsible=icon]:px-0">
-          <Link href="/dashboard" className="flex items-center">
-            <Image
-              src="/logo.svg"
-              alt="Logo"
-              width={28}
-              height={28}
-              className="cursor-pointer"
-            />
-          </Link>
+        {isCollapsed ? (
+          <div className="flex items-center justify-center w-full">
+            <Link href="/dashboard" className="flex items-center justify-center">
+              <Image
+                src="/logo.svg"
+                alt="Logo"
+                width={28}
+                height={28}
+                className="cursor-pointer"
+              />
+            </Link>
+          </div>
+        ) : (
+          <div className="flex items-center justify-between gap-4 px-3">
+            <Link href="/dashboard" className="flex items-center">
+              <Image
+                src="/logo.svg"
+                alt="Logo"
+                width={28}
+                height={28}
+                className="cursor-pointer"
+              />
+            </Link>
 
-          <h1 className="font-semibold text-xl capitalize truncate group-data-[collapsible=icon]:hidden">
-            {project?.projectName}
-          </h1>
+            <h1 className="font-semibold text-xl capitalize truncate">
+              {project?.projectName}
+            </h1>
 
-          <Link href={`/dashboard/my-projects/${project?.slug}`}>
-            <Button
-              size="icon-xs"
-              variant={"default"}
-              className="group-data-[collapsible=icon]:hidden"
-            >
-              <ChevronLeft />
-            </Button>
-          </Link>
-        </div>
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <Link href={`/dashboard/my-projects/${project?.slug}`}>
+                    <Button
+                      size="icon-xs"
+                      variant="outline"
+                      className="cursor-pointer hover:scale-105 transition-all duration-200"
+                    >
+                      <ChevronLeft className="h-3.5 w-3.5" />
+                    </Button>
+                  </Link>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" align="end">
+                  Back to Projects
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+        )}
       </SidebarHeader>
 
       {/* ───────── CONTENT ───────── */}

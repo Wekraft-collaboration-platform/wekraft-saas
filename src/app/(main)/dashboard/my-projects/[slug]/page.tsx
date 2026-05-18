@@ -35,7 +35,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { InviteDialog } from "@/modules/project/inviteDilogag";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { ProjectJoinRequests } from "@/modules/project/project-join-requests";
 import { useRouter } from "next/navigation";
@@ -54,9 +54,26 @@ const ProjectPage = () => {
     api.project.getProjectMembers,
     project?._id ? { projectId: project._id as Id<"projects"> } : "skip"
   );
+  const requests = useQuery(
+    api.project.getProjectJoinRequests,
+    project?._id ? { projectId: project._id as Id<"projects"> } : "skip"
+  );
+  const pendingRequestsCount = requests
+    ? requests.filter((r) => r.status === "pending").length
+    : 0;
 
   const [isUploading, setIsUploading] = useState(false);
   const [homeTab, setHomeTab] = useState("settings");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const searchParams = new URLSearchParams(window.location.search);
+      const tab = searchParams.get("tab");
+      if (tab) {
+        setHomeTab(tab);
+      }
+    }
+  }, []);
 
   const isOwner = !!project && !!user && project.ownerId === user._id;
 
@@ -293,11 +310,21 @@ const ProjectPage = () => {
 
             <Button
               size="sm"
-              className="rounded-full px-4! text-[10px]"
+              className="rounded-full px-4! text-[10px] flex items-center gap-1.5"
               variant={homeTab === "requests" ? "default" : "outline"}
               onClick={() => setHomeTab("requests")}
             >
-              Requests <UserPlus />
+              <span>Requests</span>
+              <UserPlus className="w-3.5 h-3.5" />
+              {pendingRequestsCount > 0 && (
+                <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-semibold transition-colors ${
+                  homeTab === "requests"
+                    ? "bg-background text-foreground"
+                    : "bg-primary text-primary-foreground"
+                }`}>
+                  {pendingRequestsCount}
+                </span>
+              )}
             </Button>
 
             <Button

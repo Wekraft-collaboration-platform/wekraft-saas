@@ -45,15 +45,24 @@ async function insertNotification(
 
 // ─── Helper: get power users (owners + admins) of a project ─────────────────
 async function getPowerUsers(ctx: any, projectId: Id<"projects">) {
+  const project = await ctx.db.get(projectId);
+  if (!project) return [];
+
   const members = await ctx.db
     .query("projectMembers")
     .withIndex("by_project", (q: any) => q.eq("projectId", projectId))
     .collect();
 
-  return members.filter(
+  const powerMembers = members.filter(
     (m: any) => m.AccessRole === "owner" || m.AccessRole === "admin",
   );
+
+  const powerUserIds = new Set(powerMembers.map((m: any) => m.userId as Id<"users">));
+  powerUserIds.add(project.ownerId);
+
+  return Array.from(powerUserIds).map((userId) => ({ userId }));
 }
+
 
 // ─── Helper: fan-out a notification to multiple recipients ──────────────────
 async function fanOut(
@@ -427,12 +436,17 @@ export const notifySprintEvent = internalMutation({
     eventType: v.union(v.literal("sprint_started"), v.literal("sprint_completed")),
   },
   handler: async (ctx, args) => {
+    const project = await ctx.db.get(args.projectId);
+    if (!project) return;
+
     const members = await ctx.db
       .query("projectMembers")
       .withIndex("by_project", (q: any) => q.eq("projectId", args.projectId))
       .collect();
 
-    const memberIds = members.map((m: any) => m.userId as Id<"users">);
+    const memberIdsSet = new Set(members.map((m: any) => m.userId as Id<"users">));
+    memberIdsSet.add(project.ownerId);
+    const memberIds = Array.from(memberIdsSet);
     const verb = args.eventType === "sprint_started" ? "started" : "completed";
     const emoji = args.eventType === "sprint_started" ? "🚀" : "🏁";
 
@@ -559,11 +573,25 @@ export const getMyNotifications = query({
 
     if (!user) return [];
 
-    return await ctx.db
+    const notifications = await ctx.db
       .query("notifications")
       .withIndex("by_recipient", (q) => q.eq("recipientId", user._id))
       .order("desc")
       .take(30);
+
+    // Resolve project slugs on the fly for frontend deep-linking
+    const resolvedNotifications = await Promise.all(
+      notifications.map(async (n) => {
+        if (!n.projectId) return { ...n, projectSlug: undefined };
+        const project = await ctx.db.get(n.projectId);
+        return {
+          ...n,
+          projectSlug: project?.slug,
+        };
+      }),
+    );
+
+    return resolvedNotifications;
   },
 });
 
@@ -670,3 +698,54 @@ export const clearAll = mutation({
     await Promise.all(all.map((n) => ctx.db.delete(n._id)));
   },
 });
+
+/**
+ * Delete a single notification.
+ */
+export const deleteNotification = mutation({
+  args: { notificationId: v.id("notifications") },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const notif = await ctx.db.get(args.notificationId);
+    if (!notif) return;
+
+    // Safety: only the recipient can delete it
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("clerkToken", identity.tokenIdentifier))
+      .unique();
+
+    if (!user || notif.recipientId !== user._id) return;
+
+    await ctx.db.delete(args.notificationId);
+  },
+});
+
+/**
+ * Internal mutation to clean up old notifications.
+ * Typically scheduled to run daily via cron.
+ */
+export const deleteOldNotifications = internalMutation({
+  args: { maxAgeDays: v.number() },
+  handler: async (ctx, args) => {
+    const cutoff = Date.now() - args.maxAgeDays * 24 * 60 * 60 * 1000;
+
+    // Scan notifications table for old records
+    const oldNotifications = await ctx.db
+      .query("notifications")
+      .filter((q) => q.lt(q.field("createdAt"), cutoff))
+      .collect();
+
+    let count = 0;
+    for (const notif of oldNotifications) {
+      await ctx.db.delete(notif._id);
+      count++;
+    }
+
+    console.log(`[Cron Cleanup] Successfully deleted ${count} notifications older than ${args.maxAgeDays} days.`);
+    return { deletedCount: count };
+  },
+});
+
