@@ -16,6 +16,7 @@ import {
 import { cn } from "@/lib/utils";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 // ─── Utility: human-readable relative time ─────────────────────────────────
 function timeAgo(ts: number): string {
@@ -47,17 +48,82 @@ const typeEmoji: Record<string, string> = {
   critical_issue: "🔴",
 };
 
+// ─── Resolve redirect target URL ───────────────────────────────────────────
+function getNotificationRedirectUrl(notif: {
+  type: string;
+  projectSlug?: string;
+  body: string;
+  entityId?: string;
+  entityTitle?: string;
+}): string {
+  const slug = notif.projectSlug;
+  if (!slug) return "/dashboard";
+
+  if (notif.type === "join_request") {
+    return `/dashboard/my-projects/${slug}?tab=requests`;
+  }
+
+  const workspaceBase = `/dashboard/my-projects/${slug}/workspace`;
+
+  switch (notif.type) {
+    case "task_assigned":
+    case "task_completed":
+      return `${workspaceBase}/tasks`;
+
+    case "issue_assigned":
+    case "critical_issue":
+      return `${workspaceBase}/issues`;
+
+    case "sprint_started":
+    case "sprint_completed":
+      return `${workspaceBase}/sprint`;
+
+    case "mentioned":
+      const bodyLower = notif.body.toLowerCase();
+      if (
+        bodyLower.includes("chat") ||
+        bodyLower.includes("teamspace") ||
+        bodyLower.includes("channel") ||
+        bodyLower.includes("#") ||
+        (notif.entityTitle && notif.entityTitle.startsWith("#"))
+      ) {
+        return notif.entityId
+          ? `${workspaceBase}/teamspace?channelId=${notif.entityId}`
+          : `${workspaceBase}/teamspace`;
+      } else if (bodyLower.includes("issue")) {
+        return `${workspaceBase}/issues`;
+      } else {
+        return `${workspaceBase}/tasks`;
+      }
+
+    case "member_joined":
+    case "member_left":
+    case "member_removed":
+    case "request_accepted":
+    case "request_rejected":
+    case "role_changed":
+      return `${workspaceBase}/team`;
+
+    default:
+      return workspaceBase;
+  }
+}
+
 // ─── Bold‐markdown renderer (safe, no external deps) ───────────────────────
 function renderBody(text: string) {
   const parts = text.split(/\*\*(.+?)\*\*/g);
-  return parts.map((part, i) =>
-    i % 2 === 1 ? (
-      <strong key={i} className="font-semibold text-foreground">
-        {part}
-      </strong>
-    ) : (
-      <span key={i}>{part}</span>
-    ),
+  return (
+    <span>
+      {parts.map((part, i) =>
+        i % 2 === 1 ? (
+          <strong key={i} className="font-semibold text-foreground">
+            {part}
+          </strong>
+        ) : (
+          <span key={i}>{part}</span>
+        ),
+      )}
+    </span>
   );
 }
 
@@ -66,12 +132,25 @@ function NotificationItem({
   notif,
   onRead,
 }: {
-  notif: Doc<"notifications">;
+  notif: Doc<"notifications"> & { projectSlug?: string };
   onRead: (id: Id<"notifications">) => void;
 }) {
+  const router = useRouter();
+
+  const handleClick = () => {
+    // 1. Mark as read if not already read
+    if (!notif.isRead) {
+      onRead(notif._id);
+    }
+
+    // 2. Perform redirection
+    const url = getNotificationRedirectUrl(notif);
+    router.push(url);
+  };
+
   return (
     <div
-      onClick={() => !notif.isRead && onRead(notif._id)}
+      onClick={handleClick}
       className={cn(
         "group flex items-start gap-3 px-4 py-3 cursor-pointer transition-colors hover:bg-accent/50",
         !notif.isRead && "bg-primary/5 border-l-2 border-l-primary",
@@ -122,6 +201,7 @@ function NotificationItem({
 
 // ─── Main component ─────────────────────────────────────────────────────────
 export function NotificationCenter() {
+  const router = useRouter();
   const notifications = useQuery(api.notifications.getMyNotifications);
   const unreadCount = useQuery(api.notifications.getUnreadCount) ?? 0;
 
@@ -131,17 +211,40 @@ export function NotificationCenter() {
 
   // ── Toast for brand-new notifications ──────────────────────────────────
   const prevIds = useRef<Set<string>>(new Set());
+  const isInitialLoad = useRef(true);
   useEffect(() => {
     if (!notifications) return;
+
+    if (isInitialLoad.current) {
+      // On initial load, just populate existing notification IDs without displaying toasts
+      notifications.forEach((n) => {
+        prevIds.current.add(n._id);
+      });
+      isInitialLoad.current = false;
+      return;
+    }
+
+    // On subsequent updates, display toasts for any new notifications
     notifications.forEach((n) => {
-      if (!prevIds.current.has(n._id) && prevIds.current.size > 0) {
-        // Only fire toasts after first load
-        toast(renderBody(n.body), {
-          icon: typeEmoji[n.type] ?? "🔔",
-          duration: 4000,
-        });
+      if (!prevIds.current.has(n._id)) {
+        toast(
+          <div
+            onClick={() => {
+              markAsRead({ notificationId: n._id });
+              const url = getNotificationRedirectUrl(n);
+              router.push(url);
+            }}
+            className="cursor-pointer w-full h-full"
+          >
+            {renderBody(n.body)}
+          </div>,
+          {
+            icon: typeEmoji[n.type] ?? "🔔",
+            duration: 4000,
+          }
+        );
+        prevIds.current.add(n._id);
       }
-      prevIds.current.add(n._id);
     });
   }, [notifications]);
 

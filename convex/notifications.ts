@@ -559,11 +559,25 @@ export const getMyNotifications = query({
 
     if (!user) return [];
 
-    return await ctx.db
+    const notifications = await ctx.db
       .query("notifications")
       .withIndex("by_recipient", (q) => q.eq("recipientId", user._id))
       .order("desc")
       .take(30);
+
+    // Resolve project slugs on the fly for frontend deep-linking
+    const resolvedNotifications = await Promise.all(
+      notifications.map(async (n) => {
+        if (!n.projectId) return { ...n, projectSlug: undefined };
+        const project = await ctx.db.get(n.projectId);
+        return {
+          ...n,
+          projectSlug: project?.slug,
+        };
+      }),
+    );
+
+    return resolvedNotifications;
   },
 });
 
@@ -670,3 +684,30 @@ export const clearAll = mutation({
     await Promise.all(all.map((n) => ctx.db.delete(n._id)));
   },
 });
+
+/**
+ * Internal mutation to clean up old notifications.
+ * Typically scheduled to run daily via cron.
+ */
+export const deleteOldNotifications = internalMutation({
+  args: { maxAgeDays: v.number() },
+  handler: async (ctx, args) => {
+    const cutoff = Date.now() - args.maxAgeDays * 24 * 60 * 60 * 1000;
+
+    // Scan notifications table for old records
+    const oldNotifications = await ctx.db
+      .query("notifications")
+      .filter((q) => q.lt(q.field("createdAt"), cutoff))
+      .collect();
+
+    let count = 0;
+    for (const notif of oldNotifications) {
+      await ctx.db.delete(notif._id);
+      count++;
+    }
+
+    console.log(`[Cron Cleanup] Successfully deleted ${count} notifications older than ${args.maxAgeDays} days.`);
+    return { deletedCount: count };
+  },
+});
+

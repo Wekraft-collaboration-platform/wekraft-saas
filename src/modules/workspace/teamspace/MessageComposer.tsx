@@ -31,7 +31,6 @@ import { GetRepoStructure } from "../GetRepoStructure";
 import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
-import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 const EMOJI_GROUPS = [
@@ -191,6 +190,14 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
       }, 50);
     }
   }, [replyingTo]);
+
+  // Scroll active mention into view
+  useEffect(() => {
+    if (showMentions) {
+      const activeEl = document.getElementById(`mention-item-${mentionIndex}`);
+      activeEl?.scrollIntoView({ block: "nearest" });
+    }
+  }, [mentionIndex, showMentions]);
 
   const handleSend = useCallback(async () => {
     const trimmed = content.trim();
@@ -485,11 +492,12 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
                     Mention someone
                   </span>
                 </div>
-                <ScrollArea className="max-h-[220px]">
+                <div className="max-h-[220px] overflow-y-auto scrollbar-thin">
                   <div className="py-1">
                     {filteredMembers.map((member, i) => (
                       <button
                         key={member._id}
+                        id={`mention-item-${i}`}
                         onClick={() => insertMention(member.userName || "")}
                         onMouseEnter={() => setMentionIndex(i)}
                         className={cn(
@@ -524,7 +532,7 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
                       </button>
                     ))}
                   </div>
-                </ScrollArea>
+                </div>
               </motion.div>
             )}
           </AnimatePresence>

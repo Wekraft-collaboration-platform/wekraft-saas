@@ -35,7 +35,7 @@ import Link from "next/link";
 import { useParams } from "next/navigation";
 import { InviteDialog } from "@/modules/project/inviteDilogag";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import Image from "next/image";
 import { ProjectJoinRequests } from "@/modules/project/project-join-requests";
 import { useRouter } from "next/navigation";
@@ -57,6 +57,16 @@ const ProjectPage = () => {
 
   const [isUploading, setIsUploading] = useState(false);
   const [homeTab, setHomeTab] = useState("settings");
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const searchParams = new URLSearchParams(window.location.search);
+      const tab = searchParams.get("tab");
+      if (tab) {
+        setHomeTab(tab);
+      }
+    }
+  }, []);
 
   const isOwner = !!project && !!user && project.ownerId === user._id;
 

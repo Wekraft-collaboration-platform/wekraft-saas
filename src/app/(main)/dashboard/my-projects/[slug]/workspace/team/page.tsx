@@ -104,7 +104,7 @@ export default function TeamPage() {
         projectId: project._id as Id<"projects">,
       });
       toast.success("Successfully left the project");
-      router.push("/dashboard/my-projects");
+      router.push("/dashboard");
     } catch (e: any) {
       toast.error(e.message || "Failed to leave the project");
     }
