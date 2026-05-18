@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { auth } from "@clerk/nextjs/server";
 import {
   S3Client,
   PutObjectCommand,
@@ -16,6 +17,11 @@ const client = new S3Client({
 const BUCKET_NAME = "wekraft-saas-upload-s3";
 
 export async function POST(req: Request) {
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   console.log("POST /api/teamspace/media - Upload request received");
   try {
     const formData = await req.formData();
@@ -71,6 +77,11 @@ export async function POST(req: Request) {
 }
 
 export async function DELETE(req: Request) {
+  const { userId } = await auth();
+  if (!userId) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+
   try {
     const { url } = await req.json();
     if (!url) {
