@@ -362,9 +362,9 @@ export const TableTab = ({
                         className="rounded border-neutral-800 data-[state=checked]:bg-primary"
                       />
                     </TableCell>
-                    <TableCell className="px-4 text-sm   font-medium border-r border-b dark:border-neutral-700 border-neutral-200  text-muted-foreground transition-colors dark:group-hover:text-primary group-hover:text-foreground">
-                      <div className="flex items-center gap-1.5 capitalize">
-                        <span className="dark:text-primary text-foreground">
+                    <TableCell className="px-4 text-sm font-medium border-r border-b dark:border-neutral-700 border-neutral-200 text-muted-foreground transition-colors dark:group-hover:text-primary group-hover:text-foreground max-w-[180px]">
+                      <div className="flex items-center gap-1.5 capitalize w-full min-w-0">
+                        <span className="dark:text-primary text-foreground truncate">
                           {task.title}
                         </span>
                         {task.isBlocked ? (
@@ -431,7 +431,7 @@ export const TableTab = ({
                       {task.assignees && task.assignees.length > 0 ? (
                         <div className="flex items-center justify-center -space-x-1">
                           <TooltipProvider>
-                            {task.assignees.map((person, i) => (
+                            {task.assignees.slice(0, 3).map((person, i) => (
                               <Tooltip key={i}>
                                 <TooltipTrigger asChild>
                                   <Avatar className="w-7 h-7 border-2 border-background shadow-sm hover:z-10 transition-transform hover:scale-110 cursor-pointer">
@@ -455,6 +455,11 @@ export const TableTab = ({
                               </Tooltip>
                             ))}
                           </TooltipProvider>
+                          {task.assignees.length > 4 && (
+                            <div className="w-7 h-7 rounded-full border-2 border-background bg-[#1c1c1c] flex items-center justify-center text-[10px] font-bold text-neutral-400 z-20 shadow-sm">
+                              +{task.assignees.length - 4}
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <div className="flex items-center justify-center w-full">

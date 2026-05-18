@@ -283,7 +283,11 @@ const ProjectWorkspace = () => {
                   size="sm"
                   variant={"outline"}
                   onClick={() => setIsDeadlineDialogOpen(true)}
-                  className="cursor-pointer text-[11px] dark:bg-muted! bg-muted/20"
+                  disabled={!isOwner}
+                  className={cn(
+                    "text-[11px] dark:bg-muted! bg-muted/20",
+                    isOwner ? "cursor-pointer" : "cursor-not-allowed opacity-50"
+                  )}
                 >
                   Change <ClockFading className="w-3 h-3!" />
                 </Button>
