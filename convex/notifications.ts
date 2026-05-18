@@ -45,15 +45,24 @@ async function insertNotification(
 
 // ─── Helper: get power users (owners + admins) of a project ─────────────────
 async function getPowerUsers(ctx: any, projectId: Id<"projects">) {
+  const project = await ctx.db.get(projectId);
+  if (!project) return [];
+
   const members = await ctx.db
     .query("projectMembers")
     .withIndex("by_project", (q: any) => q.eq("projectId", projectId))
     .collect();
 
-  return members.filter(
+  const powerMembers = members.filter(
     (m: any) => m.AccessRole === "owner" || m.AccessRole === "admin",
   );
+
+  const powerUserIds = new Set(powerMembers.map((m: any) => m.userId as Id<"users">));
+  powerUserIds.add(project.ownerId);
+
+  return Array.from(powerUserIds).map((userId) => ({ userId }));
 }
+
 
 // ─── Helper: fan-out a notification to multiple recipients ──────────────────
 async function fanOut(
@@ -427,12 +436,17 @@ export const notifySprintEvent = internalMutation({
     eventType: v.union(v.literal("sprint_started"), v.literal("sprint_completed")),
   },
   handler: async (ctx, args) => {
+    const project = await ctx.db.get(args.projectId);
+    if (!project) return;
+
     const members = await ctx.db
       .query("projectMembers")
       .withIndex("by_project", (q: any) => q.eq("projectId", args.projectId))
       .collect();
 
-    const memberIds = members.map((m: any) => m.userId as Id<"users">);
+    const memberIdsSet = new Set(members.map((m: any) => m.userId as Id<"users">));
+    memberIdsSet.add(project.ownerId);
+    const memberIds = Array.from(memberIdsSet);
     const verb = args.eventType === "sprint_started" ? "started" : "completed";
     const emoji = args.eventType === "sprint_started" ? "🚀" : "🏁";
 
