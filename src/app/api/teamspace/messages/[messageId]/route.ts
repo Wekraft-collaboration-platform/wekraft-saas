@@ -20,7 +20,7 @@ const BUCKET_NAME = "wekraft-saas-upload-s3";
 function extractS3Keys(content: string): string[] {
   if (!content) return [];
   const regex =
-    /https:\/\/wekraft-saas-upload-s3\.s3\.ap-south-1\.amazonaws\.com\/(teamspace-media\/[^\s)"\]]+)/g;
+    /https:\/\/wekraft-saas-upload-s3\.s3\.ap-south-1\.amazonaws\.com\/(teamspace-media\/[^\s)"\\]+)/g;
   const keys: string[] = [];
   let match;
   while ((match = regex.exec(content)) !== null) {
@@ -30,16 +30,11 @@ function extractS3Keys(content: string): string[] {
 }
 
 async function deleteFromS3(keys: string[]) {
-  for (const key of keys) {
-    try {
-      await s3Client.send(
-        new DeleteObjectCommand({ Bucket: BUCKET_NAME, Key: key }),
-      );
-      console.log("Deleted from S3:", key);
-    } catch (e) {
-      console.error("Failed to delete from S3:", key, e);
-    }
-  }
+  await Promise.allSettled(
+    keys.map((key) =>
+      s3Client.send(new DeleteObjectCommand({ Bucket: BUCKET_NAME, Key: key }))
+    )
+  );
 }
 
 // PATCH /api/teamspace/messages/[messageId]

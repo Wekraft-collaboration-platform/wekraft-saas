@@ -22,19 +22,13 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  console.log("POST /api/teamspace/media - Upload request received");
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File;
 
     if (!file) {
-      console.error("No file found in formData");
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
     }
-
-    console.log(
-      `Processing teamspace media: ${file.name}, Size: ${file.size}, Type: ${file.type}`,
-    );
 
     // Validation: Max size 10MB for media
     if (file.size > 10 * 1024 * 1024) {
@@ -52,8 +46,6 @@ export async function POST(req: Request) {
       .replace(/[^a-zA-Z0-9.\-_]/g, "");
     const fileName = `teamspace-media/${Date.now()}-${sanitizedName}`;
 
-    console.log(`Uploading teamspace media to S3 as: ${fileName}`);
-
     const command = new PutObjectCommand({
       Bucket: BUCKET_NAME,
       Key: fileName,
@@ -64,7 +56,6 @@ export async function POST(req: Request) {
     await client.send(command);
 
     const url = `https://${BUCKET_NAME}.s3.ap-south-1.amazonaws.com/${fileName}`;
-    console.log("Teamspace media upload successful, URL:", url);
 
     return NextResponse.json({ success: true, url, name: file.name });
   } catch (error) {
@@ -88,7 +79,6 @@ export async function DELETE(req: Request) {
       return NextResponse.json({ error: "URL is required" }, { status: 400 });
     }
 
-    console.log("Attempting to delete teamspace media:", url);
     const key = url.split(".amazonaws.com/")[1];
 
     if (key && key.startsWith("teamspace-media/")) {
@@ -97,7 +87,6 @@ export async function DELETE(req: Request) {
         Key: key,
       });
       await client.send(deleteCommand);
-      console.log("Teamspace media deleted from S3 successfully");
       return NextResponse.json({ success: true });
     } else {
       console.warn("Invalid key or not a teamspace media key");
