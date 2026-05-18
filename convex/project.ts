@@ -692,8 +692,18 @@ export const getProjectJoinRequests = query({
       .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
       .collect();
 
+    const enriched = await Promise.all(
+      requests.map(async (req) => {
+        const user = await ctx.db.get(req.userId);
+        return {
+          ...req,
+          clerkUserId: user?.clerkToken?.split("|").pop() ?? null,
+        };
+      })
+    );
+
     // Sort: Pending first, then by date descending
-    return requests.sort((a, b) => {
+    return enriched.sort((a, b) => {
       if (a.status === "pending" && b.status !== "pending") return -1;
       if (a.status !== "pending" && b.status === "pending") return 1;
       return b.updatedAt - a.updatedAt;
@@ -1076,6 +1086,7 @@ export const getTeamPageData = query({
         return {
           _id: (m as any)._id || null,
           userId: m.userId,
+          clerkUserId: user?.clerkToken ? user.clerkToken.split("|").pop() : "",
           userName: user?.name || m.userName || "Anonymous",
           userImage: user?.avatarUrl || m.userImage || "",
           userEmail: user?.email || "",

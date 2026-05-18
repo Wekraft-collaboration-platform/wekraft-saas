@@ -336,6 +336,7 @@ const ProjectPage = () => {
             {homeTab === "requests" && (
               <ProjectJoinRequests
                 projectId={project._id}
+                projectName={project.projectName}
                 currentMemberCount={(project as any).totalMemberCount}
                 memberLimit={(project as any).memberLimit}
               />

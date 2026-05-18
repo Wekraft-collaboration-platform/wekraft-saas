@@ -1,6 +1,6 @@
 "use client";
 
-import { Bell, Check, MessageSquare, AtSign, Clock } from "lucide-react";
+import { Bell, Check, MessageSquare, AtSign, Clock, UserPlus, UserMinus, ShieldAlert, ArrowRight } from "lucide-react";
 import { useNotifications } from "./hooks/useNotifications";
 import {
   Popover,
@@ -12,6 +12,9 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { formatDistanceToNow } from "date-fns";
 import { cn } from "@/lib/utils";
+import { useRouter } from "next/navigation";
+import { useConvex } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
 
 interface NotificationCenterProps {
   userId: string;
@@ -20,6 +23,45 @@ interface NotificationCenterProps {
 
 export function NotificationCenter({ userId, onSelectChannel }: NotificationCenterProps) {
   const { notifications, unreadCount, markAsRead } = useNotifications(userId);
+  const router = useRouter();
+  const convex = useConvex();
+
+  const handleNotificationClick = async (n: any) => {
+    markAsRead(n.id);
+    
+    const isMention = !n.type || n.type === "mention";
+    
+    if (isMention) {
+      if (onSelectChannel && n.channel_id) {
+        onSelectChannel(n.channel_id, n.message_id);
+      }
+    } else if (n.project_id) {
+      try {
+        const project = await convex.query(api.project.getProjectById, {
+          projectId: n.project_id,
+        });
+        if (project?.slug) {
+          router.push(`/dashboard/my-projects/${project.slug}/workspace/team`);
+        }
+      } catch (err) {
+        console.error("Failed to fetch project for routing:", err);
+      }
+    }
+  };
+
+  const getNotificationIcon = (type: string) => {
+    switch (type) {
+      case "join":
+      case "join_request":
+      case "request_accepted":
+        return <UserPlus className="h-3 w-3 text-emerald-500" />;
+      case "leave":
+      case "remove":
+        return <UserMinus className="h-3 w-3 text-rose-500" />;
+      default:
+        return <AtSign className="h-3 w-3 text-blue-500" />;
+    }
+  };
 
   return (
     <Popover>
@@ -77,100 +119,121 @@ export function NotificationCenter({ userId, onSelectChannel }: NotificationCent
             </div>
           ) : (
             <div className="flex flex-col">
-              {notifications.map((n) => (
-                <div
-                  key={n.id}
-                  className={cn(
-                    "p-4 border-b border-border/20 cursor-pointer transition-all duration-200 group relative",
-                    n.is_read === 0 
-                      ? "bg-gradient-to-r from-blue-500/[0.04] to-transparent hover:from-blue-500/[0.08]" 
-                      : "hover:bg-accent/30 hover:shadow-[0_2px_8px_rgba(0,0,0,0.02)]",
-                    "hover:-translate-y-[1px] select-none"
-                  )}
-                  onClick={() => {
-                    markAsRead(n.id);
-                    if (onSelectChannel && n.channel_id) {
-                      onSelectChannel(n.channel_id, n.message_id);
-                    }
-                  }}
-                >
-                  {/* Glowing vertical left bar for unreads */}
-                  {n.is_read === 0 && (
-                    <div className="absolute left-0 top-[15%] h-[70%] w-[3px] rounded-r-md bg-blue-500 shadow-[0_0_8px_#3b82f6]" />
-                  )}
-                  
-                  <div className="flex gap-3">
-                    <div className="relative shrink-0">
-                      <Avatar className={cn(
-                        "h-9 w-9 border shrink-0 transition-transform duration-200 group-hover:scale-105",
-                        n.is_read === 0 ? "border-blue-500/40 shadow-[0_0_8px_rgba(59,130,246,0.15)]" : "border-border/60"
-                      )}>
-                        <AvatarImage src={n.sender_image || undefined} />
-                        <AvatarFallback className="bg-gradient-to-br from-blue-500/10 to-blue-500/20 text-blue-600 text-xs font-bold dark:text-blue-400">
-                          {n.sender_name.substring(0, 2).toUpperCase()}
-                        </AvatarFallback>
-                      </Avatar>
-                      {n.is_read === 0 && (
-                        <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-blue-500 ring-2 ring-background shadow-[0_0_6px_#3b82f6] animate-pulse" />
-                      )}
-                    </div>
+              {notifications.map((n) => {
+                const isMention = !n.type || n.type === "mention";
+                return (
+                  <div
+                    key={n.id}
+                    className={cn(
+                      "p-4 border-b border-border/20 cursor-pointer transition-all duration-200 group relative",
+                      n.is_read === 0 
+                        ? "bg-gradient-to-r from-blue-500/[0.04] to-transparent hover:from-blue-500/[0.08]" 
+                        : "hover:bg-accent/30 hover:shadow-[0_2px_8px_rgba(0,0,0,0.02)]",
+                      "hover:-translate-y-[1px] select-none"
+                    )}
+                    onClick={() => handleNotificationClick(n)}
+                  >
+                    {/* Glowing vertical left bar for unreads */}
+                    {n.is_read === 0 && (
+                      <div className="absolute left-0 top-[15%] h-[70%] w-[3px] rounded-r-md bg-blue-500 shadow-[0_0_8px_#3b82f6]" />
+                    )}
                     
-                    <div className="flex flex-col gap-1 min-w-0 flex-1">
-                      <div className="flex items-center gap-1.5 flex-wrap">
-                        <span className="font-semibold text-xs text-foreground tracking-tight max-w-[130px] truncate">
-                          {n.sender_name}
-                        </span>
-                        <span className="text-[11px] text-muted-foreground/90">
-                          mentioned you in
-                        </span>
-                        <span className="text-[10px] font-bold text-blue-500 bg-blue-500/8 dark:bg-blue-500/15 px-2 py-0.5 rounded-full border border-blue-500/20 transition-all hover:bg-blue-500/25">
-                          #{n.channel_name || "channel"}
+                    <div className="flex gap-3">
+                      <div className="relative shrink-0">
+                        <Avatar className={cn(
+                          "h-9 w-9 border shrink-0 transition-transform duration-200 group-hover:scale-105",
+                          n.is_read === 0 ? "border-blue-500/40 shadow-[0_0_8px_rgba(59,130,246,0.15)]" : "border-border/60"
+                        )}>
+                          <AvatarImage src={n.sender_image || undefined} />
+                          <AvatarFallback className="bg-gradient-to-br from-blue-500/10 to-blue-500/20 text-blue-600 text-xs font-bold dark:text-blue-400">
+                            {n.sender_name.substring(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                        {n.is_read === 0 && (
+                          <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-blue-500 ring-2 ring-background shadow-[0_0_6px_#3b82f6] animate-pulse" />
+                        )}
+                        <span className="absolute -bottom-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-background border border-border shadow-sm">
+                          {getNotificationIcon(n.type)}
                         </span>
                       </div>
                       
-                      {n.content && (
-                        <p className="text-xs text-muted-foreground/90 line-clamp-2 leading-relaxed bg-accent/25 dark:bg-accent/15 border-l-2 border-primary/20 pl-2.5 py-1.5 rounded-r-md italic mt-1 shadow-[inset_1px_1px_3px_rgba(0,0,0,0.02)]">
-                          "{n.content}"
-                        </p>
-                      )}
-                      
-                      <div className="flex items-center justify-between mt-2">
-                        <div className="flex items-center gap-2">
-                          <span className="text-[10px] text-muted-foreground/60 flex items-center gap-1">
-                            <Clock className="h-3 w-3" />
-                            {formatDistanceToNow(n.created_at, {
-                              addSuffix: true,
-                            })}
+                      <div className="flex flex-col gap-1 min-w-0 flex-1">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span className="font-semibold text-xs text-foreground tracking-tight max-w-[130px] truncate">
+                            {n.sender_name}
+                          </span>
+                          {isMention ? (
+                            <>
+                              <span className="text-[11px] text-muted-foreground/90">
+                                mentioned you in
+                              </span>
+                              <span className="text-[10px] font-bold text-blue-500 bg-blue-500/8 dark:bg-blue-500/15 px-2 py-0.5 rounded-full border border-blue-500/20 transition-all hover:bg-blue-500/25">
+                                #{n.channel_name || "channel"}
+                              </span>
+                            </>
+                          ) : (
+                            <span className="text-[10px] font-bold text-emerald-500 bg-emerald-500/8 dark:bg-emerald-500/15 px-2 py-0.5 rounded-full border border-emerald-500/20 transition-all">
+                              Project Update
+                            </span>
+                          )}
+                        </div>
+                        
+                        {n.content && (
+                          <p className={cn(
+                            "text-xs text-muted-foreground/90 line-clamp-2 leading-relaxed bg-accent/25 dark:bg-accent/15 border-l-2 pl-2.5 py-1.5 rounded-r-md mt-1 shadow-[inset_1px_1px_3px_rgba(0,0,0,0.02)]",
+                            isMention ? "border-primary/20 italic" : "border-emerald-500/20"
+                          )}>
+                            {isMention ? `"${n.content}"` : n.content}
+                          </p>
+                        )}
+                        
+                        <div className="flex items-center justify-between mt-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-[10px] text-muted-foreground/60 flex items-center gap-1">
+                              <Clock className="h-3 w-3" />
+                              {formatDistanceToNow(n.created_at, {
+                                addSuffix: true,
+                              })}
+                            </span>
+                          </div>
+                          <span className="text-[10px] text-blue-500/70 font-semibold flex items-center gap-1 group-hover:text-blue-500 transition-colors">
+                            {isMention ? (
+                              <>
+                                <MessageSquare className="h-3 w-3" />
+                                <span>Jump to message</span>
+                              </>
+                            ) : (
+                              <>
+                                <ArrowRight className="h-3 w-3" />
+                                <span>Manage Team</span>
+                              </>
+                            )}
+                            <span className="transform translate-x-0 group-hover:translate-x-0.5 transition-transform duration-200">→</span>
                           </span>
                         </div>
-                        <span className="text-[10px] text-blue-500/70 font-semibold flex items-center gap-1 group-hover:text-blue-500 transition-colors">
-                          <MessageSquare className="h-3 w-3" />
-                          <span>Jump to message</span>
-                          <span className="transform translate-x-0 group-hover:translate-x-0.5 transition-transform duration-200">→</span>
-                        </span>
                       </div>
                     </div>
+                    
+                    {n.is_read === 0 && (
+                      <div className="absolute top-4 right-4 flex items-center justify-center h-6 w-6 z-10">
+                        {/* Check button appearing on hover */}
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          className="h-6 w-6 rounded-full absolute scale-0 group-hover:scale-100 hover:bg-blue-500/20 hover:text-blue-500 text-blue-500/70 transition-all duration-200 flex items-center justify-center border border-blue-500/10 bg-background/95 backdrop-blur-md shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:rotate-12"
+                          title="Mark as read"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            markAsRead(n.id);
+                          }}
+                        >
+                          <Check className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+                    )}
                   </div>
-                  
-                  {n.is_read === 0 && (
-                    <div className="absolute top-4 right-4 flex items-center justify-center h-6 w-6 z-10">
-                      {/* Check button appearing on hover */}
-                      <Button
-                        size="icon"
-                        variant="ghost"
-                        className="h-6 w-6 rounded-full absolute scale-0 group-hover:scale-100 hover:bg-blue-500/20 hover:text-blue-500 text-blue-500/70 transition-all duration-200 flex items-center justify-center border border-blue-500/10 bg-background/95 backdrop-blur-md shadow-[0_2px_8px_rgba(0,0,0,0.08)] hover:rotate-12"
-                        title="Mark as read"
-                        onClick={(e) => {
-                          e.stopPropagation();
-                          markAsRead(n.id);
-                        }}
-                      >
-                        <Check className="h-3.5 w-3.5" />
-                      </Button>
-                    </div>
-                  )}
-                </div>
-              ))}
+                );
+              })}
             </div>
           )}
         </ScrollArea>

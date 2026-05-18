@@ -19,12 +19,14 @@ import {
 
 interface ProjectJoinRequestsProps {
   projectId: Id<"projects">;
+  projectName?: string;
   currentMemberCount?: number;
   memberLimit?: number;
 }
 
 export const ProjectJoinRequests = ({
   projectId,
+  projectName,
   currentMemberCount,
   memberLimit,
 }: ProjectJoinRequestsProps) => {
@@ -34,14 +36,29 @@ export const ProjectJoinRequests = ({
     useProjectPermissions(projectId);
 
   const onAction = async (
-    requestId: Id<"projectJoinRequests">,
+    request: any,
     action: "accepted" | "rejected",
   ) => {
     try {
-      await handleRequest({ requestId, action });
+      await handleRequest({ requestId: request._id, action });
       toast.success(
         `Request ${action === "accepted" ? "accepted" : "rejected"} successfully`,
       );
+
+      if (action === "accepted") {
+        await fetch("/api/teamspace/notifications/project", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            type: "join",
+            projectId,
+            targetUserId: request.clerkUserId,
+            targetUserName: request.userName,
+            targetUserImage: request.userImage,
+            projectName: projectName,
+          }),
+        }).catch((err) => console.error("Failed to send join notification:", err));
+      }
     } catch (error: any) {
       toast.error(error.data || error.message || "Failed to process request");
       console.error(error);
@@ -126,7 +143,7 @@ export const ProjectJoinRequests = ({
 interface RequestCardProps {
   request: any;
   isPower: boolean;
-  onAction: (id: Id<"projectJoinRequests">, action: "accepted" | "rejected") => void;
+  onAction: (request: any, action: "accepted" | "rejected") => void;
   isLimitReached: boolean;
 }
 
@@ -181,7 +198,7 @@ const RequestCard = ({ request, isPower, onAction, isLimitReached }: RequestCard
               variant="outline"
               disabled={isLimitReached}
               className={`h-8 w-8 rounded-md px-6! border-green-500/20 text-green-500 hover:bg-green-500/10 hover:text-green-600 transition-all active:scale-95 ${isLimitReached ? "opacity-50 cursor-not-allowed border-muted" : ""}`}
-              onClick={() => onAction(request._id, "accepted")}
+              onClick={() => onAction(request, "accepted")}
             >
               <Check className="h-4 w-4" />
             </Button>
@@ -189,7 +206,7 @@ const RequestCard = ({ request, isPower, onAction, isLimitReached }: RequestCard
               size="icon"
               variant="outline"
               className="h-8 w-8 rounded-md px-6! border-red-500/20 text-red-500 hover:bg-red-500/10 hover:text-red-600 transition-all active:scale-95"
-              onClick={() => onAction(request._id, "rejected")}
+              onClick={() => onAction(request, "rejected")}
             >
               <X className="h-4 w-4" />
             </Button>
