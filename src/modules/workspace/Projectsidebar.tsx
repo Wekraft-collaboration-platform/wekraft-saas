@@ -737,7 +737,7 @@ export default function ProjectSidebar() {
                     <SidebarMenuButton
                       asChild
                       tooltip="Theme"
-                      className="group relative overflow-hidden  group-data-[collapsible=icon]:hidden"
+                      className="group relative overflow-hidden cursor-pointer  group-data-[collapsible=icon]:hidden"
                     >
                       <PopoverTrigger asChild>
                         <button

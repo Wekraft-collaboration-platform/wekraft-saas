@@ -3,7 +3,15 @@
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Doc, Id } from "../../../../convex/_generated/dataModel";
-import { Bell, BellRing, Check, CheckCheck, Trash2, X, FolderKanban } from "lucide-react";
+import {
+  Bell,
+  BellRing,
+  Check,
+  CheckCheck,
+  Trash2,
+  X,
+  FolderKanban,
+} from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -158,13 +166,10 @@ function NotificationItem({
         "group relative flex items-start gap-3.5 px-4 py-3.5 cursor-pointer transition-all duration-200",
         "border-b border-border/30 last:border-b-0",
         "hover:bg-accent/40 bg-background/5",
-        !notif.isRead && "bg-primary/[0.02]"
+        !notif.isRead && "bg-primary/[0.02]",
       )}
     >
-      {/* Pulse unread dot indicator (Vercel/Linear Style) */}
-      {!notif.isRead && (
-        <span className="absolute left-1.5 top-[22px] h-1.5 w-1.5 rounded-full bg-primary animate-pulse" />
-      )}
+   
 
       {/* Avatar / emoji */}
       <div className="relative shrink-0 mt-0.5">
@@ -186,9 +191,11 @@ function NotificationItem({
       <div className="flex-1 min-w-0 pr-12">
         {notif.projectName && (
           <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
-            <span className="inline-flex items-center gap-1 text-[9.5px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 px-2 py-0.5 rounded-md border border-indigo-100 dark:border-indigo-900/40 tracking-wide shadow-sm">
-              <FolderKanban className="h-3 w-3 text-indigo-500/80 dark:text-indigo-400/80 shrink-0" />
-              <span className="truncate max-w-[180px]">{notif.projectName}</span>
+            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20 tracking-wide shadow-sm">
+              <FolderKanban className="h-3 w-3 text-primary/80 shrink-0" />
+              <span className="truncate max-w-[180px]">
+                {notif.projectName}
+              </span>
             </span>
           </div>
         )}
@@ -203,9 +210,6 @@ function NotificationItem({
             </span>
           </p>
         )}
-        <p className="text-[10px] text-muted-foreground/40 mt-1.5 font-medium">
-          {timeAgo(notif.createdAt)}
-        </p>
       </div>
 
       {/* Action panel (Floating on hover - Linear Style) */}
@@ -282,19 +286,17 @@ export function NotificationCenter() {
             className="cursor-pointer w-full h-full"
           >
             {n.projectName && (
-              <span className="inline-flex items-center gap-1 text-[9.5px] font-semibold text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-950/30 px-2 py-0.5 rounded-md border border-indigo-100 dark:border-indigo-900/40 tracking-wide mb-1.5 shadow-sm">
-                <FolderKanban className="h-3 w-3 text-indigo-500/80 dark:text-indigo-400/80 shrink-0" />
+              <span className="inline-flex items-center gap-1 text-[9.5px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20 tracking-wide mb-1.5 shadow-sm">
+                <FolderKanban className="h-3 w-3 text-primary/80 shrink-0" />
                 <span className="truncate max-w-[180px]">{n.projectName}</span>
               </span>
             )}
-            <div className="text-sm font-normal">
-              {renderBody(n.body)}
-            </div>
+            <div className="text-sm font-normal">{renderBody(n.body)}</div>
           </div>,
           {
             icon: typeEmoji[n.type] ?? "🔔",
             duration: 4000,
-          }
+          },
         );
         prevIds.current.add(n._id);
       }
@@ -334,12 +336,12 @@ export function NotificationCenter() {
       <PopoverContent
         align="end"
         sideOffset={8}
-        className="w-[360px] p-0 rounded-xl bg-background/95 backdrop-blur-xl border border-border/60 shadow-[0_20px_50px_rgba(0,0,0,0.35)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.65)] overflow-hidden"
+        className="w-[360px] p-0 rounded-xl bg-sidebar border border-border/60 shadow-[0_20px_50px_rgba(0,0,0,0.35)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.65)] overflow-hidden"
       >
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-border/40 bg-muted/15">
           <div className="flex items-center gap-2">
-            <span className="text-[11px] font-semibold tracking-wider text-muted-foreground uppercase">
+            <span className="text-sm">
               Notifications
             </span>
             {unreadCount > 0 && (
@@ -395,7 +397,9 @@ export function NotificationCenter() {
                 <Bell className="h-4.5 w-4.5 text-muted-foreground/60" />
               </div>
               <div className="space-y-1">
-                <p className="text-xs font-semibold text-foreground/80">All caught up!</p>
+                <p className="text-xs font-semibold text-foreground/80">
+                  All caught up!
+                </p>
                 <p className="text-[11px] text-muted-foreground/60">
                   No notifications yet.
                 </p>
@@ -418,9 +422,9 @@ export function NotificationCenter() {
         {/* Footer */}
         {notifications && notifications.length > 0 && (
           <>
-            <Separator className="bg-border/40" />
-            <div className="px-4 py-2 text-center bg-muted/5">
-              <p className="text-[9px] font-medium tracking-wide text-muted-foreground/60 uppercase">
+            <Separator className="bg-accent!" />
+            <div className="px-4 py-3 text-center bg-muted">
+              <p className="text-[9px] font-medium tracking-wide text-muted-foreground uppercase">
                 Showing last {notifications.length} notification
                 {notifications.length !== 1 ? "s" : ""}
               </p>

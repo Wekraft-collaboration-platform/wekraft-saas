@@ -67,7 +67,7 @@ export default function Layout({
           <SidebarInset className="border-l h-screen flex flex-col">
             <header className="flex justify-between h-18 py-1 flex-none items-center border-b px-4 bg-sidebar/60 backdrop-blur-xl z-50">
               <div className="flex items-center gap-2">
-                <SidebarTrigger variant="outline" className="-ml-1 cursor-pointer hover:scale-105 transition-all duration-200" />
+                <SidebarTrigger  className="-ml-1 cursor-pointer hover:scale-105 transition-all duration-200" />
                 <DashboardBreadcrumbs />
               </div>
               {/* <div>

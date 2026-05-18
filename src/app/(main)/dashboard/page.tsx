@@ -163,7 +163,7 @@ export default function DashboardPage() {
       {/* =========CARDS============ */}
       <div className="grid grid-cols-3 gap-10 w-full my-5 px-8 font-sans">
         {/* COMMIT */}
-        <Card className="bg-linear-to-br from-accent/90 to-transparent dark:to-black  min-w-[260px] ">
+        <Card className="bg-sidebar shadow-sm dark:shadow-lg  min-w-[260px] ">
           <CardHeader>
             <CardTitle className="font-medium ">
               Commits <LucideGitCommit className="h-5 w-5 inline ml-1" />
@@ -200,7 +200,7 @@ export default function DashboardPage() {
         </Card>
 
         {/* TOTAL PR*/}
-        <Card className="bg-linear-to-br from-accent/90 to-transparent dark:to-black  min-w-[260px]">
+        <Card className="bg-sidebar shadow-sm dark:shadow-lg  min-w-[260px]">
           <CardHeader>
             <CardTitle className="flex items-center font-medium justify-between">
               <p>
@@ -253,7 +253,7 @@ export default function DashboardPage() {
           </CardContent>
         </Card>
 
-        <Card className="relative  min-w-[260px] bg-linear-to-br from-accent/90 to-transparent dark:to-black">
+        <Card className="relative  min-w-[260px] bg-sidebar shadow-sm dark:shadow-lg">
           <CardHeader>
             <CardTitle className="flex items-center justify-between">
               <p>
@@ -385,7 +385,7 @@ export default function DashboardPage() {
                         <CardContent>
                           <PieChartVariant1 stats={dashboardStats} />
                           <ScoreDetailsDialog stats={dashboardStats}>
-                            <p className="text-center text-[11px] mt-1.5 border py-1.5 px-4 rounded-md mx-auto w-fit text-muted-foreground hover:bg-accent cursor-pointer transition-colors">
+                            <p className="text-center text-[11px] mt-3 border py-1.5 px-4 rounded-md mx-auto w-fit text-muted-foreground bg-muted hover:bg-accent cursor-pointer transition-colors">
                               View Stats{" "}
                               <Waypoints className="h-3 w-3 inline ml-1" />
                             </p>

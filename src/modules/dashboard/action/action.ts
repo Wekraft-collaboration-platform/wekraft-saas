@@ -129,11 +129,14 @@ export async function getContributionStats(githubName: string) {
     }
 
     const contributions = calendar.weeks.flatMap((week: any) =>
-      week.contributionDays.map((day: any) => ({
-        date: day.date,
-        count: day.contributionCount,
-        level: Math.min(4, Math.floor(day.contributionCount / 3)),
-      }))
+      week.contributionDays.map((day: any) => {
+        const count = day.contributionCount ?? 0;
+        return {
+          date: day.date,
+          count: count,
+          level: count === 0 ? 0 : Math.min(4, Math.floor((count - 1) / 3) + 1),
+        };
+      })
     );
 
     const data = { contributions, totalContributions: calendar.totalContributions };

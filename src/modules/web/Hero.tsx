@@ -59,7 +59,7 @@ const Hero = () => {
       </div>
 
       <main className="relative z-10 flex flex-col items-center pt-28 md:pt-40 pb-20 w-full">
-        <div className="inline-flex items-center p-1 pr-4 border border-blue-500/30 rounded-full cursor-pointer transition-colors duration-200 mb-18 bg-blue-500/5 hover:bg-blue-500/10">
+        <div className="inline-flex items-center p-1 pr-4 border border-neutral-400/30 rounded-full cursor-pointer transition-colors duration-200 mb-18 bg-blue-500/5 hover:bg-blue-500/10">
           <div className="bg-blue-600 px-5 py-1 rounded-full flex items-center gap-1.5">
             <span className="text-[12px]">
               <Megaphone className="w-4 h-4 inline" />
@@ -68,19 +68,19 @@ const Hero = () => {
               Less Managing
             </span>
           </div>
-          <span className="text-blue-200 text-sm font-medium ml-3">
+          <span className="text-blue-50 text-sm font-medium ml-3">
             More Building <PlaneTakeoff className="w-4 h-4 inline ml-1" />
           </span>
         </div>
 
         <div className="flex flex-col  items-center justify-center font-pop relative px-4">
           <h1 className="text-white font-sans tracking-tight text-[64px] font-semibold">
-            Meet Your AI-Native Platform
+            Meet The Simplest Workspace
           </h1>
-          <div className="flex items-center gap-3 text-white font-sans tracking-tight text-[64px] font-semibold">
-            <h1 className="mr-2">for Teams</h1>
+          <div className="flex items-center gap-3 text-white tracking-tight text-[64px] font-semibold">
+            <h1 className="mr-2">for the most</h1>
             <FlipText className="" duration={3.5}>
-              That Move Fast
+              Complex Projects
             </FlipText>
           </div>
         </div>
