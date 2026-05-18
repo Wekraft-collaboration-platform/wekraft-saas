@@ -3,13 +3,16 @@
 import { useQuery } from "convex/react";
 import { format } from "date-fns";
 import {
+  AlertCircle,
   AlertTriangle,
   Bug,
   CalendarDays,
+  CheckCircle2,
   ChevronDown,
   ClipboardList,
   Clock12,
   ClockAlert,
+  Ellipsis,
   FastForward,
   Layers2,
   Loader2,
@@ -27,7 +30,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { priorityIcons, statusColors } from "@/lib/static-store";
+import { priorityIcons, statusColors, statusIconsNoColors } from "@/lib/static-store";
 import { cn } from "@/lib/utils";
 import { useKayaStore } from "@/store/useKayaStore";
 import type { MyIssueItem, MyTaskItem } from "@/types/types";
@@ -51,6 +54,14 @@ const issueStatusColors: Record<string, string> = {
   "in review": "bg-indigo-500/10 text-indigo-500 border-indigo-500/20",
   reopened: "bg-orange-500/10 text-orange-500 border-orange-500/20",
   closed: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+};
+
+const issueStatusIconsNoColors: Record<string, React.ReactNode> = {
+  "not opened": <AlertCircle className="w-3.5 h-3.5" />,
+  opened: <AlertCircle className="w-3.5 h-3.5" />,
+  "in review": <Clock12 className="w-3.5 h-3.5" />,
+  reopened: <AlertCircle className="w-3.5 h-3.5" />,
+  closed: <CheckCircle2 className="w-3.5 h-3.5" />,
 };
 
 export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
@@ -225,12 +236,9 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
                   </div>
 
                   <span
-                    className={cn(
-                      "text-[10px] font-medium capitalize px-2 py-0.5 rounded-full border",
-                      statusColors[task.status] ??
-                        "bg-slate-500/10 text-muted-foreground border-slate-500/20",
-                    )}
+                    className="text-[10px] font-medium capitalize px-2.5 py-1 rounded-full border bg-neutral-900/90 border-neutral-800/80 text-primary/90 flex items-center gap-1.5 shrink-0"
                   >
+                    {statusIconsNoColors[task.status] || <Ellipsis className="w-3.5 h-3.5" />}
                     {task.status}
                   </span>
 
@@ -367,11 +375,11 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
                     <span className="text-[13px] font-semibold text-primary truncate">
                       {issue.title}
                     </span>
-                    {issue.environment && (
+                    {/* {issue.environment && (
                       <span className="text-[9px] uppercase tracking-wider text-muted-foreground bg-accent px-1.5 py-0.5 rounded font-semibold shrink-0">
                         {issue.environment}
                       </span>
-                    )}
+                    )} */}
                   </div>
 
                   {dueLabel && (
@@ -393,7 +401,7 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
 
                 {/* Row 3 — Severity + Status */}
                 <div className="flex items-center gap-3 mt-2">
-                  {s && (
+                  {/* {s && (
                     <span
                       className={cn(
                         "text-[10px] font-semibold px-2 py-0.5 rounded-full",
@@ -402,15 +410,12 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
                     >
                       {s.label}
                     </span>
-                  )}
+                  )} */}
 
                   <span
-                    className={cn(
-                      "text-[10px] font-medium capitalize px-2 py-0.5 rounded-full border",
-                      issueStatusColors[issue.status] ??
-                        "bg-slate-500/10 text-slate-500 border-slate-500/20",
-                    )}
+                    className="text-[10px] font-medium capitalize px-2.5 py-1 rounded-full border bg-neutral-900/90 border-neutral-800/80 text-primary/90 flex items-center gap-1.5 shrink-0"
                   >
+                    {issueStatusIconsNoColors[issue.status] || <AlertCircle className="w-3.5 h-3.5" />}
                     {issue.status}
                   </span>
 
@@ -423,8 +428,10 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Avatar className="w-6 h-6 border border-border shrink-0">
+                             
                               <AvatarImage
-                                src={issue.creator.avatarUrl}
+                                // @ts-ignore
+                                src={issue.creator.avatar}
                                 alt={issue.creator.name}
                               />
                               <AvatarFallback className="text-[11px] font-semibold">
@@ -452,7 +459,8 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
                               <TooltipTrigger asChild>
                                 <Avatar className="w-6 h-6 border border-background shadow-xs hover:z-10 transition-transform duration-200 shrink-0">
                                   <AvatarImage
-                                    src={assignee.avatarUrl}
+                                  // @ts-ignore
+                                    src={assignee.avatar}
                                     alt={assignee.name}
                                   />
                                   <AvatarFallback className="text-[11px] font-semibold">
