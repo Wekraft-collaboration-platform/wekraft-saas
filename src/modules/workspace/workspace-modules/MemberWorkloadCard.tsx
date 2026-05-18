@@ -81,7 +81,7 @@ export const MemberWorkloadCard = ({
             <CardTitle className="text-sm font-semibold text-primary flex items-center gap-2">
               <LayoutPanelLeft className="w-4 h-4" /> Member Workload Balance
             </CardTitle>
-            <CardDescription className="text-[10px] font-medium text-muted-foreground">
+            <CardDescription className="text-xs font-medium text-muted-foreground">
               Active task density per team member
             </CardDescription>
           </div>
@@ -114,7 +114,7 @@ export const MemberWorkloadCard = ({
           <CardTitle className="text-sm font-semibold text-primary flex items-center gap-2">
             <Users2 className="w-4 h-4" /> Member Workload Balance
           </CardTitle>
-          <CardDescription className="text-[10px] font-medium text-muted-foreground">
+          <CardDescription className="text-xs font-medium text-muted-foreground">
             Current active tasks by priority levels.  Resource Leveling.
           </CardDescription>
         </div>

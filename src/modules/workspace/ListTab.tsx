@@ -146,6 +146,8 @@ interface TaskGroupProps {
   setTagFilter: (tag: string | null) => void;
   allTasks: Task[];
   canDelete?: boolean;
+  hasMoreTasks?: boolean;
+  onLoadMore?: () => void;
 }
 
 const TaskGroup = ({
@@ -166,6 +168,8 @@ const TaskGroup = ({
   setTagFilter,
   allTasks,
   canDelete = false,
+  hasMoreTasks = false,
+  onLoadMore,
 }: TaskGroupProps) => {
   const [isExpanded, setIsExpanded] = useState(defaultExpanded);
 
@@ -280,7 +284,7 @@ const TaskGroup = ({
                     <FolderPen className="w-4.5 h-4.5" /> Task Name
                   </div>
                 </TableHead>
-                <TableHead className="px-4 text-sm font-medium capitalize tracking-widest min-w-[300px] border-r border-b dark:border-neutral-700 border-neutral-200">
+                <TableHead className="px-4 text-sm font-medium capitalize tracking-widest w-[200px] min-w-[150px] border-r border-b dark:border-neutral-700 border-neutral-200">
                   <div className="flex items-center gap-2">
                     <TextQuote className="w-4.5 h-4.5" /> Description
                   </div>
@@ -344,7 +348,7 @@ const TaskGroup = ({
                     colSpan={8}
                     className="py-14 text-center text-sm text-muted-foreground"
                   >
-                    <div className="flex items-center justify-center gap-2">
+                    <div className="flex flex-col items-center justify-center gap-2">
                       <Image
                         src="/pat103.svg"
                         alt="Empty Workspace"
@@ -352,9 +356,23 @@ const TaskGroup = ({
                         height={80}
                         className="opacity-80"
                       />
-                      <span className="text-base text-primary/70">
-                        No tasks under {title.toLowerCase()}
-                      </span>
+                      <div className="flex flex-col items-center gap-1.5">
+                        <span className="text-base text-primary/70">
+                          {hasMoreTasks
+                            ? `No tasks loaded yet under ${title.toLowerCase()}`
+                            : `No tasks under ${title.toLowerCase()}`}
+                        </span>
+                        {hasMoreTasks && onLoadMore && (
+                          <Button
+                            variant="link"
+                            size="sm"
+                            onClick={onLoadMore}
+                            className="text-xs text-blue-500 hover:text-blue-400 h-auto p-0 cursor-pointer font-medium"
+                          >
+                            Load More Tasks to check database
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </TableCell>
                 </TableRow>
@@ -380,9 +398,9 @@ const TaskGroup = ({
                       />
                     </TableCell>
 
-                    <TableCell className="p-2.5 border-r border-b dark:border-neutral-700 border-neutral-200  max-w-[180px] truncate">
-                      <span className="text-sm font-medium dark:text-primary text-foreground capitalize flex items-center gap-1.5 transition-colors">
-                        {task.title}
+                    <TableCell className="p-2.5 border-r border-b dark:border-neutral-700 border-neutral-200 max-w-[180px]">
+                      <span className="text-sm font-medium dark:text-primary text-foreground capitalize flex items-center gap-1.5 transition-colors w-full min-w-0">
+                        <span className="truncate">{task.title}</span>
                         {task.isBlocked ? (
                           <Bug className="w-4 h-4 text-red-500/70 shrink-0 ml-auto" />
                         ) : (
@@ -394,8 +412,8 @@ const TaskGroup = ({
                         )}
                       </span>
                     </TableCell>
-                    <TableCell className="p-2.5 border-r border-b dark:border-neutral-700 border-neutral-200">
-                      <p className="text-xs text-muted-foreground dark:group-hover:text-primary group-hover:text-foreground transition-colors line-clamp-1 max-w-[280px] truncate">
+                    <TableCell className="p-2.5 border-r border-b dark:border-neutral-700 border-neutral-200 max-w-[180px]">
+                      <p className="text-xs text-muted-foreground dark:group-hover:text-primary group-hover:text-foreground transition-colors line-clamp-1 max-w-[180px] truncate">
                         {task.description || "No description provided yet..."}
                       </p>
                     </TableCell>
@@ -443,7 +461,7 @@ const TaskGroup = ({
                       {task.assignees && task.assignees.length > 0 ? (
                         <div className="flex items-center justify-center -space-x-2">
                           <TooltipProvider>
-                            {task.assignees.map((person, i) => (
+                            {task.assignees.slice(0, 3).map((person, i) => (
                               <Tooltip key={i}>
                                 <TooltipTrigger asChild>
                                   <Avatar className="w-7 h-7 border-2 border-primary/50 shadow-sm hover:z-10 transition-transform hover:scale-110 cursor-pointer">
@@ -464,6 +482,11 @@ const TaskGroup = ({
                               </Tooltip>
                             ))}
                           </TooltipProvider>
+                          {task.assignees.length > 4 && (
+                            <div className="w-7 h-7 rounded-full border-2 border-primary/50 bg-[#1c1c1c] flex items-center justify-center text-[10px] font-bold text-neutral-400 z-20 shadow-sm">
+                              +{task.assignees.length - 4}
+                            </div>
+                          )}
                         </div>
                       ) : (
                         <div className="flex items-center justify-center w-full">
@@ -570,6 +593,21 @@ const TaskGroup = ({
               )}
             </TableBody>
           </Table>
+          {hasMoreTasks && tasks.length > 0 && (
+            <div className="flex items-center justify-center gap-2 py-3 bg-neutral-900/10 dark:bg-neutral-900/30 border-b border-t dark:border-neutral-800/80 border-neutral-200/80">
+              <span className="text-xs text-muted-foreground">
+                More tasks may exist.
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={onLoadMore}
+                className="text-xs text-blue-500 hover:text-blue-400 hover:bg-blue-500/10 h-7 px-2 rounded-full cursor-pointer"
+              >
+                Load More
+              </Button>
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -590,6 +628,8 @@ export const ListTab = ({
   tagFilter,
   setTagFilter,
   canDelete = false,
+  hasMoreTasks = false,
+  onLoadMore,
 }: {
   tasks: Task[];
   allTasks: Task[];
@@ -604,6 +644,8 @@ export const ListTab = ({
   tagFilter: string | null;
   setTagFilter: (tag: string | null) => void;
   canDelete?: boolean;
+  hasMoreTasks?: boolean;
+  onLoadMore?: () => void;
 }) => {
   const [selectedTask, setSelectedTask] = useState<Task | null>(null);
   const [isSheetOpen, setIsSheetOpen] = useState(false);
@@ -633,6 +675,8 @@ export const ListTab = ({
         setTagFilter={setTagFilter}
         allTasks={allTasks}
         canDelete={canDelete}
+        hasMoreTasks={hasMoreTasks}
+        onLoadMore={onLoadMore}
       />
       <TaskGroup
         title="In Progress"
@@ -651,6 +695,8 @@ export const ListTab = ({
         setTagFilter={setTagFilter}
         allTasks={allTasks}
         canDelete={canDelete}
+        hasMoreTasks={hasMoreTasks}
+        onLoadMore={onLoadMore}
       />
       <TaskGroup
         title="Reviewing"
@@ -669,6 +715,8 @@ export const ListTab = ({
         setTagFilter={setTagFilter}
         allTasks={allTasks}
         canDelete={canDelete}
+        hasMoreTasks={hasMoreTasks}
+        onLoadMore={onLoadMore}
       />
       <TaskGroup
         title="Testing"
@@ -687,6 +735,8 @@ export const ListTab = ({
         setTagFilter={setTagFilter}
         allTasks={allTasks}
         canDelete={canDelete}
+        hasMoreTasks={hasMoreTasks}
+        onLoadMore={onLoadMore}
       />
       <TaskGroup
         title="Completed"
@@ -705,6 +755,8 @@ export const ListTab = ({
         setTagFilter={setTagFilter}
         allTasks={allTasks}
         canDelete={canDelete}
+        hasMoreTasks={hasMoreTasks}
+        onLoadMore={onLoadMore}
       />
 
       <TaskDetailSheet

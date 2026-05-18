@@ -45,7 +45,7 @@ export const SprintBarChart = ({
             <CardTitle className="text-sm font-semibold text-primary flex items-center gap-2">
               <BarChart3 className="w-5 h-5!" /> Sprint Performance Metrics
             </CardTitle>
-            <p className="text-[10px] text-muted-foreground font-medium">
+            <p className="text-xs text-muted-foreground font-medium">
               Sprint duration vs task completion
             </p>
           </div>
@@ -95,7 +95,7 @@ export const SprintBarChart = ({
           <CardTitle className="text-sm font-semibold text-primary flex items-center gap-2">
             <BarChart3 className="w-5 h-5!" /> Sprint Performance Metrics
           </CardTitle>
-          <p className="text-[10px] text-muted-foreground font-medium">
+          <p className="text-xs text-muted-foreground font-medium">
             Sprint duration vs task completion
           </p>
         </div>

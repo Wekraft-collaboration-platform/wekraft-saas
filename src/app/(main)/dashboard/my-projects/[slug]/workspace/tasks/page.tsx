@@ -1,7 +1,7 @@
 "use client";
 
 import { useParams } from "next/navigation";
-import { useState, startTransition, ViewTransition } from "react";
+import { useState, startTransition, ViewTransition, useEffect } from "react";
 import { Id } from "../../../../../../../../convex/_generated/dataModel";
 import { api } from "../../../../../../../../convex/_generated/api";
 import { useQuery } from "convex/react";
@@ -68,6 +68,29 @@ const TaskPage = () => {
   const project = useQuery(api.project.getProjectBySlug, { slug });
   const projectName = project?.projectName;
   const projectInviteLink = project?.inviteLink;
+
+  // Load persistent task limit from sessionStorage once project loaded
+  useEffect(() => {
+    if (typeof window !== "undefined" && project?._id) {
+      const saved = sessionStorage.getItem(`taskLimit_${project._id}`);
+      if (saved) {
+        const parsed = parseInt(saved, 10);
+        if (!isNaN(parsed) && parsed > 0) {
+          setTaskLimit(parsed);
+        }
+      }
+    }
+  }, [project?._id]);
+
+  const handleIncreaseLimit = () => {
+    setTaskLimit((prev) => {
+      const nextLimit = prev + 10;
+      if (project?._id) {
+        sessionStorage.setItem(`taskLimit_${project._id}`, String(nextLimit));
+      }
+      return nextLimit;
+    });
+  };
 
   const tasks = useQuery(
     api.workspace.getTasks,
@@ -346,13 +369,15 @@ const TaskPage = () => {
                 tagFilter={tagFilter}
                 setTagFilter={setTagFilter}
                 canDelete={canDelete}
+                hasMoreTasks={!!hasMoreTasks}
+                onLoadMore={handleIncreaseLimit}
               />
             )}
             {activeTab === "Table" && (
               <TableTab
                 tasks={filteredTasks}
                 allTasks={tasks || []}
-                onLoadMore={() => setTaskLimit((p) => p + 10)}
+                onLoadMore={handleIncreaseLimit}
                 hasMore={!!hasMoreTasks}
                 selectedTaskIds={selectedTaskIds}
                 setSelectedTaskIds={setSelectedTaskIds}
@@ -385,7 +410,7 @@ const TaskPage = () => {
             <Button
               variant="outline"
               size="sm"
-              onClick={() => setTaskLimit((prev) => prev + 10)}
+              onClick={handleIncreaseLimit}
               className="rounded-full px-8 text-xs"
             >
               Load More
