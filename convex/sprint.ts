@@ -1,4 +1,5 @@
 import { mutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { v } from "convex/values";
 
 /**
@@ -577,6 +578,21 @@ export const startSprint = mutation({
       issueIds: currentIssues.map((i) => i._id),
       updatedAt: Date.now(),
     });
+
+    // Notify all project members that the sprint started
+    const project = await ctx.db.get(sprint.projectId);
+    if (project) {
+      await ctx.runMutation(internal.notifications.notifySprintEvent, {
+        actorId: user._id,
+        actorName: user.name ?? "Someone",
+        actorAvatar: user.avatarUrl,
+        projectId: sprint.projectId,
+        projectName: project.projectName,
+        sprintId: args.sprintId as string,
+        sprintName: sprint.sprintName,
+        eventType: "sprint_started",
+      });
+    }
   },
 });
 
@@ -672,6 +688,21 @@ export const completeSprint = mutation({
           updatedAt: Date.now(),
         });
       }
+    }
+
+    // Notify all project members that the sprint is complete
+    const project = await ctx.db.get(sprint.projectId);
+    if (project) {
+      await ctx.runMutation(internal.notifications.notifySprintEvent, {
+        actorId: user._id,
+        actorName: user.name ?? "Someone",
+        actorAvatar: user.avatarUrl,
+        projectId: sprint.projectId,
+        projectName: project.projectName,
+        sprintId: args.sprintId as string,
+        sprintName: sprint.sprintName,
+        eventType: "sprint_completed",
+      });
     }
   },
 });

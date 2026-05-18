@@ -44,21 +44,6 @@ export const ProjectJoinRequests = ({
       toast.success(
         `Request ${action === "accepted" ? "accepted" : "rejected"} successfully`,
       );
-
-      if (action === "accepted") {
-        await fetch("/api/teamspace/notifications/project", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            type: "join",
-            projectId,
-            targetUserId: request.clerkUserId,
-            targetUserName: request.userName,
-            targetUserImage: request.userImage,
-            projectName: projectName,
-          }),
-        }).catch((err) => console.error("Failed to send join notification:", err));
-      }
     } catch (error: any) {
       toast.error(error.data || error.message || "Failed to process request");
       console.error(error);

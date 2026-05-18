@@ -1,4 +1,5 @@
 import { mutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { v } from "convex/values";
 import { getPlanLimits, getActiveUserPlan, PlanType } from "./pricing";
 import { customAlphabet } from "nanoid";
@@ -546,6 +547,15 @@ export const createJoinRequest = mutation({
       updatedAt: Date.now(),
     });
 
+    // Notify project owners/admins about the new join request
+    await ctx.runMutation(internal.notifications.notifyJoinRequest, {
+      requesterId: user._id,
+      requesterName: user.name ?? "Someone",
+      requesterAvatar: user.avatarUrl,
+      projectId: args.projectId,
+      projectName: project.projectName,
+    });
+
     return requestId;
   },
 });
@@ -791,6 +801,27 @@ export const handleJoinRequest = mutation({
       status: args.action,
       updatedAt: Date.now(),
     });
+
+    if (args.action === "accepted") {
+      // Notify power users a new member joined + welcome the requester
+      await ctx.runMutation(internal.notifications.notifyMemberJoined, {
+        actorId: user._id,
+        newMemberId: request.userId,
+        newMemberName: request.userName,
+        newMemberAvatar: request.userImage,
+        projectId: request.projectId,
+        projectName: project.projectName,
+      });
+    } else {
+      // Only notify the requester on rejection
+      await ctx.runMutation(internal.notifications.notifyRequestDecision, {
+        actorId: user._id,
+        requesterId: request.userId,
+        decision: args.action,
+        projectId: request.projectId,
+        projectName: project.projectName,
+      });
+    }
 
     return { success: true };
   },
@@ -1188,6 +1219,15 @@ export const removeMember = mutation({
       await ctx.db.delete(i._id);
     }
 
+    // Notify the removed member
+    await ctx.runMutation(internal.notifications.notifyMemberRemoved, {
+      actorId: user._id,
+      removedMemberId: target.userId,
+      removedMemberName: target.userName,
+      projectId: args.projectId,
+      projectName: project.projectName,
+    });
+
     await ctx.db.delete(args.memberId);
   },
 });
@@ -1247,6 +1287,15 @@ export const leaveProject = mutation({
       await ctx.db.delete(i._id);
     }
 
+    // Notify project owners/admins that a member left
+    await ctx.runMutation(internal.notifications.notifyMemberLeft, {
+      memberId: user._id,
+      memberName: user.name ?? "Someone",
+      memberAvatar: user.avatarUrl,
+      projectId: args.projectId,
+      projectName: project.projectName,
+    });
+
     await ctx.db.delete(membership._id);
     return { success: true };
   },
@@ -1294,6 +1343,15 @@ export const updateMemberRole = mutation({
 
     await ctx.db.patch(args.memberId, {
       AccessRole: args.newRole,
+    });
+
+    // Notify the affected member of the role change
+    await ctx.runMutation(internal.notifications.notifyRoleChanged, {
+      actorId: user._id,
+      memberId: target.userId,
+      newRole: args.newRole,
+      projectId: args.projectId,
+      projectName: project.projectName,
     });
   },
 });

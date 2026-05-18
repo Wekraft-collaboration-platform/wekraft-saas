@@ -1,0 +1,624 @@
+import { internalMutation, mutation, query } from "./_generated/server";
+import { v } from "convex/values";
+import { Id } from "./_generated/dataModel";
+
+// ─── Notification type union (mirrors schema) ────────────────────────────────
+const notificationType = v.union(
+  v.literal("member_joined"),
+  v.literal("member_left"),
+  v.literal("member_removed"),
+  v.literal("join_request"),
+  v.literal("request_accepted"),
+  v.literal("request_rejected"),
+  v.literal("role_changed"),
+  v.literal("mentioned"),
+  v.literal("task_assigned"),
+  v.literal("issue_assigned"),
+  v.literal("task_completed"),
+  v.literal("sprint_started"),
+  v.literal("sprint_completed"),
+  v.literal("critical_issue"),
+);
+
+// ─── Helper: insert one notification record ──────────────────────────────────
+async function insertNotification(
+  ctx: any,
+  payload: {
+    recipientId: Id<"users">;
+    senderId?: Id<"users">;
+    senderName?: string;
+    senderAvatar?: string;
+    projectId?: Id<"projects">;
+    projectName?: string;
+    type: string;
+    body: string;
+    entityId?: string;
+    entityTitle?: string;
+  },
+) {
+  await ctx.db.insert("notifications", {
+    ...payload,
+    isRead: false,
+    createdAt: Date.now(),
+  });
+}
+
+// ─── Helper: get power users (owners + admins) of a project ─────────────────
+async function getPowerUsers(ctx: any, projectId: Id<"projects">) {
+  const members = await ctx.db
+    .query("projectMembers")
+    .withIndex("by_project", (q: any) => q.eq("projectId", projectId))
+    .collect();
+
+  return members.filter(
+    (m: any) => m.AccessRole === "owner" || m.AccessRole === "admin",
+  );
+}
+
+// ─── Helper: fan-out a notification to multiple recipients ──────────────────
+async function fanOut(
+  ctx: any,
+  recipientIds: Id<"users">[],
+  payload: Omit<Parameters<typeof insertNotification>[1], "recipientId">,
+  excludeId?: Id<"users">,
+) {
+  const targets = excludeId
+    ? recipientIds.filter((id) => id !== excludeId)
+    : recipientIds;
+
+  await Promise.all(
+    targets.map((recipientId) =>
+      insertNotification(ctx, { recipientId, ...payload }),
+    ),
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// INTERNAL MUTATIONS — called only from other Convex mutations/actions
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * member_joined
+ * → recipient: the new member (welcome message)
+ * → recipients: all power users (except the actor if they accepted the request)
+ */
+export const notifyMemberJoined = internalMutation({
+  args: {
+    actorId: v.id("users"),          // who performed the action (admin accepting)
+    newMemberId: v.id("users"),      // the person who joined
+    newMemberName: v.string(),
+    newMemberAvatar: v.optional(v.string()),
+    projectId: v.id("projects"),
+    projectName: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const actor = await ctx.db.get(args.actorId);
+
+    // 1. Welcome the new member
+    await insertNotification(ctx, {
+      recipientId: args.newMemberId,
+      senderId: args.actorId,
+      senderName: actor?.name ?? "Team",
+      senderAvatar: actor?.avatarUrl,
+      projectId: args.projectId,
+      projectName: args.projectName,
+      type: "member_joined",
+      body: `Your request to join **${args.projectName}** was accepted. Welcome to the team! 🎉`,
+    });
+
+    // 2. Notify power users (except the actor who accepted it)
+    const powerUsers = await getPowerUsers(ctx, args.projectId);
+    const powerUserIds = powerUsers.map((m: any) => m.userId as Id<"users">);
+
+    await fanOut(
+      ctx,
+      powerUserIds,
+      {
+        senderId: args.newMemberId,
+        senderName: args.newMemberName,
+        senderAvatar: args.newMemberAvatar,
+        projectId: args.projectId,
+        projectName: args.projectName,
+        type: "member_joined",
+        body: `**${args.newMemberName}** joined the project.`,
+      },
+      args.actorId, // don't notify the person who accepted
+    );
+  },
+});
+
+/**
+ * member_left
+ * → recipients: all power users
+ */
+export const notifyMemberLeft = internalMutation({
+  args: {
+    memberId: v.id("users"),
+    memberName: v.string(),
+    memberAvatar: v.optional(v.string()),
+    projectId: v.id("projects"),
+    projectName: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const powerUsers = await getPowerUsers(ctx, args.projectId);
+    const powerUserIds = powerUsers.map((m: any) => m.userId as Id<"users">);
+
+    await fanOut(ctx, powerUserIds, {
+      senderId: args.memberId,
+      senderName: args.memberName,
+      senderAvatar: args.memberAvatar,
+      projectId: args.projectId,
+      projectName: args.projectName,
+      type: "member_left",
+      body: `**${args.memberName}** left the project.`,
+    });
+  },
+});
+
+/**
+ * member_removed
+ * → recipient: the removed member only
+ */
+export const notifyMemberRemoved = internalMutation({
+  args: {
+    actorId: v.id("users"),
+    removedMemberId: v.id("users"),
+    removedMemberName: v.string(),
+    projectId: v.id("projects"),
+    projectName: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const actor = await ctx.db.get(args.actorId);
+
+    await insertNotification(ctx, {
+      recipientId: args.removedMemberId,
+      senderId: args.actorId,
+      senderName: actor?.name ?? "Admin",
+      senderAvatar: actor?.avatarUrl,
+      projectId: args.projectId,
+      projectName: args.projectName,
+      type: "member_removed",
+      body: `You were removed from **${args.projectName}**.`,
+    });
+  },
+});
+
+/**
+ * join_request
+ * → recipients: all power users
+ */
+export const notifyJoinRequest = internalMutation({
+  args: {
+    requesterId: v.id("users"),
+    requesterName: v.string(),
+    requesterAvatar: v.optional(v.string()),
+    projectId: v.id("projects"),
+    projectName: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const powerUsers = await getPowerUsers(ctx, args.projectId);
+    const powerUserIds = powerUsers.map((m: any) => m.userId as Id<"users">);
+
+    await fanOut(ctx, powerUserIds, {
+      senderId: args.requesterId,
+      senderName: args.requesterName,
+      senderAvatar: args.requesterAvatar,
+      projectId: args.projectId,
+      projectName: args.projectName,
+      type: "join_request",
+      body: `**${args.requesterName}** wants to join **${args.projectName}**.`,
+    });
+  },
+});
+
+/**
+ * request_accepted / request_rejected
+ * → recipient: the requester
+ */
+export const notifyRequestDecision = internalMutation({
+  args: {
+    actorId: v.id("users"),
+    requesterId: v.id("users"),
+    decision: v.union(v.literal("accepted"), v.literal("rejected")),
+    projectId: v.id("projects"),
+    projectName: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const actor = await ctx.db.get(args.actorId);
+    const type = args.decision === "accepted" ? "request_accepted" : "request_rejected";
+    const body =
+      args.decision === "accepted"
+        ? `Your request to join **${args.projectName}** was accepted. Welcome! 🎉`
+        : `Your request to join **${args.projectName}** was declined.`;
+
+    await insertNotification(ctx, {
+      recipientId: args.requesterId,
+      senderId: args.actorId,
+      senderName: actor?.name ?? "Admin",
+      senderAvatar: actor?.avatarUrl,
+      projectId: args.projectId,
+      projectName: args.projectName,
+      type,
+      body,
+    });
+  },
+});
+
+/**
+ * role_changed
+ * → recipient: the affected member
+ */
+export const notifyRoleChanged = internalMutation({
+  args: {
+    actorId: v.id("users"),
+    memberId: v.id("users"),
+    newRole: v.string(),
+    projectId: v.id("projects"),
+    projectName: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const actor = await ctx.db.get(args.actorId);
+
+    await insertNotification(ctx, {
+      recipientId: args.memberId,
+      senderId: args.actorId,
+      senderName: actor?.name ?? "Admin",
+      senderAvatar: actor?.avatarUrl,
+      projectId: args.projectId,
+      projectName: args.projectName,
+      type: "role_changed",
+      body: `Your role in **${args.projectName}** was changed to **${args.newRole}**.`,
+    });
+  },
+});
+
+/**
+ * mentioned
+ * → recipient: the mentioned user
+ */
+export const notifyMentioned = internalMutation({
+  args: {
+    actorId: v.id("users"),
+    actorName: v.string(),
+    actorAvatar: v.optional(v.string()),
+    mentionedUserId: v.id("users"),
+    projectId: v.id("projects"),
+    projectName: v.string(),
+    entityId: v.optional(v.string()),
+    entityTitle: v.optional(v.string()),
+    context: v.optional(v.string()), // "task" | "issue"
+  },
+  handler: async (ctx, args) => {
+    // Don't notify if mentioning yourself
+    if (args.actorId === args.mentionedUserId) return;
+
+    const context = args.context ?? "comment";
+    await insertNotification(ctx, {
+      recipientId: args.mentionedUserId,
+      senderId: args.actorId,
+      senderName: args.actorName,
+      senderAvatar: args.actorAvatar,
+      projectId: args.projectId,
+      projectName: args.projectName,
+      type: "mentioned",
+      body: `**${args.actorName}** mentioned you in a ${context} in **${args.projectName}**.`,
+      entityId: args.entityId,
+      entityTitle: args.entityTitle,
+    });
+  },
+});
+
+/**
+ * task_assigned
+ * → recipients: newly assigned users (not the actor)
+ */
+export const notifyTaskAssigned = internalMutation({
+  args: {
+    actorId: v.id("users"),
+    actorName: v.string(),
+    actorAvatar: v.optional(v.string()),
+    assigneeIds: v.array(v.id("users")),
+    projectId: v.id("projects"),
+    projectName: v.string(),
+    taskId: v.string(),
+    taskTitle: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await fanOut(
+      ctx,
+      args.assigneeIds,
+      {
+        senderId: args.actorId,
+        senderName: args.actorName,
+        senderAvatar: args.actorAvatar,
+        projectId: args.projectId,
+        projectName: args.projectName,
+        type: "task_assigned",
+        body: `**${args.actorName}** assigned you to **${args.taskTitle}**.`,
+        entityId: args.taskId,
+        entityTitle: args.taskTitle,
+      },
+      args.actorId,
+    );
+  },
+});
+
+/**
+ * issue_assigned
+ * → recipients: newly assigned users (not the actor)
+ */
+export const notifyIssueAssigned = internalMutation({
+  args: {
+    actorId: v.id("users"),
+    actorName: v.string(),
+    actorAvatar: v.optional(v.string()),
+    assigneeIds: v.array(v.id("users")),
+    projectId: v.id("projects"),
+    projectName: v.string(),
+    issueId: v.string(),
+    issueTitle: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await fanOut(
+      ctx,
+      args.assigneeIds,
+      {
+        senderId: args.actorId,
+        senderName: args.actorName,
+        senderAvatar: args.actorAvatar,
+        projectId: args.projectId,
+        projectName: args.projectName,
+        type: "issue_assigned",
+        body: `**${args.actorName}** assigned you to the issue **${args.issueTitle}**.`,
+        entityId: args.issueId,
+        entityTitle: args.issueTitle,
+      },
+      args.actorId,
+    );
+  },
+});
+
+/**
+ * task_completed
+ * → recipient: the task creator (if different from completer)
+ */
+export const notifyTaskCompleted = internalMutation({
+  args: {
+    actorId: v.id("users"),
+    actorName: v.string(),
+    actorAvatar: v.optional(v.string()),
+    creatorId: v.id("users"),
+    projectId: v.id("projects"),
+    projectName: v.string(),
+    taskId: v.string(),
+    taskTitle: v.string(),
+  },
+  handler: async (ctx, args) => {
+    if (args.actorId === args.creatorId) return; // already knows
+
+    await insertNotification(ctx, {
+      recipientId: args.creatorId,
+      senderId: args.actorId,
+      senderName: args.actorName,
+      senderAvatar: args.actorAvatar,
+      projectId: args.projectId,
+      projectName: args.projectName,
+      type: "task_completed",
+      body: `**${args.actorName}** completed the task **${args.taskTitle}** that you created. ✅`,
+      entityId: args.taskId,
+      entityTitle: args.taskTitle,
+    });
+  },
+});
+
+/**
+ * sprint_started / sprint_completed
+ * → recipients: all project members
+ */
+export const notifySprintEvent = internalMutation({
+  args: {
+    actorId: v.id("users"),
+    actorName: v.string(),
+    actorAvatar: v.optional(v.string()),
+    projectId: v.id("projects"),
+    projectName: v.string(),
+    sprintId: v.string(),
+    sprintName: v.string(),
+    eventType: v.union(v.literal("sprint_started"), v.literal("sprint_completed")),
+  },
+  handler: async (ctx, args) => {
+    const members = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_project", (q: any) => q.eq("projectId", args.projectId))
+      .collect();
+
+    const memberIds = members.map((m: any) => m.userId as Id<"users">);
+    const verb = args.eventType === "sprint_started" ? "started" : "completed";
+    const emoji = args.eventType === "sprint_started" ? "🚀" : "🏁";
+
+    await fanOut(
+      ctx,
+      memberIds,
+      {
+        senderId: args.actorId,
+        senderName: args.actorName,
+        senderAvatar: args.actorAvatar,
+        projectId: args.projectId,
+        projectName: args.projectName,
+        type: args.eventType,
+        body: `**${args.actorName}** ${verb} the sprint **${args.sprintName}** ${emoji}`,
+        entityId: args.sprintId,
+        entityTitle: args.sprintName,
+      },
+      undefined, // notify everyone including the actor
+    );
+  },
+});
+
+/**
+ * critical_issue
+ * → recipients: all power users
+ */
+export const notifyCriticalIssue = internalMutation({
+  args: {
+    actorId: v.id("users"),
+    actorName: v.string(),
+    actorAvatar: v.optional(v.string()),
+    projectId: v.id("projects"),
+    projectName: v.string(),
+    issueId: v.string(),
+    issueTitle: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const powerUsers = await getPowerUsers(ctx, args.projectId);
+    const powerUserIds = powerUsers.map((m: any) => m.userId as Id<"users">);
+
+    await fanOut(
+      ctx,
+      powerUserIds,
+      {
+        senderId: args.actorId,
+        senderName: args.actorName,
+        senderAvatar: args.actorAvatar,
+        projectId: args.projectId,
+        projectName: args.projectName,
+        type: "critical_issue",
+        body: `🔴 **${args.actorName}** reported a critical issue: **${args.issueTitle}** in **${args.projectName}**.`,
+        entityId: args.issueId,
+        entityTitle: args.issueTitle,
+      },
+      undefined,
+    );
+  },
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PUBLIC QUERIES — consumed by the frontend
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Get the 30 most recent notifications for the current user.
+ */
+export const getMyNotifications = query({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("clerkToken", identity.tokenIdentifier))
+      .unique();
+
+    if (!user) return [];
+
+    return await ctx.db
+      .query("notifications")
+      .withIndex("by_recipient", (q) => q.eq("recipientId", user._id))
+      .order("desc")
+      .take(30);
+  },
+});
+
+/**
+ * Count unread notifications for the current user (for the bell badge).
+ */
+export const getUnreadCount = query({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return 0;
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("clerkToken", identity.tokenIdentifier))
+      .unique();
+
+    if (!user) return 0;
+
+    const unread = await ctx.db
+      .query("notifications")
+      .withIndex("by_recipient_unread", (q) =>
+        q.eq("recipientId", user._id).eq("isRead", false),
+      )
+      .collect();
+
+    return unread.length;
+  },
+});
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// PUBLIC MUTATIONS — mark read / clear
+// ═══════════════════════════════════════════════════════════════════════════════
+
+/**
+ * Mark a single notification as read.
+ */
+export const markAsRead = mutation({
+  args: { notificationId: v.id("notifications") },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const notif = await ctx.db.get(args.notificationId);
+    if (!notif) return;
+
+    // Safety: only the recipient can mark it read
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("clerkToken", identity.tokenIdentifier))
+      .unique();
+
+    if (!user || notif.recipientId !== user._id) return;
+
+    await ctx.db.patch(args.notificationId, { isRead: true });
+  },
+});
+
+/**
+ * Mark ALL of the current user's notifications as read.
+ */
+export const markAllAsRead = mutation({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("clerkToken", identity.tokenIdentifier))
+      .unique();
+
+    if (!user) return;
+
+    const unread = await ctx.db
+      .query("notifications")
+      .withIndex("by_recipient_unread", (q) =>
+        q.eq("recipientId", user._id).eq("isRead", false),
+      )
+      .collect();
+
+    await Promise.all(unread.map((n) => ctx.db.patch(n._id, { isRead: true })));
+  },
+});
+
+/**
+ * Delete all notifications for the current user (clear all).
+ */
+export const clearAll = mutation({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("clerkToken", identity.tokenIdentifier))
+      .unique();
+
+    if (!user) return;
+
+    const all = await ctx.db
+      .query("notifications")
+      .withIndex("by_recipient", (q) => q.eq("recipientId", user._id))
+      .collect();
+
+    await Promise.all(all.map((n) => ctx.db.delete(n._id)));
+  },
+});

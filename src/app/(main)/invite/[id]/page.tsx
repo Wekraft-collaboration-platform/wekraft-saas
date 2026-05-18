@@ -63,17 +63,6 @@ export default function InvitePage() {
         source: "invited",
       });
 
-      // Trigger notification for join request
-      await fetch("/api/teamspace/notifications/project", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "join_request",
-          projectId: project._id,
-          projectName: project.projectName,
-        }),
-      }).catch((err) => console.error("Failed to send join_request notification:", err));
-
       toast.success("Join request sent successfully!");
       setIsOpen(false);
       setRequestSent(true);

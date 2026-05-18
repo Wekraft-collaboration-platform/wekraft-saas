@@ -1,5 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 import { paginationOptsValidator } from "convex/server";
 
 // =============================
@@ -81,6 +82,37 @@ export const createIssue = mutation({
           }),
         ),
       );
+
+      // Notify newly assigned users
+      const project = await ctx.db.get(args.projectId);
+      if (project) {
+        await ctx.runMutation(internal.notifications.notifyIssueAssigned, {
+          actorId: user._id,
+          actorName: user.name ?? "Someone",
+          actorAvatar: user.avatarUrl,
+          assigneeIds: assignees.map((a) => a.userId),
+          projectId: args.projectId,
+          projectName: project.projectName,
+          issueId: issueId as string,
+          issueTitle: args.title,
+        });
+      }
+    }
+
+    // Notify power users if this is a critical issue
+    if (args.severity === "critical") {
+      const project = await ctx.db.get(args.projectId);
+      if (project) {
+        await ctx.runMutation(internal.notifications.notifyCriticalIssue, {
+          actorId: user._id,
+          actorName: user.name ?? "Someone",
+          actorAvatar: user.avatarUrl,
+          projectId: args.projectId,
+          projectName: project.projectName,
+          issueId: issueId as string,
+          issueTitle: args.title,
+        });
+      }
     }
 
     return issueId;
@@ -416,6 +448,41 @@ export const createIssueComment = mutation({
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
+
+    // ── @mention detection ───────────────────────────────────────────────
+    const mentionRegex = /@([\w-]+)/g;
+    const mentionedNames = new Set<string>();
+    let match: RegExpExecArray | null;
+    while ((match = mentionRegex.exec(args.comment)) !== null) {
+      mentionedNames.add(match[1].toLowerCase());
+    }
+
+    if (mentionedNames.size > 0) {
+      const issue = await ctx.db.get(args.issueId);
+      if (issue) {
+        const project = await ctx.db.get(issue.projectId);
+        for (const mentionName of mentionedNames) {
+          const mentionedUser = await ctx.db
+            .query("users")
+            .withIndex("by_name", (q) => q.eq("name", mentionName))
+            .unique();
+
+          if (mentionedUser && project) {
+            await ctx.runMutation(internal.notifications.notifyMentioned, {
+              actorId: user._id,
+              actorName: user.name ?? "Someone",
+              actorAvatar: user.avatarUrl,
+              mentionedUserId: mentionedUser._id,
+              projectId: issue.projectId,
+              projectName: project.projectName,
+              entityId: args.issueId as string,
+              entityTitle: issue.title,
+              context: "issue",
+            });
+          }
+        }
+      }
+    }
 
     return commentId;
   },

@@ -66,11 +66,12 @@ export function NotificationCenter({ userId, onSelectChannel }: NotificationCent
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="icon-sm" className="relative group">
-          <Bell className="h-4 w-4" />
+        <Button variant="outline" size="icon-sm" className="relative group hover:bg-accent/50 transition-colors">
+          <Bell className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
           {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 flex h-3.5 w-3.5 items-center justify-center rounded-full bg-red-500 text-[8px] font-bold text-white shadow-sm ring-2 ring-background animate-in zoom-in duration-300">
-              {unreadCount > 9 ? "9+" : unreadCount}
+            <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
+              <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+              <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500 ring-2 ring-background"></span>
             </span>
           )}
         </Button>

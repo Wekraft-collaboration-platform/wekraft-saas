@@ -42,8 +42,6 @@ import {
   CheckSquare,
   AlertCircle,
   CalendarDays,
-  Sparkles,
-  Zap,
   TrendingUp,
   ArrowUpRight,
 } from "lucide-react";
@@ -92,22 +90,6 @@ export default function TeamPage() {
         memberId: removeTarget.id,
         projectId: project._id as Id<"projects">,
       });
-
-      if (removeTarget.clerkUserId) {
-        await fetch("/api/teamspace/notifications/project", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            type: "remove",
-            projectId: project._id,
-            projectName: project.projectName,
-            targetUserId: removeTarget.clerkUserId,
-            targetUserName: removeTarget.name,
-            targetUserImage: removeTarget.userImage,
-          }),
-        }).catch((err) => console.error("Failed to send remove notification:", err));
-      }
-
       toast.success(`${removeTarget.name} removed from project`);
     } catch (e: any) {
       toast.error(e.message || "Failed to remove member");
@@ -121,17 +103,6 @@ export default function TeamPage() {
       await leaveTeam({
         projectId: project._id as Id<"projects">,
       });
-
-      await fetch("/api/teamspace/notifications/project", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          type: "leave",
-          projectId: project._id,
-          projectName: project.projectName,
-        }),
-      }).catch((err) => console.error("Failed to send leave notification:", err));
-
       toast.success("Successfully left the project");
       router.push("/dashboard/my-projects");
     } catch (e: any) {

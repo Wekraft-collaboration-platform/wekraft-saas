@@ -1,5 +1,6 @@
 import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
+import { internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
 
 // =======================================
@@ -81,6 +82,21 @@ export const createTask = mutation({
           }),
         ),
       );
+
+      // Notify assigned members (skip actor)
+      const project = await ctx.db.get(args.projectId);
+      if (project) {
+        await ctx.runMutation(internal.notifications.notifyTaskAssigned, {
+          actorId: user._id,
+          actorName: user.name ?? "Someone",
+          actorAvatar: user.avatarUrl,
+          assigneeIds: assignees.map((a) => a.userId),
+          projectId: args.projectId,
+          projectName: project.projectName,
+          taskId: taskId as string,
+          taskTitle: args.title,
+        });
+      }
     }
 
     return taskId;
@@ -170,6 +186,42 @@ export const createComment = mutation({
       updatedAt: Date.now(),
     });
 
+    // ── @mention detection ──────────────────────────────────────────────────
+    // Parses "@username" patterns and notifies each mentioned user once.
+    const mentionRegex = /@([\w-]+)/g;
+    const mentionedNames = new Set<string>();
+    let match: RegExpExecArray | null;
+    while ((match = mentionRegex.exec(args.comment)) !== null) {
+      mentionedNames.add(match[1].toLowerCase());
+    }
+
+    if (mentionedNames.size > 0) {
+      const task = await ctx.db.get(args.taskId);
+      if (task) {
+        const project = await ctx.db.get(task.projectId);
+        for (const mentionName of mentionedNames) {
+          const mentionedUser = await ctx.db
+            .query("users")
+            .withIndex("by_name", (q) => q.eq("name", mentionName))
+            .unique();
+
+          if (mentionedUser && project) {
+            await ctx.runMutation(internal.notifications.notifyMentioned, {
+              actorId: user._id,
+              actorName: user.name ?? "Someone",
+              actorAvatar: user.avatarUrl,
+              mentionedUserId: mentionedUser._id,
+              projectId: task.projectId,
+              projectName: project.projectName,
+              entityId: args.taskId as string,
+              entityTitle: task.title,
+              context: "task",
+            });
+          }
+        }
+      }
+    }
+
     return commentId;
   },
 });
@@ -228,6 +280,23 @@ export const updateTaskStatus = mutation({
         finalCompletedBy: user._id,
         updatedAt: Date.now(),
       });
+
+      // Notify task creator if they are not the one completing it
+      if (task.createdByUserId && task.createdByUserId !== user._id) {
+        const project = await ctx.db.get(task.projectId);
+        if (project) {
+          await ctx.runMutation(internal.notifications.notifyTaskCompleted, {
+            actorId: user._id,
+            actorName: user.name ?? "Someone",
+            actorAvatar: user.avatarUrl,
+            creatorId: task.createdByUserId,
+            projectId: task.projectId,
+            projectName: project.projectName,
+            taskId: args.taskId as string,
+            taskTitle: task.title,
+          });
+        }
+      }
     } else {
       await ctx.db.patch(args.taskId, {
         status: args.status,
@@ -280,6 +349,35 @@ export const updateTaskAssignees = mutation({
         }),
       ),
     );
+
+    // Notify newly added assignees
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("clerkToken", identity.tokenIdentifier))
+      .unique();
+
+    if (user && args.assignees.length > 0) {
+      const existingIds = new Set(existingAssignees.map((a) => a.userId as string));
+      const newAssigneeIds = args.assignees
+        .map((a) => a.userId)
+        .filter((id) => !existingIds.has(id as string));
+
+      if (newAssigneeIds.length > 0) {
+        const project = await ctx.db.get(task.projectId);
+        if (project) {
+          await ctx.runMutation(internal.notifications.notifyTaskAssigned, {
+            actorId: user._id,
+            actorName: user.name ?? "Someone",
+            actorAvatar: user.avatarUrl,
+            assigneeIds: newAssigneeIds,
+            projectId: task.projectId,
+            projectName: project.projectName,
+            taskId: args.taskId as string,
+            taskTitle: task.title,
+          });
+        }
+      }
+    }
 
     await ctx.db.patch(args.taskId, {
       updatedAt: Date.now(),

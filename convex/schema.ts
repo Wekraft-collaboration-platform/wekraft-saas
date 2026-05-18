@@ -437,4 +437,44 @@ export default defineSchema({
   })
     .index("by_user_announcement", ["userId", "announcementId"])
     .index("by_announcement", ["announcementId"]),
+
+  // ─── Real-time Notifications (Convex-native) ────────────────────────────
+  notifications: defineTable({
+    // Who receives this notification
+    recipientId: v.id("users"),
+    // Who triggered it (null = system)
+    senderId: v.optional(v.id("users")),
+    senderName: v.optional(v.string()),
+    senderAvatar: v.optional(v.string()),
+    // Context
+    projectId: v.optional(v.id("projects")),
+    projectName: v.optional(v.string()),
+    // Event type — maps to the full event matrix
+    type: v.union(
+      v.literal("member_joined"),       // User joins project
+      v.literal("member_left"),          // User leaves project
+      v.literal("member_removed"),       // User is removed
+      v.literal("join_request"),         // New join request submitted
+      v.literal("request_accepted"),     // Request accepted
+      v.literal("request_rejected"),     // Request rejected
+      v.literal("role_changed"),         // Role changed
+      v.literal("mentioned"),            // @mention in comment
+      v.literal("task_assigned"),        // Task assigned to you
+      v.literal("issue_assigned"),       // Issue assigned to you
+      v.literal("task_completed"),       // Task you created was completed
+      v.literal("sprint_started"),       // Sprint started
+      v.literal("sprint_completed"),     // Sprint completed
+      v.literal("critical_issue"),       // Critical issue created
+    ),
+    // Human-readable notification body
+    body: v.string(),
+    // Optional deep-link metadata
+    entityId: v.optional(v.string()),   // taskId / issueId / sprintId as string
+    entityTitle: v.optional(v.string()),
+    // Read state
+    isRead: v.boolean(),
+    createdAt: v.number(),
+  })
+    .index("by_recipient", ["recipientId", "createdAt"])
+    .index("by_recipient_unread", ["recipientId", "isRead"]),
 });

@@ -55,6 +55,17 @@ export async function initTeamspaceDB() {
     // Column already exists — safe to ignore
   }
 
+  // Migration: add type column to ts_notifications if missing
+  try {
+    await turso.execute("ALTER TABLE ts_notifications ADD COLUMN type TEXT;");
+    // Backfill existing rows to default type 'mention'
+    await turso.execute(
+      "UPDATE ts_notifications SET type = 'mention' WHERE type IS NULL;"
+    );
+  } catch (e) {
+    // Column already exists — safe to ignore
+  }
+
   // Enable Turso native row expiry on the expires_at column
   // Turso will automatically delete rows where expires_at < now()
   try {
