@@ -88,9 +88,9 @@ export const CreateTaskDialog = ({
   const [assignedMembers, setAssignedMembers] = useState<
     { userId: Id<"users">; name: string; avatar?: string }[]
   >([]);
-  const [attachments, setAttachments] = useState<{ name: string; url: string }[]>(
-    [],
-  );
+  const [attachments, setAttachments] = useState<
+    { name: string; url: string }[]
+  >([]);
   const [isPending, setIsPending] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
 
@@ -316,58 +316,72 @@ export const CreateTaskDialog = ({
                     : "Assignees"}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200 w-48">
+              <DropdownMenuContent
+                className={cn(
+                  "bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200",
+                  members && members.length >= 4 ? "w-[360px]" : "w-48",
+                )}
+              >
                 <div className="text-xs text-center font-medium p-2 border-b border-accent">
                   Select Members
                 </div>
-                {members?.map((member) => {
-                  const isSelected = assignedMembers.some(
-                    (m) => m.userId === member.userId,
-                  );
-                  return (
-                    <DropdownMenuItem
-                      key={member.userId}
-                      onSelect={(e) => {
-                        e.preventDefault();
-                        if (isSelected) {
-                          setAssignedMembers(
-                            assignedMembers.filter(
-                              (m) => m.userId !== member.userId,
-                            ),
-                          );
-                        } else {
-                          setAssignedMembers([
-                            ...assignedMembers,
-                            {
-                              userId: member.userId,
-                              name: member.userName,
-                              avatar: member.userImage,
-                            },
-                          ]);
-                        }
-                      }}
-                      className="flex items-center gap-2 cursor-pointer"
-                    >
-                      <Avatar className="h-5 w-5">
-                        <AvatarImage src={member.userImage} />
-                        <AvatarFallback className="text-[8px]">
-                          {member.userName[0]}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span
-                        className={cn(
-                          "text-xs",
-                          isSelected && "text-blue-500 font-bold",
-                        )}
+                <div
+                  className={cn(
+                    "p-1.5",
+                    members && members.length >= 4
+                      ? "grid grid-cols-2 gap-1.5"
+                      : "flex flex-col gap-0.5",
+                  )}
+                >
+                  {members?.map((member) => {
+                    const isSelected = assignedMembers.some(
+                      (m) => m.userId === member.userId,
+                    );
+                    return (
+                      <DropdownMenuItem
+                        key={member.userId}
+                        onSelect={(e) => {
+                          e.preventDefault();
+                          if (isSelected) {
+                            setAssignedMembers(
+                              assignedMembers.filter(
+                                (m) => m.userId !== member.userId,
+                              ),
+                            );
+                          } else {
+                            setAssignedMembers([
+                              ...assignedMembers,
+                              {
+                                userId: member.userId,
+                                name: member.userName,
+                                avatar: member.userImage,
+                              },
+                            ]);
+                          }
+                        }}
+                        className="flex items-center gap-2 cursor-pointer p-1.5 rounded-md hover:bg-neutral-800 transition-colors"
                       >
-                        {member.userName}
-                      </span>
-                      {isSelected && (
-                        <Check className="w-3 h-3 ml-auto text-blue-500" />
-                      )}
-                    </DropdownMenuItem>
-                  );
-                })}
+                        <Avatar className="h-5 w-5 shrink-0">
+                          <AvatarImage src={member.userImage} />
+                          <AvatarFallback className="text-[8px]">
+                            {member.userName[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span
+                          className={cn(
+                            "text-xs truncate",
+                            isSelected && "text-blue-500 font-bold",
+                          )}
+                        >
+                          {member.userName}
+                        </span>
+                        {isSelected && (
+                          <Check className="w-3 h-3 ml-auto text-blue-500 shrink-0" />
+                        )}
+                      </DropdownMenuItem>
+                    );
+                  })}
+                </div>
               </DropdownMenuContent>
             </DropdownMenu>
 
@@ -409,14 +423,16 @@ export const CreateTaskDialog = ({
                   selected={date}
                   onSelect={setDate}
                   numberOfMonths={1}
-                  disabled={[
-                    project?.createdAt
-                      ? { before: new Date(project.createdAt) }
-                      : undefined,
-                    projectDetails?.targetDate
-                      ? { after: new Date(projectDetails.targetDate) }
-                      : undefined,
-                  ].filter(Boolean) as any}
+                  disabled={
+                    [
+                      project?.createdAt
+                        ? { before: new Date(project.createdAt) }
+                        : undefined,
+                      projectDetails?.targetDate
+                        ? { after: new Date(projectDetails.targetDate) }
+                        : undefined,
+                    ].filter(Boolean) as any
+                  }
                   className="bg-[#1c1c1c] text-neutral-200"
                 />
               </PopoverContent>
@@ -434,7 +450,11 @@ export const CreateTaskDialog = ({
                 )}
                 disabled={isUploading || project?.ownerAccountType === "free"}
                 onClick={() => document.getElementById("file-upload")?.click()}
-                title={project?.ownerAccountType === "free" ? "Upgrade to Plus to use attachments" : ""}
+                title={
+                  project?.ownerAccountType === "free"
+                    ? "Upgrade to Plus to use attachments"
+                    : ""
+                }
               >
                 {isUploading ? (
                   <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -615,7 +635,6 @@ export const CreateTaskDialog = ({
                             Save
                           </Button>
                         </div>
-                    
                       </div>
                     </div>
                   )}
@@ -691,7 +710,8 @@ export const CreateTaskDialog = ({
           <div>
             {!projectDetails?.targetDate && (
               <span className="text-xs font-medium flex items-center gap-1.5">
-                <AlertCircle className="w-3.5 h-3.5" /> Project deadline is not set! Don't forget to configure it in settings.
+                <AlertCircle className="w-3.5 h-3.5" /> Project deadline is not
+                set! Don't forget to configure it in settings.
               </span>
             )}
           </div>

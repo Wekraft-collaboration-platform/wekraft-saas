@@ -68,20 +68,20 @@ export const EditIssueDialog = ({
   const [open, setOpen] = useState(false);
   const [title, setTitle] = useState(issue.title || "");
   const [description, setDescription] = useState(issue.description || "");
-  const [status, setStatus] = useState<"not opened" | "opened" | "reopened" | "closed">(
-    issue.status || "not opened"
-  );
-  const [severity, setSeverity] = useState<"low" | "medium" | "critical" | null>(
-    issue.severity || null
-  );
-  const [environment, setEnvironment] = useState<"local" | "dev" | "staging" | "production" | null>(
-    issue.environment || null
-  );
+  const [status, setStatus] = useState<
+    "not opened" | "opened" | "reopened" | "closed"
+  >(issue.status || "not opened");
+  const [severity, setSeverity] = useState<
+    "low" | "medium" | "critical" | null
+  >(issue.severity || null);
+  const [environment, setEnvironment] = useState<
+    "local" | "dev" | "staging" | "production" | null
+  >(issue.environment || null);
   const [dueDate, setDueDate] = useState<Date | undefined>(
-    issue.due_date ? new Date(issue.due_date) : undefined
+    issue.due_date ? new Date(issue.due_date) : undefined,
   );
   const [selectedPath, setSelectedPath] = useState<string | null>(
-    issue.fileLinked || null
+    issue.fileLinked || null,
   );
   const [assignedMembers, setAssignedMembers] = useState<
     { userId: Id<"users">; name: string; avatar?: string }[]
@@ -90,7 +90,7 @@ export const EditIssueDialog = ({
       userId: a.userId,
       name: a.name,
       avatar: a.avatar,
-    })) || []
+    })) || [],
   );
   const [isPending, setIsPending] = useState(false);
 
@@ -116,7 +116,7 @@ export const EditIssueDialog = ({
           userId: a.userId,
           name: a.name,
           avatar: a.avatar,
-        })) || []
+        })) || [],
       );
     }
   }, [issue, open]);
@@ -138,11 +138,14 @@ export const EditIssueDialog = ({
         environment: environment || undefined,
         due_date: dueDate?.getTime(),
         fileLinked: selectedPath || undefined,
-        assignees: assignedMembers.length > 0 ? assignedMembers.map(a => ({
-          userId: a.userId,
-          name: a.name,
-          avatar: a.avatar
-        })) : [],
+        assignees:
+          assignedMembers.length > 0
+            ? assignedMembers.map((a) => ({
+                userId: a.userId,
+                name: a.name,
+                avatar: a.avatar,
+              }))
+            : [],
       });
       toast.success("Issue updated successfully");
       setOpen(false);
@@ -193,7 +196,9 @@ export const EditIssueDialog = ({
                     status && "text-blue-400 border-blue-900/40 bg-blue-900/10",
                   )}
                 >
-                  {ISSUE_STATUS_ICONS[status] || <LucideSettings2 className="w-3.5 h-3.5" />}
+                  {ISSUE_STATUS_ICONS[status] || (
+                    <LucideSettings2 className="w-3.5 h-3.5" />
+                  )}
                   <span className="capitalize">{status.replace("-", " ")}</span>
                 </Button>
               </DropdownMenuTrigger>
@@ -224,7 +229,8 @@ export const EditIssueDialog = ({
                   size="sm"
                   className={cn(
                     "h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
-                    severity && "text-blue-400 border-blue-900/40 bg-blue-900/10",
+                    severity &&
+                      "text-blue-400 border-blue-900/40 bg-blue-900/10",
                   )}
                 >
                   {severity ? (
@@ -260,7 +266,8 @@ export const EditIssueDialog = ({
                   size="sm"
                   className={cn(
                     "h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
-                    environment && "text-blue-400 border-blue-900/40 bg-blue-900/10",
+                    environment &&
+                      "text-blue-400 border-blue-900/40 bg-blue-900/10",
                   )}
                 >
                   {environment ? (
@@ -300,7 +307,8 @@ export const EditIssueDialog = ({
                   size="sm"
                   className={cn(
                     "h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
-                    dueDate && "text-blue-400 border-blue-900/40 bg-blue-900/10",
+                    dueDate &&
+                      "text-blue-400 border-blue-900/40 bg-blue-900/10",
                   )}
                 >
                   <CalendarIcon className="w-3.5 h-3.5" />
@@ -320,14 +328,16 @@ export const EditIssueDialog = ({
                   selected={dueDate}
                   onSelect={setDueDate}
                   initialFocus
-                  disabled={[
-                    project?.createdAt
-                      ? { before: new Date(project.createdAt) }
-                      : undefined,
-                    projectDetails?.targetDate
-                      ? { after: new Date(projectDetails.targetDate) }
-                      : undefined,
-                  ].filter(Boolean) as any}
+                  disabled={
+                    [
+                      project?.createdAt
+                        ? { before: new Date(project.createdAt) }
+                        : undefined,
+                      projectDetails?.targetDate
+                        ? { after: new Date(projectDetails.targetDate) }
+                        : undefined,
+                    ].filter(Boolean) as any
+                  }
                   className="bg-[#1c1c1c] text-neutral-200"
                 />
               </PopoverContent>
@@ -341,7 +351,8 @@ export const EditIssueDialog = ({
                   size="sm"
                   className={cn(
                     "h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
-                    selectedPath && "text-blue-400 border-blue-900/50 bg-blue-900/10",
+                    selectedPath &&
+                      "text-blue-400 border-blue-900/50 bg-blue-900/10",
                   )}
                 >
                   <Link2 className="w-3.5 h-3.5" />
@@ -376,58 +387,72 @@ export const EditIssueDialog = ({
                     : "Assignees"}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200 w-48">
+              <DropdownMenuContent
+                className={cn(
+                  "bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200",
+                  members && members.length >= 4 ? "w-[360px]" : "w-48",
+                )}
+              >
                 <div className="text-xs text-center font-medium p-2 border-b border-accent">
                   Select Members
                 </div>
-                {members?.map((member) => {
-                  const isSelected = assignedMembers.some(
-                    (m) => m.userId === member.userId,
-                  );
-                  return (
-                    <DropdownMenuItem
-                      key={member.userId}
-                      onSelect={(e) => {
-                        e.preventDefault();
-                        if (isSelected) {
-                          setAssignedMembers(
-                            assignedMembers.filter(
-                              (m) => m.userId !== member.userId,
-                            ),
-                          );
-                        } else {
-                          setAssignedMembers([
-                            ...assignedMembers,
-                            {
-                              userId: member.userId,
-                              name: member.userName,
-                              avatar: member.userImage,
-                            },
-                          ]);
-                        }
-                      }}
-                      className="flex items-center gap-2 cursor-pointer"
-                    >
-                      <Avatar className="h-5 w-5">
-                        <AvatarImage src={member.userImage} />
-                        <AvatarFallback className="text-[8px]">
-                          {member.userName[0]}
-                        </AvatarFallback>
-                      </Avatar>
-                      <span
-                        className={cn(
-                           "text-xs",
-                           isSelected && "text-blue-500 font-bold",
-                        )}
+                <div
+                  className={cn(
+                    "p-1.5",
+                    members && members.length >= 4
+                      ? "grid grid-cols-2 gap-1.5"
+                      : "flex flex-col gap-0.5",
+                  )}
+                >
+                  {members?.map((member) => {
+                    const isSelected = assignedMembers.some(
+                      (m) => m.userId === member.userId,
+                    );
+                    return (
+                      <DropdownMenuItem
+                        key={member.userId}
+                        onSelect={(e) => {
+                          e.preventDefault();
+                          if (isSelected) {
+                            setAssignedMembers(
+                              assignedMembers.filter(
+                                (m) => m.userId !== member.userId,
+                              ),
+                            );
+                          } else {
+                            setAssignedMembers([
+                              ...assignedMembers,
+                              {
+                                userId: member.userId,
+                                name: member.userName,
+                                avatar: member.userImage,
+                              },
+                            ]);
+                          }
+                        }}
+                        className="flex items-center gap-2 cursor-pointer p-1.5 rounded-md hover:bg-neutral-800 transition-colors"
                       >
-                        {member.userName}
-                      </span>
-                      {isSelected && (
-                        <Check className="w-3 h-3 ml-auto text-blue-500" />
-                      )}
-                    </DropdownMenuItem>
-                  );
-                })}
+                        <Avatar className="h-5 w-5 shrink-0">
+                          <AvatarImage src={member.userImage} />
+                          <AvatarFallback className="text-[8px]">
+                            {member.userName[0]}
+                          </AvatarFallback>
+                        </Avatar>
+                        <span
+                          className={cn(
+                            "text-xs truncate",
+                            isSelected && "text-blue-500 font-bold",
+                          )}
+                        >
+                          {member.userName}
+                        </span>
+                        {isSelected && (
+                          <Check className="w-3 h-3 ml-auto text-blue-500 shrink-0" />
+                        )}
+                      </DropdownMenuItem>
+                    );
+                  })}
+                </div>
               </DropdownMenuContent>
             </DropdownMenu>
           </div>

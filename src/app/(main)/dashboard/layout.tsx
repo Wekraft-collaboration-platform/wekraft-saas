@@ -47,7 +47,6 @@ export default function Layout({
   const isWorkspaceRoute = pathname?.includes("/workspace");
   const slug = params?.slug as string | undefined;
 
-
   useEffect(() => {
     if (isStoreLoading) return;
     if (user === undefined) return;
@@ -116,11 +115,6 @@ export default function Layout({
                       >
                         <Video className="h-4 w-4" />
                       </Button>
-                      <Link href={`/dashboard/my-projects/${slug}`}>
-                        <Button size="icon-sm" variant="outline">
-                          <Home />
-                        </Button>
-                      </Link>
                     </>
                   )}
                 </div>
