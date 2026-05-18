@@ -1,6 +1,6 @@
 "use client";
 
-import { RedirectToSignIn } from "@clerk/nextjs";
+import { RedirectToSignIn, useAuth } from "@clerk/nextjs";
 import { Authenticated, Unauthenticated, useQuery } from "convex/react";
 import { BugPlay, Home, Moon, Share2, SunMedium, Video } from "lucide-react";
 import { useParams, usePathname, useRouter } from "next/navigation";
@@ -20,6 +20,7 @@ import { UserMenu } from "@/modules/dashboard/components/UserMenu";
 import { api } from "../../../../convex/_generated/api";
 import Link from "next/link";
 import { AnnouncementBanner } from "@/modules/dashboard/components/AnnouncementBanner";
+import { NotificationCenter } from "@/modules/workspace/teamspace/NotificationCenter";
 
 export default function Layout({
   children,
@@ -35,6 +36,7 @@ export default function Layout({
   const params = useParams();
 
   const { theme, setTheme } = useTheme();
+  const { userId: clerkUserId } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
 
@@ -44,6 +46,12 @@ export default function Layout({
 
   const isWorkspaceRoute = pathname?.includes("/workspace");
   const slug = params?.slug as string | undefined;
+
+  const handleSelectChannel = (channelId: string, messageId?: string) => {
+    if (slug) {
+      router.push(`/dashboard/my-projects/${slug}/workspace/teamspace?channelId=${channelId}${messageId ? `&messageId=${messageId}` : ""}`);
+    }
+  };
 
   useEffect(() => {
     if (isStoreLoading) return;
@@ -80,6 +88,12 @@ export default function Layout({
                   }}
                 /> */}
                 <div className="flex items-center gap-3">
+                  {clerkUserId && (
+                    <NotificationCenter
+                      userId={clerkUserId}
+                      onSelectChannel={handleSelectChannel}
+                    />
+                  )}
                   <Button
                     size="icon-sm"
                     variant="outline"

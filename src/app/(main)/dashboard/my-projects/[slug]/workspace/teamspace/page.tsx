@@ -6,7 +6,7 @@ import { api } from "../../../../../../../../convex/_generated/api";
 import { TeamspaceView } from "@/modules/workspace/teamspace/TeamspaceView";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSidebar } from "@/components/ui/sidebar";
-import { useEffect, useRef } from "react";
+import { Suspense, useEffect, useRef } from "react";
 
 export default function TeamspacePage() {
   const { setOpen: setSidebarOpen } = useSidebar();
@@ -73,5 +73,13 @@ export default function TeamspacePage() {
     );
   }
 
-  return <TeamspaceView projectSlug={slug} projectId={project._id} />;
+  return (
+    <Suspense fallback={
+      <div className="flex h-[calc(100vh-72px)] items-center justify-center">
+        <Skeleton className="h-8 w-8 rounded-full" />
+      </div>
+    }>
+      <TeamspaceView projectSlug={slug} projectId={project._id} />
+    </Suspense>
+  );
 }

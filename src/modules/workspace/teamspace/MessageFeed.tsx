@@ -54,7 +54,6 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { NotificationCenter } from "./NotificationCenter";
 import { PollBlock } from "./PollBlock";
 import {
   Popover,
@@ -421,15 +420,6 @@ export function MessageFeed({
         <div className="flex items-center gap-4 ml-4 shrink-0">
           <TooltipProvider delayDuration={400}>
             <div className="flex items-center gap-3 text-muted-foreground">
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <NotificationCenter 
-                    userId={currentUserId} 
-                    onSelectChannel={onSelectChannelId}
-                  />
-                </TooltipTrigger>
-                <TooltipContent>Notifications</TooltipContent>
-              </Tooltip>
               <Popover>
                 <Tooltip>
                   <TooltipTrigger asChild>
