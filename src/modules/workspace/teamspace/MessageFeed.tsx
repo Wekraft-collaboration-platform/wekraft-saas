@@ -64,6 +64,9 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useProjectPermissions } from "@/hooks/use-project-permissions";
 import { Id } from "../../../../convex/_generated/dataModel";
+import { useQuery } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
+import { useChannelReads } from "./hooks/useChannelReads";
 
 interface Props {
   channel: Channel | null;
@@ -140,6 +143,12 @@ export function MessageFeed({
     currentUserId,
     currentUserName,
   )
+
+  const projectMembers = useQuery(api.project.getProjectMembers, {
+    projectId: projectId as Id<"projects">,
+  });
+
+  const { reads: channelReads } = useChannelReads(projectId, channel?.id);
 
   // Trigger jumpToMessage when navigated from a notification
   useEffect(() => {
@@ -710,6 +719,8 @@ export function MessageFeed({
                   onPollVote={togglePollVote}
                   onEditPoll={editPoll}
                   highlightTerm={searchQuery}
+                  projectMembers={projectMembers}
+                  channelReads={channelReads}
                 />
               );
             })}

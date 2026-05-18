@@ -23,6 +23,7 @@ import { Message } from "./hooks/useMessages";
 import { PollBlock } from "./PollBlock";
 import { CreatePollDialog } from "./CreatePollDialog";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { getUserColor } from "./lib/utils";
@@ -39,6 +40,7 @@ import {
   FileIcon,
   Download,
   Ban,
+  Eye,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -61,6 +63,12 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { format } from "date-fns";
 import { Textarea } from "@/components/ui/textarea";
 import { toast } from "sonner";
@@ -135,6 +143,8 @@ interface Props {
   onPollVote: (messageId: string, optionId: string) => Promise<void>;
   onEditPoll?: (messageId: string, poll: any) => Promise<void>;
   highlightTerm?: string;
+  projectMembers?: any[];
+  channelReads?: Record<string, number>;
 }
 
 // ── Component ──────────────────────────────────────────────────────────────────
@@ -154,6 +164,8 @@ export function MessageItem({
   onPollVote,
   onEditPoll,
   highlightTerm,
+  projectMembers,
+  channelReads,
 }: Props) {
   const [hovered, setHovered] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -164,6 +176,7 @@ export function MessageItem({
   const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
   const [deleting, setDeleting] = useState(false);
   const [editPollDialogOpen, setEditPollDialogOpen] = useState(false);
+  const [readReceiptsOpen, setReadReceiptsOpen] = useState(false);
 
   // FIX: Sync edit buffer when the message is updated externally (e.g. real-time
   // collaboration) while the user is NOT actively editing.
@@ -712,6 +725,15 @@ export function MessageItem({
                         Edit
                       </DropdownMenuItem>
                     )}
+                    {isOwn && (
+                      <DropdownMenuItem
+                        onClick={() => setReadReceiptsOpen(true)}
+                        className="rounded-lg"
+                      >
+                        <Eye className="h-4 w-4 mr-2 text-muted-foreground" aria-hidden="true" />
+                        Read Receipts
+                      </DropdownMenuItem>
+                    )}
                     {canDelete && (
                       <DropdownMenuItem
                         className="text-destructive focus:text-destructive focus:bg-destructive/10 rounded-lg"
@@ -804,6 +826,99 @@ export function MessageItem({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Read Receipts Dialog */}
+      {isOwn && (
+        <Dialog open={readReceiptsOpen} onOpenChange={setReadReceiptsOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-sm">
+                <Eye className="h-4 w-4 text-blue-500" />
+                Message Details
+              </DialogTitle>
+            </DialogHeader>
+            <div className="py-2">
+              {(() => {
+                if (!readReceiptsOpen) return null;
+
+                const members = projectMembers || [];
+                const reads = channelReads || {};
+                const seenBy = [];
+                const notSeenBy = [];
+
+              for (const member of members) {
+                // Skip the sender themselves
+                if (member.clerkUserId === message.user_id) continue;
+                
+                // Also skip members without clerkUserId
+                if (!member.clerkUserId) continue;
+
+                const lastRead = reads[member.clerkUserId] || 0;
+                if (lastRead >= message.created_at) {
+                  seenBy.push(member);
+                } else {
+                  notSeenBy.push(member);
+                }
+              }
+
+              return (
+                <div className="flex flex-col gap-4">
+                  <div>
+                    <h4 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-2">
+                      Seen By ({seenBy.length})
+                    </h4>
+                    {seenBy.length > 0 ? (
+                      <ScrollArea className="max-h-[150px]">
+                        <div className="flex flex-col gap-2 pr-4">
+                          {seenBy.map((m) => (
+                            <div key={m.userId} className="flex items-center gap-2">
+                              <Avatar className="h-6 w-6">
+                                <AvatarImage src={m.userImage} />
+                                <AvatarFallback className="text-[9px]">
+                                  {m.userName.substring(0, 2).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="text-sm font-medium">{m.userName}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </ScrollArea>
+                    ) : (
+                      <div className="text-xs text-muted-foreground/60 italic">No one has seen this yet.</div>
+                    )}
+                  </div>
+
+                  <div>
+                    <h4 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-2">
+                      Not Seen By ({notSeenBy.length})
+                    </h4>
+                    {notSeenBy.length > 0 ? (
+                      <ScrollArea className="max-h-[150px]">
+                        <div className="flex flex-col gap-2 pr-4 opacity-60">
+                          {notSeenBy.map((m) => (
+                            <div key={m.userId} className="flex items-center gap-2">
+                              <Avatar className="h-6 w-6">
+                                <AvatarImage src={m.userImage} />
+                                <AvatarFallback className="text-[9px]">
+                                  {m.userName.substring(0, 2).toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <span className="text-sm">{m.userName}</span>
+                            </div>
+                          ))}
+                        </div>
+                      </ScrollArea>
+                    ) : (
+                      <div className="text-xs text-muted-foreground/60 italic">Everyone has seen this!</div>
+                    )}
+                  </div>
+                </div>
+              );
+            })()}
+          </div>
+        </DialogContent>
+      </Dialog>
+      )}
     </>
   );
 }

@@ -2,6 +2,53 @@ import { auth } from "@clerk/nextjs/server";
 import { NextRequest, NextResponse } from "next/server";
 import { turso, initTeamspaceDB } from "@/lib/turso";
 import { verifyProjectAccess } from "@/modules/workspace/teamspace/lib/auth";
+import Ably from "ably";
+
+const ably = new Ably.Rest(process.env.ABLY_API_KEY!);
+
+export async function GET(
+  req: NextRequest,
+  { params }: { params: Promise<{ channelId: string }> }
+) {
+  const { userId } = await auth();
+  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { channelId } = await params;
+  if (!channelId) {
+    return NextResponse.json({ error: "channelId required" }, { status: 400 });
+  }
+
+  await initTeamspaceDB();
+
+  // Find project_id for this channel
+  const channelRes = await turso.execute({
+    sql: "SELECT project_id FROM ts_channels WHERE id = ?",
+    args: [channelId],
+  });
+
+  if (channelRes.rows.length === 0) {
+    return NextResponse.json({ error: "Channel not found" }, { status: 404 });
+  }
+
+  const projectId = channelRes.rows[0].project_id as string;
+
+  // --- ACCESS CHECK ---
+  const access = await verifyProjectAccess(userId, projectId);
+  if ("error" in access) return NextResponse.json({ error: access.error }, { status: access.status });
+
+  // Fetch all reads for this channel
+  const readsRes = await turso.execute({
+    sql: "SELECT user_id, last_read_at FROM ts_channel_reads WHERE channel_id = ?",
+    args: [channelId],
+  });
+
+  const reads = readsRes.rows.map((r) => ({
+    userId: r.user_id as string,
+    lastReadAt: r.last_read_at as number,
+  }));
+
+  return NextResponse.json({ reads });
+}
 
 export async function POST(
   req: NextRequest,
@@ -49,6 +96,14 @@ export async function POST(
   await turso.execute({
     sql: "UPDATE ts_notifications SET is_read = 1 WHERE user_id = ? AND channel_id = ? AND type = 'mention'",
     args: [userId, channelId],
+  });
+
+  // 3. Publish to Ably for real-time read receipts sync
+  const channel = ably.channels.get(`project:${projectId}:reads`);
+  await channel.publish("channel.read", {
+    userId,
+    channelId,
+    lastReadAt: now,
   });
 
   return NextResponse.json({ success: true });
