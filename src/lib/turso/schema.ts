@@ -44,6 +44,25 @@ export async function initTeamspaceDB() {
     // Table/Index likely already exists
   }
 
+  // Migration: add expires_at for Turso native row expiry (30-day TTL)
+  try {
+    await turso.execute("ALTER TABLE ts_messages ADD COLUMN expires_at INTEGER;");
+    // Backfill existing rows: expire 30 days from their created_at
+    await turso.execute(
+      "UPDATE ts_messages SET expires_at = created_at + (30 * 24 * 60 * 60 * 1000) WHERE expires_at IS NULL;"
+    );
+  } catch (e) {
+    // Column already exists — safe to ignore
+  }
+
+  // Enable Turso native row expiry on the expires_at column
+  // Turso will automatically delete rows where expires_at < now()
+  try {
+    await turso.execute("PRAGMA turso_enable_expiry = ON;");
+  } catch (e) {
+    // Older libsql versions may not support this — safe to ignore
+  }
+
   if (isDbInitialized) return;
 
   try {
@@ -101,12 +120,13 @@ export async function initTeamspaceDB() {
       user_name        TEXT NOT NULL,
       user_image       TEXT,
       content          TEXT NOT NULL,
-      link_preview     TEXT, -- JSON metadata for unfurled links
-      poll             TEXT, -- JSON metadata for polls
+      link_preview     TEXT,    -- JSON metadata for unfurled links
+      poll             TEXT,    -- JSON metadata for polls
       thread_parent_id TEXT,
       is_pinned        INTEGER NOT NULL DEFAULT 0,
       edited_at        INTEGER,
       created_at       INTEGER NOT NULL,
+      expires_at       INTEGER, -- Unix ms: auto-expiry for 30-day retention (Turso TTL)
       FOREIGN KEY (channel_id) REFERENCES ts_channels(id) ON DELETE CASCADE
     );
     CREATE INDEX IF NOT EXISTS idx_messages_channel ON ts_messages(channel_id, created_at);
