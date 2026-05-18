@@ -54,6 +54,13 @@ const ProjectPage = () => {
     api.project.getProjectMembers,
     project?._id ? { projectId: project._id as Id<"projects"> } : "skip"
   );
+  const requests = useQuery(
+    api.project.getProjectJoinRequests,
+    project?._id ? { projectId: project._id as Id<"projects"> } : "skip"
+  );
+  const pendingRequestsCount = requests
+    ? requests.filter((r) => r.status === "pending").length
+    : 0;
 
   const [isUploading, setIsUploading] = useState(false);
   const [homeTab, setHomeTab] = useState("settings");
@@ -303,11 +310,21 @@ const ProjectPage = () => {
 
             <Button
               size="sm"
-              className="rounded-full px-4! text-[10px]"
+              className="rounded-full px-4! text-[10px] flex items-center gap-1.5"
               variant={homeTab === "requests" ? "default" : "outline"}
               onClick={() => setHomeTab("requests")}
             >
-              Requests <UserPlus />
+              <span>Requests</span>
+              <UserPlus className="w-3.5 h-3.5" />
+              {pendingRequestsCount > 0 && (
+                <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-semibold transition-colors ${
+                  homeTab === "requests"
+                    ? "bg-background text-foreground"
+                    : "bg-primary text-primary-foreground"
+                }`}>
+                  {pendingRequestsCount}
+                </span>
+              )}
             </Button>
 
             <Button

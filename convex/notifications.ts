@@ -686,6 +686,30 @@ export const clearAll = mutation({
 });
 
 /**
+ * Delete a single notification.
+ */
+export const deleteNotification = mutation({
+  args: { notificationId: v.id("notifications") },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const notif = await ctx.db.get(args.notificationId);
+    if (!notif) return;
+
+    // Safety: only the recipient can delete it
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("clerkToken", identity.tokenIdentifier))
+      .unique();
+
+    if (!user || notif.recipientId !== user._id) return;
+
+    await ctx.db.delete(args.notificationId);
+  },
+});
+
+/**
  * Internal mutation to clean up old notifications.
  * Typically scheduled to run daily via cron.
  */
