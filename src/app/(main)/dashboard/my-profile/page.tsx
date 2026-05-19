@@ -9,7 +9,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUserPlan } from "@/hooks/use-user-plan";
 
 import { BioEditor } from "@/modules/profile/components/BioEditor";
-import { GithubStats } from "@/modules/profile/components/DashboardContent";
+import { GithubStats } from "@/modules/profile/components/githubstats";
 
 const MyProfilePage = () => {
   const user = useConvexQuery(api.user.getCurrentUser);
