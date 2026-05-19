@@ -15,9 +15,9 @@ import { SignUpButton } from "@clerk/nextjs";
 const navLinks: { label: string; href: string }[] = [
   { label: "Home", href: "/" },
   { label: "Features", href: "#" },
-  { label: "Pricing", href: "/pricing" },
-  { label: "Reach us", href: "/reach-us" },
-  { label: "Why us?", href: "/why-us" },
+  { label: "Pricing", href: "/web/pricing" },
+  { label: "Reach us", href: "/web/reach-us" },
+  { label: "Why us?", href: "/web/why-us" },
   { label: "Docs", href: "/web/docs" },
 ];
 

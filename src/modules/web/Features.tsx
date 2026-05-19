@@ -80,17 +80,17 @@ const Features = () => {
       {/* badge */}
       <div className="flex items-center justify-center w-fit mx-auto gap-2 px-4 py-1.5 rounded-full border border-blue-500/20 backdrop-blur-md bg-blue-500/5 shadow-[0_0_20px_rgba(59,130,246,0.1)] mb-14">
         <div className="w-1.5 h-1.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.8)] animate-pulse" />
-        <span className="text-sm font-semibold text-blue-300 tracking-wide">
+        <span className="text-sm  text-blue-100 tracking-wide">
           Where productivity feels natural.
         </span>
       </div>
 
-      <div className="max-w-7xl mx-auto border border-accent rounded-2xl p-14 relative mt-14 bg-linear-to-b from-black to-neutral-900">
+      <div className="max-w-7xl mx-auto border border-accent rounded-2xl p-14 relative mt-14 ">
         {/* Header Section - Positioned on the border */}
         <div className="absolute -top-5 left-0 right-0 flex justify-center">
-          <h2 className="relative z-10 inline-block px-10 bg-black text-5xl font-bold text-center tracking-tight leading-[1.1]">
-            <span className="text-white">Project management</span> <br />
-            <span className="text-neutral-500 ">made beautifully simple.</span>
+          <h2 className="relative z-10 inline-block px-10 bg-black text-5xl font-semibold text-center tracking-tight leading-[1.1]">
+            <span className="text-white">nfbeifbekf</span> <br />
+            <span className="text-neutral-400 ">d of eqfkejf.</span>
           </h2>
         </div>
 
@@ -149,8 +149,8 @@ const Features = () => {
 
           {/* Right Side: Image/Preview Area */}
           <div className="relative aspect-video lg:aspect-auto lg:h-[500px] w-full mt-8 lg:mt-0">
-            <div className="absolute inset-0 bg-blue-500/20 blur-[120px] rounded-full pointer-events-none transition-opacity duration-700" />
-            <div className="relative h-full w-full rounded-3xl border border-white/10 overflow-hidden bg-neutral-950 shadow-[0_0_50px_rgba(0,0,0,0.4)] group">
+         
+            <div className="relative h-full w-full rounded-xl border border-white/10 overflow-hidden bg-neutral-950 shadow-[0_0_50px_rgba(0,0,0,0.4)] group">
               <AnimatePresence mode="wait">
                 <motion.div
                   key={activeStep}
