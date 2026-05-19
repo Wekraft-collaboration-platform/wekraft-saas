@@ -63,7 +63,7 @@ import { EnvironmentalSeverityHeatmap } from "@/modules/workspace/workspace-modu
 import { WeeklyVelocityChart } from "@/modules/workspace/workspace-modules/WeeklyVelocityChart";
 import { MemberWorkloadCard } from "@/modules/workspace/workspace-modules/MemberWorkloadCard";
 import { ProjectConfigTab } from "@/modules/workspace/workspace-modules/ProjectConfigTab";
-import { GithubIssuesChartCard } from "@/modules/workspace/workspace-modules/GithubIssuesChartCard";
+import { WeeklyEngagementChartCard } from "@/modules/workspace/workspace-modules/WeeklyEngagementChartCard";
 
 const ProjectWorkspace = () => {
   const params = useParams();
@@ -110,18 +110,6 @@ const ProjectWorkspace = () => {
     projectId ? { projectId: projectId as Id<"projects"> } : "skip",
   );
 
-  // const members = useQuery(
-  //   api.project.getProjectMembers,
-  //   projectId ? { projectId: projectId as Id<"projects"> } : "skip",
-  // );
-  // const events = useQuery(
-  //   api.calendar.getEvents,
-  //   projectId ? { projectId: projectId as Id<"projects"> } : "skip",
-  // );
-  // const scheduler = useQuery(
-  //   api.workspace.getProjectScheduler,
-  //   projectId ? { projectId: projectId as Id<"projects"> } : "skip",
-  // );
   const sprints = useQuery(
     api.sprint.getSprintsByProject,
     projectId ? { projectId: projectId as Id<"projects"> } : "skip",
@@ -423,9 +411,9 @@ const ProjectWorkspace = () => {
                   data={cachedData?.workload}
                 />
 
-                <GithubIssuesChartCard
+                <WeeklyEngagementChartCard
                   projectId={projectId as Id<"projects">}
-                  data={cachedData?.githubIssues}
+                  data={cachedData?.weeklyEngagement}
                 />
               </div>
             )}
