@@ -529,6 +529,8 @@ http.route({
       priority: t.priority ?? "low",
       assigneeId: Array.isArray(t.assignedTo) && t.assignedTo[0] ? (typeof t.assignedTo[0] === "object" ? t.assignedTo[0].userId : t.assignedTo[0]) : (typeof t.assignedTo === "string" ? t.assignedTo : undefined),
       assignee: Array.isArray(t.assignedTo) && t.assignedTo[0] ? (typeof t.assignedTo[0] === "object" ? { id: t.assignedTo[0].userId, name: t.assignedTo[0].name || "Unknown", avatarUrl: t.assignedTo[0].avatar, role: "member" as const, email: "" } : { id: t.assignedTo[0], name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" }) : (typeof t.assignedTo === "string" ? { id: t.assignedTo, name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" } : undefined),
+      assigneeIds: Array.isArray(t.assignedTo) ? t.assignedTo.map((a: any) => typeof a === "object" ? a.userId : a) : (typeof t.assignedTo === "string" ? [t.assignedTo] : []),
+      assignees: Array.isArray(t.assignedTo) ? t.assignedTo.map((a: any) => typeof a === "object" ? { id: a.userId, name: a.name || "Unknown", avatarUrl: a.avatar, role: "member" as const, email: "" } : { id: a, name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" }) : (typeof t.assignedTo === "string" ? [{ id: t.assignedTo, name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" }] : []),
       reporterId: t.createdByUserId,
       createdAt: t.createdAt,
       updatedAt: t.updatedAt,
@@ -561,6 +563,8 @@ http.route({
       priority: priorityMap[i.severity] ?? "medium",
       assigneeId: i.IssueAssignee?.[0]?.userId,
       assignee: i.IssueAssignee?.[0] ? { id: i.IssueAssignee[0].userId, name: i.IssueAssignee[0].name, avatarUrl: i.IssueAssignee[0].avatar, role: "member" as const, email: "" } : undefined,
+      assigneeIds: Array.isArray(i.IssueAssignee) ? i.IssueAssignee.map((a: any) => a.userId) : [],
+      assignees: Array.isArray(i.IssueAssignee) ? i.IssueAssignee.map((a: any) => ({ id: a.userId, name: a.name || "Unknown", avatarUrl: a.avatar, role: "member" as const, email: "" })) : [],
       reporterId: i.createdByUserId,
       createdAt: i.createdAt,
       updatedAt: i.updatedAt,
@@ -674,7 +678,26 @@ http.route({
     try {
       const body = await request.json();
       const updated = await ctx.runMutation(internal.agentTools.updateTaskInternal, { taskId: taskId as any, userId: auth.userId as any, ...body });
-      return new Response(JSON.stringify(updated), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      if (!updated) throw new Error("Task not found after update");
+      const mapped = {
+        id: updated._id,
+        projectId: updated.projectId,
+        sprintId: updated.sprintId,
+        title: updated.title,
+        description: updated.description,
+        status: updated.status,
+        priority: updated.priority ?? "low",
+        assigneeId: Array.isArray(updated.assignedTo) && updated.assignedTo[0] ? (typeof updated.assignedTo[0] === "object" ? updated.assignedTo[0].userId : updated.assignedTo[0]) : (typeof updated.assignedTo === "string" ? updated.assignedTo : undefined),
+        assignee: Array.isArray(updated.assignedTo) && updated.assignedTo[0] ? (typeof updated.assignedTo[0] === "object" ? { id: updated.assignedTo[0].userId, name: updated.assignedTo[0].name || "Unknown", avatarUrl: updated.assignedTo[0].avatar, role: "member" as const, email: "" } : { id: updated.assignedTo[0], name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" }) : (typeof updated.assignedTo === "string" ? { id: updated.assignedTo, name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" } : undefined),
+        assigneeIds: Array.isArray(updated.assignedTo) ? updated.assignedTo.map((a: any) => typeof a === "object" ? a.userId : a) : (typeof updated.assignedTo === "string" ? [updated.assignedTo] : []),
+        assignees: Array.isArray(updated.assignedTo) ? updated.assignedTo.map((a: any) => typeof a === "object" ? { id: a.userId, name: a.name || "Unknown", avatarUrl: a.avatar, role: "member" as const, email: "" } : { id: a, name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" }) : (typeof updated.assignedTo === "string" ? [{ id: updated.assignedTo, name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" }] : []),
+        reporterId: updated.createdByUserId,
+        createdAt: updated.createdAt,
+        updatedAt: updated.updatedAt,
+        isBlocked: updated.isBlocked ?? false,
+        linkWithCodebase: updated.linkWithCodebase ?? null,
+      };
+      return new Response(JSON.stringify(mapped), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
     } catch (e: any) {
       return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
     }
@@ -693,7 +716,21 @@ http.route({
     try {
       const body = await request.json();
       const updated = await ctx.runMutation(internal.agentTools.updateIssueInternal, { issueId: issueId as any, userId: auth.userId as any, ...body });
-      return new Response(JSON.stringify(updated), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      if (!updated) throw new Error("Issue not found after update");
+      const priorityMap: Record<string, string> = { critical: "critical", medium: "medium", low: "low" };
+      const mapped = {
+        id: updated._id,
+        projectId: updated.projectId,
+        title: updated.title,
+        description: updated.description,
+        status: updated.status,
+        taskId: updated.taskId,
+        priority: priorityMap[updated.severity || ""] ?? "medium",
+        reporterId: updated.createdByUserId,
+        createdAt: updated.createdAt,
+        updatedAt: updated.updatedAt,
+      };
+      return new Response(JSON.stringify(mapped), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
     } catch (e: any) {
       return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
     }

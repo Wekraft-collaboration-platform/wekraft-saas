@@ -682,7 +682,24 @@ export const getProjectTasksFull = internalQuery({
     if (args.sprintId) {
       tasks = tasks.filter((t) => t.sprintId === args.sprintId);
     }
-    return tasks;
+    const taskAssignees = await ctx.db
+      .query("taskAssignees")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
+    return tasks.map((t) => {
+      const assigneesForTask = taskAssignees
+        .filter((a) => a.taskId === t._id)
+        .map((a) => ({
+          userId: a.userId,
+          name: a.name,
+          avatar: a.avatar,
+        }));
+      return {
+        ...t,
+        assignedTo: assigneesForTask,
+      };
+    });
   },
 });
 
@@ -856,6 +873,7 @@ export const createTaskInternal = internalMutation({
     type: v.optional(v.any()),
     linkWithCodebase: v.optional(v.any()),
     assigneeId: v.optional(v.any()),
+    assigneeIds: v.optional(v.any()),
     isBlocked: v.optional(v.boolean()),
     labels: v.optional(v.any()),
     dueDate: v.optional(v.any()),
@@ -863,7 +881,7 @@ export const createTaskInternal = internalMutation({
     userId: v.id("users"),
   },
   handler: async (ctx, args) => {
-    const { userId, sprintId, assigneeId, labels, dueDate, estimatedHours, ...rest } = args;
+    const { userId, sprintId, assigneeId, assigneeIds, labels, dueDate, estimatedHours, ...rest } = args;
     
     const cleanRest: any = {};
     for (const [k, val] of Object.entries(rest)) {
@@ -872,7 +890,12 @@ export const createTaskInternal = internalMutation({
       }
     }
     
-    if (assigneeId) {
+    if (Array.isArray(assigneeIds) && assigneeIds.length > 0) {
+      const users = await Promise.all(assigneeIds.map(id => ctx.db.get(id as any)));
+      cleanRest.assignedTo = users.filter(u => u !== null).map((u: any) => ({
+        userId: u._id, name: u.name || "Unknown", avatar: u.avatarUrl
+      }));
+    } else if (assigneeId) {
       const user = await ctx.db.get(assigneeId as any) as any;
       if (user) {
         cleanRest.assignedTo = [{ userId: user._id, name: user.name || "Unknown", avatar: user.avatarUrl }];
@@ -889,6 +912,21 @@ export const createTaskInternal = internalMutation({
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
+
+    if (cleanRest.assignedTo && cleanRest.assignedTo.length > 0) {
+      await Promise.all(
+        cleanRest.assignedTo.map((assignee: any) =>
+          ctx.db.insert("taskAssignees", {
+            taskId: taskId,
+            userId: assignee.userId,
+            name: assignee.name,
+            avatar: assignee.avatar,
+            projectId: args.projectId,
+          })
+        )
+      );
+    }
+
     return taskId;
   }
 });
@@ -905,6 +943,7 @@ export const updateTaskInternal = internalMutation({
     type: v.optional(v.any()),
     linkWithCodebase: v.optional(v.any()),
     assigneeId: v.optional(v.any()),
+    assigneeIds: v.optional(v.any()),
     isBlocked: v.optional(v.boolean()),
     sprintId: v.optional(v.any()),
     labels: v.optional(v.any()),
@@ -919,6 +958,17 @@ export const updateTaskInternal = internalMutation({
     
     let patchData: any = { updatedAt: Date.now() };
     for (const [k, val] of Object.entries(updates)) {
+      if (k === "assigneeIds") {
+        if (Array.isArray(val) && val.length > 0) {
+          const users = await Promise.all(val.map(id => ctx.db.get(id as any)));
+          patchData.assignedTo = users.filter(u => u !== null).map((u: any) => ({
+            userId: u._id, name: u.name || "Unknown", avatar: u.avatarUrl
+          }));
+        } else if (Array.isArray(val) && val.length === 0) {
+          patchData.assignedTo = [];
+        }
+        continue;
+      }
       if (k === "assigneeId") {
         if (val) {
           const user = await ctx.db.get(val as any) as any;
@@ -926,7 +976,7 @@ export const updateTaskInternal = internalMutation({
             patchData.assignedTo = [{ userId: user._id, name: user.name || "Unknown", avatar: user.avatarUrl }];
           }
         } else if (val === "" || val === null) {
-          patchData.assignedTo = undefined; // Clears the assignee
+          patchData.assignedTo = [];
         }
         continue;
       }
@@ -939,7 +989,36 @@ export const updateTaskInternal = internalMutation({
     }
     
     await ctx.db.patch(taskId, patchData);
+
+    if (patchData.assignedTo !== undefined) {
+      const existingAssignees = await ctx.db
+        .query("taskAssignees")
+        .withIndex("by_task", (q) => q.eq("taskId", taskId))
+        .collect();
+      await Promise.all(existingAssignees.map(a => ctx.db.delete(a._id)));
+
+      if (patchData.assignedTo && patchData.assignedTo.length > 0) {
+        await Promise.all(
+          patchData.assignedTo.map((assignee: any) =>
+            ctx.db.insert("taskAssignees", {
+              taskId: taskId,
+              userId: assignee.userId,
+              name: assignee.name,
+              avatar: assignee.avatar,
+              projectId: task.projectId,
+            })
+          )
+        );
+      }
+    }
+
     const updatedTask = await ctx.db.get(taskId);
+    if (updatedTask && patchData.assignedTo !== undefined) {
+      return {
+        ...updatedTask,
+        assignedTo: patchData.assignedTo
+      };
+    }
     return updatedTask;
   }
 });

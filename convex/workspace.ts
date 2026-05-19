@@ -380,6 +380,7 @@ export const updateTaskAssignees = mutation({
     }
 
     await ctx.db.patch(args.taskId, {
+      assignedTo: args.assignees,
       updatedAt: Date.now(),
     });
   },
