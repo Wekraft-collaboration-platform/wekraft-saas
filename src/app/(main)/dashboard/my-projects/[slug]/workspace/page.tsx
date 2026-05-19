@@ -63,6 +63,7 @@ import { EnvironmentalSeverityHeatmap } from "@/modules/workspace/workspace-modu
 import { WeeklyVelocityChart } from "@/modules/workspace/workspace-modules/WeeklyVelocityChart";
 import { MemberWorkloadCard } from "@/modules/workspace/workspace-modules/MemberWorkloadCard";
 import { ProjectConfigTab } from "@/modules/workspace/workspace-modules/ProjectConfigTab";
+import { GithubIssuesChartCard } from "@/modules/workspace/workspace-modules/GithubIssuesChartCard";
 
 const ProjectWorkspace = () => {
   const params = useParams();
@@ -420,6 +421,11 @@ const ProjectWorkspace = () => {
                 <MemberWorkloadCard
                   projectId={projectId as Id<"projects">}
                   data={cachedData?.workload}
+                />
+
+                <GithubIssuesChartCard
+                  projectId={projectId as Id<"projects">}
+                  data={cachedData?.githubIssues}
                 />
               </div>
             )}

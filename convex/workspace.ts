@@ -1085,3 +1085,42 @@ export const getMemberWorkload = query({
       .slice(0, 15);
   },
 });
+
+// =============================================
+// GET IMPORTED GITHUB ISSUES
+// =============================================
+export const getImportedGithubIssues = query({
+  args: {
+    projectId: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    const issues = await ctx.db
+      .query("issues")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .filter((q) => q.eq(q.field("type"), "github"))
+      .collect();
+
+    const enrichedIssues = await Promise.all(
+      issues.map(async (issue) => {
+        const assignees = await ctx.db
+          .query("issueAssignees")
+          .withIndex("by_issue", (q) => q.eq("issueId", issue._id))
+          .collect();
+
+        return {
+          _id: issue._id,
+          title: issue.title,
+          status: issue.status,
+          githubIssueUrl: issue.githubIssueUrl,
+          assignees: assignees.map((a) => ({
+            userId: a.userId,
+            name: a.name,
+            avatar: a.avatar,
+          })),
+        };
+      })
+    );
+
+    return enrichedIssues;
+  },
+});

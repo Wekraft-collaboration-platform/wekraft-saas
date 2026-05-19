@@ -36,6 +36,7 @@ export interface DashboardAnalyticsData {
     low: number;
     total: number;
   }[];
+  githubIssues: any[];
   lastUpdated: number;
 }
 
@@ -69,7 +70,7 @@ export async function GET(req: NextRequest) {
 
   // 2. Cache miss or force refresh — fetch from Convex
   try {
-    const [contributions, sprints, heatmap, velocity, workload] =
+    const [contributions, sprints, heatmap, velocity, workload, githubIssues] =
       await Promise.all([
         fetchQuery(api.workspace.getProjectContributions, { projectId }),
         fetchQuery(api.sprint.getSprintsByProject, { projectId }),
@@ -78,6 +79,7 @@ export async function GET(req: NextRequest) {
         }),
         fetchQuery(api.workspace.getWeeklyVelocity, { projectId }),
         fetchQuery(api.workspace.getMemberWorkload, { projectId }),
+        fetchQuery(api.workspace.getImportedGithubIssues, { projectId }),
       ]);
 
     const data: DashboardAnalyticsData = {
@@ -86,6 +88,7 @@ export async function GET(req: NextRequest) {
       heatmap: heatmap as any,
       velocity: velocity as any,
       workload: workload as any,
+      githubIssues: githubIssues as any,
       lastUpdated: Date.now(),
     };
 

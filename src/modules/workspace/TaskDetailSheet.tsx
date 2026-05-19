@@ -523,16 +523,19 @@ export const TaskDetailSheet = ({
                         : format(currentTask.updatedAt, "d MMMM, yyyy")}
                     </span>
                   </p>
-                  <div className="flex items-center gap-2 border-l border-primary/60 pl-4">
+                  <div className="flex items-center gap-2 border-l border-primary/60 pl-4 shrink-0">
                     <span className="text-[10px] text-muted-foreground">
                       By:
                     </span>
-                    <Avatar className="w-5 h-5 border border-emerald-500/30">
+                    <Avatar className="w-7 h-7 border border-emerald-500/30">
                       <AvatarImage src={completer?.avatarUrl || ""} />
-                      <AvatarFallback className="text-[8px] bg-muted text-muted-foreground">
-                        {completer?.name?.[0] || "?"}
+                      <AvatarFallback className="text-[10px] bg-muted text-muted-foreground font-bold">
+                        {completer?.name?.[0]?.toUpperCase() || "?"}
                       </AvatarFallback>
                     </Avatar>
+                    <span className="text-xs text-primary truncate max-w-[120px]">
+                      {completer?.name || "Loading..."}
+                    </span>
                   </div>
                 </div>
               ) : (
