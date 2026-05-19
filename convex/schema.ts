@@ -168,7 +168,18 @@ export default defineSchema({
     linkWithCodebase: v.optional(v.string()),
     projectId: v.id("projects"),
     createdByUserId: v.id("users"),
-
+    assignedTo: v.optional(
+      v.union(
+        v.array(
+          v.object({
+            userId: v.id("users"),
+            name: v.string(),
+            avatar: v.optional(v.string()),
+          }),
+        ),
+        v.any(), // Fallback for legacy data
+      )
+    ),
     sprintId: v.optional(v.id("sprints")),
     attachments: v.optional(
       v.array(
@@ -237,6 +248,18 @@ export default defineSchema({
     taskId: v.optional(v.id("tasks")), // if its from task.
     projectId: v.id("projects"),
     createdByUserId: v.id("users"),
+    IssueAssignee: v.optional(
+      v.union(
+        v.array(
+          v.object({
+            userId: v.id("users"),
+            name: v.string(),
+            avatar: v.optional(v.string()),
+          }),
+        ),
+        v.any() // Fallback for legacy data
+      )
+    ),
     sprintId: v.optional(v.id("sprints")), // exluded closed issues
     // Insights
     finalCompletedAt: v.optional(v.number()),

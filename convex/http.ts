@@ -412,4 +412,292 @@ http.route({
   }),
 });
 
+const CORS_HEADERS = {
+  "Access-Control-Allow-Origin": "*",
+  "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
+  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Wekraft-Client",
+};
+
+async function authenticateRequest(
+  ctx: any,
+  request: Request
+): Promise<
+  | { ok: true; userId: string; apiKeyId: string; user: any }
+  | { ok: false; response: Response }
+> {
+  const authHeader = request.headers.get("Authorization");
+  if (!authHeader || !authHeader.startsWith("Bearer ")) {
+    return { ok: false, response: new Response(JSON.stringify({ error: "Missing or invalid Authorization header" }), { status: 401, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }) };
+  }
+  const apiKey = authHeader.slice(7);
+  const authResult = await ctx.runQuery(internal.agentTools.authenticateApiKey, { apiKey });
+  if (!authResult) {
+    return { ok: false, response: new Response(JSON.stringify({ error: "Invalid or revoked API key" }), { status: 401, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }) };
+  }
+  ctx.runMutation(internal.agentTools.touchApiKeyLastUsed, { apiKeyId: authResult.apiKeyId });
+  return { ok: true, userId: authResult.id, apiKeyId: authResult.apiKeyId, user: authResult };
+}
+
+["/ext/projects", "/ext/tasks", "/ext/sprints", "/ext/issues", "/ext/team", "/ext/me"].forEach((path) => {
+  http.route({
+    path,
+    method: "OPTIONS",
+    handler: httpAction(async () => new Response(null, { status: 204, headers: CORS_HEADERS })),
+  });
+});
+
+http.route({
+  pathPrefix: "/ext/tasks/",
+  method: "OPTIONS",
+  handler: httpAction(async () => new Response(null, { status: 204, headers: CORS_HEADERS })),
+});
+
+http.route({
+  pathPrefix: "/ext/issues/",
+  method: "OPTIONS",
+  handler: httpAction(async () => new Response(null, { status: 204, headers: CORS_HEADERS })),
+});
+
+http.route({
+  path: "/ext/me",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const auth = await authenticateRequest(ctx, request);
+    if (!auth.ok) return auth.response;
+    return new Response(JSON.stringify(auth.user), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+  }),
+});
+
+http.route({
+  path: "/ext/projects",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const auth = await authenticateRequest(ctx, request);
+    if (!auth.ok) return auth.response;
+    const projects = await ctx.runQuery(internal.agentTools.getUserProjectsFull, { userId: auth.userId as any });
+    const mapped = (projects ?? []).map((p: any) => ({
+      id: p._id,
+      name: p.projectName,
+      ownerId: p.ownerId,
+      description: p.description,
+      status: p.projectWorkStatus,
+      repoFullName: p.repoFullName,
+    }));
+    return new Response(JSON.stringify(mapped), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+  }),
+});
+
+http.route({
+  path: "/ext/sprints",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const auth = await authenticateRequest(ctx, request);
+    if (!auth.ok) return auth.response;
+    const url = new URL(request.url);
+    const projectId = url.searchParams.get("projectId");
+    if (!projectId) return new Response(JSON.stringify({ error: "projectId required" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    const sprints = await ctx.runQuery(internal.agentTools.getProjectSprintsFull, { projectId: projectId as any });
+    const mapped = (sprints ?? []).map((s: any) => ({
+      id: s._id,
+      name: s.name,
+      status: s.status,
+      startDate: s.startDate,
+      endDate: s.endDate,
+    }));
+    return new Response(JSON.stringify(mapped), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+  }),
+});
+
+http.route({
+  path: "/ext/tasks",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const auth = await authenticateRequest(ctx, request);
+    if (!auth.ok) return auth.response;
+    const url = new URL(request.url);
+    const projectId = url.searchParams.get("projectId");
+    if (!projectId) return new Response(JSON.stringify({ error: "projectId required" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    const sprintId = url.searchParams.get("sprintId") || undefined;
+    const tasks = await ctx.runQuery(internal.agentTools.getProjectTasksFull, { projectId: projectId as any, sprintId: sprintId as any });
+    const mapped = (tasks ?? []).map((t: any) => ({
+      id: t._id,
+      projectId: t.projectId,
+      sprintId: t.sprintId,
+      title: t.title,
+      description: t.description,
+      status: t.status,
+      priority: t.priority ?? "low",
+      assigneeId: Array.isArray(t.assignedTo) && t.assignedTo[0] ? (typeof t.assignedTo[0] === "object" ? t.assignedTo[0].userId : t.assignedTo[0]) : (typeof t.assignedTo === "string" ? t.assignedTo : undefined),
+      assignee: Array.isArray(t.assignedTo) && t.assignedTo[0] ? (typeof t.assignedTo[0] === "object" ? { id: t.assignedTo[0].userId, name: t.assignedTo[0].name || "Unknown", avatarUrl: t.assignedTo[0].avatar, role: "member" as const, email: "" } : { id: t.assignedTo[0], name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" }) : (typeof t.assignedTo === "string" ? { id: t.assignedTo, name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" } : undefined),
+      reporterId: t.createdByUserId,
+      createdAt: t.createdAt,
+      updatedAt: t.updatedAt,
+      isBlocked: t.isBlocked ?? false,
+      linkWithCodebase: t.linkWithCodebase ?? null,
+    }));
+    return new Response(JSON.stringify(mapped), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+  }),
+});
+
+http.route({
+  path: "/ext/issues",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const auth = await authenticateRequest(ctx, request);
+    if (!auth.ok) return auth.response;
+    const url = new URL(request.url);
+    const projectId = url.searchParams.get("projectId");
+    if (!projectId) return new Response(JSON.stringify({ error: "projectId required" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    const issues = await ctx.runQuery(internal.agentTools.getProjectIssuesFull, { projectId: projectId as any });
+    const activeIssues = (issues ?? []).filter((i: any) => i.status !== "closed");
+    const priorityMap: Record<string, string> = { critical: "critical", medium: "medium", low: "low" };
+    const mapped = activeIssues.map((i: any) => ({
+      id: i._id,
+      projectId: i.projectId,
+      title: i.title,
+      description: i.description,
+      status: i.status,
+      taskId: i.taskId,
+      priority: priorityMap[i.severity] ?? "medium",
+      assigneeId: i.IssueAssignee?.[0]?.userId,
+      assignee: i.IssueAssignee?.[0] ? { id: i.IssueAssignee[0].userId, name: i.IssueAssignee[0].name, avatarUrl: i.IssueAssignee[0].avatar, role: "member" as const, email: "" } : undefined,
+      reporterId: i.createdByUserId,
+      createdAt: i.createdAt,
+      updatedAt: i.updatedAt,
+    }));
+    return new Response(JSON.stringify(mapped), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+  }),
+});
+
+http.route({
+  path: "/ext/team",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const auth = await authenticateRequest(ctx, request);
+    if (!auth.ok) return auth.response;
+    const url = new URL(request.url);
+    const projectId = url.searchParams.get("projectId");
+    if (!projectId) return new Response(JSON.stringify({ error: "projectId required" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    const members = await ctx.runQuery(internal.agentTools.getProjectMembersFull, { projectId: projectId as any });
+    const mapped = (members ?? []).map((m: any) => ({
+      id: m._id,
+      userId: m.userId,
+      user: { id: m.userId, name: m.userName ?? "Unknown", avatarUrl: m.userImage, role: m.AccessRole ?? "member", email: "" },
+      role: m.AccessRole ?? "member",
+    }));
+    return new Response(JSON.stringify(mapped), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+  }),
+});
+
+http.route({
+  pathPrefix: "/ext/tasks/",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const auth = await authenticateRequest(ctx, request);
+    if (!auth.ok) return auth.response;
+    const url = new URL(request.url);
+    const taskId = url.pathname.replace(/^\/ext\/tasks\//, "").split("/")[0];
+    const action = url.pathname.replace(/^\/ext\/tasks\//, "").split("/")[1];
+    if (!taskId || action !== "mark-as-issue") {
+      return new Response(JSON.stringify({ error: "Invalid path" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    }
+    try {
+      const issueId = await ctx.runMutation(internal.agentTools.markTaskAsIssueInternal, { taskId: taskId as any, userId: auth.userId as any });
+      return new Response(JSON.stringify({ success: true, issueId }), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    } catch (e: any) {
+      return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    }
+  }),
+});
+
+http.route({
+  pathPrefix: "/ext/tasks/",
+  method: "DELETE",
+  handler: httpAction(async (ctx, request) => {
+    const auth = await authenticateRequest(ctx, request);
+    if (!auth.ok) return auth.response;
+    const url = new URL(request.url);
+    const taskId = url.pathname.replace(/^\/ext\/tasks\//, "").split("/")[0];
+    if (!taskId) return new Response(JSON.stringify({ error: "Missing taskId" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    try {
+      await ctx.runMutation(internal.agentTools.deleteTaskInternal, { taskId: taskId as any, userId: auth.userId as any });
+      return new Response(JSON.stringify({ success: true, taskId }), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    } catch (e: any) {
+      return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    }
+  }),
+});
+
+http.route({
+  pathPrefix: "/ext/issues/",
+  method: "DELETE",
+  handler: httpAction(async (ctx, request) => {
+    const auth = await authenticateRequest(ctx, request);
+    if (!auth.ok) return auth.response;
+    const url = new URL(request.url);
+    const issueId = url.pathname.replace(/^\/ext\/issues\//, "").split("/")[0];
+    if (!issueId) return new Response(JSON.stringify({ error: "Missing issueId" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    try {
+      await ctx.runMutation(internal.agentTools.deleteIssueInternal, { issueId: issueId as any, userId: auth.userId as any });
+      return new Response(JSON.stringify({ success: true, issueId }), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    } catch (e: any) {
+      return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    }
+  }),
+});
+
+http.route({
+  path: "/ext/tasks",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const auth = await authenticateRequest(ctx, request);
+    if (!auth.ok) return auth.response;
+    try {
+      const body = await request.json();
+      const taskId = await ctx.runMutation(internal.agentTools.createTaskInternal, { ...body, userId: auth.userId as any });
+      return new Response(JSON.stringify({ id: taskId }), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    } catch (e: any) {
+      return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    }
+  }),
+});
+
+http.route({
+  pathPrefix: "/ext/tasks/",
+  method: "PATCH",
+  handler: httpAction(async (ctx, request) => {
+    const auth = await authenticateRequest(ctx, request);
+    if (!auth.ok) return auth.response;
+    const url = new URL(request.url);
+    const taskId = url.pathname.replace(/^\/ext\/tasks\//, "").split("/")[0];
+    if (!taskId) return new Response(JSON.stringify({ error: "Missing taskId" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    try {
+      const body = await request.json();
+      const updated = await ctx.runMutation(internal.agentTools.updateTaskInternal, { taskId: taskId as any, userId: auth.userId as any, ...body });
+      return new Response(JSON.stringify(updated), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    } catch (e: any) {
+      return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    }
+  }),
+});
+
+http.route({
+  pathPrefix: "/ext/issues/",
+  method: "PATCH",
+  handler: httpAction(async (ctx, request) => {
+    const auth = await authenticateRequest(ctx, request);
+    if (!auth.ok) return auth.response;
+    const url = new URL(request.url);
+    const issueId = url.pathname.replace(/^\/ext\/issues\//, "").split("/")[0];
+    if (!issueId) return new Response(JSON.stringify({ error: "Missing issueId" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    try {
+      const body = await request.json();
+      const updated = await ctx.runMutation(internal.agentTools.updateIssueInternal, { issueId: issueId as any, userId: auth.userId as any, ...body });
+      return new Response(JSON.stringify(updated), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    } catch (e: any) {
+      return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    }
+  }),
+});
+
 export default http;

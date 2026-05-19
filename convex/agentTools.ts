@@ -670,3 +670,333 @@ export const getUserStandup = internalQuery({
     };
   },
 });
+
+/** Get all tasks for a project */
+export const getProjectTasksFull = internalQuery({
+  args: { projectId: v.id("projects"), sprintId: v.optional(v.id("sprints")) },
+  handler: async (ctx, args) => {
+    let tasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+    if (args.sprintId) {
+      tasks = tasks.filter((t) => t.sprintId === args.sprintId);
+    }
+    return tasks;
+  },
+});
+
+/** Get all issues for a project */
+export const getProjectIssuesFull = internalQuery({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("issues")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+  },
+});
+
+/** Get all members for a project */
+export const getProjectMembersFull = internalQuery({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("projectMembers")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+  },
+});
+
+/** Authenticate an API key */
+export const authenticateApiKey = internalQuery({
+  args: { apiKey: v.string() },
+  handler: async (ctx, args) => {
+    const keyRecord = await ctx.db
+      .query("userApiKeys")
+      .withIndex("by_key", (q) => q.eq("key", args.apiKey))
+      .unique();
+    if (!keyRecord) return null;
+    const user = await ctx.db.get(keyRecord.userId);
+    if (!user) return null;
+    return {
+      id: user._id,
+      name: user.name ?? "Unknown",
+      email: (user as any).email,
+      accountType: (user as any).accountType,
+      avatarUrl: user.avatarUrl,
+      apiKeyId: keyRecord._id,
+    };
+  },
+});
+
+/** Touch API Key Last Used */
+export const touchApiKeyLastUsed = internalMutation({
+  args: { apiKeyId: v.id("userApiKeys") },
+  handler: async () => {
+    // No-op since lastUsedAt is not in schema
+  },
+});
+
+/** Mark Task As Issue */
+export const markTaskAsIssueInternal = internalMutation({
+  args: { taskId: v.id("tasks"), userId: v.id("users") },
+  handler: async (ctx, args) => {
+    const task = await ctx.db.get(args.taskId);
+    if (!task) throw new Error("Task not found");
+    await ctx.db.patch(args.taskId, { isBlocked: true, updatedAt: Date.now() });
+    const issueId = await ctx.db.insert("issues", {
+      title: task.title,
+      description: task.description,
+      fileLinked: task.linkWithCodebase,
+      status: "not opened",
+      type: "task-issue",
+      projectId: task.projectId,
+      taskId: task._id,
+      createdByUserId: args.userId,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+    const taskAssignees = await ctx.db
+      .query("taskAssignees")
+      .withIndex("by_task", (q) => q.eq("taskId", args.taskId))
+      .collect();
+    await Promise.all(
+      taskAssignees.map((a) =>
+        ctx.db.insert("issueAssignees", {
+          issueId,
+          userId: a.userId,
+          name: a.name,
+          avatar: a.avatar,
+          projectId: task.projectId,
+        })
+      )
+    );
+    return issueId;
+  },
+});
+
+/** Delete Task */
+export const deleteTaskInternal = internalMutation({
+  args: { taskId: v.id("tasks"), userId: v.id("users") },
+  handler: async (ctx, args) => {
+    const task = await ctx.db.get(args.taskId);
+    if (!task) throw new Error("Task not found");
+    const assignees = await ctx.db
+      .query("taskAssignees")
+      .withIndex("by_task", (q) => q.eq("taskId", args.taskId))
+      .collect();
+    await Promise.all(assignees.map((a) => ctx.db.delete(a._id)));
+    const comments = await ctx.db
+      .query("taskComments")
+      .withIndex("by_task", (q) => q.eq("taskId", args.taskId))
+      .collect();
+    await Promise.all(comments.map((c) => ctx.db.delete(c._id)));
+    const linkedIssues = await ctx.db
+      .query("issues")
+      .withIndex("by_task", (q) => q.eq("taskId", args.taskId))
+      .collect();
+    await Promise.all(
+      linkedIssues.map(async (issue) => {
+        const issueAssignees = await ctx.db
+          .query("issueAssignees")
+          .withIndex("by_issue", (q) => q.eq("issueId", issue._id))
+          .collect();
+        await Promise.all(issueAssignees.map((ia) => ctx.db.delete(ia._id)));
+        const issueComments = await ctx.db
+          .query("issueComments")
+          .withIndex("by_issue", (q) => q.eq("issueId", issue._id))
+          .collect();
+        await Promise.all(issueComments.map((ic) => ctx.db.delete(ic._id)));
+        await ctx.db.delete(issue._id);
+      })
+    );
+    await ctx.db.delete(args.taskId);
+    return args.taskId;
+  },
+});
+
+/** Delete Issue */
+export const deleteIssueInternal = internalMutation({
+  args: { issueId: v.id("issues"), userId: v.id("users") },
+  handler: async (ctx, args) => {
+    const issue = await ctx.db.get(args.issueId);
+    if (!issue) throw new Error("Issue not found");
+    const assignees = await ctx.db
+      .query("issueAssignees")
+      .withIndex("by_issue", (q) => q.eq("issueId", args.issueId))
+      .collect();
+    await Promise.all(assignees.map((a) => ctx.db.delete(a._id)));
+    const comments = await ctx.db
+      .query("issueComments")
+      .withIndex("by_issue", (q) => q.eq("issueId", args.issueId))
+      .collect();
+    await Promise.all(comments.map((c) => ctx.db.delete(c._id)));
+    if (issue.type === "task-issue" && issue.taskId) {
+      const linkedTask = await ctx.db.get(issue.taskId);
+      if (linkedTask && linkedTask.isBlocked) {
+        await ctx.db.patch(issue.taskId, { isBlocked: false, updatedAt: Date.now() });
+      }
+    }
+    await ctx.db.delete(args.issueId);
+    return args.issueId;
+  },
+});
+
+/** Create Task */
+export const createTaskInternal = internalMutation({
+  args: {
+    projectId: v.id("projects"),
+    title: v.string(),
+    description: v.optional(v.any()),
+    status: v.optional(v.string()),
+    priority: v.optional(v.string()),
+    sprintId: v.optional(v.any()),
+    estimation: v.optional(v.any()),
+    type: v.optional(v.any()),
+    linkWithCodebase: v.optional(v.any()),
+    assigneeId: v.optional(v.any()),
+    isBlocked: v.optional(v.boolean()),
+    labels: v.optional(v.any()),
+    dueDate: v.optional(v.any()),
+    estimatedHours: v.optional(v.any()),
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    const { userId, sprintId, assigneeId, labels, dueDate, estimatedHours, ...rest } = args;
+    
+    const cleanRest: any = {};
+    for (const [k, val] of Object.entries(rest)) {
+      if (val !== null && val !== undefined) {
+        cleanRest[k] = val;
+      }
+    }
+    
+    if (assigneeId) {
+      const user = await ctx.db.get(assigneeId as any) as any;
+      if (user) {
+        cleanRest.assignedTo = [{ userId: user._id, name: user.name || "Unknown", avatar: user.avatarUrl }];
+      }
+    }
+
+    const taskId = await ctx.db.insert("tasks", {
+      ...cleanRest,
+      status: (rest.status as any) || "not started",
+      priority: (rest.priority as any) || "medium",
+      sprintId: sprintId ? (sprintId as any) : undefined,
+      createdByUserId: userId,
+      estimation: rest.estimation || { startDate: Date.now(), endDate: Date.now() + 86400000 },
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+    return taskId;
+  }
+});
+
+/** Update Task */
+export const updateTaskInternal = internalMutation({
+  args: {
+    taskId: v.id("tasks"),
+    title: v.optional(v.string()),
+    description: v.optional(v.any()),
+    status: v.optional(v.string()),
+    priority: v.optional(v.string()),
+    estimation: v.optional(v.any()),
+    type: v.optional(v.any()),
+    linkWithCodebase: v.optional(v.any()),
+    assigneeId: v.optional(v.any()),
+    isBlocked: v.optional(v.boolean()),
+    sprintId: v.optional(v.any()),
+    labels: v.optional(v.any()),
+    dueDate: v.optional(v.any()),
+    estimatedHours: v.optional(v.any()),
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    const { taskId, userId, labels, dueDate, estimatedHours, ...updates } = args;
+    const task = await ctx.db.get(taskId);
+    if (!task) throw new Error("Task not found");
+    
+    let patchData: any = { updatedAt: Date.now() };
+    for (const [k, val] of Object.entries(updates)) {
+      if (k === "assigneeId") {
+        if (val) {
+          const user = await ctx.db.get(val as any) as any;
+          if (user) {
+            patchData.assignedTo = [{ userId: user._id, name: user.name || "Unknown", avatar: user.avatarUrl }];
+          }
+        } else if (val === "" || val === null) {
+          patchData.assignedTo = undefined; // Clears the assignee
+        }
+        continue;
+      }
+
+      if (val === null) {
+        patchData[k] = undefined;
+      } else if (val !== undefined) {
+        patchData[k] = val;
+      }
+    }
+    
+    await ctx.db.patch(taskId, patchData);
+    const updatedTask = await ctx.db.get(taskId);
+    return updatedTask;
+  }
+});
+
+/** Update Issue */
+export const updateIssueInternal = internalMutation({
+  args: {
+    issueId: v.id("issues"),
+    title: v.optional(v.string()),
+    description: v.optional(v.string()),
+    status: v.optional(v.string()),
+    priority: v.optional(v.string()),
+    userId: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    const { issueId, userId, ...updates } = args;
+    const issue = await ctx.db.get(issueId);
+    if (!issue) throw new Error("Issue not found");
+    
+    let patchData: any = { updatedAt: Date.now() };
+    if (updates.title !== undefined) patchData.title = updates.title;
+    if (updates.description !== undefined) patchData.description = updates.description;
+    if (updates.status !== undefined) patchData.status = updates.status;
+    if (updates.priority !== undefined) patchData.severity = updates.priority; // map priority to severity
+    
+    await ctx.db.patch(issueId, patchData);
+    
+    if (updates.status === "closed" && issue.taskId && issue.type === "task-issue") {
+       await ctx.db.patch(issue.taskId, { isBlocked: false, updatedAt: Date.now() });
+    }
+    const updatedIssue = await ctx.db.get(issueId);
+    return updatedIssue;
+  }
+});
+
+/** Get all projects for a user */
+export const getUserProjectsFull = internalQuery({
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
+    const memberRecords = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .collect();
+    const projects = await Promise.all(
+      memberRecords.map((m) => ctx.db.get(m.projectId))
+    );
+    return projects.filter((p) => p !== null);
+  },
+});
+
+/** Get all sprints for a project */
+export const getProjectSprintsFull = internalQuery({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, args) => {
+    return await ctx.db
+      .query("sprints")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+  },
+});
