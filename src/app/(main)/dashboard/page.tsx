@@ -138,8 +138,8 @@ export default function DashboardPage() {
             </div>
 
             {/* Notifications Feed Header */}
-            <div className="px-4 py-2.5 border-b border-border/40 bg-muted/5 shrink-0 flex items-center justify-between">
-              <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/80 flex items-center gap-1.5">
+            <div className="px-4 py-2.5 border-b border-border bg-muted shrink-0 flex items-center justify-between">
+              <h3 className="text-sm text-muted-foreground flex items-center gap-1.5">
                 <Bell className="h-3.5 w-3.5 text-primary" />
                 Recent Notifications
               </h3>
@@ -174,7 +174,7 @@ export default function DashboardPage() {
                   <p className="text-xs font-medium text-foreground/75">
                     All caught up!
                   </p>
-                  <p className="text-[11px] text-muted-foreground/60 mt-1 max-w-[200px]">
+                  <p className="text-[11px] text-muted-foreground/60 mt-1 max-w-50">
                     You have no recent notifications or announcements.
                   </p>
                 </div>
@@ -218,23 +218,30 @@ export default function DashboardPage() {
 
                       {/* Content details */}
                       <div className="flex-1 min-w-0 pr-12">
-                        {notif.projectName && (
-                          <div className="flex items-center gap-1.5 mb-1">
-                            <span className="inline-flex items-center gap-1 text-[9px] font-semibold text-primary/80 bg-primary/5 px-1.5 py-0.5 rounded border border-primary/10 tracking-wide">
-                              <FolderKanban className="h-2.5 w-2.5 shrink-0" />
-                              <span className="truncate max-w-[150px]">
-                                {notif.projectName}
+                        <div className="flex items-center justify-between">
+                          {notif.projectName && (
+                            <div className="flex items-center gap-1.5 mb-1">
+                              <span className="inline-flex items-center gap-1 text-[9px] font-semibold text-primary/80 bg-primary/5 px-1.5 py-0.5 rounded border border-primary/10 tracking-wide">
+                                <FolderKanban className="h-2.5 w-2.5 shrink-0" />
+                                <span className="truncate max-w-[150px]">
+                                  {notif.projectName}
+                                </span>
                               </span>
-                            </span>
+                            </div>
+                          )}
+                          <div className="flex items-center gap-2 text-[10px] text-muted-foreground">
+                            <Clock className="h-3 w-3 shrink-0" />
+                            <span>{timeAgo(notif.createdAt)}</span>
                           </div>
-                        )}
+                        </div>
+
                         <p className="text-[12px] leading-relaxed text-muted-foreground/90 font-normal">
                           {renderNotificationBody(notif.body)}
                         </p>
-                        <div className="flex items-center gap-2 mt-1.5 text-[10px] text-muted-foreground/50">
+                        {/* <div className="flex items-center gap-2 mt-1.5 text-[10px] text-muted-foreground/50">
                           <Clock className="h-3 w-3 shrink-0" />
                           <span>{timeAgo(notif.createdAt)}</span>
-                        </div>
+                        </div> */}
                       </div>
 
                       {/* Floating actions */}

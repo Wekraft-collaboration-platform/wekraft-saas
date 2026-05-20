@@ -28,6 +28,7 @@ import {
   Table,
   Settings2,
   Plus,
+  AlertCircle,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { format } from "date-fns";
@@ -36,6 +37,14 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import {
+  DropdownMenu,
+  DropdownMenuTrigger,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+} from "@/components/ui/dropdown-menu";
 import { Calendar } from "@/components/ui/calendar";
 import { toast } from "sonner";
 import {
@@ -185,6 +194,7 @@ const ProjectWorkspace = () => {
 
   return (
     <div className="p-6">
+      {/* max-w-420 mx-auto */}
       <header className="flex items-start justify-between flex-none">
         <div className="space-y-2">
           <div className="flex items-center gap-2 mb-2"></div>
@@ -223,7 +233,7 @@ const ProjectWorkspace = () => {
       {/* TOP STATS CARDS */}
       <section className="grid grid-cols-3 gap-6 mt-10">
         {/* Project Deadline Card */}
-        <Card className="p-3! overflow-hidden shadow-sm dark:bg-accent/20 bg-card dark:border-accent border-accent/50">
+        <Card className="p-3! overflow-hidden shadow-sm dark:bg-sidebar bg-card dark:border-accent border-accent/50">
           <CardHeader className="px-0 flex flex-row items-center justify-between">
             <CardTitle className="text-sm flex items-center gap-2">
               <AudioLines className="w-5 h-5!" /> Track Your Project
@@ -238,8 +248,8 @@ const ProjectWorkspace = () => {
             </Button>
           </CardHeader>
           <CardContent>
-            <div className="flex justify-between items-end my-3">
-              <p className="text-[10px] tracking-wide text-muted-foreground ">
+            <div className="flex justify-between items-end my-2.5">
+              <p className="text-sm tracking-wide text-muted-foreground ">
                 Days Remaining
               </p>
               <p className="text-base font-inter tracking-tight">
@@ -251,45 +261,97 @@ const ProjectWorkspace = () => {
               className="h-4.5! bg-blue-100/50 dark:bg-accent [&>div]:bg-blue-500 transition-all duration-500"
             />
           </CardContent>
-          <CardFooter className="flex flex-col items-start gap-2 border-t pt-4">
-            <div className="flex flex-col items-start gap-3 text-xs text-muted-foreground w-full">
-              <div className="flex items-center gap-1.5">
-                <Clock3 className="w-3 h-3! " /> Created :
-                <span className="font-semibold ">
-                  {createdAt ? format(createdAt, "PPP") : "---"}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-1.5">
-                  <FlagTriangleRight className="w-3 h-3! -ml-1" /> Deadline :
-                  <span className="font-semibold ">
-                    {deadline ? format(deadline, "PPP") : "Not Set"}
+          <CardFooter className="flex flex-col items-start gap-3 border-t pt-5! px-2!">
+            <div className="flex flex-col gap-4 w-full">
+              {/* Duration Dates Flex Container */}
+              <div className="flex items-center justify-around w-full gap-4 py-1 text-xs text-muted-foreground border bg-muted rounded-md p-2">
+                {/* Created Date */}
+                <div className="flex flex-col items-center gap-0.5 text-center">
+                  <span className="flex items-center gap-1 text-xs  text-muted-foreground ">
+                    <Clock3 className="w-3 h-3 text-muted-foreground" /> Created
+                  </span>
+                  <span className="font-medium text-foreground">
+                    {createdAt ? format(createdAt, "PPP") : "---"}
                   </span>
                 </div>
 
+                {/* Vertical Divider */}
+                <div className="h-6 w-px bg-accent" />
+
+                {/* Deadline Date */}
+                <div className="flex flex-col items-center gap-0.5 text-center">
+                  <span className="flex items-center gap-1 text-[10px]  font-medium text-muted-foreground ">
+                    <FlagTriangleRight className="w-3 h-3 text-muted-foreground" /> Deadline
+                  </span>
+                  <span className="font-medium text-foreground">
+                    {deadline ? format(deadline, "PPP") : "Not Set"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex w-full items-center justify-between px-2">
+                {/* Deadline button */}
                 <Button
                   size="sm"
-                  variant={"outline"}
+                  variant="outline"
                   onClick={() => setIsDeadlineDialogOpen(true)}
                   disabled={!isOwner}
                   className={cn(
-                    "text-[11px] dark:bg-muted! bg-muted/20",
+                    "text-[10px]",
                     isOwner ? "cursor-pointer" : "cursor-not-allowed opacity-50"
                   )}
                 >
                   Change <ClockFading className="w-3 h-3!" />
                 </Button>
-                {projectId && (
-                  <SetTargetDateDialog
-                    isOpen={isDeadlineDialogOpen}
-                    onOpenChange={setIsDeadlineDialogOpen}
-                    projectId={projectId as Id<"projects">}
-                    projectName={project?.projectName}
-                    projectCreatedAt={project.createdAt}
-                  />
-                )}
+
+                {/* Alerts Dropdown Button */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={!isOwner}
+                      className={cn(
+                        "text-[10px]",
+                        isOwner ? "cursor-pointer" : "cursor-not-allowed opacity-50"
+                      )}
+                    >
+                      Set Alerts <AlertCircle className="w-3 h-3!" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuLabel className="text-[11px] font-semibold text-muted-foreground">Project Alerts</DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="cursor-pointer text-xs">
+                      <span>25% Duration Reached</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer text-xs">
+                      <span>50% Duration Reached</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer text-xs">
+                      <span>75% Duration Reached</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer text-xs">
+                      <span>90% Duration Reached</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="cursor-pointer text-xs text-primary focus:text-primary">
+                      <span>+ Custom Alert...</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
+
+              {projectId && (
+                <SetTargetDateDialog
+                  isOpen={isDeadlineDialogOpen}
+                  onOpenChange={setIsDeadlineDialogOpen}
+                  projectId={projectId as Id<"projects">}
+                  projectName={project?.projectName}
+                  projectCreatedAt={project.createdAt}
+                />
+              )}
             </div>
           </CardFooter>
         </Card>
@@ -387,7 +449,7 @@ const ProjectWorkspace = () => {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-6 px-2">
+              <div className="grid grid-cols-2 gap-x-10 gap-y-6 px-5">
                 <TeamContributionRadarCard
                   projectId={projectId as Id<"projects">}
                   data={cachedData?.contributions}
