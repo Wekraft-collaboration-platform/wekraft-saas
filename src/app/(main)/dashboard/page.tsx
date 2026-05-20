@@ -7,31 +7,24 @@ import { Doc, Id } from "../../../../convex/_generated/dataModel";
 import { useRouter } from "next/navigation";
 import {
   Check,
-  CheckCheck,
   Trash2,
   FolderKanban,
   Bell,
   CheckCircle2,
   Circle,
-  Github,
-  Calendar,
   Clock,
-  Zap,
-  HardDrive,
-  Users,
   Compass,
-  ArrowRight,
-  TrendingUp,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { cn } from "@/lib/utils";
 import {
   NOTIFICATION_ICONS,
   getNotificationRedirectUrl,
   renderNotificationBody,
 } from "@/lib/static-store";
+import { UpcomingDeadlines } from "@/modules/dashboard/components/UpcomingDeadlines";
+import { UpcomingEvents } from "@/modules/dashboard/components/UpcomingEvents";
 
 // ─── Utility: human-readable relative time ─────────────────────────────────
 function timeAgo(ts: number): string {
@@ -84,29 +77,29 @@ export default function DashboardPage() {
   return (
     <div className="w-full bg-background min-h-full p-6 text-foreground">
       {/* Parent Divided */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start max-w-7xl mx-auto">
-        
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start ">
+
         {/* Left Side (Main Content: Notifications and Upcoming Events) */}
         <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-2 gap-8">
-          
+
           {/* Left Side Column: Notifications Card */}
-          <div className="flex flex-col rounded-2xl border border-border bg-sidebar shadow-sm h-[600px] overflow-hidden">
+          <div className="flex flex-col rounded-lg border border-border bg-sidebar shadow-md h-135 overflow-hidden">
             {/* Onboarding Guide Top Section */}
             <div className="p-5 border-b border-border/40 bg-muted/10 shrink-0">
               <div className="flex items-center justify-between mb-3">
-                <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/80 flex items-center gap-1.5">
-                  <Compass className="h-3.5 w-3.5 text-primary" />
+                <h3 className="text-base font-medium text-muted-foreground flex items-center gap-1.5">
+                  <Compass className="h-4 w-4 text-primary" />
                   Getting Started
                 </h3>
                 <span className="text-[11px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
                   {activeCount} of {STATIC_STEPS.length} completed
                 </span>
               </div>
-              
+
               {/* Progress bar */}
-              <div className="w-full h-1.5 bg-muted/50 rounded-full overflow-hidden mb-4">
+              <div className="w-full h-2.5 bg-muted/50 rounded-full overflow-hidden mb-4">
                 <div
-                  className="h-full bg-gradient-to-r from-primary to-violet-500 transition-all duration-500 ease-out"
+                  className="h-full bg-linear-to-r from-primary to-blue-500 transition-all duration-500 ease-out"
                   style={{ width: `${progressPercent}%` }}
                 />
               </div>
@@ -132,8 +125,8 @@ export default function DashboardPage() {
                         className={cn(
                           "text-[12.5px] transition-all duration-200 tracking-wide font-normal",
                           isCompleted
-                            ? "text-muted-foreground/40 line-through decoration-muted-foreground/30"
-                            : "text-foreground/75 group-hover:text-foreground",
+                            ? "text-muted-foreground/70 line-through decoration-muted-foreground/60"
+                            : "text-foreground group-hover:text-foreground",
                         )}
                       >
                         {step.text}
@@ -145,13 +138,13 @@ export default function DashboardPage() {
             </div>
 
             {/* Notifications Feed Header */}
-            <div className="px-5 py-3.5 border-b border-border/40 bg-muted/5 shrink-0 flex items-center justify-between">
+            <div className="px-4 py-2.5 border-b border-border/40 bg-muted/5 shrink-0 flex items-center justify-between">
               <h3 className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/80 flex items-center gap-1.5">
-                <Bell className="h-3.5 w-3.5 text-violet-500" />
+                <Bell className="h-3.5 w-3.5 text-primary" />
                 Recent Notifications
               </h3>
               {notifications && notifications.filter((n) => !n.isRead).length > 0 && (
-                <span className="text-[10px] font-semibold bg-violet-500/10 text-violet-500 px-2 py-0.5 rounded-full border border-violet-500/10">
+                <span className="text-[10px] font-semibold bg-primary/10 text-primary px-2 py-0.5 rounded-full border border-primary/10">
                   {notifications.filter((n) => !n.isRead).length} Unread
                 </span>
               )}
@@ -163,7 +156,7 @@ export default function DashboardPage() {
                 // Loading Skeleton
                 <div className="flex flex-col divide-y divide-border/10">
                   {Array.from({ length: 4 }).map((_, i) => (
-                    <div key={i} className="flex items-start gap-3.5 px-5 py-4 animate-pulse">
+                    <div key={i} className="flex items-start gap-3 px-4 py-2.5 animate-pulse">
                       <div className="h-7 w-7 rounded-full bg-muted/40 shrink-0" />
                       <div className="flex-1 space-y-2.5">
                         <div className="h-3 bg-muted/40 rounded w-full" />
@@ -199,9 +192,9 @@ export default function DashboardPage() {
                         router.push(redirectUrl);
                       }}
                       className={cn(
-                        "group relative flex items-start gap-3.5 px-5 py-3.5 cursor-pointer transition-all duration-200",
-                        "hover:bg-accent/30 bg-background/5",
-                        !notif.isRead && "bg-primary/[0.015] border-l-2 border-l-primary",
+                        "group relative flex items-start gap-3 px-4 py-2 cursor-pointer transition-all duration-200",
+                        "hover:bg-accent/30",
+                        !notif.isRead && "bg-primary/[0.015]",
                       )}
                     >
                       {/* Avatar or Event Emoji */}
@@ -280,17 +273,18 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Right Side Column (Left-Side portion): Upcoming deadlines & events placeholder */}
-          <div className="flex flex-col h-full min-h-[250px] items-center justify-center p-6 border border-border bg-sidebar/40 rounded-2xl text-center text-muted-foreground/50 text-xs">
-            upcoming events & deadlines: this will come here future todo
+          {/* Middle Column: Upcoming Deadlines & Upcoming Events */}
+          <div className="flex flex-col gap-6 h-135">
+            <UpcomingDeadlines />
+            <UpcomingEvents />
           </div>
 
         </div>
 
         {/* Right Side (Sidebar: Usage, Account, Cloud storage, Advertisements) */}
         <div className="lg:col-span-4">
-          <div className="flex flex-col h-full min-h-[250px] items-center justify-center p-6 border border-border bg-sidebar/40 rounded-2xl text-center text-muted-foreground/50 text-xs">
-            user account, cloud storage & usage: this will come here future todo
+          <div className="flex flex-col h-full min-h-[250px] items-center justify-center p-6 border border-border bg-card dark:bg-sidebar rounded-2xl text-center text-muted-foreground/50 text-xs">
+            user account, cloud storage &amp; usage: this will come here future todo
           </div>
         </div>
 

@@ -105,3 +105,77 @@ export const deleteEvent = mutation({
     await ctx.db.delete(args.id);
   },
 });
+
+// ====================================
+// GET UPCOMING EVENTS (WITHIN 7 DAYS)
+// ====================================
+export const getUpcomingEvents = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier)
+      )
+      .unique();
+
+    if (!user) return [];
+
+    // Owned projects
+    const ownedProjects = await ctx.db
+      .query("projects")
+      .withIndex("by_owner", (q) => q.eq("ownerId", user._id))
+      .collect();
+
+    // Joined projects
+    const memberships = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    const joinedProjects: any[] = [];
+    for (const m of memberships) {
+      const p = await ctx.db.get(m.projectId);
+      if (p && p.ownerId !== user._id) {
+        joinedProjects.push(p);
+      }
+    }
+
+    const allProjects = [...ownedProjects, ...joinedProjects];
+    const results = [];
+    const now = Date.now();
+    const oneWeekFromNow = now + 7 * 24 * 60 * 60 * 1000;
+
+    for (const p of allProjects) {
+      const events = await ctx.db
+        .query("calendarEvents")
+        .withIndex("by_project", (q) => q.eq("projectId", p._id))
+        .collect();
+
+      for (const event of events) {
+        if (event.start >= now && event.start <= oneWeekFromNow) {
+          results.push({
+            _id: event._id,
+            title: event.title,
+            description: event.description || "",
+            start: event.start,
+            end: event.end,
+            allDay: event.allDay,
+            color: event.color || null,
+            projectId: p._id,
+            projectName: p.projectName,
+            projectSlug: p.slug,
+          });
+        }
+      }
+    }
+
+    // Sort by start time ascending
+    results.sort((a, b) => a.start - b.start);
+    return results.slice(0, 20);
+  },
+});
+

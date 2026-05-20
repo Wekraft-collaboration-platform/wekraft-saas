@@ -71,12 +71,12 @@ function NotificationItem({
       onClick={handleClick}
       className={cn(
         "group relative flex items-start gap-3.5 px-4 py-3.5 cursor-pointer transition-all duration-200",
-        "border-b border-border/30 last:border-b-0",
-        "hover:bg-accent/40 bg-background/5",
+        "border-b border-border/70",
+        "hover:bg-accent/20",
         !notif.isRead && "bg-primary/[0.02]",
       )}
     >
-   
+
 
       {/* Avatar / Icon */}
       <div className="relative shrink-0 mt-0.5">
@@ -103,23 +103,23 @@ function NotificationItem({
           <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
             <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20 tracking-wide shadow-sm">
               <FolderKanban className="h-3 w-3 text-primary/80 shrink-0" />
-              <span className="truncate max-w-[180px]">
+              <span className="truncate max-w-50">
                 {notif.projectName}
               </span>
             </span>
           </div>
         )}
-        <p className="text-[12.5px] leading-relaxed text-foreground/80 font-normal">
+        <p className="text-[12px] leading-relaxed text-foreground font-normal">
           {renderNotificationBody(notif.body)}
         </p>
-        {notif.entityTitle && (
+        {/* {notif.entityTitle && (
           <p className="text-[10px] text-muted-foreground/60 mt-1 font-mono flex items-center gap-1.5">
             <span className="text-[8px] opacity-40">↳</span>
             <span className="truncate bg-muted/65 px-1.5 py-0.5 rounded border border-border/20">
               {notif.entityTitle}
             </span>
           </p>
-        )}
+        )} */}
       </div>
 
       {/* Action panel (Floating on hover - Linear Style) */}
@@ -247,10 +247,10 @@ export function NotificationCenter() {
       <PopoverContent
         align="end"
         sideOffset={8}
-        className="w-[360px] p-0 rounded-xl bg-sidebar border border-border/60 shadow-[0_20px_50px_rgba(0,0,0,0.35)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.65)] overflow-hidden"
+        className="w-95 p-0 rounded-lg bg-sidebar border border-border shadow-[0_20px_50px_rgba(0,0,0,0.35)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.65)] overflow-hidden"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border/40 bg-muted/15">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted">
           <div className="flex items-center gap-2">
             <span className="text-sm">
               Notifications
@@ -266,7 +266,7 @@ export function NotificationCenter() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground"
+                className="h-4 w-4! rounded-md hover:bg-accent text-muted-foreground hover:text-foreground"
                 onClick={handleMarkAllRead}
                 title="Mark all as read"
               >
@@ -277,7 +277,7 @@ export function NotificationCenter() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                className="h-4! w-4 rounded-md text-muted-foreground "
                 onClick={handleClearAll}
                 title="Clear all"
               >
@@ -288,7 +288,7 @@ export function NotificationCenter() {
         </div>
 
         {/* List */}
-        <ScrollArea className="h-[400px]">
+        <ScrollArea className="h-[300px]">
           {notifications === undefined ? (
             // Loading skeleton (Linear Style)
             <div className="flex flex-col gap-0 divide-y divide-border/20">
