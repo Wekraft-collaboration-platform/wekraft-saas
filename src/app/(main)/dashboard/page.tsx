@@ -238,10 +238,7 @@ export default function DashboardPage() {
                         <p className="text-[12px] leading-relaxed text-muted-foreground/90 font-normal">
                           {renderNotificationBody(notif.body)}
                         </p>
-                        {/* <div className="flex items-center gap-2 mt-1.5 text-[10px] text-muted-foreground/50">
-                          <Clock className="h-3 w-3 shrink-0" />
-                          <span>{timeAgo(notif.createdAt)}</span>
-                        </div> */}
+
                       </div>
 
                       {/* Floating actions */}

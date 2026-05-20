@@ -74,12 +74,10 @@ export function UpcomingEvents() {
         ) : !events || events.length === 0 ? (
           // Empty state
           <div className="flex flex-col items-center justify-center h-full py-6 px-6 text-center gap-2">
-            <div className="h-8 w-8 rounded-full bg-muted/20 border border-border/25 flex items-center justify-center">
-              <Calendar className="h-4.5 w-4.5 text-muted-foreground/45" />
-            </div>
+            <Calendar className="h-4.5 w-4.5 text-muted-foreground" />
             <div>
-              <p className="text-xs font-medium text-foreground/75">No events soon</p>
-              <p className="text-[10px] text-muted-foreground/55 mt-0.5 max-w-[180px]">
+              <p className="text-sm font-medium ">No events soon</p>
+              <p className="text-xs text-muted-foreground mt-0.5 max-w-45">
                 No upcoming events or meetings this week.
               </p>
             </div>
