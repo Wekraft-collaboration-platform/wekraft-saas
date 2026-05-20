@@ -83,37 +83,8 @@ export const createIssue = mutation({
         ),
       );
 
-      // Notify newly assigned users
-      const project = await ctx.db.get(args.projectId);
-      if (project) {
-        await ctx.runMutation(internal.notifications.notifyIssueAssigned, {
-          actorId: user._id,
-          actorName: user.name ?? "Someone",
-          actorAvatar: user.avatarUrl,
-          assigneeIds: assignees.map((a) => a.userId),
-          projectId: args.projectId,
-          projectName: project.projectName,
-          issueId: issueId as string,
-          issueTitle: args.title,
-        });
-      }
     }
 
-    // Notify power users if this is a critical issue
-    if (args.severity === "critical") {
-      const project = await ctx.db.get(args.projectId);
-      if (project) {
-        await ctx.runMutation(internal.notifications.notifyCriticalIssue, {
-          actorId: user._id,
-          actorName: user.name ?? "Someone",
-          actorAvatar: user.avatarUrl,
-          projectId: args.projectId,
-          projectName: project.projectName,
-          issueId: issueId as string,
-          issueTitle: args.title,
-        });
-      }
-    }
 
     return issueId;
   },

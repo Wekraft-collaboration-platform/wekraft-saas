@@ -17,6 +17,14 @@ import {
   Clock,
   CheckCircle2,
   Globe,
+  UserPlus,
+  UserMinus,
+  UserX,
+  MailOpen,
+  UserCog,
+  MessageSquare,
+  Bell,
+  XCircle,
 } from "lucide-react";
 import {
   Popover,
@@ -283,3 +291,80 @@ export const SortPopover = ({
 
 export const INVITE_LINK = "http://localhost:3000/";
 // export const INVITE_LINK = "https://wekraft-saas.vercel.app/";
+
+export const NOTIFICATION_ICONS: Record<string, React.ComponentType<any>> = {
+  member_joined: UserPlus,
+  member_left: UserMinus,
+  member_removed: UserX,
+  join_request: MailOpen,
+  request_accepted: CheckCircle2,
+  request_rejected: XCircle,
+  role_changed: UserCog,
+  mentioned: MessageSquare,
+};
+
+export function getNotificationRedirectUrl(notif: {
+  type: string;
+  projectSlug?: string;
+  body: string;
+  entityId?: string;
+  entityTitle?: string;
+}): string {
+  const slug = notif.projectSlug;
+  if (!slug) return "/dashboard";
+
+  if (notif.type === "join_request") {
+    return `/dashboard/my-projects/${slug}?tab=requests`;
+  }
+
+  const workspaceBase = `/dashboard/my-projects/${slug}/workspace`;
+
+  switch (notif.type) {
+    case "mentioned":
+      const bodyLower = notif.body.toLowerCase();
+      if (
+        bodyLower.includes("chat") ||
+        bodyLower.includes("teamspace") ||
+        bodyLower.includes("channel") ||
+        bodyLower.includes("#") ||
+        (notif.entityTitle && notif.entityTitle.startsWith("#"))
+      ) {
+        return notif.entityId
+          ? `${workspaceBase}/teamspace?channelId=${notif.entityId}`
+          : `${workspaceBase}/teamspace`;
+      } else if (bodyLower.includes("issue")) {
+        return `${workspaceBase}/issues`;
+      } else {
+        return `${workspaceBase}/tasks`;
+      }
+
+    case "request_accepted":
+    case "member_joined":
+      return workspaceBase;
+
+    case "member_left":
+    case "member_removed":
+    case "role_changed":
+      return `${workspaceBase}/team`;
+
+    default:
+      return workspaceBase;
+  }
+}
+
+export function renderNotificationBody(text: string): React.ReactNode {
+  const parts = text.split(/\*\*(.+?)\*\*/g);
+  return (
+    <span>
+      {parts.map((part, i) =>
+        i % 2 === 1 ? (
+          <strong key={i} className="font-semibold text-foreground">
+            {part}
+          </strong>
+        ) : (
+          <span key={i}>{part}</span>
+        ),
+      )}
+    </span>
+  );
+}

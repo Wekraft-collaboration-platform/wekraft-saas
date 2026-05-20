@@ -25,6 +25,11 @@ import { cn } from "@/lib/utils";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import {
+  NOTIFICATION_ICONS,
+  getNotificationRedirectUrl,
+  renderNotificationBody,
+} from "@/lib/static-store";
 
 // ─── Utility: human-readable relative time ─────────────────────────────────
 function timeAgo(ts: number): string {
@@ -36,104 +41,6 @@ function timeAgo(ts: number): string {
   if (m < 60) return `${m}m ago`;
   if (h < 24) return `${h}h ago`;
   return `${d}d ago`;
-}
-
-// ─── Per-notification icon mapping ─────────────────────────────────────────
-const typeEmoji: Record<string, string> = {
-  member_joined: "🎉",
-  member_left: "👋",
-  member_removed: "🚫",
-  join_request: "📬",
-  request_accepted: "✅",
-  request_rejected: "❌",
-  role_changed: "🔄",
-  mentioned: "💬",
-  task_assigned: "📋",
-  issue_assigned: "🐛",
-  task_completed: "✅",
-  sprint_started: "🚀",
-  sprint_completed: "🏁",
-  critical_issue: "🔴",
-};
-
-// ─── Resolve redirect target URL ───────────────────────────────────────────
-function getNotificationRedirectUrl(notif: {
-  type: string;
-  projectSlug?: string;
-  body: string;
-  entityId?: string;
-  entityTitle?: string;
-}): string {
-  const slug = notif.projectSlug;
-  if (!slug) return "/dashboard";
-
-  if (notif.type === "join_request") {
-    return `/dashboard/my-projects/${slug}?tab=requests`;
-  }
-
-  const workspaceBase = `/dashboard/my-projects/${slug}/workspace`;
-
-  switch (notif.type) {
-    case "task_assigned":
-    case "task_completed":
-      return `${workspaceBase}/tasks`;
-
-    case "issue_assigned":
-    case "critical_issue":
-      return `${workspaceBase}/issues`;
-
-    case "sprint_started":
-    case "sprint_completed":
-      return `${workspaceBase}/sprint`;
-
-    case "mentioned":
-      const bodyLower = notif.body.toLowerCase();
-      if (
-        bodyLower.includes("chat") ||
-        bodyLower.includes("teamspace") ||
-        bodyLower.includes("channel") ||
-        bodyLower.includes("#") ||
-        (notif.entityTitle && notif.entityTitle.startsWith("#"))
-      ) {
-        return notif.entityId
-          ? `${workspaceBase}/teamspace?channelId=${notif.entityId}`
-          : `${workspaceBase}/teamspace`;
-      } else if (bodyLower.includes("issue")) {
-        return `${workspaceBase}/issues`;
-      } else {
-        return `${workspaceBase}/tasks`;
-      }
-
-    case "request_accepted":
-    case "member_joined":
-      return workspaceBase;
-
-    case "member_left":
-    case "member_removed":
-    case "role_changed":
-      return `${workspaceBase}/team`;
-
-    default:
-      return workspaceBase;
-  }
-}
-
-// ─── Bold‐markdown renderer (safe, no external deps) ───────────────────────
-function renderBody(text: string) {
-  const parts = text.split(/\*\*(.+?)\*\*/g);
-  return (
-    <span>
-      {parts.map((part, i) =>
-        i % 2 === 1 ? (
-          <strong key={i} className="font-semibold text-foreground">
-            {part}
-          </strong>
-        ) : (
-          <span key={i}>{part}</span>
-        ),
-      )}
-    </span>
-  );
 }
 
 // ─── Single notification row ────────────────────────────────────────────────
@@ -171,7 +78,7 @@ function NotificationItem({
     >
    
 
-      {/* Avatar / emoji */}
+      {/* Avatar / Icon */}
       <div className="relative shrink-0 mt-0.5">
         {notif.senderAvatar ? (
           <Avatar className="h-7 w-7 ring-1 ring-border/40 shadow-sm">
@@ -182,7 +89,10 @@ function NotificationItem({
           </Avatar>
         ) : (
           <div className="h-7 w-7 rounded-full bg-accent/30 border border-border/40 flex items-center justify-center text-xs shadow-sm">
-            {typeEmoji[notif.type] ?? "🔔"}
+            {(() => {
+              const IconComponent = NOTIFICATION_ICONS[notif.type] ?? Bell;
+              return <IconComponent className="h-3.5 w-3.5 text-muted-foreground/80" />;
+            })()}
           </div>
         )}
       </div>
@@ -200,7 +110,7 @@ function NotificationItem({
           </div>
         )}
         <p className="text-[12.5px] leading-relaxed text-foreground/80 font-normal">
-          {renderBody(notif.body)}
+          {renderNotificationBody(notif.body)}
         </p>
         {notif.entityTitle && (
           <p className="text-[10px] text-muted-foreground/60 mt-1 font-mono flex items-center gap-1.5">
@@ -276,6 +186,7 @@ export function NotificationCenter() {
     // On subsequent updates, display toasts for any new notifications
     notifications.forEach((n) => {
       if (!prevIds.current.has(n._id)) {
+        const IconComponent = NOTIFICATION_ICONS[n.type] ?? Bell;
         toast(
           <div
             onClick={() => {
@@ -291,10 +202,10 @@ export function NotificationCenter() {
                 <span className="truncate max-w-[180px]">{n.projectName}</span>
               </span>
             )}
-            <div className="text-sm font-normal">{renderBody(n.body)}</div>
+            <div className="text-sm font-normal">{renderNotificationBody(n.body)}</div>
           </div>,
           {
-            icon: typeEmoji[n.type] ?? "🔔",
+            icon: <IconComponent className="h-4 w-4 text-primary" />,
             duration: 4000,
           },
         );

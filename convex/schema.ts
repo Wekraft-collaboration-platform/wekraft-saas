@@ -459,12 +459,6 @@ export default defineSchema({
       v.literal("request_rejected"),     // Request rejected
       v.literal("role_changed"),         // Role changed
       v.literal("mentioned"),            // @mention in comment
-      v.literal("task_assigned"),        // Task assigned to you
-      v.literal("issue_assigned"),       // Issue assigned to you
-      v.literal("task_completed"),       // Task you created was completed
-      v.literal("sprint_started"),       // Sprint started
-      v.literal("sprint_completed"),     // Sprint completed
-      v.literal("critical_issue"),       // Critical issue created
     ),
     // Human-readable notification body
     body: v.string(),

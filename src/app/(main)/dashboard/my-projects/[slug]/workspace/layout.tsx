@@ -10,12 +10,12 @@ import { ShieldAlert, ArrowLeft, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 
+import ProjectSidebar from "@/modules/workspace/Projectsidebar";
+
 export default function WorkspaceLayout({
   children,
-  sidebar,
 }: {
   children: React.ReactNode;
-  sidebar: React.ReactNode;
 }) {
   const params = useParams();
   const router = useRouter();
@@ -109,7 +109,7 @@ export default function WorkspaceLayout({
   // 4. Authorized Access State
   return (
     <div className="">
-      {sidebar} {/* This will now receive workspace @sidebar */}
+      <ProjectSidebar />
       <main className="flex-1">{children}</main>
       <FloatingKaya />
       <AiAssistantSheet />
