@@ -551,16 +551,20 @@ http.route({
     const projectId = url.searchParams.get("projectId");
     if (!projectId) return new Response(JSON.stringify({ error: "projectId required" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
     const issues = await ctx.runQuery(internal.agentTools.getProjectIssuesFull, { projectId: projectId as any });
-    const activeIssues = (issues ?? []).filter((i: any) => i.status !== "closed");
     const priorityMap: Record<string, string> = { critical: "critical", medium: "medium", low: "low" };
-    const mapped = activeIssues.map((i: any) => ({
+    const mapped = (issues ?? []).map((i: any) => ({
       id: i._id,
       projectId: i.projectId,
       title: i.title,
       description: i.description,
       status: i.status,
       taskId: i.taskId,
-      priority: priorityMap[i.severity] ?? "medium",
+      priority: priorityMap[i.severity || ""] ?? "medium",
+      severity: i.severity ?? "medium",
+      environment: i.environment ?? "local",
+      due_date: i.due_date,
+      fileLinked: i.fileLinked ?? null,
+      linkWithCodebase: i.fileLinked ?? null,
       assigneeId: i.IssueAssignee?.[0]?.userId,
       assignee: i.IssueAssignee?.[0] ? { id: i.IssueAssignee[0].userId, name: i.IssueAssignee[0].name, avatarUrl: i.IssueAssignee[0].avatar, role: "member" as const, email: "" } : undefined,
       assigneeIds: Array.isArray(i.IssueAssignee) ? i.IssueAssignee.map((a: any) => a.userId) : [],
@@ -705,6 +709,46 @@ http.route({
 });
 
 http.route({
+  path: "/ext/issues",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const auth = await authenticateRequest(ctx, request);
+    if (!auth.ok) return auth.response;
+    try {
+      const body = await request.json();
+      const created = await ctx.runMutation(internal.agentTools.createIssueInternal, { ...body, userId: auth.userId as any });
+      if (!created || !created._id) throw new Error("Failed to create issue");
+      
+      const priorityMap: Record<string, string> = { critical: "critical", medium: "medium", low: "low" };
+      const mapped = {
+        id: created._id,
+        projectId: created.projectId,
+        title: created.title,
+        description: created.description,
+        status: created.status,
+        taskId: created.taskId,
+        priority: priorityMap[created.severity || ""] ?? "medium",
+        severity: created.severity ?? "medium",
+        environment: created.environment ?? "local",
+        due_date: created.due_date,
+        fileLinked: created.fileLinked ?? null,
+        linkWithCodebase: created.fileLinked ?? null,
+        assigneeId: created.IssueAssignee?.[0]?.userId,
+        assignee: created.IssueAssignee?.[0] ? { id: created.IssueAssignee[0].userId, name: created.IssueAssignee[0].name || "Unknown", avatarUrl: created.IssueAssignee[0].avatar, role: "member" as const, email: "" } : undefined,
+        assigneeIds: Array.isArray(created.IssueAssignee) ? created.IssueAssignee.map((a: any) => a.userId) : [],
+        assignees: Array.isArray(created.IssueAssignee) ? created.IssueAssignee.map((a: any) => ({ id: a.userId, name: a.name || "Unknown", avatarUrl: a.avatar, role: "member" as const, email: "" })) : [],
+        reporterId: created.createdByUserId,
+        createdAt: created.createdAt,
+        updatedAt: created.updatedAt,
+      };
+      return new Response(JSON.stringify(mapped), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    } catch (e: any) {
+      return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    }
+  }),
+});
+
+http.route({
   pathPrefix: "/ext/issues/",
   method: "PATCH",
   handler: httpAction(async (ctx, request) => {
@@ -726,6 +770,15 @@ http.route({
         status: updated.status,
         taskId: updated.taskId,
         priority: priorityMap[updated.severity || ""] ?? "medium",
+        severity: updated.severity ?? "medium",
+        environment: updated.environment ?? "local",
+        due_date: updated.due_date,
+        fileLinked: updated.fileLinked ?? null,
+        linkWithCodebase: updated.fileLinked ?? null,
+        assigneeId: updated.IssueAssignee?.[0]?.userId,
+        assignee: updated.IssueAssignee?.[0] ? { id: updated.IssueAssignee[0].userId, name: updated.IssueAssignee[0].name || "Unknown", avatarUrl: updated.IssueAssignee[0].avatar, role: "member" as const, email: "" } : undefined,
+        assigneeIds: Array.isArray(updated.IssueAssignee) ? updated.IssueAssignee.map((a: any) => a.userId) : [],
+        assignees: Array.isArray(updated.IssueAssignee) ? updated.IssueAssignee.map((a: any) => ({ id: a.userId, name: a.name || "Unknown", avatarUrl: a.avatar, role: "member" as const, email: "" })) : [],
         reporterId: updated.createdByUserId,
         createdAt: updated.createdAt,
         updatedAt: updated.updatedAt,

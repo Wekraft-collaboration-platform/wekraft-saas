@@ -707,10 +707,23 @@ export const getProjectTasksFull = internalQuery({
 export const getProjectIssuesFull = internalQuery({
   args: { projectId: v.id("projects") },
   handler: async (ctx, args) => {
-    return await ctx.db
+    const issues = await ctx.db
       .query("issues")
       .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
       .collect();
+
+    const issueAssignees = await ctx.db
+      .query("issueAssignees")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
+    return issues.map((i) => {
+      const assigneesForIssue = issueAssignees.filter((ia) => ia.issueId === i._id);
+      return {
+        ...i,
+        IssueAssignee: assigneesForIssue,
+      };
+    });
   },
 });
 
@@ -1029,29 +1042,182 @@ export const updateIssueInternal = internalMutation({
     issueId: v.id("issues"),
     title: v.optional(v.string()),
     description: v.optional(v.string()),
-    status: v.optional(v.string()),
-    priority: v.optional(v.string()),
+    status: v.optional(
+      v.union(
+        v.literal("not opened"),
+        v.literal("opened"),
+        v.literal("reopened"),
+        v.literal("closed"),
+      )
+    ),
+    priority: v.optional(v.string()), // map priority to severity if sent
+    severity: v.optional(
+      v.union(v.literal("critical"), v.literal("medium"), v.literal("low"))
+    ),
+    environment: v.optional(
+      v.union(
+        v.literal("local"),
+        v.literal("dev"),
+        v.literal("staging"),
+        v.literal("production"),
+      )
+    ),
+    due_date: v.optional(v.number()),
+    fileLinked: v.optional(v.string()),
+    assignees: v.optional(
+      v.array(
+        v.object({
+          userId: v.id("users"),
+          name: v.string(),
+          avatar: v.optional(v.string()),
+        })
+      )
+    ),
     userId: v.id("users"),
   },
   handler: async (ctx, args) => {
-    const { issueId, userId, ...updates } = args;
+    const { issueId, userId, assignees, priority, ...updates } = args;
     const issue = await ctx.db.get(issueId);
     if (!issue) throw new Error("Issue not found");
     
     let patchData: any = { updatedAt: Date.now() };
-    if (updates.title !== undefined) patchData.title = updates.title;
-    if (updates.description !== undefined) patchData.description = updates.description;
-    if (updates.status !== undefined) patchData.status = updates.status;
-    if (updates.priority !== undefined) patchData.severity = updates.priority; // map priority to severity
+    for (const [k, val] of Object.entries(updates)) {
+      if (val === null) {
+        patchData[k] = undefined;
+      } else if (val !== undefined) {
+        patchData[k] = val;
+      }
+    }
+
+    if (priority !== undefined) {
+      patchData.severity = priority;
+    }
+
+    if (updates.status === "closed") {
+      patchData.finalCompletedAt = Date.now();
+      patchData.finalCompletedBy = userId;
+      
+      if (issue.type === "task-issue" && issue.taskId) {
+         await ctx.db.patch(issue.taskId, { isBlocked: false, updatedAt: Date.now() });
+      }
+    } else if (updates.status !== undefined) {
+      patchData.finalCompletedAt = undefined;
+      patchData.finalCompletedBy = undefined;
+    }
     
     await ctx.db.patch(issueId, patchData);
-    
-    if (updates.status === "closed" && issue.taskId && issue.type === "task-issue") {
-       await ctx.db.patch(issue.taskId, { isBlocked: false, updatedAt: Date.now() });
+
+    if (assignees !== undefined) {
+      const existingAssignees = await ctx.db
+        .query("issueAssignees")
+        .withIndex("by_issue", (q) => q.eq("issueId", issueId))
+        .collect();
+      await Promise.all(existingAssignees.map((a) => ctx.db.delete(a._id)));
+
+      await Promise.all(
+        assignees.map((assignee) =>
+          ctx.db.insert("issueAssignees", {
+            issueId,
+            userId: assignee.userId,
+            name: assignee.name,
+            avatar: assignee.avatar,
+            projectId: issue.projectId,
+          })
+        )
+      );
     }
+    
     const updatedIssue = await ctx.db.get(issueId);
-    return updatedIssue;
+    if (!updatedIssue) throw new Error("Issue not found after update");
+    const issueAssignees = await ctx.db
+      .query("issueAssignees")
+      .withIndex("by_issue", (q) => q.eq("issueId", issueId))
+      .collect();
+    return {
+      ...updatedIssue,
+      IssueAssignee: issueAssignees,
+    };
   }
+});
+
+/** Create Issue Internal */
+export const createIssueInternal = internalMutation({
+  args: {
+    title: v.string(),
+    description: v.optional(v.string()),
+    environment: v.optional(
+      v.union(
+        v.literal("local"),
+        v.literal("dev"),
+        v.literal("staging"),
+        v.literal("production"),
+      )
+    ),
+    severity: v.optional(
+      v.union(v.literal("critical"), v.literal("medium"), v.literal("low"))
+    ),
+    due_date: v.optional(v.number()),
+    status: v.union(
+      v.literal("not opened"),
+      v.literal("opened"),
+      v.literal("reopened"),
+      v.literal("closed"),
+    ),
+    type: v.union(
+      v.literal("manual"),
+      v.literal("task-issue"),
+      v.literal("github"),
+    ),
+    githubIssueUrl: v.optional(v.string()),
+    fileLinked: v.optional(v.string()),
+    taskId: v.optional(v.id("tasks")),
+    projectId: v.id("projects"),
+    userId: v.id("users"),
+    assignees: v.optional(
+      v.array(
+        v.object({
+          userId: v.id("users"),
+          name: v.string(),
+          avatar: v.optional(v.string()),
+        })
+      )
+    ),
+  },
+  handler: async (ctx, args) => {
+    const { assignees, userId, ...issueData } = args;
+
+    const issueId = await ctx.db.insert("issues", {
+      ...issueData,
+      createdByUserId: userId,
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+
+    if (assignees && assignees.length > 0) {
+      await Promise.all(
+        assignees.map((assignee) =>
+          ctx.db.insert("issueAssignees", {
+            issueId,
+            userId: assignee.userId,
+            name: assignee.name,
+            avatar: assignee.avatar,
+            projectId: args.projectId,
+          })
+        )
+      );
+    }
+
+    const createdIssue = await ctx.db.get(issueId);
+    if (!createdIssue) throw new Error("Failed to retrieve created issue");
+    const issueAssignees = await ctx.db
+      .query("issueAssignees")
+      .withIndex("by_issue", (q) => q.eq("issueId", issueId))
+      .collect();
+    return {
+      ...createdIssue,
+      IssueAssignee: issueAssignees,
+    };
+  },
 });
 
 /** Get all projects for a user */
