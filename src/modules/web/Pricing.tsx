@@ -301,9 +301,11 @@ const Pricing = () => {
                   </p>
 
                   {/* CTA Button */}
-                  <div className="w-full mb-6 block">
+                  <div className="w-full mb-6 flex flex-col items-center">
                     <button
                       onClick={async () => {
+                        if (plan.key === (user?.accountType || "free")) return;
+                        
                         const isLoadingPlan = loadingRazorpay === plan.name || loadingStripe === plan.name;
                         if (isLoadingPlan) return;
                         
@@ -338,15 +340,54 @@ const Pricing = () => {
                           console.error("Payment failed", e);
                         }
                       }}
-                      disabled={loadingRazorpay !== null || loadingStripe !== null}
+                      disabled={loadingRazorpay !== null || loadingStripe !== null || plan.key === (user?.accountType || "free")}
                       className={cn(
-                        "w-full py-2 px-4 rounded-full font-medium text-sm transition-all duration-300 shadow-sm flex items-center justify-center gap-2 cursor-pointer",
-                        "bg-[#1c1c1c] border border-white/10 text-gray-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] hover:bg-white hover:text-black",
+                        "w-full py-2 px-4 rounded-full font-medium text-sm transition-all duration-300 shadow-sm flex items-center justify-center gap-2",
+                        plan.key === (user?.accountType || "free")
+                          ? "bg-white/10 text-white cursor-default"
+                          : "bg-[#1c1c1c] border border-white/10 text-gray-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] hover:bg-white hover:text-black cursor-pointer",
                         (loadingRazorpay !== null || loadingStripe !== null) && "opacity-50 cursor-not-allowed"
                       )}
                     >
-                      {(loadingRazorpay === plan.name || loadingStripe === plan.name) ? "Processing..." : plan.cta}
+                      {plan.key === (user?.accountType || "free") 
+                        ? "Current Plan" 
+                        : (loadingRazorpay === plan.name || loadingStripe === plan.name) 
+                          ? "Processing..." 
+                          : plan.cta}
                     </button>
+                    {plan.key === (user?.accountType || "free") && plan.key !== "free" && (
+                      <button 
+                        onClick={async () => {
+                          try {
+                            if (!user?.customerId) {
+                              toast.error("No active billing profile found. Please contact support.");
+                              return;
+                            }
+                            
+                            toast.loading("Redirecting to billing portal...", { id: "portal-loading" });
+                            
+                            const res = await fetch("/api/payments/stripe/portal", {
+                              method: "POST",
+                              headers: { "Content-Type": "application/json" },
+                              body: JSON.stringify({ customerId: user.customerId })
+                            });
+                            
+                            if (!res.ok) throw new Error("Failed to securely connect to billing portal");
+                            
+                            const { url } = await res.json();
+                            toast.dismiss("portal-loading");
+                            window.location.href = url;
+                          } catch (e: any) {
+                            console.error(e);
+                            toast.dismiss("portal-loading");
+                            toast.error(e.message || "Something went wrong.");
+                          }
+                        }}
+                        className="mt-2 text-xs text-gray-500 hover:text-white transition-colors cursor-pointer"
+                      >
+                        Cancel subscription
+                      </button>
+                    )}
                   </div>
 
                   {/* Features */}
