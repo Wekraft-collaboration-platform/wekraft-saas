@@ -334,9 +334,9 @@ const Pricing = () => {
                           });
                           
                           await handleCheckout(order, { name: user.name || "", email: user.email || "" });
-                        } catch (e) {
+                        } catch (e: any) {
                           console.error("Payment failed", e);
-                          toast.error("Failed to process subscription");
+                          toast.error(e.message || "Failed to process subscription");
                         }
                       }}
                       disabled={isLoading}
