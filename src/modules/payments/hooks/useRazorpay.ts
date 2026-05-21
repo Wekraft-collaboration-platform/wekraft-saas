@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { toast } from "sonner";
 import { Id } from "../../../../convex/_generated/dataModel";
 
@@ -63,11 +63,24 @@ export interface Plan {
 
 export const useRazorpay = () => {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
+  const [exchangeRate, setExchangeRate] = useState(85);
+
+  useEffect(() => {
+    const fetchRate = async () => {
+      try {
+        const res = await fetch("https://open.er-api.com/v6/latest/USD");
+        const data = await res.json();
+        if (data.rates?.INR) setExchangeRate(data.rates.INR);
+      } catch {
+        // Fallback to 85
+      }
+    };
+    fetchRate();
+  }, []);
 
   const initiatePayment = async (
     plan: Plan,
-    userDetails: { id: Id<"users">; name: string; email: string },
-    exchangeRate: number = 85
+    userDetails: { id: Id<"users">; name: string; email: string }
   ) => {
     if (!userDetails?.id) {
       toast.error("User data missing");

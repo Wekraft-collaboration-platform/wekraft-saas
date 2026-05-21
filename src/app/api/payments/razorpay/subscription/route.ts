@@ -8,9 +8,6 @@ if (
   console.warn("[Razorpay] Missing NEXT_PUBLIC_RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET in env");
 }
 
-const razorpayKeyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID || "";
-const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET || "";
-
 type RazorpayPlan = {
   id: string;
   period: string;
@@ -21,6 +18,9 @@ type RazorpayPlan = {
 
 export async function POST(req: NextRequest) {
   try {
+    const razorpayKeyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+    const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET;
+
     if (!razorpayKeyId || !razorpayKeySecret) {
       return NextResponse.json(
         { error: "Razorpay keys are not configured" },
