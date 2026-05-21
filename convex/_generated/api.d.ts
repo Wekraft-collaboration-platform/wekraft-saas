@@ -20,7 +20,6 @@ import type * as payments from "../payments.js";
 import type * as pricing from "../pricing.js";
 import type * as project from "../project.js";
 import type * as projectDetails from "../projectDetails.js";
-import type * as razorpayWebhook from "../razorpayWebhook.js";
 import type * as repo from "../repo.js";
 import type * as scheduleRunner from "../scheduleRunner.js";
 import type * as scheduler from "../scheduler.js";
@@ -47,7 +46,6 @@ declare const fullApi: ApiFromModules<{
   pricing: typeof pricing;
   project: typeof project;
   projectDetails: typeof projectDetails;
-  razorpayWebhook: typeof razorpayWebhook;
   repo: typeof repo;
   scheduleRunner: typeof scheduleRunner;
   scheduler: typeof scheduler;

@@ -23,6 +23,14 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
     planExpiry: v.optional(v.number()), // For temporary upgrades/coupons
+    
+    // Subscription Data
+    subscriptionId: v.optional(v.string()),
+    customerId: v.optional(v.string()),
+    subscriptionStatus: v.optional(v.string()), // "active", "past_due", "cancelled", etc.
+    subscriptionProvider: v.optional(v.string()), // "razorpay" | "stripe"
+    currentPeriodEnd: v.optional(v.number()), // Unix timestamp in ms
+
     bio: v.optional(v.string()),
     socialLinks: v.optional(v.array(v.string())), // max 3 links (excluding github)
 
@@ -32,7 +40,9 @@ export default defineSchema({
   })
     .index("by_token", ["clerkToken"])
     .index("by_accountType", ["accountType"])
-    .index("by_name", ["name"]),
+    .index("by_name", ["name"])
+    .index("by_subscriptionId", ["subscriptionId"])
+    .index("by_customerId", ["customerId"]),
   // ---------------------------------------------
 
   repositories: defineTable({

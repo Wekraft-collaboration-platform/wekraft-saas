@@ -398,3 +398,38 @@ export const updatePlanInternal = internalMutation({
     console.log(`[Payments] Updated user ${args.userId} to plan ${args.plan}`);
   },
 });
+
+export const updateUserSubscriptionInternal = internalMutation({
+  args: {
+    userId: v.id("users"),
+    // plan is optional here — if omitted, we only update status fields (e.g. past_due)
+    plan: v.optional(v.union(v.literal("free"), v.literal("plus"), v.literal("pro"))),
+    subscriptionId: v.optional(v.string()),
+    customerId: v.optional(v.string()),
+    status: v.optional(v.string()),
+    currentPeriodEnd: v.optional(v.number()),
+    provider: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const patch: Record<string, any> = {
+      subscriptionId: args.subscriptionId,
+      customerId: args.customerId,
+      subscriptionStatus: args.status,
+      currentPeriodEnd: args.currentPeriodEnd,
+      subscriptionProvider: args.provider,
+      updatedAt: Date.now(),
+    };
+
+    // Only update accountType when a plan is explicitly provided.
+    // This prevents 'past_due' webhooks from silently downgrading users.
+    if (args.plan !== undefined) {
+      patch.accountType = args.plan;
+    }
+
+    await ctx.db.patch(args.userId, patch);
+    console.log(
+      `[Payments] Subscription updated: user=${args.userId}, plan=${args.plan ?? "unchanged"}, status=${args.status}, provider=${args.provider}`
+    );
+  },
+});
+

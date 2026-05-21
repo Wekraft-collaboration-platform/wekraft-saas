@@ -25,7 +25,7 @@ import { cn } from "@/lib/utils";
 import { useConvexAuth, useAction, useQuery } from "convex/react";
 import { toast } from "sonner";
 import { api } from "../../../convex/_generated/api";
-import { useRazorpay } from "@/modules/razorpay";
+import { usePayment } from "@/modules/payments/usePayment";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -180,16 +180,30 @@ const FeatureValue = ({ value }: { value: string | boolean }) => {
   );
 };
 
+// ─── Geo-based Provider Detection ───────────────────────────────────────────
+// Uses the browser's built-in Intl API — zero latency, no external API call.
+// India (Asia/Kolkata / Asia/Calcutta) → Razorpay
+// Everywhere else → Stripe
+function getProvider(): "razorpay" | "stripe" {
+  try {
+    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+    if (tz === "Asia/Kolkata" || tz === "Asia/Calcutta") return "razorpay";
+    return "stripe";
+  } catch {
+    return "stripe"; // safe fallback if Intl is unavailable
+  }
+}
+
 const Pricing = () => {
   const { isAuthenticated } = useConvexAuth();
   const user = useQuery(api.user.getCurrentUser);
-  const createOrder = useAction((api as any).payments.createPaymentOrder);
-  const { initiatePayment, isLoading, isScriptLoaded } = useRazorpay({
+  const createOrder = useAction((api as any).payments.createSubscriptionCheckout);
+  const { handleCheckout, isLoading, isReady } = usePayment({
     onSuccess: () => {
-      toast.success("Payment successful! Your plan will be updated shortly.");
+      toast.success("Subscription successful! Your plan will be updated shortly.");
     },
     onError: (error) => {
-      toast.error(error.message || "Failed to initiate payment");
+      toast.error(error.message || "Failed to process payment");
     },
   });
 
@@ -304,34 +318,25 @@ const Pricing = () => {
                           return;
                         }
 
-                        if (!isScriptLoaded) {
+                        if (!isReady) {
                           toast.error("Payment system is still loading, please wait.");
                           return;
                         }
 
                         try {
-                          const order = await createOrder({ plan: plan.key as "plus" | "pro", userId: user._id, provider: "razorpay" });
+                          const provider = getProvider();
+                          const order = await createOrder({
+                            plan: plan.key as "plus" | "pro",
+                            userId: user._id,
+                            name: user.name || "",
+                            email: user.email || "",
+                            provider,
+                          });
                           
-                          if (order.provider === "razorpay") {
-                            await initiatePayment({
-                              key: order.key as string,
-                              amount: order.amount,
-                              currency: order.currency,
-                              name: "Wekraft",
-                              description: `Upgrade to ${plan.name}`,
-                              order_id: order.id,
-                              prefill: {
-                                name: user.name || "",
-                                email: user.email || "",
-                              },
-                              theme: {
-                                color: "#000000",
-                              },
-                            });
-                          }
+                          await handleCheckout(order, { name: user.name || "", email: user.email || "" });
                         } catch (e) {
                           console.error("Payment failed", e);
-                          toast.error("Failed to process order creation");
+                          toast.error("Failed to process subscription");
                         }
                       }}
                       disabled={isLoading}
