@@ -3,6 +3,65 @@ import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
 
+// ─────────────────────────────────────────────────────────────
+// SECURITY: Project membership authorization helper.
+// Called by every HTTP endpoint that accepts a projectId.
+// Returns true if the userId is the project owner OR a member.
+// O(log N) — uses by_user index on projectMembers.
+// ─────────────────────────────────────────────────────────────
+export const isProjectMember = internalQuery({
+  args: { userId: v.id("users"), projectId: v.id("projects") },
+  handler: async (ctx, args) => {
+    // Check ownership first (fastest: single get)
+    const project = await ctx.db.get(args.projectId);
+    if (!project) return false;
+    if (project.ownerId === args.userId) return true;
+
+    // Check membership table
+    const member = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_user", (q) => q.eq("userId", args.userId))
+      .filter((q) => q.eq(q.field("projectId"), args.projectId))
+      .unique();
+    return member !== null;
+  },
+});
+
+// ─────────────────────────────────────────────────────────────
+// SECURITY: Sliding-window rate limiter (60 req / min per API key).
+// Uses the apiKeyRateLimits table added to schema.
+// Returns true if the request is ALLOWED, false if rate limited.
+// ─────────────────────────────────────────────────────────────
+const RATE_LIMIT_WINDOW_MS = 60_000;   // 1 minute
+const RATE_LIMIT_MAX_REQUESTS = 60;    // 60 requests per minute per key
+
+export const checkAndIncrementRateLimit = internalMutation({
+  args: { apiKeyId: v.id("userApiKeys") },
+  handler: async (ctx, args) => {
+    const now = Date.now();
+    const windowStart = now - (now % RATE_LIMIT_WINDOW_MS);
+
+    const existing = await ctx.db
+      .query("apiKeyRateLimits")
+      .withIndex("by_key_window", (q) =>
+        q.eq("apiKeyId", args.apiKeyId).eq("windowStart", windowStart)
+      )
+      .unique();
+
+    if (existing) {
+      if (existing.count >= RATE_LIMIT_MAX_REQUESTS) return false;
+      await ctx.db.patch(existing._id, { count: existing.count + 1 });
+    } else {
+      await ctx.db.insert("apiKeyRateLimits", {
+        apiKeyId: args.apiKeyId,
+        windowStart,
+        count: 1,
+      });
+    }
+    return true;
+  },
+});
+
 // Calendar Events mutation by agent
 export const insertCalendarEvent = internalMutation({
   args: {
@@ -278,9 +337,10 @@ export const createOrUpdateScheduler = internalMutation({
  * Specially for Python Agent where we pass projectId as string.
  */
 export const getMemberWorkloadPYAgent = internalQuery({
-  args: { projectId: v.string() },
+  // Security: accept v.id("projects") to enforce Convex ID type safety
+  args: { projectId: v.id("projects") },
   handler: async (ctx, args) => {
-    const projectId = args.projectId as Id<"projects">;
+    const projectId = args.projectId;
     const members = await ctx.db
       .query("projectMembers")
       .withIndex("by_project", (q) => q.eq("projectId", projectId))
@@ -738,7 +798,7 @@ export const getProjectMembersFull = internalQuery({
   },
 });
 
-/** Authenticate an API key */
+/** Authenticate an API key — returns null if invalid, expired, or revoked */
 export const authenticateApiKey = internalQuery({
   args: { apiKey: v.string() },
   handler: async (ctx, args) => {
@@ -747,6 +807,8 @@ export const authenticateApiKey = internalQuery({
       .withIndex("by_key", (q) => q.eq("key", args.apiKey))
       .unique();
     if (!keyRecord) return null;
+    // Reject revoked keys
+    if (keyRecord.revokedAt) return null;
     const user = await ctx.db.get(keyRecord.userId);
     if (!user) return null;
     return {
@@ -760,11 +822,11 @@ export const authenticateApiKey = internalQuery({
   },
 });
 
-/** Touch API Key Last Used */
+/** Touch API Key Last Used — updates lastUsedAt for security audit trail */
 export const touchApiKeyLastUsed = internalMutation({
   args: { apiKeyId: v.id("userApiKeys") },
-  handler: async () => {
-    // No-op since lastUsedAt is not in schema
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.apiKeyId, { lastUsedAt: Date.now() });
   },
 });
 

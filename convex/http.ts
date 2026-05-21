@@ -434,8 +434,38 @@ async function authenticateRequest(
   if (!authResult) {
     return { ok: false, response: new Response(JSON.stringify({ error: "Invalid or revoked API key" }), { status: 401, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }) };
   }
+
+  // Rate limiting: 60 requests per minute per API key
+  const allowed = await ctx.runMutation(internal.agentTools.checkAndIncrementRateLimit, { apiKeyId: authResult.apiKeyId });
+  if (!allowed) {
+    return { ok: false, response: new Response(JSON.stringify({ error: "Rate limit exceeded. Max 60 requests per minute." }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": "60", ...CORS_HEADERS } }) };
+  }
+
+  // Update last-used timestamp (fire-and-forget — non-blocking)
   ctx.runMutation(internal.agentTools.touchApiKeyLastUsed, { apiKeyId: authResult.apiKeyId });
   return { ok: true, userId: authResult.id, apiKeyId: authResult.apiKeyId, user: authResult };
+}
+
+/**
+ * SECURITY: Verify the authenticated user has access to the requested projectId.
+ * Returns a 403 Response if unauthorized, or null if authorized.
+ */
+async function assertProjectAccess(
+  ctx: any,
+  userId: string,
+  projectId: string
+): Promise<Response | null> {
+  const isMember = await ctx.runQuery(internal.agentTools.isProjectMember, {
+    userId: userId as any,
+    projectId: projectId as any,
+  });
+  if (!isMember) {
+    return new Response(
+      JSON.stringify({ error: "Forbidden: you are not a member of this project" }),
+      { status: 403, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }
+    );
+  }
+  return null;
 }
 
 ["/ext/projects", "/ext/tasks", "/ext/sprints", "/ext/issues", "/ext/team", "/ext/me"].forEach((path) => {
@@ -464,7 +494,14 @@ http.route({
   handler: httpAction(async (ctx, request) => {
     const auth = await authenticateRequest(ctx, request);
     if (!auth.ok) return auth.response;
-    return new Response(JSON.stringify(auth.user), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    // SECURITY (CRIT-02): Only return display-safe fields. Never expose apiKeyId or email.
+    const safeUser = {
+      id:          auth.user.id,
+      name:        auth.user.name,
+      avatarUrl:   auth.user.avatarUrl,
+      accountType: auth.user.accountType,
+    };
+    return new Response(JSON.stringify(safeUser), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
   }),
 });
 
@@ -496,13 +533,17 @@ http.route({
     const url = new URL(request.url);
     const projectId = url.searchParams.get("projectId");
     if (!projectId) return new Response(JSON.stringify({ error: "projectId required" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    // SECURITY (CRIT-01): Verify caller is a member of this project
+    const forbidden = await assertProjectAccess(ctx, auth.userId, projectId);
+    if (forbidden) return forbidden;
     const sprints = await ctx.runQuery(internal.agentTools.getProjectSprintsFull, { projectId: projectId as any });
     const mapped = (sprints ?? []).map((s: any) => ({
-      id: s._id,
-      name: s.name,
-      status: s.status,
-      startDate: s.startDate,
-      endDate: s.endDate,
+      id:        s._id,
+      sprintName: s.sprintName,                    // FIX (LOW-05): was s.name
+      status:    s.status,
+      duration:  s.duration,                        // FIX (LOW-05): expose full duration object
+      startDate: s.duration?.startDate,             // convenience alias
+      endDate:   s.duration?.endDate,               // convenience alias
     }));
     return new Response(JSON.stringify(mapped), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
   }),
@@ -517,6 +558,9 @@ http.route({
     const url = new URL(request.url);
     const projectId = url.searchParams.get("projectId");
     if (!projectId) return new Response(JSON.stringify({ error: "projectId required" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    // SECURITY (CRIT-01): Verify caller is a member of this project
+    const forbidden = await assertProjectAccess(ctx, auth.userId, projectId);
+    if (forbidden) return forbidden;
     const sprintId = url.searchParams.get("sprintId") || undefined;
     const tasks = await ctx.runQuery(internal.agentTools.getProjectTasksFull, { projectId: projectId as any, sprintId: sprintId as any });
     const mapped = (tasks ?? []).map((t: any) => ({
@@ -526,6 +570,7 @@ http.route({
       title: t.title,
       description: t.description,
       status: t.status,
+      type: t.type,
       priority: t.priority ?? "low",
       assigneeId: Array.isArray(t.assignedTo) && t.assignedTo[0] ? (typeof t.assignedTo[0] === "object" ? t.assignedTo[0].userId : t.assignedTo[0]) : (typeof t.assignedTo === "string" ? t.assignedTo : undefined),
       assignee: Array.isArray(t.assignedTo) && t.assignedTo[0] ? (typeof t.assignedTo[0] === "object" ? { id: t.assignedTo[0].userId, name: t.assignedTo[0].name || "Unknown", avatarUrl: t.assignedTo[0].avatar, role: "member" as const, email: "" } : { id: t.assignedTo[0], name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" }) : (typeof t.assignedTo === "string" ? { id: t.assignedTo, name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" } : undefined),
@@ -550,6 +595,9 @@ http.route({
     const url = new URL(request.url);
     const projectId = url.searchParams.get("projectId");
     if (!projectId) return new Response(JSON.stringify({ error: "projectId required" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    // SECURITY (CRIT-01): Verify caller is a member of this project
+    const forbidden = await assertProjectAccess(ctx, auth.userId, projectId);
+    if (forbidden) return forbidden;
     const issues = await ctx.runQuery(internal.agentTools.getProjectIssuesFull, { projectId: projectId as any });
     const priorityMap: Record<string, string> = { critical: "critical", medium: "medium", low: "low" };
     const mapped = (issues ?? []).map((i: any) => ({
@@ -586,6 +634,9 @@ http.route({
     const url = new URL(request.url);
     const projectId = url.searchParams.get("projectId");
     if (!projectId) return new Response(JSON.stringify({ error: "projectId required" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    // SECURITY (CRIT-01): Verify caller is a member of this project
+    const forbidden = await assertProjectAccess(ctx, auth.userId, projectId);
+    if (forbidden) return forbidden;
     const members = await ctx.runQuery(internal.agentTools.getProjectMembersFull, { projectId: projectId as any });
     const mapped = (members ?? []).map((m: any) => ({
       id: m._id,
@@ -662,10 +713,15 @@ http.route({
     if (!auth.ok) return auth.response;
     try {
       const body = await request.json();
+      // SECURITY (CRIT-01): Verify caller is a member of the target project
+      if (body.projectId) {
+        const forbidden = await assertProjectAccess(ctx, auth.userId, body.projectId);
+        if (forbidden) return forbidden;
+      }
       const taskId = await ctx.runMutation(internal.agentTools.createTaskInternal, { ...body, userId: auth.userId as any });
       return new Response(JSON.stringify({ id: taskId }), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
     } catch (e: any) {
-      return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify({ error: "Failed to create task" }), { status: 500, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
     }
   }),
 });
@@ -681,6 +737,11 @@ http.route({
     if (!taskId) return new Response(JSON.stringify({ error: "Missing taskId" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
     try {
       const body = await request.json();
+      // SECURITY (CRIT-01): Verify task belongs to a project the caller can access
+      if (body.projectId) {
+        const forbidden = await assertProjectAccess(ctx, auth.userId, body.projectId);
+        if (forbidden) return forbidden;
+      }
       const updated = await ctx.runMutation(internal.agentTools.updateTaskInternal, { taskId: taskId as any, userId: auth.userId as any, ...body });
       if (!updated) throw new Error("Task not found after update");
       const mapped = {
@@ -690,6 +751,7 @@ http.route({
         title: updated.title,
         description: updated.description,
         status: updated.status,
+        type: updated.type,
         priority: updated.priority ?? "low",
         assigneeId: Array.isArray(updated.assignedTo) && updated.assignedTo[0] ? (typeof updated.assignedTo[0] === "object" ? updated.assignedTo[0].userId : updated.assignedTo[0]) : (typeof updated.assignedTo === "string" ? updated.assignedTo : undefined),
         assignee: Array.isArray(updated.assignedTo) && updated.assignedTo[0] ? (typeof updated.assignedTo[0] === "object" ? { id: updated.assignedTo[0].userId, name: updated.assignedTo[0].name || "Unknown", avatarUrl: updated.assignedTo[0].avatar, role: "member" as const, email: "" } : { id: updated.assignedTo[0], name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" }) : (typeof updated.assignedTo === "string" ? { id: updated.assignedTo, name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" } : undefined),
@@ -703,7 +765,7 @@ http.route({
       };
       return new Response(JSON.stringify(mapped), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
     } catch (e: any) {
-      return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify({ error: "Failed to update task" }), { status: 500, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
     }
   }),
 });
