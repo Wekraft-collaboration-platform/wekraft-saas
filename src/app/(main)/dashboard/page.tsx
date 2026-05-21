@@ -16,6 +16,19 @@ import {
   GitCommit,
   GitPullRequest,
   Trash2,
+  Gem,
+  Layers,
+  ArrowUpRight,
+  GitMerge,
+  MoreVertical,
+  Plus,
+  Globe,
+  Lock,
+  ExternalLink,
+  Settings2,
+  LucideGitCommitHorizontal,
+  LucideLayersPlus,
+  GitGraph,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useState } from "react";
@@ -32,6 +45,8 @@ import { UpcomingDeadlines } from "@/modules/dashboard/components/UpcomingDeadli
 import { UpcomingEvents } from "@/modules/dashboard/components/UpcomingEvents";
 import { api } from "../../../../convex/_generated/api";
 import { useSidebar } from "@/components/ui/sidebar";
+import CreateProjectDialog from "@/modules/project/CreateProjectDialog";
+import { DashboardProjects } from "./DashboardProjects";
 
 // ─── Utility: human-readable relative time ─────────────────────────────────
 function timeAgo(ts: number): string {
@@ -93,6 +108,18 @@ export default function DashboardPage() {
   const ownerProjects = useQuery(api.project.getUserProjects);
   const teamProjects = useQuery(api.project.getJoinedProjects);
 
+  // Combine and sort projects
+  const allProjects = [
+    ...(ownerProjects?.map((p) => ({ ...p, role: "Owner" as const })) ?? []),
+    ...(teamProjects?.map((p) => ({ ...p, role: "Member" as const })) ?? []),
+  ];
+
+  const sortedProjects = ownerProjects === undefined || teamProjects === undefined
+    ? undefined
+    : allProjects.sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
+
+
+
   // Dynamic interactive checklist state (starts with first two items completed)
   const [completedSteps, setCompletedSteps] = useState<number[]>([1, 2]);
 
@@ -110,153 +137,161 @@ export default function DashboardPage() {
       {/* Parent Divided */}
       <div className="flex flex-col lg:flex-row gap-8 items-start w-full">
         {/* Left Side */}
-        <div className="flex-1 min-w-0 flex flex-col gap-6 py-6 pl-6">
+        <div className="flex-1 min-w-0 flex flex-col gap-6 py-8 pl-8">
           {/* 3 Metric Cards */}
           <div className={cn("grid grid-cols-3 gap-8", isSidebarOpen && "gap-5")}>
             {/* Total Commits Card */}
-            <div className="dark:bg-sidebar bg-card border border-border rounded-xl p-4 shadow-md flex items-center justify-between group">
-              <div className="space-y-1">
-                <span className="text-sm text-muted-foreground ">
-                  Total Commits
-                </span>
-                <div className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-1.5 font-sans">
+            <div className="dark:bg-sidebar bg-card border border-border rounded-xl p-4 shadow-md flex items-center justify-between group h-[126px]">
+              <div className="flex flex-col justify-between h-full w-full">
+                <div className="flex items-center gap-1.5">
+                  <span className="text-sm tracking-wide text-primary flex items-center gap-1">
+                    Commits
+                    <span className=" tracking-tighter"><LucideGitCommitHorizontal /></span>
+                  </span>
+                </div>
+                <div className="text-3xl tracking-tight text-foreground mt-1">
                   {currentUser === undefined || isStatsLoading ? (
-                    <span className="h-6 w-12 bg-muted animate-pulse rounded" />
+                    <span className="inline-block h-9 w-20 bg-muted animate-pulse rounded" />
                   ) : !githubUsername ? (
-                    <span className="text-xs font-medium text-muted-foreground/60">
-                      Not Connected
-                    </span>
+                    <span className="text-sm font-medium text-muted-foreground/60">Not Connected</span>
                   ) : (
                     <span>{dashboardStats?.totalCommits ?? 0}</span>
                   )}
                 </div>
-                <span className="text-xs text-muted-foreground block">
-                  Synced contributions
+                <span className="text-[11px] text-muted-foreground ">
+                  Last Year commits
                 </span>
               </div>
-              <div className="h-9 w-9 rounded-md bg-primary/5 border border-primary/10 flex items-center justify-center text-primary ">
-                <GitCommit className="h-5 w-5" />
+              <div className="relative flex items-center justify-center w-16 h-full shrink-0">
+                <LucideGitCommitHorizontal className="" />
               </div>
             </div>
 
             {/* Merged PR / PR Card */}
-            <div className="bg-sidebar border border-border/80 rounded-xl p-5 shadow-xs transition-all duration-300 hover:border-primary/50 hover:shadow-md flex items-center justify-between group">
-              <div className="space-y-1">
-                <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground/85">
-                  Merged PR / PR
-                </span>
-                <div className="text-2xl font-bold tracking-tight text-foreground flex items-center gap-1.5 font-sans">
-                  {currentUser === undefined || isStatsLoading ? (
-                    <span className="h-6 w-16 bg-muted animate-pulse rounded" />
-                  ) : !githubUsername ? (
-                    <span className="text-xs font-medium text-muted-foreground/60">
-                      Not Connected
-                    </span>
-                  ) : (
-                    <span>
-                      {dashboardStats?.totalMergedPRs ?? 0}
-                      <span className="text-muted-foreground/40 font-light mx-1">
-                        /
-                      </span>
-                      {dashboardStats?.totalPRs ?? 0}
-                    </span>
-                  )}
+            <div className="dark:bg-sidebar bg-card border border-border rounded-xl p-4 shadow-md flex items-center justify-between group h-[126px]">
+              <div className="grid grid-cols-2 w-full h-full divide-x divide-border/60">
+                {/* Left: Pull Request */}
+                <div className="flex flex-col justify-between h-full pr-4">
+                  <span className="text-sm text-primary flex items-center gap-1.5">
+                    Pull Request
+                    <GitPullRequest className="h-3.5 w-3.5" />
+                  </span>
+                  <div className="text-3xl tracking-tight text-foreground font-sans my-1">
+                    {currentUser === undefined || isStatsLoading ? (
+                      <span className="inline-block h-9 w-12 bg-muted animate-pulse rounded" />
+                    ) : !githubUsername ? (
+                      <span className="text-sm font-medium text-muted-foreground/60">--</span>
+                    ) : (
+                      <span>{dashboardStats?.totalPRs ?? 0}</span>
+                    )}
+                  </div>
+                  <span className="text-[11px] text-muted-foreground">
+                    Total
+                  </span>
                 </div>
-                <span className="text-[10px] text-muted-foreground/60 block">
-                  Pull request statistics
-                </span>
-              </div>
-              <div className="h-10 w-10 rounded-lg bg-primary/5 border border-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300">
-                <GitPullRequest className="h-5 w-5" />
+
+                {/* Right: Merged PRs */}
+                <div className="flex flex-col justify-between h-full pl-6">
+                  <span className="text-sm  tracking-wide  flex items-center gap-1.5">
+                    Merged PRs
+                    <GitMerge className="h-3.5 w-3.5" />
+                  </span>
+                  <div className="text-3xl tracking-tight text-foreground font-sans my-1">
+                    {currentUser === undefined || isStatsLoading ? (
+                      <span className="inline-block h-9 w-12 bg-muted animate-pulse rounded" />
+                    ) : !githubUsername ? (
+                      <span className="text-sm font-medium text-muted-foreground/60">--</span>
+                    ) : (
+                      <span>{dashboardStats?.totalMergedPRs ?? 0}</span>
+                    )}
+                  </div>
+                  <span className="text-[11px] text-muted-foreground">
+                    Merged
+                  </span>
+                </div>
               </div>
             </div>
 
             {/* Projects Joined / Created Card */}
-            <div className="bg-sidebar border border-border/80 rounded-xl p-5 shadow-xs transition-all duration-300 hover:border-primary/50 hover:shadow-md flex items-center justify-between group">
-              <div className="space-y-2 flex-1 pr-2">
-                <span className="text-[10px] uppercase font-bold tracking-wider text-muted-foreground/85 block">
-                  Projects (Joined / Created)
-                </span>
+            <div className="dark:bg-sidebar bg-card border border-border rounded-xl p-4 shadow-md flex items-center justify-between group h-[126px] relative">
+              {currentUser !== undefined && userPlan !== "pro" && (
+                <div className="absolute -top-2.5 left-4 px-2.5 py-0.5 bg-blue-600 dark:bg-blue-500 text-white rounded-full text-[9px] font-extrabold tracking-wide uppercase shadow-sm flex items-center gap-1 border border-blue-400/20 z-10">
+                  Unlock Pro Limits
+                  <Gem className="size-2.5 fill-white/20" />
+                </div>
+              )}
 
-                <div className="flex items-center gap-4">
-                  {/* Joined column */}
-                  <div>
-                    <div className="text-xl font-bold tracking-tight text-foreground font-sans">
-                      {teamProjects === undefined ? (
-                        <span className="inline-block h-6 w-8 bg-muted animate-pulse rounded" />
-                      ) : (
-                        <span>
-                          {teamProjects.length}
-                          <span className="text-xs text-muted-foreground/50 font-normal ml-0.5">
-                            /{joinLimit}
-                          </span>
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-[10px] text-muted-foreground/60 block">
-                      Joined
-                    </span>
+              <div className="grid grid-cols-2 w-full h-full divide-x divide-border">
+                {/* Left: Projects Created */}
+                <div className="flex flex-col justify-between h-full pr-4">
+                  <span className="text-sm flex items-center gap-1.5">
+                    Projects Created
+                    <Layers className="h-3.5 w-3.5 " />
+                  </span>
+                  <div className="text-3xl tracking-tight text-foreground font-sans my-1 flex items-baseline">
+                    {ownerProjects === undefined ? (
+                      <span className="inline-block h-9 w-12 bg-muted animate-pulse rounded" />
+                    ) : (
+                      <>
+                        <span>{ownerProjects.length}</span>
+                        <span className="text-muted-foreground text-lg font-light ml-1.5">/{createLimit}</span>
+                      </>
+                    )}
                   </div>
-
-                  {/* Divider line */}
-                  <div className="h-6 w-px bg-border/60 self-center" />
-
-                  {/* Created column */}
-                  <div>
-                    <div className="text-xl font-bold tracking-tight text-foreground font-sans">
-                      {ownerProjects === undefined ? (
-                        <span className="inline-block h-6 w-8 bg-muted animate-pulse rounded" />
-                      ) : (
-                        <span>
-                          {ownerProjects.length}
-                          <span className="text-xs text-muted-foreground/50 font-normal ml-0.5">
-                            /{createLimit}
-                          </span>
-                        </span>
-                      )}
-                    </div>
-                    <span className="text-[10px] text-muted-foreground/60 block">
-                      Created
-                    </span>
-                  </div>
+                  <span className="text-[11px] text-muted-foreground">
+                    Created
+                  </span>
                 </div>
 
-                {/* <span className="text-[9px] text-muted-foreground/50 uppercase font-semibold tracking-wider block">
-                  Plan:{" "}
-                  <span className="text-primary font-bold">{userPlan}</span>
-                </span> */}
-              </div>
-              <div className="h-10 w-10 rounded-lg bg-primary/5 border border-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-primary-foreground transition-all duration-300 shrink-0 self-center">
-                <FolderCode className="h-5 w-5" />
+                {/* Right: Joined */}
+                <div className="flex flex-col justify-between h-full pl-6">
+                  <span className="text-sm flex items-center gap-1.5">
+                    Joined
+                    <ArrowUpRight className="h-3.5 w-3.5 " />
+                  </span>
+                  <div className="text-3xl tracking-tight text-foreground font-sans my-1 flex items-baseline">
+                    {teamProjects === undefined ? (
+                      <span className="inline-block h-9 w-12 bg-muted animate-pulse rounded" />
+                    ) : (
+                      <>
+                        <span>{teamProjects.length}</span>
+                        <span className="text-muted-foreground/35 text-lg font-light ml-1.5">/{joinLimit}</span>
+                      </>
+                    )}
+                  </div>
+                  <span className="text-[11px] text-muted-foreground/60">
+                    Joined
+                  </span>
+                </div>
               </div>
             </div>
           </div>
 
           {/* Tabs Navigation */}
-          <div className="flex items-center gap-2 border-b border-border pb-px">
+          <div className="flex items-center gap-2 border-b border-accent pb-px">
             <button
               type="button"
               onClick={() => setActiveTab("stats")}
               className={cn(
-                "px-4 py-2 text-xs font-semibold tracking-wide border-b-2 -mb-px transition-all duration-200 uppercase outline-none",
+                "px-4 py-2 text-sm tracking-wide border rounded-t-xl  -mb-px transition-all duration-200  outline-none",
                 activeTab === "stats"
-                  ? "border-primary text-foreground font-bold"
+                  ? "border-b-primary text-foreground bg-muted/80"
                   : "border-transparent text-muted-foreground hover:text-foreground",
               )}
             >
-              Stats
+              Stats <GitGraph className="inline ml-1 w-4 h-4" />
             </button>
             <button
               type="button"
               onClick={() => setActiveTab("projects")}
               className={cn(
-                "px-4 py-2 text-xs font-semibold tracking-wide border-b-2 -mb-px transition-all duration-200 uppercase outline-none",
+                "px-4 py-2 text-sm tracking-wide border rounded-t-xl  -mb-px transition-all duration-200  outline-none",
                 activeTab === "projects"
-                  ? "border-primary text-foreground font-bold"
+                  ? "border-b-primary text-foreground bg-muted/80"
                   : "border-transparent text-muted-foreground hover:text-foreground",
               )}
             >
-              Projects
+              Projects <LucideLayersPlus className="inline ml-1 w-4 h-4" />
             </button>
           </div>
 
@@ -474,18 +509,10 @@ export default function DashboardPage() {
               </div>
             </div>
           ) : (
-            <div className="flex flex-col items-center justify-center p-8 border border-border border-dashed rounded-xl bg-sidebar text-center h-[350px] transition-all">
-              <div className="h-12 w-12 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-4 animate-bounce">
-                <FolderCode className="h-6 w-6" />
-              </div>
-              <h4 className="text-sm font-semibold text-foreground tracking-tight">
-                Projects Workspace
-              </h4>
-              <p className="text-xs text-muted-foreground max-w-sm mt-1.5 leading-relaxed">
-                This tab is dedicated to managing and exploring your projects.
-                Detailed features will be implemented here soon.
-              </p>
-            </div>
+            <DashboardProjects
+              projects={sortedProjects}
+              isRightSidebarExpanded={isRightSidebarExpanded}
+            />
           )}
         </div>
 

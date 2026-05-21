@@ -378,6 +378,7 @@ export const getUserProjects = query({
           repoName: p.repoName,
           projectWorkStatus: p.projectWorkStatus,
           slug: p.slug,
+          createdAt: p.createdAt,
           members: members.slice(0, 4).map((m) => ({
             userId: m.userId,
             userImage: m.userImage,
@@ -1010,6 +1011,7 @@ export const getJoinedProjects = query({
           repoName: p.repoName,
           projectWorkStatus: p.projectWorkStatus,
           slug: p.slug,
+          createdAt: p.createdAt,
           members: members.slice(0, 4).map((mt) => ({
             userId: mt.userId,
             userImage: mt.userImage,
