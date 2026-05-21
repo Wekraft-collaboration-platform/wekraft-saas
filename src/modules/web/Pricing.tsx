@@ -26,6 +26,7 @@ import { useConvexAuth, useAction, useQuery } from "convex/react";
 import { toast } from "sonner";
 import { api } from "../../../convex/_generated/api";
 import { useRazorpay } from "@/modules/payments/hooks/useRazorpay";
+import { useStripeCheckout } from "@/modules/payments/hooks/useStripeCheckout";
 import Script from "next/script";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -190,7 +191,23 @@ const FeatureValue = ({ value }: { value: string | boolean }) => {
 const Pricing = () => {
   const { isAuthenticated } = useConvexAuth();
   const user = useQuery(api.user.getCurrentUser);
-  const { initiatePayment, loadingPlan } = useRazorpay();
+  const [countryCode, setCountryCode] = React.useState<string | null>(null);
+  
+  const { initiatePayment: initiateRazorpay, loadingPlan: loadingRazorpay } = useRazorpay();
+  const { initiatePayment: initiateStripe, loadingPlan: loadingStripe } = useStripeCheckout();
+
+  React.useEffect(() => {
+    fetch("https://ipapi.co/json/")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.country_code) {
+          setCountryCode(data.country_code);
+        }
+      })
+      .catch((err) => console.error("Failed to fetch country code", err));
+  }, []);
+
+  const isIndia = countryCode === "IN";
 
   return (
     <div className="bg-[#050505] min-h-screen w-full selection:bg-white/20 font-sans antialiased relative overflow-hidden">
@@ -287,7 +304,7 @@ const Pricing = () => {
                   <div className="w-full mb-6 block">
                     <button
                       onClick={async () => {
-                        const isLoadingPlan = loadingPlan === plan.name;
+                        const isLoadingPlan = loadingRazorpay === plan.name || loadingStripe === plan.name;
                         if (isLoadingPlan) return;
                         
                         if (!isAuthenticated) {
@@ -306,22 +323,29 @@ const Pricing = () => {
                         }
 
                         try {
-                          await initiatePayment(
-                            { name: plan.name, planType: plan.key as "plus" | "pro", priceUSD: plan.priceUSD },
-                            { id: user._id, name: user.name || "", email: user.email || "" }
-                          );
+                          if (isIndia) {
+                            await initiateRazorpay(
+                              { name: plan.name, planType: plan.key as "plus" | "pro", priceUSD: plan.priceUSD },
+                              { id: user._id, name: user.name || "", email: user.email || "" }
+                            );
+                          } else {
+                            await initiateStripe(
+                              { name: plan.name, planType: plan.key as "plus" | "pro", priceUSD: plan.priceUSD },
+                              { id: user._id, name: user.name || "", email: user.email || "" }
+                            );
+                          }
                         } catch (e: any) {
                           console.error("Payment failed", e);
                         }
                       }}
-                      disabled={loadingPlan !== null}
+                      disabled={loadingRazorpay !== null || loadingStripe !== null}
                       className={cn(
                         "w-full py-2 px-4 rounded-full font-medium text-sm transition-all duration-300 shadow-sm flex items-center justify-center gap-2 cursor-pointer",
                         "bg-[#1c1c1c] border border-white/10 text-gray-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] hover:bg-white hover:text-black",
-                        (loadingPlan !== null) && "opacity-50 cursor-not-allowed"
+                        (loadingRazorpay !== null || loadingStripe !== null) && "opacity-50 cursor-not-allowed"
                       )}
                     >
-                      {loadingPlan === plan.name ? "Processing..." : plan.cta}
+                      {(loadingRazorpay === plan.name || loadingStripe === plan.name) ? "Processing..." : plan.cta}
                     </button>
                   </div>
 

@@ -24,6 +24,7 @@ import type * as repo from "../repo.js";
 import type * as scheduleRunner from "../scheduleRunner.js";
 import type * as scheduler from "../scheduler.js";
 import type * as sprint from "../sprint.js";
+import type * as stripe from "../stripe.js";
 import type * as user from "../user.js";
 import type * as workspace from "../workspace.js";
 
@@ -50,6 +51,7 @@ declare const fullApi: ApiFromModules<{
   scheduleRunner: typeof scheduleRunner;
   scheduler: typeof scheduler;
   sprint: typeof sprint;
+  stripe: typeof stripe;
   user: typeof user;
   workspace: typeof workspace;
 }>;

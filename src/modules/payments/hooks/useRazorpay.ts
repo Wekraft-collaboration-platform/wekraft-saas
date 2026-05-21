@@ -63,7 +63,7 @@ export interface Plan {
 
 export const useRazorpay = () => {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
-  const [exchangeRate, setExchangeRate] = useState(85);
+  const [exchangeRate, setExchangeRate] = useState(96);
 
   useEffect(() => {
     const fetchRate = async () => {
@@ -72,7 +72,7 @@ export const useRazorpay = () => {
         const data = await res.json();
         if (data.rates?.INR) setExchangeRate(data.rates.INR);
       } catch {
-        // Fallback to 85
+        // Fallback to 96
       }
     };
     fetchRate();
