@@ -149,12 +149,12 @@ export function UpcomingDeadlines() {
         ) : !deadlines || deadlines.length === 0 ? (
           // Empty state
           <div className="flex flex-col items-center justify-center h-full py-6 px-6 text-center gap-2">
-            <div className="h-8 w-8 rounded-full bg-muted/20 border border-border/25 flex items-center justify-center">
-              <CalendarClock className="h-4.5 w-4.5 text-muted-foreground/40" />
-            </div>
+
+            <CalendarClock className="h-5 w-5 text-primary" />
+
             <div>
-              <p className="text-xs font-medium text-foreground/75">No deadlines soon</p>
-              <p className="text-[10px] text-muted-foreground/55 mt-0.5 max-w-[180px]">
+              <p className="text-sm font-medium text-foreground">No deadlines soon</p>
+              <p className="text-xs text-muted-foreground mt-0.5 max-w-[180px]">
                 No projects have deadlines in the next 7 days.
               </p>
             </div>

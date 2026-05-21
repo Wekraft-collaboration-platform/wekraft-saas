@@ -29,9 +29,10 @@ import {
   LucideGitCommitHorizontal,
   LucideLayersPlus,
   GitGraph,
+  Github,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -47,6 +48,8 @@ import { api } from "../../../../convex/_generated/api";
 import { useSidebar } from "@/components/ui/sidebar";
 import CreateProjectDialog from "@/modules/project/CreateProjectDialog";
 import { DashboardProjects } from "./DashboardProjects";
+import { toast } from "sonner";
+import { useUser } from "@clerk/nextjs";
 
 // ─── Utility: human-readable relative time ─────────────────────────────────
 function timeAgo(ts: number): string {
@@ -78,6 +81,8 @@ const STATIC_STEPS: Step[] = [
 export default function DashboardPage() {
   const router = useRouter();
   const { open: isSidebarOpen } = useSidebar();
+  const [mounted, setMounted] = useState(false);
+  const { user: clerkUser } = useUser();
 
   const [activeTab, setActiveTab] = useState<"stats" | "projects">("stats");
   const [isRightSidebarExpanded, setIsRightSidebarExpanded] = useState(false);
@@ -108,6 +113,47 @@ export default function DashboardPage() {
   const ownerProjects = useQuery(api.project.getUserProjects);
   const teamProjects = useQuery(api.project.getJoinedProjects);
 
+
+  // ------------GITHUB CONNECTION------------------------
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
+  const handleConnectGithub = async () => {
+    try {
+      const existingGithub = clerkUser?.externalAccounts.find(
+        // @ts-ignore
+        (acc) => acc.provider === "github",
+      );
+
+      if (
+        existingGithub &&
+        existingGithub.verification?.status !== "verified" &&
+        existingGithub.verification?.externalVerificationRedirectURL
+      ) {
+        window.location.href =
+          existingGithub.verification.externalVerificationRedirectURL.toString();
+        return;
+      }
+
+      const res = await clerkUser?.createExternalAccount({
+        strategy: "oauth_github",
+        redirectUrl: window.location.href,
+      });
+
+      if (res?.verification?.externalVerificationRedirectURL) {
+        window.location.href =
+          res.verification.externalVerificationRedirectURL.toString();
+      }
+    } catch (error: any) {
+      console.error("❌ Failed to connect GitHub:", error);
+      toast.error(
+        error?.errors?.[0]?.message ||
+        "Something went wrong while connecting GitHub",
+      );
+    }
+  };
+
   // Combine and sort projects
   const allProjects = [
     ...(ownerProjects?.map((p) => ({ ...p, role: "Owner" as const })) ?? []),
@@ -134,6 +180,17 @@ export default function DashboardPage() {
 
   return (
     <div className="w-full bg-background min-h-full text-foreground">
+      <div className="mt-3 ml-8">
+        <h2 className="text-base italic font-medium tracking-tight font-inter">
+          {!githubUsername && (
+            <>You havent connected github yet, connect to unlock full potential.
+              <Button
+                onClick={handleConnectGithub} className="text-xs cursor-pointer px-5! h-7.5! ml-2" size='sm'>
+                Connect <Github />
+              </Button></>
+          )}
+        </h2>
+      </div>
       {/* Parent Divided */}
       <div className="flex flex-col lg:flex-row gap-8 items-start w-full">
         {/* Left Side */}
