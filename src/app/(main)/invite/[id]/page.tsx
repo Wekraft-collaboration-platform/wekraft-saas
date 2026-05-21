@@ -1,26 +1,23 @@
 "use client";
 
-import * as React from "react";
-import { useParams, useRouter } from "next/navigation";
-import { useQuery } from "convex/react";
-import { api } from "@/../convex/_generated/api";
-import { useConvexAuth } from "convex/react";
-import Image from "next/image";
+import { useConvexAuth, useMutation, useQuery } from "convex/react";
 import { motion } from "framer-motion";
-import { Button } from "@/components/ui/button";
 import {
-  Rocket,
-  Users,
-  ShieldAlert,
-  CheckCircle2,
   ArrowRight,
+  CheckCircle2,
+  Loader2,
   LogIn,
+  Rocket,
+  ShieldAlert,
+  Users,
 } from "lucide-react";
-import { Skeleton } from "@/components/ui/skeleton";
+import Image from "next/image";
 import Link from "next/link";
-import { cn } from "@/lib/utils";
-import { useMutation } from "convex/react";
+import { useParams, useRouter } from "next/navigation";
+import * as React from "react";
 import { toast } from "sonner";
+import { api } from "@/../convex/_generated/api";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
@@ -29,8 +26,9 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
-import { Loader2 } from "lucide-react";
+import { cn } from "@/lib/utils";
 
 export default function InvitePage() {
   const params = useParams();

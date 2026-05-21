@@ -3,6 +3,7 @@
 import { RedirectToSignIn } from "@clerk/nextjs";
 import { Authenticated, Unauthenticated, useQuery } from "convex/react";
 import { BugPlay, Home, Moon, Share2, SunMedium, Video } from "lucide-react";
+import Link from "next/link";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
 import { useEffect, useState } from "react";
@@ -14,13 +15,12 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useStoreUser } from "@/hooks/use-user-store";
+import { AnnouncementBanner } from "@/modules/dashboard/components/AnnouncementBanner";
 import { DashboardBreadcrumbs } from "@/modules/dashboard/components/HeaderCrumbs";
+import { NotificationCenter } from "@/modules/dashboard/components/NotificationCenter";
 import { ShareProjectDialog } from "@/modules/dashboard/components/ShareProjectDialog";
 import { UserMenu } from "@/modules/dashboard/components/UserMenu";
 import { api } from "../../../../convex/_generated/api";
-import Link from "next/link";
-import { AnnouncementBanner } from "@/modules/dashboard/components/AnnouncementBanner";
-import { NotificationCenter } from "@/modules/dashboard/components/NotificationCenter";
 
 export default function Layout({
   children,
@@ -67,7 +67,7 @@ export default function Layout({
           <SidebarInset className="border-l h-screen flex flex-col">
             <header className="flex justify-between h-18 py-1 flex-none items-center border-b px-4 bg-sidebar/60 backdrop-blur-xl z-50">
               <div className="flex items-center gap-2">
-                <SidebarTrigger  className="-ml-1 cursor-pointer hover:scale-105 transition-all duration-200" />
+                <SidebarTrigger className="-ml-1 cursor-pointer hover:scale-105 transition-all duration-200" />
                 <DashboardBreadcrumbs />
               </div>
               {/* <div>

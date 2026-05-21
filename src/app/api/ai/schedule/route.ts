@@ -1,7 +1,7 @@
-import { NextRequest, NextResponse } from "next/server";
-import { generateText } from "ai";
 import { openai } from "@ai-sdk/openai";
+import { generateText } from "ai";
 import { ConvexHttpClient } from "convex/browser";
+import { type NextRequest, NextResponse } from "next/server";
 import { api } from "../../../../../convex/_generated/api";
 
 // Initialize Convex Client

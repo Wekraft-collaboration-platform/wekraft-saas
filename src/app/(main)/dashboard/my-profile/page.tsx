@@ -1,15 +1,14 @@
 "use client";
+import { useQuery as useConvexQuery } from "convex/react";
+import { Gem, Loader, Settings2, Share2, Star } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Gem, Loader, Settings2, Share2, Star } from "lucide-react";
-import { useQuery as useConvexQuery } from "convex/react";
-import { api } from "../../../../../convex/_generated/api";
-import { useStoreUser } from "@/hooks/use-user-store";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUserPlan } from "@/hooks/use-user-plan";
-
+import { useStoreUser } from "@/hooks/use-user-store";
 import { BioEditor } from "@/modules/profile/components/BioEditor";
 import { GithubStats } from "@/modules/profile/components/githubstats";
+import { api } from "../../../../../convex/_generated/api";
 
 const MyProfilePage = () => {
   const user = useConvexQuery(api.user.getCurrentUser);

@@ -1,6 +1,6 @@
-import { NextRequest, NextResponse } from "next/server";
-import { ratelimit } from "@/lib/rate-limit";
 import { ConvexHttpClient } from "convex/browser";
+import { type NextRequest, NextResponse } from "next/server";
+import { ratelimit } from "@/lib/rate-limit";
 import { api } from "../../../../convex/_generated/api";
 
 const AGENT_URL = process.env.NEXT_PUBLIC_AGENT_URL;

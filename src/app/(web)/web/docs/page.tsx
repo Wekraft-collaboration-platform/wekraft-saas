@@ -1,28 +1,28 @@
-import Link from "next/link";
-import { docsConfig } from "@/lib/docs-config";
 import {
-  BookOpen,
-  Terminal,
-  Layers,
-  CheckSquare,
   AlertCircle,
-  Zap,
-  Clock,
-  Calendar,
-  Users,
-  BarChart3,
-  Settings,
   ArrowRight,
+  BarChart3,
+  BookOpen,
+  Calendar,
+  CheckSquare,
+  Clock,
   Command,
-  Sparkles,
-  ShieldCheck,
-  CreditCard,
-  FileText,
   Compass,
   Cpu,
-  Wrench,
+  CreditCard,
+  FileText,
+  Layers,
   LayoutGrid,
+  Settings,
+  ShieldCheck,
+  Sparkles,
+  Terminal,
+  Users,
+  Wrench,
+  Zap,
 } from "lucide-react";
+import Link from "next/link";
+import { docsConfig } from "@/lib/docs-config";
 
 const iconMap: { [key: string]: any } = {
   BookOpen,

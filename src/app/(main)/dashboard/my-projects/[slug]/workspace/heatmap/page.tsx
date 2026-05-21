@@ -1,13 +1,13 @@
 "use client";
 
-import { useSidebar } from "@/components/ui/sidebar";
-import React, { useEffect, useState, useRef, useMemo } from "react";
-import { HeatmapFlow } from "@/modules/workspace/heatmaps/HeatmapFlow";
-import { useParams } from "next/navigation";
 import { useQuery } from "convex/react";
-import { api } from "../../../../../../../../convex/_generated/api";
+import { useParams } from "next/navigation";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useSidebar } from "@/components/ui/sidebar";
+import type { FolderNode } from "@/modules/workspace/heatmaps/action";
+import { HeatmapFlow } from "@/modules/workspace/heatmaps/HeatmapFlow";
 import { HeatmapPanel } from "@/modules/workspace/heatmaps/HeatmapPanel";
-import { FolderNode } from "@/modules/workspace/heatmaps/action";
+import { api } from "../../../../../../../../convex/_generated/api";
 
 const HeatmapPage = () => {
   const { open: sidebarOpen, setOpen: setSidebarOpen } = useSidebar();

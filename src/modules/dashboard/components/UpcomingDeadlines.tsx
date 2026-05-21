@@ -1,9 +1,19 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CalendarClock, Clock, FolderKanban } from "lucide-react";
+import { CalendarClock, Clock, FolderKanban, RefreshCwIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+
+async function fetchDeadlines(refresh = false) {
+  const url = refresh
+    ? "/api/dashboard/upcoming-cards?refresh=true"
+    : "/api/dashboard/upcoming-cards";
+  const res = await fetch(url);
+  const d = await res.json();
+  return d.deadlines || [];
+}
 
 function daysUntil(ts: number): number {
   return Math.ceil((ts - Date.now()) / (1000 * 60 * 60 * 24));
@@ -46,7 +56,7 @@ function Sparkline({ id, daysLeft }: { id: string; daysLeft: number }) {
   // Color of the line based on urgency
   const isUrgent = daysLeft <= 2;
   const isWarning = daysLeft <= 4;
-  
+
   // Tailwind color classes for stroke
   const strokeColor = isUrgent
     ? "stroke-rose-500"
@@ -72,18 +82,25 @@ export function UpcomingDeadlines() {
   const router = useRouter();
   const [deadlines, setDeadlines] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    fetch("/api/dashboard/upcoming-cards")
-      .then((res) => res.json())
-      .then((d) => {
-        setDeadlines(d.deadlines || []);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setLoading(false);
-      });
+    fetchDeadlines()
+      .then(setDeadlines)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      const fresh = await fetchDeadlines(true);
+      setDeadlines(fresh);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setRefreshing(false);
+    }
   }, []);
 
   return (
@@ -95,12 +112,26 @@ export function UpcomingDeadlines() {
           Upcoming Deadlines
         </h3>
         <span className="text-[11px] font-medium text-muted-foreground">
-          next 7 days
+          in 1 Week
         </span>
+        <Button
+          size="icon-xs"
+          variant="outline"
+          onClick={handleRefresh}
+          disabled={refreshing}
+          title="Refresh deadlines"
+        >
+          <RefreshCwIcon
+            className={cn(
+              "h-3 w-3 text-muted-foreground",
+              refreshing && "animate-spin"
+            )}
+          />
+        </Button>
       </div>
 
       {/* Body - Scrollable */}
-      <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar divide-y divide-border/20">
+      <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar divide-y divide-border">
         {loading ? (
           // Loading skeleton
           <div className="flex flex-col divide-y divide-border/10">
@@ -138,7 +169,7 @@ export function UpcomingDeadlines() {
               <button
                 key={project._id}
                 onClick={() => router.push(`/dashboard/my-projects/${project.slug}/workspace`)}
-                className="w-full flex items-center gap-3 px-4 py-2 text-left hover:bg-accent/30 transition-colors duration-150 group outline-none"
+                className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-accent/30 cursor-pointer transition-colors duration-150 group outline-none"
               >
                 {/* Icon */}
                 <div

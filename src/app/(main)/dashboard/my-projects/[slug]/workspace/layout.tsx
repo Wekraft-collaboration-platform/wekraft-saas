@@ -1,16 +1,15 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
-import { api } from "../../../../../../../convex/_generated/api";
-import { Id } from "../../../../../../../convex/_generated/dataModel";
-import { FloatingKaya } from "@/modules/ai/FloatingKaya";
-import { AiAssistantSheet } from "@/modules/ai/AiAssistantSheet";
-import { ShieldAlert, ArrowLeft, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowLeft, Loader2, ShieldAlert } from "lucide-react";
 import Image from "next/image";
-
+import { useParams, useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { AiAssistantSheet } from "@/modules/ai/AiAssistantSheet";
+import { FloatingKaya } from "@/modules/ai/FloatingKaya";
 import ProjectSidebar from "@/modules/workspace/Projectsidebar";
+import { api } from "../../../../../../../convex/_generated/api";
+import type { Id } from "../../../../../../../convex/_generated/dataModel";
 
 export default function WorkspaceLayout({
   children,

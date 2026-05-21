@@ -1,78 +1,79 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import { Id } from "../../../../../../../convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
-import { api } from "../../../../../../../convex/_generated/api";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import {
-  ChevronLeft,
-  Home,
-  CalendarIcon,
-  Activity,
-  AudioLines,
-  ExternalLink,
-  Clock3,
-  FlagTriangleRight,
-  ClockFading,
-  Users,
-  Timer,
-  CheckCircle2,
-  XCircle,
-  History,
-  CalendarRange,
-  PlusCircle,
-  ChartBar,
-  Table,
-  Settings2,
-  Plus,
-  AlertCircle,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import {
+  Activity,
+  AlertCircle,
+  AudioLines,
+  CalendarIcon,
+  CalendarRange,
+  ChartBar,
+  CheckCircle2,
+  ChevronLeft,
+  Clock3,
+  ClockFading,
+  ExternalLink,
+  FlagTriangleRight,
+  History,
+  Home,
+  Lock,
+  Plus,
+  PlusCircle,
+  Settings2,
+  Sparkles,
+  Table,
+  Timer,
+  Users,
+  XCircle,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import {
-  DropdownMenu,
-  DropdownMenuTrigger,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-} from "@/components/ui/dropdown-menu";
-import { Calendar } from "@/components/ui/calendar";
-import { toast } from "sonner";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardFooter,
-} from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import Image from "next/image";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ActivityOverviewCard } from "@/modules/workspace/workspace-modules/ActivityOverviewCard";
-import { TaskStatusCard } from "@/modules/workspace/workspace-modules/TaskStatusCard";
-import { SchedulerCard } from "@/modules/workspace/workspace-modules/SchedulerCard";
-import { SprintBarChart } from "@/modules/workspace/workspace-modules/SprintBarChart";
-import { UserWorkTable } from "@/modules/workspace/workspace-modules/UserWorkTable";
-import { SetTargetDateDialog } from "@/modules/workspace/SetTargetDateDialog";
 import { Separator } from "@/components/ui/separator";
-import { TeamContributionRadarCard } from "@/modules/workspace/workspace-modules/TeamContributionRadarCard";
-import { Lock, Sparkles } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
+import { SetTargetDateDialog } from "@/modules/workspace/SetTargetDateDialog";
+import { ActivityOverviewCard } from "@/modules/workspace/workspace-modules/ActivityOverviewCard";
 import { EnvironmentalSeverityHeatmap } from "@/modules/workspace/workspace-modules/EnvironmentalSeverityHeatmap";
-import { WeeklyVelocityChart } from "@/modules/workspace/workspace-modules/WeeklyVelocityChart";
 import { MemberWorkloadCard } from "@/modules/workspace/workspace-modules/MemberWorkloadCard";
 import { ProjectConfigTab } from "@/modules/workspace/workspace-modules/ProjectConfigTab";
+import { SchedulerCard } from "@/modules/workspace/workspace-modules/SchedulerCard";
+import { SprintBarChart } from "@/modules/workspace/workspace-modules/SprintBarChart";
+import { TaskStatusCard } from "@/modules/workspace/workspace-modules/TaskStatusCard";
+import { TeamContributionRadarCard } from "@/modules/workspace/workspace-modules/TeamContributionRadarCard";
+import { UserWorkTable } from "@/modules/workspace/workspace-modules/UserWorkTable";
 import { WeeklyEngagementChartCard } from "@/modules/workspace/workspace-modules/WeeklyEngagementChartCard";
+import { WeeklyVelocityChart } from "@/modules/workspace/workspace-modules/WeeklyVelocityChart";
+import { api } from "../../../../../../../convex/_generated/api";
+import type { Id } from "../../../../../../../convex/_generated/dataModel";
 
 const ProjectWorkspace = () => {
   const params = useParams();
@@ -281,7 +282,8 @@ const ProjectWorkspace = () => {
                 {/* Deadline Date */}
                 <div className="flex flex-col items-center gap-0.5 text-center">
                   <span className="flex items-center gap-1 text-[10px]  font-medium text-muted-foreground ">
-                    <FlagTriangleRight className="w-3 h-3 text-muted-foreground" /> Deadline
+                    <FlagTriangleRight className="w-3 h-3 text-muted-foreground" />{" "}
+                    Deadline
                   </span>
                   <span className="font-medium text-foreground">
                     {deadline ? format(deadline, "PPP") : "Not Set"}
@@ -299,7 +301,9 @@ const ProjectWorkspace = () => {
                   disabled={!isOwner}
                   className={cn(
                     "text-[10px]",
-                    isOwner ? "cursor-pointer" : "cursor-not-allowed opacity-50"
+                    isOwner
+                      ? "cursor-pointer"
+                      : "cursor-not-allowed opacity-50",
                   )}
                 >
                   Change <ClockFading className="w-3 h-3!" />
@@ -314,14 +318,18 @@ const ProjectWorkspace = () => {
                       disabled={!isOwner}
                       className={cn(
                         "text-[10px]",
-                        isOwner ? "cursor-pointer" : "cursor-not-allowed opacity-50"
+                        isOwner
+                          ? "cursor-pointer"
+                          : "cursor-not-allowed opacity-50",
                       )}
                     >
                       Set Alerts <AlertCircle className="w-3 h-3!" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuLabel className="text-[11px] font-semibold text-muted-foreground">Project Alerts</DropdownMenuLabel>
+                    <DropdownMenuLabel className="text-[11px] font-semibold text-muted-foreground">
+                      Project Alerts
+                    </DropdownMenuLabel>
                     <DropdownMenuSeparator />
                     <DropdownMenuItem className="cursor-pointer text-xs">
                       <span>25% Duration Reached</span>

@@ -1,8 +1,8 @@
-import { NextRequest, NextResponse } from "next/server";
 import { fetchQuery } from "convex/nextjs";
+import { type NextRequest, NextResponse } from "next/server";
 import { redis } from "@/lib/redis";
-import { Id } from "../../../../../convex/_generated/dataModel";
 import { api } from "../../../../../convex/_generated/api";
+import type { Id } from "../../../../../convex/_generated/dataModel";
 
 export interface DashboardAnalyticsData {
   contributions: {
@@ -83,17 +83,23 @@ export async function GET(req: NextRequest) {
 
   // 2. Cache miss or force refresh — fetch from Convex
   try {
-    const [contributions, sprints, heatmap, velocity, workload, weeklyEngagement] =
-      await Promise.all([
-        fetchQuery(api.workspace.getProjectContributions, { projectId }),
-        fetchQuery(api.sprint.getSprintsByProject, { projectId }),
-        fetchQuery(api.workspace.getEnvironmentalSeverityHeatmap, {
-          projectId,
-        }),
-        fetchQuery(api.workspace.getWeeklyVelocity, { projectId }),
-        fetchQuery(api.workspace.getMemberWorkload, { projectId }),
-        fetchQuery(api.workspace.getWeeklyEngagement, { projectId }),
-      ]);
+    const [
+      contributions,
+      sprints,
+      heatmap,
+      velocity,
+      workload,
+      weeklyEngagement,
+    ] = await Promise.all([
+      fetchQuery(api.workspace.getProjectContributions, { projectId }),
+      fetchQuery(api.sprint.getSprintsByProject, { projectId }),
+      fetchQuery(api.workspace.getEnvironmentalSeverityHeatmap, {
+        projectId,
+      }),
+      fetchQuery(api.workspace.getWeeklyVelocity, { projectId }),
+      fetchQuery(api.workspace.getMemberWorkload, { projectId }),
+      fetchQuery(api.workspace.getWeeklyEngagement, { projectId }),
+    ]);
 
     const data: DashboardAnalyticsData = {
       contributions: contributions as any,

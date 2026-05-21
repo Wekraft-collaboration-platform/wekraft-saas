@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
 import { ConvexHttpClient } from "convex/browser";
+import { type NextRequest, NextResponse } from "next/server";
 import { api } from "../../../../../convex/_generated/api";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
@@ -25,9 +25,10 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
-  // Check cache
+  // Check cache (skip if ?refresh=true is passed)
+  const forceRefresh = req.nextUrl.searchParams.get("refresh") === "true";
   const cached = cache.get(userId);
-  if (cached && Date.now() - cached.timestamp < CACHE_TTL) {
+  if (!forceRefresh && cached && Date.now() - cached.timestamp < CACHE_TTL) {
     console.log("==========CACHED HIT FOR DASHBOARD CARDS===============");
     return NextResponse.json(cached.data);
   }
@@ -53,12 +54,16 @@ export async function GET(req: NextRequest) {
       timestamp: Date.now(),
     });
 
+    console.log(
+      "==========Updated CACHE DATA FOR DASHBOARD CARDS===============",
+      data,
+    );
     return NextResponse.json(data);
   } catch (error) {
     console.error("Error fetching dashboard upcoming cards:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
-      { status: 500 }
+      { status: 500 },
     );
   }
 }

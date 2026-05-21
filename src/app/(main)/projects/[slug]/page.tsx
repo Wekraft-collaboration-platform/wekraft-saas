@@ -1,11 +1,11 @@
 "use client";
 
-import { use, useEffect, useState } from "react";
-import { useMutation, useQuery } from "convex/react";
 import { useUser } from "@clerk/nextjs";
-import { api } from "../../../../../convex/_generated/api";
-import { Id } from "../../../../../convex/_generated/dataModel";
+import { useMutation, useQuery } from "convex/react";
+import { use, useEffect, useState } from "react";
 import { toast } from "sonner";
+import { api } from "../../../../../convex/_generated/api";
+import type { Id } from "../../../../../convex/_generated/dataModel";
 
 // ── types ──────────────────────────────────────────────────────────────────
 interface Member {

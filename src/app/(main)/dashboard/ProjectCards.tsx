@@ -1,23 +1,23 @@
 "use client";
 
-import React from "react";
 import {
-  Plus,
-  Settings2,
   ExternalLink,
   FolderGit2,
-  Link2Off,
   Globe,
+  Link2Off,
   Lock,
   LucideLayers2,
   LucideLayers3,
+  Plus,
+  Settings2,
 } from "lucide-react";
-import { Card } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import Link from "next/link";
-import { ProjectQuickStats } from "@/types/types";
+import React from "react";
+import { Button } from "@/components/ui/button";
+import { Card } from "@/components/ui/card";
+import { cn } from "@/lib/utils";
 import CreateProjectDialog from "@/modules/project/CreateProjectDialog";
+import type { ProjectQuickStats } from "@/types/types";
 
 interface ProjectCardsProps {
   projects: ProjectQuickStats[] | undefined;

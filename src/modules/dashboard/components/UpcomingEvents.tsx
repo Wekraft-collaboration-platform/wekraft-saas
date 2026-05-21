@@ -1,46 +1,63 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Calendar, Clock, FolderKanban } from "lucide-react";
+import { Calendar, FolderKanban, RefreshCwIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Button } from "@/components/ui/button";
+
+function formatDay(ts: number): string {
+  return new Date(ts).toLocaleDateString("en-US", { weekday: "short" });
+}
+
+function formatDateNum(ts: number): string {
+  return new Date(ts).toLocaleDateString("en-US", { day: "2-digit" });
+}
+
+function formatTime(ts: number, allDay: boolean): string {
+  if (allDay) return "All Day";
+  return new Date(ts).toLocaleTimeString("en-US", {
+    hour: "2-digit",
+    minute: "2-digit",
+  });
+}
 
 function daysUntil(ts: number): number {
   return Math.ceil((ts - Date.now()) / (1000 * 60 * 60 * 24));
 }
 
-function formatEventTime(start: number, end: number, allDay: boolean): string {
-  const startDate = new Date(start);
-  const dateStr = startDate.toLocaleDateString("en-US", {
-    month: "short",
-    day: "numeric",
-  });
-  if (allDay) {
-    return `${dateStr} (All Day)`;
-  }
-  const timeStr = startDate.toLocaleTimeString("en-US", {
-    hour: "2-digit",
-    minute: "2-digit",
-  });
-  return `${dateStr} at ${timeStr}`;
+async function fetchEvents(refresh = false) {
+  const url = refresh
+    ? "/api/dashboard/upcoming-cards?refresh=true"
+    : "/api/dashboard/upcoming-cards";
+  const res = await fetch(url);
+  const d = await res.json();
+  return d.events || [];
 }
 
 export function UpcomingEvents() {
   const router = useRouter();
   const [events, setEvents] = useState<any[] | null>(null);
   const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
 
   useEffect(() => {
-    fetch("/api/dashboard/upcoming-cards")
-      .then((res) => res.json())
-      .then((d) => {
-        setEvents(d.events || []);
-        setLoading(false);
-      })
-      .catch((err) => {
-        console.error(err);
-        setLoading(false);
-      });
+    fetchEvents()
+      .then(setEvents)
+      .catch(console.error)
+      .finally(() => setLoading(false));
+  }, []);
+
+  const handleRefresh = useCallback(async () => {
+    setRefreshing(true);
+    try {
+      const fresh = await fetchEvents(true);
+      setEvents(fresh);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setRefreshing(false);
+    }
   }, []);
 
   return (
@@ -52,31 +69,51 @@ export function UpcomingEvents() {
           Upcoming Events
         </h3>
         <span className="text-[11px] font-medium text-muted-foreground">
-          next 7 days
+          in 1 Week
         </span>
+        <Button
+          size="icon-xs"
+          variant="outline"
+          onClick={handleRefresh}
+          disabled={refreshing}
+          title="Refresh events"
+        >
+          <RefreshCwIcon
+            className={cn(
+              "h-3 w-3 text-muted-foreground",
+              refreshing && "animate-spin"
+            )}
+          />
+        </Button>
       </div>
 
       {/* Body */}
-      <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar divide-y divide-border/20">
+      <div className="flex-1 min-h-0 overflow-y-auto custom-scrollbar divide-y divide-border">
         {loading ? (
-          // Loading skeleton
           <div className="flex flex-col divide-y divide-border/10">
             {Array.from({ length: 2 }).map((_, i) => (
-              <div key={i} className="flex items-center gap-3 px-4 py-2.5 animate-pulse">
-                <div className="h-7 w-7 rounded-lg bg-muted/40 shrink-0" />
+              <div key={i} className="flex items-start gap-3 px-4 py-2.5 animate-pulse">
+                {/* Date skeleton */}
+                <div className="flex flex-col items-center shrink-0 w-8 gap-1 mt-0.5">
+                  <div className="h-4 w-6 bg-muted/40 rounded" />
+                  <div className="h-2.5 w-5 bg-muted/20 rounded" />
+                </div>
+                {/* Divider skeleton */}
+                <div className="w-px self-stretch bg-border/30 mx-1 shrink-0" />
+                {/* Content skeleton */}
                 <div className="flex-1 space-y-2">
                   <div className="h-3 bg-muted/40 rounded w-3/4" />
+                  <div className="h-2.5 bg-muted/20 rounded w-full" />
                   <div className="h-2.5 bg-muted/20 rounded w-1/2" />
                 </div>
               </div>
             ))}
           </div>
         ) : !events || events.length === 0 ? (
-          // Empty state
           <div className="flex flex-col items-center justify-center h-full py-6 px-6 text-center gap-2">
             <Calendar className="h-4.5 w-4.5 text-muted-foreground" />
             <div>
-              <p className="text-sm font-medium ">No events soon</p>
+              <p className="text-sm font-medium">No events soon</p>
               <p className="text-xs text-muted-foreground mt-0.5 max-w-45">
                 No upcoming events or meetings this week.
               </p>
@@ -90,36 +127,64 @@ export function UpcomingEvents() {
             return (
               <button
                 key={event._id}
-                onClick={() => router.push(`/projects/${event.projectSlug}`)}
-                className="w-full flex items-start gap-3 px-4 py-2.5 text-left hover:bg-accent/30 transition-colors duration-150 group outline-none"
+                onClick={() => router.push(`/dashboard/my-projects/${event.projectSlug}/workspace/calendar`)}
+                className="w-full flex items-start gap-0 px-4 py-2 text-left hover:bg-accent/30 cursor-pointer transition-colors duration-150 group outline-none"
               >
-                {/* Event Color Dot */}
-                <div
-                  className={cn(
-                    "h-2 w-2 rounded-full mt-1.5 shrink-0",
-                    isToday ? "bg-destructive animate-pulse" : "bg-primary"
-                  )}
-                  style={event.color ? { backgroundColor: event.color } : undefined}
-                />
+                {/* Left: Date block */}
+                <div className="flex flex-col items-center shrink-0 w-9 mr-3 mt-0.5">
+                  <span
+                    className={cn(
+                      "text-[15px] font-bold leading-none",
+                      isToday ? "text-primary" : "text-foreground/80"
+                    )}
+                  >
+                    {formatDateNum(event.start)}
+                  </span>
+                  <span
+                    className={cn(
+                      "text-[9px] font-semibold uppercase tracking-wider mt-0.5",
+                      isToday ? "text-primary/70" : "text-muted-foreground/60"
+                    )}
+                  >
+                    {isToday ? "TODAY" : formatDay(event.start)}
+                  </span>
+                </div>
 
-                {/* Content */}
+                {/* Vertical divider */}
+                <div
+                  className="w-px self-stretch mr-3 shrink-0 rounded-full"
+                  style={
+                    event.color
+                      ? { backgroundColor: event.color, opacity: 1 }
+                      : undefined
+                  }
+                >
+                  {!event.color && (
+                    <div
+                      className={cn(
+                        "w-full h-full rounded-full",
+                        isToday ? "bg-primary/60" : "bg-border/50"
+                      )}
+                    />
+                  )}
+                </div>
+
+                {/* Right: Content */}
                 <div className="flex-1 min-w-0">
+                  {/* Title */}
                   <p className="text-[12.5px] font-medium text-foreground/85 truncate group-hover:text-foreground transition-colors">
                     {event.title}
                   </p>
+                  {/* Bottom row: time + project */}
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    <span className="text-[10px] text-muted-foreground/50">
+                      {formatTime(event.start, event.allDay)}
+                    </span>
 
-                  {/* Project Name Badge */}
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <span className="inline-flex items-center gap-1 text-[9px] font-medium text-muted-foreground bg-muted px-1.5 py-0.2 rounded border border-border/40 max-w-full truncate">
+                    {/* Project badge */}
+                    <span className="inline-flex items-center gap-1 text-[9px] font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded border border-border/40 max-w-[120px] truncate">
                       <FolderKanban className="h-2.5 w-2.5 shrink-0" />
                       <span className="truncate">{event.projectName}</span>
-                    </span>
-                  </div>
-
-                  <div className="flex items-center gap-1 mt-1 text-muted-foreground/55">
-                    <Clock className="h-3 w-3 shrink-0" />
-                    <span className="text-[10px]">
-                      {formatEventTime(event.start, event.end, event.allDay)}
                     </span>
                   </div>
                 </div>

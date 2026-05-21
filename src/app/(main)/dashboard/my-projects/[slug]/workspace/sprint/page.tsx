@@ -1,31 +1,29 @@
 "use client";
 
-import { useParams } from "next/navigation";
 import { useQuery } from "convex/react";
-import { api } from "../../../../../../../../convex/_generated/api";
-import { Id } from "../../../../../../../../convex/_generated/dataModel";
-import Link from "next/link";
 import { format } from "date-fns";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import {
-  Plus,
-  Zap,
-  Clock,
+  Calendar,
   CheckCircle2,
-  Target,
+  ChevronRight,
+  Clock,
   FastForward,
-  FileCodeCorner,
   FastForwardIcon,
-  Sparkles,
+  FileCodeCorner,
+  Filter,
   MoveRight,
+  Plus,
+  Search,
+  Sparkles,
+  Target,
+  Zap,
 } from "lucide-react";
-import { CreateSprintDialog } from "@/modules/workspace/CreateSprintDialog";
 import Image from "next/image";
-
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
 import { useState } from "react";
-import { useRouter } from "next/navigation";
-import { Search, Filter, Calendar, ChevronRight } from "lucide-react";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import {
   Select,
@@ -35,7 +33,10 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
+import { CreateSprintDialog } from "@/modules/workspace/CreateSprintDialog";
 import { useKayaStore } from "@/store/useKayaStore";
+import { api } from "../../../../../../../../convex/_generated/api";
+import type { Id } from "../../../../../../../../convex/_generated/dataModel";
 
 const SprintPage = () => {
   const params = useParams();

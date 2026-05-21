@@ -1,11 +1,11 @@
-import { NextRequest, NextResponse } from "next/server";
 import { fetchQuery } from "convex/nextjs";
+import { type NextRequest, NextResponse } from "next/server";
 import { redis } from "@/lib/redis";
-import { api } from "../../../../../convex/_generated/api";
 import {
-  getProjectLanguages,
   getProjectHealthData,
+  getProjectLanguages,
 } from "@/modules/github/actions/action";
+import { api } from "../../../../../convex/_generated/api";
 
 const CACHE_TTL = 60 * 30; // 30 minutes
 

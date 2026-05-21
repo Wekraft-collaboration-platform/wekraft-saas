@@ -1,13 +1,13 @@
 "use client";
 
-import { useStoreUser } from "@/hooks/use-user-store";
 import { useMutation, useQuery } from "convex/react";
 import { useRouter } from "next/navigation";
-import { api } from "../../../../../convex/_generated/api";
 import { useEffect } from "react";
-import { getUserTopLanguages } from "@/modules/github/actions/action";
 import { toast } from "sonner";
 import OnboardCard from "@/components/forgeui/onboard-card";
+import { useStoreUser } from "@/hooks/use-user-store";
+import { getUserTopLanguages } from "@/modules/github/actions/action";
+import { api } from "../../../../../convex/_generated/api";
 
 const AuthCallback = () => {
   const { isAuthenticated, isLoading: isStoreLoading } = useStoreUser();

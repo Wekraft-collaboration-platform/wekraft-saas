@@ -1,16 +1,16 @@
 "use client";
 
-import { api } from "@/../convex/_generated/api";
-import { Id } from "@/../convex/_generated/dataModel";
-import { Button } from "@/components/ui/button";
-import { Skeleton } from "@/components/ui/skeleton";
 import { useMutation, useQuery } from "convex/react";
-import { toast } from "sonner";
+import { format } from "date-fns";
 import {
   ArrowUpRight,
+  Calendar,
   ChevronLeft,
+  Clock,
+  CopyPlus,
   ExternalLink,
   Globe,
+  Globe2,
   GlobeLock,
   ImageIcon,
   Link2,
@@ -20,27 +20,24 @@ import {
   Settings2,
   UploadCloud,
   UserPlus,
-  Calendar,
-  Clock,
   Users,
-  CopyPlus,
-  Globe2,
 } from "lucide-react";
-
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Separator } from "@/components/ui/separator";
-import { format } from "date-fns";
-
-import Link from "next/link";
-import { useParams } from "next/navigation";
-import { InviteDialog } from "@/modules/project/inviteDilogag";
-import { Badge } from "@/components/ui/badge";
-import { useState, useEffect } from "react";
 import Image from "next/image";
-import { ProjectJoinRequests } from "@/modules/project/project-join-requests";
-import { useRouter } from "next/navigation";
-import SettingTab from "@/modules/project/SettingsTab";
+import Link from "next/link";
+import { useParams, useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { api } from "@/../convex/_generated/api";
+import type { Id } from "@/../convex/_generated/dataModel";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Separator } from "@/components/ui/separator";
+import { Skeleton } from "@/components/ui/skeleton";
+import { InviteDialog } from "@/modules/project/inviteDilogag";
 import ProjectInfo from "@/modules/project/ProjectInfo";
+import { ProjectJoinRequests } from "@/modules/project/project-join-requests";
+import SettingTab from "@/modules/project/SettingsTab";
 
 const ProjectPage = () => {
   const params = useParams();
@@ -52,11 +49,11 @@ const ProjectPage = () => {
   const user = useQuery(api.user.getCurrentUser);
   const members = useQuery(
     api.project.getProjectMembers,
-    project?._id ? { projectId: project._id as Id<"projects"> } : "skip"
+    project?._id ? { projectId: project._id as Id<"projects"> } : "skip",
   );
   const requests = useQuery(
     api.project.getProjectJoinRequests,
-    project?._id ? { projectId: project._id as Id<"projects"> } : "skip"
+    project?._id ? { projectId: project._id as Id<"projects"> } : "skip",
   );
   const pendingRequestsCount = requests
     ? requests.filter((r) => r.status === "pending").length
@@ -317,11 +314,13 @@ const ProjectPage = () => {
               <span>Requests</span>
               <UserPlus className="w-3.5 h-3.5" />
               {pendingRequestsCount > 0 && (
-                <span className={`px-1.5 py-0.5 rounded-full text-[9px] font-semibold transition-colors ${
-                  homeTab === "requests"
-                    ? "bg-background text-foreground"
-                    : "bg-primary text-primary-foreground"
-                }`}>
+                <span
+                  className={`px-1.5 py-0.5 rounded-full text-[9px] font-semibold transition-colors ${
+                    homeTab === "requests"
+                      ? "bg-background text-foreground"
+                      : "bg-primary text-primary-foreground"
+                  }`}
+                >
                   {pendingRequestsCount}
                 </span>
               )}

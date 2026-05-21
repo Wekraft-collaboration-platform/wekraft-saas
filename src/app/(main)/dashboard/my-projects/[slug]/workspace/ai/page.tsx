@@ -1,13 +1,6 @@
 "use client";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import Image from "next/image";
+import { useQuery } from "convex/react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
   ArrowDown,
   ArrowRight,
@@ -25,29 +18,39 @@ import {
   Sparkles,
   X,
 } from "lucide-react";
-import React, { useEffect, useRef, useState } from "react";
-import { Button } from "@/components/ui/button";
-import { useQuery } from "convex/react";
-
+import Image from "next/image";
 import { useParams } from "next/navigation";
-import { motion, AnimatePresence } from "framer-motion";
-import { useLangGraphAgent } from "@/modules/ai/langGraphAgent/useLangGraphAgent";
+import type React from "react";
+import { useEffect, useRef, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { ScrollArea } from "@/components/ui/scroll-area";
 import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { Spinner } from "@/components/ui/spinner";
+import { Textarea } from "@/components/ui/textarea";
+import { cn } from "@/lib/utils";
+import type {
   AgentState,
+  CalendarEventInterrupt,
   InterruptValue,
   ResumeValue,
-  CalendarEventInterrupt,
 } from "@/modules/ai/AgentTypes";
-import { AppCheckpoint, GraphNode } from "@/modules/ai/langGraphAgent/types";
-import { ChatbotNode } from "@/modules/ai/ChatbotNode";
-import { ToolCallCard } from "@/modules/ai/ToolCard";
 import { CalendarApprovalCard } from "@/modules/ai/CalendarApprovalCard";
-import { SprintItemSelectionCard } from "@/modules/ai/SprintItemSelectionCard";
+import { ChatbotNode } from "@/modules/ai/ChatbotNode";
+import type {
+  AppCheckpoint,
+  GraphNode,
+} from "@/modules/ai/langGraphAgent/types";
+import { useLangGraphAgent } from "@/modules/ai/langGraphAgent/useLangGraphAgent";
 import { SchedulerSetupCard } from "@/modules/ai/SchedulerSetupCard";
-import { Spinner } from "@/components/ui/spinner";
-import { ScrollArea } from "@/components/ui/scroll-area";
+import { SprintItemSelectionCard } from "@/modules/ai/SprintItemSelectionCard";
+import { ToolCallCard } from "@/modules/ai/ToolCard";
 import { api } from "../../../../../../../../convex/_generated/api";
-import { cn } from "@/lib/utils";
 
 const quickActions = [
   {

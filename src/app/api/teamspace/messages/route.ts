@@ -1,14 +1,14 @@
 import { auth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
-import { turso, initTeamspaceDB } from "@/lib/turso";
 import Ably from "ably";
+import { ConvexHttpClient } from "convex/browser";
 import { randomUUID } from "crypto";
+import { type NextRequest, NextResponse } from "next/server";
+import { initTeamspaceDB, turso } from "@/lib/turso";
 import { verifyProjectAccess } from "@/modules/workspace/teamspace/lib/auth";
 import {
   extractUrls,
   unfurlUrl,
 } from "@/modules/workspace/teamspace/lib/unfurl";
-import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../../../../convex/_generated/api";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
@@ -92,7 +92,8 @@ export async function GET(req: NextRequest) {
 
   // Fetch reactions grouped for these messages
   const messageIds = result.rows.map((r) => r.id as string);
-  let reactionsMap: Record<string, { emoji: string; userIds: string[] }[]> = {};
+  const reactionsMap: Record<string, { emoji: string; userIds: string[] }[]> =
+    {};
 
   if (messageIds.length > 0) {
     const placeholders = messageIds.map(() => "?").join(",");
@@ -113,7 +114,7 @@ export async function GET(req: NextRequest) {
   }
 
   // Fetch poll votes grouped for these messages
-  let pollVotesMap: Record<
+  const pollVotesMap: Record<
     string,
     {
       option_id: string;
@@ -142,7 +143,7 @@ export async function GET(req: NextRequest) {
   }
 
   const messages = result.rows.reverse().map((m) => {
-    let poll = m.poll ? JSON.parse(m.poll as string) : null;
+    const poll = m.poll ? JSON.parse(m.poll as string) : null;
     if (poll) {
       poll.votes = pollVotesMap[m.id as string] ?? [];
     }
@@ -212,8 +213,11 @@ export async function POST(req: NextRequest) {
   if (channelType === "announcement") {
     if (!access.permissions.isOwner && !access.permissions.isAdmin) {
       return NextResponse.json(
-        { error: "Forbidden: Only project owners and admins can post in announcement channels" },
-        { status: 403 }
+        {
+          error:
+            "Forbidden: Only project owners and admins can post in announcement channels",
+        },
+        { status: 403 },
       );
     }
   }
@@ -291,7 +295,9 @@ export async function POST(req: NextRequest) {
 
   // Publish lightweight message metadata to project-wide messages channel for unread count tracking
   try {
-    const projectMsgsChannel = ably.channels.get(`project:${projectId}:messages`);
+    const projectMsgsChannel = ably.channels.get(
+      `project:${projectId}:messages`,
+    );
     await projectMsgsChannel.publish("message.new", {
       id,
       channel_id: channelId,
@@ -319,7 +325,8 @@ export async function POST(req: NextRequest) {
         const noSpaces = member.userName.replace(/\s+/g, "");
         if (noSpaces && noSpaces !== member.userName) tagsToTry.push(noSpaces);
         const firstName = member.userName.split(" ")[0];
-        if (firstName && firstName.length >= 3 && firstName !== member.userName) tagsToTry.push(firstName);
+        if (firstName && firstName.length >= 3 && firstName !== member.userName)
+          tagsToTry.push(firstName);
         if (member.githubUsername) tagsToTry.push(member.githubUsername);
         return tagsToTry.some((tag) => {
           const escaped = tag.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
@@ -342,13 +349,18 @@ export async function POST(req: NextRequest) {
 
         if (convexToken) {
           // Re-use the existing convex client with auth
-          const authedConvex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+          const authedConvex = new ConvexHttpClient(
+            process.env.NEXT_PUBLIC_CONVEX_URL!,
+          );
           authedConvex.setAuth(convexToken);
 
           // Fetch the actor's Convex user record (suffix-match on clerkToken)
-          const actorConvexUser = await convex.query(api.user.getUserByClerkToken, {
-            clerkToken: userId,
-          });
+          const actorConvexUser = await convex.query(
+            api.user.getUserByClerkToken,
+            {
+              clerkToken: userId,
+            },
+          );
 
           if (actorConvexUser) {
             // mentionedMembers have userId (Convex user ID) from getProjectMembers
@@ -356,15 +368,18 @@ export async function POST(req: NextRequest) {
               .map((m: any) => m.userId)
               .filter(Boolean);
 
-            await authedConvex.mutation(api.notifications.notifyTeamspaceMention, {
-              actorId: actorConvexUser._id,
-              mentionedUserIds,
-              projectId: projectId as any,
-              channelId,
-              channelName,
-              messageId: id,
-              snippet: (content ?? "").trim().substring(0, 120),
-            });
+            await authedConvex.mutation(
+              api.notifications.notifyTeamspaceMention,
+              {
+                actorId: actorConvexUser._id,
+                mentionedUserIds,
+                projectId: projectId as any,
+                channelId,
+                channelName,
+                messageId: id,
+                snippet: (content ?? "").trim().substring(0, 120),
+              },
+            );
           }
         }
       }

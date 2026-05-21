@@ -649,7 +649,8 @@
   }
   35% {
     background-color: color-mix(in oklab, var(--foreground) 6%, transparent);
-    box-shadow: inset 3.5px 0 0 0 color-mix(in oklab, var(--foreground) 30%, transparent);
+    box-shadow: inset 3.5px 0 0 0
+      color-mix(in oklab, var(--foreground) 30%, transparent);
   }
   100% {
     background-color: transparent;
@@ -686,5 +687,3 @@
     offset-distance: 100%;
   }
 }
-
-

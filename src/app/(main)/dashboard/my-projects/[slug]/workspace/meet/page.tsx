@@ -1,9 +1,9 @@
 "use client";
 
-import React from "react";
-import { useParams, useRouter } from "next/navigation";
+import { History, Plus, Video } from "lucide-react";
 import Image from "next/image";
-import { Video, Plus, History } from "lucide-react";
+import { useParams, useRouter } from "next/navigation";
+import React from "react";
 import { Button } from "@/components/ui/button";
 import { useKayaStore } from "@/store/useKayaStore";
 
@@ -63,13 +63,17 @@ export default function MeetPage() {
               </p>
               <p className="text-muted-foreground text-sm lg:text-[15px] leading-relaxed">
                 Real-time video collaboration is coming soon! Host secure team
-                meetings, share your screen, and brainstorm ideas with your teammates.
+                meetings, share your screen, and brainstorm ideas with your
+                teammates.
               </p>
             </div>
 
             {/* Static Pro Access Alert Banner */}
             <div className="p-3 rounded-lg border border-indigo-500/20 bg-indigo-500/5 text-xs text-indigo-400 leading-normal w-full">
-              <span className="font-semibold text-indigo-300">PRO Feature:</span> Pro Access needed to use this feature.
+              <span className="font-semibold text-indigo-300">
+                PRO Feature:
+              </span>{" "}
+              Pro Access needed to use this feature.
             </div>
           </div>
 

@@ -1,31 +1,30 @@
 "use client";
+import { useQuery } from "convex/react";
 import {
-  ChartNoAxesGantt,
-  Loader2,
-  CalendarPlus,
-  Target,
   ArrowRight,
-  ClipboardClock,
-  Frown,
   Calendar,
+  CalendarPlus,
+  ChartNoAxesGantt,
+  ClipboardClock,
   FileCodeCorner,
+  Frown,
+  Loader2,
   Sparkles,
+  Target,
   TrendingDown,
 } from "lucide-react";
-import React, { useState } from "react";
-import { useParams } from "next/navigation";
-import { useQuery } from "convex/react";
-import { api } from "../../../../../../../../convex/_generated/api";
-import { Id } from "../../../../../../../../convex/_generated/dataModel";
-
-import { SetTargetDateDialog } from "@/modules/workspace/SetTargetDateDialog";
-import { Button } from "@/components/ui/button";
-import { ProjectTimeline } from "@/modules/workspace/timeLogs/ProjectTimeline";
-import { PaceTracker } from "@/modules/workspace/timeLogs/PaceTracker";
-import { MilestoneTrajectory } from "@/modules/workspace/timeLogs/MilestoneTrajectory";
-import { DelayDebt } from "@/modules/workspace/timeLogs/DelayDebt";
 import Image from "next/image";
+import { useParams } from "next/navigation";
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
+import { SetTargetDateDialog } from "@/modules/workspace/SetTargetDateDialog";
+import { DelayDebt } from "@/modules/workspace/timeLogs/DelayDebt";
+import { MilestoneTrajectory } from "@/modules/workspace/timeLogs/MilestoneTrajectory";
+import { PaceTracker } from "@/modules/workspace/timeLogs/PaceTracker";
+import { ProjectTimeline } from "@/modules/workspace/timeLogs/ProjectTimeline";
+import { api } from "../../../../../../../../convex/_generated/api";
+import type { Id } from "../../../../../../../../convex/_generated/dataModel";
 
 const TimeLogsSkeleton = () => {
   return (
