@@ -72,9 +72,9 @@ export function IdentityPicker({
   };
 
   return (
-    <div className="space-y-1.5">
+    <div className="space-y-1.5 font-sans">
       <div className="flex items-center justify-between">
-        <Label htmlFor="username" className="text-xs text-white">
+        <Label htmlFor="username" className="text-xs text-zinc-300 font-medium">
           Username
         </Label>
       </div>
@@ -85,11 +85,11 @@ export function IdentityPicker({
           autoComplete="off"
           spellCheck={false}
           className={cn(
-            "bg-accent/30! border text-white placeholder:text-neutral-300 transition-all",
+            "bg-zinc-900/50 border border-zinc-800 text-white placeholder:text-zinc-400 rounded-lg h-9 text-xs transition-all focus-visible:ring-1 focus-visible:ring-blue-500!",
             (value.length >= 3 && isAvailable === false && !isTyping) ||
               (value.length > 0 && !isLengthValid)
               ? "border-destructive/50! focus-visible:ring-destructive/20!"
-              : "focus-visible:ring-white/20!",
+              : "focus-visible:ring-[#5e6ad2]/40!",
           )}
           value={value}
           onChange={(e) =>
@@ -102,8 +102,8 @@ export function IdentityPicker({
       </div>
       <div className="min-h-5 px-1">
         {value.length > 0 && value.length < 3 && (
-          <p className="text-[11px] text-neutral-400">
-            Username needs to be more than or 3 letters
+          <p className="text-[11px] text-zinc-500">
+            Username needs to be at least 3 characters
           </p>
         )}
         {value.length > 20 && (
@@ -111,11 +111,11 @@ export function IdentityPicker({
         )}
         {value.length >= 3 && isAvailable === false && !isTyping && (
           <p className="text-[11px] text-destructive animate-in fade-in slide-in-from-top-1">
-            username exists!
+            Username is already taken
           </p>
         )}
         {value.length >= 3 && isAvailable === true && !isTyping && (
-          <p className="text-[11px] text-white/70">Username is available</p>
+          <p className="text-[11px] text-blue-400">Username is available</p>
         )}
       </div>
     </div>

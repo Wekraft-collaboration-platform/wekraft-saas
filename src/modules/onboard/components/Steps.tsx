@@ -5,31 +5,26 @@ import {
   ChevronRight,
   ChevronLeft,
   Check,
-  SearchAlert,
-  HandHeart,
-  FolderGit2,
-  Search,
-  Lock,
-  Globe,
-  UserPlus,
   FolderGit,
   Loader2,
   Copy,
-  UserRoundCog,
-  Lightbulb,
-  Code2,
   Rocket,
-  TrendingUp,
   Sun,
   Moon,
   Monitor,
-  Palette,
+  Folder,
+  Shield,
+  Lightbulb,
+  Search,
+  Code2,
+  Globe,
+  TrendingUp,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
-import { STEPS, SOURCES, PURPOSES } from "./StaticContent";
+import { STEPS, PURPOSES } from "./StaticContent";
 import { PROJECT_STATUS, INVITE_LINK, ROLES } from "@/lib/static-store";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -39,20 +34,19 @@ import { api } from "../../../../convex/_generated/api";
 import { useRouter } from "next/navigation";
 import { nanoid } from "nanoid";
 import { IdentityRolePicker } from "./IdentityRolePicker";
+import { useClerk, useUser } from "@clerk/nextjs";
 
-const variants = {
+const stepVariants = {
   enter: (direction: number) => ({
-    x: direction > 0 ? 20 : -20,
+    y: direction > 0 ? 12 : -12,
     opacity: 0,
   }),
   center: {
-    zIndex: 1,
-    x: 0,
+    y: 0,
     opacity: 1,
   },
   exit: (direction: number) => ({
-    zIndex: 0,
-    x: direction < 0 ? 20 : -20,
+    y: direction < 0 ? 12 : -12,
     opacity: 0,
   }),
 };
@@ -75,6 +69,10 @@ export function MultiStepOnboarding() {
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
 
+  // Authentication Context
+  const { signOut } = useClerk();
+  const { user: clerkUser, isLoaded: isUserLoaded } = useUser();
+
   // Mutations
   const updatePurposes = useMutation(api.user.updateUserPrimaryUsage);
   const updateIdentity = useMutation(api.user.updateUserIdentity);
@@ -91,7 +89,7 @@ export function MultiStepOnboarding() {
 
   // Step 3
   const [projectName, setProjectName] = useState("");
-  const [isPublic, setIsPublic] = useState(true); // default always true.
+  const isPublic = true; // default always true.
   const [projectStatus, setProjectStatus] = useState("");
   const [generatedInviteLink, setGeneratedInviteLink] = useState("");
 
@@ -103,7 +101,6 @@ export function MultiStepOnboarding() {
       setIsLoading(true);
 
       if (currentStep === 1) {
-        // optional
         if (purposes.length > 0) {
           await updatePurposes({ purposes });
         }
@@ -128,13 +125,14 @@ export function MultiStepOnboarding() {
         } catch (error: any) {
           toast.error(error.message || "Username is already taken");
           setIsLoading(false);
-          return; // Stop here, don't go to step 3
+          return;
         }
       }
 
       if (currentStep === 3) {
         if (!projectName || !projectStatus) {
           toast.error("Please provide project name and status");
+          setIsLoading(false);
           return;
         }
         try {
@@ -195,187 +193,304 @@ export function MultiStepOnboarding() {
 
   const isSkip = currentStep === 1;
 
+  // Render mock preview components on the right-hand column
+  const renderRightSidePreview = (step: number) => {
+    switch (step) {
+      case 1:
+        return (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between border-b border-zinc-900 pb-3">
+              <div className="flex items-center gap-2">
+                <FolderGit className="w-3.5 h-3.5 text-[#5e6ad2]" />
+                <span className="text-xs font-semibold text-zinc-200">Active Workspaces</span>
+              </div>
+              <span className="text-[10px] bg-zinc-900 text-zinc-500 px-2 py-0.5 rounded-full font-medium">
+                4 total
+              </span>
+            </div>
+            <div className="space-y-2">
+              {[
+                { name: "WeKraft Collaboration", desc: "Main project for team workspace", status: "Active", color: "text-[#5e6ad2] bg-[#5e6ad2]/10" },
+                { name: "Marketing Campaign", desc: "Launch timeline and website feedback", status: "Planning", color: "text-blue-400 bg-blue-400/10" },
+                { name: "Design System 2.0", desc: "Figma token sync and component library", status: "Backlog", color: "text-zinc-500 bg-zinc-900" },
+              ].map((p, i) => (
+                <div key={i} className="p-3 bg-zinc-900/30 border border-zinc-900/40 rounded-lg flex items-center justify-between">
+                  <div>
+                    <h5 className="text-[11px] font-semibold text-zinc-300">{p.name}</h5>
+                    <p className="text-[9.5px] text-zinc-500 mt-0.5">{p.desc}</p>
+                  </div>
+                  <span className={cn("text-[9px] px-2 py-0.5 rounded-full font-medium", p.color)}>
+                    {p.status}
+                  </span>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      case 2:
+        return (
+          <div className="space-y-5">
+            <div className="flex items-center justify-between border-b border-zinc-900 pb-3">
+              <span className="text-xs font-semibold text-zinc-200">Profile Preview</span>
+              <span className="text-[10px] text-emerald-400 flex items-center gap-1">
+                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                Live Sync
+              </span>
+            </div>
+
+            <div className="flex items-center gap-4 p-4 bg-zinc-900/30 border border-zinc-900/40 rounded-xl">
+              <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#5e6ad2] to-violet-500 flex items-center justify-center text-white font-bold text-base shadow-lg shadow-[#5e6ad2]/15">
+                {(username || clerkUser?.username || "U").charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <h4 className="text-xs font-bold text-zinc-200">@{username || "username"}</h4>
+                <p className="text-[10px] text-zinc-400 mt-0.5">{selectedRole || "Select Occupation"}</p>
+                <div className="flex items-center gap-1.5 mt-2">
+                  <span className="text-[9px] bg-zinc-900 border border-zinc-800 text-zinc-500 px-2 py-0.5 rounded">
+                    wekraft.co/u/{username || "username"}
+                  </span>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <div className="h-6 w-full bg-zinc-900/20 rounded border border-zinc-900/40 flex items-center px-3 justify-between">
+                <span className="text-[9px] text-zinc-500">Security</span>
+                <Shield className="w-3 h-3 text-zinc-600" />
+              </div>
+              <div className="h-6 w-full bg-zinc-900/20 rounded border border-zinc-900/40 flex items-center px-3 justify-between">
+                <span className="text-[9px] text-zinc-500">API Access</span>
+                <span className="text-[8px] bg-zinc-900 text-zinc-500 px-1.5 rounded">Disabled</span>
+              </div>
+            </div>
+          </div>
+        );
+      case 3:
+        return (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between border-b border-zinc-900 pb-3">
+              <div className="flex items-center gap-2">
+                <Folder className="w-3.5 h-3.5 text-zinc-400" />
+                <span className="text-xs font-semibold text-zinc-200 truncate max-w-40">
+                  {projectName || "Acme SaaS"}
+                </span>
+                {projectStatus && (
+                  <span className="text-[8.5px] bg-[#5e6ad2]/10 text-[#5e6ad2] px-1.5 py-0.5 rounded capitalize font-medium">
+                    {projectStatus}
+                  </span>
+                )}
+              </div>
+              <span className="text-[9.5px] text-zinc-500">Board View</span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 h-44">
+              {[
+                {
+                  title: "To Do",
+                  tasks: ["Design Landing Page", "Write API Docs"],
+                },
+                {
+                  title: "In Progress",
+                  tasks: ["Auth Flow setup"],
+                },
+                {
+                  title: "Done",
+                  tasks: ["Init React App"],
+                },
+              ].map((col, idx) => (
+                <div key={idx} className="bg-zinc-950/40 border border-zinc-900/50 rounded-lg p-2 flex flex-col justify-start">
+                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-wider mb-2 block">{col.title}</span>
+                  <div className="space-y-1.5 flex-1 overflow-hidden">
+                    {col.tasks.map((task, tidx) => (
+                      <div key={tidx} className="p-1.5 bg-zinc-900/40 border border-zinc-900/60 rounded text-[8px] text-zinc-300 font-medium truncate">
+                        {task}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      case 4:
+        return (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between border-b border-zinc-900 pb-3">
+              <span className="text-xs font-semibold text-zinc-200">Theme Engine</span>
+              <span className="text-[9.5px] text-[#5e6ad2] capitalize">{theme} theme active</span>
+            </div>
+
+            <div className={cn(
+              "p-4 rounded-xl border transition-all duration-300 relative overflow-hidden",
+              theme === "light"
+                ? "bg-white border-zinc-200 text-zinc-800"
+                : "bg-zinc-950 border-zinc-900 text-zinc-400"
+            )}>
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-1.5">
+                  <div className={cn("w-2.5 h-2.5 rounded-full", theme === "light" ? "bg-zinc-200" : "bg-zinc-900")} />
+                  <div className={cn("h-3 w-16 rounded", theme === "light" ? "bg-zinc-200" : "bg-zinc-900")} />
+                </div>
+                <div className={cn("h-4 w-4 rounded-full", theme === "light" ? "bg-zinc-200" : "bg-zinc-900")} />
+              </div>
+
+              <div className="space-y-2">
+                <div className={cn("h-8 rounded p-2 flex items-center justify-between", theme === "light" ? "bg-zinc-50 border border-zinc-200" : "bg-zinc-900/30 border border-zinc-900")}>
+                  <div className="flex items-center gap-2">
+                    <div className={cn("w-4 h-4 rounded", theme === "light" ? "bg-zinc-200" : "bg-zinc-850")} />
+                    <div className={cn("h-2.5 w-24 rounded", theme === "light" ? "bg-zinc-300" : "bg-zinc-700")} />
+                  </div>
+                  <div className={cn("h-2 w-6 rounded", theme === "light" ? "bg-zinc-300" : "bg-zinc-700")} />
+                </div>
+
+                <div className={cn("h-8 rounded p-2 flex items-center justify-between", theme === "light" ? "bg-zinc-50 border border-zinc-200" : "bg-zinc-900/30 border border-zinc-900")}>
+                  <div className="flex items-center gap-2">
+                    <div className={cn("w-4 h-4 rounded", theme === "light" ? "bg-zinc-200" : "bg-zinc-850")} />
+                    <div className={cn("h-2.5 w-16 rounded", theme === "light" ? "bg-zinc-300" : "bg-zinc-700")} />
+                  </div>
+                  <div className={cn("h-2 w-8 rounded", theme === "light" ? "bg-zinc-300" : "bg-zinc-700")} />
+                </div>
+              </div>
+            </div>
+          </div>
+        );
+      case 5:
+        return (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between border-b border-zinc-900 pb-3">
+              <span className="text-xs font-semibold text-zinc-200">Workspace Team</span>
+              <span className="text-[10px] text-zinc-500 font-mono">Invite Link Enabled</span>
+            </div>
+
+            <div className="space-y-2">
+              {[
+                { name: (clerkUser?.fullName || clerkUser?.username || "Mariana Wilson") + " (You)", role: "Workspace Admin", status: "Active Now", color: "bg-emerald-400" },
+                { name: "Alex Rivera", role: "Software Developer", status: "Invited", color: "bg-zinc-700" },
+                { name: "Sarah Chen", role: "Product Designer", status: "Invited", color: "bg-zinc-700" },
+              ].map((member, i) => (
+                <div key={i} className="p-3 bg-zinc-900/30 border border-zinc-900/40 rounded-lg flex items-center justify-between">
+                  <div className="flex items-center gap-2.5">
+                    <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-[9px] font-bold text-zinc-400 border border-zinc-700">
+                      {member.name.charAt(0)}
+                    </div>
+                    <div>
+                      <h5 className="text-[10px] font-semibold text-zinc-300">{member.name}</h5>
+                      <p className="text-[8.5px] text-zinc-500 mt-0.5">{member.role}</p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-1.5">
+                    <span className={cn("w-1.5 h-1.5 rounded-full", member.color)} />
+                    <span className="text-[9px] text-zinc-500 font-medium">{member.status}</span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      default:
+        return null;
+    }
+  };
+
   return (
-    <div className="dark flex flex-col items-center justify-center h-screen p-4 pt-10 relative text-foreground overflow-hidden">
-      {/* <Image
-        src="/bg-footer.jpg"
-        alt="bg-image"
-        fill
-        className="absolute w-full h-full object-cover opacity-20"
-        priority
-      /> */}
+    <div className="min-h-screen w-full bg-black text-white flex flex-row overflow-hidden font-sans relative">
       <div className="noise-bg" />
 
-      <Image
-        src="/pat102.svg"
-        alt="bg-image"
-        width={200}
-        height={200}
-        className="absolute bottom-10 right-5 opacity-40"
-        priority
-      />
+      {/* Left Column (40% width on Desktop, full width on Mobile) */}
+      <div className="w-full lg:w-[40%] flex flex-col justify-between p-6 min-h-screen relative z-10 border-r border-zinc-900 bg-black">
+        {/* Header */}
+        <header className="flex justify-between items-center w-full">
+          <div className="flex items-center gap-2 select-none">
+            <Image src="/logo.svg" alt="WeKraft Logo" width={28} height={28} className="shrink-0" />
+            <span className="font-bold text-lg tracking-tight text-white font-pop">WeKraft</span>
+          </div>
 
-      <Image
-        src="/pat101.svg"
-        alt="bg-image"
-        width={200}
-        height={200}
-        className="absolute bottom-10 left-14 opacity-40"
-        priority
-      />
-
-      {/* <div className="absolute -top-1/3 left-1/2 -translate-x-1/2 w-full max-w-3xl h-[500px] bg-blue-500/55 transform-gpu blur-[200px] rounded-full pointer-events-none opacity-50" /> */}
-      {/* <div className="absolute -bottom-1/3 left-1/2 -translate-x-1/2 w-full max-w-2xl h-[500px] bg-neutral-200/15 transform-gpu blur-[200px] rounded-full pointer-events-none opacity-50" /> */}
-
-      {/* Progress Header */}
-      <div className="flex items-center gap-3 absolute top-8">
-        {STEPS.map((step) => (
-          <React.Fragment key={step.id}>
-            <div
-              className={cn(
-                "flex items-center justify-center w-8 h-8 rounded-full border text-sm transition-all duration-300",
-                currentStep >= step.id
-                  ? "bg-white text-black border-white"
-                  : "bg-transparent text-muted-foreground border-white/40",
-              )}
-            >
-              {currentStep > step.id ? <Check className="w-4 h-4" /> : step.id}
-            </div>
-            {step.id < 5 && (
-              <div
-                className={cn(
-                  "w-8 h-[1px] transition-colors duration-300",
-                  currentStep > step.id ? "bg-white" : "bg-white/40",
-                )}
-              />
+          <div className="flex items-center gap-4 text-[11px] text-zinc-200">
+            {isUserLoaded && clerkUser?.primaryEmailAddress?.emailAddress && (
+              <span className="hidden sm:inline">
+                Logged in as <span className="text-zinc-400 font-medium">{clerkUser.primaryEmailAddress.emailAddress}</span>
+              </span>
             )}
-          </React.Fragment>
-        ))}
-      </div>
 
-      {/* BODY  */}
-      <main className="w-full relative h-full flex flex-col max-h-[500px] max-w-2xl overflow-hidden font-sans group">
-        {/* Background & Border Layer with Fade/Blur Effect */}
-        <div 
-          className="absolute inset-0 bg-neutral-900/70 border border-neutral-800 rounded-xl backdrop-blur-xl pointer-events-none transition-all duration-500"
-          style={{ 
-            WebkitMaskImage: 'linear-gradient(to bottom, black 0%, black 60%, transparent 100%)',
-            maskImage: 'linear-gradient(to bottom, black 0%, black 60%, transparent 100%)'
-          }}
-        />
+          </div>
+        </header>
 
-        <div className="p-5 h-full flex flex-col relative z-10">
+        {/* Center content containing active step */}
+        <main className="flex-1 flex flex-col justify-center py-10 w-full max-w-sm mx-auto">
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={currentStep}
               custom={direction}
-              variants={variants}
+              variants={stepVariants}
               initial="enter"
               animate="center"
               exit="exit"
-              transition={{ duration: 0.2, ease: "easeOut" }}
+              transition={{ duration: 0.28, ease: [0.16, 1, 0.3, 1] }}
+              className="w-full flex flex-col"
             >
-              {/* ── STEP 1 : your Main purpose of using wekraft (SKIP) ── */}
-              {currentStep === 1 && (
-                <div className="space-y-5 relative">
-                  <div className="text-center space-y-1 mb-10">
-                    <h2 className="text-xl font-semibold tracking-tight text-white ">
-                      What brings you to WeKraft{" "}
-                      <HandHeart className="w-6 h-6 inline ml-2 text-white" />
-                    </h2>
-                    <p className="text-white/70 text-sm">
-                      Pick one or more — helps us tailor your experience{" "}
-                    </p>
-                  </div>
+              {/* Step Header */}
+              <div className="mb-6">
+                <h2 className="text-lg font-bold tracking-tight text-white">
+                  {currentStep === 1 && "What brings you to WeKraft"}
+                  {currentStep === 2 && "Let’s set up your identity"}
+                  {currentStep === 3 && "Create your first project"}
+                  {currentStep === 4 && "Personalize your space"}
+                  {currentStep === 5 && "Share invite link"}
+                </h2>
+                <p className="text-xs text-zinc-300 mt-1">
+                  {currentStep === 1 && "Pick one or more options to help us customize your workspace."}
+                  {currentStep === 2 && "Choose a unique username and select your role to build with others."}
+                  {currentStep === 3 && "Create your project workspace to start syncing and collaborating."}
+                  {currentStep === 4 && "Choose a theme preference that best fits your working style."}
+                  {currentStep === 5 && "Invite your friends or teammates to start working together."}
+                </p>
+              </div>
 
-                  <div className="grid grid-cols-1 gap-4">
+              {/* Step Content */}
+              <div className="flex-1 min-h-[250px] flex flex-col justify-center">
+                {/* STEP 1 */}
+                {currentStep === 1 && (
+                  <div className="space-y-2.5">
                     {PURPOSES.map((p) => {
                       const selected = purposes.includes(p.id);
                       return (
                         <button
                           key={p.id}
+                          type="button"
                           onClick={() => togglePurpose(p.id)}
                           className={cn(
-                            "relative flex items-start gap-3 p-2 rounded-lg border border-border cursor-pointer text-left transition-all duration-200 group overflow-hidden",
+                            "w-full flex items-center justify-between p-3 rounded-xl border text-left transition-all duration-200 cursor-pointer select-none",
                             selected
-                              ? `bg-accent`
-                              : "bg-neutral-900",
+                              ? "bg-zinc-900 border-white/10"
+                              : "bg-zinc-950/20 border-border hover:border-white/30 hover:bg-zinc-900/10"
                           )}
                         >
-                          {/* Icon bubble */}
-                          <div
-                            className={cn(
-                              "shrink-0 w-8 h-8 rounded-lg flex items-center justify-center transition-all duration-200",
-                              selected
-                                ? `bg-white text-black border ${p.border}`
-                                : "bg-white/15 border-white/10 group-hover:scale-105",
-                            )}
-                          >
-                            <p.icon
-                              className={cn(
-                                "w-4 h-4",
-                                selected ? "text-neutral-800" : "text-white",
-                              )}
-                            />
+                          <div className="flex items-center gap-3">
+                            <div className={cn(
+                              "w-8 h-8 rounded-lg flex items-center justify-center transition-all",
+                              selected ? "bg-blue-800 text-white" : "bg-zinc-900 text-zinc-400"
+                            )}>
+                              <p.icon className="w-4 h-4" />
+                            </div>
+                            <div>
+                              <h4 className="text-xs font-semibold text-zinc-100">{p.label}</h4>
+                              <p className="text-[10px] text-zinc-300 mt-0.5">{p.description}</p>
+                            </div>
                           </div>
-
-                          {/* Text */}
-                          <div className="min-w-0">
-                            <p
-                              className={cn(
-                                "text-sm  leading-tight",
-                                selected ? "text-white" : "text-white",
-                              )}
-                            >
-                              {p.label}
-                            </p>
-                            <p
-                              className={cn(
-                                "text-xs mt-0.5 leading-snug",
-                                selected ? "text-white" : "text-white/70",
-                              )}
-                            >
-                              {p.description}
-                            </p>
+                          <div className={cn(
+                            "w-4 h-4 rounded-full border flex items-center justify-center transition-all",
+                            selected ? "border-[#5e6ad2] bg-blue-600" : "border-zinc-850 bg-transparent"
+                          )}>
+                            {selected && <Check className="w-2.5 h-2.5 text-white stroke-[3px]" />}
                           </div>
-
-                          {/* Check badge */}
-                          {selected && (
-                            <motion.div
-                              initial={{ scale: 0 }}
-                              animate={{ scale: 1 }}
-                              className="absolute top-2 right-2"
-                            >
-                              <div
-                                className={cn(
-                                  "rounded-full p-0.5 border bg-blue-500",
-                                  p.border,
-                                )}
-                              >
-                                <Check className={cn("w-3 h-3 text-white")} />
-                              </div>
-                            </motion.div>
-                          )}
                         </button>
                       );
                     })}
                   </div>
-                </div>
-              )}
-              {/* ── STEP 2 : Update User Name and Occupation ── */}
-              {currentStep === 2 && (
-                <div className="space-y-4 relative">
-                  <div className="text-center space-y-1 mb-5">
-                    <h2 className="text-xl font-semibold tracking-tight text-white ">
-                      Let’s set up your identity
-                      <UserRoundCog className="w-6 h-6 inline ml-2 text-white" />
-                    </h2>
-                    <p className="text-neutral-200 text-sm px-8 text-center">
-                      Choose unique name & Occupation — this is how people will
-                      find you & build with you.
-                    </p>
-                  </div>
+                )}
 
+                {/* STEP 2 */}
+                {currentStep === 2 && (
                   <IdentityRolePicker
                     username={username}
                     onUsernameChange={setUsername}
@@ -384,46 +499,29 @@ export function MultiStepOnboarding() {
                     onRoleSelect={setSelectedRole}
                     onValidationError={setUsernameError}
                   />
-                </div>
-              )}
-              {/* --- STEP 3 : CREATE FIRST PROJECT */}
-              {currentStep === 3 && (
-                <div className="space-y-5 relative">
-                  <div className="text-center space-y-1 mb-5">
-                    <h2 className="text-xl font-semibold tracking-tight text-white flex items-center justify-center gap-2">
-                      Create your first project
-                      <FolderGit className="w-6 h-6 " />
-                    </h2>
-                    <p className="text-white/80 text-sm">
-                      Create your first project to sync and collab{" "}
-                    </p>
-                  </div>
+                )}
 
-                  <div className="space-y-4">
-                    <div className="space-y-2">
-                      <Label
-                        htmlFor="projectName"
-                        className="text-xs text-white"
-                      >
+                {/* STEP 3 */}
+                {currentStep === 3 && (
+                  <div className="space-y-5">
+                    <div className="space-y-1.5 font-sans">
+                      <Label htmlFor="projectName" className="text-xs text-zinc-300 font-medium">
                         Project Name
                       </Label>
                       <Input
                         id="projectName"
-                        placeholder={"Acme saas"}
-                        className="bg-accent/20! border text-white placeholder:text-neutral-300"
+                        placeholder="e.g. Acme SaaS"
+                        className="bg-zinc-900/50 border border-zinc-800 text-white placeholder:text-zinc-500 rounded-lg h-9 text-xs transition-all focus-visible:ring-1 focus-visible:ring-[#5e6ad2]!"
                         value={projectName}
                         onChange={(e) => setProjectName(e.target.value)}
                       />
                     </div>
 
-                    <div className="space-y-3">
-                      <Label className="text-sm text-white">
-                        Status{" "}
-                        <span className="text-xs normal-case tracking-tight font-inter text-neutral-300 ml-1">
-                          (will help the community to know about your project.)
-                        </span>
+                    <div className="space-y-1.5  font-sans">
+                      <Label className="text-xs text-zinc-300 font-medium block">
+                        Project Status <span className="text-zinc-400 font-normal ml-1">(community indicators)</span>
                       </Label>
-                      <div className="grid grid-cols-3 gap-3">
+                      <div className="grid grid-cols-3 gap-4 mt-6">
                         {PROJECT_STATUS.map((status) => {
                           const isSelected = projectStatus === status;
                           const config = STATUS_CONFIG[status] || {
@@ -434,271 +532,270 @@ export function MultiStepOnboarding() {
                           return (
                             <button
                               key={status}
+                              type="button"
                               onClick={() => setProjectStatus(status)}
                               className={cn(
-                                "relative flex flex-col items-start gap-4 p-4 rounded-lg border text-left transition-all duration-300 overflow-hidden group h-20",
+                                "flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all duration-200 cursor-pointer h-16 select-none",
                                 isSelected
-                                  ? "bg-white/10 border-white/50 text-white shadow-[0_0_20px_rgba(255,255,255,0.05)]"
-                                  : "bg-white/5 border-white/10 text-neutral-400 hover:bg-white/5 hover:border-white/20 hover:text-white",
+                                  ? "bg-zinc-900/60 border-blue-500/30 text-white shadow-[0_0_12px_rgba(94,106,210,0.08)]"
+                                  : "bg-zinc-9050 border-zinc-800 text-zinc-400 hover:border-zinc-800/80 hover:text-zinc-200"
                               )}
                             >
                               <config.icon
                                 className={cn(
-                                  "w-5 h-5 transition-colors shrink-0",
-                                  isSelected
-                                    ? "text-white"
-                                    : "text-neutral-200",
+                                  "w-4 h-4 mb-2 transition-colors",
+                                  isSelected ? "text-blue-500" : "text-zinc-500"
                                 )}
                               />
-                              <span
-                                className={cn(
-                                  "text-sm tracking-tight",
-                                  isSelected
-                                    ? "text-white"
-                                    : "text-neutral-300",
-                                )}
-                              >
-                                {config.label}
-                              </span>
-
-                              {isSelected && (
-                                <motion.div
-                                  layoutId="status-active-glow"
-                                  className="absolute inset-0 bg-white/[0.02]"
-                                  initial={false}
-                                  transition={{
-                                    type: "spring",
-                                    bounce: 0.2,
-                                    duration: 0.5,
-                                  }}
-                                />
-                              )}
+                              <span className="text-[10px] font-semibold capitalize">{config.label}</span>
                             </button>
                           );
                         })}
                       </div>
                     </div>
                   </div>
-                </div>
-              )}
-              {/* STEP 4 : THEME SELECTION --- */}
-              {currentStep === 4 && (
-                <div className="space-y-6 relative flex flex-col h-full">
-                  <div className="text-center space-y-2 mb-20">
-                    <h2 className="text-xl font-semibold tracking-tight text-white flex items-center justify-center gap-2">
-                      Personalize your space
-                      <Palette className="w-6 h-6 " />
-                    </h2>
-                    <p className="text-white/80 text-sm">
-                      Choose a theme that suits your working style
-                    </p>
-                  </div>
+                )}
 
-                  <div className="grid grid-cols-3 gap-4 mt-auto ">
+                {/* STEP 4 */}
+                {currentStep === 4 && (
+                  <div className="grid grid-cols-3 gap-2.5">
                     {[
                       { id: "light", label: "Light", icon: Sun, desc: "Clean & Minimal" },
                       { id: "dark", label: "Dark", icon: Moon, desc: "Sleek & Focused" },
-                      { id: "system", label: "System", icon: Monitor, desc: "Auto sync" },
+                      { id: "system", label: "System", icon: Monitor, desc: "Auto Sync" },
                     ].map((t) => {
                       const isSelected = theme === t.id;
                       return (
                         <button
                           key={t.id}
+                          type="button"
                           onClick={() => setTheme(t.id)}
                           className={cn(
-                            "relative flex flex-col items-center gap-4 p-6 rounded-xl border transition-all duration-300 group",
+                            "flex flex-col items-center justify-center p-4 rounded-xl border text-center transition-all duration-200 cursor-pointer select-none",
                             isSelected
-                              ? "bg-white/5 border-white/50 text-white shadow-[0_0_30px_rgba(255,255,255,0.05)] scale-[1.02]"
-                              : "bg-white/5 border-white/5 text-neutral-400 hover:bg-white/[0.08] hover:border-white/20 hover:text-white"
+                              ? "bg-zinc-900/60 border-[#5e6ad2]/70 text-white shadow-[0_0_12px_rgba(94,106,210,0.08)]"
+                              : "bg-zinc-950/20 border-zinc-900 text-zinc-400 hover:border-zinc-800/80 hover:text-zinc-200"
                           )}
                         >
                           <div className={cn(
-                            "w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300",
-                            isSelected ? "bg-white text-black" : "bg-white/5"
+                            "w-8 h-8 rounded-full flex items-center justify-center mb-2.5 transition-colors",
+                            isSelected ? "bg-[#5e6ad2]/15 text-[#5e6ad2]" : "bg-zinc-900 text-zinc-500"
                           )}>
-                            <t.icon className="w-6 h-6" />
+                            <t.icon className="w-4 h-4" />
                           </div>
-                          
-                          <div className="text-center">
-                            <p className="text-sm font-semibold">{t.label}</p>
-                            <p className="text-xs mt-2 text-neutral-300">{t.desc}</p>
-                          </div>
-
-                          {isSelected && (
-                            <motion.div
-                              layoutId="theme-active"
-                              className="absolute inset-0 rounded-xl border-2 border-white/20"
-                              initial={false}
-                            />
-                          )}
+                          <span className="text-[11px] font-semibold">{t.label}</span>
+                          <span className="text-[9px] text-zinc-500 mt-1 leading-tight">{t.desc}</span>
                         </button>
                       );
                     })}
                   </div>
-                </div>
-              )}
-              {/* STEP 5 : INVITE TO PROJECT */}
-              {currentStep === 5 && (
-                <div className="space-y-6 relative">
-                  <div className="text-center space-y-2 mb-8">
-                    <h2 className="text-xl font-semibold tracking-tight text-white flex items-center justify-center gap-2">
-                      Share invite link
-                      <UserPlus className="w-6 h-6 " />
-                    </h2>
-                    <p className="text-neutral-300 text-sm">
-                      Invite your friends or team to join your project and start
-                      collaborating
-                    </p>
-                  </div>
+                )}
 
-                  <div className="bg-accent/30 border rounded-lg p-3 space-y-4">
-                    <div className="space-y-2">
-                      <Label className="text-sm text-white">
-                        Project Invite Link
-                      </Label>
-                      <div className="flex gap-5">
+                {/* STEP 5 */}
+                {currentStep === 5 && (
+                  <div className="space-y-4 font-sans">
+                    <div className="space-y-1.5">
+                      <Label className="text-xs text-zinc-400 font-medium">Project Invite Link</Label>
+                      <div className="flex gap-2">
                         <Input
                           readOnly
                           value={`${INVITE_LINK}${generatedInviteLink}`}
-                          className="flex-1 truncate bg-black/40 border border-white/10 rounded-lg px-4 py-2.5 text-sm text-white font-inter"
+                          className="flex-1 bg-zinc-900/50 border border-zinc-800 text-white rounded-lg h-9 text-xs px-3 focus-visible:ring-1 focus-visible:ring-[#5e6ad2]!"
                         />
                         <Button
                           variant="default"
                           size="sm"
-                          className="shrink-0"
+                          className="bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white rounded-lg h-9 text-xs px-3 flex items-center gap-1.5 cursor-pointer"
                           onClick={() => {
-                            navigator.clipboard.writeText(
-                              `${INVITE_LINK}${generatedInviteLink}`,
-                            );
+                            navigator.clipboard.writeText(`${INVITE_LINK}${generatedInviteLink}`);
                             toast.success("Link copied to clipboard!");
                           }}
                         >
+                          <Copy className="w-3.5 h-3.5" />
                           Copy
-                          <Copy className="w-4 h-4 " />
                         </Button>
                       </div>
                     </div>
+
+                    <div className="flex items-center gap-3 my-6">
+                      <div className="h-[1px] flex-1 bg-zinc-900" />
+                      <span className="text-[9px] text-zinc-600 uppercase tracking-widest font-bold">Share via</span>
+                      <div className="h-[1px] flex-1 bg-zinc-900" />
+                    </div>
+
+                    <div className="grid grid-cols-3 gap-2">
+                      <Button
+                        variant="outline"
+                        className="h-14 flex flex-col items-center justify-center gap-1.5 bg-zinc-950/20 border-zinc-800 hover:border-zinc-700/80 hover:bg-zinc-900/10 transition-all rounded-xl group cursor-pointer"
+                        onClick={() => {
+                          navigator.clipboard.writeText(`${INVITE_LINK}/invite/${generatedInviteLink}`);
+                          toast.success("Link copied for WhatsApp!");
+                        }}
+                      >
+                        <Image
+                          src="/whatsapp.png"
+                          alt="WhatsApp"
+                          width={18}
+                          height={18}
+                          className="opacity-50 group-hover:opacity-100 transition-opacity"
+                        />
+                        <span className="text-[9px] font-semibold text-zinc-500 group-hover:text-zinc-300 transition-colors">
+                          WhatsApp
+                        </span>
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        className="h-14 flex flex-col items-center justify-center gap-1.5 bg-zinc-950/20 border-zinc-800 hover:border-zinc-700/80 hover:bg-zinc-900/10 transition-all rounded-xl group cursor-pointer"
+                        onClick={() => window.open("https://discord.com", "_blank")}
+                      >
+                        <Image
+                          src="/discord.png"
+                          alt="Discord"
+                          width={18}
+                          height={18}
+                          className="opacity-50 group-hover:opacity-100 transition-opacity"
+                        />
+                        <span className="text-[9px] font-semibold text-zinc-500 group-hover:text-zinc-300 transition-colors">
+                          Discord
+                        </span>
+                      </Button>
+
+                      <Button
+                        variant="outline"
+                        className="h-14 flex flex-col items-center justify-center gap-1.5 bg-zinc-950/20 border-zinc-800 hover:border-zinc-700/80 hover:bg-zinc-900/10 transition-all rounded-xl group cursor-pointer"
+                        onClick={() => window.open("https://slack.com", "_blank")}
+                      >
+                        <Image
+                          src="/slack.png"
+                          alt="Slack"
+                          width={18}
+                          height={18}
+                          className="opacity-50 group-hover:opacity-100 transition-opacity"
+                        />
+                        <span className="text-[9px] font-semibold text-zinc-500 group-hover:text-zinc-300 transition-colors">
+                          Slack
+                        </span>
+                      </Button>
+                    </div>
                   </div>
+                )}
+              </div>
 
-                  <div className="flex items-center gap-4 mt-16 mb-4 px-10">
-                    <div className="h-px flex-1 bg-white/30"></div>
-                    <span className="text-sm text-white capitalize whitespace-nowrap">
-                      share it via
-                    </span>
-                    <div className="h-px flex-1 bg-white/30"></div>
-                  </div>
-
-                  <div className="grid grid-cols-3 gap-4">
-                    <Button
-                      variant="outline"
-                      className="h-18 flex flex-col items-center justify-center gap-2 bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 transition-all group"
-                      onClick={() => {
-                        navigator.clipboard.writeText(
-                          `${INVITE_LINK}/invite/${generatedInviteLink}`,
-                        );
-                        toast.success("Link copied for WhatsApp!");
-                      }}
+              {/* Step Action Buttons */}
+              <div className="flex items-center justify-between mt-8 pt-5 border-t border-zinc-900">
+                <div>
+                  {currentStep > 1 && (
+                    <button
+                      type="button"
+                      onClick={handleBack}
+                      disabled={isLoading}
+                      className="flex items-center gap-1 text-xs font-medium text-zinc-400 hover:text-zinc-200 transition-colors disabled:opacity-40 cursor-pointer"
                     >
-                      <Image
-                        src="/whatsapp.png"
-                        alt="WhatsApp"
-                        width={24}
-                        height={24}
-                        className="opacity-70 group-hover:opacity-100 transition-opacity"
-                      />
-                      <span className="text-[10px] text-white/50 group-hover:text-white transition-colors">
-                        WhatsApp
-                      </span>
-                    </Button>
-
-                    <Button
-                      variant="outline"
-                      className="h-18 flex flex-col items-center justify-center gap-2 bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 transition-all group"
-                      onClick={() =>
-                        window.open("https://discord.com", "_blank")
-                      }
-                    >
-                      <Image
-                        src="/discord.png"
-                        alt="Discord"
-                        width={24}
-                        height={24}
-                        className="opacity-70 group-hover:opacity-100 transition-opacity"
-                      />
-                      <span className="text-[10px] text-white/50 group-hover:text-white transition-colors">
-                        Discord
-                      </span>
-                    </Button>
-
-                    <Button
-                      variant="outline"
-                      className="h-18 flex flex-col items-center justify-center gap-2 bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 transition-all group"
-                      onClick={() => window.open("https://slack.com", "_blank")}
-                    >
-                      <Image
-                        src="/slack.png"
-                        alt="Slack"
-                        width={24}
-                        height={24}
-                        className="opacity-70 group-hover:opacity-100 transition-opacity"
-                      />
-                      <span className="text-[10px] text-white/50 group-hover:text-white transition-colors">
-                        Slack
-                      </span>
-                    </Button>
-                  </div>
+                      <ChevronLeft className="w-3.5 h-3.5" />
+                      Back
+                    </button>
+                  )}
                 </div>
-              )}
+                <div className="flex items-center gap-6">
+                  {isSkip && (
+                    <button
+                      type="button"
+                      onClick={handleSkip}
+                      disabled={isLoading}
+                      className="text-xs font-medium text-zinc-200 hover:text-white transition-colors cursor-pointer"
+                    >
+                      Skip
+                    </button>
+                  )}
+                  <Button
+                    onClick={handleNext}
+                    disabled={isLoading}
+                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-5 h-8 rounded-lg flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-95 cursor-pointer disabled:opacity-50 border-none"
+                  >
+                    {isLoading ? (
+                      <>   Saving  <Loader2 className="w-3 h-3 animate-spin" /> </>
+                    ) : currentStep === 5 ? (
+                      <>
+                        Get Started
+                        <Rocket className="w-3.5 h-3.5" />
+                      </>
+                    ) : (
+                      <>
+                        Continue
+                        <ChevronRight className="w-3.5 h-3.5" />
+                      </>
+                    )}
+                  </Button>
+                </div>
+              </div>
             </motion.div>
           </AnimatePresence>
+        </main>
 
-          {/* Action Footer */}
-          <div className="flex items-center justify-between mt-auto pt-4 border-t border-white/10">
-            <Button
-              variant="outline"
-              onClick={handleBack}
-              disabled={currentStep === 1 || isLoading}
-              className="text-muted-foreground hover:text-white disabled:opacity-30 transition-all z-10 text-xs h-8 px-3"
-            >
-              <ChevronLeft className="w-3.5 h-3.5 mr-1" />
-              Back
-            </Button>
+        {/* Progress Stepper at Bottom */}
+        <footer className="w-full flex justify-center py-2 select-none">
+          <div className="flex items-center gap-1.5">
+            {STEPS.map((step) => {
+              const isActive = currentStep === step.id;
+              return (
+                <div
+                  key={step.id}
+                  className={cn(
+                    "h-1 rounded-full transition-all duration-300",
+                    isActive ? "w-5 bg-zinc-200" : "w-1 bg-zinc-800"
+                  )}
+                />
+              );
+            })}
+          </div>
+        </footer>
+      </div>
 
-            <div className="flex items-center gap-5">
-              {isSkip && (
-                <Button
-                  variant="default"
-                  onClick={handleSkip}
-                  disabled={isLoading}
-                  className=" text-xs h-8 px-5 transition-all z-10"
+      {/* Right Column (60% width on Desktop, hidden on Mobile) */}
+      <div className="hidden lg:flex lg:w-[60%] bg-[#080710] relative items-center justify-center p-12 overflow-hidden select-none">
+        {/* Ambient gradient backglows */}
+        <div className="absolute top-1/4 left-1/4 w-[350px] h-[350px] bg-[#5e6ad2]/8 blur-[120px] rounded-full pointer-events-none" />
+        <div className="absolute bottom-1/4 right-1/4 w-[250px] h-[250px] bg-indigo-500/5 blur-[100px] rounded-full pointer-events-none" />
+
+        {/* Browser Mockup Box */}
+        <div className="w-[90%] max-w-[620px] aspect-[16/10] bg-zinc-950 border border-zinc-900 rounded-2xl overflow-hidden shadow-2xl relative flex flex-col">
+          {/* Minimalist Tab Bar */}
+          <div className="h-9 border-b border-zinc-900/60 bg-zinc-950 px-4 flex items-center justify-between shrink-0">
+            <div className="flex items-center gap-1.5">
+              <div className="w-2.5 h-2.5 rounded-full bg-zinc-900" />
+              <div className="w-2.5 h-2.5 rounded-full bg-zinc-900" />
+              <div className="w-2.5 h-2.5 rounded-full bg-zinc-900" />
+            </div>
+            <div className="text-[10px] text-zinc-600 font-mono tracking-tight bg-zinc-950 border border-zinc-900/80 rounded-md px-3 py-0.5 w-48 text-center truncate">
+              wekraft.co/workspace
+            </div>
+            <div className="w-10" />
+          </div>
+
+          {/* Browser Workspace Content */}
+          <div className="relative p-6 flex-1 overflow-hidden bg-zinc-950 font-sans text-left text-zinc-400">
+            {/* Glow accent */}
+            <div className="absolute -top-1/4 -right-1/4 w-60 h-60 bg-[#5e6ad2]/5 blur-[60px] rounded-full pointer-events-none" />
+
+            {/* Hover-Blur preview frame */}
+            <div className=" h-full w-full  flex flex-col justify-center">
+              <AnimatePresence mode="wait">
+                <motion.div
+                  key={currentStep}
+                  initial={{ opacity: 0, scale: 0.96 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  exit={{ opacity: 0, scale: 0.96 }}
+                  transition={{ duration: 0.3, ease: "easeInOut" }}
+                  className="w-full"
                 >
-                  Skip <ChevronRight className="w-3.5 h-3.5 ml-1" />
-                </Button>
-              )}
-              <Button
-                onClick={handleNext}
-                disabled={isLoading}
-                className="text-xs font-medium px-6 h-8 transition-all active:scale-95 z-10 cursor-pointer rounded-lg flex items-center justify-center gap-2"
-              >
-                {isLoading ? (
-                  <>
-                    <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                    <span>Saving...</span>
-                  </>
-                ) : (
-                  <>
-                    <span>Continue</span>
-                    <ChevronRight className="w-3.5 h-3.5" />
-                  </>
-                )}
-              </Button>
+                  {renderRightSidePreview(currentStep)}
+                </motion.div>
+              </AnimatePresence>
             </div>
           </div>
         </div>
-      </main>
-
-      {/* Background Decorative Element */}
-      <div className="fixed bottom-0 left-1/2 -translate-x-1/2 w-full h-[300px] bg-black/30 blur-[120px] pointer-events-none" />
+      </div>
     </div>
   );
 }
