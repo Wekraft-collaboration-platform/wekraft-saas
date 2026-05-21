@@ -169,7 +169,7 @@ export function UpcomingDeadlines() {
               <button
                 key={project._id}
                 onClick={() => router.push(`/dashboard/my-projects/${project.slug}/workspace`)}
-                className="w-full flex items-center gap-3 px-4 py-3 text-left hover:bg-accent/30 cursor-pointer transition-colors duration-150 group outline-none"
+                className="w-full flex items-center gap-3 px-5 py-3 text-left hover:bg-accent/30 cursor-pointer transition-colors duration-150 group outline-none"
               >
                 {/* Icon */}
                 <div
@@ -191,8 +191,8 @@ export function UpcomingDeadlines() {
                     {project.projectName}
                   </p>
                   <div className="flex items-center gap-1.5 mt-0.5">
-                    <Clock className="h-3 w-3 text-muted-foreground/45 shrink-0" />
-                    <span className="text-[10.5px] text-muted-foreground/55">
+                    <Clock className="h-3 w-3 text-muted-foreground shrink-0" />
+                    <span className="text-[10.5px] text-muted-foreground">
                       {formatDate(project.targetDate)}
                     </span>
                   </div>
@@ -211,7 +211,7 @@ export function UpcomingDeadlines() {
                       ? "bg-destructive/10 text-destructive border-destructive/20"
                       : isWarning
                         ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
-                        : "bg-primary/10 text-primary border-primary/20",
+                        : "bg-primary/5 text-muted-foreground border-primary/20",
                   )}
                 >
                   {days <= 0 ? "Today" : `${days}d left`}

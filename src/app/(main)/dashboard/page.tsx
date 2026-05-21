@@ -215,7 +215,7 @@ export default function DashboardPage() {
             {/* Projects Joined / Created Card */}
             <div className="dark:bg-sidebar bg-card border border-border rounded-xl p-4 shadow-md flex items-center justify-between group h-[126px] relative">
               {currentUser !== undefined && userPlan !== "pro" && (
-                <div className="absolute -top-2.5 left-4 px-2.5 py-0.5 bg-blue-600 dark:bg-blue-500 text-white rounded-full text-[9px] font-extrabold tracking-wide uppercase shadow-sm flex items-center gap-1 border border-blue-400/20 z-10">
+                <div className="absolute -top-2.5 left-4 px-2.5 py-0.5 bg-blue-600 dark:bg-blue-500 text-white rounded-full text-xs shadow-sm flex items-center gap-1 border border-blue-400/20 z-10">
                   Unlock Pro Limits
                   <Gem className="size-2.5 fill-white/20" />
                 </div>
@@ -255,7 +255,7 @@ export default function DashboardPage() {
                     ) : (
                       <>
                         <span>{teamProjects.length}</span>
-                        <span className="text-muted-foreground/35 text-lg font-light ml-1.5">/{joinLimit}</span>
+                        <span className="text-muted-foreground text-lg font-light ml-1.5">/{joinLimit}</span>
                       </>
                     )}
                   </div>
@@ -268,7 +268,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Tabs Navigation */}
-          <div className="flex items-center gap-2 border-b border-accent pb-px">
+          <div className="flex items-center gap-2 border-b border-accent pb-px mt-4">
             <button
               type="button"
               onClick={() => setActiveTab("stats")}
@@ -519,14 +519,14 @@ export default function DashboardPage() {
         {/* Right Side */}
         <div
           className={cn(
-            "relative transition-all duration-300 ease-in-out shrink-0 w-full lg:self-stretch lg:min-h-screen",
-            isRightSidebarExpanded ? "lg:w-80" : "lg:w-14",
+            "relative transition-all duration-200 ease-in-out shrink-0 w-full self-stretch min-h-screen",
+            isRightSidebarExpanded ? "w-80" : "w-14",
           )}
         >
           <button
             type="button"
             onClick={() => setIsRightSidebarExpanded(!isRightSidebarExpanded)}
-            className="w-5 h-14 bg-primary hover:bg-primary/95 text-primary-foreground absolute top-[44%] -left-2.5 rounded-full flex items-center justify-center shadow-md cursor-pointer transition-all duration-200 z-20 focus:outline-none focus:ring-1 focus:ring-primary/50"
+            className="w-5 h-14 bg-primary hover:bg-primary/95 text-primary-foreground absolute top-[45%] -left-2.5 rounded-full flex items-center justify-center shadow-md cursor-pointer transition-all duration-200 z-20 focus:outline-none focus:ring-1 focus:ring-primary/50"
             aria-label={
               isRightSidebarExpanded ? "Collapse sidebar" : "Expand sidebar"
             }

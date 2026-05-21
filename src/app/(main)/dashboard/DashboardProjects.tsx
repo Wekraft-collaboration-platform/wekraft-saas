@@ -140,7 +140,7 @@ export const DashboardProjects = ({
               className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-muted shadow-md h-full"
             >
               {/* Top Part: Cover Image with float badges */}
-              <div className="aspect-video w-full bg-muted relative overflow-hidden shrink-0">
+              <div className="aspect-video w-full bg-card relative overflow-hidden shrink-0">
                 {project.thumbnailUrl ? (
                   <img
                     src={project.thumbnailUrl}
@@ -158,22 +158,6 @@ export const DashboardProjects = ({
                   </div>
                 )}
 
-                {/* Floating Badges */}
-                <div className="absolute top-2 left-2 flex flex-wrap gap-1 z-10">
-                  {/* Role Badge */}
-                  <span
-                    className={cn(
-                      "text-xs  px-1.5 py-0.5 rounded-full border shadow-xs backdrop-blur-md",
-                      project.role === "Owner"
-                        ? "bg-blue-500/10 text-white border-blue-500/20"
-                        : "bg-blue-500/10 text-white border-blue-500/20"
-                    )}
-                  >
-                    {project.role}
-                  </span>
-
-
-                </div>
               </div>
 
               {/* Card Body - Overlapping cover image & scooped corner background */}
@@ -189,18 +173,30 @@ export const DashboardProjects = ({
               >
 
                 {/* Top Metadata Line */}
-                <div className="flex items-center gap-1 text-xs text-muted-foreground/70 mb-1 font-medium">
+                <div className="flex items-center gap-4 text-xs text-muted-foreground/70 mb-1 font-medium">
                   <span>
                     {project.createdAt
                       ? formatRelativeTime(project.createdAt)
                       : "some time ago"}
                   </span>
+                  <div className="flex flex-wrap gap-1 z-10">
+                    <span
+                      className={cn(
+                        "text-[10px]  px-1.5 py-0.5 rounded-full border shadow-xs backdrop-blur-md",
+                        project.role === "Owner"
+                          ? "bg-blue-500/10 text-white border-blue-500/20"
+                          : "bg-blue-500/10 text-white border-blue-500/20"
+                      )}
+                    >
+                      {project.role}
+                    </span>
+                  </div>
 
 
                 </div>
 
                 {/* Project Name Title */}
-                <h3 className="text-xs font-bold text-foreground truncate tracking-tight mb-3">
+                <h3 className="text-sm font-semibold capitalize text-foreground/90 truncate tracking-tight mb-3">
                   <span
                     onClick={() =>
                       router.push(`/dashboard/my-projects/${project.slug}`)
@@ -212,14 +208,14 @@ export const DashboardProjects = ({
                 </h3>
 
                 {/* Footer Info: Avatars and Repository Bubble */}
-                <div className="mt-auto flex items-center justify-between gap-4 pt-1.5 border-t border-border/20">
+                <div className="mt-auto flex items-center justify-between gap-4 ">
                   {/* Avatars Stack */}
                   {project.totalMembers > 0 ? (
                     <div className="flex -space-x-1">
                       {project.members?.slice(0, 3).map((member, i) => (
                         <div
                           key={i}
-                          className="size-4.5 rounded-full border border-sidebar bg-accent overflow-hidden shadow-xs"
+                          className="size-6 rounded-full border border-sidebar bg-accent overflow-hidden shadow-xs"
                           title={member.userName}
                         >
                           {member.userImage ? (
@@ -229,14 +225,14 @@ export const DashboardProjects = ({
                               className="w-full h-full object-cover"
                             />
                           ) : (
-                            <div className="w-full h-full flex items-center justify-center text-[6px] bg-primary/20 text-primary font-bold">
+                            <div className="w-full h-full flex items-center justify-center text-[8px] bg-primary/20 text-primary font-bold">
                               {member.userName.charAt(0)}
                             </div>
                           )}
                         </div>
                       ))}
                       {project.totalMembers > 3 && (
-                        <div className="size-4.5 rounded-full border border-sidebar bg-accent flex items-center justify-center text-[6px] text-muted-foreground font-bold">
+                        <div className="size-5 rounded-full border border-sidebar bg-accent flex items-center justify-center text-[8px] text-muted-foreground font-bold">
                           +{project.totalMembers - 3}
                         </div>
                       )}
@@ -258,7 +254,7 @@ export const DashboardProjects = ({
                     onClick={() =>
                       router.push(`/dashboard/my-projects/${project.slug}`)
                     }
-                    className="h-7 text-[10px] gap-1 border-border/60 hover:bg-accent/40 transition-all font-semibold cursor-pointer"
+                    className="h-7 text-[10px] gap-1 border-accent! cursor-pointer"
                   >
                     <Settings2 className="size-3" /> View
                   </Button>
@@ -269,7 +265,7 @@ export const DashboardProjects = ({
                         `/dashboard/my-projects/${project.slug}/workspace`
                       )
                     }
-                    className="h-7 text-[10px] gap-1 font-semibold transition-all cursor-pointer"
+                    className="h-7 text-[10px] gap-1 cursor-pointer"
                   >
                     <ExternalLink className="size-3" /> Workspace
                   </Button>
@@ -278,7 +274,8 @@ export const DashboardProjects = ({
             </div>
           ))}
         </div>
-      )}
-    </div>
+      )
+      }
+    </div >
   );
 };
