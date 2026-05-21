@@ -566,7 +566,7 @@ export const AppSidebar = () => {
                     : "Upgrade to Plus to unlock AI and boost your productivity."}
               </p>
               {user.accountType !== "pro" && (
-                <Link href="/dashboard/pricing">
+                <Link href="/web/pricing">
                   <Button
                     className="text-[10px] cursor-pointer w-full my-1.5 font-medium"
                     size="xs"
