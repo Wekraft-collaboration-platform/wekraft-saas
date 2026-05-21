@@ -25,7 +25,8 @@ import { cn } from "@/lib/utils";
 import { useConvexAuth, useAction, useQuery } from "convex/react";
 import { toast } from "sonner";
 import { api } from "../../../convex/_generated/api";
-import { usePayment } from "@/modules/payments/usePayment";
+import { useRazorpay } from "@/modules/payments/hooks/useRazorpay";
+import Script from "next/script";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -49,6 +50,7 @@ interface Plan {
   highlighted: boolean;
   icon: React.ReactNode;
   features: FeatureItem[];
+  priceUSD: number;
 }
 
 interface FeatureRow {
@@ -104,6 +106,7 @@ const plans: Plan[] = [
     highlighted: false,
     icon: <GitBranch className="h-4 w-4" />,
     features: freeFeatures,
+    priceUSD: 0,
   },
   {
     key: "plus",
@@ -118,6 +121,7 @@ const plans: Plan[] = [
     highlighted: true,
     icon: <Flame className="h-4 w-4" />,
     features: plusFeatures,
+    priceUSD: 6,
   },
   {
     key: "pro",
@@ -132,6 +136,7 @@ const plans: Plan[] = [
     highlighted: false,
     icon: <Shield className="h-4 w-4" />,
     features: proFeatures,
+    priceUSD: 15,
   },
 ];
 
@@ -180,35 +185,16 @@ const FeatureValue = ({ value }: { value: string | boolean }) => {
   );
 };
 
-// ─── Geo-based Provider Detection ───────────────────────────────────────────
-// Uses the browser's built-in Intl API — zero latency, no external API call.
-// India (Asia/Kolkata / Asia/Calcutta) → Razorpay
-// Everywhere else → Stripe
-function getProvider(): "razorpay" | "stripe" {
-  try {
-    const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
-    if (tz === "Asia/Kolkata" || tz === "Asia/Calcutta") return "razorpay";
-    return "stripe";
-  } catch {
-    return "stripe"; // safe fallback if Intl is unavailable
-  }
-}
+
 
 const Pricing = () => {
   const { isAuthenticated } = useConvexAuth();
   const user = useQuery(api.user.getCurrentUser);
-  const createOrder = useAction((api as any).payments.createSubscriptionCheckout);
-  const { handleCheckout, isLoading, isReady } = usePayment({
-    onSuccess: () => {
-      toast.success("Subscription successful! Your plan will be updated shortly.");
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to process payment");
-    },
-  });
+  const { initiatePayment, loadingPlan } = useRazorpay();
 
   return (
     <div className="bg-[#050505] min-h-screen w-full selection:bg-white/20 font-sans antialiased relative overflow-hidden">
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       {/* ── Background Grid & Glow ── */}
       <div className="absolute inset-0 pointer-events-none z-0">
         <div 
@@ -301,7 +287,8 @@ const Pricing = () => {
                   <div className="w-full mb-6 block">
                     <button
                       onClick={async () => {
-                        if (isLoading) return;
+                        const isLoadingPlan = loadingPlan === plan.name;
+                        if (isLoadingPlan) return;
                         
                         if (!isAuthenticated) {
                           toast.error("Please login to upgrade your plan");
@@ -318,35 +305,23 @@ const Pricing = () => {
                           return;
                         }
 
-                        if (!isReady) {
-                          toast.error("Payment system is still loading, please wait.");
-                          return;
-                        }
-
                         try {
-                          const provider = getProvider();
-                          const order = await createOrder({
-                            plan: plan.key as "plus" | "pro",
-                            userId: user._id,
-                            name: user.name || "",
-                            email: user.email || "",
-                            provider,
-                          });
-                          
-                          await handleCheckout(order, { name: user.name || "", email: user.email || "" });
+                          await initiatePayment(
+                            { name: plan.name, planType: plan.key as "plus" | "pro", priceUSD: plan.priceUSD },
+                            { id: user._id, name: user.name || "", email: user.email || "" }
+                          );
                         } catch (e: any) {
                           console.error("Payment failed", e);
-                          toast.error(e.message || "Failed to process subscription");
                         }
                       }}
-                      disabled={isLoading}
+                      disabled={loadingPlan !== null}
                       className={cn(
                         "w-full py-2 px-4 rounded-full font-medium text-sm transition-all duration-300 shadow-sm flex items-center justify-center gap-2 cursor-pointer",
                         "bg-[#1c1c1c] border border-white/10 text-gray-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] hover:bg-white hover:text-black",
-                        isLoading && "opacity-50 cursor-not-allowed"
+                        (loadingPlan !== null) && "opacity-50 cursor-not-allowed"
                       )}
                     >
-                      {isLoading ? "Processing..." : plan.cta}
+                      {loadingPlan === plan.name ? "Processing..." : plan.cta}
                     </button>
                   </div>
 

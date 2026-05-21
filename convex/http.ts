@@ -388,62 +388,6 @@ http.route({
   }),
 });
 
-// ─── Razorpay Webhook ────────────────────────────────────────────────────────
-http.route({
-  path: "/razorpay-webhook",
-  method: "POST",
-  handler: httpAction(async (ctx, request) => {
-    const signature = request.headers.get("x-razorpay-signature");
-    const payload = await request.text();
 
-    if (!signature) {
-      return new Response("Missing x-razorpay-signature header", { status: 400 });
-    }
-    if (!payload) {
-      return new Response("Empty payload", { status: 400 });
-    }
-
-    const success = await ctx.runAction(internal.payments.processWebhook, {
-      signature,
-      payload,
-      provider: "razorpay",
-    });
-
-    return new Response(success ? "OK" : "Webhook processing failed", {
-      status: success ? 200 : 400,
-    });
-  }),
-});
-
-// ─── Stripe Webhook ──────────────────────────────────────────────────────────
-// IMPORTANT: Stripe requires the raw body (not parsed JSON) for signature verification.
-// Do NOT call request.json() here — always use request.text().
-http.route({
-  path: "/webhooks/payments/stripe",
-  method: "POST",
-  handler: httpAction(async (ctx, request) => {
-    const signature = request.headers.get("stripe-signature");
-    const payload = await request.text(); // Must be raw body for Stripe signature verification
-
-    if (!signature) {
-      return new Response("Missing stripe-signature header", { status: 400 });
-    }
-    if (!payload) {
-      return new Response("Empty payload", { status: 400 });
-    }
-
-    const success = await ctx.runAction(internal.payments.processWebhook, {
-      signature,
-      payload,
-      provider: "stripe",
-    });
-
-    // Stripe expects a 200 even for events we don't handle;
-    // returning non-200 causes retries. Only return 400 for signature failures.
-    return new Response(success ? "OK" : "Webhook signature verification failed", {
-      status: success ? 200 : 400,
-    });
-  }),
-});
 
 export default http;
