@@ -60,6 +60,12 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Loader2 } from "lucide-react";
 import { EditTaskDialog } from "./EditTaskDialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface TaskDetailSheetProps {
   task: Task | null;
@@ -626,36 +632,62 @@ export const TaskDetailSheet = ({
                               >
                                 <ExternalLink size={14} />
                               </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                                onClick={() => handleRemoveAttachment(file.url)}
-                                disabled={project?.ownerAccountType === "free"}
-                              >
-                                <Trash2 size={14} />
-                              </Button>
+                              <TooltipProvider delayDuration={100}>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="inline-block">
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                        onClick={() => handleRemoveAttachment(file.url)}
+                                        disabled={project?.ownerAccountType === "free"}
+                                      >
+                                        <Trash2 size={14} />
+                                      </Button>
+                                    </div>
+                                  </TooltipTrigger>
+                                  {project?.ownerAccountType === "free" && (
+                                    <TooltipContent className="bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200 text-xs p-2 max-w-[200px] text-center">
+                                      Ask project owner to upgrade to unlock cloud storage.
+                                    </TooltipContent>
+                                  )}
+                                </Tooltip>
+                              </TooltipProvider>
                             </div>
                           </div>
                         ))}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-9 px-3 text-xs bg-muted/30 border-border text-muted-foreground hover:text-foreground rounded-xl gap-2 mt-2 border-dashed"
-                          disabled={isUploading || project?.ownerAccountType === "free"}
-                          onClick={() =>
-                            document
-                              .getElementById("detail-file-upload")
-                              ?.click()
-                          }
-                        >
-                          {isUploading ? (
-                            <Loader2 className="w-3 h-3 animate-spin" />
-                          ) : (
-                            <Plus size={14} />
-                          )}
-                          Add More
-                        </Button>
+                        <TooltipProvider delayDuration={100}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="inline-block w-full mt-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-9 w-full px-3 text-xs bg-muted/30 border-border text-muted-foreground hover:text-foreground rounded-xl gap-2 border-dashed"
+                                  disabled={isUploading || project?.ownerAccountType === "free"}
+                                  onClick={() =>
+                                    document
+                                      .getElementById("detail-file-upload")
+                                      ?.click()
+                                  }
+                                >
+                                  {isUploading ? (
+                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                  ) : (
+                                    <Plus size={14} />
+                                  )}
+                                  Add More
+                                </Button>
+                              </div>
+                            </TooltipTrigger>
+                            {project?.ownerAccountType === "free" && (
+                              <TooltipContent className="bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200 text-xs p-2 max-w-[200px] text-center">
+                                Ask project owner to upgrade to unlock cloud storage.
+                              </TooltipContent>
+                            )}
+                          </Tooltip>
+                        </TooltipProvider>
                       </div>
                     ) : (
                       <div className="text-center space-y-3 py-4 w-full">
@@ -666,24 +698,37 @@ export const TaskDetailSheet = ({
                         <p className="text-muted-foreground text-xs font-medium">
                           No attachments yet
                         </p>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-9 px-4 text-xs bg-muted/30 border-border text-muted-foreground hover:text-foreground rounded-xl gap-2 mt-2"
-                          disabled={isUploading || project?.ownerAccountType === "free"}
-                          onClick={() =>
-                            document
-                              .getElementById("detail-file-upload")
-                              ?.click()
-                          }
-                        >
-                          {isUploading ? (
-                            <Loader2 className="w-3 h-3 animate-spin" />
-                          ) : (
-                            <Plus size={14} />
-                          )}
-                          Add Attachment
-                        </Button>
+                        <TooltipProvider delayDuration={100}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="inline-block mt-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-9 px-4 text-xs bg-muted/30 border-border text-muted-foreground hover:text-foreground rounded-xl gap-2"
+                                  disabled={isUploading || project?.ownerAccountType === "free"}
+                                  onClick={() =>
+                                    document
+                                      .getElementById("detail-file-upload")
+                                      ?.click()
+                                  }
+                                >
+                                  {isUploading ? (
+                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                  ) : (
+                                    <Plus size={14} />
+                                  )}
+                                  Add Attachment
+                                </Button>
+                              </div>
+                            </TooltipTrigger>
+                            {project?.ownerAccountType === "free" && (
+                              <TooltipContent className="bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200 text-xs p-2 max-w-[200px] text-center">
+                                Ask project owner to upgrade to unlock cloud storage.
+                              </TooltipContent>
+                            )}
+                          </Tooltip>
+                        </TooltipProvider>
                       </div>
                     )}
                     <input

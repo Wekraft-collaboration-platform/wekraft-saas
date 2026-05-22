@@ -1,54 +1,60 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
 import { useMutation, useQuery } from "convex/react";
-import { api } from "../../../convex/_generated/api";
+import { format } from "date-fns";
+import {
+  Check,
+  ChevronRight,
+  Clock,
+  FileText,
+  Link2,
+  Loader2,
+  LucideSettings2,
+  Paperclip,
+  Tag,
+  Trash2,
+  User,
+  X,
+} from "lucide-react";
+import type React from "react";
+import { useEffect, useState } from "react";
+import type { DateRange } from "react-day-picker";
+import { toast } from "sonner";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  X,
-  ChevronRight,
-  User,
-  Tag,
-  Link2,
-  Loader2,
-  LucideSettings2,
-  Paperclip,
-  Clock,
-  Check,
-  FileText,
-  Trash2,
-} from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
-import { DateRange } from "react-day-picker";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
-import { Id } from "../../../convex/_generated/dataModel";
-import { GetRepoStructure } from "./GetRepoStructure";
-
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { priorityIcons, statusIcons } from "@/lib/static-store";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
+import { api } from "../../../convex/_generated/api";
+import type { Id } from "../../../convex/_generated/dataModel";
+import { GetRepoStructure } from "./GetRepoStructure";
 
 interface EditTaskDialogProps {
   projectName: string;
@@ -461,33 +467,43 @@ export const EditTaskDialog = ({
 
             {/* Attachments */}
             <div className="relative">
-              <Button
-                variant="outline"
-                size="sm"
-                className={cn(
-                  "h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
-                  attachments.length > 0 &&
-                    "text-blue-400 border-blue-900/40 bg-blue-900/10",
-                )}
-                disabled={isUploading || project?.ownerAccountType === "free"}
-                onClick={() =>
-                  document.getElementById("file-upload-edit")?.click()
-                }
-                title={
-                  project?.ownerAccountType === "free"
-                    ? "Upgrade to Plus to use attachments"
-                    : ""
-                }
-              >
-                {isUploading ? (
-                  <Loader2 className="w-3.5 h-3.5 animate-spin" />
-                ) : (
-                  <Paperclip className="w-3.5 h-3.5" />
-                )}
-                {attachments.length > 0
-                  ? `${attachments.length} Attachments`
-                  : "Attachments"}
-              </Button>
+              <TooltipProvider delayDuration={100}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="inline-block">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className={cn(
+                          "h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
+                          attachments.length > 0 &&
+                            "text-blue-400 border-blue-900/40 bg-blue-900/10",
+                        )}
+                        disabled={
+                          isUploading || project?.ownerAccountType === "free"
+                        }
+                        onClick={() =>
+                          document.getElementById("file-upload-edit")?.click()
+                        }
+                      >
+                        {isUploading ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Paperclip className="w-3.5 h-3.5" />
+                        )}
+                        {attachments.length > 0
+                          ? `${attachments.length} Attachments`
+                          : "Attachments"}
+                      </Button>
+                    </div>
+                  </TooltipTrigger>
+                  {project?.ownerAccountType === "free" && (
+                    <TooltipContent className="bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200 text-xs p-2 max-w-[200px] text-center">
+                      Ask project owner to upgrade to unlock cloud storage.
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
               <input
                 id="file-upload-edit"
                 type="file"

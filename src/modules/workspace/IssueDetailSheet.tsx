@@ -24,6 +24,8 @@ import {
   ExternalLink,
   RotateCcw,
   CheckCircle2,
+  Paperclip,
+  Trash2,
 } from "lucide-react";
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
@@ -42,6 +44,12 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Loader2 } from "lucide-react";
 import { EditIssueDialog } from "./EditIssueDialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface IssueDetailSheetProps {
   issue: any | null;
@@ -132,9 +140,71 @@ export const IssueDetailSheet = ({
   const updateIssue = useMutation(api.issue.updateIssue);
   const updateIssueStatus = useMutation(api.issue.updateIssueStatus);
   const assignIssueToSprint = useMutation(api.sprint.assignIssueToSprint);
+  const addAttachment = useMutation(api.issue.addIssueAttachment);
+  const removeAttachment = useMutation(api.issue.removeIssueAttachment);
 
   const [isUpdatingStatus, setIsUpdatingStatus] = useState(false);
   const [isAssigningSprint, setIsAssigningSprint] = useState(false);
+  const [isUploading, setIsUploading] = useState(false);
+
+  const handleAttachmentUpload = async (
+    e: React.ChangeEvent<HTMLInputElement>,
+  ) => {
+    const file = e.target.files?.[0];
+    if (!file || !realIssue) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("File too large. Max 10MB allowed.");
+      return;
+    }
+
+    const toastId = toast.loading(`Uploading ${file.name}...`);
+    setIsUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/issue-attachments", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (data.error) throw new Error(data.error);
+
+      await addAttachment({
+        issueId: realIssue._id,
+        name: data.name,
+        url: data.url,
+      });
+
+      toast.success("Attachment added successfully", { id: toastId });
+    } catch (error: any) {
+      toast.error(error.message || "Failed to upload attachment", {
+        id: toastId,
+      });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const handleRemoveAttachment = async (url: string) => {
+    if (!realIssue) return;
+    try {
+      await removeAttachment({
+        issueId: realIssue._id,
+        url,
+      });
+      await fetch("/api/issue-attachments", {
+        method: "DELETE",
+        body: JSON.stringify({ url }),
+      });
+      toast.success("Attachment removed");
+    } catch (error) {
+      toast.error("Failed to remove attachment");
+    }
+  };
 
   if (!realIssue) return null;
 
@@ -536,7 +606,7 @@ export const IssueDetailSheet = ({
                       : format(realIssue.updatedAt, "d MMMM, yyyy")}
                   </span>
                 </p>
-                <div className="flex items-center gap-2 border-l border-primary/60 pl-4">
+                <div className="flex items-center gap-2 border-l border-primary/60 pl-4 shrink-0">
                   <span className="text-[10px] text-muted-foreground">By:</span>
                   <Avatar className="w-5 h-5 border border-emerald-500/30">
                     <AvatarImage src={completer?.avatarUrl || ""} />
@@ -544,6 +614,9 @@ export const IssueDetailSheet = ({
                       {completer?.name?.[0] || "?"}
                     </AvatarFallback>
                   </Avatar>
+                  <span className="text-xs text-primary truncate max-w-[120px]">
+                    {completer?.name || "Loading..."}
+                  </span>
                 </div>
               </div>
             ) : (
@@ -562,6 +635,9 @@ export const IssueDetailSheet = ({
               <TabsList className="w-full">
                 <TabsTrigger value="description" className="text-xs flex-1">
                   Description <TextQuote className="w-4 h-4 ml-1.5" />
+                </TabsTrigger>
+                <TabsTrigger value="attachments" className="text-xs flex-1">
+                  Attachments <Paperclip className="w-4 h-4 ml-1.5" />
                 </TabsTrigger>
                 <TabsTrigger value="comments" className="text-xs flex-1">
                   Comments <MessagesSquare className="w-4 h-4 ml-1.5" />
@@ -588,6 +664,142 @@ export const IssueDetailSheet = ({
                     </p>
                   </div>
                 )}
+              </TabsContent>
+
+              <TabsContent value="attachments" className="pt-2">
+                <div className="p-2">
+                  {realIssue.attachments && realIssue.attachments.length > 0 ? (
+                    <div className="grid grid-cols-1 gap-2 w-full">
+                      {realIssue.attachments.map((file: any, idx: number) => (
+                        <div
+                          key={idx}
+                          className="flex items-center justify-between bg-accent/20 border border-[#333] rounded-xl px-4 py-2 group hover:border-blue-500/50 transition-all duration-200"
+                        >
+                          <div className="flex items-center gap-3 overflow-hidden">
+                            <div className="p-2 bg-blue-500/10 rounded-lg">
+                              <FileText className="w-5 h-5 text-blue-400" />
+                            </div>
+                            <div className="flex flex-col min-w-0">
+                              <span className="text-xs font-medium text-primary truncate max-w-[200px]">
+                                {file.name}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
+                              onClick={() => window.open(file.url, "_blank")}
+                            >
+                              <ExternalLink size={14} />
+                            </Button>
+                            <TooltipProvider delayDuration={100}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="inline-block">
+                                    <Button
+                                      variant="ghost"
+                                      size="icon"
+                                      className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                      onClick={() => handleRemoveAttachment(file.url)}
+                                      disabled={project?.ownerAccountType === "free"}
+                                    >
+                                      <Trash2 size={14} />
+                                    </Button>
+                                  </div>
+                                </TooltipTrigger>
+                                {project?.ownerAccountType === "free" && (
+                                  <TooltipContent className="bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200 text-xs p-2 max-w-[200px] text-center">
+                                    Ask project owner to upgrade to unlock cloud storage.
+                                  </TooltipContent>
+                                )}
+                              </Tooltip>
+                            </TooltipProvider>
+                          </div>
+                        </div>
+                      ))}
+                      <TooltipProvider delayDuration={100}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="inline-block w-full mt-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-9 w-full px-3 text-xs bg-muted/30 border-border text-muted-foreground hover:text-foreground rounded-xl gap-2 border-dashed"
+                                disabled={isUploading || project?.ownerAccountType === "free"}
+                                onClick={() =>
+                                  document
+                                    .getElementById("issue-detail-file-upload")
+                                    ?.click()
+                                }
+                              >
+                                {isUploading ? (
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <Plus size={14} />
+                                )}
+                                Add More
+                              </Button>
+                            </div>
+                          </TooltipTrigger>
+                          {project?.ownerAccountType === "free" && (
+                            <TooltipContent className="bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200 text-xs p-2 max-w-[200px] text-center">
+                              Ask project owner to upgrade to unlock cloud storage.
+                            </TooltipContent>
+                          )}
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  ) : (
+                    <div className="text-center space-y-3 py-4 w-full">
+                      <Paperclip
+                        size={32}
+                        className="text-muted-foreground/20 mx-auto"
+                      />
+                      <p className="text-muted-foreground text-xs font-medium">
+                        No attachments yet
+                      </p>
+                      <TooltipProvider delayDuration={100}>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <div className="inline-block mt-2">
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                className="h-9 px-4 text-xs bg-muted/30 border-border text-muted-foreground hover:text-foreground rounded-xl gap-2"
+                                disabled={isUploading || project?.ownerAccountType === "free"}
+                                onClick={() =>
+                                  document
+                                    .getElementById("issue-detail-file-upload")
+                                    ?.click()
+                                }
+                              >
+                                {isUploading ? (
+                                  <Loader2 className="w-3 h-3 animate-spin" />
+                                ) : (
+                                  <Plus size={14} />
+                                )}
+                                Add Attachment
+                              </Button>
+                            </div>
+                          </TooltipTrigger>
+                          {project?.ownerAccountType === "free" && (
+                            <TooltipContent className="bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200 text-xs p-2 max-w-[200px] text-center">
+                              Ask project owner to upgrade to unlock cloud storage.
+                            </TooltipContent>
+                          )}
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
+                  )}
+                  <input
+                    id="issue-detail-file-upload"
+                    type="file"
+                    className="hidden"
+                    onChange={handleAttachmentUpload}
+                  />
+                </div>
               </TabsContent>
 
               <TabsContent value="comments" className="pt-2">
