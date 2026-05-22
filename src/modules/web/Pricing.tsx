@@ -113,7 +113,7 @@ const plans: Plan[] = [
     key: "plus",
     name: "Plus",
     badge: "40% OFF",
-    priceLabel: "$6",
+    priceLabel: "$7",
     oldPrice: "$10",
     priceSub: "Serious team building",
     description: "Serious team building",
@@ -122,7 +122,7 @@ const plans: Plan[] = [
     highlighted: true,
     icon: <Flame className="h-4 w-4" />,
     features: plusFeatures,
-    priceUSD: 6,
+    priceUSD: 7,
   },
   {
     key: "pro",
