@@ -33,6 +33,7 @@ export const updatePlanServerSide = mutation({
       subscriptionStatus: args.status,
       subscriptionProvider: "stripe",
       currentPeriodEnd: args.currentPeriodEnd,
+      cancelAtPeriodEnd: false, // Reset this so the UI doesn't think the new plan is cancelling
       updatedAt: Date.now(),
     });
 

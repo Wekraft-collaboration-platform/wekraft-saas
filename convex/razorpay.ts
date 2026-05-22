@@ -25,6 +25,7 @@ export const updatePlanServerSide = mutation({
       customerId: args.customerId,
       subscriptionStatus: args.status,
       subscriptionProvider: "razorpay",
+      cancelAtPeriodEnd: false, // Reset this so the UI doesn't think the new plan is cancelling
       updatedAt: Date.now(),
     });
 

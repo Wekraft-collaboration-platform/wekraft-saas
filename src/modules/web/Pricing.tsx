@@ -385,7 +385,7 @@ const Pricing = () => {
                     </button>
                     {plan.key === (user?.accountType || "free") && plan.key !== "free" && (
                       user?.cancelAtPeriodEnd ? (
-                        <span className="mt-3 text-xs text-orange-400/90 bg-orange-400/10 px-3 py-1 rounded-full font-medium border border-orange-400/20">
+                        <span className="mt-3 inline-flex text-xs text-orange-400/90 bg-orange-400/10 px-3 py-1.5 rounded-full font-medium border border-orange-400/20">
                           Ends on {user.currentPeriodEnd ? new Date(user.currentPeriodEnd).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'period end'}
                         </span>
                       ) : (
@@ -426,9 +426,9 @@ const Pricing = () => {
                               toast.error(e.message || "Something went wrong.");
                             }
                           }}
-                          className="mt-2 text-xs text-gray-500 hover:text-white transition-colors cursor-pointer"
+                          className="mt-3 py-1.5 px-4 rounded-full text-xs font-medium border border-white/10 text-gray-400 hover:text-red-400 hover:border-red-400/30 hover:bg-red-400/10 transition-all cursor-pointer"
                         >
-                          Cancel subscription
+                          Cancel Subscription
                         </button>
                       )
                     )}
