@@ -71,7 +71,7 @@ export const handleSubscriptionUpdate = mutation({
     // but here we just update status and let them stay "pro" or "plus" until `currentPeriodEnd`.
     // In actual implementation, a cron job or a check on the `accountType` would downgrade them 
     // when `currentPeriodEnd` is reached.
-    
+
     // For now, if status is "canceled" or "past_due" and currentPeriodEnd is in the past, downgrade them immediately.
     let newPlan = user.accountType;
     if (args.status === "canceled" || args.status === "unpaid") {

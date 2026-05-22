@@ -43,6 +43,13 @@ export async function POST(req: NextRequest) {
       .update(body)
       .digest("hex");
 
+    if (expectedSignature.length !== razorpay_signature.length) {
+      return NextResponse.json(
+        { success: false, error: "Invalid signature length" },
+        { status: 400 },
+      );
+    }
+
     const isValid = crypto.timingSafeEqual(
       Buffer.from(expectedSignature),
       Buffer.from(razorpay_signature),
@@ -50,7 +57,7 @@ export async function POST(req: NextRequest) {
 
     if (!isValid) {
       return NextResponse.json(
-        { success: false, message: "Invalid signature" },
+        { success: false, error: "Invalid signature" },
         { status: 400 },
       );
     }
@@ -62,7 +69,7 @@ export async function POST(req: NextRequest) {
     if (!convexUrl || !backendSecret) {
       console.error("[Razorpay Verify] Missing CONVEX_URL or BACKEND_SECRET");
       return NextResponse.json(
-        { error: "Server configuration error" },
+        { success: false, error: "Server configuration error" },
         { status: 500 },
       );
     }
@@ -83,9 +90,9 @@ export async function POST(req: NextRequest) {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error("[Razorpay Verify]", message);
+    console.error("[Razorpay Verify Error]", message);
     return NextResponse.json(
-      { error: "Failed to verify payment" },
+      { success: false, error: message },
       { status: 500 },
     );
   }

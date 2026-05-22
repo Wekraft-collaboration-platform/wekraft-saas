@@ -193,7 +193,7 @@ const Pricing = () => {
   const user = useQuery(api.user.getCurrentUser);
   const [countryCode, setCountryCode] = React.useState<string | null>(null);
   
-  const { initiatePayment: initiateRazorpay, loadingPlan: loadingRazorpay } = useRazorpay();
+  const { initiatePayment: initiateRazorpay, loadingPlan: loadingRazorpay, cancelPayment: cancelRazorpay } = useRazorpay();
   const { initiatePayment: initiateStripe, loadingPlan: loadingStripe } = useStripeCheckout();
 
   React.useEffect(() => {
@@ -359,6 +359,16 @@ const Pricing = () => {
                       <button 
                         onClick={async () => {
                           try {
+                            if (user?.subscriptionProvider === "razorpay") {
+                              if (!user?.subscriptionId) {
+                                toast.error("No active subscription found. Please contact support.");
+                                return;
+                              }
+                              await cancelRazorpay(user.subscriptionId);
+                              return;
+                            }
+
+                            // Stripe Cancellation
                             if (!user?.customerId) {
                               toast.error("No active billing profile found. Please contact support.");
                               return;

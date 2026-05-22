@@ -103,6 +103,7 @@ export const useRazorpay = () => {
           amount: plan.priceUSD * exchangeRate,
           currency: "INR",
           planName: plan.name,
+          planType: plan.planType,
         }),
       });
 
@@ -136,7 +137,7 @@ export const useRazorpay = () => {
               toast.success(`Successfully upgraded to ${plan.name}!`);
             } else {
               toast.error(
-                "Payment verification failed. Please contact support.",
+                verifyData.error || "Payment verification failed. Please contact support.",
               );
             }
           } catch (err) {

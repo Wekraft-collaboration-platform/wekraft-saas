@@ -24,49 +24,19 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    // Step 1: Search for an existing product with this exact name
-    let product: Stripe.Product;
-    const existingProducts = await stripe.products.search({
-      query: `name:'${planName}' AND active:'true'`,
-      limit: 1,
-    });
-
-    if (existingProducts.data.length > 0) {
-      product = existingProducts.data[0];
-    } else {
-      // Create a new product dynamically
-      product = await stripe.products.create({
-        name: planName,
-        description: `Subscription to Wekraft ${planName} plan`,
-      });
+    let targetPriceId = "";
+    if (planType === "plus") {
+      targetPriceId = process.env.STRIPE_PLUS_PRICE_ID || "";
+    } else if (planType === "pro") {
+      targetPriceId = process.env.STRIPE_PRO_PRICE_ID || "";
     }
 
-    // Step 2: Find or create a price for this product
-    // We search active prices for this product that match the exact unit_amount (in cents)
-    const unitAmountCents = Math.round(priceUSD * 100);
-
-    let price: Stripe.Price;
-    const existingPrices = await stripe.prices.list({
-      product: product.id,
-      active: true,
-      currency: "usd",
-      type: "recurring",
-    });
-
-    const matchingPrice = existingPrices.data.find(
-      (p) => p.unit_amount === unitAmountCents && p.recurring?.interval === "month"
-    );
-
-    if (matchingPrice) {
-      price = matchingPrice;
-    } else {
-      // Create a new price dynamically
-      price = await stripe.prices.create({
-        product: product.id,
-        unit_amount: unitAmountCents,
-        currency: "usd",
-        recurring: { interval: "month" },
-      });
+    if (!targetPriceId) {
+      console.error(`[Stripe] Missing configuration for ${planType} plan`);
+      return NextResponse.json(
+        { error: `Server missing configuration for ${planType} plan` },
+        { status: 500 },
+      );
     }
 
     // Step 3: Create the Checkout Session
@@ -82,7 +52,7 @@ export async function POST(req: NextRequest) {
       },
       line_items: [
         {
-          price: price.id,
+          price: targetPriceId,
           quantity: 1,
         },
       ],

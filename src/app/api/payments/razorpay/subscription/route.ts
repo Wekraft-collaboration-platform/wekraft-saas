@@ -32,37 +32,31 @@ export async function POST(req: NextRequest) {
       key_id: razorpayKeyId,
       key_secret: razorpayKeySecret,
     });
-    const { amount, planName, currency = "INR" } = await req.json();
+    const { amount, planName, planType, currency = "INR" } = await req.json();
 
-    if (!amount || typeof amount !== "number" || amount <= 0) {
+    if (!planType || (planType !== "plus" && planType !== "pro")) {
       return NextResponse.json(
-        { error: "amount is required and must be a positive number" },
+        { error: "Invalid planType" },
         { status: 400 },
       );
     }
 
-    const amountInPaise = Math.round(amount * 100);
+    let targetPlanId = "";
+    if (planType === "plus") {
+      targetPlanId = process.env.RAZORPAY_PLUS_PLAN_ID || "";
+    } else if (planType === "pro") {
+      targetPlanId = process.env.RAZORPAY_PRO_PLAN_ID || "";
+    }
 
-    const plans = await razorpay.plans.all({ count: 100 });
-    const existingPlan = (plans.items as RazorpayPlan[]).find(
-      (p) => Number(p.item.amount) === amountInPaise && p.period === "monthly",
-    );
-
-    const targetPlan =
-      existingPlan ??
-      (await razorpay.plans.create({
-        period: "monthly",
-        interval: 1,
-        item: {
-          name: planName || "Wekraft Plan",
-          amount: amountInPaise,
-          currency,
-          description: `Monthly subscription for ${planName || "Wekraft Plan"}`,
-        },
-      }));
+    if (!targetPlanId) {
+      return NextResponse.json(
+        { error: `Server missing configuration for ${planType} plan` },
+        { status: 500 },
+      );
+    }
 
     const subscription = await razorpay.subscriptions.create({
-      plan_id: targetPlan.id,
+      plan_id: targetPlanId,
       total_count: 120, // 10 years
       quantity: 1,
       customer_notify: 1,

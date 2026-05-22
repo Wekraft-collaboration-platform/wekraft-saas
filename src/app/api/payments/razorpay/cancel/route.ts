@@ -33,7 +33,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    await razorpay.subscriptions.cancel(subscriptionId);
+    // By passing 'true', Razorpay schedules the cancellation for the end of the current billing cycle
+    // The webhook will handle downgrading the user when the cycle ends.
+    await razorpay.subscriptions.cancel(subscriptionId, true);
 
     return NextResponse.json({ success: true });
   } catch (error) {
