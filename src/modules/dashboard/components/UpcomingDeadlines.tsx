@@ -2,15 +2,21 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { CalendarClock, Clock, FolderKanban, RefreshCwIcon } from "lucide-react";
+import { CalendarClock, ChevronDown, Clock, FolderKanban, RefreshCwIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 async function fetchDeadlines(refresh = false) {
   const url = refresh
     ? "/api/dashboard/upcoming-cards?refresh=true"
     : "/api/dashboard/upcoming-cards";
-  const res = await fetch(url);
+  const res = await fetch(url, { cache: "no-store" });
   const d = await res.json();
   return d.deadlines || [];
 }
@@ -62,7 +68,7 @@ function Sparkline({ id, daysLeft }: { id: string; daysLeft: number }) {
     ? "stroke-rose-500"
     : isWarning
       ? "stroke-amber-500"
-      : "stroke-lime-500 dark:stroke-lime-400"; // Using lime green just like the user's reference
+      : "stroke-blue-500 dark:stroke-blue-400";
 
   return (
     <svg width={width} height={height} className="shrink-0">
@@ -78,56 +84,78 @@ function Sparkline({ id, daysLeft }: { id: string; daysLeft: number }) {
   );
 }
 
-export function UpcomingDeadlines() {
+export interface UpcomingDeadlinesProps {
+  deadlines: any[] | null;
+  loading: boolean;
+  refreshing: boolean;
+  onRefresh: () => Promise<void>;
+}
+
+export function UpcomingDeadlines({
+  deadlines,
+  loading,
+  refreshing,
+  onRefresh,
+}: UpcomingDeadlinesProps) {
   const router = useRouter();
-  const [deadlines, setDeadlines] = useState<any[] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
-
-  useEffect(() => {
-    fetchDeadlines()
-      .then(setDeadlines)
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
-
-  const handleRefresh = useCallback(async () => {
-    setRefreshing(true);
-    try {
-      const fresh = await fetchDeadlines(true);
-      setDeadlines(fresh);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setRefreshing(false);
-    }
-  }, []);
+  const [selectedWeeks, setSelectedWeeks] = useState(1);
+  const now = Date.now();
+  const threshold = now + selectedWeeks * 7 * 24 * 60 * 60 * 1000;
+  const filteredDeadlines = deadlines
+    ? deadlines.filter((p) => p.targetDate >= now && p.targetDate <= threshold)
+    : [];
 
   return (
     <div className="flex-1 flex flex-col rounded-lg border border-border bg-card dark:bg-sidebar shadow-sm overflow-hidden h-1/2 min-h-0">
       {/* Header */}
       <div className="px-4 py-2.5 border-b border-border bg-muted shrink-0 flex items-center justify-between">
-        <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
+        <div className="flex items-center gap-1.5">
           <CalendarClock className="h-4 w-4 text-primary" />
-          Upcoming Deadlines
-        </h3>
-        <span className="text-[11px] font-medium text-muted-foreground">
-          in 1 Week
-        </span>
-        <Button
-          size="icon-xs"
-          variant="outline"
-          onClick={handleRefresh}
-          disabled={refreshing}
-          title="Refresh deadlines"
-        >
-          <RefreshCwIcon
-            className={cn(
-              "h-3 w-3 text-muted-foreground",
-              refreshing && "animate-spin"
-            )}
-          />
-        </Button>
+          <h3 className="text-sm font-medium ">
+            Upcoming Deadlines
+          </h3>
+        </div>
+
+        <div className="flex items-center gap-2.5">
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                className="text-[10px]  h-6 font-medium text-primary bg-accent! hover:bg-sidebar px-2.5 py-0.5 rounded-md cursor-pointer transition-colors shadow-none flex items-center gap-1"
+              >
+                <span>{selectedWeeks === 1 ? "1 Week" : `${selectedWeeks} Weeks`}</span>
+                <ChevronDown className="h-3 w-3 opacity-80 shrink-0" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="start" className="bg-popover border border-border text-foreground">
+              <DropdownMenuItem onClick={() => setSelectedWeeks(1)} className="cursor-pointer text-xs">
+                1 Week
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSelectedWeeks(2)} className="cursor-pointer text-xs">
+                2 Weeks
+              </DropdownMenuItem>
+              <DropdownMenuItem onClick={() => setSelectedWeeks(3)} className="cursor-pointer text-xs">
+                3 Weeks
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+          <Button
+            size="icon-xs"
+            variant="outline"
+            onClick={onRefresh}
+            disabled={refreshing}
+            className="bg-accent!"
+            title="Refresh deadlines"
+          >
+            <RefreshCwIcon
+              className={cn(
+                "h-3 w-3 ",
+                refreshing && "animate-spin"
+              )}
+            />
+          </Button>
+        </div>
+
       </div>
 
       {/* Body - Scrollable */}
@@ -146,21 +174,19 @@ export function UpcomingDeadlines() {
               </div>
             ))}
           </div>
-        ) : !deadlines || deadlines.length === 0 ? (
+        ) : !deadlines || filteredDeadlines.length === 0 ? (
           // Empty state
           <div className="flex flex-col items-center justify-center h-full py-6 px-6 text-center gap-2">
-
-            <CalendarClock className="h-5 w-5 text-primary" />
-
+            <CalendarClock className="h-7 w-7 text-muted-foreground" />
             <div>
-              <p className="text-sm font-medium text-foreground">No deadlines soon</p>
-              <p className="text-xs text-muted-foreground mt-0.5 max-w-[180px]">
-                No projects have deadlines in the next 7 days.
+              <p className="text-base font-medium text-foreground">No deadlines soon</p>
+              <p className="text-sm text-muted-foreground mt-0.5 max-w-[240px]">
+                No projects have deadlines in the next {selectedWeeks * 7} days.
               </p>
             </div>
           </div>
         ) : (
-          deadlines.map((project) => {
+          filteredDeadlines.map((project) => {
             const days = daysUntil(project.targetDate);
             const isUrgent = days <= 2;
             const isWarning = days <= 4;
@@ -169,32 +195,46 @@ export function UpcomingDeadlines() {
               <button
                 key={project._id}
                 onClick={() => router.push(`/dashboard/my-projects/${project.slug}/workspace`)}
-                className="w-full flex items-center gap-3 px-5 py-3 text-left hover:bg-accent/30 cursor-pointer transition-colors duration-150 group outline-none"
+                className="w-full flex items-center gap-3 px-5 py-3.5 text-left hover:bg-accent/30 cursor-pointer transition-colors duration-150 group outline-none"
               >
                 {/* Icon */}
                 <div
                   className={cn(
-                    "h-6 w-6 rounded-md flex items-center justify-center shrink-0 border",
+                    "h-7 w-7 rounded-md flex items-center justify-center shrink-0 border",
                     isUrgent
                       ? "bg-destructive/10 border-destructive/20 text-destructive"
                       : isWarning
                         ? "bg-amber-500/10 border-amber-500/20 text-amber-500"
-                        : "bg-primary/10 border-primary/20 text-primary",
+                        : "bg-primary/5 border-primary/20 text-primary",
                   )}
                 >
-                  <FolderKanban className="h-3.5 w-3.5" />
+                  <FolderKanban className="h-4 w-4" />
                 </div>
 
                 {/* Content */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-[12.5px] font-medium text-foreground/85 truncate group-hover:text-foreground transition-colors">
+                  <p className="text-[12px] font-medium text-foreground/85 truncate group-hover:text-foreground transition-colors">
                     {project.projectName}
                   </p>
-                  <div className="flex items-center gap-1.5 mt-0.5">
-                    <Clock className="h-3 w-3 text-muted-foreground shrink-0" />
-                    <span className="text-[10.5px] text-muted-foreground">
-                      {formatDate(project.targetDate)}
-                    </span>
+                  <div className="flex items-center gap-2 mt-1 flex-wrap">
+                    <div className="flex items-center gap-1.5">
+                      <Clock className="h-4 w-4 text-muted-foreground shrink-0" />
+                      <span className="text-[11px] text-muted-foreground">
+                        {formatDate(project.targetDate)}
+                      </span>
+                    </div>
+                    {project.role && (
+                      <span
+                        className={cn(
+                          "text-[10px] rounded-sm border bg-muted px-2 py-0.6 shrink-0 ml-4",
+                          project.role === "owned"
+                            ? "bg-primary/10 border-primary/20 text-primary"
+                            : "bg-background/20  px-3! py-0.5"
+                        )}
+                      >
+                        {project.role}
+                      </span>
+                    )}
                   </div>
                 </div>
 

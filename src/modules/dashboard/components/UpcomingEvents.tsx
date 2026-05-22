@@ -2,9 +2,15 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Calendar, FolderKanban, RefreshCwIcon } from "lucide-react";
+import { Calendar, ChevronDown, FolderKanban, RefreshCwIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 
 function formatDay(ts: number): string {
   return new Date(ts).toLocaleDateString("en-US", { weekday: "short" });
@@ -30,61 +36,87 @@ async function fetchEvents(refresh = false) {
   const url = refresh
     ? "/api/dashboard/upcoming-cards?refresh=true"
     : "/api/dashboard/upcoming-cards";
-  const res = await fetch(url);
+  const res = await fetch(url, { cache: "no-store" });
   const d = await res.json();
   return d.events || [];
 }
 
-export function UpcomingEvents() {
+export interface UpcomingEventsProps {
+  events: any[] | null;
+  loading: boolean;
+  refreshing: boolean;
+  onRefresh: () => Promise<void>;
+}
+
+export function UpcomingEvents({
+  events,
+  loading,
+  refreshing,
+  onRefresh,
+}: UpcomingEventsProps) {
   const router = useRouter();
-  const [events, setEvents] = useState<any[] | null>(null);
-  const [loading, setLoading] = useState(true);
-  const [refreshing, setRefreshing] = useState(false);
+  const [selectedWeeks, setSelectedWeeks] = useState(1);
 
-  useEffect(() => {
-    fetchEvents()
-      .then(setEvents)
-      .catch(console.error)
-      .finally(() => setLoading(false));
-  }, []);
-
-  const handleRefresh = useCallback(async () => {
-    setRefreshing(true);
-    try {
-      const fresh = await fetchEvents(true);
-      setEvents(fresh);
-    } catch (err) {
-      console.error(err);
-    } finally {
-      setRefreshing(false);
-    }
-  }, []);
+  const now = Date.now();
+  const threshold = now + selectedWeeks * 7 * 24 * 60 * 60 * 1000;
+  const filteredEvents = events
+    ? events.filter((e) => e.start >= now && e.start <= threshold)
+    : [];
 
   return (
     <div className="flex-1 flex flex-col rounded-lg border border-border bg-card dark:bg-sidebar shadow-md overflow-hidden h-1/2 min-h-0">
       {/* Header */}
-      <div className="px-4 py-2.5 border-b border-border bg-muted shrink-0 flex items-center justify-between">
-        <h3 className="text-sm font-medium text-muted-foreground flex items-center gap-1.5">
-          <Calendar className="h-4 w-4 text-primary" />
-          Upcoming Events
-        </h3>
-        <span className="text-[11px] font-medium text-muted-foreground">
-          in 1 Week
-        </span>
-        <Button
-          size="icon-xs"
-          variant="outline"
-          onClick={handleRefresh}
-          disabled={refreshing}
-          title="Refresh events"
-        >
-          <RefreshCwIcon
-            className={cn(
-              "h-3 w-3 text-muted-foreground",
-              refreshing && "animate-spin"
-            )}
-          />
-        </Button>
+      <div className="px-4 py-2.5 border-b border-border bg-muted shrink-0 flex items-center justify-between w-full">
+        <div className="flex items-center gap-1.5 w-full justify-between">
+          <div className="flex items-center gap-1.5">
+            <Calendar className="h-4 w-4 text-primary" />
+            <h3 className="text-sm font-medium ">
+              Upcoming Events
+            </h3>
+          </div>
+          <div className="flex items-center gap-2.5">
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="outline"
+                  className="text-[10px] h-6 font-medium text-primary bg-accent! px-2.5 py-0.5 rounded-md cursor-pointer transition-colors shadow-none flex items-center gap-1"
+                >
+                  <span>{selectedWeeks === 1 ? "1 Week" : `${selectedWeeks} Weeks`}</span>
+                  <ChevronDown className="h-3 w-3 opacity-80 shrink-0" />
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="start" className="bg-popover border border-border text-foreground">
+                <DropdownMenuItem onClick={() => setSelectedWeeks(1)} className="cursor-pointer text-xs">
+                  1 Week
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSelectedWeeks(2)} className="cursor-pointer text-xs">
+                  2 Weeks
+                </DropdownMenuItem>
+                <DropdownMenuItem onClick={() => setSelectedWeeks(3)} className="cursor-pointer text-xs">
+                  3 Weeks
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
+            <Button
+              size="icon-xs"
+              variant="outline"
+              onClick={onRefresh}
+              disabled={refreshing}
+              title="Refresh events"
+              className="bg-accent!"
+            >
+              <RefreshCwIcon
+                className={cn(
+                  "h-3 w-3",
+                  refreshing && "animate-spin"
+                )}
+              />
+            </Button>
+          </div>
+
+        </div>
+
+
       </div>
 
       {/* Body */}
@@ -109,18 +141,18 @@ export function UpcomingEvents() {
               </div>
             ))}
           </div>
-        ) : !events || events.length === 0 ? (
+        ) : !events || filteredEvents.length === 0 ? (
           <div className="flex flex-col items-center justify-center h-full py-6 px-6 text-center gap-2">
-            <Calendar className="h-4.5 w-4.5 text-muted-foreground" />
+            <Calendar className="h-7 w-7 text-muted-foreground" />
             <div>
-              <p className="text-sm font-medium">No events soon</p>
-              <p className="text-xs text-muted-foreground mt-0.5 max-w-45">
-                No upcoming events or meetings this week.
+              <p className="text-base font-medium">No events soon</p>
+              <p className="text-sm text-muted-foreground mt-0.5 max-w-[240px]">
+                No upcoming events or meetings in the next {selectedWeeks * 7} days.
               </p>
             </div>
           </div>
         ) : (
-          events.map((event) => {
+          filteredEvents.map((event) => {
             const days = daysUntil(event.start);
             const isToday = days <= 0;
 

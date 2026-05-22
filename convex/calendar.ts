@@ -107,7 +107,7 @@ export const deleteEvent = mutation({
 });
 
 // ====================================
-// GET UPCOMING EVENTS (WITHIN 7 DAYS)
+// GET UPCOMING EVENTS (WITHIN 3 WEEKS)
 // ====================================
 export const getUpcomingEvents = query({
   args: {},
@@ -147,7 +147,7 @@ export const getUpcomingEvents = query({
     const allProjects = [...ownedProjects, ...joinedProjects];
     const results = [];
     const now = Date.now();
-    const oneWeekFromNow = now + 7 * 24 * 60 * 60 * 1000;
+    const threeWeeksFromNow = now + 21 * 24 * 60 * 60 * 1000;
 
     for (const p of allProjects) {
       const events = await ctx.db
@@ -156,7 +156,7 @@ export const getUpcomingEvents = query({
         .collect();
 
       for (const event of events) {
-        if (event.start >= now && event.start <= oneWeekFromNow) {
+        if (event.start >= now && event.start <= threeWeeksFromNow) {
           results.push({
             _id: event._id,
             title: event.title,
@@ -168,6 +168,7 @@ export const getUpcomingEvents = query({
             projectId: p._id,
             projectName: p.projectName,
             projectSlug: p.slug,
+            role: p.ownerId === user._id ? "owned" : "joined",
           });
         }
       }
@@ -175,7 +176,7 @@ export const getUpcomingEvents = query({
 
     // Sort by start time ascending
     results.sort((a, b) => a.start - b.start);
-    return results.slice(0, 20);
+    return results.slice(0, 35);
   },
 });
 
