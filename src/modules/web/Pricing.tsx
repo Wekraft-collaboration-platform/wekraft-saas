@@ -82,7 +82,7 @@ const plusFeatures: FeatureItem[] = [
   { label: "Up to 6 team members",         icon: <UserPlus className="h-3.5 w-3.5" /> },
   { label: "Full Team & Community Insights",icon: <BarChart3 className="h-3.5 w-3.5" /> },
   { label: "Basic Cloud Storage",          icon: <Cpu className="h-3.5 w-3.5" /> },
-  { label: "Message before join",          icon: <Check className="h-3.5 w-3.5" /> },
+
   { label: "Project Heatmaps",             icon: <Map className="h-3.5 w-3.5" /> },
 ];
 
@@ -158,7 +158,7 @@ const featureCategories: FeatureCat[] = [
     icon: <BarChart3 className="h-4 w-4" />,
     rows: [
       { label: "User Profiles", icon: <Users className="h-3.5 w-3.5" />, free: "Limited", plus: "Full", pro: "Full" },
-      { label: "Message Before Join", icon: <Check className="h-3.5 w-3.5" />, free: false, plus: true, pro: true },
+
       { label: "Team Insights", icon: <BarChart3 className="h-3.5 w-3.5" />, free: "Limited", plus: "Full", pro: "Full" },
       { label: "Community Insights", icon: <Star className="h-3.5 w-3.5" />, free: "Limited", plus: "Full", pro: "Full" },
       { label: "Project Heatmap", icon: <Map className="h-3.5 w-3.5" />, free: "Limited", plus: "Full", pro: "Full" },
