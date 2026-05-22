@@ -26,7 +26,7 @@ interface DashboardProject {
   projectWorkStatus?: string;
   slug: string;
   createdAt?: number;
-  role: "Owner" | "Member";
+  role: "owned" | "joined";
   members?: {
     userId: string;
     userImage?: string;
@@ -162,7 +162,7 @@ export const DashboardProjects = ({
 
               {/* Card Body - Overlapping cover image & scooped corner background */}
               <div
-                className="relative flex flex-col flex-1 p-3 -mt-6 rounded-t-[20px]"
+                className="relative flex flex-col flex-1 p-3 -mt-14 rounded-t-[20px]"
                 style={{
                   background: `
                     radial-gradient(circle at 100% 0, transparent 60px, var(--muted) 27px) top right / 60px 0px no-repeat,
@@ -173,7 +173,7 @@ export const DashboardProjects = ({
               >
 
                 {/* Top Metadata Line */}
-                <div className="flex items-center gap-4 text-xs text-muted-foreground/70 mb-1 font-medium">
+                <div className="flex items-center gap-4 text-xs text-muted-foreground mb-1 font-medium">
                   <span>
                     {project.createdAt
                       ? formatRelativeTime(project.createdAt)
@@ -182,10 +182,10 @@ export const DashboardProjects = ({
                   <div className="flex flex-wrap gap-1 z-10">
                     <span
                       className={cn(
-                        "text-[10px]  px-1.5 py-0.5 rounded-full border shadow-xs backdrop-blur-md",
-                        project.role === "Owner"
-                          ? "bg-blue-500/10 text-white border-blue-500/20"
-                          : "bg-blue-500/10 text-white border-blue-500/20"
+                        "text-[9px] font-semibold px-2 py-0.5 rounded-full border uppercase tracking-wider backdrop-blur-md shrink-0",
+                        project.role === "owned"
+                          ? "bg-blue-500/10 text-blue-500 dark:text-blue-400 border-blue-500/25"
+                          : "bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border-emerald-500/25"
                       )}
                     >
                       {project.role}

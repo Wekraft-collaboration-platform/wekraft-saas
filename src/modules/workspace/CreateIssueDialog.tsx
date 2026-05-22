@@ -27,8 +27,17 @@ import {
   Paperclip,
   Check,
   User,
+  X,
+  FileText,
+  Trash2,
 } from "lucide-react";
 import { Label } from "@/components/ui/label";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { toast } from "sonner";
 import {
   Popover,
@@ -86,6 +95,8 @@ export const CreateIssueDialog = ({
     { userId: Id<"users">; name: string; avatar?: string }[]
   >([]);
   const [isPending, setIsPending] = useState(false);
+  const [attachments, setAttachments] = useState<{ name: string; url: string }[]>([]);
+  const [isUploading, setIsUploading] = useState(false);
 
   const members = useQuery(api.project.getProjectMembers, { projectId });
   const project = useQuery(api.project.getProjectById, { projectId });
@@ -93,6 +104,52 @@ export const CreateIssueDialog = ({
     projectId,
   });
   const createIssue = useMutation(api.issue.createIssue);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("File too large. Max 10MB allowed.");
+      return;
+    }
+
+    const toastId = toast.loading(`Uploading ${file.name}...`);
+    setIsUploading(true);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+
+      const response = await fetch("/api/issue-attachments", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await response.json();
+      if (data.error) throw new Error(data.error);
+
+      setAttachments((prev) => [...prev, { name: data.name, url: data.url }]);
+      toast.success("File uploaded successfully", { id: toastId });
+    } catch (error: any) {
+      toast.error(error.message || "Failed to upload file", { id: toastId });
+    } finally {
+      setIsUploading(false);
+    }
+  };
+
+  const removeAttachment = async (url: string) => {
+    try {
+      await fetch("/api/issue-attachments", {
+        method: "DELETE",
+        body: JSON.stringify({ url }),
+      });
+      setAttachments((prev) => prev.filter((a) => a.url !== url));
+    } catch (error) {
+      console.error("Failed to delete attachment from S3", error);
+      setAttachments((prev) => prev.filter((a) => a.url !== url));
+    }
+  };
 
   const handleCreateIssue = async () => {
     if (!title.trim()) {
@@ -113,6 +170,7 @@ export const CreateIssueDialog = ({
         projectId,
         fileLinked: selectedPath || undefined,
         assignees: assignedMembers.length > 0 ? assignedMembers : undefined,
+        attachments: attachments.length > 0 ? attachments : undefined,
       });
       toast.success("Issue created successfully");
       setOpen(false);
@@ -125,6 +183,7 @@ export const CreateIssueDialog = ({
       setDueDate(undefined);
       setSelectedPath(null);
       setAssignedMembers([]);
+      setAttachments([]);
     } catch (error) {
       console.error(error);
       toast.error("Failed to create issue");
@@ -434,16 +493,49 @@ export const CreateIssueDialog = ({
               </DropdownMenuContent>
             </DropdownMenu>
 
-            {/* Attachments (UI Only) */}
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]"
-              onClick={() => toast.info("Attachments module coming soon!")}
-            >
-              <Paperclip className="w-3.5 h-3.5" />
-              Attachments
-            </Button>
+            {/* Attachments */}
+            <div className="relative">
+              <TooltipProvider delayDuration={100}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <div className="inline-block">
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        className={cn(
+                          "h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
+                          attachments.length > 0 &&
+                            "text-blue-400 border-blue-900/40 bg-blue-900/10",
+                        )}
+                        disabled={isUploading || project?.ownerAccountType === "free"}
+                        onClick={() => document.getElementById("issue-file-upload")?.click()}
+                      >
+                        {isUploading ? (
+                          <Loader2 className="w-3.5 h-3.5 animate-spin" />
+                        ) : (
+                          <Paperclip className="w-3.5 h-3.5" />
+                        )}
+                        {attachments.length > 0
+                          ? `${attachments.length} Attachments`
+                          : "Attachments"}
+                      </Button>
+                    </div>
+                  </TooltipTrigger>
+                  {project?.ownerAccountType === "free" && (
+                    <TooltipContent className="bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200 text-xs p-2 max-w-[200px] text-center">
+                      Ask project owner to upgrade to unlock cloud storage.
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              </TooltipProvider>
+              <input
+                id="issue-file-upload"
+                type="file"
+                className="hidden"
+                onChange={handleFileUpload}
+              />
+            </div>
           </div>
 
           <Textarea
@@ -452,6 +544,30 @@ export const CreateIssueDialog = ({
             onChange={(e) => setDescription(e.target.value)}
             className="h-[220px] overflow-y-scroll bg-transparent border p-2 focus-visible:ring-0 placeholder:text-neutral-600 resize-none text-sm leading-relaxed [field-sizing:normal]"
           />
+
+          {/* Attachments List */}
+          {attachments.length > 0 && (
+            <div className="flex flex-wrap gap-2 pt-2 border-t border-[#2b2b2b]/50">
+              {attachments.map((file, idx) => (
+                <div
+                  key={idx}
+                  className="flex items-center gap-2 bg-[#252525] border border-[#333] rounded-md px-2 py-1 group"
+                >
+                  <FileText className="w-3.5 h-3.5 text-blue-400" />
+                  <span className="text-[10px] text-neutral-300 max-w-[120px] truncate">
+                    {file.name}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => removeAttachment(file.url)}
+                    className="opacity-0 group-hover:opacity-100 transition-opacity text-neutral-500 hover:text-red-400"
+                  >
+                    <Trash2 className="w-3 h-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="p-4 border-t border-[#2b2b2b] flex items-center justify-end shrink-0">

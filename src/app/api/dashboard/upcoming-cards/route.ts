@@ -17,7 +17,7 @@ interface CacheEntry {
 
 // In-memory cache keyed by Clerk userId
 const cache = new Map<string, CacheEntry>();
-const CACHE_TTL = 30 * 60 * 1000; // 30 minutes
+const CACHE_TTL = 45 * 60 * 1000; // 45 minutes
 
 export async function GET(req: NextRequest) {
   const { userId, getToken } = await auth();
@@ -28,7 +28,8 @@ export async function GET(req: NextRequest) {
   // Check cache (skip if ?refresh=true is passed)
   const forceRefresh = req.nextUrl.searchParams.get("refresh") === "true";
   const cached = cache.get(userId);
-  if (!forceRefresh && cached && Date.now() - cached.timestamp < CACHE_TTL) {
+  const isStaleCache = cached && cached.data.deadlines && cached.data.deadlines.length > 0 && !("role" in cached.data.deadlines[0]);
+  if (!forceRefresh && cached && !isStaleCache && Date.now() - cached.timestamp < CACHE_TTL) {
     console.log("==========CACHED HIT FOR DASHBOARD CARDS===============");
     return NextResponse.json(cached.data);
   }
