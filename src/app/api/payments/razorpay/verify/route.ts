@@ -3,11 +3,12 @@ import { type NextRequest, NextResponse } from "next/server";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../../../../../convex/_generated/api";
 
-function getRazorpayKeySecret() {
+function getRazorpayKeySecret(): string {
   const secret = process.env.RAZORPAY_KEY_SECRET;
   if (!secret) {
-    console.warn("[Razorpay] Missing RAZORPAY_KEY_SECRET in env");
-    return "";
+    // SECURITY: Never fall back to an empty string — an empty HMAC key allows
+    // anyone to forge a valid signature by computing HMAC-SHA256("", payload).
+    throw new Error("RAZORPAY_KEY_SECRET is not configured on the server");
   }
   return secret;
 }
@@ -36,24 +37,37 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    const body = `${razorpay_payment_id}|${razorpay_subscription_id}`;
-
-    const expectedSignature = crypto
-      .createHmac("sha256", getRazorpayKeySecret())
-      .update(body)
-      .digest("hex");
-
-    if (expectedSignature.length !== razorpay_signature.length) {
+    // Resolve HMAC key — returns 500 if env var is missing (never falls back to "")
+    let keySecret: string;
+    try {
+      keySecret = getRazorpayKeySecret();
+    } catch (e) {
+      const msg = e instanceof Error ? e.message : "Server configuration error";
+      console.error("[Razorpay Verify]", msg);
       return NextResponse.json(
-        { success: false, error: "Invalid signature length" },
-        { status: 400 },
+        { success: false, error: "Server configuration error" },
+        { status: 500 },
       );
     }
 
-    const isValid = crypto.timingSafeEqual(
-      Buffer.from(expectedSignature),
-      Buffer.from(razorpay_signature),
-    );
+    const body = `${razorpay_payment_id}|${razorpay_subscription_id}`;
+    const expectedSignature = crypto
+      .createHmac("sha256", keySecret)
+      .update(body)
+      .digest("hex");
+
+    // SECURITY: Use timingSafeEqual directly — wrapping in try/catch handles
+    // the case where lengths differ (timingSafeEqual throws a TypeError).
+    // A pre-check on length before this call re-introduces a timing side channel.
+    let isValid: boolean;
+    try {
+      isValid = crypto.timingSafeEqual(
+        Buffer.from(expectedSignature),
+        Buffer.from(razorpay_signature),
+      );
+    } catch {
+      isValid = false;
+    }
 
     if (!isValid) {
       return NextResponse.json(

@@ -250,24 +250,20 @@ export const completeOnboarding = mutation({
 });
 
 // ==============================
-// UPGRADE ACCOUNT (Usage for Coupons/Payments)
+// UPGRADE ACCOUNT (Coupons / internal server flows ONLY)
+// SECURITY: This is intentionally an internalMutation — it MUST NOT be public.
+// Any authenticated browser client can call public mutations, which would allow
+// users to grant themselves free Pro access via the browser console.
+// This can only be called from other Convex server functions.
 // =============================
-export const upgradeAccount = mutation({
+export const upgradeAccount = internalMutation({
   args: {
+    userId: v.id("users"),
     plan: v.union(v.literal("plus"), v.literal("pro")),
     durationDays: v.optional(v.number()), // e.g., 7 days for a 1-week coupon
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
-
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_token", (q) =>
-        q.eq("clerkToken", identity.tokenIdentifier),
-      )
-      .unique();
-
+    const user = await ctx.db.get(args.userId);
     if (!user) throw new Error("User not found");
 
     let planExpiry = undefined;
@@ -275,7 +271,7 @@ export const upgradeAccount = mutation({
       planExpiry = Date.now() + args.durationDays * 24 * 60 * 60 * 1000;
     }
 
-    await ctx.db.patch(user._id, {
+    await ctx.db.patch(args.userId, {
       accountType: args.plan,
       planExpiry,
       updatedAt: Date.now(),

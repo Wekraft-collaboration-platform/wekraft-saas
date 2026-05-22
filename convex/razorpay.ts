@@ -1,5 +1,6 @@
-import { mutation } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+
 
 export const updatePlanServerSide = mutation({
   args: {
@@ -81,5 +82,36 @@ export const handleSubscriptionUpdate = mutation({
     await ctx.db.patch(user._id, patchPayload);
 
     return { success: true };
+  },
+});
+
+/**
+ * Server-only: verifies that a given subscriptionId belongs to the authenticated Clerk user.
+ * Used by the cancel API route to prevent one user from cancelling another user's subscription.
+ */
+export const verifySubscriptionOwner = query({
+  args: {
+    backendSecret: v.string(),
+    subscriptionId: v.string(),
+    clerkUserId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const secret = process.env.BACKEND_SECRET;
+    if (!secret || args.backendSecret !== secret) {
+      throw new Error("Unauthorized backend request");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_subscriptionId", (q) => q.eq("subscriptionId", args.subscriptionId))
+      .first();
+
+    if (!user) return false;
+
+    // clerkToken is stored as "https://clerk-domain|user_xxx" — match the Clerk user ID suffix
+    return (
+      user.clerkToken === args.clerkUserId ||
+      user.clerkToken.endsWith(`|${args.clerkUserId}`)
+    );
   },
 });

@@ -1,6 +1,6 @@
-import { mutation } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
-import { Id } from "./_generated/dataModel";
+
 
 export const updatePlanServerSide = mutation({
   args: {
@@ -89,3 +89,33 @@ export const handleSubscriptionUpdate = mutation({
   },
 });
 
+/**
+ * Server-only: verifies that a given Stripe customerId belongs to the authenticated Clerk user.
+ * Used by the billing portal route to prevent one user from accessing another user's billing portal.
+ */
+export const verifyCustomerOwner = query({
+  args: {
+    backendSecret: v.string(),
+    customerId: v.string(),
+    clerkUserId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const secret = process.env.BACKEND_SECRET;
+    if (!secret || args.backendSecret !== secret) {
+      throw new Error("Unauthorized backend request");
+    }
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_customerId", (q) => q.eq("customerId", args.customerId))
+      .first();
+
+    if (!user) return false;
+
+    // clerkToken is stored as "https://clerk-domain|user_xxx" — match the Clerk user ID suffix
+    return (
+      user.clerkToken === args.clerkUserId ||
+      user.clerkToken.endsWith(`|${args.clerkUserId}`)
+    );
+  },
+});

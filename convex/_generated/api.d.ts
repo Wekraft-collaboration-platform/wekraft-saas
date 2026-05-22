@@ -16,6 +16,7 @@ import type * as crons from "../crons.js";
 import type * as http from "../http.js";
 import type * as issue from "../issue.js";
 import type * as notifications from "../notifications.js";
+import type * as payments from "../payments.js";
 import type * as pricing from "../pricing.js";
 import type * as project from "../project.js";
 import type * as projectDetails from "../projectDetails.js";
@@ -43,6 +44,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   issue: typeof issue;
   notifications: typeof notifications;
+  payments: typeof payments;
   pricing: typeof pricing;
   project: typeof project;
   projectDetails: typeof projectDetails;
