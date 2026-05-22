@@ -1,6 +1,5 @@
 import { mutation } from "./_generated/server";
 import { v } from "convex/values";
-import { Id } from "./_generated/dataModel";
 
 export const updatePlanServerSide = mutation({
   args: {
@@ -38,6 +37,7 @@ export const handleSubscriptionUpdate = mutation({
     subscriptionId: v.string(),
     status: v.string(),
     currentPeriodEnd: v.optional(v.number()),
+    cancelAtPeriodEnd: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     // Validate secret
@@ -70,8 +70,12 @@ export const handleSubscriptionUpdate = mutation({
       updatedAt: Date.now(),
     };
 
-    if (args.currentPeriodEnd) {
+    if (args.currentPeriodEnd !== undefined) {
       patchPayload.currentPeriodEnd = args.currentPeriodEnd;
+    }
+
+    if (args.cancelAtPeriodEnd !== undefined) {
+      patchPayload.cancelAtPeriodEnd = args.cancelAtPeriodEnd;
     }
 
     await ctx.db.patch(user._id, patchPayload);

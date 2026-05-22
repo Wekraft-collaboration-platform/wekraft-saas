@@ -82,6 +82,7 @@ export const handleSubscriptionUpdate = mutation({
       accountType: newPlan,
       subscriptionStatus: args.status,
       currentPeriodEnd: args.currentPeriodEnd,
+      cancelAtPeriodEnd: args.cancelAtPeriodEnd,
       updatedAt: Date.now(),
     });
 

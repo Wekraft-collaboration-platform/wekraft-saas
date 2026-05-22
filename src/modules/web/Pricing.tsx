@@ -356,47 +356,53 @@ const Pricing = () => {
                           : plan.cta}
                     </button>
                     {plan.key === (user?.accountType || "free") && plan.key !== "free" && (
-                      <button 
-                        onClick={async () => {
-                          try {
-                            if (user?.subscriptionProvider === "razorpay") {
-                              if (!user?.subscriptionId) {
-                                toast.error("No active subscription found. Please contact support.");
+                      user?.cancelAtPeriodEnd ? (
+                        <span className="mt-3 text-xs text-orange-400/90 bg-orange-400/10 px-3 py-1 rounded-full font-medium border border-orange-400/20">
+                          Ends on {user.currentPeriodEnd ? new Date(user.currentPeriodEnd).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'period end'}
+                        </span>
+                      ) : (
+                        <button 
+                          onClick={async () => {
+                            try {
+                              if (user?.subscriptionProvider === "razorpay") {
+                                if (!user?.subscriptionId) {
+                                  toast.error("No active subscription found. Please contact support.");
+                                  return;
+                                }
+                                await cancelRazorpay(user.subscriptionId);
                                 return;
                               }
-                              await cancelRazorpay(user.subscriptionId);
-                              return;
-                            }
 
-                            // Stripe Cancellation
-                            if (!user?.customerId) {
-                              toast.error("No active billing profile found. Please contact support.");
-                              return;
+                              // Stripe Cancellation
+                              if (!user?.customerId) {
+                                toast.error("No active billing profile found. Please contact support.");
+                                return;
+                              }
+                              
+                              toast.loading("Redirecting to billing portal...", { id: "portal-loading" });
+                              
+                              const res = await fetch("/api/payments/stripe/portal", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ customerId: user.customerId })
+                              });
+                              
+                              if (!res.ok) throw new Error("Failed to securely connect to billing portal");
+                              
+                              const { url } = await res.json();
+                              toast.dismiss("portal-loading");
+                              window.location.href = url;
+                            } catch (e: any) {
+                              console.error(e);
+                              toast.dismiss("portal-loading");
+                              toast.error(e.message || "Something went wrong.");
                             }
-                            
-                            toast.loading("Redirecting to billing portal...", { id: "portal-loading" });
-                            
-                            const res = await fetch("/api/payments/stripe/portal", {
-                              method: "POST",
-                              headers: { "Content-Type": "application/json" },
-                              body: JSON.stringify({ customerId: user.customerId })
-                            });
-                            
-                            if (!res.ok) throw new Error("Failed to securely connect to billing portal");
-                            
-                            const { url } = await res.json();
-                            toast.dismiss("portal-loading");
-                            window.location.href = url;
-                          } catch (e: any) {
-                            console.error(e);
-                            toast.dismiss("portal-loading");
-                            toast.error(e.message || "Something went wrong.");
-                          }
-                        }}
-                        className="mt-2 text-xs text-gray-500 hover:text-white transition-colors cursor-pointer"
-                      >
-                        Cancel subscription
-                      </button>
+                          }}
+                          className="mt-2 text-xs text-gray-500 hover:text-white transition-colors cursor-pointer"
+                        >
+                          Cancel subscription
+                        </button>
+                      )
                     )}
                   </div>
 

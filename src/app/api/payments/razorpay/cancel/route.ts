@@ -34,8 +34,25 @@ export async function POST(req: NextRequest) {
     }
 
     // By passing 'true', Razorpay schedules the cancellation for the end of the current billing cycle
-    // The webhook will handle downgrading the user when the cycle ends.
     await razorpay.subscriptions.cancel(subscriptionId, true);
+
+    // SERVER-SIDE FULFILLMENT: Instantly update cancelAtPeriodEnd in Convex so the UI updates
+    const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
+    const backendSecret = process.env.BACKEND_SECRET;
+
+    if (convexUrl && backendSecret) {
+      const { ConvexHttpClient } = await import("convex/browser");
+      const { api } = await import("../../../../../../convex/_generated/api");
+      const convex = new ConvexHttpClient(convexUrl);
+      
+      // @ts-ignore
+      await convex.mutation(api.razorpay.handleSubscriptionUpdate, {
+        backendSecret,
+        subscriptionId,
+        status: "active", // Plan stays active until period ends
+        cancelAtPeriodEnd: true,
+      });
+    }
 
     return NextResponse.json({ success: true });
   } catch (error) {
