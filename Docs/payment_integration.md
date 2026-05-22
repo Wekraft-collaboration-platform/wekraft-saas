@@ -108,15 +108,25 @@ Log into [Stripe Dashboard](https://dashboard.stripe.com/) and obtain:
 
 ### B. Local Webhook Testing (Stripe CLI)
 
+There are two ways to authenticate the Stripe CLI and forward webhooks:
+
+**Method 1: Browser Authentication**
 ```bash
 # 1. Login to your Stripe account
 stripe login
+# (You MUST open the browser link provided in the terminal to authorize it)
 
 # 2. Forward webhook events to your local server
 stripe listen --forward-to localhost:3000/api/payments/stripe/webhook
 ```
 
-Copy the `whsec_...` signing secret printed by the CLI and set it as `STRIPE_WEBHOOK_SECRET` in `.env.local`.
+**Method 2: API Key Bypass (Faster)**
+If you don't want to use the browser, you can directly pass your Stripe Secret Key:
+```bash
+stripe listen --api-key sk_test_YOUR_SECRET_KEY --forward-to localhost:3000/api/payments/stripe/webhook
+```
+
+After running `stripe listen`, copy the `whsec_...` signing secret printed by the CLI ("Ready! Your webhook signing secret is whsec_...") and set it as `STRIPE_WEBHOOK_SECRET` in `.env.local`. Be sure to restart your `pnpm dev` server so it loads the new secret!
 
 ### C. Production Webhook Configuration
 
