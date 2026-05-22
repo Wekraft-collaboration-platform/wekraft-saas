@@ -127,8 +127,8 @@ const plans: Plan[] = [
   {
     key: "pro",
     name: "Pro",
-    badge: "25% OFF",
-    priceLabel: "$15",
+    badge: "20% OFF",
+    priceLabel: "$16",
     oldPrice: "$20",
     priceSub: "Growing startup needs intelligence",
     description: "Growing startup needs intelligence.",
@@ -137,7 +137,7 @@ const plans: Plan[] = [
     highlighted: false,
     icon: <Shield className="h-4 w-4" />,
     features: proFeatures,
-    priceUSD: 15,
+    priceUSD: 16,
   },
 ];
 
@@ -146,8 +146,8 @@ const featureCategories: FeatureCat[] = [
     title: "Usage & Limits",
     icon: <Users className="h-4 w-4" />,
     rows: [
-      { label: "Project Creation", icon: <FolderGit2 className="h-3.5 w-3.5" />, free: "2", plus: "5", pro: "10" },
-      { label: "Team Members per Project", icon: <UserPlus className="h-3.5 w-3.5" />, free: "1", plus: "6", pro: "15" },
+      { label: "Project Creation", icon: <FolderGit2 className="h-3.5 w-3.5" />, free: "2", plus: "10", pro: "20" },
+      { label: "Team Members per Project", icon: <UserPlus className="h-3.5 w-3.5" />, free: "3", plus: "6", pro: "15" },
     ],
   },
   {
@@ -251,7 +251,7 @@ const Pricing = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-6xl mx-auto">
           {plans.map((plan, idx) => {
             const displayPriceLabel = isIndia 
-              ? (plan.key === "free" ? "₹0" : plan.key === "plus" ? "₹699" : "₹1499") 
+              ? (plan.key === "free" ? "₹0" : plan.key === "plus" ? "₹649" : "₹1499") 
               : plan.priceLabel;
 
             const displayOldPrice = isIndia 
