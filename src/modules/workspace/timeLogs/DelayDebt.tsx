@@ -101,7 +101,7 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
   }
 
   return (
-    <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-neutral-900/90 shadow-sm dark:shadow-none p-4 flex flex-col justify-start relative overflow-hidden">
+    <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-neutral-900/80 shadow-sm dark:shadow-none p-4 flex flex-col justify-start relative overflow-hidden">
       {/* HEADER: Title & Compact Tabs */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">

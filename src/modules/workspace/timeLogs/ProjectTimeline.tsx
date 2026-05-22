@@ -286,7 +286,7 @@ function TimelineDayAxis({
                 {/* Bar — group is ON the bar itself, not the outer wrapper */}
                 <div
                   className={cn(
-                    "absolute h-8 rounded-full border flex items-center pl-1 pr-3 shadow-sm group transition-all hover:shadow-md hover:scale-[1.01] backdrop-blur-sm",
+                    "absolute h-8 rounded-l-full rounded-r-xl! border flex items-center pl-1 pr-3 shadow-sm group transition-all hover:shadow-md hover:scale-[1.05] backdrop-blur-sm",
                     taskUI.barClass,
                   )}
                   style={{ left, width }}
@@ -438,13 +438,13 @@ export const ProjectTimeline = ({
   // MAIN TIMELINE COMPONENT
   return (
     <div className="w-full bg-sidebar border rounded-lg overflow-hidden shadow-sm ">
-      <div className="flex items-center justify-between p-2.5 border-b bg-muted/30">
+      <div className="flex items-center justify-between p-2.5 border-b bg-muted/80">
         <div className="flex items-center gap-2">
           <div className="p-1.5 bg-primary border rounded-md">
             <ChartNoAxesGantt className="w-4 h-4 text-primary-foreground" />
           </div>
           <h3 className="text-sm font-medium">Project Time Logs</h3>
-          <span className="ml-2 rounded-full bg-muted border px-1.5 py-0.5 text-[9px] font-medium text-muted-foreground">
+          <span className="ml-2 rounded-full bg-accent! border px-2.5 py-1 text-[9px] font-normal text-primary">
             Task Count: {filteredTasks.length}
           </span>
         </div>
