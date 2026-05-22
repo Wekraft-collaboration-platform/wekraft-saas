@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Id } from "../../../../convex/_generated/dataModel";
 
@@ -63,20 +63,6 @@ export interface Plan {
 
 export const useRazorpay = () => {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
-  const [exchangeRate, setExchangeRate] = useState(96);
-
-  useEffect(() => {
-    const fetchRate = async () => {
-      try {
-        const res = await fetch("https://open.er-api.com/v6/latest/USD");
-        const data = await res.json();
-        if (data.rates?.INR) setExchangeRate(data.rates.INR);
-      } catch {
-        // Fallback to 96
-      }
-    };
-    fetchRate();
-  }, []);
 
   const initiatePayment = async (
     plan: Plan,
@@ -100,7 +86,7 @@ export const useRazorpay = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          amount: plan.priceUSD * exchangeRate,
+          amount: plan.planType === "plus" ? 699 : 1499,
           currency: "INR",
           planName: plan.name,
           planType: plan.planType,
@@ -116,7 +102,7 @@ export const useRazorpay = () => {
       const options: RazorpayCheckoutOptions = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         subscription_id: orderData.subscriptionId,
-        name: "Wekraft SaaS",
+        name: "Wekraft",
         description: `Upgrade to ${plan.name}`,
         handler: async (response: RazorpayPaymentResponse) => {
           try {

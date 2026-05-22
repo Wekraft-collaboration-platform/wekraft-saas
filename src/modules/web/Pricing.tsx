@@ -250,6 +250,14 @@ const Pricing = () => {
       <section className="max-w-7xl mx-auto px-4 pb-12 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-6xl mx-auto">
           {plans.map((plan, idx) => {
+            const displayPriceLabel = isIndia 
+              ? (plan.key === "free" ? "₹0" : plan.key === "plus" ? "₹699" : "₹1499") 
+              : plan.priceLabel;
+
+            const displayOldPrice = isIndia 
+              ? (plan.key === "free" ? undefined : plan.key === "plus" ? "₹1099" : "₹1999") 
+              : plan.oldPrice;
+
             return (
               <motion.div
                 key={plan.key}
@@ -288,10 +296,10 @@ const Pricing = () => {
 
                   {/* Price */}
                   <div className="flex items-baseline gap-1 mb-2">
-                    {plan.oldPrice && (
-                      <span className="text-xl font-medium tracking-tight text-gray-500 line-through mr-2">{plan.oldPrice}</span>
+                    {displayOldPrice && (
+                      <span className="text-xl font-medium tracking-tight text-gray-500 line-through mr-2">{displayOldPrice}</span>
                     )}
-                    <span className="text-4xl font-medium tracking-tight text-white">{plan.priceLabel}</span>
+                    <span className="text-4xl font-medium tracking-tight text-white">{displayPriceLabel}</span>
                     <span className="text-sm text-gray-500 font-normal">/month</span>
                   </div>
 
