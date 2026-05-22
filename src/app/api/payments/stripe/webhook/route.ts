@@ -66,6 +66,11 @@ export async function POST(req: NextRequest) {
           // Fetch the subscription to get the current period end
           const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
+          const periodEndSec = subscription.items?.data?.[0]?.current_period_end || 
+            (subscription as any).current_period_end || 
+            (subscription as any).currentPeriodEnd ||
+            (Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60);
+
           // Update Convex
           // @ts-ignore
           await convex.mutation(api.stripe.updatePlanServerSide, {
@@ -75,7 +80,7 @@ export async function POST(req: NextRequest) {
             subscriptionId,
             customerId,
             status: subscription.status,
-            currentPeriodEnd: (subscription as any).currentPeriodEnd ? (subscription as any).currentPeriodEnd * 1000 : (subscription as any).current_period_end * 1000,
+            currentPeriodEnd: periodEndSec * 1000,
           });
 
           console.log(`[Stripe Webhook] Successfully upgraded user ${userId} to ${plan}`);
@@ -96,14 +101,25 @@ export async function POST(req: NextRequest) {
         // Actually, let's create a new mutation `handleSubscriptionUpdate` in `convex/stripe.ts` 
         // to handle finding the user by customerId or subscriptionId and updating their status.
         
+        const periodEndSec = subscription.items?.data?.[0]?.current_period_end || 
+          (subscription as any).current_period_end || 
+          (subscription as any).currentPeriodEnd ||
+          (Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60);
+
+        const cancelAtPeriodEnd = !!(
+          subscription.cancel_at_period_end || 
+          subscription.cancel_at || 
+          (subscription as any).cancelAtPeriodEnd
+        );
+
         // @ts-ignore
         await convex.mutation(api.stripe.handleSubscriptionUpdate, {
           backendSecret,
           subscriptionId: subscription.id,
           customerId: subscription.customer as string,
           status: subscription.status,
-          currentPeriodEnd: (subscription as any).currentPeriodEnd ? (subscription as any).currentPeriodEnd * 1000 : (subscription as any).current_period_end * 1000,
-          cancelAtPeriodEnd: (subscription as any).cancelAtPeriodEnd ?? (subscription as any).cancel_at_period_end,
+          currentPeriodEnd: periodEndSec * 1000,
+          cancelAtPeriodEnd,
         });
 
         console.log(`[Stripe Webhook] Handled subscription update for ${subscription.id}`);

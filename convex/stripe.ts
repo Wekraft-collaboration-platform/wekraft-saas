@@ -63,8 +63,7 @@ export const handleSubscriptionUpdate = mutation({
       .first();
 
     if (!user) {
-      console.error(`[Stripe Webhook] User not found for customerId: ${args.customerId}`);
-      return { success: false, error: "User not found" };
+      throw new Error(`[Stripe Webhook] User not found for customerId: ${args.customerId}`);
     }
 
     // Determine plan type. If canceled, they usually drop to free at the end of the period

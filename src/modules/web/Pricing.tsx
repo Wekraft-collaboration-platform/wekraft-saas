@@ -344,16 +344,21 @@ const Pricing = () => {
                       className={cn(
                         "w-full py-2 px-4 rounded-full font-medium text-sm transition-all duration-300 shadow-sm flex items-center justify-center gap-2",
                         plan.key === (user?.accountType || "free")
-                          ? "bg-white/10 text-white cursor-default"
+                          ? "bg-blue-500/10 border border-blue-500/35 text-blue-400 cursor-default font-semibold"
                           : "bg-[#1c1c1c] border border-white/10 text-gray-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] hover:bg-white hover:text-black cursor-pointer",
                         (loadingRazorpay !== null || loadingStripe !== null) && "opacity-50 cursor-not-allowed"
                       )}
                     >
-                      {plan.key === (user?.accountType || "free") 
-                        ? "Current Plan" 
-                        : (loadingRazorpay === plan.name || loadingStripe === plan.name) 
-                          ? "Processing..." 
-                          : plan.cta}
+                      {plan.key === (user?.accountType || "free") ? (
+                        <div className="flex items-center justify-center gap-1.5">
+                          <Check className="w-4 h-4 text-blue-400" strokeWidth={3} />
+                          <span>Current Plan</span>
+                        </div>
+                      ) : (loadingRazorpay === plan.name || loadingStripe === plan.name) ? (
+                        "Processing..."
+                      ) : (
+                        plan.cta
+                      )}
                     </button>
                     {plan.key === (user?.accountType || "free") && plan.key !== "free" && (
                       user?.cancelAtPeriodEnd ? (
