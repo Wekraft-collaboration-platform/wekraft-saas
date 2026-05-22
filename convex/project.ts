@@ -1587,7 +1587,7 @@ export const toggleProjectUpvote = mutation({
 });
 
 // ====================================
-// GET UPCOMING DEADLINES (WITHIN 7 DAYS)
+// GET UPCOMING DEADLINES (WITHIN 3 WEEKS)
 // ====================================
 export const getUpcomingDeadlines = query({
   args: {},
@@ -1627,7 +1627,7 @@ export const getUpcomingDeadlines = query({
     const allProjects = [...ownedProjects, ...joinedProjects];
     const results = [];
     const now = Date.now();
-    const oneWeekFromNow = now + 7 * 24 * 60 * 60 * 1000;
+    const threeWeeksFromNow = now + 21 * 24 * 60 * 60 * 1000;
 
     for (const p of allProjects) {
       const details = await ctx.db
@@ -1636,8 +1636,8 @@ export const getUpcomingDeadlines = query({
         .unique();
 
       if (details && details.targetDate) {
-        // Only those whose deadlines are in 1 week (7 days) and in the future
-        if (details.targetDate >= now && details.targetDate <= oneWeekFromNow) {
+        // Only those whose deadlines are in 3 weeks (21 days) and in the future
+        if (details.targetDate >= now && details.targetDate <= threeWeeksFromNow) {
           results.push({
             _id: p._id,
             projectName: p.projectName,
@@ -1645,6 +1645,7 @@ export const getUpcomingDeadlines = query({
             thumbnailUrl: p.thumbnailUrl || null,
             targetDate: details.targetDate,
             ownerName: p.ownerName,
+            role: p.ownerId === user._id ? "owned" : "joined",
           });
         }
       }
@@ -1652,7 +1653,7 @@ export const getUpcomingDeadlines = query({
 
     // Sort by soonest deadline first
     results.sort((a, b) => a.targetDate - b.targetDate);
-    return results.slice(0, 10);
+    return results.slice(0, 15);
   },
 });
 

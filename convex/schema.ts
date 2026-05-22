@@ -252,6 +252,14 @@ export default defineSchema({
     // Insights
     finalCompletedAt: v.optional(v.number()),
     finalCompletedBy: v.optional(v.id("users")),
+    attachments: v.optional(
+      v.array(
+        v.object({
+          name: v.string(),
+          url: v.string(),
+        })
+      )
+    ),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
