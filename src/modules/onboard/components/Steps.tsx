@@ -35,6 +35,7 @@ import { useRouter } from "next/navigation";
 import { nanoid } from "nanoid";
 import { IdentityRolePicker } from "./IdentityRolePicker";
 import { useClerk, useUser } from "@clerk/nextjs";
+import { OnboardingRightSide } from "./OnboardingRightSide";
 
 const stepVariants = {
   enter: (direction: number) => ({
@@ -193,211 +194,14 @@ export function MultiStepOnboarding() {
 
   const isSkip = currentStep === 1;
 
-  // Render mock preview components on the right-hand column
-  const renderRightSidePreview = (step: number) => {
-    switch (step) {
-      case 1:
-        return (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between border-b border-zinc-900 pb-3">
-              <div className="flex items-center gap-2">
-                <FolderGit className="w-3.5 h-3.5 text-[#5e6ad2]" />
-                <span className="text-xs font-semibold text-zinc-200">Active Workspaces</span>
-              </div>
-              <span className="text-[10px] bg-zinc-900 text-zinc-500 px-2 py-0.5 rounded-full font-medium">
-                4 total
-              </span>
-            </div>
-            <div className="space-y-2">
-              {[
-                { name: "WeKraft Collaboration", desc: "Main project for team workspace", status: "Active", color: "text-[#5e6ad2] bg-[#5e6ad2]/10" },
-                { name: "Marketing Campaign", desc: "Launch timeline and website feedback", status: "Planning", color: "text-blue-400 bg-blue-400/10" },
-                { name: "Design System 2.0", desc: "Figma token sync and component library", status: "Backlog", color: "text-zinc-500 bg-zinc-900" },
-              ].map((p, i) => (
-                <div key={i} className="p-3 bg-zinc-900/30 border border-zinc-900/40 rounded-lg flex items-center justify-between">
-                  <div>
-                    <h5 className="text-[11px] font-semibold text-zinc-300">{p.name}</h5>
-                    <p className="text-[9.5px] text-zinc-500 mt-0.5">{p.desc}</p>
-                  </div>
-                  <span className={cn("text-[9px] px-2 py-0.5 rounded-full font-medium", p.color)}>
-                    {p.status}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-      case 2:
-        return (
-          <div className="space-y-5">
-            <div className="flex items-center justify-between border-b border-zinc-900 pb-3">
-              <span className="text-xs font-semibold text-zinc-200">Profile Preview</span>
-              <span className="text-[10px] text-emerald-400 flex items-center gap-1">
-                <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
-                Live Sync
-              </span>
-            </div>
 
-            <div className="flex items-center gap-4 p-4 bg-zinc-900/30 border border-zinc-900/40 rounded-xl">
-              <div className="w-12 h-12 rounded-full bg-gradient-to-tr from-[#5e6ad2] to-violet-500 flex items-center justify-center text-white font-bold text-base shadow-lg shadow-[#5e6ad2]/15">
-                {(username || clerkUser?.username || "U").charAt(0).toUpperCase()}
-              </div>
-              <div>
-                <h4 className="text-xs font-bold text-zinc-200">@{username || "username"}</h4>
-                <p className="text-[10px] text-zinc-400 mt-0.5">{selectedRole || "Select Occupation"}</p>
-                <div className="flex items-center gap-1.5 mt-2">
-                  <span className="text-[9px] bg-zinc-900 border border-zinc-800 text-zinc-500 px-2 py-0.5 rounded">
-                    wekraft.co/u/{username || "username"}
-                  </span>
-                </div>
-              </div>
-            </div>
-
-            <div className="space-y-2">
-              <div className="h-6 w-full bg-zinc-900/20 rounded border border-zinc-900/40 flex items-center px-3 justify-between">
-                <span className="text-[9px] text-zinc-500">Security</span>
-                <Shield className="w-3 h-3 text-zinc-600" />
-              </div>
-              <div className="h-6 w-full bg-zinc-900/20 rounded border border-zinc-900/40 flex items-center px-3 justify-between">
-                <span className="text-[9px] text-zinc-500">API Access</span>
-                <span className="text-[8px] bg-zinc-900 text-zinc-500 px-1.5 rounded">Disabled</span>
-              </div>
-            </div>
-          </div>
-        );
-      case 3:
-        return (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between border-b border-zinc-900 pb-3">
-              <div className="flex items-center gap-2">
-                <Folder className="w-3.5 h-3.5 text-zinc-400" />
-                <span className="text-xs font-semibold text-zinc-200 truncate max-w-40">
-                  {projectName || "Acme SaaS"}
-                </span>
-                {projectStatus && (
-                  <span className="text-[8.5px] bg-[#5e6ad2]/10 text-[#5e6ad2] px-1.5 py-0.5 rounded capitalize font-medium">
-                    {projectStatus}
-                  </span>
-                )}
-              </div>
-              <span className="text-[9.5px] text-zinc-500">Board View</span>
-            </div>
-
-            <div className="grid grid-cols-3 gap-2 h-44">
-              {[
-                {
-                  title: "To Do",
-                  tasks: ["Design Landing Page", "Write API Docs"],
-                },
-                {
-                  title: "In Progress",
-                  tasks: ["Auth Flow setup"],
-                },
-                {
-                  title: "Done",
-                  tasks: ["Init React App"],
-                },
-              ].map((col, idx) => (
-                <div key={idx} className="bg-zinc-950/40 border border-zinc-900/50 rounded-lg p-2 flex flex-col justify-start">
-                  <span className="text-[8px] font-bold text-zinc-500 uppercase tracking-wider mb-2 block">{col.title}</span>
-                  <div className="space-y-1.5 flex-1 overflow-hidden">
-                    {col.tasks.map((task, tidx) => (
-                      <div key={tidx} className="p-1.5 bg-zinc-900/40 border border-zinc-900/60 rounded text-[8px] text-zinc-300 font-medium truncate">
-                        {task}
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-      case 4:
-        return (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between border-b border-zinc-900 pb-3">
-              <span className="text-xs font-semibold text-zinc-200">Theme Engine</span>
-              <span className="text-[9.5px] text-[#5e6ad2] capitalize">{theme} theme active</span>
-            </div>
-
-            <div className={cn(
-              "p-4 rounded-xl border transition-all duration-300 relative overflow-hidden",
-              theme === "light"
-                ? "bg-white border-zinc-200 text-zinc-800"
-                : "bg-zinc-950 border-zinc-900 text-zinc-400"
-            )}>
-              <div className="flex items-center justify-between mb-4">
-                <div className="flex items-center gap-1.5">
-                  <div className={cn("w-2.5 h-2.5 rounded-full", theme === "light" ? "bg-zinc-200" : "bg-zinc-900")} />
-                  <div className={cn("h-3 w-16 rounded", theme === "light" ? "bg-zinc-200" : "bg-zinc-900")} />
-                </div>
-                <div className={cn("h-4 w-4 rounded-full", theme === "light" ? "bg-zinc-200" : "bg-zinc-900")} />
-              </div>
-
-              <div className="space-y-2">
-                <div className={cn("h-8 rounded p-2 flex items-center justify-between", theme === "light" ? "bg-zinc-50 border border-zinc-200" : "bg-zinc-900/30 border border-zinc-900")}>
-                  <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded", theme === "light" ? "bg-zinc-200" : "bg-zinc-850")} />
-                    <div className={cn("h-2.5 w-24 rounded", theme === "light" ? "bg-zinc-300" : "bg-zinc-700")} />
-                  </div>
-                  <div className={cn("h-2 w-6 rounded", theme === "light" ? "bg-zinc-300" : "bg-zinc-700")} />
-                </div>
-
-                <div className={cn("h-8 rounded p-2 flex items-center justify-between", theme === "light" ? "bg-zinc-50 border border-zinc-200" : "bg-zinc-900/30 border border-zinc-900")}>
-                  <div className="flex items-center gap-2">
-                    <div className={cn("w-4 h-4 rounded", theme === "light" ? "bg-zinc-200" : "bg-zinc-850")} />
-                    <div className={cn("h-2.5 w-16 rounded", theme === "light" ? "bg-zinc-300" : "bg-zinc-700")} />
-                  </div>
-                  <div className={cn("h-2 w-8 rounded", theme === "light" ? "bg-zinc-300" : "bg-zinc-700")} />
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      case 5:
-        return (
-          <div className="space-y-4">
-            <div className="flex items-center justify-between border-b border-zinc-900 pb-3">
-              <span className="text-xs font-semibold text-zinc-200">Workspace Team</span>
-              <span className="text-[10px] text-zinc-500 font-mono">Invite Link Enabled</span>
-            </div>
-
-            <div className="space-y-2">
-              {[
-                { name: (clerkUser?.fullName || clerkUser?.username || "Mariana Wilson") + " (You)", role: "Workspace Admin", status: "Active Now", color: "bg-emerald-400" },
-                { name: "Alex Rivera", role: "Software Developer", status: "Invited", color: "bg-zinc-700" },
-                { name: "Sarah Chen", role: "Product Designer", status: "Invited", color: "bg-zinc-700" },
-              ].map((member, i) => (
-                <div key={i} className="p-3 bg-zinc-900/30 border border-zinc-900/40 rounded-lg flex items-center justify-between">
-                  <div className="flex items-center gap-2.5">
-                    <div className="w-6 h-6 rounded-full bg-zinc-800 flex items-center justify-center text-[9px] font-bold text-zinc-400 border border-zinc-700">
-                      {member.name.charAt(0)}
-                    </div>
-                    <div>
-                      <h5 className="text-[10px] font-semibold text-zinc-300">{member.name}</h5>
-                      <p className="text-[8.5px] text-zinc-500 mt-0.5">{member.role}</p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-1.5">
-                    <span className={cn("w-1.5 h-1.5 rounded-full", member.color)} />
-                    <span className="text-[9px] text-zinc-500 font-medium">{member.status}</span>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        );
-      default:
-        return null;
-    }
-  };
 
   return (
-    <div className="min-h-screen w-full bg-black text-white flex flex-row overflow-hidden font-sans relative">
+    <div className="min-h-screen w-full bg-black! text-white flex flex-row overflow-hidden font-sans relative">
       <div className="noise-bg" />
 
       {/* Left Column (40% width on Desktop, full width on Mobile) */}
-      <div className="w-full lg:w-[40%] flex flex-col justify-between p-6 min-h-screen relative z-10 border-r border-zinc-900 bg-black">
+      <div className="w-full lg:w-[40%] flex flex-col justify-between p-6 min-h-screen relative z-10 border-r border-zinc-800 bg-black">
         {/* Header */}
         <header className="flex justify-between items-center w-full">
           <div className="flex items-center gap-2 select-none">
@@ -459,10 +263,10 @@ export function MultiStepOnboarding() {
                           type="button"
                           onClick={() => togglePurpose(p.id)}
                           className={cn(
-                            "w-full flex items-center justify-between p-3 rounded-xl border text-left transition-all duration-200 cursor-pointer select-none",
+                            "w-full flex items-center bg-muted/60! justify-between p-3 rounded-lg border text-left transition-all duration-200 cursor-pointer select-none",
                             selected
-                              ? "bg-zinc-900 border-white/10"
-                              : "bg-zinc-950/20 border-border hover:border-white/30 hover:bg-zinc-900/10"
+                              ? "bg-zinc-900! border-white/10"
+                              : "bg-zinc-950/20 border-border hover:border-white/20 hover:bg-zinc-900/10"
                           )}
                         >
                           <div className="flex items-center gap-3">
@@ -735,7 +539,7 @@ export function MultiStepOnboarding() {
 
         {/* Progress Stepper at Bottom */}
         <footer className="w-full flex justify-center py-2 select-none">
-          <div className="flex items-center gap-1.5">
+          <div className="flex items-center gap-2.5">
             {STEPS.map((step) => {
               const isActive = currentStep === step.id;
               return (
@@ -743,7 +547,7 @@ export function MultiStepOnboarding() {
                   key={step.id}
                   className={cn(
                     "h-1 rounded-full transition-all duration-300",
-                    isActive ? "w-5 bg-zinc-200" : "w-1 bg-zinc-800"
+                    isActive ? "w-7 bg-zinc-100" : "w-1 bg-zinc-600"
                   )}
                 />
               );
@@ -753,49 +557,16 @@ export function MultiStepOnboarding() {
       </div>
 
       {/* Right Column (60% width on Desktop, hidden on Mobile) */}
-      <div className="hidden lg:flex lg:w-[60%] bg-[#080710] relative items-center justify-center p-12 overflow-hidden select-none">
-        {/* Ambient gradient backglows */}
-        <div className="absolute top-1/4 left-1/4 w-[350px] h-[350px] bg-[#5e6ad2]/8 blur-[120px] rounded-full pointer-events-none" />
-        <div className="absolute bottom-1/4 right-1/4 w-[250px] h-[250px] bg-indigo-500/5 blur-[100px] rounded-full pointer-events-none" />
-
-        {/* Browser Mockup Box */}
-        <div className="w-[90%] max-w-[620px] aspect-[16/10] bg-zinc-950 border border-zinc-900 rounded-2xl overflow-hidden shadow-2xl relative flex flex-col">
-          {/* Minimalist Tab Bar */}
-          <div className="h-9 border-b border-zinc-900/60 bg-zinc-950 px-4 flex items-center justify-between shrink-0">
-            <div className="flex items-center gap-1.5">
-              <div className="w-2.5 h-2.5 rounded-full bg-zinc-900" />
-              <div className="w-2.5 h-2.5 rounded-full bg-zinc-900" />
-              <div className="w-2.5 h-2.5 rounded-full bg-zinc-900" />
-            </div>
-            <div className="text-[10px] text-zinc-600 font-mono tracking-tight bg-zinc-950 border border-zinc-900/80 rounded-md px-3 py-0.5 w-48 text-center truncate">
-              wekraft.co/workspace
-            </div>
-            <div className="w-10" />
-          </div>
-
-          {/* Browser Workspace Content */}
-          <div className="relative p-6 flex-1 overflow-hidden bg-zinc-950 font-sans text-left text-zinc-400">
-            {/* Glow accent */}
-            <div className="absolute -top-1/4 -right-1/4 w-60 h-60 bg-[#5e6ad2]/5 blur-[60px] rounded-full pointer-events-none" />
-
-            {/* Hover-Blur preview frame */}
-            <div className=" h-full w-full  flex flex-col justify-center">
-              <AnimatePresence mode="wait">
-                <motion.div
-                  key={currentStep}
-                  initial={{ opacity: 0, scale: 0.96 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.96 }}
-                  transition={{ duration: 0.3, ease: "easeInOut" }}
-                  className="w-full"
-                >
-                  {renderRightSidePreview(currentStep)}
-                </motion.div>
-              </AnimatePresence>
-            </div>
-          </div>
-        </div>
-      </div>
+      <OnboardingRightSide
+        currentStep={currentStep}
+        purposes={purposes}
+        username={username}
+        selectedRole={selectedRole}
+        projectName={projectName}
+        projectStatus={projectStatus}
+        theme={theme}
+        clerkUser={clerkUser}
+      />
     </div>
   );
 }
