@@ -94,10 +94,13 @@ export const useRazorpay = () => {
       });
 
       const orderData = await orderRes.json();
-      if (!orderRes.ok)
-        throw new Error(
-          orderData.error || "Failed to create subscription",
-        );
+      if (!orderRes.ok) {
+        let errMsg = orderData.error;
+        if (typeof errMsg === 'object') {
+          errMsg = errMsg?.description || JSON.stringify(errMsg);
+        }
+        throw new Error(errMsg || "Failed to create subscription");
+      }
 
       const options: RazorpayCheckoutOptions = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,

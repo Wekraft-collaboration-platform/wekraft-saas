@@ -71,28 +71,29 @@ interface FeatureCat {
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
 const freeFeatures: FeatureItem[] = [
-  { label: "2 project creation",  icon: <FolderGit2 className="h-3.5 w-3.5" /> },
-  { label: "1 joining",   icon: <UserPlus className="h-3.5 w-3.5" /> },
+  { label: "2 Project Creation",  icon: <FolderGit2 className="h-3.5 w-3.5" /> },
+  { label: "2 Project Joining",   icon: <GitBranch className="h-3.5 w-3.5" /> },
+  { label: "Up to 3 team members", icon: <UserPlus className="h-3.5 w-3.5" /> },
 ];
 
 const plusFeatures: FeatureItem[] = [
-  { label: "5 project creation",          icon: <FolderGit2 className="h-3.5 w-3.5" /> },
-  { label: "5 Project joining",           icon: <UserPlus className="h-3.5 w-3.5" /> },
-  { label: "Media Uploads",  icon: <Cpu className="h-3.5 w-3.5" /> },
-  { label: "Advance Graphs/ Analysis",                icon: <BarChart3 className="h-3.5 w-3.5" /> },
-  { label: "Up to 6 team members",      icon: <Users className="h-3.5 w-3.5" /> },
-  { label: "Sprints Creation",                 icon: <Map className="h-3.5 w-3.5" /> },
-  { label: "Basic support",             icon: <HeadphonesIcon className="h-3.5 w-3.5" /> },
+  { label: "10 Project Creation",          icon: <FolderGit2 className="h-3.5 w-3.5" /> },
+  { label: "10 Project Joining",           icon: <GitBranch className="h-3.5 w-3.5" /> },
+  { label: "Up to 6 team members",         icon: <UserPlus className="h-3.5 w-3.5" /> },
+  { label: "Full Team & Community Insights",icon: <BarChart3 className="h-3.5 w-3.5" /> },
+  { label: "Basic Cloud Storage",          icon: <Cpu className="h-3.5 w-3.5" /> },
+  { label: "Message before join",          icon: <Check className="h-3.5 w-3.5" /> },
+  { label: "Project Heatmaps",             icon: <Map className="h-3.5 w-3.5" /> },
 ];
 
 const proFeatures: FeatureItem[] = [
-  { label: "10 Project Creation",          icon: <FolderGit2 className="h-3.5 w-3.5" /> },
-  { label: "Unlimited Project Joining", icon: <UserPlus className="h-3.5 w-3.5" /> },
-  { label: "Kaya - PM agent",        icon: <Bot className="h-3.5 w-3.5" /> },
-  { label: "Schedule project reports",       icon: <CalendarCheck className="h-3.5 w-3.5" /> },
-  { label: "15 team members",              icon: <Users className="h-3.5 w-3.5" /> },
-  { label: "Higher media upload limits",  icon: <Cpu className="h-3.5 w-3.5" /> },
-  { label: "Priority support",  icon: <Star className="h-3.5 w-3.5" /> },
+  { label: "20 Project Creation",          icon: <FolderGit2 className="h-3.5 w-3.5" /> },
+  { label: "20 Project Joining",           icon: <GitBranch className="h-3.5 w-3.5" /> },
+  { label: "Up to 15 team members",        icon: <UserPlus className="h-3.5 w-3.5" /> },
+  { label: "Kaya AI & PM Agent",           icon: <Bot className="h-3.5 w-3.5" /> },
+  { label: "Automated Reporting",          icon: <CalendarCheck className="h-3.5 w-3.5" /> },
+  { label: "Higher Cloud Storage",         icon: <Cpu className="h-3.5 w-3.5" /> },
+  { label: "Priority Support",             icon: <Star className="h-3.5 w-3.5" /> },
 ];
 
 const plans: Plan[] = [
@@ -144,26 +145,40 @@ const plans: Plan[] = [
 const featureCategories: FeatureCat[] = [
   {
     title: "Usage & Limits",
-    icon: <Users className="h-4 w-4" />,
+    icon: <FolderGit2 className="h-4 w-4" />,
     rows: [
       { label: "Project Creation", icon: <FolderGit2 className="h-3.5 w-3.5" />, free: "2", plus: "10", pro: "20" },
+      { label: "Project Joining", icon: <GitBranch className="h-3.5 w-3.5" />, free: "2", plus: "10", pro: "20" },
       { label: "Team Members per Project", icon: <UserPlus className="h-3.5 w-3.5" />, free: "3", plus: "6", pro: "15" },
+      { label: "Cloud Storage", icon: <Cpu className="h-3.5 w-3.5" />, free: "None", plus: "Basic", pro: "Higher" },
     ],
   },
   {
-    title: "Features",
+    title: "Workspace Features & Insights",
+    icon: <BarChart3 className="h-4 w-4" />,
+    rows: [
+      { label: "User Profiles", icon: <Users className="h-3.5 w-3.5" />, free: "Limited", plus: "Full", pro: "Full" },
+      { label: "Message Before Join", icon: <Check className="h-3.5 w-3.5" />, free: false, plus: true, pro: true },
+      { label: "Team Insights", icon: <BarChart3 className="h-3.5 w-3.5" />, free: "Limited", plus: "Full", pro: "Full" },
+      { label: "Community Insights", icon: <Star className="h-3.5 w-3.5" />, free: "Limited", plus: "Full", pro: "Full" },
+      { label: "Project Heatmap", icon: <Map className="h-3.5 w-3.5" />, free: "Limited", plus: "Full", pro: "Full" },
+    ],
+  },
+  {
+    title: "AI & Automation",
     icon: <Sparkles className="h-4 w-4" />,
     rows: [
-      { label: "File Uploads", icon: <Cpu className="h-3.5 w-3.5" />, free: "Limited", plus: "Standard", pro: "High" },
-      { label: "AI Features", icon: <Bot className="h-3.5 w-3.5" />, free: "—", plus: "Basic", pro: "Advanced (Kaya)" },
-      { label: "Sprints & Kanban", icon: <Wrench className="h-3.5 w-3.5" />, free: "Basic", plus: "Full", pro: "Full + Automation" },
+      { label: "PM Agent", icon: <Bot className="h-3.5 w-3.5" />, free: "None", plus: "None", pro: "Full" },
+      { label: "Kaya AI", icon: <Sparkles className="h-3.5 w-3.5" />, free: "None", plus: "None", pro: "Full" },
+      { label: "Automated Reporting", icon: <CalendarCheck className="h-3.5 w-3.5" />, free: false, plus: false, pro: true },
+      { label: "Experimental Features", icon: <Wrench className="h-3.5 w-3.5" />, free: false, plus: false, pro: true },
     ],
   },
   {
     title: "Support",
     icon: <Lock className="h-4 w-4" />,
     rows: [
-      { label: "Support", icon: <HeadphonesIcon className="h-3.5 w-3.5" />, free: "Community", plus: "Standard", pro: "Priority" },
+      { label: "Dedicated Support", icon: <HeadphonesIcon className="h-3.5 w-3.5" />, free: "Basic", plus: "Basic", pro: "Priority" },
     ],
   },
 ];

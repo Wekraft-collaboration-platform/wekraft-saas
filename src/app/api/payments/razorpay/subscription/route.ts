@@ -67,11 +67,26 @@ export async function POST(req: NextRequest) {
       amount,
       currency,
     });
-  } catch (error) {
-    const message = error instanceof Error ? error.message : String(error);
-    console.error("[Razorpay Subscription]", message);
+  } catch (error: any) {
+    console.error("[Razorpay Subscription Error]:", error);
+    let message = "Failed to create subscription";
+    
+    if (error instanceof Error) {
+      message = error.message;
+    } else if (error?.error?.description) {
+      message = error.error.description;
+    } else if (typeof error === "string") {
+      message = error;
+    } else if (error && typeof error === "object") {
+      try {
+        message = JSON.stringify(error);
+      } catch (e) {
+        message = String(error);
+      }
+    }
+    
     return NextResponse.json(
-      { error: message || "Failed to create subscription" },
+      { error: message },
       { status: 500 },
     );
   }
