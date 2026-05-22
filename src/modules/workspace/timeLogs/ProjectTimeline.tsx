@@ -133,11 +133,15 @@ function TimelineDayAxis({
   const trackWidth = Math.max(TRACK_MIN_PX, naturalWidth);
   const columnWidthPercentage = 100 / days.length;
 
+  const taskRowHeight = 42; // h-8 (32px) + gap-2.5 (10px)
+  const computedHeight = 75 + (tasks?.length || 0) * taskRowHeight + 40;
+  const containerHeight = Math.max(440, computedHeight);
+
   return (
-    <div className="w-full min-w-0 overflow-x-auto dark:bg-card">
+    <div className="w-full min-w-0 overflow-auto max-h-[500px] dark:bg-card">
       <div
-        className="relative flex h-full min-h-[440px] max-h-[500px] w-full pl-0.5"
-        style={{ width: `max(${trackWidth}px, 100%)` }}
+        className="relative flex min-h-[440px] w-full pl-0.5"
+        style={{ width: `max(${trackWidth}px, 100%)`, height: `${containerHeight}px` }}
         aria-label={`Timeline from ${format(days[0]!, "PPP")} to ${format(days[days.length - 1]!, "PPP")}, one column per day`}
       >
         {days.map((day, i) => {

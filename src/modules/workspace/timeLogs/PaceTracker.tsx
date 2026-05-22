@@ -56,24 +56,21 @@ export const PaceTracker = ({
   const isReady = totalTasks >= 6 && daysConsumed >= 3;
   let state = "empty";
   if (isReady) state = "ready";
-  else if (totalTasks > 0) state = "growing";
-
-  // const state = "ready";
 
   if (state === "empty") {
     return (
-      <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-neutral-900/70 shadow-sm dark:shadow-none p-4 flex flex-col relative overflow-hidden">
+      <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-neutral-900/90 shadow-sm dark:shadow-none p-4 flex flex-col relative overflow-hidden">
         <div className="flex items-center gap-2 mb-3">
-          <div className={cn("p-1.5 rounded-md border bg-muted/50")}>
+          <div className={cn("p-1.5 rounded-md border bg-card")}>
             <Activity className={cn("w-3.5 h-3.5 text-primary")} />
           </div>
-          <h3 className="text-[13px] font-semibold tracking-tight text-neutral-900 dark:text-white/90">
+          <h3 className="text-base font-medium tracking-tight text-black dark:text-white">
             Pace Tracker
           </h3>
         </div>
         <div className="flex flex-col items-center justify-center space-y-3 mt-6">
           <LucideAlertTriangle className={cn("w-8 h-8 text-primary opacity-50")} />
-          <p className="text-[11px] text-muted-foreground leading-relaxed text-center px-7">
+          <p className="text-xs text-muted-foreground leading-relaxed text-center px-7">
             Your workspace atleast have{" "}
             <span className="text-primary">6 tasks and 3 days of history</span>{" "}
             to establish velocity.
@@ -83,28 +80,6 @@ export const PaceTracker = ({
     );
   }
 
-  if (state === "growing") {
-    return (
-      <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-neutral-900/70 shadow-sm dark:shadow-none p-4 flex flex-col relative overflow-hidden">
-        <div className="flex items-center gap-2 mb-3">
-          <div className={cn("p-1.5 rounded-md border bg-muted/50")}>
-            <Activity className={cn("w-3.5 h-3.5 text-primary")} />
-          </div>
-          <h3 className="text-[13px] font-semibold tracking-tight text-neutral-900 dark:text-white/90">
-            Pace Tracker
-          </h3>
-        </div>
-        <div className="flex flex-col items-center justify-center space-y-3 mt-6">
-          <LucideAlertTriangle className={cn("w-8 h-8 text-primary opacity-50")} />
-          <p className="text-[11px] text-muted-foreground leading-relaxed text-center px-7">
-            Your workspace atleast have{" "}
-            <span className="text-primary">6 tasks and 3 days of history</span>{" "}
-            to establish velocity.
-          </p>
-        </div>
-      </div>
-    );
-  }
 
   // READY STATE
   const gap = timeConsumedPct - taskCompletedPct; // Positive means Behind
@@ -144,22 +119,22 @@ export const PaceTracker = ({
   };
 
   return (
-    <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-neutral-900/70 shadow-sm dark:shadow-none p-4 flex flex-col justify-between relative overflow-hidden">
+    <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-neutral-900/90 shadow-sm dark:shadow-none p-4 flex flex-col justify-between relative overflow-hidden">
       {/* HEADER */}
       <div>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <div className={cn("p-1.5 rounded-md border bg-muted/50")}>
+            <div className={cn("p-1.5 rounded-md border bg-card")}>
               <Activity className={cn("w-3.5 h-3.5 text-primary")} />
             </div>
-            <h3 className="text-[13px] font-semibold tracking-tight text-neutral-900 dark:text-white/90">
+            <h3 className="text-base font-medium tracking-tight text-black dark:text-white">
               Pace Tracker
             </h3>
           </div>
           {isBehind ? (
             <div
               className={cn(
-                "px-3 py-1.5 rounded-sm text-[10px] flex items-center gap-1 border border-border bg-muted text-rose-500",
+                "px-3 py-1.5 rounded-sm text-[10px] flex items-center gap-1 border border-accent bg-accent/60 text-rose-400",
               )}
             >
               <AlertCircle className="w-3 h-3" />
@@ -168,7 +143,7 @@ export const PaceTracker = ({
           ) : (
             <div
               className={cn(
-                "px-3 py-1.5 rounded-sm text-[10px] flex items-center gap-1 border bg-muted/50 text-green-600",
+                "px-3 py-1.5 rounded-sm text-[10px] flex items-center gap-1 border border-accent bg-accent/60 text-green-400",
               )}
             >
               <ArrowUpRight className="w-3 h-3" />
@@ -229,52 +204,44 @@ export const PaceTracker = ({
 
       {/* STATS FOOTER */}
       <div className="mt-3">
-        {gap > 90 ? (
-          <div className="mb-2 px-3 py-2 rounded border border-rose-500/10 bg-rose-500/10 text-muted-foreground text-[11px] font-medium flex items-center gap-2 tracking-wide">
-            <div className="w-1.5 h-1.5 rounded-full bg-rose-500 mt-px" />
-            {gap.toFixed(0)}% gap — speed up.{" "}
-            <span className="underline underline-offset-2 text-primary">
-              Ask KAYA to optimize
-            </span>
-          </div>
-        ) : (
-          <div className="grid grid-cols-4 gap-1.5">
-            <div className="bg-muted rounded-lg p-2 border border-border max-h-[48px] flex flex-col justify-center">
-              <div className="text-base font-bold text-neutral-900 dark:text-white tracking-tight leading-none mb-0.5">
-                {Math.ceil(daysRemaining)}
-              </div>
-              <div className="text-[9px] text-primary tracking-wider">
-                Days left
-              </div>
+
+        <div className="grid grid-cols-4 gap-1.5">
+          <div className="bg-accent/60 rounded-lg p-2 border border-accent max-h-[48px] flex flex-col justify-center">
+            <div className="text-base font-bold font-mono text-neutral-900 dark:text-white tracking-tight leading-none mb-0.5">
+              {Math.ceil(daysRemaining)}
             </div>
-            <div className="bg-muted rounded-lg p-2 border border-border max-h-[48px] flex flex-col justify-center">
-              <div className="text-base font-bold text-primary tracking-tight leading-none mb-0.5">
-                {tasksRemaining}
-              </div>
-              <div className="text-[9px] text-primary tracking-wider">
-                Tasks left
-              </div>
-            </div>
-            <div className="bg-muted rounded-lg p-2 border border-border max-h-[48px] flex flex-col justify-center">
-              <div className="text-base font-bold text-primary tracking-tight leading-none mb-0.5 flex items-baseline">
-                {needPerDay}
-                <span className="text-[10px] ml-0.5 font-semibold">/day</span>
-              </div>
-              <div className="text-[9px] text-primary tracking-wider">
-                Need rate
-              </div>
-            </div>
-            <div className="bg-muted rounded-lg p-2 border border-border max-h-[48px] flex flex-col justify-center">
-              <div className="text-base font-bold text-primary tracking-tight leading-none mb-0.5 flex items-baseline">
-                {currentPace}
-                <span className="text-[10px] ml-0.5 font-semibold">/day</span>
-              </div>
-              <div className="text-[9px] text-primary tracking-wider">
-                Pace rate
-              </div>
+            <div className="text-[9px] text-primary tracking-wider">
+              Days left
             </div>
           </div>
-        )}
+          <div className="bg-accent/60 rounded-lg p-2 border border-accent max-h-[48px] flex flex-col justify-center">
+            <div className="text-base font-bold font-mono text-primary tracking-tight leading-none mb-0.5">
+              {tasksRemaining}
+            </div>
+            <div className="text-[9px] text-primary tracking-wider">
+              Tasks left
+            </div>
+          </div>
+          <div className="bg-accent/60 rounded-lg p-2 border border-accent max-h-[48px] flex flex-col justify-center">
+            <div className="text-base font-bold font-mono text-primary tracking-tight leading-none mb-0.5 flex items-baseline">
+              {needPerDay}
+              <span className="text-[10px] ml-0.5 font-semibold">/day</span>
+            </div>
+            <div className="text-[9px] text-primary tracking-wider">
+              Need rate
+            </div>
+          </div>
+          <div className="bg-accent/60 rounded-lg p-2 border border-accent max-h-[48px] flex flex-col justify-center">
+            <div className="text-base font-bold font-mono text-primary tracking-tight leading-none mb-0.5 flex items-baseline">
+              {currentPace}
+              <span className="text-[10px] ml-0.5 font-semibold">/day</span>
+            </div>
+            <div className="text-[9px] text-primary tracking-wider">
+              Pace rate
+            </div>
+          </div>
+        </div>
+
       </div>
     </div>
   );

@@ -2,7 +2,7 @@
 
 import React, { useState, useMemo } from "react";
 import { cn } from "@/lib/utils";
-import { AlertCircle, BadgeAlert, Hourglass, LucideAlertTriangle } from "lucide-react";
+import { AlertCircle, BadgeAlert, CircleMinus, Hourglass, LucideAlertTriangle } from "lucide-react";
 import { Task } from "@/types/types";
 import { useQuery } from "convex/react";
 import { Id } from "../../../../convex/_generated/dataModel";
@@ -60,18 +60,18 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
 
   if (!isReady) {
     return (
-      <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-neutral-900/70 shadow-sm dark:shadow-none p-4 flex flex-col relative overflow-hidden">
+      <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-neutral-900/90 shadow-sm dark:shadow-none p-4 flex flex-col relative overflow-hidden">
         <div className="flex items-center gap-2 mb-3">
-          <div className={cn("p-1.5 rounded-md border bg-muted/50")}>
+          <div className={cn("p-1.5 rounded-md border bg-card")}>
             <Hourglass className={cn("w-3 h-3! text-primary")} />
           </div>
-          <h3 className="text-[13px] font-bold tracking-tight text-neutral-900 dark:text-white/90">
+          <h3 className="text-base font-medium tracking-tight text-black  dark:text-white">
             Delay Debt
           </h3>
         </div>
         <div className="flex flex-col items-center justify-center space-y-3 mt-6">
           <LucideAlertTriangle className={cn("w-8 h-8 text-primary opacity-50")} />
-          <p className="text-[11px] text-muted-foreground leading-relaxed text-center px-7">
+          <p className="text-xs text-muted-foreground leading-relaxed text-center px-7">
             Your workspace atleast have{" "}
             <span className="text-primary">more than 5 tasks </span>{" "}
             to establish delay debt tracking.
@@ -101,14 +101,14 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
   }
 
   return (
-    <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-accent/20 shadow-sm dark:shadow-none p-4 flex flex-col justify-start relative overflow-hidden">
+    <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-neutral-900/90 shadow-sm dark:shadow-none p-4 flex flex-col justify-start relative overflow-hidden">
       {/* HEADER: Title & Compact Tabs */}
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
-          <div className={cn("p-1.5 rounded-md border bg-muted/50")}>
+          <div className={cn("p-1.5 rounded-md border bg-card")}>
             <Hourglass className={cn("w-3 h-3! text-primary")} />
           </div>
-          <h3 className="text-[13px] font-bold tracking-tight text-neutral-900 dark:text-white/90">
+          <h3 className="text-base font-medium tracking-tight text-black  dark:text-white">
             Delay Debt
           </h3>
         </div>
@@ -141,28 +141,28 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
 
       {/* STAT CARDS: Compact & Simplified */}
       <div className="grid grid-cols-2 gap-2 mb-4">
-        <div className="bg-muted rounded-lg p-2 border border-border">
+        <div className="bg-muted rounded-lg p-2 border border-accent">
           <div
             className={cn(
-              "text-xl font-bold tracking-tight leading-none mb-1 text-primary",
+              "text-xl font-bold font-mono tracking-tight leading-none mb-1 text-primary",
             )}
           >
             {Math.ceil(totalDaysOverdueForTab)}
           </div>
-          <div className="text-[9px] text-neutral-500 uppercase tracking-widest font-semibold">
-            Days Overdue
+          <div className="text-[10px] text-muted-foreground">
+            Days Overdue <CircleMinus className="h-3 w-3 inline ml-1" />
           </div>
         </div>
-        <div className="bg-muted rounded-lg p-2 border border-border relative">
+        <div className="bg-muted rounded-lg p-2 border border-accent relative">
           <div
             className={cn(
-              "text-xl font-bold tracking-tight leading-none mb-1 text-primary",
+              "text-xl font-bold font-mono tracking-tight leading-none mb-1 text-primary",
             )}
           >
             {currentOverdueCount}
           </div>
-          <div className="text-[9px] text-neutral-500 uppercase tracking-widest font-semibold">
-            Total {activeTab}
+          <div className="text-[10px] text-muted-foreground">
+            Overdue {activeTab} <AlertCircle className="h-3 w-3 inline ml-1" />
           </div>
         </div>
       </div>
@@ -173,7 +173,7 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
           <span>Worst offenders</span>
           <div
             className={cn(
-              "px-2 py-0.5 rounded text-[9px] border font-bold bg-red-500/40!",
+              "px-2 py-0.5 rounded text-[9px] border font-medium bg-accent!",
               badgeColor,
             )}
           >

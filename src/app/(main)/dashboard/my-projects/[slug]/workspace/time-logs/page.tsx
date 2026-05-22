@@ -7,11 +7,6 @@ import {
   ChartNoAxesGantt,
   ClipboardClock,
   FileCodeCorner,
-  Frown,
-  Loader2,
-  Sparkles,
-  Target,
-  TrendingDown,
 } from "lucide-react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
