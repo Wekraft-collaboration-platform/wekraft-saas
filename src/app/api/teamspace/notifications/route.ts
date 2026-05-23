@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
-import { turso, initTeamspaceDB } from "@/lib/turso";
+import { type NextRequest, NextResponse } from "next/server";
+import { initTeamspaceDB, turso } from "@/lib/turso";
 
 // GET /api/teamspace/notifications?limit=20
 export async function GET(req: NextRequest) {

@@ -1,17 +1,43 @@
 "use client";
 
+import { useMutation, useQuery } from "convex/react";
+import { format } from "date-fns";
+import {
+  AlertCircle,
+  ArrowLeft,
+  Bug,
+  BugIcon,
+  Calendar,
+  Check,
+  CheckCircle2,
+  Circle,
+  Clipboard,
+  ClipboardList,
+  Clock,
+  ExternalLink,
+  FastForward,
+  Flag,
+  Lock,
+  Play,
+  Plus,
+  Target,
+  Users,
+  Zap,
+} from "lucide-react";
+import Link from "next/link";
 import { useParams } from "next/navigation";
 import { useState } from "react";
-import { useQuery, useMutation } from "convex/react";
-import { api } from "../../../../../../../../../convex/_generated/api";
-import { Id } from "../../../../../../../../../convex/_generated/dataModel";
-import Link from "next/link";
-import { format } from "date-fns";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { toast } from "sonner";
-import { useProjectPermissions } from "@/hooks/use-project-permissions";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import {
   Table,
   TableBody,
@@ -20,37 +46,11 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogDescription,
-} from "@/components/ui/dialog";
-import { statusIcons, priorityIcons2, statusColors } from "@/lib/static-store";
+import { useProjectPermissions } from "@/hooks/use-project-permissions";
+import { priorityIcons2, statusColors, statusIcons } from "@/lib/static-store";
 import { cn } from "@/lib/utils";
-import {
-  ArrowLeft,
-  Target,
-  Plus,
-  CheckCircle2,
-  AlertCircle,
-  Zap,
-  Play,
-  Check,
-  Lock,
-  Calendar,
-  Bug,
-  Circle,
-  Clock,
-  Flag,
-  FastForward,
-  ExternalLink,
-  Users,
-  Clipboard,
-  ClipboardList,
-  BugIcon,
-} from "lucide-react";
+import { api } from "../../../../../../../../../convex/_generated/api";
+import type { Id } from "../../../../../../../../../convex/_generated/dataModel";
 
 const SprintDetailPage = () => {
   const params = useParams();

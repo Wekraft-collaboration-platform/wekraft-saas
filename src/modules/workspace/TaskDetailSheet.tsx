@@ -60,6 +60,13 @@ import {
 } from "@/components/ui/alert-dialog";
 import { Loader2 } from "lucide-react";
 import { EditTaskDialog } from "./EditTaskDialog";
+import { MoveToSprintDialog } from "./MoveToSprintDialog";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface TaskDetailSheetProps {
   task: Task | null;
@@ -289,15 +296,19 @@ export const TaskDetailSheet = ({
                 )}
                 {currentTask.isBlocked ? "Blocked by Issue" : "Mark as Issue"}
               </Button>
-              <Button variant="outline" size="sm" className="text-[10px]">
-                <FastForward size={12} /> Add to Sprint
-              </Button>
+              <MoveToSprintDialog
+                trigger={
+                  <Button variant="outline" size="sm" className="text-[10px]">
+                    <FastForward size={12} /> Add to Sprint
+                  </Button>
+                }
+              />
             </div>
           </div>
 
-          <div className="flex-1 overflow-y-auto px-4 py-4 scrollbar-hide">
+          <div className="flex-1 overflow-y-auto px-4 py-6 scrollbar-hide space-y-4.5">
             {/* Title Section */}
-            <div className="flex flex-col space-y-2.5">
+            <div className="flex flex-col space-y-3">
               <h1 className="text-xl font-semibold tracking-tight text-primary capitalize max-w-[300px] truncate leading-tight">
                 {currentTask.title}
               </h1>
@@ -306,37 +317,24 @@ export const TaskDetailSheet = ({
                   {currentTask.type ? (
                     <div
                       className={cn(
-                        "flex items-center gap-1.5 px-3 py-1 rounded-full text-[10px] font-semibold border transition-all duration-200",
+                        "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs border transition-all duration-200",
                         currentTask.type.color === "green" &&
-                          "bg-emerald-500/10 text-emerald-400 border-emerald-400/20 shadow-[0_0_10px_rgba(52,211,153,0.05)]",
+                        "bg-emerald-500/10 text-primary/80 border-emerald-400/20 shadow-[0_0_10px_rgba(52,211,153,0.05)]",
                         currentTask.type.color === "yellow" &&
-                          "bg-yellow-500/10 text-yellow-400 border-yellow-400/20 shadow-[0_0_10px_rgba(250,204,21,0.05)]",
+                        "bg-yellow-500/10 text-primary/80 border-yellow-400/20 shadow-[0_0_10px_rgba(250,204,21,0.05)]",
                         currentTask.type.color === "purple" &&
-                          "bg-purple-500/10 text-purple-400 border-purple-400/20 shadow-[0_0_10px_rgba(192,132,252,0.05)]",
+                        "bg-purple-500/10 text-primary/80 border-purple-400/20 shadow-[0_0_10px_rgba(192,132,252,0.05)]",
                         currentTask.type.color === "blue" &&
-                          "bg-blue-500/10 text-blue-400 border-blue-400/20 shadow-[0_0_10px_rgba(96,165,250,0.05)]",
+                        "bg-blue-500/10 text-primary/80 border-blue-400/20 shadow-[0_0_10px_rgba(96,165,250,0.05)]",
                         currentTask.type.color === "grey" &&
-                          "bg-muted text-muted-foreground border-border",
+                        "bg-muted text-muted-foreground border-border",
                       )}
                     >
-                      <div
-                        className={cn(
-                          "w-1.5 h-1.5 rounded-full animate-pulse",
-                          currentTask.type.color === "green" &&
-                            "bg-emerald-400",
-                          currentTask.type.color === "yellow" &&
-                            "bg-yellow-400",
-                          currentTask.type.color === "purple" &&
-                            "bg-purple-400",
-                          currentTask.type.color === "blue" && "bg-blue-400",
-                          currentTask.type.color === "grey" && "bg-neutral-400",
-                        )}
-                      />
                       {currentTask.type.label}
                     </div>
                   ) : (
-                    <span className="text-[10px] text-primary/10 tracking-widest px-2">
-                      —
+                    <span className="text-[10px] text-muted-foreground tracking-widest px-2">
+                      —-
                     </span>
                   )}
                 </div>
@@ -357,73 +355,76 @@ export const TaskDetailSheet = ({
               </div>
             </div>
 
-            {/* Stats Grid */}
-            <div className="space-y-4  mt-6">
-              <div className="grid grid-cols-[120px_1fr] items-center">
-                <div className="flex items-center gap-2.5 text-muted-foreground text-sm font-medium">
-                  <Calendar size={16} /> Duration
+            {/* Stats Panel */}
+            <div className="border border-neutral-800 rounded-lg bg-neutral-900/10 overflow-hidden">
+              {/* Row 1: Duration */}
+              <div className="grid grid-cols-[100px_1fr] items-center px-4 py-3 border-b border-neutral-800">
+                <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
+                  <Calendar size={14} className="text-muted-foreground/80" /> Duration
                 </div>
-                <div className="text-xs font-semibold text-primary/80">
+                <div className="text-xs text-primary/80 pl-2">
                   {currentTask.estimation ? (
                     <>
                       {format(currentTask.estimation.startDate, "d MMMM")} -{" "}
                       {format(currentTask.estimation.endDate, "d MMMM, yyyy")}
                     </>
                   ) : (
-                    "Not set"
+                    <span className="text-neutral-500 italic">Not set</span>
                   )}
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 gap-x-6 gap-y-5 justify-items-start w-full items-center">
-                {/* STATUS */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-muted-foreground text-sm font-medium">
-                    <Clock size={14} /> Status
+              {/* Row 2: Status & Assignee */}
+              <div className="grid grid-cols-2 divide-x divide-neutral-800">
+                {/* Status */}
+                <div className="px-4 py-3 space-y-2">
+                  <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
+                    <Clock size={14} className="text-muted-foreground/80" /> Status
                   </div>
-                  <div>
-                    <p
-                      className={cn(
-                        "px-3 py-1 flex items-center bg-accent rounded-full text-[10px] border capitalize gap-1.5",
-                      )}
-                    >
+                  <div className="flex items-center">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] bg-neutral-900 border border-neutral-800 text-neutral-300 capitalize">
                       {statusIconsNoColors[currentTask.status] || (
-                        <Circle size={12} />
+                        <Circle size={10} />
                       )}
                       {currentTask.status}
-                    </p>
+                    </span>
                   </div>
                 </div>
 
-                {/* ASSIGNEE */}
-                <div className="space-y-2">
-                  <div className="flex items-center gap-2 text-muted-foreground text-sm font-medium">
-                    <Users size={14} /> Assignee
+                {/* Assignee */}
+                <div className="px-4 py-3 space-y-2">
+                  <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
+                    <Users size={14} className="text-muted-foreground/80" /> Assignee
                   </div>
                   <div className="flex items-center gap-2">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
-                        <div className="cursor-pointer">
+                        <div className="cursor-pointer flex items-center">
                           {currentTask.assignees &&
-                          currentTask.assignees.length > 0 ? (
-                            <div className="flex -space-x-2">
-                              {currentTask.assignees.map((person, i) => (
-                                <Avatar
-                                  key={i}
-                                  className="w-7 h-7 border-2 border-neutral-900"
-                                >
-                                  <AvatarImage src={person.avatar} />
-                                  <AvatarFallback className="text-[10px] bg-neutral-800 text-neutral-400">
-                                    {person.name[0]}
-                                  </AvatarFallback>
-                                </Avatar>
-                              ))}
+                            currentTask.assignees.length > 0 ? (
+                            <div className="flex items-center gap-2">
+                              <div className="flex -space-x-1.5">
+                                {currentTask.assignees.map((person, i) => (
+                                  <Avatar
+                                    key={i}
+                                    className="w-6.5 h-6.5 border-2 border-neutral-900 shadow-sm"
+                                  >
+                                    <AvatarImage src={person.avatar} />
+                                    <AvatarFallback className="text-[10px] bg-neutral-800 text-neutral-400">
+                                      {person.name[0]}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                ))}
+                              </div>
+                              <div className="w-6 h-6 rounded-full border border-neutral-800 bg-neutral-800/30 hover:bg-neutral-800 flex items-center justify-center text-neutral-400 hover:text-neutral-200 transition-colors">
+                                <Plus size={10} />
+                              </div>
                             </div>
                           ) : (
                             <Button
                               variant="outline"
                               size="sm"
-                              className="h-6 px-2 text-[10px] bg-muted/50 border-border/50 text-muted-foreground hover:text-foreground rounded-lg gap-1"
+                              className="h-6 px-2 text-[10px] bg-muted/30 border-border/50 text-muted-foreground hover:text-foreground rounded-lg gap-1"
                             >
                               <Plus size={10} /> Unassigned
                             </Button>
@@ -471,78 +472,78 @@ export const TaskDetailSheet = ({
                     </DropdownMenu>
                   </div>
                 </div>
+              </div>
 
-                {/* PRIORITY */}
-                <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-muted-foreground text-sm font-medium">
-                    <AlertCircle size={14} /> Priority
+              {/* Row 3: Priority & Codebase Link */}
+              <div className="grid grid-cols-2 divide-x divide-neutral-800 border-t border-neutral-800">
+                {/* Priority */}
+                <div className="px-4 py-3 space-y-4">
+                  <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
+                    <AlertCircle size={14} className="text-muted-foreground/80" /> Priority
                   </div>
-                  <div>
-                    <p
-                      className={
-                        "flex items-center gap-2 text-xs capitalize text-primary ml-2"
-                      }
-                    >
-                      {priorityIcons2[currentTask.priority || "none"]}
-                      {priority.label}
-                    </p>
+                  <div className="flex items-center gap-1.5 text-xs text-primary capitalize pl-1">
+                    {priorityIcons2[currentTask.priority || "none"]}
+                    {priority.label}
                   </div>
                 </div>
 
-                {/* LINK WITH CODEBASE */}
-                {currentTask.linkWithCodebase ? (
-                  <div className="space-y-2">
-                    <div className="flex items-center gap-2 text-muted-foreground text-sm font-medium">
-                      <Tag size={14} /> Link Code
-                    </div>
-                    <div className="text-xs font-medium text-primary ml-2">
-                      <GitBranch size={12} className="inline" />{" "}
-                      {currentTask.linkWithCodebase.split("/").pop()}
-                    </div>
+                {/* Link with Codebase */}
+                <div className="px-4 py-3 space-y-2">
+                  <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
+                    <Tag size={14} className="text-muted-foreground/80" /> Codebase
                   </div>
-                ) : (
                   <div>
-                    <p className="text-xs text-muted-foreground">
-                      <GitBranch size={12} className="inline mr-1" /> No codebase
-                      linked
-                    </p>
+                    {currentTask.linkWithCodebase ? (
+                      <div className="text-xs font-medium text-primary pl-1 flex items-center gap-1">
+                        <GitBranch size={12} className="inline text-muted-foreground" />{" "}
+                        {currentTask.linkWithCodebase.split("/").pop()}
+                      </div>
+                    ) : (
+                      <p className="text-[11px] text-muted-foreground italic pl-1 flex items-center gap-1">
+                        <GitBranch size={12} className="inline text-muted-foreground/55" /> No codebase
+                        linked
+                      </p>
+                    )}
                   </div>
-                )}
+                </div>
               </div>
             </div>
 
-            <div className="my-3">
+            <div className="mt-4">
               {currentTask.status === "completed" ? (
-                <div className="flex items-center justify-between bg-emerald-100/5 border border-emerald-500/20 rounded-md p-3 shadow-sm transition-all duration-300">
+                <div className="flex items-center justify-between bg-emerald-950/10 border border-emerald-900/30 rounded-xl p-3.5 shadow-sm transition-all duration-300">
                   <p className="text-xs text-muted-foreground flex items-center">
-                    <Check size={16} className="mr-2 text-emerald-500" />
+                    <Check size={14} className="mr-2 text-emerald-500" />
                     Completed at:
-                    <span className="text-xs font-semibold ml-3 text-primary">
+                    <span className="text-xs text-primary ml-2 font-normal">
                       {currentTask.finalCompletedAt
                         ? format(currentTask.finalCompletedAt, "d MMMM, yyyy")
                         : format(currentTask.updatedAt, "d MMMM, yyyy")}
                     </span>
                   </p>
-                  <div className="flex items-center gap-2 border-l border-primary/60 pl-4">
+                  <div className="flex items-center gap-2 border-l border-neutral-800 pl-4 shrink-0">
                     <span className="text-[10px] text-muted-foreground">
                       By:
                     </span>
-                    <Avatar className="w-5 h-5 border border-emerald-500/30">
+                    <Avatar className="w-6 h-6 border border-neutral-800">
                       <AvatarImage src={completer?.avatarUrl || ""} />
-                      <AvatarFallback className="text-[8px] bg-muted text-muted-foreground">
-                        {completer?.name?.[0] || "?"}
+                      <AvatarFallback className="text-[9px] bg-neutral-800 text-neutral-400 font-bold">
+                        {completer?.name?.[0]?.toUpperCase() || "?"}
                       </AvatarFallback>
                     </Avatar>
+                    <span className="text-xs text-neutral-300 truncate max-w-[100px]">
+                      {completer?.name || "Loading..."}
+                    </span>
                   </div>
                 </div>
               ) : (
-                <p className="text-sm text-muted-foreground">
-                  <CalendarClock size={16} className=" mr-1 inline -mt-1" />{" "}
-                  Last updated:{" "}
-                  <span className="text-xs font-medium ml-3 text-primary">
+                <div className="flex items-center gap-2 border border-neutral-800 bg-neutral-900/5 rounded-xl p-3 text-muted-foreground text-xs">
+                  <CalendarClock size={14} className="text-muted-foreground/80" />
+                  <span>Last updated:</span>
+                  <span className="text-primary/95 ml-1">
                     {format(currentTask.updatedAt, "d MMMM, yyyy")}
                   </span>
-                </p>
+                </div>
               )}
             </div>
 
@@ -567,14 +568,14 @@ export const TaskDetailSheet = ({
 
                 <TabsContent value="description" className="pt-4">
                   {currentTask.description ? (
-                    <div className="p-5 rounded-2xl bg-accent/30 border border-border backdrop-blur-sm shadow-inner group">
+                    <div className="p-5 rounded-xl bg-neutral-950/10 border border-neutral-800 group">
                       <p className="text-foreground/90 text-sm leading-relaxed whitespace-pre-wrap min-h-[100px] selection:bg-primary/20">
                         {currentTask.description}
                       </p>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center justify-center p-8 border-2 border-dashed border-border rounded-2xl bg-accent/10 ">
-                      <div className="p-3 rounded-full bg-muted/50 text-muted-foreground  transition-all duration-300 shadow-lg">
+                    <div className="flex flex-col items-center justify-center p-8 border border-dashed border-neutral-800 rounded-xl bg-neutral-950/5">
+                      <div className="p-3 rounded-full bg-neutral-900 text-muted-foreground transition-all duration-300">
                         <FileText size={24} />
                       </div>
                       <p className="mt-4 text-sm font-medium text-foreground/70">
@@ -597,7 +598,7 @@ export const TaskDetailSheet = ({
                       </div>
                     )}
                     {currentTask.attachments &&
-                    currentTask.attachments.length > 0 ? (
+                      currentTask.attachments.length > 0 ? (
                       <div className="grid grid-cols-1 gap-2 w-full">
                         {currentTask.attachments.map((file, idx) => (
                           <div
@@ -623,36 +624,62 @@ export const TaskDetailSheet = ({
                               >
                                 <ExternalLink size={14} />
                               </Button>
-                              <Button
-                                variant="ghost"
-                                size="icon"
-                                className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                                onClick={() => handleRemoveAttachment(file.url)}
-                                disabled={project?.ownerAccountType === "free"}
-                              >
-                                <Trash2 size={14} />
-                              </Button>
+                              <TooltipProvider delayDuration={100}>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <div className="inline-block">
+                                      <Button
+                                        variant="ghost"
+                                        size="icon"
+                                        className="h-8 w-8 text-muted-foreground hover:text-destructive"
+                                        onClick={() => handleRemoveAttachment(file.url)}
+                                        disabled={project?.ownerAccountType === "free"}
+                                      >
+                                        <Trash2 size={14} />
+                                      </Button>
+                                    </div>
+                                  </TooltipTrigger>
+                                  {project?.ownerAccountType === "free" && (
+                                    <TooltipContent className="bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200 text-xs p-2 max-w-[200px] text-center">
+                                      Ask project owner to upgrade to unlock cloud storage.
+                                    </TooltipContent>
+                                  )}
+                                </Tooltip>
+                              </TooltipProvider>
                             </div>
                           </div>
                         ))}
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-9 px-3 text-xs bg-muted/30 border-border text-muted-foreground hover:text-foreground rounded-xl gap-2 mt-2 border-dashed"
-                          disabled={isUploading || project?.ownerAccountType === "free"}
-                          onClick={() =>
-                            document
-                              .getElementById("detail-file-upload")
-                              ?.click()
-                          }
-                        >
-                          {isUploading ? (
-                            <Loader2 className="w-3 h-3 animate-spin" />
-                          ) : (
-                            <Plus size={14} />
-                          )}
-                          Add More
-                        </Button>
+                        <TooltipProvider delayDuration={100}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="inline-block w-full mt-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-9 w-full px-3 text-xs bg-muted/30 border-border text-muted-foreground hover:text-foreground rounded-xl gap-2 border-dashed"
+                                  disabled={isUploading || project?.ownerAccountType === "free"}
+                                  onClick={() =>
+                                    document
+                                      .getElementById("detail-file-upload")
+                                      ?.click()
+                                  }
+                                >
+                                  {isUploading ? (
+                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                  ) : (
+                                    <Plus size={14} />
+                                  )}
+                                  Add More
+                                </Button>
+                              </div>
+                            </TooltipTrigger>
+                            {project?.ownerAccountType === "free" && (
+                              <TooltipContent className="bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200 text-xs p-2 max-w-[200px] text-center">
+                                Ask project owner to upgrade to unlock cloud storage.
+                              </TooltipContent>
+                            )}
+                          </Tooltip>
+                        </TooltipProvider>
                       </div>
                     ) : (
                       <div className="text-center space-y-3 py-4 w-full">
@@ -663,24 +690,37 @@ export const TaskDetailSheet = ({
                         <p className="text-muted-foreground text-xs font-medium">
                           No attachments yet
                         </p>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-9 px-4 text-xs bg-muted/30 border-border text-muted-foreground hover:text-foreground rounded-xl gap-2 mt-2"
-                          disabled={isUploading || project?.ownerAccountType === "free"}
-                          onClick={() =>
-                            document
-                              .getElementById("detail-file-upload")
-                              ?.click()
-                          }
-                        >
-                          {isUploading ? (
-                            <Loader2 className="w-3 h-3 animate-spin" />
-                          ) : (
-                            <Plus size={14} />
-                          )}
-                          Add Attachment
-                        </Button>
+                        <TooltipProvider delayDuration={100}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <div className="inline-block mt-2">
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  className="h-9 px-4 text-xs bg-muted/30 border-border text-muted-foreground hover:text-foreground rounded-xl gap-2"
+                                  disabled={isUploading || project?.ownerAccountType === "free"}
+                                  onClick={() =>
+                                    document
+                                      .getElementById("detail-file-upload")
+                                      ?.click()
+                                  }
+                                >
+                                  {isUploading ? (
+                                    <Loader2 className="w-3 h-3 animate-spin" />
+                                  ) : (
+                                    <Plus size={14} />
+                                  )}
+                                  Add Attachment
+                                </Button>
+                              </div>
+                            </TooltipTrigger>
+                            {project?.ownerAccountType === "free" && (
+                              <TooltipContent className="bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200 text-xs p-2 max-w-[200px] text-center">
+                                Ask project owner to upgrade to unlock cloud storage.
+                              </TooltipContent>
+                            )}
+                          </Tooltip>
+                        </TooltipProvider>
                       </div>
                     )}
                     <input
@@ -695,7 +735,7 @@ export const TaskDetailSheet = ({
                 <TabsContent value="comments" className="pt-2">
                   <div className="pt-2">
                     {comments && comments.length > 0 ? (
-                      <div className="border border-border rounded-lg overflow-hidden divide-y divide-border bg-accent/5 backdrop-blur-sm max-h-[350px] overflow-y-auto custom-scrollbar">
+                      <div className="border border-border rounded-lg overflow-hidden divide-y divide-border bg-accent/5 backdrop-blur-sm max-h-[240px] overflow-y-auto custom-scrollbar">
                         {comments.map((comment) => (
                           <div
                             key={comment._id}
@@ -707,7 +747,7 @@ export const TaskDetailSheet = ({
                                 {comment.userName.charAt(0)}
                               </AvatarFallback>
                             </Avatar>
- 
+
                             <div className="flex-1 min-w-0">
                               <div className="flex items-center justify-between mb-1">
                                 <span className="text-xs font-semibold text-foreground capitalize truncate font-inter">
@@ -746,7 +786,7 @@ export const TaskDetailSheet = ({
           </div>
 
           {activeTab === "comments" && (
-            <div className="px-4 py-5 border-t border-border/50 bg-background/95 backdrop-blur-md sticky bottom-0 z-20">
+            <div className="px-4 py-4 border-t border-border bg-card  sticky bottom-0 z-20">
               <div className="relative">
                 <div className="relative flex items-center bg-accent/40 border border-border rounded-xl overflow-hidden focus-within:border-primary/20 transition-all duration-300">
                   <Input

@@ -1,68 +1,79 @@
 "use client";
 
-import { useEffect, useState } from "react";
-import { useParams } from "next/navigation";
-import { Id } from "../../../../../../../convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
-import { api } from "../../../../../../../convex/_generated/api";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import {
-  ChevronLeft,
-  Home,
-  CalendarIcon,
-  Activity,
-  AudioLines,
-  ExternalLink,
-  Clock3,
-  FlagTriangleRight,
-  ClockFading,
-  Users,
-  Timer,
-  CheckCircle2,
-  XCircle,
-  History,
-  CalendarRange,
-  PlusCircle,
-  ChartBar,
-  Table,
-  Settings2,
-  Plus,
-} from "lucide-react";
-import { cn } from "@/lib/utils";
 import { format } from "date-fns";
+import {
+  Activity,
+  AlertCircle,
+  AudioLines,
+  CalendarIcon,
+  CalendarRange,
+  ChartBar,
+  CheckCircle2,
+  ChevronLeft,
+  Clock3,
+  ClockFading,
+  ExternalLink,
+  FlagTriangleRight,
+  History,
+  Home,
+  Lock,
+  Plus,
+  PlusCircle,
+  Settings2,
+  Sparkles,
+  Table,
+  Timer,
+  Users,
+  XCircle,
+} from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { useParams } from "next/navigation";
+import { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
+import {
+  Card,
+  CardAction,
+  CardContent,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { toast } from "sonner";
-import {
-  Card,
-  CardAction,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  CardDescription,
-  CardFooter,
-} from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
-import Image from "next/image";
-import { Skeleton } from "@/components/ui/skeleton";
-import { ActivityOverviewCard } from "@/modules/workspace/workspace-modules/ActivityOverviewCard";
-import { TaskStatusCard } from "@/modules/workspace/workspace-modules/TaskStatusCard";
-import { SchedulerCard } from "@/modules/workspace/workspace-modules/SchedulerCard";
-import { SprintBarChart } from "@/modules/workspace/workspace-modules/SprintBarChart";
-import { UserWorkTable } from "@/modules/workspace/workspace-modules/UserWorkTable";
-import { SetTargetDateDialog } from "@/modules/workspace/SetTargetDateDialog";
 import { Separator } from "@/components/ui/separator";
-import { TeamContributionRadarCard } from "@/modules/workspace/workspace-modules/TeamContributionRadarCard";
-import { Lock, Sparkles } from "lucide-react";
+import { Skeleton } from "@/components/ui/skeleton";
+import { cn } from "@/lib/utils";
+import { SetTargetDateDialog } from "@/modules/workspace/SetTargetDateDialog";
+import { ActivityOverviewCard } from "@/modules/workspace/workspace-modules/ActivityOverviewCard";
 import { EnvironmentalSeverityHeatmap } from "@/modules/workspace/workspace-modules/EnvironmentalSeverityHeatmap";
-import { WeeklyVelocityChart } from "@/modules/workspace/workspace-modules/WeeklyVelocityChart";
 import { MemberWorkloadCard } from "@/modules/workspace/workspace-modules/MemberWorkloadCard";
 import { ProjectConfigTab } from "@/modules/workspace/workspace-modules/ProjectConfigTab";
+import { SchedulerCard } from "@/modules/workspace/workspace-modules/SchedulerCard";
+import { SprintBarChart } from "@/modules/workspace/workspace-modules/SprintBarChart";
+import { TaskStatusCard } from "@/modules/workspace/workspace-modules/TaskStatusCard";
+import { TeamContributionRadarCard } from "@/modules/workspace/workspace-modules/TeamContributionRadarCard";
+import { UserWorkTable } from "@/modules/workspace/workspace-modules/UserWorkTable";
+import { WeeklyEngagementChartCard } from "@/modules/workspace/workspace-modules/WeeklyEngagementChartCard";
+import { WeeklyVelocityChart } from "@/modules/workspace/workspace-modules/WeeklyVelocityChart";
+import { api } from "../../../../../../../convex/_generated/api";
+import type { Id } from "../../../../../../../convex/_generated/dataModel";
 
 const ProjectWorkspace = () => {
   const params = useParams();
@@ -109,18 +120,6 @@ const ProjectWorkspace = () => {
     projectId ? { projectId: projectId as Id<"projects"> } : "skip",
   );
 
-  // const members = useQuery(
-  //   api.project.getProjectMembers,
-  //   projectId ? { projectId: projectId as Id<"projects"> } : "skip",
-  // );
-  // const events = useQuery(
-  //   api.calendar.getEvents,
-  //   projectId ? { projectId: projectId as Id<"projects"> } : "skip",
-  // );
-  // const scheduler = useQuery(
-  //   api.workspace.getProjectScheduler,
-  //   projectId ? { projectId: projectId as Id<"projects"> } : "skip",
-  // );
   const sprints = useQuery(
     api.sprint.getSprintsByProject,
     projectId ? { projectId: projectId as Id<"projects"> } : "skip",
@@ -196,6 +195,7 @@ const ProjectWorkspace = () => {
 
   return (
     <div className="p-6">
+      {/* max-w-420 mx-auto */}
       <header className="flex items-start justify-between flex-none">
         <div className="space-y-2">
           <div className="flex items-center gap-2 mb-2"></div>
@@ -234,7 +234,7 @@ const ProjectWorkspace = () => {
       {/* TOP STATS CARDS */}
       <section className="grid grid-cols-3 gap-6 mt-10">
         {/* Project Deadline Card */}
-        <Card className="p-3! overflow-hidden shadow-sm dark:bg-accent/20 bg-card dark:border-accent border-accent/50">
+        <Card className="p-3! overflow-hidden shadow-sm dark:bg-sidebar bg-card dark:border-accent border-accent/50">
           <CardHeader className="px-0 flex flex-row items-center justify-between">
             <CardTitle className="text-sm flex items-center gap-2">
               <AudioLines className="w-5 h-5!" /> Track Your Project
@@ -249,8 +249,8 @@ const ProjectWorkspace = () => {
             </Button>
           </CardHeader>
           <CardContent>
-            <div className="flex justify-between items-end my-3">
-              <p className="text-[10px] tracking-wide text-muted-foreground ">
+            <div className="flex justify-between items-end my-2.5">
+              <p className="text-sm tracking-wide text-muted-foreground ">
                 Days Remaining
               </p>
               <p className="text-base font-inter tracking-tight">
@@ -262,45 +262,104 @@ const ProjectWorkspace = () => {
               className="h-4.5! bg-blue-100/50 dark:bg-accent [&>div]:bg-blue-500 transition-all duration-500"
             />
           </CardContent>
-          <CardFooter className="flex flex-col items-start gap-2 border-t pt-4">
-            <div className="flex flex-col items-start gap-3 text-xs text-muted-foreground w-full">
-              <div className="flex items-center gap-1.5">
-                <Clock3 className="w-3 h-3! " /> Created :
-                <span className="font-semibold ">
-                  {createdAt ? format(createdAt, "PPP") : "---"}
-                </span>
-              </div>
-
-              <div className="flex items-center justify-between w-full">
-                <div className="flex items-center gap-1.5">
-                  <FlagTriangleRight className="w-3 h-3! -ml-1" /> Deadline :
-                  <span className="font-semibold ">
-                    {deadline ? format(deadline, "PPP") : "Not Set"}
+          <CardFooter className="flex flex-col items-start gap-3 border-t pt-5! px-2!">
+            <div className="flex flex-col gap-4 w-full">
+              {/* Duration Dates Flex Container */}
+              <div className="flex items-center justify-around w-full gap-4 py-1 text-xs text-muted-foreground border bg-muted rounded-md p-2">
+                {/* Created Date */}
+                <div className="flex flex-col items-center gap-0.5 text-center">
+                  <span className="flex items-center gap-1 text-xs  text-muted-foreground ">
+                    <Clock3 className="w-3 h-3 text-muted-foreground" /> Created
+                  </span>
+                  <span className="font-medium text-foreground">
+                    {createdAt ? format(createdAt, "PPP") : "---"}
                   </span>
                 </div>
 
+                {/* Vertical Divider */}
+                <div className="h-6 w-px bg-accent" />
+
+                {/* Deadline Date */}
+                <div className="flex flex-col items-center gap-0.5 text-center">
+                  <span className="flex items-center gap-1 text-[10px]  font-medium text-muted-foreground ">
+                    <FlagTriangleRight className="w-3 h-3 text-muted-foreground" />{" "}
+                    Deadline
+                  </span>
+                  <span className="font-medium text-foreground">
+                    {deadline ? format(deadline, "PPP") : "Not Set"}
+                  </span>
+                </div>
+              </div>
+
+              {/* Action Buttons */}
+              <div className="flex w-full items-center justify-between px-2">
+                {/* Deadline button */}
                 <Button
                   size="sm"
-                  variant={"outline"}
+                  variant="outline"
                   onClick={() => setIsDeadlineDialogOpen(true)}
                   disabled={!isOwner}
                   className={cn(
-                    "text-[11px] dark:bg-muted! bg-muted/20",
-                    isOwner ? "cursor-pointer" : "cursor-not-allowed opacity-50"
+                    "text-[10px]",
+                    isOwner
+                      ? "cursor-pointer"
+                      : "cursor-not-allowed opacity-50",
                   )}
                 >
                   Change <ClockFading className="w-3 h-3!" />
                 </Button>
-                {projectId && (
-                  <SetTargetDateDialog
-                    isOpen={isDeadlineDialogOpen}
-                    onOpenChange={setIsDeadlineDialogOpen}
-                    projectId={projectId as Id<"projects">}
-                    projectName={project?.projectName}
-                    projectCreatedAt={project.createdAt}
-                  />
-                )}
+
+                {/* Alerts Dropdown Button */}
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      disabled={!isOwner}
+                      className={cn(
+                        "text-[10px]",
+                        isOwner
+                          ? "cursor-pointer"
+                          : "cursor-not-allowed opacity-50",
+                      )}
+                    >
+                      Set Alerts <AlertCircle className="w-3 h-3!" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="w-48">
+                    <DropdownMenuLabel className="text-[11px] font-semibold text-muted-foreground">
+                      Project Alerts
+                    </DropdownMenuLabel>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="cursor-pointer text-xs">
+                      <span>25% Duration Reached</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer text-xs">
+                      <span>50% Duration Reached</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer text-xs">
+                      <span>75% Duration Reached</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuItem className="cursor-pointer text-xs">
+                      <span>90% Duration Reached</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    <DropdownMenuItem className="cursor-pointer text-xs text-primary focus:text-primary">
+                      <span>+ Custom Alert...</span>
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
+
+              {projectId && (
+                <SetTargetDateDialog
+                  isOpen={isDeadlineDialogOpen}
+                  onOpenChange={setIsDeadlineDialogOpen}
+                  projectId={projectId as Id<"projects">}
+                  projectName={project?.projectName}
+                  projectCreatedAt={project.createdAt}
+                />
+              )}
             </div>
           </CardFooter>
         </Card>
@@ -370,7 +429,7 @@ const ProjectWorkspace = () => {
               <div className="flex flex-col items-center justify-center py-16 ">
                 <div className="flex flex-col items-start gap-1.5 max-w-sm text-sm">
                   <Image
-                    src="/pat104.svg"
+                    src="/pat106.svg"
                     alt="locked features"
                     width={120}
                     height={120}
@@ -398,7 +457,7 @@ const ProjectWorkspace = () => {
                 </div>
               </div>
             ) : (
-              <div className="grid grid-cols-2 gap-6 px-2">
+              <div className="grid grid-cols-2 gap-x-10 gap-y-6 px-5">
                 <TeamContributionRadarCard
                   projectId={projectId as Id<"projects">}
                   data={cachedData?.contributions}
@@ -420,6 +479,11 @@ const ProjectWorkspace = () => {
                 <MemberWorkloadCard
                   projectId={projectId as Id<"projects">}
                   data={cachedData?.workload}
+                />
+
+                <WeeklyEngagementChartCard
+                  projectId={projectId as Id<"projects">}
+                  data={cachedData?.weeklyEngagement}
                 />
               </div>
             )}

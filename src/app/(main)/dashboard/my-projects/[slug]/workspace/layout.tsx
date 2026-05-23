@@ -1,21 +1,20 @@
 "use client";
 
-import { useParams, useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
-import { api } from "../../../../../../../convex/_generated/api";
-import { Id } from "../../../../../../../convex/_generated/dataModel";
-import { FloatingKaya } from "@/modules/ai/FloatingKaya";
-import { AiAssistantSheet } from "@/modules/ai/AiAssistantSheet";
-import { ShieldAlert, ArrowLeft, Loader2 } from "lucide-react";
-import { Button } from "@/components/ui/button";
+import { ArrowLeft, Loader2, ShieldAlert } from "lucide-react";
 import Image from "next/image";
+import { useParams, useRouter } from "next/navigation";
+import { Button } from "@/components/ui/button";
+import { AiAssistantSheet } from "@/modules/ai/AiAssistantSheet";
+import { FloatingKaya } from "@/modules/ai/FloatingKaya";
+import ProjectSidebar from "@/modules/workspace/Projectsidebar";
+import { api } from "../../../../../../../convex/_generated/api";
+import type { Id } from "../../../../../../../convex/_generated/dataModel";
 
 export default function WorkspaceLayout({
   children,
-  sidebar,
 }: {
   children: React.ReactNode;
-  sidebar: React.ReactNode;
 }) {
   const params = useParams();
   const router = useRouter();
@@ -109,7 +108,7 @@ export default function WorkspaceLayout({
   // 4. Authorized Access State
   return (
     <div className="">
-      {sidebar} {/* This will now receive workspace @sidebar */}
+      <ProjectSidebar />
       <main className="flex-1">{children}</main>
       <FloatingKaya />
       <AiAssistantSheet />

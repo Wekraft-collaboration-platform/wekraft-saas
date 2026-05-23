@@ -46,6 +46,14 @@ export const createIssue = mutation({
         }),
       ),
     ),
+    attachments: v.optional(
+      v.array(
+        v.object({
+          name: v.string(),
+          url: v.string(),
+        })
+      )
+    ),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -83,37 +91,8 @@ export const createIssue = mutation({
         ),
       );
 
-      // Notify newly assigned users
-      const project = await ctx.db.get(args.projectId);
-      if (project) {
-        await ctx.runMutation(internal.notifications.notifyIssueAssigned, {
-          actorId: user._id,
-          actorName: user.name ?? "Someone",
-          actorAvatar: user.avatarUrl,
-          assigneeIds: assignees.map((a) => a.userId),
-          projectId: args.projectId,
-          projectName: project.projectName,
-          issueId: issueId as string,
-          issueTitle: args.title,
-        });
-      }
     }
 
-    // Notify power users if this is a critical issue
-    if (args.severity === "critical") {
-      const project = await ctx.db.get(args.projectId);
-      if (project) {
-        await ctx.runMutation(internal.notifications.notifyCriticalIssue, {
-          actorId: user._id,
-          actorName: user.name ?? "Someone",
-          actorAvatar: user.avatarUrl,
-          projectId: args.projectId,
-          projectName: project.projectName,
-          issueId: issueId as string,
-          issueTitle: args.title,
-        });
-      }
-    }
 
     return issueId;
   },
@@ -349,6 +328,14 @@ export const updateIssue = mutation({
         }),
       ),
     ),
+    attachments: v.optional(
+      v.array(
+        v.object({
+          name: v.string(),
+          url: v.string(),
+        })
+      )
+    ),
   },
   handler: async (ctx, args) => {
     const { issueId, assignees, ...updates } = args;
@@ -573,4 +560,49 @@ export const deleteIssue = mutation({
     return args.issueId;
   },
 });
+
+export const addIssueAttachment = mutation({
+  args: {
+    issueId: v.id("issues"),
+    name: v.string(),
+    url: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const issue = await ctx.db.get(args.issueId);
+    if (!issue) throw new Error("Issue not found");
+
+    const currentAttachments = issue.attachments ?? [];
+
+    await ctx.db.patch(args.issueId, {
+      attachments: [...currentAttachments, { name: args.name, url: args.url }],
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+export const removeIssueAttachment = mutation({
+  args: {
+    issueId: v.id("issues"),
+    url: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const issue = await ctx.db.get(args.issueId);
+    if (!issue) throw new Error("Issue not found");
+
+    const currentAttachments = issue.attachments ?? [];
+    const newAttachments = currentAttachments.filter((a) => a.url !== args.url);
+
+    await ctx.db.patch(args.issueId, {
+      attachments: newAttachments,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
 

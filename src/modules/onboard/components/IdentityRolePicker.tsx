@@ -58,24 +58,24 @@ export function IdentityRolePicker({
         onValidationError={onValidationError}
       />
 
-      <div className="">
-        <Label htmlFor="role-search" className="text-xs text-white mb-1.5">
+      <div className="space-y-1.5 font-sans">
+        <Label htmlFor="role-search" className="text-xs text-zinc-400 font-medium">
           Occupation
         </Label>
 
-        <div className="border  rounded-xl overflow-hidden">
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-white" />
+        <div className="rounded-xl overflow-hidden border border-zinc-800 bg-zinc-950">
+          <div className="relative border-b border-zinc-800">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-3.5 text-zinc-500" />
             <Input
               id="role-search"
               placeholder="Search role..."
-              className="pl-9 bg-neutral-800! h-10 rounded-none border-none   text-white placeholder:text-neutral-300"
+              className="pl-9 bg-zinc-900/30 h-9 rounded-none border-none text-xs text-white placeholder:text-zinc-500 focus-visible:ring-0 focus-visible:ring-offset-0"
               value={roleSearch}
               onChange={(e) => setRoleSearch(e.target.value)}
             />
           </div>
-          <ScrollArea className="h-[140px] px-5 py-3 bg-white/5  scrollbar-hide">
-            <div className="space-y-2">
+          <ScrollArea className="h-[140px] px-3 py-3 bg-zinc-900/10 scrollbar-hide">
+            <div className="space-y-1.5">
               {filteredRoles.length > 0 ? (
                 filteredRoles.map((role, idx) => {
                   const isSelected = role === selectedRole;
@@ -86,21 +86,21 @@ export function IdentityRolePicker({
                       type="button"
                       onClick={() => onRoleSelect(role)}
                       className={cn(
-                        "w-full flex items-center justify-between rounded-lg border px-3 py-2.5 text-left text-xs tracking-wide font-medium capitalize transition-all",
+                        "w-full flex items-center justify-between rounded-lg border px-3 py-2 text-left text-xs tracking-wide font-medium capitalize transition-all",
                         isSelected
-                          ? "bg-accent/40 border-white/30 text-white"
-                          : "bg-accent/20!  text-neutral-300 border-white/5",
+                          ? "bg-zinc-800/80 border-zinc-700 text-white"
+                          : "bg-zinc-900/20 text-zinc-400 border-zinc-900/40 hover:bg-zinc-900/50 hover:text-zinc-200 hover:border-zinc-800",
                       )}
                     >
                       <span>{role}</span>
                       {isSelected && (
-                        <Check className="size-4 text-white p-1 bg-blue-500 rounded-full" />
+                        <Check className="size-4 text-white p-0.5 bg-[#5e6ad2] rounded-full" />
                       )}
                     </button>
                   );
                 })
               ) : (
-                <div className="flex h-28 items-center justify-center rounded-lg border border-dashed border-white/10 text-sm text-white/60">
+                <div className="flex h-24 items-center justify-center rounded-lg border border-dashed border-zinc-800 text-xs text-zinc-500">
                   No roles found for "{roleSearch}"
                 </div>
               )}

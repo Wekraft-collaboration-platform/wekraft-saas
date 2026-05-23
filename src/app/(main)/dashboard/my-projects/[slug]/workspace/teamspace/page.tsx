@@ -1,12 +1,12 @@
 "use client";
 
-import { useParams } from "next/navigation";
 import { useQuery } from "convex/react";
-import { api } from "../../../../../../../../convex/_generated/api";
-import { TeamspaceView } from "@/modules/workspace/teamspace/TeamspaceView";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useSidebar } from "@/components/ui/sidebar";
+import { useParams } from "next/navigation";
 import { Suspense, useEffect, useRef } from "react";
+import { useSidebar } from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { TeamspaceView } from "@/modules/workspace/teamspace/TeamspaceView";
+import { api } from "../../../../../../../../convex/_generated/api";
 
 export default function TeamspacePage() {
   const { setOpen: setSidebarOpen } = useSidebar();
@@ -74,11 +74,13 @@ export default function TeamspacePage() {
   }
 
   return (
-    <Suspense fallback={
-      <div className="flex h-[calc(100vh-72px)] items-center justify-center">
-        <Skeleton className="h-8 w-8 rounded-full" />
-      </div>
-    }>
+    <Suspense
+      fallback={
+        <div className="flex h-[calc(100vh-72px)] items-center justify-center">
+          <Skeleton className="h-8 w-8 rounded-full" />
+        </div>
+      }
+    >
       <TeamspaceView projectSlug={slug} projectId={project._id} />
     </Suspense>
   );

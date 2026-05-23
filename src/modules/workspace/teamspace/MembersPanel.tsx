@@ -46,8 +46,8 @@ export function MembersPanel({ projectId, onlineIds, currentUserId, currentUserN
     <div className="flex flex-col h-full w-full">
       {/* Header */}
       <div className="flex items-center gap-2 px-3 h-14 border-b border-border/80 shrink-0">
-        <Users className="h-3.5 w-3.5 text-muted-foreground" />
-        <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-widest">
+        <Users className="h-4 w-4" />
+        <h3 className="text-base ">
           Members
         </h3>
       </div>
@@ -72,11 +72,11 @@ export function MembersPanel({ projectId, onlineIds, currentUserId, currentUserN
                 </p>
                 <div className="flex flex-col gap-0.5">
                   {online.map((m) => (
-                    <MemberRow 
-                      key={m.userId} 
-                      member={m} 
-                      online 
-                      isCurrentUser={m.clerkUserId === currentUserId} 
+                    <MemberRow
+                      key={m.userId}
+                      member={m}
+                      online
+                      isCurrentUser={m.clerkUserId === currentUserId}
                     />
                   ))}
                 </div>
@@ -91,11 +91,11 @@ export function MembersPanel({ projectId, onlineIds, currentUserId, currentUserN
                 </p>
                 <div className="flex flex-col gap-0.5">
                   {offline.map((m) => (
-                    <MemberRow 
-                      key={m.userId} 
-                      member={m} 
-                      online={false} 
-                      isCurrentUser={m.clerkUserId === currentUserId} 
+                    <MemberRow
+                      key={m.userId}
+                      member={m}
+                      online={false}
+                      isCurrentUser={m.clerkUserId === currentUserId}
                     />
                   ))}
                 </div>

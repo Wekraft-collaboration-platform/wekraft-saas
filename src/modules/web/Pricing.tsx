@@ -25,7 +25,9 @@ import { cn } from "@/lib/utils";
 import { useConvexAuth, useAction, useQuery } from "convex/react";
 import { toast } from "sonner";
 import { api } from "../../../convex/_generated/api";
-import { useRazorpay } from "@/modules/razorpay";
+import { useRazorpay } from "@/modules/payments/hooks/useRazorpay";
+import { useStripeCheckout } from "@/modules/payments/hooks/useStripeCheckout";
+import Script from "next/script";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -49,6 +51,7 @@ interface Plan {
   highlighted: boolean;
   icon: React.ReactNode;
   features: FeatureItem[];
+  priceUSD: number;
 }
 
 interface FeatureRow {
@@ -68,28 +71,29 @@ interface FeatureCat {
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
 const freeFeatures: FeatureItem[] = [
-  { label: "2 project creation",  icon: <FolderGit2 className="h-3.5 w-3.5" /> },
-  { label: "1 joining",   icon: <UserPlus className="h-3.5 w-3.5" /> },
+  { label: "2 Project Creation",  icon: <FolderGit2 className="h-3.5 w-3.5" /> },
+  { label: "2 Project Joining",   icon: <GitBranch className="h-3.5 w-3.5" /> },
+  { label: "Up to 3 team members", icon: <UserPlus className="h-3.5 w-3.5" /> },
 ];
 
 const plusFeatures: FeatureItem[] = [
-  { label: "5 project creation",          icon: <FolderGit2 className="h-3.5 w-3.5" /> },
-  { label: "5 Project joining",           icon: <UserPlus className="h-3.5 w-3.5" /> },
-  { label: "Media Uploads",  icon: <Cpu className="h-3.5 w-3.5" /> },
-  { label: "Advance Graphs/ Analysis",                icon: <BarChart3 className="h-3.5 w-3.5" /> },
-  { label: "Up to 6 team members",      icon: <Users className="h-3.5 w-3.5" /> },
-  { label: "Sprints Creation",                 icon: <Map className="h-3.5 w-3.5" /> },
-  { label: "Basic support",             icon: <HeadphonesIcon className="h-3.5 w-3.5" /> },
+  { label: "10 Project Creation",          icon: <FolderGit2 className="h-3.5 w-3.5" /> },
+  { label: "10 Project Joining",           icon: <GitBranch className="h-3.5 w-3.5" /> },
+  { label: "Up to 6 team members",         icon: <UserPlus className="h-3.5 w-3.5" /> },
+  { label: "Full Team & Community Insights",icon: <BarChart3 className="h-3.5 w-3.5" /> },
+  { label: "Basic Cloud Storage",          icon: <Cpu className="h-3.5 w-3.5" /> },
+
+  { label: "Project Heatmaps",             icon: <Map className="h-3.5 w-3.5" /> },
 ];
 
 const proFeatures: FeatureItem[] = [
-  { label: "10 Project Creation",          icon: <FolderGit2 className="h-3.5 w-3.5" /> },
-  { label: "Unlimited Project Joining", icon: <UserPlus className="h-3.5 w-3.5" /> },
-  { label: "Kaya - PM agent",        icon: <Bot className="h-3.5 w-3.5" /> },
-  { label: "Schedule project reports",       icon: <CalendarCheck className="h-3.5 w-3.5" /> },
-  { label: "15 team members",              icon: <Users className="h-3.5 w-3.5" /> },
-  { label: "Higher media upload limits",  icon: <Cpu className="h-3.5 w-3.5" /> },
-  { label: "Priority support",  icon: <Star className="h-3.5 w-3.5" /> },
+  { label: "20 Project Creation",          icon: <FolderGit2 className="h-3.5 w-3.5" /> },
+  { label: "20 Project Joining",           icon: <GitBranch className="h-3.5 w-3.5" /> },
+  { label: "Up to 15 team members",        icon: <UserPlus className="h-3.5 w-3.5" /> },
+  { label: "Kaya AI & PM Agent",           icon: <Bot className="h-3.5 w-3.5" /> },
+  { label: "Automated Reporting",          icon: <CalendarCheck className="h-3.5 w-3.5" /> },
+  { label: "Higher Cloud Storage",         icon: <Cpu className="h-3.5 w-3.5" /> },
+  { label: "Priority Support",             icon: <Star className="h-3.5 w-3.5" /> },
 ];
 
 const plans: Plan[] = [
@@ -104,12 +108,13 @@ const plans: Plan[] = [
     highlighted: false,
     icon: <GitBranch className="h-4 w-4" />,
     features: freeFeatures,
+    priceUSD: 0,
   },
   {
     key: "plus",
     name: "Plus",
     badge: "40% OFF",
-    priceLabel: "$6",
+    priceLabel: "$7",
     oldPrice: "$10",
     priceSub: "Serious team building",
     description: "Serious team building",
@@ -118,12 +123,13 @@ const plans: Plan[] = [
     highlighted: true,
     icon: <Flame className="h-4 w-4" />,
     features: plusFeatures,
+    priceUSD: 7,
   },
   {
     key: "pro",
     name: "Pro",
-    badge: "25% OFF",
-    priceLabel: "$15",
+    badge: "20% OFF",
+    priceLabel: "$16",
     oldPrice: "$20",
     priceSub: "Growing startup needs intelligence",
     description: "Growing startup needs intelligence.",
@@ -132,32 +138,47 @@ const plans: Plan[] = [
     highlighted: false,
     icon: <Shield className="h-4 w-4" />,
     features: proFeatures,
+    priceUSD: 16,
   },
 ];
 
 const featureCategories: FeatureCat[] = [
   {
     title: "Usage & Limits",
-    icon: <Users className="h-4 w-4" />,
+    icon: <FolderGit2 className="h-4 w-4" />,
     rows: [
-      { label: "Project Creation", icon: <FolderGit2 className="h-3.5 w-3.5" />, free: "2", plus: "5", pro: "10" },
-      { label: "Team Members per Project", icon: <UserPlus className="h-3.5 w-3.5" />, free: "1", plus: "6", pro: "15" },
+      { label: "Project Creation", icon: <FolderGit2 className="h-3.5 w-3.5" />, free: "2", plus: "10", pro: "20" },
+      { label: "Project Joining", icon: <GitBranch className="h-3.5 w-3.5" />, free: "2", plus: "10", pro: "20" },
+      { label: "Team Members per Project", icon: <UserPlus className="h-3.5 w-3.5" />, free: "3", plus: "6", pro: "15" },
+      { label: "Cloud Storage", icon: <Cpu className="h-3.5 w-3.5" />, free: "None", plus: "Basic", pro: "Higher" },
     ],
   },
   {
-    title: "Features",
+    title: "Workspace Features & Insights",
+    icon: <BarChart3 className="h-4 w-4" />,
+    rows: [
+      { label: "User Profiles", icon: <Users className="h-3.5 w-3.5" />, free: "Limited", plus: "Full", pro: "Full" },
+
+      { label: "Team Insights", icon: <BarChart3 className="h-3.5 w-3.5" />, free: "Limited", plus: "Full", pro: "Full" },
+      { label: "Community Insights", icon: <Star className="h-3.5 w-3.5" />, free: "Limited", plus: "Full", pro: "Full" },
+      { label: "Project Heatmap", icon: <Map className="h-3.5 w-3.5" />, free: "Limited", plus: "Full", pro: "Full" },
+    ],
+  },
+  {
+    title: "AI & Automation",
     icon: <Sparkles className="h-4 w-4" />,
     rows: [
-      { label: "File Uploads", icon: <Cpu className="h-3.5 w-3.5" />, free: "Limited", plus: "Standard", pro: "High" },
-      { label: "AI Features", icon: <Bot className="h-3.5 w-3.5" />, free: "—", plus: "Basic", pro: "Advanced (Kaya)" },
-      { label: "Sprints & Kanban", icon: <Wrench className="h-3.5 w-3.5" />, free: "Basic", plus: "Full", pro: "Full + Automation" },
+      { label: "PM Agent", icon: <Bot className="h-3.5 w-3.5" />, free: "None", plus: "None", pro: "Full" },
+      { label: "Kaya AI", icon: <Sparkles className="h-3.5 w-3.5" />, free: "None", plus: "None", pro: "Full" },
+      { label: "Automated Reporting", icon: <CalendarCheck className="h-3.5 w-3.5" />, free: false, plus: false, pro: true },
+      { label: "Experimental Features", icon: <Wrench className="h-3.5 w-3.5" />, free: false, plus: false, pro: true },
     ],
   },
   {
     title: "Support",
     icon: <Lock className="h-4 w-4" />,
     rows: [
-      { label: "Support", icon: <HeadphonesIcon className="h-3.5 w-3.5" />, free: "Community", plus: "Standard", pro: "Priority" },
+      { label: "Dedicated Support", icon: <HeadphonesIcon className="h-3.5 w-3.5" />, free: "Basic", plus: "Basic", pro: "Priority" },
     ],
   },
 ];
@@ -180,21 +201,32 @@ const FeatureValue = ({ value }: { value: string | boolean }) => {
   );
 };
 
+
+
 const Pricing = () => {
   const { isAuthenticated } = useConvexAuth();
   const user = useQuery(api.user.getCurrentUser);
-  const createOrder = useAction((api as any).payments.createPaymentOrder);
-  const { initiatePayment, isLoading, isScriptLoaded } = useRazorpay({
-    onSuccess: () => {
-      toast.success("Payment successful! Your plan will be updated shortly.");
-    },
-    onError: (error) => {
-      toast.error(error.message || "Failed to initiate payment");
-    },
-  });
+  const [countryCode, setCountryCode] = React.useState<string | null>(null);
+  
+  const { initiatePayment: initiateRazorpay, loadingPlan: loadingRazorpay, cancelPayment: cancelRazorpay } = useRazorpay();
+  const { initiatePayment: initiateStripe, loadingPlan: loadingStripe } = useStripeCheckout();
+
+  React.useEffect(() => {
+    fetch("https://ipapi.co/json/")
+      .then((res) => res.json())
+      .then((data) => {
+        if (data && data.country_code) {
+          setCountryCode(data.country_code);
+        }
+      })
+      .catch((err) => console.error("Failed to fetch country code", err));
+  }, []);
+
+  const isIndia = countryCode === "IN";
 
   return (
     <div className="bg-[#050505] min-h-screen w-full selection:bg-white/20 font-sans antialiased relative overflow-hidden">
+      <Script src="https://checkout.razorpay.com/v1/checkout.js" strategy="lazyOnload" />
       {/* ── Background Grid & Glow ── */}
       <div className="absolute inset-0 pointer-events-none z-0">
         <div 
@@ -233,6 +265,14 @@ const Pricing = () => {
       <section className="max-w-7xl mx-auto px-4 pb-12 relative z-10">
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-6xl mx-auto">
           {plans.map((plan, idx) => {
+            const displayPriceLabel = isIndia 
+              ? (plan.key === "free" ? "₹0" : plan.key === "plus" ? "₹649" : "₹1499") 
+              : plan.priceLabel;
+
+            const displayOldPrice = isIndia 
+              ? (plan.key === "free" ? undefined : plan.key === "plus" ? "₹1099" : "₹1999") 
+              : plan.oldPrice;
+
             return (
               <motion.div
                 key={plan.key}
@@ -271,10 +311,10 @@ const Pricing = () => {
 
                   {/* Price */}
                   <div className="flex items-baseline gap-1 mb-2">
-                    {plan.oldPrice && (
-                      <span className="text-xl font-medium tracking-tight text-gray-500 line-through mr-2">{plan.oldPrice}</span>
+                    {displayOldPrice && (
+                      <span className="text-xl font-medium tracking-tight text-gray-500 line-through mr-2">{displayOldPrice}</span>
                     )}
-                    <span className="text-4xl font-medium tracking-tight text-white">{plan.priceLabel}</span>
+                    <span className="text-4xl font-medium tracking-tight text-white">{displayPriceLabel}</span>
                     <span className="text-sm text-gray-500 font-normal">/month</span>
                   </div>
 
@@ -284,10 +324,13 @@ const Pricing = () => {
                   </p>
 
                   {/* CTA Button */}
-                  <div className="w-full mb-6 block">
+                  <div className="w-full mb-6 flex flex-col items-center">
                     <button
                       onClick={async () => {
-                        if (isLoading) return;
+                        if (plan.key === (user?.accountType || "free")) return;
+                        
+                        const isLoadingPlan = loadingRazorpay === plan.name || loadingStripe === plan.name;
+                        if (isLoadingPlan) return;
                         
                         if (!isAuthenticated) {
                           toast.error("Please login to upgrade your plan");
@@ -304,45 +347,91 @@ const Pricing = () => {
                           return;
                         }
 
-                        if (!isScriptLoaded) {
-                          toast.error("Payment system is still loading, please wait.");
-                          return;
-                        }
-
                         try {
-                          const order = await createOrder({ plan: plan.key as "plus" | "pro", userId: user._id, provider: "razorpay" });
-                          
-                          if (order.provider === "razorpay") {
-                            await initiatePayment({
-                              key: order.key as string,
-                              amount: order.amount,
-                              currency: order.currency,
-                              name: "Wekraft",
-                              description: `Upgrade to ${plan.name}`,
-                              order_id: order.id,
-                              prefill: {
-                                name: user.name || "",
-                                email: user.email || "",
-                              },
-                              theme: {
-                                color: "#000000",
-                              },
-                            });
+                          if (isIndia) {
+                            await initiateRazorpay(
+                              { name: plan.name, planType: plan.key as "plus" | "pro", priceUSD: plan.priceUSD },
+                              { id: user._id, name: user.name || "", email: user.email || "" }
+                            );
+                          } else {
+                            await initiateStripe(
+                              { name: plan.name, planType: plan.key as "plus" | "pro", priceUSD: plan.priceUSD },
+                              { id: user._id, name: user.name || "", email: user.email || "" }
+                            );
                           }
-                        } catch (e) {
+                        } catch (e: any) {
                           console.error("Payment failed", e);
-                          toast.error("Failed to process order creation");
                         }
                       }}
-                      disabled={isLoading}
+                      disabled={loadingRazorpay !== null || loadingStripe !== null || plan.key === (user?.accountType || "free")}
                       className={cn(
-                        "w-full py-2 px-4 rounded-full font-medium text-sm transition-all duration-300 shadow-sm flex items-center justify-center gap-2 cursor-pointer",
-                        "bg-[#1c1c1c] border border-white/10 text-gray-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] hover:bg-white hover:text-black",
-                        isLoading && "opacity-50 cursor-not-allowed"
+                        "w-full py-2 px-4 rounded-full font-medium text-sm transition-all duration-300 shadow-sm flex items-center justify-center gap-2",
+                        plan.key === (user?.accountType || "free")
+                          ? "bg-blue-500/10 border border-blue-500/35 text-blue-400 cursor-default font-semibold"
+                          : "bg-[#1c1c1c] border border-white/10 text-gray-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] hover:bg-white hover:text-black cursor-pointer",
+                        (loadingRazorpay !== null || loadingStripe !== null) && "opacity-50 cursor-not-allowed"
                       )}
                     >
-                      {isLoading ? "Processing..." : plan.cta}
+                      {plan.key === (user?.accountType || "free") ? (
+                        <div className="flex items-center justify-center gap-1.5">
+                          <Check className="w-4 h-4 text-blue-400" strokeWidth={3} />
+                          <span>Current Plan</span>
+                        </div>
+                      ) : (loadingRazorpay === plan.name || loadingStripe === plan.name) ? (
+                        "Processing..."
+                      ) : (
+                        plan.cta
+                      )}
                     </button>
+                    {plan.key === (user?.accountType || "free") && plan.key !== "free" && (
+                      user?.cancelAtPeriodEnd ? (
+                        <span className="mt-3 inline-flex text-xs text-orange-400/90 bg-orange-400/10 px-3 py-1.5 rounded-full font-medium border border-orange-400/20">
+                          Ends on {user.currentPeriodEnd ? new Date(user.currentPeriodEnd).toLocaleDateString(undefined, { year: 'numeric', month: 'short', day: 'numeric' }) : 'period end'}
+                        </span>
+                      ) : (
+                        <button 
+                          onClick={async () => {
+                            try {
+                              if (user?.subscriptionProvider === "razorpay") {
+                                if (!user?.subscriptionId) {
+                                  toast.error("No active subscription found. Please contact support.");
+                                  return;
+                                }
+                                await cancelRazorpay(user.subscriptionId);
+                                return;
+                              }
+
+                              // Stripe Cancellation
+                              if (!user?.customerId) {
+                                toast.error("No active billing profile found. Please contact support.");
+                                return;
+                              }
+                              
+                              toast.loading("Redirecting to billing portal...", { id: "portal-loading" });
+                              
+                              const res = await fetch("/api/payments/stripe/portal", {
+                                method: "POST",
+                                headers: { "Content-Type": "application/json" },
+                                body: JSON.stringify({ customerId: user.customerId })
+                              });
+                              
+                              if (!res.ok) throw new Error("Failed to securely connect to billing portal");
+                              
+                              const { url } = await res.json();
+                              toast.dismiss("portal-loading");
+                              window.location.href = url;
+                            } catch (e: any) {
+                              console.error(e);
+                              toast.dismiss("portal-loading");
+                              toast.error(e.message || "Something went wrong.");
+                            }
+                          }}
+                          className="mt-3 py-1.5 px-4 rounded-full text-xs font-medium border border-white/10 text-gray-400 hover:text-red-400 hover:border-red-400/30 hover:bg-red-400/10 transition-all cursor-pointer"
+                        >
+                          Cancel Subscription
+                        </button>
+                      )
+                    )}
                   </div>
 
                   {/* Features */}

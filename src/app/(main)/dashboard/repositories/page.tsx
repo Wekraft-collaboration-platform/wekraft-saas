@@ -1,4 +1,5 @@
 "use client";
+import { useQuery } from "convex/react";
 import {
   FolderGit2,
   GitBranch,
@@ -7,27 +8,26 @@ import {
   LucideGitBranch,
   Search,
 } from "lucide-react";
+import Link from "next/link";
 import React, { useState } from "react";
-import { useQuery } from "convex/react";
-import { api } from "../../../../../convex/_generated/api";
+import { Badge } from "@/components/ui/badge";
+import { Button } from "@/components/ui/button";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  CardDescription,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import ShowRepo from "@/modules/repo/ShowRepo";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
-import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import Link from "next/link";
+import ShowRepo from "@/modules/repo/ShowRepo";
+import { api } from "../../../../../convex/_generated/api";
 
 const RepositoriesPage = () => {
   const [selectedRepo, setSelectedRepo] = useState<{

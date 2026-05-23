@@ -1,5 +1,5 @@
-import { MultiStepOnboarding } from "@/modules/onboard/components/Steps";
 import React from "react";
+import { MultiStepOnboarding } from "@/modules/onboard/components/Steps";
 
 const Onboard = () => {
   return (

@@ -6,8 +6,9 @@ import { Id } from "../../../../convex/_generated/dataModel";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
 import { Pie, PieChart, Cell, ResponsiveContainer } from "recharts";
-import { LayoutDashboard, Activity } from "lucide-react";
+import { LayoutDashboard, Activity, HelpCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface EnvironmentalSeverityHeatmapProps {
   projectId: Id<"projects">;
@@ -69,6 +70,30 @@ export const EnvironmentalSeverityHeatmap = ({ projectId, data: providedData }: 
               Active issue counts across infrastructure layers
             </CardDescription>
           </div>
+          <div className="flex-none">
+            <TooltipProvider delayDuration={100}>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button className="group relative flex items-center h-6 rounded-full border border-border bg-accent/30 text-muted-foreground hover:text-foreground transition-all duration-300 ease-in-out w-6 hover:w-24 overflow-hidden text-[10px] font-medium flex-none">
+                    <div className="absolute left-[4px] flex items-center gap-1.5">
+                      <HelpCircle className="w-3.5 h-3.5 shrink-0" />
+                      <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out whitespace-nowrap">
+                        Know more
+                      </span>
+                    </div>
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="bottom" className="bg-popover text-popover-foreground border border-border p-2.5 max-w-[260px] rounded-md shadow-md text-[10px] z-50">
+                  <p className="font-semibold text-muted-foreground border-b border-border pb-1 mb-1">
+                    Environment Distribution
+                  </p>
+                  <p className="leading-relaxed text-muted-foreground">
+                    Displays the share of active issues assigned to different infrastructure layers and environments (e.g. dev, beta, prod) to spot system vulnerability spots.
+                  </p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
         </CardHeader>
         <CardContent className="flex flex-col items-center justify-center h-[220px] text-center p-6">
           <Activity className="w-8 h-8 mb-2 text-muted-foreground/40" />
@@ -100,6 +125,30 @@ export const EnvironmentalSeverityHeatmap = ({ projectId, data: providedData }: 
           <CardDescription className="text-xs font-medium text-muted-foreground">
             Active issue counts across infrastructure layers
           </CardDescription>
+        </div>
+        <div className="flex-none">
+          <TooltipProvider delayDuration={100}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button className="group relative flex items-center h-6 rounded-full border border-border bg-accent/30 text-muted-foreground hover:text-foreground transition-all duration-300 ease-in-out w-6 hover:w-24 overflow-hidden text-[10px] font-medium flex-none">
+                  <div className="absolute left-[4px] flex items-center gap-1.5">
+                    <HelpCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out whitespace-nowrap">
+                      Know more
+                    </span>
+                  </div>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="bg-popover text-popover-foreground border border-border p-2.5 max-w-[260px] rounded-md shadow-md text-[10px] z-50">
+                <p className="font-semibold text-muted-foreground border-b border-border pb-1 mb-1">
+                  Environment Distribution
+                </p>
+                <p className="leading-relaxed text-muted-foreground">
+                  Displays the share of active issues assigned to different infrastructure layers and environments (e.g. dev, beta, prod) to spot system vulnerability spots.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
         </div>
       </CardHeader>
       <CardContent className="pt-0">

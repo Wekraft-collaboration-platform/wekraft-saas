@@ -1,17 +1,18 @@
 import { auth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
-import { turso, initTeamspaceDB } from "@/lib/turso";
-import { verifyProjectAccess } from "@/modules/workspace/teamspace/lib/auth";
 import Ably from "ably";
+import { type NextRequest, NextResponse } from "next/server";
+import { initTeamspaceDB, turso } from "@/lib/turso";
+import { verifyProjectAccess } from "@/modules/workspace/teamspace/lib/auth";
 
 const ably = new Ably.Rest(process.env.ABLY_API_KEY!);
 
 export async function GET(
   req: NextRequest,
-  { params }: { params: Promise<{ channelId: string }> }
+  { params }: { params: Promise<{ channelId: string }> },
 ) {
   const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!userId)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { channelId } = await params;
   if (!channelId) {
@@ -34,7 +35,11 @@ export async function GET(
 
   // --- ACCESS CHECK ---
   const access = await verifyProjectAccess(userId, projectId);
-  if ("error" in access) return NextResponse.json({ error: access.error }, { status: access.status });
+  if ("error" in access)
+    return NextResponse.json(
+      { error: access.error },
+      { status: access.status },
+    );
 
   // Fetch all reads for this channel
   const readsRes = await turso.execute({
@@ -52,10 +57,11 @@ export async function GET(
 
 export async function POST(
   req: NextRequest,
-  { params }: { params: Promise<{ channelId: string }> }
+  { params }: { params: Promise<{ channelId: string }> },
 ) {
   const { userId } = await auth();
-  if (!userId) return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  if (!userId)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const { channelId } = await params;
   if (!channelId) {
@@ -78,7 +84,11 @@ export async function POST(
 
   // --- ACCESS CHECK ---
   const access = await verifyProjectAccess(userId, projectId);
-  if ("error" in access) return NextResponse.json({ error: access.error }, { status: access.status });
+  if ("error" in access)
+    return NextResponse.json(
+      { error: access.error },
+      { status: access.status },
+    );
 
   const now = Date.now();
 

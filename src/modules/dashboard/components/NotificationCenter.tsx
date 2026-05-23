@@ -22,9 +22,20 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import {
+  NOTIFICATION_ICONS,
+  getNotificationRedirectUrl,
+  renderNotificationBody,
+} from "@/lib/static-store";
 
 // ─── Utility: human-readable relative time ─────────────────────────────────
 function timeAgo(ts: number): string {
@@ -36,104 +47,6 @@ function timeAgo(ts: number): string {
   if (m < 60) return `${m}m ago`;
   if (h < 24) return `${h}h ago`;
   return `${d}d ago`;
-}
-
-// ─── Per-notification icon mapping ─────────────────────────────────────────
-const typeEmoji: Record<string, string> = {
-  member_joined: "🎉",
-  member_left: "👋",
-  member_removed: "🚫",
-  join_request: "📬",
-  request_accepted: "✅",
-  request_rejected: "❌",
-  role_changed: "🔄",
-  mentioned: "💬",
-  task_assigned: "📋",
-  issue_assigned: "🐛",
-  task_completed: "✅",
-  sprint_started: "🚀",
-  sprint_completed: "🏁",
-  critical_issue: "🔴",
-};
-
-// ─── Resolve redirect target URL ───────────────────────────────────────────
-function getNotificationRedirectUrl(notif: {
-  type: string;
-  projectSlug?: string;
-  body: string;
-  entityId?: string;
-  entityTitle?: string;
-}): string {
-  const slug = notif.projectSlug;
-  if (!slug) return "/dashboard";
-
-  if (notif.type === "join_request") {
-    return `/dashboard/my-projects/${slug}?tab=requests`;
-  }
-
-  const workspaceBase = `/dashboard/my-projects/${slug}/workspace`;
-
-  switch (notif.type) {
-    case "task_assigned":
-    case "task_completed":
-      return `${workspaceBase}/tasks`;
-
-    case "issue_assigned":
-    case "critical_issue":
-      return `${workspaceBase}/issues`;
-
-    case "sprint_started":
-    case "sprint_completed":
-      return `${workspaceBase}/sprint`;
-
-    case "mentioned":
-      const bodyLower = notif.body.toLowerCase();
-      if (
-        bodyLower.includes("chat") ||
-        bodyLower.includes("teamspace") ||
-        bodyLower.includes("channel") ||
-        bodyLower.includes("#") ||
-        (notif.entityTitle && notif.entityTitle.startsWith("#"))
-      ) {
-        return notif.entityId
-          ? `${workspaceBase}/teamspace?channelId=${notif.entityId}`
-          : `${workspaceBase}/teamspace`;
-      } else if (bodyLower.includes("issue")) {
-        return `${workspaceBase}/issues`;
-      } else {
-        return `${workspaceBase}/tasks`;
-      }
-
-    case "request_accepted":
-    case "member_joined":
-      return workspaceBase;
-
-    case "member_left":
-    case "member_removed":
-    case "role_changed":
-      return `${workspaceBase}/team`;
-
-    default:
-      return workspaceBase;
-  }
-}
-
-// ─── Bold‐markdown renderer (safe, no external deps) ───────────────────────
-function renderBody(text: string) {
-  const parts = text.split(/\*\*(.+?)\*\*/g);
-  return (
-    <span>
-      {parts.map((part, i) =>
-        i % 2 === 1 ? (
-          <strong key={i} className="font-semibold text-foreground">
-            {part}
-          </strong>
-        ) : (
-          <span key={i}>{part}</span>
-        ),
-      )}
-    </span>
-  );
 }
 
 // ─── Single notification row ────────────────────────────────────────────────
@@ -164,17 +77,17 @@ function NotificationItem({
       onClick={handleClick}
       className={cn(
         "group relative flex items-start gap-3.5 px-4 py-3.5 cursor-pointer transition-all duration-200",
-        "border-b border-border/30 last:border-b-0",
-        "hover:bg-accent/40 bg-background/5",
+        "border-b border-border/70",
+        "hover:bg-accent/20",
         !notif.isRead && "bg-primary/[0.02]",
       )}
     >
-   
 
-      {/* Avatar / emoji */}
+
+      {/* Avatar / Icon */}
       <div className="relative shrink-0 mt-0.5">
         {notif.senderAvatar ? (
-          <Avatar className="h-7 w-7 ring-1 ring-border/40 shadow-sm">
+          <Avatar className="h-6 w-6 ring-1 ring-border/40 shadow-sm">
             <AvatarImage src={notif.senderAvatar} />
             <AvatarFallback className="text-[9px] font-semibold bg-accent">
               {notif.senderName?.[0]?.toUpperCase() ?? "?"}
@@ -182,7 +95,10 @@ function NotificationItem({
           </Avatar>
         ) : (
           <div className="h-7 w-7 rounded-full bg-accent/30 border border-border/40 flex items-center justify-center text-xs shadow-sm">
-            {typeEmoji[notif.type] ?? "🔔"}
+            {(() => {
+              const IconComponent = NOTIFICATION_ICONS[notif.type] ?? Bell;
+              return <IconComponent className="h-3.5 w-3.5 text-muted-foreground/80" />;
+            })()}
           </div>
         )}
       </div>
@@ -191,25 +107,25 @@ function NotificationItem({
       <div className="flex-1 min-w-0 pr-12">
         {notif.projectName && (
           <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
-            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20 tracking-wide shadow-sm">
+            <span className="inline-flex items-center gap-1 text-[10px] text-primary bg-primary/5 px-2 py-0.5 rounded-md border border-primary/10 tracking-wide shadow-sm">
               <FolderKanban className="h-3 w-3 text-primary/80 shrink-0" />
-              <span className="truncate max-w-[180px]">
+              <span className="truncate max-w-50">
                 {notif.projectName}
               </span>
             </span>
           </div>
         )}
-        <p className="text-[12.5px] leading-relaxed text-foreground/80 font-normal">
-          {renderBody(notif.body)}
+        <p className="text-[11px] leading-relaxed text-foreground font-normal">
+          {renderNotificationBody(notif.body)}
         </p>
-        {notif.entityTitle && (
+        {/* {notif.entityTitle && (
           <p className="text-[10px] text-muted-foreground/60 mt-1 font-mono flex items-center gap-1.5">
             <span className="text-[8px] opacity-40">↳</span>
             <span className="truncate bg-muted/65 px-1.5 py-0.5 rounded border border-border/20">
               {notif.entityTitle}
             </span>
           </p>
-        )}
+        )} */}
       </div>
 
       {/* Action panel (Floating on hover - Linear Style) */}
@@ -276,6 +192,7 @@ export function NotificationCenter() {
     // On subsequent updates, display toasts for any new notifications
     notifications.forEach((n) => {
       if (!prevIds.current.has(n._id)) {
+        const IconComponent = NOTIFICATION_ICONS[n.type] ?? Bell;
         toast(
           <div
             onClick={() => {
@@ -291,10 +208,10 @@ export function NotificationCenter() {
                 <span className="truncate max-w-[180px]">{n.projectName}</span>
               </span>
             )}
-            <div className="text-sm font-normal">{renderBody(n.body)}</div>
+            <div className="text-sm font-normal">{renderNotificationBody(n.body)}</div>
           </div>,
           {
-            icon: typeEmoji[n.type] ?? "🔔",
+            icon: <IconComponent className="h-4 w-4 text-primary" />,
             duration: 4000,
           },
         );
@@ -313,33 +230,40 @@ export function NotificationCenter() {
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          size="icon-sm"
-          className="relative h-9 w-9 rounded-lg border-border/40 hover:bg-accent/40"
-          aria-label="Notifications"
-        >
-          {unreadCount > 0 ? (
-            <BellRing className="h-4 w-4 text-primary animate-[wiggle_0.5s_ease-in-out]" />
-          ) : (
-            <Bell className="h-4 w-4" />
-          )}
-          {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 h-4 min-w-4 rounded-full bg-primary text-[9px] font-bold text-primary-foreground flex items-center justify-center px-1 ring-2 ring-background">
-              {unreadCount > 99 ? "99+" : unreadCount}
-            </span>
-          )}
-        </Button>
-      </PopoverTrigger>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon-sm"
+                className="relative h-9 w-9 rounded-lg border-border/40 hover:bg-accent/40"
+                aria-label="Notifications"
+              >
+                {unreadCount > 0 ? (
+                  <BellRing className="h-4 w-4 text-primary animate-[wiggle_0.5s_ease-in-out]" />
+                ) : (
+                  <Bell className="h-4 w-4" />
+                )}
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 min-w-4 rounded-full bg-primary text-[9px] font-bold text-primary-foreground flex items-center justify-center px-1 ring-2 ring-background">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
+              </Button>
+            </PopoverTrigger>
+          </TooltipTrigger>
+          <TooltipContent>Show Notifications</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
       <PopoverContent
         align="end"
         sideOffset={8}
-        className="w-[360px] p-0 rounded-xl bg-sidebar border border-border/60 shadow-[0_20px_50px_rgba(0,0,0,0.35)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.65)] overflow-hidden"
+        className="w-95 p-0 rounded-lg bg-sidebar border border-border shadow-[0_20px_50px_rgba(0,0,0,0.35)] dark:shadow-[0_20px_50px_rgba(0,0,0,0.65)] overflow-hidden"
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-4 py-3 border-b border-border/40 bg-muted/15">
+        <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted">
           <div className="flex items-center gap-2">
             <span className="text-sm">
               Notifications
@@ -355,7 +279,7 @@ export function NotificationCenter() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6 rounded-md hover:bg-accent text-muted-foreground hover:text-foreground"
+                className="h-4 w-4! rounded-md hover:bg-accent text-muted-foreground hover:text-foreground"
                 onClick={handleMarkAllRead}
                 title="Mark all as read"
               >
@@ -366,7 +290,7 @@ export function NotificationCenter() {
               <Button
                 variant="ghost"
                 size="icon"
-                className="h-6 w-6 rounded-md hover:bg-destructive/10 text-muted-foreground hover:text-destructive"
+                className="h-4! w-4 rounded-md text-muted-foreground "
                 onClick={handleClearAll}
                 title="Clear all"
               >
@@ -377,7 +301,7 @@ export function NotificationCenter() {
         </div>
 
         {/* List */}
-        <ScrollArea className="h-[400px]">
+        <ScrollArea className="h-[300px]">
           {notifications === undefined ? (
             // Loading skeleton (Linear Style)
             <div className="flex flex-col gap-0 divide-y divide-border/20">

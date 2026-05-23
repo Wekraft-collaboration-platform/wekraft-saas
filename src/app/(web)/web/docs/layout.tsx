@@ -1,35 +1,34 @@
 "use client";
 
-import { docsConfig } from "@/lib/docs-config";
-import Link from "next/link";
-import Image from "next/image";
-import { usePathname } from "next/navigation";
 import {
-  Search,
-  ChevronRight,
-  BookOpen,
-  Terminal,
-  Layers,
-  Zap,
-  Calendar,
-  Users,
-  BarChart3,
-  Clock,
-  Settings,
   AlertCircle,
+  BarChart3,
+  BookOpen,
+  Calendar,
   CheckSquare,
-  Menu,
-  X,
+  ChevronRight,
+  Clock,
   Command,
-  Sparkles,
-  ShieldCheck,
   CreditCard,
   FileText,
   Info,
+  Layers,
+  Menu,
+  Search,
+  Settings,
+  ShieldCheck,
+  Sparkles,
+  Terminal,
+  Users,
+  X,
+  Zap,
 } from "lucide-react";
+import Image from "next/image";
+import Link from "next/link";
+import { usePathname } from "next/navigation";
+import { useCallback, useEffect, useRef, useState } from "react";
+import { allDocs, docsConfig } from "@/lib/docs-config";
 import { cn } from "@/lib/utils";
-import { useEffect, useState, useCallback, useRef } from "react";
-import { allDocs } from "@/lib/docs-config";
 
 const iconMap: { [key: string]: any } = {
   BookOpen,

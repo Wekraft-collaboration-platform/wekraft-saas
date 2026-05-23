@@ -1,43 +1,46 @@
 "use client";
 
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
 import { useQuery } from "convex/react";
+import { format } from "date-fns";
 import {
   Bug,
+  Calendar,
+  ExternalLink,
+  FileCode,
   FileCodeCorner,
   Filter,
   Github,
   LucideLoader2,
+  MoreHorizontal,
   Search,
   Sparkles,
   UserPlus,
 } from "lucide-react";
-import React, { useState } from "react";
-import { api } from "../../../../../../../../convex/_generated/api";
-import { useParams } from "next/navigation";
-import { Input } from "@/components/ui/input";
 import Image from "next/image";
-import { CreateIssueDialog } from "@/modules/workspace/CreateIssueDialog";
-import { cn } from "@/lib/utils";
-import { useKayaStore } from "@/store/useKayaStore";
-import {
-  IssueKanbanUI,
-  SEVERITY_CONFIG,
-  TYPE_CONFIG,
-  Issue,
-} from "@/modules/workspace/IssueKanbanUI";
-import { ImportGithubIssueDialog } from "@/modules/workspace/heatmaps/ImportGithubIssueDialog";
-import { IssueDetailSheet } from "@/modules/workspace/IssueDetailSheet";
+import { useParams } from "next/navigation";
+import React, { useState } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { format } from "date-fns";
-import { Calendar, ExternalLink, FileCode, MoreHorizontal } from "lucide-react";
+import { Input } from "@/components/ui/input";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { cn } from "@/lib/utils";
+import { CreateIssueDialog } from "@/modules/workspace/CreateIssueDialog";
+import { ImportGithubIssueDialog } from "@/modules/workspace/heatmaps/ImportGithubIssueDialog";
+import { IssueDetailSheet } from "@/modules/workspace/IssueDetailSheet";
+import {
+  type Issue,
+  IssueKanbanUI,
+  SEVERITY_CONFIG,
+  TYPE_CONFIG,
+} from "@/modules/workspace/IssueKanbanUI";
+import { useKayaStore } from "@/store/useKayaStore";
+import { api } from "../../../../../../../../convex/_generated/api";
 
 const users = [
   { name: "Ritesh", img: "https://i.pravatar.cc/40?img=1" },
@@ -79,7 +82,7 @@ const GithubIssueCard = ({
               <span className={cn(severity.iconColor)}>
                 {severity.icon &&
                   React.cloneElement(severity.icon as React.ReactElement, {
-                    // @ts-ignore
+                    // @ts-expect-error
                     className: "w-2.5 h-2.5",
                   })}
               </span>
@@ -93,7 +96,7 @@ const GithubIssueCard = ({
               <span className={cn(type.iconColor)}>
                 {type.icon &&
                   React.cloneElement(type.icon as React.ReactElement, {
-                    // @ts-ignore
+                    // @ts-expect-error
                     className: "w-2.5 h-2.5",
                   })}
               </span>

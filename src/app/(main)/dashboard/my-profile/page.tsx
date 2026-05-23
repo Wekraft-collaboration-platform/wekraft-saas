@@ -1,23 +1,19 @@
 "use client";
+import { useQuery as useConvexQuery } from "convex/react";
+import { Gem, Loader, Settings2, Share2, Star } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { Edit2, Gem, Loader, Settings2, Share2 } from "lucide-react";
-import Image from "next/image";
-import React from "react";
-import { useQuery as useConvexQuery } from "convex/react";
-import { api } from "../../../../../convex/_generated/api";
-import { useStoreUser } from "@/hooks/use-user-store";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useUserPlan } from "@/hooks/use-user-plan";
-import { Star } from "lucide-react";
-
+import { useStoreUser } from "@/hooks/use-user-store";
 import { BioEditor } from "@/modules/profile/components/BioEditor";
-import { ProfileTabs } from "@/modules/profile/components/ProfileTabs";
+import { GithubStats } from "@/modules/profile/components/githubstats";
+import { api } from "../../../../../convex/_generated/api";
 
 const MyProfilePage = () => {
   const user = useConvexQuery(api.user.getCurrentUser);
   const { isLoading: isStoreLoading } = useStoreUser();
-  const { isUpgraded, plan } = useUserPlan(user as any);
+  const { isUpgraded } = useUserPlan(user as any);
 
   if (isStoreLoading || !user) {
     return (
@@ -125,12 +121,8 @@ const MyProfilePage = () => {
         </div>
       </div>
 
-      <div className="mt-8 pb-10">
-        <ProfileTabs user={user} isUpgraded={isUpgraded} />
-      </div>
-
-      <div className="mt-8 pb-10">
-        <p>List top 3 projects</p>
+      <div className="mt-8">
+        <GithubStats />
       </div>
     </div>
   );

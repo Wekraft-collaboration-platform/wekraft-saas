@@ -1,10 +1,10 @@
-import React from "react";
-import Navbar from "@/modules/web/Navbar";
-import WhyUs from "@/modules/web/WhyUs";
-import Comparison from "@/modules/web/Comparison";
-import SmoothScroll from "@/providers/SmoothScroll";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
+import React from "react";
+import Comparison from "@/modules/web/Comparison";
+import Navbar from "@/modules/web/Navbar";
+import WhyUs from "@/modules/web/WhyUs";
+import SmoothScroll from "@/providers/SmoothScroll";
 
 export default function WhyUsPage() {
   return (

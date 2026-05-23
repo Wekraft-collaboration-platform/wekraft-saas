@@ -135,7 +135,7 @@ export const AppSidebar = () => {
       console.error("❌ Failed to connect GitHub:", error);
       toast.error(
         error?.errors?.[0]?.message ||
-          "Something went wrong while connecting GitHub",
+        "Something went wrong while connecting GitHub",
       );
     }
   };
@@ -260,31 +260,6 @@ export const AppSidebar = () => {
             </div>
           </SidebarMenuButton>
 
-          {/* 3 */}
-          <SidebarMenuButton
-            asChild
-            tooltip="All Projects"
-            isActive={isActive("/dashboard/all-projects")}
-            className="group relative overflow-hidden"
-          >
-            <Link
-              href="/dashboard/all-projects"
-              className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
-            >
-              <FolderCode className="h-5 w-5" />
-              <span className="text-sm group-data-[collapsible=icon]:hidden">
-                All Projects
-              </span>
-              <span
-                className="
-        pointer-events-none absolute inset-0 -z-10
-        opacity-0 transition-opacity
-        group-data-[active=true]:opacity-100
-        bg-linear-to-l from-blue-600/80 dark:from-blue-600/50 via-blue-600/10  to-transparent
-      "
-              />
-            </Link>
-          </SidebarMenuButton>
 
           {/* 4 */}
           <SidebarMenuButton
@@ -359,7 +334,7 @@ export const AppSidebar = () => {
 
                               <div className="flex -space-x-0.5 overflow-hidden">
                                 {project.members &&
-                                project.members.length > 0 ? (
+                                  project.members.length > 0 ? (
                                   project.members
                                     .slice(0, 3)
                                     .map((member, idx) => (
@@ -451,7 +426,7 @@ export const AppSidebar = () => {
 
                               <div className="flex -space-x-1.5 overflow-hidden">
                                 {project?.members &&
-                                project?.members.length > 0 ? (
+                                  project?.members.length > 0 ? (
                                   project?.members
                                     .slice(0, 3)
                                     .map((member, idx) => (
@@ -591,7 +566,7 @@ export const AppSidebar = () => {
                     : "Upgrade to Plus to unlock AI and boost your productivity."}
               </p>
               {user.accountType !== "pro" && (
-                <Link href="/dashboard/pricing">
+                <Link href="/web/pricing">
                   <Button
                     className="text-[10px] cursor-pointer w-full my-1.5 font-medium"
                     size="xs"

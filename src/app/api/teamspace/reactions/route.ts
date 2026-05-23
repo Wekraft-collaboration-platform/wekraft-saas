@@ -1,8 +1,8 @@
 import { auth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
-import { turso, initTeamspaceDB } from "@/lib/turso";
 import Ably from "ably";
 import { randomUUID } from "crypto";
+import { type NextRequest, NextResponse } from "next/server";
+import { initTeamspaceDB, turso } from "@/lib/turso";
 import { verifyProjectAccess } from "@/modules/workspace/teamspace/lib/auth";
 
 const ably = new Ably.Rest(process.env.ABLY_API_KEY!);

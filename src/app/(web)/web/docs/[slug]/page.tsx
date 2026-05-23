@@ -1,15 +1,14 @@
 import fs from "fs";
+import { Calendar, ChevronLeft, ChevronRight, Clock, User } from "lucide-react";
+import type { Metadata } from "next";
+import Link from "next/link";
+import { notFound } from "next/navigation";
 import path from "path";
+import type { Components } from "react-markdown";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { notFound } from "next/navigation";
-import { allDocs, docsConfig } from "@/lib/docs-config";
-import { ChevronRight, ChevronLeft, Clock, Calendar, User } from "lucide-react";
-import Link from "next/link";
-import type { Components } from "react-markdown";
 import { TableOfContents } from "@/components/TableOfContents";
-
-import { Metadata } from "next";
+import { allDocs, docsConfig } from "@/lib/docs-config";
 
 export async function generateStaticParams() {
   return allDocs.map((doc) => ({ slug: doc.slug }));

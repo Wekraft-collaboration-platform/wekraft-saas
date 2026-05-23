@@ -20,11 +20,12 @@ import type * as payments from "../payments.js";
 import type * as pricing from "../pricing.js";
 import type * as project from "../project.js";
 import type * as projectDetails from "../projectDetails.js";
-import type * as razorpayWebhook from "../razorpayWebhook.js";
+import type * as razorpay from "../razorpay.js";
 import type * as repo from "../repo.js";
 import type * as scheduleRunner from "../scheduleRunner.js";
 import type * as scheduler from "../scheduler.js";
 import type * as sprint from "../sprint.js";
+import type * as stripe from "../stripe.js";
 import type * as user from "../user.js";
 import type * as workspace from "../workspace.js";
 
@@ -47,11 +48,12 @@ declare const fullApi: ApiFromModules<{
   pricing: typeof pricing;
   project: typeof project;
   projectDetails: typeof projectDetails;
-  razorpayWebhook: typeof razorpayWebhook;
+  razorpay: typeof razorpay;
   repo: typeof repo;
   scheduleRunner: typeof scheduleRunner;
   scheduler: typeof scheduler;
   sprint: typeof sprint;
+  stripe: typeof stripe;
   user: typeof user;
   workspace: typeof workspace;
 }>;

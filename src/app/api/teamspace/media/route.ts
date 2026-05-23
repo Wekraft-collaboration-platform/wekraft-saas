@@ -1,10 +1,10 @@
-import { NextResponse } from "next/server";
-import { auth } from "@clerk/nextjs/server";
 import {
-  S3Client,
-  PutObjectCommand,
   DeleteObjectCommand,
+  PutObjectCommand,
+  S3Client,
 } from "@aws-sdk/client-s3";
+import { auth } from "@clerk/nextjs/server";
+import { NextResponse } from "next/server";
 
 const client = new S3Client({
   credentials: {

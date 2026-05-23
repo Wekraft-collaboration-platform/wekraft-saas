@@ -87,9 +87,9 @@ const ProjectInfo = ({ project, members }: ProjectInfoProps) => {
           <span className="text-sm text-primary font-semibold min-w-[100px]">
             Upvotes:
           </span>
-          <div className="flex items-center gap-1.5 text-rose-500 bg-rose-500/10 px-2.5 py-1 rounded-full border border-rose-500/20">
+          <div className="flex items-center gap-1.5 text-primary bg-muted/40 px-2.5 py-1 ">
             <Heart className="w-3.5 h-3.5 fill-current" />
-            <span className="text-xs font-bold">
+            <span className="text-sm font-bold">
               {project.projectUpvotes || 0}
             </span>
           </div>

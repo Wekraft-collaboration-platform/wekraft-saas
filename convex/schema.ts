@@ -23,6 +23,15 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
     planExpiry: v.optional(v.number()), // For temporary upgrades/coupons
+
+    // Subscription Data
+    subscriptionId: v.optional(v.string()),
+    customerId: v.optional(v.string()),
+    subscriptionStatus: v.optional(v.string()), // "active", "past_due", "cancelled", etc.
+    subscriptionProvider: v.optional(v.string()), // "razorpay" | "stripe"
+    currentPeriodEnd: v.optional(v.number()), // Unix timestamp in ms
+    cancelAtPeriodEnd: v.optional(v.boolean()),
+
     bio: v.optional(v.string()),
     socialLinks: v.optional(v.array(v.string())), // max 3 links (excluding github)
 
@@ -32,7 +41,9 @@ export default defineSchema({
   })
     .index("by_token", ["clerkToken"])
     .index("by_accountType", ["accountType"])
-    .index("by_name", ["name"]),
+    .index("by_name", ["name"])
+    .index("by_subscriptionId", ["subscriptionId"])
+    .index("by_customerId", ["customerId"]),
   // ---------------------------------------------
 
   repositories: defineTable({
@@ -241,6 +252,14 @@ export default defineSchema({
     // Insights
     finalCompletedAt: v.optional(v.number()),
     finalCompletedBy: v.optional(v.id("users")),
+    attachments: v.optional(
+      v.array(
+        v.object({
+          name: v.string(),
+          url: v.string(),
+        })
+      )
+    ),
     createdAt: v.number(),
     updatedAt: v.number(),
   })
@@ -354,8 +373,7 @@ export default defineSchema({
   // -------------------------------------------------
   tickets: defineTable({
     projectId: v.id("projects"),
-    title: v.string(),
-    description: v.optional(v.string()),
+    body: v.string(),
     createdBy: v.id("users"),
     assignedTo: v.id("users"),
     status: v.union(v.literal("open"), v.literal("closed")),
@@ -421,7 +439,7 @@ export default defineSchema({
     .index("by_project_user", ["projectId", "userId"]),
 
 
-// Admin messages to all users -----------------------
+  // Admin messages to all users -----------------------
   announcements: defineTable({
     title: v.string(),
     description: v.string(),
@@ -459,12 +477,6 @@ export default defineSchema({
       v.literal("request_rejected"),     // Request rejected
       v.literal("role_changed"),         // Role changed
       v.literal("mentioned"),            // @mention in comment
-      v.literal("task_assigned"),        // Task assigned to you
-      v.literal("issue_assigned"),       // Issue assigned to you
-      v.literal("task_completed"),       // Task you created was completed
-      v.literal("sprint_started"),       // Sprint started
-      v.literal("sprint_completed"),     // Sprint completed
-      v.literal("critical_issue"),       // Critical issue created
     ),
     // Human-readable notification body
     body: v.string(),

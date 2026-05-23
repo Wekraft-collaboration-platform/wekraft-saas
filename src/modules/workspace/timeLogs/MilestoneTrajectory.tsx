@@ -2,7 +2,7 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import { Compass, BadgeAlert, LucideAlertTriangle } from "lucide-react";
+import { Compass, BadgeAlert, LucideAlertTriangle, TrendingUpDown } from "lucide-react";
 import { Task } from "@/types/types";
 import { format } from "date-fns";
 
@@ -32,18 +32,18 @@ export const MilestoneTrajectory = ({
 
   if (!isReady) {
     return (
-      <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-neutral-900/70 shadow-sm dark:shadow-none p-4 flex flex-col relative overflow-hidden">
+      <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-neutral-900/90 shadow-sm dark:shadow-none p-4 flex flex-col relative overflow-hidden">
         <div className="flex items-center gap-2 mb-3">
-          <div className={cn("p-1.5 rounded-md border bg-muted/50")}>
+          <div className={cn("p-1.5 rounded-md border bg-accent")}>
             <Compass className={cn("w-3.5 h-3.5 text-primary")} />
           </div>
-          <h3 className="text-[13px] font-semibold tracking-tight text-neutral-900 dark:text-white/90">
+          <h3 className="text-base font-medium tracking-tight text-neutral-900 dark:text-white/90">
             Milestone Trajectory
           </h3>
         </div>
         <div className="flex flex-col items-center justify-center space-y-3 mt-6">
           <LucideAlertTriangle className={cn("w-8 h-8 text-primary opacity-50")} />
-          <p className="text-[11px] text-muted-foreground leading-relaxed text-center px-7">
+          <p className="text-xs text-muted-foreground leading-relaxed text-center px-8">
             Your workspace atleast have{" "}
             <span className="text-primary">6 tasks and 3 days of history</span>{" "}
             to establish trajectory forecasting.
@@ -55,12 +55,12 @@ export const MilestoneTrajectory = ({
 
   // MATHEMATICAL PROJECTION
   const velocity = completedTasks / daysConsumed;
-  
+
   let daysNeeded = 0;
   if (velocity > 0) {
     daysNeeded = tasksRemaining / velocity;
   } else {
-    daysNeeded = tasksRemaining * 2; 
+    daysNeeded = tasksRemaining * 2;
   }
 
   const projectedCompletion = now + daysNeeded * msInDay;
@@ -74,14 +74,14 @@ export const MilestoneTrajectory = ({
   const currentPos = ((now - createdAt) / totalDuration) * 100;
 
   return (
-    <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-neutral-900/70 shadow-sm dark:shadow-none p-4 flex flex-col justify-between relative overflow-hidden">
+    <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-neutral-900/80 shadow-sm dark:shadow-none p-4 flex flex-col justify-between relative overflow-hidden">
       <div>
         <div className="flex items-center justify-between mb-4">
           <div className="flex items-center gap-2">
-            <div className={cn("p-1.5 rounded-md border bg-muted/50")}>
+            <div className={cn("p-1.5 rounded-md border bg-card")}>
               <Compass className={cn("w-3.5 h-3.5 text-primary")} />
             </div>
-            <h3 className="text-[13px] font-semibold tracking-tight text-neutral-900 dark:text-white/90">
+            <h3 className="text-base font-medium tracking-tight text-neutral-900 dark:text-white/90">
               Milestone Trajectory
             </h3>
           </div>
@@ -89,8 +89,8 @@ export const MilestoneTrajectory = ({
             className={cn(
               "px-2 py-1 rounded-sm text-[10px] font-bold border",
               isBehind
-                ? "bg-rose-500/10 border-rose-500/20 text-rose-500"
-                : "bg-emerald-500/10 border-emerald-500/20 text-emerald-500",
+                ? "bg-accent/60 border-accent text-red-400"
+                : "bg-accent/60 border-accent text-emerald-400",
             )}
           >
             {isBehind
@@ -100,10 +100,10 @@ export const MilestoneTrajectory = ({
         </div>
 
         <div className="mt-4">
-          <div className="text-[10px] text-primary uppercase tracking-widest font-medium mb-1">
-            Projected Completion
+          <div className="text-xs text-primary font-medium mb-1">
+            Expected  Projected Completion <TrendingUpDown className="w-4 h-4 inline ml-1" />
           </div>
-          <div className="text-xl font-semibold tracking-tight text-neutral-900 dark:text-white">
+          <div className="text-xl font-semibold tracking-tight text-black font-pop! dark:text-white">
             {format(projectedCompletion, "MMM dd, yyyy")}
           </div>
           <div className="text-[10px] text-muted-foreground mt-1">
@@ -114,10 +114,10 @@ export const MilestoneTrajectory = ({
 
       <div className="">
         {/* Timeline */}
-        <div className="relative h-3 w-full bg-neutral-200 dark:bg-neutral-800/50 rounded-full mb-3">
+        <div className="relative h-3 w-full bg-neutral-200 dark:bg-neutral-800 rounded-full mb-3">
           {/* Progress fill */}
           <div
-            className="absolute h-full bg-primary/70 rounded-full"
+            className="absolute h-full bg-primary rounded-full"
             style={{ width: `${Math.min(100, currentPos)}%` }}
           />
 
@@ -137,7 +137,7 @@ export const MilestoneTrajectory = ({
           />
         </div>
 
-        <div className="flex justify-between text-[9px] text-muted-foreground font-semibold uppercase tracking-wider">
+        <div className="flex justify-between text-[10px] tracking-wider">
           <span>Start</span>
           <div className="flex gap-4">
             <span className="flex items-center gap-1">

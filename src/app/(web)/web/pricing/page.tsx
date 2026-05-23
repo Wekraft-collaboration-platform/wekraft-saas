@@ -1,10 +1,10 @@
 "use client";
-import React from "react";
-import Pricing from "@/modules/web/Pricing";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-import { ArrowLeft } from "lucide-react";
 import { useConvexAuth } from "convex/react";
+import { ArrowLeft } from "lucide-react";
+import Link from "next/link";
+import React from "react";
+import { Button } from "@/components/ui/button";
+import Pricing from "@/modules/web/Pricing";
 
 const PricingPage = () => {
   const { isAuthenticated } = useConvexAuth();

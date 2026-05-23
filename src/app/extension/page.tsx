@@ -1,10 +1,10 @@
 "use client";
 
-import { useUser, SignInButton } from "@clerk/nextjs";
+import { SignInButton, useUser } from "@clerk/nextjs";
 import { useMutation } from "convex/react";
-import { api } from "../../../convex/_generated/api";
 import { useSearchParams } from "next/navigation";
-import { useState, useEffect, Suspense } from "react";
+import { Suspense, useEffect, useState } from "react";
+import { api } from "../../../convex/_generated/api";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type State = "idle" | "loading" | "success" | "error";

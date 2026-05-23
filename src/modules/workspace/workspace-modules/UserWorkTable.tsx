@@ -90,6 +90,28 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
     projectId ? { projectId, limit: 10, cursor: issueCursor } : "skip",
   );
 
+  const [ticketCursor, setTicketCursor] = useState(0);
+  const [allTickets, setAllTickets] = useState<any[]>([]);
+  const [hasMoreTickets, setHasMoreTickets] = useState(true);
+  const ticketScrollRef = useRef<HTMLDivElement>(null);
+
+  const ticketsResult = useQuery(
+    api.workspace.getMyTickets,
+    projectId ? { projectId, limit: 10, cursor: ticketCursor } : "skip",
+  );
+
+  // ─── Accumulate tickets across pages ───
+  useEffect(() => {
+    if (!ticketsResult) return;
+    const newItems = ticketsResult.items;
+    setAllTickets((prev) => {
+      const existingIds = new Set(prev.map((t) => t._id));
+      const unique = newItems.filter((t: any) => !existingIds.has(t._id));
+      return [...prev, ...unique];
+    });
+    setHasMoreTickets(ticketsResult.nextCursor !== null);
+  }, [ticketsResult]);
+
   // ─── Accumulate tasks across pages ───
   useEffect(() => {
     if (!tasksResult) return;
@@ -507,6 +529,108 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
     );
   };
 
+  // ─── Ticket list renderer ───
+  const renderTickets = () => {
+    if (!ticketsResult && allTickets.length === 0) {
+      return (
+        <div className="flex items-center justify-center py-16">
+          <Loader2 className="w-5 h-5 animate-spin text-muted-foreground" />
+        </div>
+      );
+    }
+
+    if (allTickets.length === 0) return renderEmptyState("tickets");
+
+    return (
+      <div className="flex flex-col h-full">
+        <div
+          ref={ticketScrollRef}
+          className="grid grid-cols-2 gap-6 flex-1 overflow-y-auto space-y-2.5 items-center"
+        >
+          {allTickets.map((ticket) => {
+            return (
+              <div
+                key={ticket._id}
+                onClick={() =>
+                  router.push(`/dashboard/my-projects/${slug}/workspace`)
+                }
+                className="bg-muted border border-accent/60 px-4 py-3 rounded-lg hover:bg-muted/80 transition-colors cursor-pointer flex flex-col justify-between min-h-[110px]"
+              >
+                {/* Row 1 — Status + Creation date */}
+                <div className="flex items-center justify-between gap-4">
+                  <span className={cn(
+                    "text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider",
+                    ticket.status === "open" ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20" : "bg-muted-foreground/15 text-muted-foreground border border-muted-foreground/20"
+                  )}>
+                    {ticket.status}
+                  </span>
+                  <span className="text-[11px] text-muted-foreground font-medium">
+                    {format(new Date(ticket.createdAt), "MMM d, h:mm a")}
+                  </span>
+                </div>
+
+                {/* Row 2 — Description (line-clamp-2) */}
+                <p className="text-[12px] text-foreground mt-2.5 line-clamp-2 leading-relaxed break-words">
+                  {ticket.body}
+                </p>
+
+                {/* Row 3 — Avatars (assignee and creator) */}
+                <div className="flex items-center justify-between pt-2.5 mt-2 border-t border-border/20 text-[10px]">
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-muted-foreground font-medium">Assignee:</span>
+                    <div className="flex items-center gap-1">
+                      <Avatar className="w-5 h-5 border border-border">
+                        <AvatarImage src={ticket.assignee?.avatar} alt={ticket.assignee?.name} />
+                        <AvatarFallback className="text-[9px] font-semibold">
+                          {(ticket.assignee?.name || "?").charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="font-semibold text-foreground/90">{ticket.assignee?.name || "Unassigned"}</span>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5">
+                    <span className="text-muted-foreground font-medium">Created by:</span>
+                    <div className="flex items-center gap-1">
+                      <Avatar className="w-5 h-5 border border-border">
+                        <AvatarImage src={ticket.creator?.avatar} alt={ticket.creator?.name} />
+                        <AvatarFallback className="text-[9px] font-semibold">
+                          {(ticket.creator?.name || "?").charAt(0).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <span className="font-semibold text-foreground/90">{ticket.creator?.name || "Unknown"}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
+        {/* Load more button */}
+        <div className="flex justify-center pt-3 pb-1 shrink-0">
+          {hasMoreTickets ? (
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => setTicketCursor((prev) => prev + 10)}
+              className="text-[11px] text-muted-foreground hover:text-primary gap-1.5 cursor-pointer"
+            >
+              <ChevronDown className="w-3 h-3" />
+              Load more
+            </Button>
+          ) : (
+            <div className="flex justify-center items-center my-6 text-center w-full">
+              <span className="text-sm text-muted-foreground font-medium">
+                No more tickets assigned to you.
+              </span>
+            </div>
+          )}
+        </div>
+      </div>
+    );
+  };
+
   // ─── Tab content router ───
   const renderTabContent = () => {
     switch (activeTab) {
@@ -514,6 +638,8 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
         return renderTasks();
       case "issues":
         return renderIssues();
+      case "tickets":
+        return renderTickets();
       default:
         return renderEmptyState(activeTab);
     }

@@ -1,9 +1,9 @@
+import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { auth } from "@clerk/nextjs/server";
-import { NextRequest, NextResponse } from "next/server";
-import { turso } from "@/lib/turso";
 import Ably from "ably";
+import { type NextRequest, NextResponse } from "next/server";
+import { turso } from "@/lib/turso";
 import { verifyProjectAccess } from "@/modules/workspace/teamspace/lib/auth";
-import { S3Client, DeleteObjectCommand } from "@aws-sdk/client-s3";
 
 const ably = new Ably.Rest(process.env.ABLY_API_KEY!);
 
@@ -32,8 +32,8 @@ function extractS3Keys(content: string): string[] {
 async function deleteFromS3(keys: string[]) {
   await Promise.allSettled(
     keys.map((key) =>
-      s3Client.send(new DeleteObjectCommand({ Bucket: BUCKET_NAME, Key: key }))
-    )
+      s3Client.send(new DeleteObjectCommand({ Bucket: BUCKET_NAME, Key: key })),
+    ),
   );
 }
 

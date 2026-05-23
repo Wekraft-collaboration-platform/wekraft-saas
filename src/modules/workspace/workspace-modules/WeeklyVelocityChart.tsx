@@ -6,8 +6,9 @@ import { Id } from "../../../../convex/_generated/dataModel";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
 import { Bar, BarChart, XAxis, YAxis, CartesianGrid } from "recharts";
-import { TrendingUp, Zap } from "lucide-react";
+import { TrendingUp, Zap, HelpCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface WeeklyVelocityChartProps {
   projectId: Id<"projects">;
@@ -52,17 +53,40 @@ export const WeeklyVelocityChart = ({ projectId, data: providedData }: WeeklyVel
   if (totalThisWeek === 0) {
     return (
       <Card className="border shadow-sm dark:bg-accent/20 bg-card dark:border-accent border-accent/50 overflow-hidden h-[340px]">
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
-          <div className="space-y-1">
-            <CardTitle className="text-sm font-semibold text-primary flex items-center gap-2">
-              <Zap className="w-4 h-4" /> Weekly Velocity Breakdown
-            </CardTitle>
-            <CardDescription className="text-xs font-medium text-muted-foreground">
-              0 items completed this week (Mon - Sun)
-            </CardDescription>
-          </div>
-          <TrendingUp className="w-4 h-4 text-muted-foreground opacity-50" />
-        </CardHeader>
+      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-6">
+        <div className="space-y-1">
+          <CardTitle className="text-sm font-semibold text-primary flex items-center gap-2">
+            <Zap className="w-4 h-4" /> Weekly Velocity Breakdown
+          </CardTitle>
+          <CardDescription className="text-xs font-medium text-muted-foreground">
+            0 items completed this week (Mon - Sun)
+          </CardDescription>
+        </div>
+        <div className="flex-none">
+          <TooltipProvider delayDuration={100}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button className="group relative flex items-center h-6 rounded-full border border-border bg-accent/30 text-muted-foreground hover:text-foreground transition-all duration-300 ease-in-out w-6 hover:w-24 overflow-hidden text-[10px] font-medium flex-none">
+                  <div className="absolute left-[4px] flex items-center gap-1.5">
+                    <HelpCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out whitespace-nowrap">
+                      Know more
+                    </span>
+                  </div>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="bg-popover text-popover-foreground border border-border p-2.5 max-w-[260px] rounded-md shadow-md text-[10px] z-50">
+                <p className="font-semibold text-muted-foreground border-b border-border pb-1 mb-1">
+                  Weekly Velocity Breakdown
+                </p>
+                <p className="leading-relaxed text-muted-foreground">
+                  Tracks the number of completed tasks and closed issues on a daily basis (Monday to Sunday) during the current week to show team velocity trends.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
+      </CardHeader>
         <CardContent className="flex flex-col items-center justify-center h-[220px] text-center p-6">
           <TrendingUp className="w-8 h-8 mb-2 text-muted-foreground/40" />
           <p className="text-base font-medium text-muted-foreground">No velocity data yet</p>
@@ -85,7 +109,30 @@ export const WeeklyVelocityChart = ({ projectId, data: providedData }: WeeklyVel
             {totalThisWeek} items completed this week (Mon - Sun)
           </CardDescription>
         </div>
-        <TrendingUp className="w-4 h-4 text-muted-foreground opacity-50" />
+        <div className="flex-none">
+          <TooltipProvider delayDuration={100}>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button className="group relative flex items-center h-6 rounded-full border border-border bg-accent/30 text-muted-foreground hover:text-foreground transition-all duration-300 ease-in-out w-6 hover:w-24 overflow-hidden text-[10px] font-medium flex-none">
+                  <div className="absolute left-[4px] flex items-center gap-1.5">
+                    <HelpCircle className="w-3.5 h-3.5 shrink-0" />
+                    <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out whitespace-nowrap">
+                      Know more
+                    </span>
+                  </div>
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="bottom" className="bg-popover text-popover-foreground border border-border p-2.5 max-w-[260px] rounded-md shadow-md text-[10px] z-50">
+                <p className="font-semibold text-muted-foreground border-b border-border pb-1 mb-1">
+                  Weekly Velocity Breakdown
+                </p>
+                <p className="leading-relaxed text-muted-foreground">
+                  Tracks the number of completed tasks and closed issues on a daily basis (Monday to Sunday) during the current week to show team velocity trends.
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        </div>
       </CardHeader>
       <CardContent className="pt-0">
         <ChartContainer config={chartConfig} className="h-[220px] w-full">

@@ -133,11 +133,15 @@ function TimelineDayAxis({
   const trackWidth = Math.max(TRACK_MIN_PX, naturalWidth);
   const columnWidthPercentage = 100 / days.length;
 
+  const taskRowHeight = 42; // h-8 (32px) + gap-2.5 (10px)
+  const computedHeight = 75 + (tasks?.length || 0) * taskRowHeight + 40;
+  const containerHeight = Math.max(440, computedHeight);
+
   return (
-    <div className="w-full min-w-0 overflow-x-auto dark:bg-card">
+    <div className="w-full min-w-0 overflow-auto max-h-[500px] dark:bg-card">
       <div
-        className="relative flex h-full min-h-[440px] max-h-[500px] w-full pl-0.5"
-        style={{ width: `max(${trackWidth}px, 100%)` }}
+        className="relative flex min-h-[440px] w-full pl-0.5"
+        style={{ width: `max(${trackWidth}px, 100%)`, height: `${containerHeight}px` }}
         aria-label={`Timeline from ${format(days[0]!, "PPP")} to ${format(days[days.length - 1]!, "PPP")}, one column per day`}
       >
         {days.map((day, i) => {
@@ -282,7 +286,7 @@ function TimelineDayAxis({
                 {/* Bar — group is ON the bar itself, not the outer wrapper */}
                 <div
                   className={cn(
-                    "absolute h-8 rounded-full border flex items-center pl-1 pr-3 shadow-sm group transition-all hover:shadow-md hover:scale-[1.01] backdrop-blur-sm",
+                    "absolute h-8 rounded-l-full rounded-r-xl! border flex items-center pl-1 pr-3 shadow-sm group transition-all hover:shadow-md hover:scale-[1.05] backdrop-blur-sm",
                     taskUI.barClass,
                   )}
                   style={{ left, width }}
@@ -434,13 +438,13 @@ export const ProjectTimeline = ({
   // MAIN TIMELINE COMPONENT
   return (
     <div className="w-full bg-sidebar border rounded-lg overflow-hidden shadow-sm ">
-      <div className="flex items-center justify-between p-2.5 border-b bg-muted/30">
+      <div className="flex items-center justify-between p-2.5 border-b bg-muted/80">
         <div className="flex items-center gap-2">
           <div className="p-1.5 bg-primary border rounded-md">
             <ChartNoAxesGantt className="w-4 h-4 text-primary-foreground" />
           </div>
           <h3 className="text-sm font-medium">Project Time Logs</h3>
-          <span className="ml-2 rounded-full bg-muted border px-1.5 py-0.5 text-[9px] font-medium text-muted-foreground">
+          <span className="ml-2 rounded-full bg-accent! border px-2.5 py-1 text-[9px] font-normal text-primary">
             Task Count: {filteredTasks.length}
           </span>
         </div>

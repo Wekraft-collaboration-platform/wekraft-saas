@@ -1,32 +1,21 @@
 "use client";
 
-import { useParams } from "next/navigation";
-import { useState, startTransition, ViewTransition, useEffect } from "react";
-import { Id } from "../../../../../../../../convex/_generated/dataModel";
-import { api } from "../../../../../../../../convex/_generated/api";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import {
-  UserPlus,
-  Search,
   Filter,
-  Plus,
   Layers3,
+  LucideLoader2,
+  Plus,
+  Search,
   Sparkle,
   Sparkles,
   Trash2,
-  LucideLoader2,
+  UserPlus,
 } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { CreateTaskDialog } from "@/modules/workspace/CreateTaskDialog";
-import { TABS } from "@/lib/static-store";
-import { ListTab } from "@/modules/workspace/ListTab";
-import { TableTab } from "@/modules/workspace/TableTab";
-import { KanbanTask } from "@/modules/workspace/KanbanTask";
 import Image from "next/image";
-import { useKayaStore } from "@/store/useKayaStore";
-import { useMutation } from "convex/react";
+import { useParams } from "next/navigation";
+import { startTransition, useEffect, useState, ViewTransition } from "react";
+import { toast } from "sonner";
 import {
   AlertDialog,
   AlertDialogAction,
@@ -38,20 +27,28 @@ import {
   AlertDialogTitle,
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
-import { toast } from "sonner";
-import {
-  SortConfig,
-  applyTaskFilters,
-} from "@/modules/workspace/function/taskFilters";
-
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import {
   Tooltip,
   TooltipContent,
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-
+import { TABS } from "@/lib/static-store";
 import { InviteDialog } from "@/modules/project/inviteDilogag";
+import { CreateTaskDialog } from "@/modules/workspace/CreateTaskDialog";
+import {
+  applyTaskFilters,
+  type SortConfig,
+} from "@/modules/workspace/function/taskFilters";
+import { KanbanTask } from "@/modules/workspace/KanbanTask";
+import { ListTab } from "@/modules/workspace/ListTab";
+import { TableTab } from "@/modules/workspace/TableTab";
+import { useKayaStore } from "@/store/useKayaStore";
+import { api } from "../../../../../../../../convex/_generated/api";
+import type { Id } from "../../../../../../../../convex/_generated/dataModel";
 
 const TaskPage = () => {
   const params = useParams();

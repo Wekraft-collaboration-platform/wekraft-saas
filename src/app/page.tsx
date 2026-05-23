@@ -1,11 +1,11 @@
 "use client";
 import { useConvexAuth } from "convex/react";
+import { motion } from "framer-motion";
 import Image from "next/image";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React, { useEffect } from "react";
 import { toast } from "sonner";
-import { motion } from "framer-motion";
-import Link from "next/link";
 
 const Home = () => {
   const router = useRouter();

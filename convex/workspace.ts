@@ -83,20 +83,6 @@ export const createTask = mutation({
         ),
       );
 
-      // Notify assigned members (skip actor)
-      const project = await ctx.db.get(args.projectId);
-      if (project) {
-        await ctx.runMutation(internal.notifications.notifyTaskAssigned, {
-          actorId: user._id,
-          actorName: user.name ?? "Someone",
-          actorAvatar: user.avatarUrl,
-          assigneeIds: assignees.map((a) => a.userId),
-          projectId: args.projectId,
-          projectName: project.projectName,
-          taskId: taskId as string,
-          taskTitle: args.title,
-        });
-      }
     }
 
     return taskId;
@@ -281,22 +267,6 @@ export const updateTaskStatus = mutation({
         updatedAt: Date.now(),
       });
 
-      // Notify task creator if they are not the one completing it
-      if (task.createdByUserId && task.createdByUserId !== user._id) {
-        const project = await ctx.db.get(task.projectId);
-        if (project) {
-          await ctx.runMutation(internal.notifications.notifyTaskCompleted, {
-            actorId: user._id,
-            actorName: user.name ?? "Someone",
-            actorAvatar: user.avatarUrl,
-            creatorId: task.createdByUserId,
-            projectId: task.projectId,
-            projectName: project.projectName,
-            taskId: args.taskId as string,
-            taskTitle: task.title,
-          });
-        }
-      }
     } else {
       await ctx.db.patch(args.taskId, {
         status: args.status,
@@ -350,34 +320,6 @@ export const updateTaskAssignees = mutation({
       ),
     );
 
-    // Notify newly added assignees
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_token", (q) => q.eq("clerkToken", identity.tokenIdentifier))
-      .unique();
-
-    if (user && args.assignees.length > 0) {
-      const existingIds = new Set(existingAssignees.map((a) => a.userId as string));
-      const newAssigneeIds = args.assignees
-        .map((a) => a.userId)
-        .filter((id) => !existingIds.has(id as string));
-
-      if (newAssigneeIds.length > 0) {
-        const project = await ctx.db.get(task.projectId);
-        if (project) {
-          await ctx.runMutation(internal.notifications.notifyTaskAssigned, {
-            actorId: user._id,
-            actorName: user.name ?? "Someone",
-            actorAvatar: user.avatarUrl,
-            assigneeIds: newAssigneeIds,
-            projectId: task.projectId,
-            projectName: project.projectName,
-            taskId: args.taskId as string,
-            taskTitle: task.title,
-          });
-        }
-      }
-    }
 
     await ctx.db.patch(args.taskId, {
       updatedAt: Date.now(),
@@ -765,6 +707,67 @@ export const getMyIssues = query({
     return { items, nextCursor };
   },
 });
+
+// =============================================
+// GET MY TICKETS (Paginated — for UserWorkTable)
+// =============================================
+export const getMyTickets = query({
+  args: {
+    projectId: v.id("projects"),
+    limit: v.optional(v.number()),
+    cursor: v.optional(v.number()),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return { items: [], nextCursor: null };
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) return { items: [], nextCursor: null };
+
+    const limit = args.limit ?? 10;
+    const skip = args.cursor ?? 0;
+
+    const allUserTickets = await ctx.db
+      .query("tickets")
+      .withIndex("by_assignee", (q) => q.eq("assignedTo", user._id))
+      .filter((q) => q.eq(q.field("projectId"), args.projectId))
+      .order("desc")
+      .collect();
+
+    const paginatedTickets = allUserTickets.slice(skip, skip + limit);
+
+    const items = await Promise.all(
+      paginatedTickets.map(async (ticket) => {
+        const creator = await ctx.db.get(ticket.createdBy);
+        const assignee = await ctx.db.get(ticket.assignedTo);
+
+        return {
+          _id: ticket._id,
+          body: ticket.body,
+          status: ticket.status,
+          createdAt: ticket.createdAt,
+          creator: creator
+            ? { name: creator.name, avatar: creator.avatarUrl }
+            : undefined,
+          assignee: assignee
+            ? { name: assignee.name, avatar: assignee.avatarUrl }
+            : undefined,
+        };
+      }),
+    );
+
+    const nextCursor = skip + limit < allUserTickets.length ? skip + limit : null;
+
+    return { items, nextCursor };
+  },
+});
+
 // =============================================
 // DELETE TASKS (Bulk)
 // =============================================
@@ -1083,5 +1086,196 @@ export const getMemberWorkload = query({
     return Object.values(memberWorkload)
       .sort((a, b) => b.total - a.total)
       .slice(0, 15);
+  },
+});
+
+// =============================================
+// GET WEEKLY ENGAGEMENT GRID (completions of tasks & issues)
+// =============================================
+export const getWeeklyEngagement = query({
+  args: {
+    projectId: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    // 1. Fetch project members
+    const members = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
+    // 2. Fetch completed tasks and closed issues in the last 12 days
+    const now = new Date();
+    const twelveDaysAgo = new Date();
+    twelveDaysAgo.setDate(now.getDate() - 11);
+    twelveDaysAgo.setHours(0, 0, 0, 0);
+    const startTs = twelveDaysAgo.getTime();
+
+    const completedTasks = await ctx.db
+      .query("tasks")
+      .withIndex("by_project_status", (q) =>
+        q.eq("projectId", args.projectId).eq("status", "completed")
+      )
+      .filter((q) => q.gte(q.field("finalCompletedAt"), startTs))
+      .collect();
+
+    const closedIssues = await ctx.db
+      .query("issues")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .filter((q) =>
+        q.and(
+          q.eq(q.field("status"), "closed"),
+          q.gte(q.field("finalCompletedAt"), startTs)
+        )
+      )
+      .collect();
+
+    // 3. Generate the 12 days timestamps & labels (X-axis labels: days)
+    const days: { label: string; startTs: number; endTs: number }[] = [];
+    for (let i = 0; i < 12; i++) {
+      const d = new Date(twelveDaysAgo.getTime() + i * 24 * 60 * 60 * 1000);
+      const dayStart = new Date(d);
+      dayStart.setHours(0, 0, 0, 0);
+      const dayEnd = new Date(d);
+      dayEnd.setHours(23, 59, 59, 999);
+
+      days.push({
+        label: d.getDate().toString(), // e.g. "18", "19", etc.
+        startTs: dayStart.getTime(),
+        endTs: dayEnd.getTime(),
+      });
+    }
+
+    // 4. Map contributions per member per day
+    const memberEngagement = members.map((m) => {
+      // Initials (e.g. "Rox" -> "ROX" or first letters)
+      const nameParts = m.userName.trim().split(/\s+/);
+      let initials = "";
+      if (nameParts.length >= 2) {
+        initials = (nameParts[0][0] + nameParts[1][0]).toUpperCase();
+      } else if (nameParts[0]) {
+        initials = nameParts[0].slice(0, 3).toUpperCase();
+      }
+
+      const dailyActivity = days.map((day) => {
+        const tasksCount = completedTasks.filter(
+          (t) =>
+            t.finalCompletedBy === m.userId &&
+            t.finalCompletedAt! >= day.startTs &&
+            t.finalCompletedAt! <= day.endTs
+        ).length;
+
+        const issuesCount = closedIssues.filter(
+          (i) =>
+            i.finalCompletedBy === m.userId &&
+            i.finalCompletedAt! >= day.startTs &&
+            i.finalCompletedAt! <= day.endTs
+        ).length;
+
+        return {
+          tasks: tasksCount,
+          issues: issuesCount,
+          total: tasksCount + issuesCount,
+        };
+      });
+
+      return {
+        userId: m.userId,
+        name: m.userName,
+        avatar: m.userImage || "",
+        initials,
+        dailyActivity,
+      };
+    });
+
+    return {
+      days: days.map((d) => d.label),
+      members: memberEngagement,
+    };
+  },
+});
+
+// =============================================
+// CREATE TICKET
+// =============================================
+export const createTicket = mutation({
+  args: {
+    projectId: v.id("projects"),
+    body: v.string(),
+    assignedTo: v.id("users"),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) throw new Error("User not found");
+
+    const ticketId = await ctx.db.insert("tickets", {
+      projectId: args.projectId,
+      body: args.body,
+      createdBy: user._id,
+      assignedTo: args.assignedTo,
+      status: "open",
+      createdAt: Date.now(),
+      updatedAt: Date.now(),
+    });
+
+    return ticketId;
+  },
+});
+
+// =============================================
+// GET TICKETS (with creator and assignee resolved)
+// =============================================
+export const getTickets = query({
+  args: {
+    projectId: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    const tickets = await ctx.db
+      .query("tickets")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .order("desc")
+      .collect();
+
+    return await Promise.all(
+      tickets.map(async (ticket) => {
+        const creator = await ctx.db.get(ticket.createdBy);
+        const assignee = await ctx.db.get(ticket.assignedTo);
+        return {
+          ...ticket,
+          creator: creator ? { name: creator.name, avatar: creator.avatarUrl } : null,
+          assignee: assignee ? { name: assignee.name, avatar: assignee.avatarUrl } : null,
+        };
+      }),
+    );
+  },
+});
+
+// =============================================
+// UPDATE TICKET STATUS
+// =============================================
+export const updateTicketStatus = mutation({
+  args: {
+    ticketId: v.id("tickets"),
+    status: v.union(v.literal("open"), v.literal("closed")),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const ticket = await ctx.db.get(args.ticketId);
+    if (!ticket) throw new Error("Ticket not found");
+
+    await ctx.db.patch(args.ticketId, {
+      status: args.status,
+      updatedAt: Date.now(),
+    });
   },
 });

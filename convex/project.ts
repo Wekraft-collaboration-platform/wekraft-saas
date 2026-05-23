@@ -378,6 +378,7 @@ export const getUserProjects = query({
           repoName: p.repoName,
           projectWorkStatus: p.projectWorkStatus,
           slug: p.slug,
+          createdAt: p.createdAt,
           members: members.slice(0, 4).map((m) => ({
             userId: m.userId,
             userImage: m.userImage,
@@ -909,7 +910,7 @@ export const updateProject = mutation({
       throw new Error("Unauthorized");
     }
 
-    const { projectId, ...patches } = args;
+    const { projectId, lookingForMembers, ...patches } = args;
     await ctx.db.patch(projectId, {
       ...patches,
       updatedAt: Date.now(),
@@ -1010,6 +1011,7 @@ export const getJoinedProjects = query({
           repoName: p.repoName,
           projectWorkStatus: p.projectWorkStatus,
           slug: p.slug,
+          createdAt: p.createdAt,
           members: members.slice(0, 4).map((mt) => ({
             userId: mt.userId,
             userImage: mt.userImage,
@@ -1583,3 +1585,75 @@ export const toggleProjectUpvote = mutation({
     }
   },
 });
+
+// ====================================
+// GET UPCOMING DEADLINES (WITHIN 3 WEEKS)
+// ====================================
+export const getUpcomingDeadlines = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier)
+      )
+      .unique();
+
+    if (!user) return [];
+
+    // Owned projects
+    const ownedProjects = await ctx.db
+      .query("projects")
+      .withIndex("by_owner", (q) => q.eq("ownerId", user._id))
+      .collect();
+
+    // Joined projects
+    const memberships = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    const joinedProjects: any[] = [];
+    for (const m of memberships) {
+      const p = await ctx.db.get(m.projectId);
+      if (p && p.ownerId !== user._id) {
+        joinedProjects.push(p);
+      }
+    }
+
+    const allProjects = [...ownedProjects, ...joinedProjects];
+    const results = [];
+    const now = Date.now();
+    const threeWeeksFromNow = now + 21 * 24 * 60 * 60 * 1000;
+
+    for (const p of allProjects) {
+      const details = await ctx.db
+        .query("projectDetails")
+        .withIndex("by_project", (q) => q.eq("projectId", p._id))
+        .unique();
+
+      if (details && details.targetDate) {
+        // Only those whose deadlines are in 3 weeks (21 days) and in the future
+        if (details.targetDate >= now && details.targetDate <= threeWeeksFromNow) {
+          results.push({
+            _id: p._id,
+            projectName: p.projectName,
+            slug: p.slug,
+            thumbnailUrl: p.thumbnailUrl || null,
+            targetDate: details.targetDate,
+            ownerName: p.ownerName,
+            role: p.ownerId === user._id ? "owned" : "joined",
+          });
+        }
+      }
+    }
+
+    // Sort by soonest deadline first
+    results.sort((a, b) => a.targetDate - b.targetDate);
+    return results.slice(0, 15);
+  },
+});
+

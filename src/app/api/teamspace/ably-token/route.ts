@@ -1,6 +1,6 @@
 import { auth } from "@clerk/nextjs/server";
-import { NextResponse } from "next/server";
 import Ably from "ably";
+import { NextResponse } from "next/server";
 
 // GET /api/teamspace/ably-token
 // Returns a short-lived Ably capability token scoped to teamspace:*

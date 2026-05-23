@@ -1,3 +1,4 @@
+import { SignInButton, SignUpButton } from "@clerk/nextjs";
 import {
   Ghost,
   GhostIcon,
@@ -5,13 +6,11 @@ import {
   LucideGithub,
   LucideMail,
 } from "lucide-react";
-import Link from "next/link";
-import { Button } from "@/components/ui/button";
-
-import { redirect } from "next/navigation";
 import Image from "next/image";
+import Link from "next/link";
+import { redirect } from "next/navigation";
+import { Button } from "@/components/ui/button";
 import DesignCarousel from "@/modules/auth/components/Design";
-import { SignInButton, SignUpButton } from "@clerk/nextjs";
 
 export default async function LoginPage() {
   return (

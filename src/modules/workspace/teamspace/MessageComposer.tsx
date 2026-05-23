@@ -18,7 +18,7 @@
 import { useState, useRef, useCallback, KeyboardEvent, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { SmilePlus, Plus, X, SendHorizontal, BarChart2, Code, AtSign, Paperclip, Loader2, FileIcon } from "lucide-react";
+import { SmilePlus, Plus, X, SendHorizontal, BarChart2, Code, AtSign, Paperclip, Loader2, FileIcon, TicketSlash, Save } from "lucide-react";
 import { toast } from "sonner";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
@@ -28,7 +28,7 @@ import { getUserColor } from "./lib/utils";
 import { Message } from "./hooks/useMessages";
 import { CreatePollDialog } from "./CreatePollDialog";
 import { GetRepoStructure } from "../GetRepoStructure";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -56,6 +56,12 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
   const [content, setContent] = useState("");
   const [isPollDialogOpen, setIsPollDialogOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+
+  // Ticket creation state
+  const [showTicketCreate, setShowTicketCreate] = useState(false);
+  const [ticketBody, setTicketBody] = useState("");
+  const [ticketAssigneeId, setTicketAssigneeId] = useState<string>("");
+  const createTicketMutation = useMutation(api.workspace.createTicket);
 
   // Mention state
   const [mentionQuery, setMentionQuery] = useState("");
@@ -107,17 +113,17 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
       const data = await res.json();
       if (data.url) {
         const isImage = selectedMediaFile.type.startsWith("image/");
-        const markdownLink = isImage 
+        const markdownLink = isImage
           ? `![${selectedMediaFile.name}](${data.url})`
           : `[${selectedMediaFile.name}](${data.url})`;
-        
+
         let finalContent = markdownLink;
         if (mediaCaption.trim()) {
-           finalContent += "\n\n" + mediaCaption.trim();
+          finalContent += "\n\n" + mediaCaption.trim();
         }
-        
+
         await onSend(finalContent);
-        
+
         setSelectedMediaFile(null);
         if (mediaPreviewUrl) {
           URL.revokeObjectURL(mediaPreviewUrl);
@@ -161,16 +167,18 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
     projectId ? { projectId: projectId as Id<"projects"> } : "skip"
   );
 
+  const selectedMember = members?.find((m) => m.userId === ticketAssigneeId);
+
   const filteredMembers = [
-    ...(mentionQuery.toLowerCase() === "e" || mentionQuery.toLowerCase() === "ev" || "everyone".includes(mentionQuery.toLowerCase()) 
-      ? [{ _id: "everyone", userName: "everyone", AccessRole: "Notify everyone in project", userImage: undefined, role: "system" }] 
+    ...(mentionQuery.toLowerCase() === "e" || mentionQuery.toLowerCase() === "ev" || "everyone".includes(mentionQuery.toLowerCase())
+      ? [{ _id: "everyone", userName: "everyone", AccessRole: "Notify everyone in project", userImage: undefined, role: "system" }]
       : []),
     ...(members?.filter((m) =>
       m.userName?.toLowerCase().includes(mentionQuery.toLowerCase()) &&
       m.clerkUserId !== currentUserId // Filter out current user
     ) || [])
   ];
-  
+
   // Auto-resize logic
   useEffect(() => {
     const el = textareaRef.current;
@@ -204,7 +212,7 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
     if (!trimmed) return;
 
     setContent("");
-    
+
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
       textareaRef.current.focus();
@@ -250,15 +258,15 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
 
   const insertMention = (name: string) => {
     if (mentionStartIndex === -1) return;
-    
+
     const before = content.substring(0, mentionStartIndex);
     const after = content.substring(textareaRef.current?.selectionStart || content.length);
     const newContent = `${before}@${name} ${after}`;
-    
+
     setContent(newContent);
     setShowMentions(false);
     setMentionStartIndex(-1);
-    
+
     setTimeout(() => {
       if (textareaRef.current) {
         textareaRef.current.focus();
@@ -327,6 +335,145 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
           </PopoverContent>
         </Popover>
 
+        {/* Tickets Creation Popover */}
+        <Popover open={showTicketCreate} onOpenChange={setShowTicketCreate}>
+          <PopoverTrigger asChild>
+            <div className="absolute top-0 left-4 w-0 h-0 pointer-events-none" />
+          </PopoverTrigger>
+          <PopoverContent className="w-[340px] p-4 border-border bg-background backdrop-blur-xl shadow-2xl rounded-xl space-y-4" side="top" align="start" sideOffset={10}>
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold flex items-center gap-1.5 text-foreground">
+                <TicketSlash className="h-4 w-4 text-primary" /> Create Ticket
+              </h3>
+              <button
+                onClick={() => {
+                  setShowTicketCreate(false);
+                  setTicketBody("");
+                  setTicketAssigneeId("");
+                }}
+                className="text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <X className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="space-y-3">
+              <div className="space-y-2">
+                <label className="text-xs text-muted-foreground">Ticket Description</label>
+                <Textarea
+                  placeholder="What needs to be done?"
+                  value={ticketBody}
+                  onChange={(e) => setTicketBody(e.target.value)}
+                  className="min-h-[70px] text-xs resize-none"
+                  autoFocus
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-xs text-muted-foreground">Assignee</label>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      type="button"
+                      className="w-full flex items-center justify-between rounded-md border border-accent bg-transparent px-3 py-2 text-xs shadow-sm hover:bg-accent/30 transition-colors text-foreground text-left cursor-pointer"
+                    >
+                      {selectedMember ? (
+                        <div className="flex items-center gap-2">
+                          <Avatar className="h-5 w-5">
+                            <AvatarImage src={selectedMember.userImage} />
+                            <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-bold">
+                              {selectedMember.userName.substring(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <span>{selectedMember.userName}</span>
+                        </div>
+                      ) : (
+                        <span className="text-muted-foreground">Select an assignee</span>
+                      )}
+                      <span className="text-[10px] text-muted-foreground">▼</span>
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    side="right"
+                    align="center"
+                    sideOffset={20}
+                    className="w-[320px] p-3 border border-border bg-background shadow-2xl rounded-xl z-[250]"
+                  >
+                    <h4 className="text-xs text-primary border-b pb-2 border-accent tracking-wider mb-2">Assign Member</h4>
+                    <div className="grid grid-cols-4 gap-2 max-h-[280px] overflow-y-auto pr-1">
+                      {members?.map((member) => (
+                        <button
+                          key={member._id}
+                          type="button"
+                          onClick={() => {
+                            setTicketAssigneeId(member.userId);
+                          }}
+                          className={cn(
+                            "flex flex-col items-center gap-1.5 p-2 rounded-lg border text-center transition-all duration-200 hover:bg-accent/40 hover:border-border/60 group cursor-pointer",
+                            ticketAssigneeId === member.userId
+                              ? "bg-primary/10 border-primary/15 text-primary"
+                              : "border-transparent bg-muted/10 text-muted-foreground"
+                          )}
+                        >
+                          <Avatar className="h-9 w-9 border border-border/30 group-hover:scale-105 transition-transform duration-200">
+                            <AvatarImage src={member.userImage ?? undefined} />
+                            <AvatarFallback className="text-[11px] bg-primary/10 text-primary font-black">
+                              {(member.userName || "??").substring(0, 2).toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex flex-col min-w-0 w-full">
+                            <span className="text-[10px] font-bold truncate leading-tight w-full text-foreground">
+                              {member.userName}
+                            </span>
+                            <span className="text-[9px] text-muted-foreground truncate w-full">
+                              {member.AccessRole || "Member"}
+                            </span>
+                          </div>
+                        </button>
+                      ))}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+            </div>
+            <div className="flex justify-end gap-2 pt-2 border-t border-border/40">
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs h-7"
+                onClick={() => {
+                  setShowTicketCreate(false);
+                  setTicketBody("");
+                  setTicketAssigneeId("");
+                }}
+              >
+                Cancel
+              </Button>
+              <Button
+                size="sm"
+                className="text-xs h-7"
+                disabled={!ticketBody.trim() || !ticketAssigneeId}
+                onClick={async () => {
+                  try {
+                    await createTicketMutation({
+                      projectId: projectId as Id<"projects">,
+                      body: ticketBody.trim(),
+                      assignedTo: ticketAssigneeId as Id<"users">,
+                    });
+                    toast.success("Ticket created successfully!");
+                    setShowTicketCreate(false);
+                    setTicketBody("");
+                    setTicketAssigneeId("");
+                  } catch (err) {
+                    console.error("Failed to create ticket:", err);
+                    toast.error("Failed to create ticket");
+                  }
+                }}
+              >
+                Save <Save />
+              </Button>
+            </div>
+          </PopoverContent>
+        </Popover>
+
         {/* Attachment menu */}
         <div className="flex items-center gap-1.5 shrink-0">
           <Popover>
@@ -341,9 +488,9 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
                 <Plus className="h-4 w-4 text-foreground/80" />
               </motion.button>
             </PopoverTrigger>
-            <PopoverContent 
-              side="top" 
-              align="start" 
+            <PopoverContent
+              side="top"
+              align="start"
               className="w-auto p-4 mb-2 bg-background/95 backdrop-blur-xl border-border/40 shadow-2xl rounded-2xl"
             >
               <div className="flex gap-6">
@@ -352,7 +499,7 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
                   { label: "Poll", icon: BarChart2, color: "bg-foreground text-background" },
                   { label: "Media (Max 10MB)", icon: uploadingMedia ? Loader2 : Paperclip, color: "bg-foreground text-background" },
                 ].map((item) => (
-                  <button 
+                  <button
                     key={item.label}
                     className="flex flex-col items-center gap-1.5 group outline-none"
                     onClick={() => {
@@ -387,10 +534,10 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
           {/* Emoji picker */}
           <Popover>
             <PopoverTrigger asChild>
-              <motion.button 
+              <motion.button
                 whileHover={{ scale: 1.1 }}
                 whileTap={{ scale: 0.9 }}
-                disabled={disabled} 
+                disabled={disabled}
                 className="h-6 w-6 flex items-center justify-center text-muted-foreground/80 hover:text-foreground transition-colors disabled:opacity-50"
               >
                 <SmilePlus className="h-5 w-5" />
@@ -426,6 +573,15 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
             value={content}
             onChange={(e) => {
               const val = e.target.value;
+
+              if (val.trim() === "/") {
+                setShowTicketCreate(true);
+                setContent("");
+                setShowMentions(false);
+                setShowCodeLinker(false);
+                return;
+              }
+
               setContent(val);
               onTyping?.(val.length > 0);
 
@@ -488,7 +644,7 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
               >
                 <div className="px-3 py-2 border-b border-border/40 bg-muted/50 flex items-center gap-2">
                   <AtSign className="h-3.5 w-3.5 text-primary" />
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                  <span className="text-sm text-muted-foreground">
                     Mention someone
                   </span>
                 </div>
@@ -504,7 +660,7 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
                           "w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-colors",
                           i === mentionIndex
                             ? "bg-primary/15"
-                            : "hover:bg-accent/60"
+                            : "hover:bg-accent/40"
                         )}
                       >
                         <Avatar className="h-8 w-8 border border-border/40 shrink-0">
@@ -542,15 +698,15 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
 
         {/* Send button */}
         <div className="flex items-center shrink-0 pr-1">
-          <motion.button 
+          <motion.button
             whileHover={content.trim() ? { scale: 1.1 } : {}}
             whileTap={content.trim() ? { scale: 0.9 } : {}}
             onClick={handleSend}
-            disabled={disabled || !content.trim()} 
+            disabled={disabled || !content.trim()}
             className={cn(
               "p-1.5 rounded-md transition-all duration-200",
-              content.trim() 
-                ? "text-primary hover:bg-primary/10" 
+              content.trim()
+                ? "text-primary hover:bg-primary/10"
                 : "text-muted-foreground/40 cursor-not-allowed"
             )}
           >
@@ -559,18 +715,18 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
         </div>
       </motion.div>
 
-      <CreatePollDialog 
-        open={isPollDialogOpen} 
-        onOpenChange={setIsPollDialogOpen} 
+      <CreatePollDialog
+        open={isPollDialogOpen}
+        onOpenChange={setIsPollDialogOpen}
         onSendPoll={async (poll) => {
           await onSend("", poll);
         }}
       />
-      <input 
-        type="file" 
-        className="hidden" 
-        ref={fileInputRef} 
-        onChange={handleMediaSelect} 
+      <input
+        type="file"
+        className="hidden"
+        ref={fileInputRef}
+        onChange={handleMediaSelect}
         accept=".pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx,.png,.jpg,.jpeg,.gif,.webp"
       />
 
@@ -583,7 +739,7 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
               Preview and add a caption before sending.
             </DialogDescription>
           </DialogHeader>
-          
+
           <div className="flex flex-col items-center justify-center space-y-4 my-2">
             {mediaPreviewUrl ? (
               <div className="relative w-full max-h-[40vh] rounded-md overflow-hidden flex items-center justify-center bg-muted/50 border border-border/40">
@@ -597,40 +753,40 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
                 <span className="text-xs text-muted-foreground mt-1">{(selectedMediaFile.size / 1024 / 1024).toFixed(2)} MB</span>
               </div>
             ) : null}
-            
-            <Textarea 
-               value={mediaCaption}
-               onChange={(e) => setMediaCaption(e.target.value)}
-               placeholder="Add a caption..."
-               disabled={uploadingMedia}
-               className="w-full resize-none min-h-[60px]"
-               rows={2}
-               onKeyDown={(e) => {
-                 if (e.key === "Enter" && !e.shiftKey) {
-                   e.preventDefault();
-                   uploadAndSendMedia();
-                 }
-               }}
+
+            <Textarea
+              value={mediaCaption}
+              onChange={(e) => setMediaCaption(e.target.value)}
+              placeholder="Add a caption..."
+              disabled={uploadingMedia}
+              className="w-full resize-none min-h-[60px]"
+              rows={2}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  uploadAndSendMedia();
+                }
+              }}
             />
           </div>
-          
+
           <DialogFooter className="sm:justify-end gap-2">
-             <Button variant="ghost" onClick={handleCancelMedia} disabled={uploadingMedia}>
-               Cancel
-             </Button>
-             <Button onClick={uploadAndSendMedia} disabled={uploadingMedia}>
-               {uploadingMedia ? (
-                 <>
-                   <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                   Sending...
-                 </>
-               ) : (
-                 <>
-                   <SendHorizontal className="mr-2 h-4 w-4" />
-                   Send
-                 </>
-               )}
-             </Button>
+            <Button variant="ghost" onClick={handleCancelMedia} disabled={uploadingMedia}>
+              Cancel
+            </Button>
+            <Button onClick={uploadAndSendMedia} disabled={uploadingMedia}>
+              {uploadingMedia ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Sending...
+                </>
+              ) : (
+                <>
+                  <SendHorizontal className="mr-2 h-4 w-4" />
+                  Send
+                </>
+              )}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
