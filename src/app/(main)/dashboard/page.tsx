@@ -462,7 +462,7 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Announcements / Notifications List */}
-                <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-border custom-scrollbar">
+                <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-border custom-scrollbar scrollbar-hide">
                   {notifications === undefined ? (
                     <div className="flex flex-col divide-y divide-border/10">
                       {Array.from({ length: 3 }).map((_, i) => (
@@ -496,7 +496,7 @@ export default function DashboardPage() {
                             "group relative flex items-start gap-3 px-4 py-3 transition-colors duration-150 text-left outline-none",
                             notif.isRead
                               ? "hover:bg-accent/15"
-                              : "bg-primary/5 hover:bg-primary/10 border-l-2 border-primary",
+                              : "bg-primary/5 hover:bg-primary/10",
                             redirectUrl && "cursor-pointer"
                           )}
                         >
