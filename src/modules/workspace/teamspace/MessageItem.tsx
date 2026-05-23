@@ -178,6 +178,11 @@ export function MessageItem({
   const [editPollDialogOpen, setEditPollDialogOpen] = useState(false);
   const [readReceiptsOpen, setReadReceiptsOpen] = useState(false);
 
+  // WhatsApp-style full screen preview overlay
+  const [previewMediaUrl, setPreviewMediaUrl] = useState<string | null>(null);
+  const [previewMediaType, setPreviewMediaType] = useState<"image" | "pdf" | null>(null);
+  const [previewMediaName, setPreviewMediaName] = useState<string>("");
+
   // FIX: Sync edit buffer when the message is updated externally (e.g. real-time
   // collaboration) while the user is NOT actively editing.
   useEffect(() => {
@@ -531,32 +536,54 @@ export function MessageItem({
                      return (
                         <div className="flex flex-col">
                            {isImage ? (
-                              <div className={cn("mt-0.5", captionText ? "mb-1.5" : "mb-0.5")}>
+                              <div 
+                                className={cn("mt-0.5 cursor-pointer relative group inline-block", captionText ? "mb-1.5" : "mb-0.5")}
+                                onClick={() => {
+                                  setPreviewMediaUrl(fileUrl);
+                                  setPreviewMediaType("image");
+                                  setPreviewMediaName(fileName);
+                                }}
+                              >
                                  <img 
                                     src={fileUrl} 
                                     alt={fileName} 
-                                    className="max-h-[140px] max-w-[160px] sm:max-h-[180px] sm:max-w-[220px] w-auto rounded-md object-contain"
+                                    className="max-h-[140px] max-w-[160px] sm:max-h-[180px] sm:max-w-[220px] w-auto rounded-md object-contain transition-opacity group-hover:opacity-90"
                                  />
+                                 <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center pointer-events-none">
+                                    <Eye className="text-white h-6 w-6 drop-shadow-md" />
+                                 </div>
                               </div>
                            ) : (
-                              <a 
-                                 href={fileUrl} 
-                                 target="_blank" 
-                                 rel="noopener noreferrer"
-                                 onClick={(e) => handleDownload(e, fileUrl, fileName)}
-                                 className="flex items-center gap-3 p-2.5 mt-0.5 mb-1 bg-black/5 dark:bg-white/5 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer"
+                              <div 
+                                 onClick={(e) => {
+                                   if (fileName.toLowerCase().endsWith('.pdf')) {
+                                     e.preventDefault();
+                                     setPreviewMediaUrl(fileUrl);
+                                     setPreviewMediaType("pdf");
+                                     setPreviewMediaName(fileName);
+                                   } else {
+                                     handleDownload(e, fileUrl, fileName);
+                                   }
+                                 }}
+                                 className="flex items-center gap-3 p-2.5 mt-0.5 mb-1 bg-black/5 dark:bg-white/5 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer max-w-[280px]"
                               >
-                                 <div className="p-2 bg-primary/10 rounded-md">
+                                 <div className="p-2 bg-primary/10 rounded-md shrink-0">
                                     <FileIcon className="h-6 w-6 text-primary" />
                                  </div>
-                                 <div className="flex flex-col overflow-hidden min-w-[120px] max-w-[200px]">
+                                 <div className="flex flex-col overflow-hidden min-w-[120px] flex-1">
                                     <span className="text-sm font-medium truncate" title={fileName}>{fileName}</span>
                                     <span className="text-[10px] text-muted-foreground uppercase mt-0.5">Document</span>
                                  </div>
-                                 <div className="ml-2 p-1.5 rounded-full bg-black/5 dark:bg-white/5">
+                                 <div 
+                                    className="ml-2 p-1.5 rounded-full bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 shrink-0"
+                                    onClick={(e) => {
+                                      e.stopPropagation();
+                                      handleDownload(e, fileUrl, fileName);
+                                    }}
+                                 >
                                     <Download className="h-3.5 w-3.5 text-muted-foreground" />
                                  </div>
-                              </a>
+                              </div>
                            )}
                            
                            {(captionText || message.edited_at) && (
@@ -925,6 +952,55 @@ export function MessageItem({
         </DialogContent>
       </Dialog>
       )}
+
+      {/* Media Preview Overlay (WhatsApp Web style) */}
+      <Dialog open={!!previewMediaUrl} onOpenChange={(open) => !open && setPreviewMediaUrl(null)}>
+        <DialogContent className="max-w-[100vw] h-[100vh] max-h-[100vh] w-full p-0 m-0 border-none bg-black/95 shadow-none flex flex-col justify-between overflow-hidden [&>button]:hidden z-[500] rounded-none">
+          {/* Top Bar */}
+          <div className="flex items-center justify-between p-4 bg-gradient-to-b from-black/80 to-transparent text-white z-10 shrink-0">
+            <div className="flex items-center gap-4">
+              <div className="flex flex-col">
+                <span className="font-medium text-sm">{message.user_name}</span>
+                <span className="text-xs text-white/60">{format(new Date(message.created_at), "MMM d, h:mm a")}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button 
+                onClick={(e) => handleDownload(e, previewMediaUrl!, previewMediaName)}
+                className="p-2 hover:bg-white/10 rounded-full transition-colors cursor-pointer"
+                title="Download"
+              >
+                <Download className="h-5 w-5 text-white" />
+              </button>
+              <button 
+                onClick={() => setPreviewMediaUrl(null)} 
+                className="p-2 hover:bg-white/10 rounded-full transition-colors cursor-pointer"
+                title="Close"
+              >
+                <X className="h-6 w-6 text-white" />
+              </button>
+            </div>
+          </div>
+          
+          {/* Content area */}
+          <div className="flex-1 flex items-center justify-center overflow-hidden p-4 relative">
+            {previewMediaType === "image" && (
+              <img 
+                src={previewMediaUrl!} 
+                alt={previewMediaName} 
+                className="max-w-full max-h-full object-contain drop-shadow-2xl" 
+              />
+            )}
+            {previewMediaType === "pdf" && (
+              <iframe 
+                src={previewMediaUrl!} 
+                title={previewMediaName} 
+                className="w-full h-full max-w-5xl rounded-lg bg-white shadow-2xl" 
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
     </>
   );
 }

@@ -56,6 +56,7 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
   const [content, setContent] = useState("");
   const [isPollDialogOpen, setIsPollDialogOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const captionTextareaRef = useRef<HTMLTextAreaElement>(null);
 
   // Ticket creation state
   const [showTicketCreate, setShowTicketCreate] = useState(false);
@@ -243,7 +244,7 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
       }
       if (e.key === "Enter" || e.key === "Tab") {
         e.preventDefault();
-        insertMention(filteredMembers[mentionIndex].userName || "unknown");
+        insertMention(filteredMembers[mentionIndex].userName || "unknown", false);
         return;
       }
       if (e.key === "Escape") {
@@ -258,22 +259,30 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
     }
   };
 
-  const insertMention = (name: string) => {
+  const insertMention = (name: string, isCaption: boolean = false) => {
     if (mentionStartIndex === -1) return;
 
-    const before = content.substring(0, mentionStartIndex);
-    const after = content.substring(textareaRef.current?.selectionStart || content.length);
+    const currentText = isCaption ? mediaCaption : content;
+    const ref = isCaption ? captionTextareaRef : textareaRef;
+
+    const before = currentText.substring(0, mentionStartIndex);
+    const after = currentText.substring(ref.current?.selectionStart || currentText.length);
     const newContent = `${before}@${name} ${after}`;
 
-    setContent(newContent);
+    if (isCaption) {
+      setMediaCaption(newContent);
+    } else {
+      setContent(newContent);
+    }
+    
     setShowMentions(false);
     setMentionStartIndex(-1);
 
     setTimeout(() => {
-      if (textareaRef.current) {
-        textareaRef.current.focus();
+      if (ref.current) {
+        ref.current.focus();
         const newPos = (before + "@" + name + " ").length;
-        textareaRef.current.setSelectionRange(newPos, newPos);
+        ref.current.setSelectionRange(newPos, newPos);
       }
     }, 10);
   };
@@ -644,7 +653,7 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
 
           {/* Mentions Dropdown — anchored relative to the textarea wrapper */}
           <AnimatePresence>
-            {showMentions && filteredMembers.length > 0 && (
+            {showMentions && filteredMembers.length > 0 && !selectedMediaFile && (
               <motion.div
                 initial={{ opacity: 0, y: 6, scale: 0.97 }}
                 animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -664,7 +673,7 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
                       <button
                         key={member._id}
                         id={`mention-item-${i}`}
-                        onClick={() => insertMention(member.userName || "")}
+                        onClick={() => insertMention(member.userName || "", false)}
                         onMouseEnter={() => setMentionIndex(i)}
                         className={cn(
                           "w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-colors",
@@ -764,20 +773,124 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
               </div>
             ) : null}
 
-            <Textarea
-              value={mediaCaption}
-              onChange={(e) => setMediaCaption(e.target.value)}
-              placeholder="Add a caption..."
-              disabled={uploadingMedia}
-              className="w-full resize-none min-h-[60px]"
-              rows={2}
-              onKeyDown={(e) => {
-                if (e.key === "Enter" && !e.shiftKey) {
-                  e.preventDefault();
-                  uploadAndSendMedia();
-                }
-              }}
-            />
+            <div className="relative w-full">
+              <Textarea
+                ref={captionTextareaRef}
+                value={mediaCaption}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setMediaCaption(val);
+
+                  const cursorPosition = e.target.selectionStart ?? 0;
+                  const textBeforeCursor = val.substring(0, cursorPosition);
+                  const lastAtIndex = textBeforeCursor.lastIndexOf("@");
+
+                  if (lastAtIndex !== -1) {
+                    const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
+                    const charBeforeAt = lastAtIndex > 0 ? textBeforeCursor[lastAtIndex - 1] : undefined;
+                    const validStart = charBeforeAt === undefined || charBeforeAt === " " || charBeforeAt === "\n";
+
+                    if (validStart && !textAfterAt.includes(" ")) {
+                      setMentionQuery(textAfterAt);
+                      setShowMentions(true);
+                      setMentionIndex(0);
+                      setMentionStartIndex(lastAtIndex);
+                    } else {
+                      setShowMentions(false);
+                      setMentionStartIndex(-1);
+                    }
+                  } else {
+                    setShowMentions(false);
+                    setMentionStartIndex(-1);
+                  }
+                }}
+                placeholder="Add a caption... (type @ to mention)"
+                disabled={uploadingMedia}
+                className="w-full resize-none min-h-[60px]"
+                rows={2}
+                onKeyDown={(e) => {
+                  if (showMentions && filteredMembers.length > 0) {
+                    if (e.key === "ArrowDown") {
+                      e.preventDefault();
+                      setMentionIndex((prev) => (prev + 1) % filteredMembers.length);
+                      return;
+                    }
+                    if (e.key === "ArrowUp") {
+                      e.preventDefault();
+                      setMentionIndex((prev) => (prev - 1 + filteredMembers.length) % filteredMembers.length);
+                      return;
+                    }
+                    if (e.key === "Enter" || e.key === "Tab") {
+                      e.preventDefault();
+                      insertMention(filteredMembers[mentionIndex].userName || "unknown", true);
+                      return;
+                    }
+                    if (e.key === "Escape") {
+                      setShowMentions(false);
+                      return;
+                    }
+                  }
+
+                  if (e.key === "Enter" && !e.shiftKey) {
+                    e.preventDefault();
+                    uploadAndSendMedia();
+                  }
+                }}
+              />
+              <AnimatePresence>
+                {showMentions && filteredMembers.length > 0 && !!selectedMediaFile && (
+                  <motion.div
+                    initial={{ opacity: 0, y: 6, scale: 0.97 }}
+                    animate={{ opacity: 1, y: 0, scale: 1 }}
+                    exit={{ opacity: 0, y: 6, scale: 0.97 }}
+                    transition={{ duration: 0.15, ease: "easeOut" }}
+                    className="absolute bottom-[calc(100%+8px)] left-0 w-64 bg-popover border border-border/50 shadow-2xl rounded-xl overflow-hidden z-[200]"
+                  >
+                    <div className="px-3 py-2 border-b border-border/40 bg-muted/50 flex items-center gap-2">
+                      <AtSign className="h-3.5 w-3.5 text-primary" />
+                      <span className="text-sm text-muted-foreground">Mention someone</span>
+                    </div>
+                    <div className="max-h-[220px] overflow-y-auto scrollbar-thin">
+                      <div className="py-1">
+                        {filteredMembers.map((member, i) => (
+                          <button
+                            key={member._id}
+                            id={`caption-mention-item-${i}`}
+                            onClick={() => insertMention(member.userName || "", true)}
+                            onMouseEnter={() => setMentionIndex(i)}
+                            className={cn(
+                              "w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-colors",
+                              i === mentionIndex ? "bg-primary/15" : "hover:bg-accent/40"
+                            )}
+                          >
+                            <Avatar className="h-8 w-8 border border-border/40 shrink-0">
+                              <AvatarImage src={member.userImage ?? undefined} />
+                              <AvatarFallback className="text-[11px] bg-primary/10 text-primary font-bold">
+                                {(member.userName || "??").substring(0, 2).toUpperCase()}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex flex-col min-w-0">
+                              <span
+                                className="text-[13px] font-semibold truncate leading-tight"
+                                style={{ color: getUserColor(member.userName || "") }}
+                              >
+                                {member.userName}
+                              </span>
+                              <span className="text-[11px] text-muted-foreground truncate">
+                                {member.AccessRole || "Member"}
+                              </span>
+                            </div>
+                            {i === mentionIndex && (
+                              <span className="ml-auto text-[9px] text-muted-foreground/60 shrink-0">↵</span>
+                            )}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  </motion.div>
+                )}
+              </AnimatePresence>
+            </div>
           </div>
 
           <DialogFooter className="sm:justify-end gap-2">
