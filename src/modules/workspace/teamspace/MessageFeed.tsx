@@ -222,7 +222,7 @@ export function MessageFeed({
         });
 
         target.scrollIntoView({ behavior: "smooth", block: "center" });
-        
+
         // Add a visual premium pulse to the message container
         const container =
           messageEl || (wordEl?.closest('[id^="message-"]') as HTMLElement);
@@ -399,18 +399,18 @@ export function MessageFeed({
       {/* Channel header */}
       <div className="flex items-center justify-between px-6 h-14 border-b border-border/80 flex-none bg-background/95 backdrop-blur z-10">
         <div className="flex items-center gap-3.5 min-w-0">
-          <div className="bg-primary/10 p-1.5 rounded-lg shrink-0 border border-primary/20">
-            <ChannelIcon className="h-5 w-5 text-primary" />
-          </div>
+
+          <ChannelIcon className="h-4 w-4 text-primary" />
+
           <div className="flex flex-col min-w-0">
             <div className="flex items-center gap-2">
-              <h2 className="font-bold text-xl leading-tight text-foreground truncate tracking-tight capitalize">
+              <h2 className="font-semibold text-xl leading-tight text-foreground truncate tracking-tight capitalize">
                 {channel.name}
               </h2>
-              {isAnnouncement && <Lock className="h-4 w-4 text-amber-500/70" />}
+              {isAnnouncement && <Lock className="h-4 w-4 text-muted-foreground" />}
             </div>
             {channel.description && (
-              <p className="text-[11px] text-muted-foreground/50 truncate leading-tight mt-0.5 font-medium first-letter:uppercase">
+              <p className="text-[10px] text-muted-foreground line-clamp-1 truncate leading-tight mt-0.5 font-medium first-letter:uppercase">
                 {channel.description}
               </p>
             )}
@@ -558,7 +558,7 @@ export function MessageFeed({
             </div>
           </TooltipProvider>
 
-          <div className="relative group flex items-center bg-accent/40 rounded-full border border-border/50 hover:bg-accent/60 transition-all overflow-hidden w-64 ring-primary/20 focus-within:ring-2">
+          <div className="relative group flex items-center bg-accent/50 rounded-full border border-border hover:bg-accent/60 transition-all overflow-hidden w-64 ring-primary/20 focus-within:ring-2">
             <div className="relative flex-1 flex items-center">
               <input
                 type="text"
@@ -566,14 +566,14 @@ export function MessageFeed({
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
                 className={cn(
-                  "bg-transparent text-[11px] px-3 py-1.5 w-full focus:outline-none placeholder:text-muted-foreground/50",
+                  "bg-transparent text-[11px] px-3 py-1.5 w-full focus:outline-none placeholder:text-muted-foreground",
                   searchQuery ? "pr-[85px]" : "pr-8",
                 )}
               />
 
               <div className="absolute right-1 top-1/2 -translate-y-1/2 flex items-center">
                 {searchQuery ? (
-                  <div className="flex items-center gap-1.5 bg-background/80 backdrop-blur-md rounded-xl px-2.5 py-1.5 border border-border/60 shadow-lg animate-in fade-in zoom-in duration-300">
+                  <div className="flex items-center gap-1.5 bg-transparent backdrop-blur-md rounded-xl px-2.5 py-1.5 border border-border/60 shadow-lg animate-in fade-in zoom-in duration-300">
                     {searchResults.length > 0 && (
                       <span className="text-[11px] font-black text-primary/80 px-2 tabular-nums border-r border-border/50 mr-1.5">
                         {currentSearchIndex + 1}/{searchResults.length}
@@ -610,7 +610,7 @@ export function MessageFeed({
                     </button>
                   </div>
                 ) : (
-                  <Search className="h-4 w-4 mr-3 text-muted-foreground/40 group-hover:text-primary/60 transition-colors" />
+                  <Search className="h-4 w-4 mr-3 text-muted-foreground" />
                 )}
               </div>
             </div>
