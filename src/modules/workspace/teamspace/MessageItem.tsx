@@ -493,15 +493,21 @@ export function MessageItem({
                       return parts.map((part, i) => {
                         if (part.startsWith("@")) {
                           const username = part.substring(1);
-                          return (
-                            <span
-                              key={`mention-${i}`}
-                              className="font-bold hover:underline cursor-pointer transition-all"
-                              style={{ color: getUserColor(username) }}
-                            >
-                              {part}
-                            </span>
-                          );
+                          const lowerName = username.toLowerCase();
+                          const isSpecial = ["admin", "owner", "member", "everyone"].includes(lowerName);
+                          const isMember = isSpecial || projectMembers?.some(m => m.userName?.toLowerCase() === lowerName);
+
+                          if (isMember) {
+                            return (
+                              <span
+                                key={`mention-${i}`}
+                                className="font-bold hover:underline cursor-pointer transition-all"
+                                style={{ color: getUserColor(username) }}
+                              >
+                                {part}
+                              </span>
+                            );
+                          }
                         }
                         return (
                           <Highlight

@@ -212,6 +212,8 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
     if (!trimmed) return;
 
     setContent("");
+    setShowCodeLinker(false);
+    setShowMentions(false);
 
     if (textareaRef.current) {
       textareaRef.current.style.height = "auto";
@@ -316,11 +318,18 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
           <PopoverTrigger asChild>
             <div className="absolute top-0 left-4 w-0 h-0 pointer-events-none" />
           </PopoverTrigger>
-          <PopoverContent className="w-[340px] p-0 border-border/40 bg-background/95 backdrop-blur-xl shadow-2xl rounded-xl overflow-hidden" side="top" align="start" sideOffset={10}>
+          <PopoverContent 
+            className="w-[340px] p-0 border-border/40 bg-background/95 backdrop-blur-xl shadow-2xl rounded-xl overflow-hidden" 
+            side="top" 
+            align="start" 
+            sideOffset={10}
+            onOpenAutoFocus={(e) => e.preventDefault()}
+          >
             <GetRepoStructure
               repoFullName={project?.repoFullName}
               ownerClerkId={project?.ownerClerkId}
               selectedPath={selectedPath}
+              onClose={() => setShowCodeLinker(false)}
               onSelect={(path) => {
                 if (path) {
                   const before = content.substring(0, content.lastIndexOf("\\"));
@@ -611,8 +620,9 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
               } else if (lastBackslashIndex !== -1) {
                 const charBeforeBackslash = lastBackslashIndex > 0 ? textBeforeCursor[lastBackslashIndex - 1] : undefined;
                 const validStart = charBeforeBackslash === undefined || charBeforeBackslash === " " || charBeforeBackslash === "\n";
+                const textAfterBackslash = textBeforeCursor.substring(lastBackslashIndex + 1);
 
-                if (validStart) {
+                if (validStart && !textAfterBackslash.includes(" ")) {
                   setShowCodeLinker(true);
                   setShowMentions(false);
                 } else {
