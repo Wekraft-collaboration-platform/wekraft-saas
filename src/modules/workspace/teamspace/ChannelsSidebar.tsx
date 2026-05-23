@@ -37,6 +37,7 @@ import {
   Trash2,
   PlaneTakeoff,
   MoreHorizontal,
+  X,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -96,6 +97,7 @@ export function ChannelsSidebar({
   const [deleteOpen, setDeleteOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [targetChannel, setTargetChannel] = useState<Channel | null>(null);
+  const [showHint, setShowHint] = useState(true);
 
   const { settings } = useTeamspaceSettings(projectId);
   const canCreate = isPower || settings?.members_can_create_channels === 1;
@@ -339,6 +341,27 @@ export function ChannelsSidebar({
           )}
         </div>
       </ScrollArea>
+
+      {showHint && (
+        <div className="px-3 pb-3 shrink-0">
+          <div className="bg-muted/40 border border-accent rounded-lg p-2.5 relative group animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <button 
+              onClick={() => setShowHint(false)}
+              className="absolute top-1 right-1 p-0.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
+            >
+              <X className="h-3.5 w-3.5" />
+            </button>
+            <div className="text-[13px] text-muted-foreground pr-4 leading-tight">
+              <span className="block text-foreground font-semibold mb-1.5">Quick tip:</span>
+              <ol className="list-decimal list-inside space-y-1 ml-0.5">
+                <li><strong className="text-foreground">@</strong> for mentions</li>
+                <li><strong className="text-foreground">/</strong> for ticket creation</li>
+                <li><strong className="text-foreground">\</strong> for code link</li>
+              </ol>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Bottom Setting Section */}
       <div className="bg-background border-t border-border shrink-0">
