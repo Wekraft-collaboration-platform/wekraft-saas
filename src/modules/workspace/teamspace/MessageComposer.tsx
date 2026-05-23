@@ -45,6 +45,7 @@ interface Props {
   replyingTo?: Message | null;
   onClearReply?: () => void;
   onSend: (content: string, poll?: any) => Promise<void>;
+  onUploadMedia?: (file: File, caption: string) => void;
   onTyping?: (isTyping: boolean) => void;
   disabled?: boolean;
   isAnnouncement?: boolean;
@@ -52,7 +53,7 @@ interface Props {
   projectSlug?: string;
 }
 
-export function MessageComposer({ channelName, projectId, replyingTo, onClearReply, onSend, onTyping, disabled, isAnnouncement, currentUserId, projectSlug }: Props) {
+export function MessageComposer({ channelName, projectId, replyingTo, onClearReply, onSend, onUploadMedia, onTyping, disabled, isAnnouncement, currentUserId, projectSlug }: Props) {
   const [content, setContent] = useState("");
   const [isPollDialogOpen, setIsPollDialogOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -94,56 +95,26 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
     setMediaCaption("");
   };
 
-  const uploadAndSendMedia = async () => {
-    if (!selectedMediaFile) return;
+  const uploadAndSendMedia = () => {
+    if (!selectedMediaFile || !onUploadMedia) return;
 
-    setUploadingMedia(true);
-    const formData = new FormData();
-    formData.append("file", selectedMediaFile);
+    onUploadMedia(selectedMediaFile, mediaCaption);
 
-    try {
-      const res = await fetch("/api/teamspace/media", {
-        method: "POST",
-        body: formData,
-      });
-
-      if (!res.ok) {
-        throw new Error(await res.text());
-      }
-
-      const data = await res.json();
-      if (data.url) {
-        const isImage = selectedMediaFile.type.startsWith("image/");
-        const markdownLink = isImage
-          ? `![${selectedMediaFile.name}](${data.url})`
-          : `[${selectedMediaFile.name}](${data.url})`;
-
-        let finalContent = markdownLink;
-        if (mediaCaption.trim()) {
-          finalContent += "\n\n" + mediaCaption.trim();
-        }
-
-        await onSend(finalContent);
-
-        setSelectedMediaFile(null);
-        if (mediaPreviewUrl) {
-          URL.revokeObjectURL(mediaPreviewUrl);
-          setMediaPreviewUrl(null);
-        }
-        setMediaCaption("");
-      }
-    } catch (err) {
-      console.error(err);
-      toast.error("Failed to upload media");
-    } finally {
-      setUploadingMedia(false);
-      if (fileInputRef.current) {
-        fileInputRef.current.value = "";
-      }
+    // Instantly close dialog
+    setShowMentions(false);
+    setSelectedMediaFile(null);
+    if (mediaPreviewUrl) {
+      URL.revokeObjectURL(mediaPreviewUrl);
+      setMediaPreviewUrl(null);
+    }
+    setMediaCaption("");
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
     }
   };
 
   const handleCancelMedia = () => {
+    setShowMentions(false);
     setSelectedMediaFile(null);
     if (mediaPreviewUrl) {
       URL.revokeObjectURL(mediaPreviewUrl);
@@ -840,11 +811,11 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
               <AnimatePresence>
                 {showMentions && filteredMembers.length > 0 && !!selectedMediaFile && (
                   <motion.div
-                    initial={{ opacity: 0, y: 6, scale: 0.97 }}
+                    initial={{ opacity: 0, y: -6, scale: 0.97 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: 6, scale: 0.97 }}
+                    exit={{ opacity: 0, y: -6, scale: 0.97 }}
                     transition={{ duration: 0.15, ease: "easeOut" }}
-                    className="absolute bottom-[calc(100%+8px)] left-0 w-64 bg-popover border border-border/50 shadow-2xl rounded-xl overflow-hidden z-[200]"
+                    className="absolute top-[calc(100%+8px)] left-0 w-64 bg-popover border border-border/50 shadow-2xl rounded-xl overflow-hidden z-[200]"
                   >
                     <div className="px-3 py-2 border-b border-border/40 bg-muted/50 flex items-center gap-2">
                       <AtSign className="h-3.5 w-3.5 text-primary" />

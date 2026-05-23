@@ -32,15 +32,19 @@ import {
   MoreHorizontal,
   Reply,
   Pencil,
-  Trash2,
-  Check,
-  X,
-  Copy,
-  Pin,
+  AtSign,
+  Paperclip,
+  Loader2,
   FileIcon,
   Download,
-  Ban,
   Eye,
+  Check,
+  Clock,
+  Trash2,
+  Copy,
+  Pin,
+  Ban,
+  X,
 } from "lucide-react";
 import {
   DropdownMenu,
@@ -474,7 +478,7 @@ export function MessageItem({
             ) : (
               <div className="relative flex flex-col">
                 {message.content && (() => {
-                  const s3Regex = /^(!?)\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)(?:\s+([\s\S]*))?$/;
+                  const s3Regex = /^(!?)\[([^\]]+)\]\(((?:blob:)?https?:\/\/[^\s\)]+)\)(?:\s+([\s\S]*))?$/;
                   const match = message.content.match(s3Regex);
                   
                   let isMedia = false;
@@ -530,7 +534,7 @@ export function MessageItem({
                       (edited)
                     </span>
                   );
-                  const timestampSpacer = !(message.poll && !message.content) && <span className="inline-block w-11 h-0" />;
+                  const timestampSpacer = !(message.poll && !message.content) && <span className={cn("inline-block h-0", message.id.startsWith("optimistic-") ? "w-14" : "w-11")} />;
 
                   if (isMedia) {
                      return (
@@ -596,7 +600,7 @@ export function MessageItem({
                            
                            {/* Space for timestamp if no caption */}
                            {!captionText && !message.edited_at && (
-                             <div className="h-3 w-11 mt-1" />
+                             <div className={cn("h-3 mt-1", message.id.startsWith("optimistic-") ? "w-14" : "w-11")} />
                            )}
                         </div>
                      );
@@ -621,14 +625,17 @@ export function MessageItem({
                       onVote={(msgId, optId) => onPollVote(msgId, optId)}
                     />
                     {/* Invisible spacer for timestamp when there's only a poll */}
-                    {!message.content && <div className="h-2 w-11" />}
+                    {!message.content && <div className={cn("h-2", message.id.startsWith("optimistic-") ? "w-14" : "w-11")} />}
                   </div>
                 )}
 
-                <div className="absolute bottom-0 right-0 flex items-center">
+                <div className="absolute bottom-0 right-0 flex items-center gap-1">
                   <span className="text-[9px] select-none text-muted-foreground/60 font-medium uppercase leading-none">
                     {format(new Date(message.created_at), "h:mm a")}
                   </span>
+                  {message.user_id === currentUserId && message.id.startsWith("optimistic-") && (
+                    <Clock className="h-2.5 w-2.5 text-muted-foreground/60" />
+                  )}
                 </div>
               </div>
             )}
