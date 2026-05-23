@@ -359,6 +359,7 @@ export function ChannelsSidebar({
                 <li><strong className="text-foreground">@</strong> for mentions</li>
                 <li><strong className="text-foreground">/</strong> for ticket creation</li>
                 <li><strong className="text-foreground">\</strong> for code link</li>
+                <li><strong className="text-foreground">#</strong> for file upload</li>
               </ol>
             </div>
           </div>

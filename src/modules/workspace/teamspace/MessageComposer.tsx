@@ -571,6 +571,16 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
                 return;
               }
 
+              if (val.trim() === "#") {
+                if (fileInputRef.current) {
+                  fileInputRef.current.click();
+                }
+                setContent("");
+                setShowMentions(false);
+                setShowCodeLinker(false);
+                return;
+              }
+
               setContent(val);
               onTyping?.(val.length > 0);
 
