@@ -429,7 +429,7 @@ const ProjectWorkspace = () => {
               <div className="flex flex-col items-center justify-center py-16 ">
                 <div className="flex flex-col items-start gap-1.5 max-w-sm text-sm">
                   <Image
-                    src="/pat104.svg"
+                    src="/pat106.svg"
                     alt="locked features"
                     width={120}
                     height={120}

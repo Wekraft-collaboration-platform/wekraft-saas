@@ -22,6 +22,12 @@ import {
   PopoverTrigger,
 } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { useEffect, useRef } from "react";
 import { toast } from "sonner";
 import { useRouter } from "next/navigation";
@@ -81,7 +87,7 @@ function NotificationItem({
       {/* Avatar / Icon */}
       <div className="relative shrink-0 mt-0.5">
         {notif.senderAvatar ? (
-          <Avatar className="h-7 w-7 ring-1 ring-border/40 shadow-sm">
+          <Avatar className="h-6 w-6 ring-1 ring-border/40 shadow-sm">
             <AvatarImage src={notif.senderAvatar} />
             <AvatarFallback className="text-[9px] font-semibold bg-accent">
               {notif.senderName?.[0]?.toUpperCase() ?? "?"}
@@ -101,7 +107,7 @@ function NotificationItem({
       <div className="flex-1 min-w-0 pr-12">
         {notif.projectName && (
           <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
-            <span className="inline-flex items-center gap-1 text-[10px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20 tracking-wide shadow-sm">
+            <span className="inline-flex items-center gap-1 text-[10px] text-primary bg-primary/5 px-2 py-0.5 rounded-md border border-primary/10 tracking-wide shadow-sm">
               <FolderKanban className="h-3 w-3 text-primary/80 shrink-0" />
               <span className="truncate max-w-50">
                 {notif.projectName}
@@ -109,7 +115,7 @@ function NotificationItem({
             </span>
           </div>
         )}
-        <p className="text-[12px] leading-relaxed text-foreground font-normal">
+        <p className="text-[11px] leading-relaxed text-foreground font-normal">
           {renderNotificationBody(notif.body)}
         </p>
         {/* {notif.entityTitle && (
@@ -224,25 +230,32 @@ export function NotificationCenter() {
 
   return (
     <Popover>
-      <PopoverTrigger asChild>
-        <Button
-          variant="outline"
-          size="icon-sm"
-          className="relative h-9 w-9 rounded-lg border-border/40 hover:bg-accent/40"
-          aria-label="Notifications"
-        >
-          {unreadCount > 0 ? (
-            <BellRing className="h-4 w-4 text-primary animate-[wiggle_0.5s_ease-in-out]" />
-          ) : (
-            <Bell className="h-4 w-4" />
-          )}
-          {unreadCount > 0 && (
-            <span className="absolute -top-1 -right-1 h-4 min-w-4 rounded-full bg-primary text-[9px] font-bold text-primary-foreground flex items-center justify-center px-1 ring-2 ring-background">
-              {unreadCount > 99 ? "99+" : unreadCount}
-            </span>
-          )}
-        </Button>
-      </PopoverTrigger>
+      <TooltipProvider>
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <PopoverTrigger asChild>
+              <Button
+                variant="outline"
+                size="icon-sm"
+                className="relative h-9 w-9 rounded-lg border-border/40 hover:bg-accent/40"
+                aria-label="Notifications"
+              >
+                {unreadCount > 0 ? (
+                  <BellRing className="h-4 w-4 text-primary animate-[wiggle_0.5s_ease-in-out]" />
+                ) : (
+                  <Bell className="h-4 w-4" />
+                )}
+                {unreadCount > 0 && (
+                  <span className="absolute -top-1 -right-1 h-4 min-w-4 rounded-full bg-primary text-[9px] font-bold text-primary-foreground flex items-center justify-center px-1 ring-2 ring-background">
+                    {unreadCount > 99 ? "99+" : unreadCount}
+                  </span>
+                )}
+              </Button>
+            </PopoverTrigger>
+          </TooltipTrigger>
+          <TooltipContent>Show Notifications</TooltipContent>
+        </Tooltip>
+      </TooltipProvider>
 
       <PopoverContent
         align="end"

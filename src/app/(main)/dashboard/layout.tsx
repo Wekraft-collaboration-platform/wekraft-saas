@@ -21,6 +21,12 @@ import { NotificationCenter } from "@/modules/dashboard/components/NotificationC
 import { ShareProjectDialog } from "@/modules/dashboard/components/ShareProjectDialog";
 import { UserMenu } from "@/modules/dashboard/components/UserMenu";
 import { api } from "../../../../convex/_generated/api";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 export default function Layout({
   children,
@@ -82,41 +88,60 @@ export default function Layout({
                   }}
                 /> */}
                 <div className="flex items-center gap-3">
-                  <NotificationCenter />
-                  <Button
-                    size="icon-sm"
-                    variant="outline"
-                    onClick={() =>
-                      setTheme(theme === "dark" ? "light" : "dark")
-                    }
-                    aria-label="Toggle theme"
-                  >
-                    {!mounted || theme === "light" ? (
-                      <SunMedium className="h-4 w-4" />
-                    ) : (
-                      <Moon className="h-4 w-4" />
+                  <TooltipProvider>
+                    <NotificationCenter />
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          size="icon-sm"
+                          variant="outline"
+                          onClick={() =>
+                            setTheme(theme === "dark" ? "light" : "dark")
+                          }
+                          aria-label="Toggle theme"
+                        >
+                          {!mounted || theme === "light" ? (
+                            <SunMedium className="h-4 w-4" />
+                          ) : (
+                            <Moon className="h-4 w-4" />
+                          )}
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Theme Switcher</TooltipContent>
+                    </Tooltip>
+                    {/* Only when workspace ! */}
+                    {isWorkspaceRoute && (
+                      <>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              size="icon-sm"
+                              variant="outline"
+                              onClick={() => setIsShareOpen(true)}
+                              aria-label="Share project"
+                            >
+                              <Share2 className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Share Project</TooltipContent>
+                        </Tooltip>
+                        <Link href={`/dashboard/my-projects/${slug}/workspace/meet`}>
+                          <Tooltip>
+                            <TooltipTrigger asChild>
+                              <Button
+                                size="icon-sm"
+                                variant="outline"
+                                aria-label="Start video call"
+                              >
+                                <Video className="h-4 w-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Team Meet</TooltipContent>
+                          </Tooltip>
+                        </Link>
+                      </>
                     )}
-                  </Button>
-                  {/* Only when workspace ! */}
-                  {isWorkspaceRoute && (
-                    <>
-                      <Button
-                        size="icon-sm"
-                        variant="outline"
-                        onClick={() => setIsShareOpen(true)}
-                        aria-label="Share project"
-                      >
-                        <Share2 className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        size="icon-sm"
-                        variant="outline"
-                        aria-label="Start video call"
-                      >
-                        <Video className="h-4 w-4" />
-                      </Button>
-                    </>
-                  )}
+                  </TooltipProvider>
                 </div>
                 <UserMenu />
               </div>

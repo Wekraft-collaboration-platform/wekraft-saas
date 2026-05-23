@@ -222,15 +222,15 @@ export default function DashboardPage() {
           <div className="flex-1 min-w-0 flex flex-col gap-6 py-8 pl-8">
             {/* Connect Github */}
             {!githubUsername && (
-              <h2 className="text-base italic font-medium tracking-tight font-inter">
-
-                <>You havent connected github yet, connect to unlock full potential.
-                  <Button
-                    onClick={handleConnectGithub} className="text-xs cursor-pointer px-5! h-7.5! ml-2" size='sm'>
-                    Connect <Github />
-                  </Button></>
-
-              </h2>
+              <div className="flex items-center gap-5">
+                <h2 className="text-base italic font-medium tracking-tight font-inter">
+                  You havent connected github yet, connect to unlock full potential.
+                </h2>
+                <Button
+                  onClick={handleConnectGithub} className="text-sm rounded-sm! cursor-pointer px-5! h-7.5! ml-2" size='sm'>
+                  Connect <Github />
+                </Button>
+              </div>
             )}
 
             {/* 3 Metric Cards */}

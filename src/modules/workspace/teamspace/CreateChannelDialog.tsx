@@ -79,7 +79,7 @@ export function CreateChannelDialog({ open, onOpenChange, onCreate }: Props) {
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
+      <DialogContent className="sm:max-w-md bg-card rounded-lg!">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Hash className="h-4 w-4" />
@@ -104,11 +104,10 @@ export function CreateChannelDialog({ open, onOpenChange, onCreate }: Props) {
                     >
                       <label
                         htmlFor="type-text"
-                        className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${
-                          field.value === "text"
-                            ? "border-primary bg-accent"
-                            : "border-border hover:bg-accent/50"
-                        }`}
+                        className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${field.value === "text"
+                          ? "border-primary/10 bg-accent/40"
+                          : "border-primary/20 hover:bg-accent/20"
+                          }`}
                       >
                         <RadioGroupItem value="text" id="type-text" className="sr-only" />
                         <Hash className="h-4 w-4 shrink-0" />
@@ -119,11 +118,10 @@ export function CreateChannelDialog({ open, onOpenChange, onCreate }: Props) {
                       </label>
                       <label
                         htmlFor="type-announcement"
-                        className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${
-                          field.value === "announcement"
-                            ? "border-primary bg-accent"
-                            : "border-border hover:bg-accent/50"
-                        }`}
+                        className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${field.value === "announcement"
+                          ? "border-primary/10 bg-accent/40"
+                          : "border-primary/20 hover:bg-accent/20"
+                          }`}
                       >
                         <RadioGroupItem value="announcement" id="type-announcement" className="sr-only" />
                         <Megaphone className="h-4 w-4 shrink-0" />
@@ -147,12 +145,12 @@ export function CreateChannelDialog({ open, onOpenChange, onCreate }: Props) {
                 <FormItem>
                   <FormLabel>Channel Name</FormLabel>
                   <FormControl>
-                    <div className="flex items-center gap-1 border rounded-md px-3 bg-input focus-within:ring-1 focus-within:ring-ring">
+                    <div className="flex items-center gap-1 border rounded-md px-3 bg-transparent!  focus-within:ring-1 focus-within:ring-ring">
                       <Hash className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                       <Input
                         {...field}
                         placeholder="e.g. dev-chat"
-                        className="border-0 p-0 h-9 shadow-none focus-visible:ring-0 bg-transparent"
+                        className="border-0 p-0 h-9 shadow-none focus-visible:ring-0 bg-transparent!"
                         onChange={(e) =>
                           field.onChange(e.target.value.toLowerCase().replace(/\s+/g, "-"))
                         }
@@ -187,7 +185,7 @@ export function CreateChannelDialog({ open, onOpenChange, onCreate }: Props) {
               <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
                 Cancel
               </Button>
-              <Button type="submit" disabled={loading}>
+              <Button type="submit" disabled={loading} className="text-xs">
                 {loading ? "Creating..." : "Create Channel"}
               </Button>
             </DialogFooter>
