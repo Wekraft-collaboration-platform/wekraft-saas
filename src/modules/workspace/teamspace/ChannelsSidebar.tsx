@@ -344,15 +344,17 @@ export function ChannelsSidebar({
 
       {showHint && (
         <div className="px-3 pb-3 shrink-0">
-          <div className="bg-muted/40 border border-accent rounded-lg p-2.5 relative group animate-in fade-in slide-in-from-bottom-2 duration-300">
-            <button 
-              onClick={() => setShowHint(false)}
-              className="absolute top-1 right-1 p-0.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors"
-            >
-              <X className="h-3.5 w-3.5" />
-            </button>
-            <div className="text-[13px] text-muted-foreground pr-4 leading-tight">
-              <span className="block text-foreground font-semibold mb-1.5">Quick tip:</span>
+          <div className="bg-muted/40 border border-accent rounded-lg relative group animate-in fade-in slide-in-from-bottom-2 duration-300">
+            <div className="px-3 py-2 border-b border-border/50 flex items-center justify-between">
+              <span className="text-[13px] font-semibold text-foreground">Quick tip:</span>
+              <button 
+                onClick={() => setShowHint(false)}
+                className="p-0.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors cursor-pointer"
+              >
+                <X className="h-3.5 w-3.5" />
+              </button>
+            </div>
+            <div className="p-3 text-[13px] text-muted-foreground leading-tight">
               <ol className="list-decimal list-inside space-y-1 ml-0.5">
                 <li><strong className="text-foreground">@</strong> for mentions</li>
                 <li><strong className="text-foreground">/</strong> for ticket creation</li>
