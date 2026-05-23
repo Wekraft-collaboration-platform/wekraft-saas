@@ -44,10 +44,13 @@ import {
   X,
   ArrowLeft,
   PinOff,
+  TicketPlus,
+  TicketSlash,
 } from "lucide-react";
 import { format, isToday, isYesterday } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { toast } from "sonner";
 import {
   Tooltip,
   TooltipContent,
@@ -63,7 +66,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useProjectPermissions } from "@/hooks/use-project-permissions";
 import { Id } from "../../../../convex/_generated/dataModel";
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { useChannelReads } from "./hooks/useChannelReads";
 
@@ -148,6 +151,12 @@ export function MessageFeed({
   });
 
   const { reads: channelReads } = useChannelReads(projectId, channel?.id);
+
+  const tickets = useQuery(api.workspace.getTickets, {
+    projectId: projectId as Id<"projects">,
+  });
+  const updateTicketStatusMutation = useMutation(api.workspace.updateTicketStatus);
+  const openTicketsCount = tickets?.filter((t) => t.status === "open").length ?? 0;
 
   // Trigger jumpToMessage when navigated from a notification
   useEffect(() => {
@@ -420,6 +429,138 @@ export function MessageFeed({
         <div className="flex items-center gap-4 ml-4 shrink-0">
           <TooltipProvider delayDuration={400}>
             <div className="flex items-center gap-3 text-muted-foreground">
+              {/* Tickets popover */}
+              <Popover>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <PopoverTrigger asChild>
+                      <button className="focus:outline-none relative group p-1 rounded-md hover:bg-accent/40 transition-colors">
+                        <TicketSlash className="h-5 w-5 hover:text-foreground cursor-pointer transition-colors" />
+                        {openTicketsCount > 0 && (
+                          <span className="absolute -top-1 -right-1 flex h-4 w-4 items-center justify-center rounded-full bg-emerald-500 text-[8px] font-bold text-white shadow-sm ring-1 ring-background">
+                            {openTicketsCount}
+                          </span>
+                        )}
+                      </button>
+                    </PopoverTrigger>
+                  </TooltipTrigger>
+                  <TooltipContent>Shows all Tickets</TooltipContent>
+                </Tooltip>
+                <PopoverContent
+                  className="w-[360px] p-0 shadow-xl border-border overflow-hidden bg-background backdrop-blur-xl rounded-xl"
+                  align="end"
+                  sideOffset={12}
+                >
+                  <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border-b border-border/50">
+                    <div className="flex items-center gap-2.5">
+                      <TicketSlash className="h-4 w-4" />
+                      <span className="text-sm font-semibold">Tickets</span>
+                    </div>
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {openTicketsCount} open / {tickets?.length || 0} total
+                    </span>
+                  </div>
+
+                  <ScrollArea className="h-[380px]">
+                    {!tickets || tickets.length === 0 ? (
+                      <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+                        <TicketSlash className="h-8 w-8 text-muted-foreground/60" />
+                        <p className="text-sm text-foreground mt-2 font-medium">
+                          No tickets created yet
+                        </p>
+                        <p className="text-xs text-muted-foreground/80 mt-1.5 leading-relaxed">
+                          Type <code className="bg-muted px-1.5 py-0.5 rounded text-primary font-bold">/</code> in the chat box to create a ticket.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="p-2 space-y-2">
+                        {tickets.map((ticket) => (
+                          <div
+                            key={ticket._id}
+                            className={cn(
+                              "group relative border border-border/30 rounded-lg p-2.5 bg-muted/40 hover:bg-accent/10 transition-all duration-200",
+                              ticket.status !== "open" && "opacity-60"
+                            )}
+                          >
+                            <div className="flex items-center justify-between gap-2 mb-1.5">
+                              <span className={cn(
+                                "text-[8px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider",
+                                ticket.status === "open" ? "bg-emerald-500/10 text-emerald-500" : "bg-muted-foreground/15 text-muted-foreground"
+                              )}>
+                                {ticket.status}
+                              </span>
+                              <span className="text-[9px] text-muted-foreground">
+                                {format(new Date(ticket.createdAt), "MMM d, h:mm a")}
+                              </span>
+                            </div>
+
+                            <p className="text-xs text-foreground leading-relaxed break-words mb-2 pr-10">
+                              {ticket.body}
+                            </p>
+
+                            <div className="flex items-center justify-between pt-2 border-t border-border/20 text-[9px]">
+                              <div className="flex items-center gap-1">
+                                <span className="text-muted-foreground/80">Assignee:</span>
+                                <div className="flex items-center gap-1 truncate max-w-[100px]">
+                                  <Avatar className="h-3.5 w-3.5">
+                                    <AvatarImage src={ticket.assignee?.avatar ?? undefined} />
+                                    <AvatarFallback className="text-[7px] bg-primary/10 text-primary font-bold">
+                                      {(ticket.assignee?.name || "??").substring(0, 2).toUpperCase()}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <span className="font-semibold text-foreground/90 truncate">{ticket.assignee?.name || "Unassigned"}</span>
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className="text-muted-foreground/80">Creator:</span>
+                                <div className="flex items-center gap-1 truncate max-w-[100px]">
+                                  <Avatar className="h-3.5 w-3.5">
+                                    <AvatarImage src={ticket.creator?.avatar ?? undefined} />
+                                    <AvatarFallback className="text-[7px] bg-primary/10 text-primary font-bold">
+                                      {(ticket.creator?.name || "??").substring(0, 2).toUpperCase()}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <span className="font-semibold text-foreground/90 truncate">{ticket.creator?.name || "Unknown"}</span>
+                                </div>
+                              </div>
+                            </div>
+
+                            {/* Ticket action to close/reopen */}
+                            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="h-5 px-1.5 text-[9px] font-bold text-muted-foreground hover:text-foreground hover:bg-accent/40 rounded transition-all"
+                                onClick={async () => {
+                                  try {
+                                    const nextStatus = ticket.status === "open" ? "closed" : "open";
+                                    await updateTicketStatusMutation({
+                                      ticketId: ticket._id,
+                                      status: nextStatus,
+                                    });
+                                    toast.success(`Ticket marked as ${nextStatus}`);
+                                  } catch (err) {
+                                    console.error("Failed to update ticket status:", err);
+                                    toast.error("Failed to update ticket");
+                                  }
+                                }}
+                              >
+                                {ticket.status === "open" ? "Close" : "Reopen"}
+                              </Button>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    )}
+                  </ScrollArea>
+                  <div className="px-4 py-2.5 bg-accent/30 border-t border-border flex items-center justify-center gap-2">
+                    <p className="text-xs  text-muted-foreground">
+                      Collaborative space tickets
+                    </p>
+                  </div>
+                </PopoverContent>
+              </Popover>
+              {/* Pinned messages button */}
               <Popover>
                 <Tooltip>
                   <TooltipTrigger asChild>
@@ -437,35 +578,35 @@ export function MessageFeed({
                   <TooltipContent>Pinned Messages</TooltipContent>
                 </Tooltip>
                 <PopoverContent
-                  className="w-80 p-0 shadow-2xl border-border/40 overflow-hidden bg-background/95 backdrop-blur-xl rounded-xl"
+                  className="w-80 p-0 shadow-xl border-border overflow-hidden bg-background backdrop-blur-xl rounded-xl"
                   align="end"
                   sideOffset={12}
                 >
-                  <div className="flex items-center justify-between px-4 py-3 bg-gradient-to-r from-blue-500/10 to-transparent border-b border-border/50">
+                  <div className="flex items-center justify-between px-4 py-3 bg-muted/30 border-b border-border/50">
                     <div className="flex items-center gap-2.5">
-                      <div className="bg-blue-500/20 p-1 rounded-md">
-                        <Pin className="h-4 w-4 text-blue-500" />
-                      </div>
-                      <span className="text-xs font-bold uppercase tracking-[0.1em] text-foreground/90">
+
+                      <Pin className="h-4 w-4" />
+
+                      <span className="text-sm">
                         Pins
                       </span>
                     </div>
-                    <div className="px-2 py-0.5 rounded-full bg-accent/50 border border-border/40">
-                      <span className="text-[10px] font-medium text-muted-foreground">
-                        {pinnedMessages.length} total
-                      </span>
-                    </div>
+
+                    <span className="text-xs font-medium text-muted-foreground">
+                      {pinnedMessages.length} total
+                    </span>
                   </div>
+
                   <ScrollArea className="h-[380px]">
                     {pinnedMessages.length === 0 ? (
                       <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
-                        <div className="bg-accent/40 p-4 rounded-full mb-4 ring-8 ring-accent/10">
-                          <Pin className="h-8 w-8 text-muted-foreground/30" />
-                        </div>
-                        <p className="text-sm font-semibold text-foreground/80">
+
+                        <Pin className="h-8 w-8 text-muted-foreground" />
+
+                        <p className="text-sm text-foreground">
                           No pinned messages
                         </p>
-                        <p className="text-xs text-muted-foreground/50 mt-1.5 leading-relaxed">
+                        <p className="text-xs text-muted-foreground/80 mt-1.5 leading-relaxed">
                           Pin important messages to find them easily later.
                         </p>
                       </div>
@@ -498,14 +639,14 @@ export function MessageFeed({
                                     <span className="text-[12px] font-bold text-foreground/90 leading-none">
                                       {msg.user_name}
                                     </span>
-                                    <span className="text-[10px] text-muted-foreground/40 font-medium">
+                                    <span className="text-[10px] text-muted-foreground font-medium">
                                       {format(
                                         new Date(msg.created_at),
                                         "MMM d",
                                       )}
                                     </span>
                                   </div>
-                                  <p className="text-[11px] text-foreground/70 leading-relaxed antialiased line-clamp-3">
+                                  <p className="text-[11px] text-foreground leading-relaxed antialiased line-clamp-3">
                                     {msg.content}
                                   </p>
                                 </div>
@@ -519,7 +660,7 @@ export function MessageFeed({
                                         e.stopPropagation();
                                         togglePin(msg.id, false);
                                       }}
-                                      className="absolute bottom-2 right-2 p-1.5 rounded-md bg-accent/20 border border-border/30 text-muted-foreground/40 hover:text-red-500 hover:bg-red-500/10 hover:border-red-500/20 opacity-0 group-hover:opacity-100 transition-all duration-200 cursor-pointer backdrop-blur-sm"
+                                      className="absolute bottom-2 right-2 p-1.5 rounded-md bg-accent/20 border border-border/30 text-muted-foreground cursor-pointer backdrop-blur-sm"
                                     >
                                       <PinOff className="h-3 w-3" />
                                     </button>
@@ -537,15 +678,15 @@ export function MessageFeed({
                       </div>
                     )}
                   </ScrollArea>
-                  <div className="px-4 py-2.5 bg-accent/30 border-t border-border/50 flex items-center justify-center gap-2">
-                    <div className="h-1 w-1 rounded-full bg-blue-500/50" />
-                    <p className="text-[9px] font-semibold uppercase tracking-[0.05em] text-muted-foreground/60">
+                  <div className="px-4 py-2.5 bg-accent/30 border-t border-border flex items-center justify-center gap-2">
+                    <p className="text-[10px]  text-muted-foreground">
                       Pinned globally for all members
                     </p>
                   </div>
                 </PopoverContent>
               </Popover>
 
+              {/* MEMBER PANNEL */}
               <Tooltip>
                 <TooltipTrigger asChild>
                   <Users

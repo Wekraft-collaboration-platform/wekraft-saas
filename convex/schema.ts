@@ -23,7 +23,7 @@ export default defineSchema({
     createdAt: v.number(),
     updatedAt: v.number(),
     planExpiry: v.optional(v.number()), // For temporary upgrades/coupons
-    
+
     // Subscription Data
     subscriptionId: v.optional(v.string()),
     customerId: v.optional(v.string()),
@@ -373,8 +373,7 @@ export default defineSchema({
   // -------------------------------------------------
   tickets: defineTable({
     projectId: v.id("projects"),
-    title: v.string(),
-    description: v.optional(v.string()),
+    body: v.string(),
     createdBy: v.id("users"),
     assignedTo: v.id("users"),
     status: v.union(v.literal("open"), v.literal("closed")),
@@ -440,7 +439,7 @@ export default defineSchema({
     .index("by_project_user", ["projectId", "userId"]),
 
 
-// Admin messages to all users -----------------------
+  // Admin messages to all users -----------------------
   announcements: defineTable({
     title: v.string(),
     description: v.string(),
