@@ -38,11 +38,13 @@ import { InviteDialog } from "@/modules/project/inviteDilogag";
 import ProjectInfo from "@/modules/project/ProjectInfo";
 import { ProjectJoinRequests } from "@/modules/project/project-join-requests";
 import SettingTab from "@/modules/project/SettingsTab";
+import { useSidebar } from "@/components/ui/sidebar";
 
 const ProjectPage = () => {
   const params = useParams();
   const slug = params.slug as string;
   const router = useRouter();
+  const { open: isSidebarOpen } = useSidebar();
 
   const project = useQuery(api.project.getProjectBySlug, { slug });
   const projectInviteLink = project?.inviteLink;
@@ -210,7 +212,7 @@ const ProjectPage = () => {
 
       {/* ----------------------------------------------- */}
       {/* -------------------AWS SETUP HERE ------------- */}
-      <div className="w-[1080px] h-[260px] mx-auto bg-primary/10 rounded-lg overflow-hidden my-8 relative group border border-border">
+      <div className={`${isSidebarOpen ? "w-[1080px]" : "w-[1240px]"} h-[300px] mx-auto bg-primary/10 rounded-lg overflow-hidden my-8 relative group border border-border`}>
         {project.thumbnailUrl ? (
           <Image
             src={project.thumbnailUrl}
@@ -229,9 +231,8 @@ const ProjectPage = () => {
         {/* Overlay for upload */}
         {isOwner && (
           <div
-            className={`absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
-              isUploading ? "opacity-100" : ""
-            }`}
+            className={`absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${isUploading ? "opacity-100" : ""
+              }`}
           >
             {isUploading ? (
               <div className="flex flex-col items-center text-white">
@@ -243,7 +244,7 @@ const ProjectPage = () => {
                 <UploadCloud className="w-10 h-10 mb-2" />
                 <span className="font-semibold">Click to Upload Thumbnail</span>
                 <span className="text-xs text-white/70 mt-1">
-                  1080 x 260 Recommended (Max 1MB)
+                  1280 x 300 Recommended (Max 1MB)
                 </span>
                 <input
                   type="file"
@@ -315,11 +316,10 @@ const ProjectPage = () => {
               <UserPlus className="w-3.5 h-3.5" />
               {pendingRequestsCount > 0 && (
                 <span
-                  className={`px-1.5 py-0.5 rounded-full text-[9px] font-semibold transition-colors ${
-                    homeTab === "requests"
-                      ? "bg-background text-foreground"
-                      : "bg-primary text-primary-foreground"
-                  }`}
+                  className={`px-1.5 py-0.5 rounded-full text-[9px] font-semibold transition-colors ${homeTab === "requests"
+                    ? "bg-background text-foreground"
+                    : "bg-primary text-primary-foreground"
+                    }`}
                 >
                   {pendingRequestsCount}
                 </span>

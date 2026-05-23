@@ -910,7 +910,7 @@ export const updateProject = mutation({
       throw new Error("Unauthorized");
     }
 
-    const { projectId, ...patches } = args;
+    const { projectId, lookingForMembers, ...patches } = args;
     await ctx.db.patch(projectId, {
       ...patches,
       updatedAt: Date.now(),
