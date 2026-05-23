@@ -12,6 +12,7 @@ const isPublicRoute = createRouteMatcher([
   "/auth/callback(.*)",
   "/projects(.*)",
   "/api/public/(.*)",
+  "/api/payments/(.*)",
   "/invite(.*)",
   "/",
 ]);

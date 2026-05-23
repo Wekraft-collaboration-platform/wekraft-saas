@@ -250,24 +250,20 @@ export const completeOnboarding = mutation({
 });
 
 // ==============================
-// UPGRADE ACCOUNT (Usage for Coupons/Payments)
+// UPGRADE ACCOUNT (Coupons / internal server flows ONLY)
+// SECURITY: This is intentionally an internalMutation — it MUST NOT be public.
+// Any authenticated browser client can call public mutations, which would allow
+// users to grant themselves free Pro access via the browser console.
+// This can only be called from other Convex server functions.
 // =============================
-export const upgradeAccount = mutation({
+export const upgradeAccount = internalMutation({
   args: {
+    userId: v.id("users"),
     plan: v.union(v.literal("plus"), v.literal("pro")),
     durationDays: v.optional(v.number()), // e.g., 7 days for a 1-week coupon
   },
   handler: async (ctx, args) => {
-    const identity = await ctx.auth.getUserIdentity();
-    if (!identity) throw new Error("Unauthorized");
-
-    const user = await ctx.db
-      .query("users")
-      .withIndex("by_token", (q) =>
-        q.eq("clerkToken", identity.tokenIdentifier),
-      )
-      .unique();
-
+    const user = await ctx.db.get(args.userId);
     if (!user) throw new Error("User not found");
 
     let planExpiry = undefined;
@@ -275,7 +271,7 @@ export const upgradeAccount = mutation({
       planExpiry = Date.now() + args.durationDays * 24 * 60 * 60 * 1000;
     }
 
-    await ctx.db.patch(user._id, {
+    await ctx.db.patch(args.userId, {
       accountType: args.plan,
       planExpiry,
       updatedAt: Date.now(),
@@ -398,3 +394,38 @@ export const updatePlanInternal = internalMutation({
     console.log(`[Payments] Updated user ${args.userId} to plan ${args.plan}`);
   },
 });
+
+export const updateUserSubscriptionInternal = internalMutation({
+  args: {
+    userId: v.id("users"),
+    // plan is optional here — if omitted, we only update status fields (e.g. past_due)
+    plan: v.optional(v.union(v.literal("free"), v.literal("plus"), v.literal("pro"))),
+    subscriptionId: v.optional(v.string()),
+    customerId: v.optional(v.string()),
+    status: v.optional(v.string()),
+    currentPeriodEnd: v.optional(v.number()),
+    provider: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const patch: Record<string, any> = {
+      subscriptionId: args.subscriptionId,
+      customerId: args.customerId,
+      subscriptionStatus: args.status,
+      currentPeriodEnd: args.currentPeriodEnd,
+      subscriptionProvider: args.provider,
+      updatedAt: Date.now(),
+    };
+
+    // Only update accountType when a plan is explicitly provided.
+    // This prevents 'past_due' webhooks from silently downgrading users.
+    if (args.plan !== undefined) {
+      patch.accountType = args.plan;
+    }
+
+    await ctx.db.patch(args.userId, patch);
+    console.log(
+      `[Payments] Subscription updated: user=${args.userId}, plan=${args.plan ?? "unchanged"}, status=${args.status}, provider=${args.provider}`
+    );
+  },
+});
+

@@ -293,7 +293,7 @@ export default function TeamPage() {
               <Button
                 variant="default"
                 size="sm"
-                onClick={() => router.push("/dashboard/pricing")}
+                onClick={() => router.push("/web/pricing")}
                 className="rounded-full text-xs bg-blue-500 text-white hover:bg-blue-600"
               >
                 Upgrade to Pro

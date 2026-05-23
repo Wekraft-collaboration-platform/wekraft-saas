@@ -138,7 +138,7 @@ const AllProjectsPage = () => {
 
         {/* Right Side: Upgrade Button */}
         <div className="ml-auto">
-          <Link href="/dashboard/pricing">
+          <Link href="/web/pricing">
             <Button size="sm" className="text-xs">
               Upgrade <Clover className="" />
             </Button>
