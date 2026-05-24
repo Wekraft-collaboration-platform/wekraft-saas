@@ -429,3 +429,95 @@ export const updateUserSubscriptionInternal = internalMutation({
   },
 });
 
+export const getOnboardingProgress = query({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return { completedSteps: [] };
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) return { completedSteps: [] };
+
+    const steps: number[] = [];
+
+    // Step 1: Connect GitHub
+    if (user.githubUsername) {
+      steps.push(1);
+    }
+
+    // Check projects
+    const myProjects = await ctx.db
+      .query("projects")
+      .withIndex("by_owner", (q) => q.eq("ownerId", user._id))
+      .collect();
+
+    const joinedMemberships = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    const allProjectIds = new Set([
+      ...myProjects.map((p) => p._id),
+      ...joinedMemberships.map((m) => m.projectId),
+    ]);
+
+    // Step 2: Link a repository — at least one project must have a connected repo
+    const hasLinkedRepo = myProjects.some((p) => !!p.repositoryId);
+    if (hasLinkedRepo) {
+      steps.push(2);
+    }
+
+    // Let's check team members, deadlines, and tasks across projects
+    let hasTeamMembers = false;
+    let hasDeadline = false;
+    let hasTasks = false;
+
+    for (const projectId of allProjectIds) {
+      if (hasTeamMembers && hasDeadline && hasTasks) break;
+
+      if (!hasTeamMembers) {
+        const members = await ctx.db
+          .query("projectMembers")
+          .withIndex("by_project", (q) => q.eq("projectId", projectId))
+          .collect();
+        if (members.length > 1) {
+          hasTeamMembers = true;
+        }
+      }
+
+      if (!hasDeadline) {
+        const details = await ctx.db
+          .query("projectDetails")
+          .withIndex("by_project", (q) => q.eq("projectId", projectId))
+          .unique();
+        if (details && details.targetDate) {
+          hasDeadline = true;
+        }
+      }
+
+      if (!hasTasks) {
+        const task = await ctx.db
+          .query("tasks")
+          .withIndex("by_project", (q) => q.eq("projectId", projectId))
+          .first();
+        if (task) {
+          hasTasks = true;
+        }
+      }
+    }
+
+    if (hasTeamMembers) steps.push(3);
+    if (hasDeadline) steps.push(4);
+    if (hasTasks) steps.push(5);
+
+    // Step 6 (Download extension) might be checked locally or if we have a field in DB
+    // Currently relying on the Zustand local storage or a local flag.
+
+    return { completedSteps: steps };
+  },
+});

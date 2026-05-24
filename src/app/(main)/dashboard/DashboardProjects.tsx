@@ -389,6 +389,7 @@ export const DashboardProjects = ({
           <CreateProjectDialog
             trigger={
               <Button
+                id="create-project-btn"
                 size="sm"
                 className="h-8 text-xs gap-1.5 cursor-pointer shadow-xs hover:shadow-md transition-all duration-200"
               >
@@ -602,6 +603,7 @@ export const DashboardProjects = ({
                     <Settings2 className="size-3" /> View
                   </Button>
                   <Button
+                    id="workspace-link-btn"
                     size="sm"
                     onClick={() =>
                       router.push(
