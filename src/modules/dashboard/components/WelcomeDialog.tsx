@@ -17,17 +17,41 @@ export function WelcomeDialog() {
   }, []);
 
   useEffect(() => {
+    // Target the first step specifically
+    const el = document.getElementById("tour-step-1");
+
     if (stage === "tooltip") {
-      const el = document.getElementById("tour-getting-started");
       if (el) {
+        // Bring step element above the backdrop and ensure it has an opaque background
+        el.style.position = "relative";
+        el.style.zIndex = "51";
+        el.style.backgroundColor = "var(--sidebar)";
+        el.style.borderRadius = "0.375rem"; // match rounded-md
+        
         const rect = el.getBoundingClientRect();
-        // Point to the right side of the checklist, near the top (step 1 area)
-        setPos({ top: rect.top + 50, left: rect.right + 10 });
+        // Point to the right side of the step
+        setPos({ top: rect.top + 10, left: rect.right + 10 });
       } else {
         // Fallback positioning
         setPos({ top: 200, left: 400 });
       }
+    } else {
+      if (el) {
+        el.style.position = "";
+        el.style.zIndex = "";
+        el.style.backgroundColor = "";
+        el.style.borderRadius = "";
+      }
     }
+
+    return () => {
+      if (el) {
+        el.style.position = "";
+        el.style.zIndex = "";
+        el.style.backgroundColor = "";
+        el.style.borderRadius = "";
+      }
+    };
   }, [stage]);
 
   const handleSkip = () => {

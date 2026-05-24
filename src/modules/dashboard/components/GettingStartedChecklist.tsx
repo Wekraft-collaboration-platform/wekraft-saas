@@ -229,7 +229,7 @@ export function GettingStartedChecklist() {
           const open = activeId === step.id && !done;
 
           return (
-            <div key={step.id}>
+            <div key={step.id} id={`tour-step-${step.id}`}>
               {/* Step Row */}
               <button
                 type="button"
