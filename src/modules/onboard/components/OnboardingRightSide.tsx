@@ -16,6 +16,7 @@ import {
   AlertCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Typewriter } from "react-simple-typewriter";
 
 interface OnboardingRightSideProps {
   currentStep: number;
@@ -34,14 +35,14 @@ interface OnboardingRightSideProps {
 export const ROCKET_HUD_CONFIG = {
   // Performance and Frame-rate settings
   performance: {
-    maxFps: 60,                // Cap FPS to avoid high CPU usage (especially on 120Hz Mac ProMotion screens)
+    maxFps: 40,                // Cap FPS to avoid high CPU usage (especially on 120Hz Mac ProMotion screens)
     pauseWhenHidden: true      // Pause canvas animation entirely when tab is inactive (saves battery/CPU)
   },
 
   // Dimensions, Scaling, and Viewports
   sizes: {
     gridSize: 45,              // Size of each background grid cell in pixels
-    fov: 420,                  // Field of View depth projection (lower = more fish-eye, higher = flatter)
+    fov: 400,                  // Field of View depth projection (lower = more fish-eye, higher = flatter)
     cameraDistance: 300,       // Camera distance from the object
     starCount: 300,            // Total number of background warp stars
     starMaxZ: 900,             // Max depth range for stars
@@ -49,7 +50,7 @@ export const ROCKET_HUD_CONFIG = {
     starSpeedWarp: 24.0,       // Warp speed for stars (Step 5)
     centerYOffset: 30,         // Additional vertical coordinate adjustment to center the rocket in layout
     vesselWarpYOffset: -185,   // Fly-up height offset when step 5 is active
-    
+
     // Rocket line stroke widths
     rocketLineThickness: {
       pilot: 0.9,
@@ -231,6 +232,11 @@ function generateTopCap(): ComponentGeometry {
     edges.push({ v1: tipIdx, v2: i, type: "cone" });
   }
 
+  // Antenna Tip needle extending straight up from the nose cone tip
+  const antennaTipIdx = vertices.length;
+  vertices.push({ x: 0, y: -110, z: 0 });
+  edges.push({ v1: tipIdx, v2: antennaTipIdx, type: "cone" });
+
   return { vertices, edges };
 }
 
@@ -281,9 +287,11 @@ function generateUpperSleeve(): ComponentGeometry {
   edges.push({ v1: latchBase + 4, v2: latchBase + 3, type: "latch" });
   edges.push({ v1: latchBase + 3, v2: latchBase, type: "latch" });
 
-  // Connect latch corners to the sleeve body at front points
-  const bodyTop = 8;
-  const bodyMid = 24;
+  // Connect latch corners to the sleeve body at front points (theta approx 1.5*PI, which is index 12 in 16-segment layers)
+  // Layer 1 starts at index 16, so 28 (16+12) is front center.
+  // Layer 2 starts at index 32, so 44 (32+12) is front center.
+  const bodyTop = 28;
+  const bodyMid = 44;
   edges.push({ v1: latchBase, v2: bodyTop - 1, type: "latch" });
   edges.push({ v1: latchBase + 1, v2: bodyTop + 1, type: "latch" });
   edges.push({ v1: latchBase + 3, v2: bodyMid - 1, type: "latch" });
@@ -392,7 +400,8 @@ function generateBaseReceptacle(): ComponentGeometry {
     { y: -45, r: 85 }, // Top collar
     { y: -15, r: 85 },
     { y: 15, r: 85 },
-    { y: 45, r: 85 }  // Bottom collar
+    { y: 45, r: 85 },  // Bottom collar
+    { y: 68, r: 55 }   // Engine nozzle bell
   ];
 
   layers.forEach((layer, layerIdx) => {
@@ -413,7 +422,32 @@ function generateBaseReceptacle(): ComponentGeometry {
     edges.push({ v1: i, v2: segments + i, type: "structure" });
     edges.push({ v1: segments + i, v2: 2 * segments + i, type: "structure" });
     edges.push({ v1: 2 * segments + i, v2: 3 * segments + i, type: "structure" });
+    edges.push({ v1: 3 * segments + i, v2: 4 * segments + i, type: "structure" });
   }
+
+  // Add 4 aerodynamic stabilizer fins
+  const finAngles = [0, Math.PI / 2, Math.PI, Math.PI * 1.5];
+  finAngles.forEach((angle) => {
+    const cos = Math.cos(angle);
+    const sin = Math.sin(angle);
+
+    const vBase = vertices.length;
+    // Fin outer points
+    vertices.push({ x: cos * 125, y: 25, z: sin * 125 }); // fin tip top
+    vertices.push({ x: cos * 125, y: 55, z: sin * 125 }); // fin tip bottom
+
+    const segIdx = Math.round((angle / (Math.PI * 2)) * segments) % segments;
+
+    // root top (layer 2, y = 15): index 2 * segments + segIdx
+    const rootTop = 2 * segments + segIdx;
+    // root bottom (layer 3, y = 45): index 3 * segments + segIdx
+    const rootBottom = 3 * segments + segIdx;
+
+    edges.push({ v1: rootTop, v2: vBase, type: "structure" });
+    edges.push({ v1: vBase, v2: vBase + 1, type: "structure" });
+    edges.push({ v1: vBase + 1, v2: rootBottom, type: "structure" });
+    edges.push({ v1: vBase, v2: rootBottom, type: "structure" });
+  });
 
   return { vertices, edges };
 }
@@ -431,6 +465,14 @@ export function OnboardingRightSide({
 }: OnboardingRightSideProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const overlayRef = useRef<HTMLDivElement>(null);
+  const arrowSvgRef = useRef<SVGSVGElement>(null);
+  const arrowPathRef = useRef<SVGPathElement>(null);
+  const arrowDotRef = useRef<SVGCircleElement>(null);
+  const nameOverlayRef = useRef<HTMLDivElement>(null);
+  const nameArrowSvgRef = useRef<SVGSVGElement>(null);
+  const nameArrowPathRef = useRef<SVGPathElement>(null);
+  const nameArrowDotRef = useRef<SVGCircleElement>(null);
 
   // Sync props to refs to avoid restarting canvas loop on updates
   const currentStepRef = useRef(currentStep);
@@ -513,7 +555,12 @@ export function OnboardingRightSide({
 
     // Visibility Listener to pause calculations when user switches tabs (saves CPU on Mac/Windows)
     const handleVisibilityChange = () => {
+      const wasRunning = isRunning;
       isRunning = document.visibilityState === "visible";
+      if (isRunning && !wasRunning) {
+        lastFrameTime = performance.now();
+        render();
+      }
     };
 
     if (ROCKET_HUD_CONFIG.performance.pauseWhenHidden) {
@@ -787,9 +834,9 @@ export function OnboardingRightSide({
         ctx.beginPath();
         ctx.moveTo(pPrev.x, pPrev.y);
         ctx.lineTo(pCurrent.x, pCurrent.y);
-        const opacity = Math.min(1, (ROCKET_HUD_CONFIG.sizes.starMaxZ - star.z) / (ROCKET_HUD_CONFIG.sizes.starMaxZ / 2)) * 
-                        (step === 5 ? ROCKET_HUD_CONFIG.colors.starWarpOpacity : ROCKET_HUD_CONFIG.colors.starNormalOpacity) * 
-                        star.brightness;
+        const opacity = Math.min(1, (ROCKET_HUD_CONFIG.sizes.starMaxZ - star.z) / (ROCKET_HUD_CONFIG.sizes.starMaxZ / 2)) *
+          (step === 5 ? ROCKET_HUD_CONFIG.colors.starWarpOpacity : ROCKET_HUD_CONFIG.colors.starNormalOpacity) *
+          star.brightness;
         ctx.strokeStyle = `rgba(${ROCKET_HUD_CONFIG.colors.starRgb}, ${opacity})`;
         ctx.lineWidth = step === 5 ? 1.4 : 0.7;
         ctx.stroke();
@@ -1031,7 +1078,7 @@ export function OnboardingRightSide({
         const flameSpawns = step === 5 ? 4 : 3;
         for (let k = 0; k < flameSpawns; k++) {
           const theta = Math.random() * Math.PI * 2;
-          const r = Math.random() * 32; 
+          const r = Math.random() * 32;
           flameParticles.push({
             x: Math.cos(theta) * r,
             y: nozzleBaseY,
@@ -1156,15 +1203,15 @@ export function OnboardingRightSide({
       if (step === 5) {
         if (time % 8 === 0 && splashRings.length < 5) {
           splashRings.push({
-            y: lockedY.topCap - 80, 
+            y: lockedY.topCap - 80,
             radius: 12,
             opacity: 0.9
           });
         }
 
         splashRings.forEach((ring, idx) => {
-          ring.y += 7.0; 
-          ring.radius += 6.5; 
+          ring.y += 7.0;
+          ring.radius += 6.5;
           ring.opacity = Math.max(0, 1 - (ring.y - (lockedY.topCap - 80)) / 260);
 
           if (ring.opacity <= 0) {
@@ -1194,6 +1241,73 @@ export function OnboardingRightSide({
           ctx.setLineDash([]);
         });
       }
+
+      // Calculate cockpit screen coordinates and position/update the HTML overlay and leader line arrow
+      const cockpitLocalPt = { x: 0, y: lockedY.upperSleeve + offsets.upperSleeve, z: 0 };
+      const cockpitRotated = rotatePointOpt(cockpitLocalPt);
+      const cockpitProjected = project(cockpitRotated);
+
+      if (step === 2 && overlayRef.current && arrowSvgRef.current && arrowPathRef.current && arrowDotRef.current) {
+        overlayRef.current.style.display = "flex";
+        arrowSvgRef.current.style.display = "block";
+
+        // Position the card to the right of the cockpit
+        const cardX = cockpitProjected.x + 140;
+        const cardY = cockpitProjected.y - 45;
+
+        overlayRef.current.style.left = `${cardX}px`;
+        overlayRef.current.style.top = `${cardY}px`;
+
+        // Leader line: from cockpit to intermediate bend, then horizontal to card left edge
+        const x1 = cockpitProjected.x;
+        const y1 = cockpitProjected.y;
+        const x2 = cardX - 5;
+        const y2 = cardY + 32; // middle of card height
+
+        const pathData = `M ${x1} ${y1} L ${x1 + 35} ${y2} L ${x2} ${y2}`;
+        arrowPathRef.current.setAttribute("d", pathData);
+
+        // Position dot on the cockpit
+        arrowDotRef.current.setAttribute("cx", `${x1}`);
+        arrowDotRef.current.setAttribute("cy", `${y1}`);
+      } else {
+        if (overlayRef.current) overlayRef.current.style.display = "none";
+        if (arrowSvgRef.current) arrowSvgRef.current.style.display = "none";
+      }
+
+      // Calculate spaceship tip coordinates
+      const tipLocalPt = { x: 0, y: lockedY.topCap + offsets.topCap - 80, z: 0 };
+      const tipRotated = rotatePointOpt(tipLocalPt);
+      const tipProjected = project(tipRotated);
+
+      if (step === 3 && nameOverlayRef.current && nameArrowSvgRef.current && nameArrowPathRef.current && nameArrowDotRef.current) {
+        nameOverlayRef.current.style.display = "flex";
+        nameArrowSvgRef.current.style.display = "block";
+
+        // Position the card to the left of the tip
+        const cardWidth = 220;
+        const cardX = tipProjected.x - 140 - cardWidth;
+        const cardY = tipProjected.y - 35;
+
+        nameOverlayRef.current.style.left = `${cardX}px`;
+        nameOverlayRef.current.style.top = `${cardY}px`;
+
+        // Leader line: from tip to intermediate bend, then horizontal to card right edge
+        const x1 = tipProjected.x;
+        const y1 = tipProjected.y;
+        const x2 = cardX + cardWidth + 5;
+        const y2 = cardY + 25; // middle of card height
+
+        const pathData = `M ${x1} ${y1} L ${x1 - 35} ${y2} L ${x2} ${y2}`;
+        nameArrowPathRef.current.setAttribute("d", pathData);
+
+        // Position dot on the tip
+        nameArrowDotRef.current.setAttribute("cx", `${x1}`);
+        nameArrowDotRef.current.setAttribute("cy", `${y1}`);
+      } else {
+        if (nameOverlayRef.current) nameOverlayRef.current.style.display = "none";
+        if (nameArrowSvgRef.current) nameArrowSvgRef.current.style.display = "none";
+      }
     };
 
     animFrame = requestAnimationFrame(render);
@@ -1213,115 +1327,169 @@ export function OnboardingRightSide({
       ref={containerRef}
       className={cn(
         "hidden lg:flex lg:w-[60%] relative overflow-hidden select-none h-screen transition-all duration-500",
-        "bg-[#030304] border-l border-zinc-900"
+        "bg-[#030304]! border-l border-zinc-900"
       )}
     >
       {/* 3D Blueprint Canvas */}
       <canvas ref={canvasRef} className="w-full h-full block" />
 
-      {/* --- HUD OVERLAYS --- */}
+      {/* SVG Leader Line Arrow for Step 2 cockpit */}
+      <svg
+        ref={arrowSvgRef}
+        style={{ display: "none" }}
+        className="absolute inset-0 w-full h-full pointer-events-none z-10"
+      >
+        <path
+          ref={arrowPathRef}
+          fill="none"
+          stroke="rgba(255, 255, 255, 0.45)"
+          strokeWidth="1.2"
+          strokeDasharray="3 3"
+        />
+        <circle
+          ref={arrowDotRef}
+          r="3"
+          fill="rgba(255, 255, 255, 0.85)"
+        />
+      </svg>
 
-      {/* 1. Technical Corner Brackets */}
-      {/* To customize size/color of corner brackets, adjust borders & spacing classes below */}
-      <div className="absolute top-6 left-6 w-8 h-8 border-t border-l border-zinc-700/80 pointer-events-none" />
-      <div className="absolute top-6 right-6 w-8 h-8 border-t border-r border-zinc-700/80 pointer-events-none" />
-      <div className="absolute bottom-6 left-6 w-8 h-8 border-b border-l border-zinc-700/80 pointer-events-none" />
-      <div className="absolute bottom-6 right-6 w-8 h-8 border-b border-r border-zinc-700/80 pointer-events-none" />
-
-      {/* 2. Top-Left System Status Header */}
-      {/* To customize top-left header text size (e.g. text-[9px]) or color (e.g. text-zinc-400), tweak classes here */}
-      <div className="absolute top-8 left-8 flex flex-col font-mono text-[9px] text-zinc-400 gap-1 tracking-wider uppercase select-none pointer-events-none">
-        <div className="flex items-center gap-1.5 text-zinc-100 font-bold">
-          <Activity className="w-3.5 h-3.5 text-zinc-400" />
-          <span>{ROCKET_HUD_CONFIG.hudLabels.stationHeader}</span>
+      {/* Cockpit HUD Overlay (Step 2 Only) */}
+      <div
+        ref={overlayRef}
+        style={{ display: "none" }}
+        className="absolute z-20 bg-neutral-900/80 border border-zinc-800 rounded-md py-3 px-6 flex flex-col gap-2.5 max-w-[300px] shadow-2xl font-sans text-xs tracking-tight text-zinc-300 pointer-events-none transition-opacity duration-300"
+      >
+        <div className="text-sm text-primary/80 flex items-center gap-1.5 font-sans!">
+          <span className="w-1.5 h-1.5 rounded-full bg-neutral-500 animate-pulse shrink-0" />
+          Pilot Cockpit
         </div>
-        <div className="flex items-center gap-1.5 mt-1 text-zinc-500">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
-          <span>{ROCKET_HUD_CONFIG.hudLabels.stationStatus}</span>
-        </div>
-      </div>
-
-      {/* 3. Top-Right Pilot Synced Card (Visible Step >= 2) */}
-      {/* To customize pilot crew card background, padding (p-3.5) or borders, modify Tailwind classes here */}
-      {currentStep >= 2 && (
-        <div className="absolute top-8 right-8 bg-[#07070a]/95 border border-zinc-800 rounded-xl p-3.5 flex items-center gap-3.5 max-w-[240px] shadow-2xl font-mono text-[9.5px] tracking-tight text-zinc-300">
-          <div className="relative shrink-0 w-9 h-9 rounded-lg border border-zinc-800 bg-zinc-950 overflow-hidden flex items-center justify-center">
+        <div className="flex items-center gap-3">
+          <div className="relative shrink-0 w-9 h-9 rounded-lg border border-zinc-800 bg-zinc-800! overflow-hidden flex items-center justify-center">
             {clerkUser?.imageUrl ? (
-              <img src={clerkUser.imageUrl} className="w-full h-full object-cover grayscale opacity-90" alt="" />
+              <img src={clerkUser.imageUrl} className="w-full h-full object-cover" alt="" />
             ) : (
               <User className="w-4 h-4 text-zinc-500" />
             )}
-            <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent pointer-events-none" />
-            <div className="absolute bottom-0 left-0 w-full h-[1px] bg-white/20 animate-pulse" />
+
           </div>
 
           <div className="min-w-0">
-            <div className="text-zinc-500 text-[8px] uppercase tracking-wider">{ROCKET_HUD_CONFIG.hudLabels.crewCardTitle}</div>
-            <div className="font-bold text-zinc-100 truncate mt-0.5 max-w-[130px] capitalize">
-              {username || clerkUser?.fullName || ROCKET_HUD_CONFIG.hudLabels.crewCardDefaultName}
+            <div className="text-xs text-zinc-100 truncate max-w-[130px] capitalize">
+              Name:  {username || clerkUser?.fullName || ROCKET_HUD_CONFIG.hudLabels.crewCardDefaultName}
             </div>
-            <div className="text-zinc-400 text-[8.5px] mt-0.5 truncate uppercase">
-              ROLE: {selectedRole || ROCKET_HUD_CONFIG.hudLabels.crewCardDefaultRole}
+            <div className="text-zinc-450 mt-2 text-[10px]  truncate">
+              Role: {selectedRole || ROCKET_HUD_CONFIG.hudLabels.crewCardDefaultRole}
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* SVG Leader Line Arrow for Step 3 designation */}
+      <svg
+        ref={nameArrowSvgRef}
+        style={{ display: "none" }}
+        className="absolute inset-0 w-full h-full pointer-events-none z-10"
+      >
+        <path
+          ref={nameArrowPathRef}
+          fill="none"
+          stroke="rgba(255, 255, 255, 0.45)"
+          strokeWidth="1.2"
+          strokeDasharray="3 3"
+        />
+        <circle
+          ref={nameArrowDotRef}
+          r="3"
+          fill="rgba(255, 255, 255, 0.85)"
+        />
+      </svg>
+
+      {/* Spaceship Name HUD Overlay (Step 3 Only) */}
+      <div
+        ref={nameOverlayRef}
+        style={{ display: "none" }}
+        className="absolute z-20 bg-neutral-900/80 border border-zinc-800 rounded-md py-3 px-6 flex flex-col gap-1.5 min-w-[200px] max-w-[300px] shadow-2xl font-sans text-xs tracking-tight text-zinc-300 pointer-events-none transition-opacity duration-300"
+      >
+        <div className="text-sm text-primary/80 flex items-center gap-1.5 font-sans!">
+          <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse shrink-0" />
+          Spaceship Designation
+        </div>
+        <div className="text-xs text-zinc-100 truncate max-w-[200px] capitalize">
+          Name: {projectName || "WEKRAFT-01"}
+        </div>
+        <div className="text-zinc-450 mt-1 text-[10px]">
+          Name the spaceship to launch
+        </div>
+      </div>
+
+      {/* 1. Technical Corner Brackets */}
+      {/* To customize size/color of corner brackets, adjust borders & spacing classes below */}
+      <div className="absolute top-6 left-6 w-8 h-8 border-t border-l border-zinc-700/90 pointer-events-none" />
+      <div className="absolute top-6 right-6 w-8 h-8 border-t border-r border-zinc-700/90 pointer-events-none" />
+      <div className="absolute bottom-6 left-6 w-8 h-8 border-b border-l border-zinc-700/90 pointer-events-none" />
+      <div className="absolute bottom-6 right-6 w-8 h-8 border-b border-r border-zinc-700/90 pointer-events-none" />
+
+      {/* 2. Top-Left System Status Header */}
+      {/* To customize top-left header text size (e.g. text-[9px]) or color (e.g. text-zinc-400), tweak classes here */}
+      <div className="absolute top-8 left-8 max-w-[240px] flex flex-col font-pop! text-xs text-zinc-300 gap-1 tracking-wide select-none pointer-events-none">
+        <div className="flex items-start  gap-1.5 text-zinc-300 font-bold">
+          <Activity className="w-3.5 h-3.5 shrink-0! text-zinc-300" />
+          <span>Wekraft - where you launch product at the speed of Light</span>
+        </div>
+
+      </div>
+
+      {/* 3. Top-Right Pilot Synced Card (Visible Step >= 3) */}
+      {/* To customize pilot crew card background, padding (p-3.5) or borders, modify Tailwind classes here */}
+      {currentStep >= 3 && (
+        <div className="absolute top-8 right-8 bg-neutral-900/60 border border-zinc-800 rounded-md p-3 flex items-center gap-3.5 max-w-[240px] shadow-2xl text-[9.5px] tracking-wide text-zinc-300">
+          <div className="relative shrink-0 w-9 h-9 rounded-lg border border-zinc-800 bg-zinc-950 overflow-hidden flex items-center justify-center">
+            {clerkUser?.imageUrl ? (
+              <img src={clerkUser.imageUrl} className="w-full h-full object-cover " alt="" />
+            ) : (
+              <User className="w-4 h-4 text-zinc-500" />
+            )}
+          </div>
+
+          <div className="min-w-0">
+            <div className="text-zinc-400 text-xs">Vessel Crew</div>
+            <div className="font-bold text-zinc-100 truncate mt-0.5 max-w-[130px] capitalize">
+              Name:   {username || clerkUser?.fullName || ROCKET_HUD_CONFIG.hudLabels.crewCardDefaultName}
+            </div>
+            <div className="text-zinc-400 text-[10px] mt-0.5 truncate ">
+              Role: {selectedRole || ROCKET_HUD_CONFIG.hudLabels.crewCardDefaultRole}
             </div>
           </div>
         </div>
       )}
 
-      {/* 4. Bottom-Left Live Diagnostics Terminal */}
-      {/* To customize text size/colors/spacing inside diagnostics terminal, tweak the classes of elements below */}
-      <div className="absolute bottom-8 left-8 flex flex-col max-w-[340px] font-mono text-[9.5px] text-zinc-500 gap-1.5 select-none pointer-events-none">
-        <div className="flex items-center gap-1.5 text-zinc-350 font-semibold mb-1 text-[10px]">
-          <Terminal className="w-3.5 h-3.5 text-zinc-500" />
-          <span>{ROCKET_HUD_CONFIG.hudLabels.diagnosticsTitle}</span>
-        </div>
-        <div className="space-y-1 bg-[#050506]/40 border border-zinc-900/60 p-3 rounded-lg backdrop-blur-xs min-w-[260px]">
-          {logs.map((log, idx) => (
-            <div key={idx} className="flex gap-2 leading-relaxed">
-              <span className="text-zinc-650 shrink-0">&gt;</span>
-              <span className={cn(
-                idx === logs.length - 1 ? "text-zinc-300 font-bold" : "text-zinc-500"
-              )}>
-                {log}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* 5. Bottom-Right Flight Telemetry panel */}
-      {/* To customize spacing/alignment/color of flight telemetry panel, modify Tailwind classes here */}
-      <div className="absolute bottom-8 right-8 flex flex-col font-mono text-[9px] text-zinc-500 gap-2 border border-zinc-900/60 bg-[#050506]/40 p-3.5 rounded-lg min-w-[180px] backdrop-blur-xs select-none pointer-events-none text-right">
-        <div className="flex items-center justify-end gap-1.5 text-zinc-350 font-semibold mb-1 text-[10px]">
-          <Compass className="w-3.5 h-3.5 text-zinc-500" />
-          <span>{ROCKET_HUD_CONFIG.hudLabels.telemetryTitle}</span>
-        </div>
-
-        <div className="space-y-1">
-          <div className="flex justify-between">
-            <span className="text-zinc-650 text-left">SPEED:</span>
-            <span className="text-zinc-300 font-bold font-mono">
-              {currentStep === 5 ? "MAX WARP" : "0.00 MACH"}
+      {/* 4. Minimal Bottom Onboarding Status & Progress Bar */}
+      <div className="absolute bottom-8 left-8 right-8 flex flex-col gap-3 font-sans select-none pointer-events-none">
+        <div className="flex justify-between items-center text-[10px] tracking-wider text-zinc-500 font-medium">
+          <span className="uppercase">SYSTEM STATUS</span>
+          <span className="text-zinc-400 flex items-center gap-1">
+            <span>Complete Onboarding to launch spaceship //</span>
+            <span className="text-emerald-400">
+              <Typewriter
+                key={currentStep}
+                words={[
+                  currentStep === 1 ? " awaiting purpose selection..." : "",
+                  currentStep === 2 ? " awaiting pilot authorization..." : "",
+                  currentStep === 3 ? " awaiting spaceship designation registry..." : "",
+                  currentStep === 4 ? " awaiting workspace styling sync..." : "",
+                  currentStep === 5 ? " liftoff authorization granted. go for launch!" : "",
+                ].filter(Boolean)}
+                loop={1}
+                cursor
+                cursorStyle="_"
+                typeSpeed={60}
+                delaySpeed={1000}
+              />
             </span>
-          </div>
-
-          <div className="flex justify-between">
-            <span className="text-zinc-650 text-left">ALTITUDE:</span>
-            <span className="text-zinc-300 font-mono">
-              {currentStep === 5 ? "89,450 M" : "0 M (DOCK)"}
-            </span>
-          </div>
-
-          <div className="flex justify-between">
-            <span className="text-zinc-650 text-left">EST. YAW:</span>
-            <span className="text-zinc-350 font-mono">
-              {currentStep === 5 ? "COSMIC L-0" : "STATION CORE"}
-            </span>
-          </div>
+          </span>
+          <span className="font-mono">ONBOARDING SEQUENCE // STEP {currentStep} OF 5</span>
         </div>
-
-        {/* Dynamic Loading telemetry bar */}
-        {/* To customize loading bar color (e.g. bg-emerald-500) or height (e.g. h-1), edit this element */}
-        <div className="w-full bg-zinc-950 h-1 rounded-full overflow-hidden mt-1 border border-zinc-900">
+        <div className="w-full bg-zinc-950 h-1 rounded-full overflow-hidden border border-zinc-900/50">
           <div
             className={cn(
               "h-full bg-zinc-400 transition-all duration-700 rounded-full",

@@ -25,9 +25,9 @@ export function AnnouncementBanner() {
   };
 
   return (
-    <div className="w-full flex items-center justify-between px-6 py-2 bg-blue-500/10 dark:bg-blue-800/20 border-b border-blue-500/20 transition-all duration-300 shrink-0">
+    <div className="w-full flex items-center justify-between px-6 py-2 bg-blue-500/10 dark:bg-blue-700/15 border-b border-blue-500/20 transition-all duration-300 shrink-0">
       <div className="flex items-center text-xs text-blue-600 dark:text-blue-400 font-medium">
-        <span className="font-semibold mr-1"><MegaphoneIcon className="inline mr-1 w-4 h-4"/>{activeAnnouncement.title}:</span>
+        <span className="font-semibold mr-1"><MegaphoneIcon className="inline mr-1 w-4 h-4" />{activeAnnouncement.title}:</span>
         <span className="text-primary/90">{activeAnnouncement.description}</span>
       </div>
 

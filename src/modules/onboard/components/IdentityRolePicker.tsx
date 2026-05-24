@@ -59,7 +59,7 @@ export function IdentityRolePicker({
       />
 
       <div className="space-y-1.5 font-sans">
-        <Label htmlFor="role-search" className="text-xs text-zinc-400 font-medium">
+        <Label htmlFor="role-search" className="text-sm text-zinc-300 font-medium">
           Occupation
         </Label>
 
@@ -94,7 +94,7 @@ export function IdentityRolePicker({
                     >
                       <span>{role}</span>
                       {isSelected && (
-                        <Check className="size-4 text-white p-0.5 bg-[#5e6ad2] rounded-full" />
+                        <Check className="size-4 text-white p-0.5 bg-blue-600 rounded-full" />
                       )}
                     </button>
                   );
