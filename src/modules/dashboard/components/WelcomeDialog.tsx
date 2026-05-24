@@ -4,14 +4,19 @@ import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { STEPS } from "./GettingStartedChecklist";
 import { useRouter } from "next/navigation";
+import { useQuery } from "convex/react";
+import { api } from "../../../../convex/_generated/api";
 
 export function WelcomeDialog() {
   const [show, setShow] = useState(false);
   const [tourStep, setTourStep] = useState<number>(0); 
-  // 0: Welcome Modal, 1-6: Checklist Steps, 7: Tabs
+  // 0: Welcome Modal, 1-6: Checklist Steps
   
   const [pos, setPos] = useState({ bottom: 0, left: 0 });
   const router = useRouter();
+
+  const progressData = useQuery(api.user.getOnboardingProgress);
+  const completedIds = progressData?.completedSteps ?? [];
 
   useEffect(() => {
     // Check local storage to see if the user has already seen the welcome dialog
@@ -22,35 +27,49 @@ export function WelcomeDialog() {
   }, []);
 
   useEffect(() => {
+    const handleStartTour = () => {
+      setShow(true);
+      const firstIncomplete = STEPS.find(s => !completedIds.includes(s.id));
+      if (firstIncomplete) {
+        setTourStep(firstIncomplete.id);
+      } else {
+        setTourStep(1); // fallback if all completed
+      }
+    };
+    window.addEventListener('start-quick-tour', handleStartTour);
+    return () => window.removeEventListener('start-quick-tour', handleStartTour);
+  }, [completedIds]);
+
+  useEffect(() => {
     let targetId = null;
     if (tourStep >= 1 && tourStep <= 6) targetId = `tour-step-${tourStep}`;
 
     const el = targetId ? document.getElementById(targetId) : null;
+    let animationFrameId: number;
 
     if (tourStep > 0) {
       if (el) {
-        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        // Delay scroll slightly to ensure smooth behavior after state updates
+        setTimeout(() => {
+          el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        }, 10);
         
         el.style.position = "relative";
         el.style.zIndex = "51";
         el.style.borderRadius = "0.5rem";
         el.classList.add("bg-accent/20");
         
-        // Use a small timeout to let the smooth scroll settle before measuring
-        setTimeout(() => {
+        // Continuously update position to glue the tooltip to the element during smooth scroll
+        const updatePos = () => {
           const rect = el.getBoundingClientRect();
           setPos({ 
             bottom: window.innerHeight - rect.top + 5, 
             left: rect.left + (rect.width / 2) - 160 
           });
-        }, 300);
+          animationFrameId = requestAnimationFrame(updatePos);
+        };
+        updatePos();
 
-        // Position ABOVE the target element, centered horizontally
-        const rect = el.getBoundingClientRect();
-        setPos({ 
-          bottom: window.innerHeight - rect.top + 5, 
-          left: rect.left + (rect.width / 2) - 160 
-        });
       } else {
         // Fallback positioning if element not found
         setPos({ bottom: 200, left: 400 });
@@ -66,6 +85,7 @@ export function WelcomeDialog() {
 
     // Cleanup previous element if we move to next step
     return () => {
+      if (animationFrameId) cancelAnimationFrame(animationFrameId);
       if (el) {
         el.style.position = "";
         el.style.zIndex = "";
@@ -95,6 +115,13 @@ export function WelcomeDialog() {
     setTourStep(1);
   };
 
+  const getNextStep = (current: number) => {
+    for (let i = current + 1; i <= 6; i++) {
+      if (!completedIds.includes(i)) return i;
+    }
+    return null;
+  };
+
   if (!show) return null;
 
   const getShortCta = (stepId: number) => {
@@ -111,6 +138,7 @@ export function WelcomeDialog() {
 
   if (tourStep > 0) {
     const currentStepConfig = STEPS[tourStep - 1];
+    const nextStep = getNextStep(tourStep);
 
     const stepTitle = currentStepConfig?.label;
     const stepDescription = currentStepConfig?.description;
@@ -151,8 +179,8 @@ export function WelcomeDialog() {
                 Skip Tour
               </Button>
               <div className="flex gap-2">
-                {tourStep < 6 ? (
-                  <Button variant="secondary" onClick={() => setTourStep(tourStep + 1)} className="h-8 px-3 text-xs">
+                {nextStep !== null ? (
+                  <Button variant="secondary" onClick={() => setTourStep(nextStep)} className="h-8 px-3 text-xs">
                     Next
                   </Button>
                 ) : (

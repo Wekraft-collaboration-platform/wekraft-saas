@@ -198,9 +198,7 @@ export function GettingStartedChecklist() {
           <button
             type="button"
             onClick={() => {
-              // Expand the first incomplete step to start the guided flow
-              const firstId = STEPS.find((s) => !completedIds.includes(s.id))?.id ?? null;
-              setExpandedStep(firstId);
+              window.dispatchEvent(new CustomEvent('start-quick-tour'));
             }}
             title="Quick Tour"
             className="flex items-center gap-1 h-5 px-2 rounded text-[10px] font-medium text-primary/70 hover:text-primary bg-primary/8 hover:bg-primary/15 transition-colors cursor-pointer border border-primary/15"
