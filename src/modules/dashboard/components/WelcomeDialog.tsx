@@ -103,7 +103,7 @@ export function WelcomeDialog() {
           switch (currentPlacement) {
             case 'top':
               top = rect.top - boxHeight - gap;
-              left = rect.left + rect.width / 2 - boxWidth / 2;
+              left = rect.left + rect.width / 2 - boxWidth / 2 + 40;
               break;
             case 'right':
               top = rect.top + rect.height / 2 - boxHeight / 2;
@@ -111,7 +111,7 @@ export function WelcomeDialog() {
               break;
             case 'bottom':
               top = rect.bottom + gap;
-              left = rect.left + rect.width / 2 - boxWidth / 2;
+              left = rect.left + rect.width / 2 - boxWidth / 2 + 40;
               break;
             case 'left':
               top = rect.top + rect.height / 2 - boxHeight / 2;
@@ -120,22 +120,22 @@ export function WelcomeDialog() {
           }
 
           // Clamp left and top to ensure the tooltip stays within the screen
-          left = Math.max(margin, Math.min(window.innerWidth - boxWidth - margin, left));
-          top = Math.max(margin, Math.min(window.innerHeight - boxHeight - margin, top));
+          left = Math.round(Math.max(margin, Math.min(window.innerWidth - boxWidth - margin, left)));
+          top = Math.round(Math.max(margin, Math.min(window.innerHeight - boxHeight - margin, top)));
 
           // Calculate arrow position based on clamped tooltip position
-          const targetCenterX = rect.left + rect.width / 2;
-          const targetCenterY = rect.top + rect.height / 2;
+          const targetCenterX = Math.round(rect.left + rect.width / 2);
+          const targetCenterY = Math.round(rect.top + rect.height / 2);
           
           let arrowX = 160;
           let arrowY = 90;
 
           if (currentPlacement === 'top' || currentPlacement === 'bottom') {
             arrowX = targetCenterX - left;
-            arrowX = Math.max(40, Math.min(boxWidth - 40, arrowX));
+            arrowX = Math.round(Math.max(40, Math.min(boxWidth - 40, arrowX)));
           } else {
             arrowY = targetCenterY - top;
-            arrowY = Math.max(40, Math.min(boxHeight - 40, arrowY));
+            arrowY = Math.round(Math.max(40, Math.min(boxHeight - 40, arrowY)));
           }
 
           setPos({ top, left, arrowX, arrowY, placement: currentPlacement, arrowType: ((tourStep - 1) % 5) + 1 });
@@ -221,10 +221,11 @@ export function WelcomeDialog() {
         />
         
         {/* Tooltip positioned according to current placement */}
-        <div 
-          className="absolute z-50 pointer-events-auto flex flex-col items-center animate-in fade-in zoom-in-95 duration-500"
-          style={{ top: pos.top, left: pos.left, width: 320 }}
-        >
+        {pos.top !== -1000 && (
+          <div 
+            className="absolute z-50 pointer-events-auto flex flex-col items-center animate-in fade-in transition-all duration-300 ease-out"
+            style={{ top: pos.top, left: pos.left, width: 320 }}
+          >
           {pos.placement === 'top' && (
             <div className="absolute z-10 transition-all duration-75" style={{ top: (tooltipRef.current?.offsetHeight || 180) - 5, left: pos.arrowX - 30 }}>
               <MinimalArrow type={pos.arrowType} placement={pos.placement} />
@@ -290,6 +291,7 @@ export function WelcomeDialog() {
 
           {/* Bottom placement arrow is already handled above */}
         </div>
+        )}
       </div>
     );
   }
