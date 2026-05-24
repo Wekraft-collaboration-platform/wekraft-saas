@@ -132,7 +132,7 @@ const STEPS: StepConfig[] = [
 export function GettingStartedChecklist() {
   const progressData = useQuery(api.user.getOnboardingProgress);
   const router = useRouter();
-  const [expandedStep, setExpandedStep] = useState<number | null>(null);
+  const [expandedStep, setExpandedStep] = useState<number | null>(-1);
 
   // Skeleton while Convex query loads
   if (progressData === undefined) {

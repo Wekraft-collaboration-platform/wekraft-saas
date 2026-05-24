@@ -26,11 +26,13 @@ export function WelcomeDialog() {
         el.style.position = "relative";
         el.style.zIndex = "51";
         el.style.backgroundColor = "var(--sidebar)";
-        el.style.borderRadius = "0.375rem"; // match rounded-md
+        el.style.borderRadius = "0.5rem";
+        // Add a visible border/glow to make it clearly visible against the dark background
+        el.style.boxShadow = "0 0 0 1px rgba(255,255,255,0.15), 0 10px 30px rgba(0,0,0,0.8)";
         
         const rect = el.getBoundingClientRect();
-        // Point to the right side of the step
-        setPos({ top: rect.top + 10, left: rect.right + 10 });
+        // Point right next to the step, aligned neatly
+        setPos({ top: rect.top, left: rect.right + 5 });
       } else {
         // Fallback positioning
         setPos({ top: 200, left: 400 });
@@ -41,6 +43,7 @@ export function WelcomeDialog() {
         el.style.zIndex = "";
         el.style.backgroundColor = "";
         el.style.borderRadius = "";
+        el.style.boxShadow = "";
       }
     }
 
@@ -50,6 +53,7 @@ export function WelcomeDialog() {
         el.style.zIndex = "";
         el.style.backgroundColor = "";
         el.style.borderRadius = "";
+        el.style.boxShadow = "";
       }
     };
   }, [stage]);
@@ -78,7 +82,6 @@ export function WelcomeDialog() {
       <div className="fixed inset-0 z-50 pointer-events-none">
         <div 
           className="absolute inset-0 bg-background/50 backdrop-blur-[1px] pointer-events-auto transition-opacity" 
-          onClick={handleSkip} 
         />
         
         {/* Tooltip positioned near the checklist */}
@@ -86,10 +89,10 @@ export function WelcomeDialog() {
           className="absolute z-50 pointer-events-auto flex items-start animate-in fade-in slide-in-from-right-8 duration-500"
           style={{ top: pos.top, left: pos.left }}
         >
-          {/* SVG Curvy Arrow pointing left */}
-          <div className="mt-6 -mr-2 z-10 text-white drop-shadow-md">
-            <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M45 40 C 45 20 25 15 10 15 M 10 15 L 18 8 M 10 15 L 18 22" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+          {/* SVG Curvy Arrow pointing left with 2 curves */}
+          <div className="mt-1 -mr-1 z-10 text-white drop-shadow-md shrink-0">
+            <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M55 40 C 40 40, 45 10, 25 25 S 10 10, 2 15 M 2 15 L 10 10 M 2 15 L 7 23" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
           
