@@ -1,34 +1,19 @@
 "use client";
 
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import {
-  FolderGit,
-  Mail,
-  Bell,
-  Plus,
-  LayoutDashboard,
-  Folder,
-  ListTodo,
-  Layers,
-  Settings,
-  ChevronDown,
-  LayersPlusIcon,
-  User2,
-  GlobeOff,
-  Globe,
-  Sparkles,
-  HelpCircle,
-  Zap,
-  Home,
-  DollarSign,
+  Activity,
+  Terminal,
+  Cpu,
   Compass,
-  FileText,
-  BarChart2,
-  Users,
-  Database,
-  Filter,
-  MoreHorizontal,
-  Maximize2
+  Shield,
+  Sliders,
+  Wind,
+  Zap,
+  Settings,
+  User,
+  CheckCircle2,
+  AlertCircle
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -43,6 +28,296 @@ interface OnboardingRightSideProps {
   clerkUser?: any;
 }
 
+// --- 3D Geometry Utilities ---
+interface Point3D {
+  x: number;
+  y: number;
+  z: number;
+}
+
+interface Edge {
+  v1: number;
+  v2: number;
+  type?: "structure" | "pilot" | "latch" | "core" | "cone";
+}
+
+interface ComponentGeometry {
+  vertices: Point3D[];
+  edges: Edge[];
+}
+
+function rotateX(p: Point3D, angle: number): Point3D {
+  const cos = Math.cos(angle);
+  const sin = Math.sin(angle);
+  return {
+    x: p.x,
+    y: p.y * cos - p.z * sin,
+    z: p.y * sin + p.z * cos
+  };
+}
+
+function rotateY(p: Point3D, angle: number): Point3D {
+  const cos = Math.cos(angle);
+  const sin = Math.sin(angle);
+  return {
+    x: p.x * cos + p.z * sin,
+    y: p.y,
+    z: -p.x * sin + p.z * cos
+  };
+}
+
+function rotateZ(p: Point3D, angle: number): Point3D {
+  const cos = Math.cos(angle);
+  const sin = Math.sin(angle);
+  return {
+    x: p.x * cos - p.y * sin,
+    y: p.x * sin + p.y * cos,
+    z: p.z
+  };
+}
+
+function rotatePoint(p: Point3D, pitch: number, yaw: number, roll: number): Point3D {
+  let pt = rotateY(p, yaw);
+  pt = rotateX(pt, pitch);
+  pt = rotateZ(pt, roll);
+  return pt;
+}
+
+// --- Spacecraft Geometry Generators (Enlarged and Enhanced) ---
+
+// Component 1: Top Cap (Funnel Shape + Conical Nose Cone Tip - Enlarged)
+function generateTopCap(): ComponentGeometry {
+  const vertices: Point3D[] = [];
+  const edges: Edge[] = [];
+  const segments = 16;
+
+  const layers = [
+    { y: -35, r: 45 }, // Cone base ring
+    { y: -20, r: 75 }, // Outer rim upper
+    { y: 0, r: 85 },   // Mid-body outer
+    { y: 25, r: 85 },  // Lower outer
+    { y: 25, r: 65 }   // Inner sleeve insertion ring
+  ];
+
+  // Generate standard layers
+  layers.forEach((layer, layerIdx) => {
+    const base = layerIdx * segments;
+    for (let i = 0; i < segments; i++) {
+      const theta = (i / segments) * Math.PI * 2;
+      vertices.push({
+        x: Math.cos(theta) * layer.r,
+        y: layer.y,
+        z: Math.sin(theta) * layer.r
+      });
+      edges.push({ v1: base + i, v2: base + ((i + 1) % segments), type: "structure" });
+    }
+  });
+
+  // Longitudinal connecting lines
+  for (let i = 0; i < segments; i++) {
+    edges.push({ v1: i, v2: segments + i, type: "structure" });
+    edges.push({ v1: segments + i, v2: 2 * segments + i, type: "structure" });
+    edges.push({ v1: 2 * segments + i, v2: 3 * segments + i, type: "structure" });
+    edges.push({ v1: 3 * segments + i, v2: 4 * segments + i, type: "structure" });
+  }
+
+  // Conical Nose Cone Tip vertex at the very top (local Y = -80)
+  const tipIdx = vertices.length;
+  vertices.push({ x: 0, y: -80, z: 0 });
+
+  // Connect tip to form a true cone
+  for (let i = 0; i < segments; i++) {
+    edges.push({ v1: tipIdx, v2: i, type: "cone" });
+  }
+
+  return { vertices, edges };
+}
+
+// Component 2: Upper Sleeve (Cockpit - Enlarged)
+function generateUpperSleeve(): ComponentGeometry {
+  const vertices: Point3D[] = [];
+  const edges: Edge[] = [];
+  const segments = 16;
+
+  const layers = [
+    { y: -50, r: 85 }, // Top collar
+    { y: -15, r: 85 },
+    { y: 15, r: 85 },
+    { y: 50, r: 85 }  // Bottom collar
+  ];
+
+  layers.forEach((layer, layerIdx) => {
+    const base = layerIdx * segments;
+    for (let i = 0; i < segments; i++) {
+      const theta = (i / segments) * Math.PI * 2;
+      vertices.push({
+        x: Math.cos(theta) * layer.r,
+        y: layer.y,
+        z: Math.sin(theta) * layer.r
+      });
+      edges.push({ v1: base + i, v2: base + ((i + 1) % segments), type: "structure" });
+    }
+  });
+
+  // Vertical sleeve wall lines
+  for (let i = 0; i < segments; i++) {
+    edges.push({ v1: i, v2: segments + i, type: "structure" });
+    edges.push({ v1: segments + i, v2: 2 * segments + i, type: "structure" });
+    edges.push({ v1: 2 * segments + i, v2: 3 * segments + i, type: "structure" });
+  }
+
+  // Add Front Latch (from screenshot shield element) at theta = PI (front of the cylinder, z < 0)
+  const latchBase = vertices.length;
+  vertices.push({ x: -16, y: -12, z: -90 }); // 0: top-left
+  vertices.push({ x: 16, y: -12, z: -90 });  // 1: top-right
+  vertices.push({ x: 12, y: 18, z: -90 });   // 2: bottom-right
+  vertices.push({ x: -12, y: 18, z: -90 });  // 3: bottom-left
+  vertices.push({ x: 0, y: 28, z: -90 });   // 4: lower tip
+
+  edges.push({ v1: latchBase, v2: latchBase + 1, type: "latch" });
+  edges.push({ v1: latchBase + 1, v2: latchBase + 2, type: "latch" });
+  edges.push({ v1: latchBase + 2, v2: latchBase + 4, type: "latch" });
+  edges.push({ v1: latchBase + 4, v2: latchBase + 3, type: "latch" });
+  edges.push({ v1: latchBase + 3, v2: latchBase, type: "latch" });
+
+  // Connect latch corners to the sleeve body at front points
+  const bodyTop = 8;
+  const bodyMid = 24;
+  edges.push({ v1: latchBase, v2: bodyTop - 1, type: "latch" });
+  edges.push({ v1: latchBase + 1, v2: bodyTop + 1, type: "latch" });
+  edges.push({ v1: latchBase + 3, v2: bodyMid - 1, type: "latch" });
+  edges.push({ v1: latchBase + 2, v2: bodyMid + 1, type: "latch" });
+
+  // Add Pilot Helmet mesh (to be selectively rendered inside cockpit) - Enlarged
+  const pilotBase = vertices.length;
+  const rad = 15;
+  const latBands = 5;
+  const lonBands = 8;
+
+  // Generate helmet sphere points
+  for (let lat = 0; lat <= latBands; lat++) {
+    const theta = (lat * Math.PI) / latBands;
+    const sinTheta = Math.sin(theta);
+    const cosTheta = Math.cos(theta);
+
+    for (let lon = 0; lon < lonBands; lon++) {
+      const phi = (lon * 2 * Math.PI) / lonBands;
+      vertices.push({
+        x: Math.cos(phi) * sinTheta * rad,
+        y: cosTheta * rad - 5, // sitting centered in sleeve
+        z: Math.sin(phi) * sinTheta * rad
+      });
+    }
+  }
+
+  // Connect pilot helmet mesh lines
+  for (let lat = 0; lat < latBands; lat++) {
+    for (let lon = 0; lon < lonBands; lon++) {
+      const first = lat * lonBands + lon;
+      const second = first + lonBands;
+
+      edges.push({
+        v1: pilotBase + first,
+        v2: pilotBase + ((first + 1) % lonBands + lat * lonBands),
+        type: "pilot"
+      });
+      edges.push({
+        v1: pilotBase + second,
+        v2: pilotBase + ((second + 1) % lonBands + (lat + 1) * lonBands),
+        type: "pilot"
+      });
+      edges.push({
+        v1: pilotBase + first,
+        v2: pilotBase + second,
+        type: "pilot"
+      });
+    }
+  }
+
+  return { vertices, edges };
+}
+
+// Component 3: Reactor core (vertical rods bundle - Enlarged & Enhanced)
+function generateReactorCore(): ComponentGeometry {
+  const vertices: Point3D[] = [];
+  const edges: Edge[] = [];
+  const numRods = 12; 
+  const rodRadius = 9;
+  const coreRadius = 40;
+  const rodHeight = 110;
+
+  for (let r = 0; r < numRods; r++) {
+    const angle = (r / numRods) * Math.PI * 2;
+    const centerX = Math.cos(angle) * coreRadius;
+    const centerZ = Math.sin(angle) * coreRadius;
+    const baseVertIdx = vertices.length;
+    const segments = 6;
+
+    // Top cap of the rod
+    for (let i = 0; i < segments; i++) {
+      const theta = (i / segments) * Math.PI * 2;
+      vertices.push({
+        x: centerX + Math.cos(theta) * rodRadius,
+        y: -rodHeight / 2,
+        z: centerZ + Math.sin(theta) * rodRadius
+      });
+      edges.push({ v1: baseVertIdx + i, v2: baseVertIdx + ((i + 1) % segments), type: "core" });
+    }
+
+    // Bottom cap of the rod
+    for (let i = 0; i < segments; i++) {
+      const theta = (i / segments) * Math.PI * 2;
+      vertices.push({
+        x: centerX + Math.cos(theta) * rodRadius,
+        y: rodHeight / 2,
+        z: centerZ + Math.sin(theta) * rodRadius
+      });
+      edges.push({ v1: baseVertIdx + segments + i, v2: baseVertIdx + segments + ((i + 1) % segments), type: "core" });
+      // Vertical connector
+      edges.push({ v1: baseVertIdx + i, v2: baseVertIdx + segments + i, type: "core" });
+    }
+  }
+
+  return { vertices, edges };
+}
+
+// Component 4: Base Receptacle (Enlarged)
+function generateBaseReceptacle(): ComponentGeometry {
+  const vertices: Point3D[] = [];
+  const edges: Edge[] = [];
+  const segments = 16;
+
+  const layers = [
+    { y: -45, r: 85 }, // Top collar
+    { y: -15, r: 85 },
+    { y: 15, r: 85 },
+    { y: 45, r: 85 }  // Bottom collar
+  ];
+
+  layers.forEach((layer, layerIdx) => {
+    const base = layerIdx * segments;
+    for (let i = 0; i < segments; i++) {
+      const theta = (i / segments) * Math.PI * 2;
+      vertices.push({
+        x: Math.cos(theta) * layer.r,
+        y: layer.y,
+        z: Math.sin(theta) * layer.r
+      });
+      edges.push({ v1: base + i, v2: base + ((i + 1) % segments), type: "structure" });
+    }
+  });
+
+  // Vertical sleeve lines
+  for (let i = 0; i < segments; i++) {
+    edges.push({ v1: i, v2: segments + i, type: "structure" });
+    edges.push({ v1: segments + i, v2: 2 * segments + i, type: "structure" });
+    edges.push({ v1: 2 * segments + i, v2: 3 * segments + i, type: "structure" });
+  }
+
+  return { vertices, edges };
+}
+
+// --- Main Component ---
 export function OnboardingRightSide({
   currentStep,
   purposes,
@@ -53,522 +328,870 @@ export function OnboardingRightSide({
   theme = "dark",
   clerkUser,
 }: OnboardingRightSideProps) {
-  // Render step-wise elements on the right column
-  const renderContent = () => {
-    switch (currentStep) {
-      case 1:
-        return (
-          <div className="w-[90%] max-w-[620px] aspect-[16/10] bg-zinc-900 border border-zinc-900 rounded-2xl overflow-hidden shadow-2xl relative flex flex-col font-sans">
-            {/* macOS Style Browser Tab Bar */}
-            <div className="h-10 border-b border-zinc-900 bg-zinc-950 px-4 flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-1.5">
-                <span className="w-3 h-3 rounded-full bg-[#ff5f56] border border-[#e0443e]" />
-                <span className="w-3 h-3 rounded-full bg-[#ffbd2e] border border-[#dfa123]" />
-                <span className="w-3 h-3 rounded-full bg-[#27c93f] border border-[#1aab29]" />
-              </div>
+  const containerRef = useRef<HTMLDivElement>(null);
+  const canvasRef = useRef<HTMLCanvasElement>(null);
 
-              <div className="flex items-center gap-2.5 text-zinc-600 text-[10px]">
-                <span className="cursor-pointer hover:text-zinc-400">◀</span>
-                <span className="cursor-pointer hover:text-zinc-400">▶</span>
-                <span className="cursor-pointer hover:text-zinc-400">↻</span>
-              </div>
+  // Sync props to refs to avoid restarting canvas loop on updates
+  const currentStepRef = useRef(currentStep);
+  const projectNameRef = useRef(projectName);
+  const usernameRef = useRef(username);
+  const selectedRoleRef = useRef(selectedRole);
 
-              <div className="text-[10px] text-zinc-400 font-mono tracking-tight bg-zinc-900 border border-zinc-850 rounded-md px-4 py-0.5 w-64 text-center truncate flex items-center justify-center gap-1">
-                <span className="text-emerald-500">🔒</span>
-                <span>https://wekraft.co/workspace</span>
-              </div>
+  useEffect(() => {
+    currentStepRef.current = currentStep;
+  }, [currentStep]);
 
-              <div className="w-16" />
-            </div>
+  useEffect(() => {
+    projectNameRef.current = projectName;
+  }, [projectName]);
 
-            {/* Browser Workspace Content */}
-            <div className="relative p-6 flex-1 overflow-hidden bg-zinc-950 text-left text-zinc-450">
-              {/* Glow accent */}
-              <div className="absolute -top-1/4 -right-1/4 w-60 h-60 bg-[#5e6ad2]/5 blur-[60px] rounded-full pointer-events-none" />
+  useEffect(() => {
+    usernameRef.current = username;
+  }, [username]);
 
-              <div className="space-y-4">
-                <div className="flex items-center justify-between border-b border-zinc-900 pb-3">
-                  <div className="flex items-center gap-2">
-                    <FolderGit className="w-3.5 h-3.5 text-[#5e6ad2]" />
-                    <span className="text-xs font-semibold text-zinc-200">Active Workspaces</span>
-                  </div>
-                  <span className="text-[10px] bg-zinc-900 text-zinc-500 px-2 py-0.5 rounded-full font-medium">
-                    4 total
-                  </span>
-                </div>
-                <div className="space-y-2">
-                  {[
-                    {
-                      name: "WeKraft Collaboration",
-                      desc: "Main project for team workspace",
-                      status: "Active",
-                      color: "text-[#5e6ad2] bg-[#5e6ad2]/10",
-                    },
-                    {
-                      name: "Marketing Campaign",
-                      desc: "Launch timeline and website feedback",
-                      status: "Planning",
-                      color: "text-blue-400 bg-blue-400/10",
-                    },
-                    {
-                      name: "Design System 2.0",
-                      desc: "Figma token sync and component library",
-                      status: "Backlog",
-                      color: "text-zinc-500 bg-zinc-900",
-                    },
-                  ].map((p, i) => (
-                    <div
-                      key={i}
-                      className="p-3 bg-zinc-900/30 border border-zinc-900/40 rounded-lg flex items-center justify-between"
-                    >
-                      <div>
-                        <h5 className="text-[11px] font-semibold text-zinc-300">{p.name}</h5>
-                        <p className="text-[9.5px] text-zinc-500 mt-0.5">{p.desc}</p>
-                      </div>
-                      <span className={cn("text-[9px] px-2 py-0.5 rounded-full font-medium", p.color)}>
-                        {p.status}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-          </div>
-        );
+  useEffect(() => {
+    selectedRoleRef.current = selectedRole;
+  }, [selectedRole]);
 
-      case 2:
-        return (
-          <div className="w-full flex items-center justify-center p-4 font-sans">
-            {/* Colorful Gradient Card Outer */}
-            <div className="w-[380px] aspect-[1.3] rounded-[40px] bg-gradient-to-tr from-[#abc4ff] via-[#ffd6ff] to-[#ffebd6] relative p-6 shadow-2xl flex flex-col justify-end overflow-visible">
+  // Tech diagnostic logs
+  const [logs, setLogs] = useState<string[]>([
+    "SYS INIT // CORE SEQUENCE LOADED",
+    "PENDING hardpoint docking clamps release..."
+  ]);
 
-              {/* Circular avatar overlapping the card */}
-              <div className="absolute top-[12%] left-8 w-[92px] h-[92px] rounded-full border-[5px] border-white overflow-hidden shadow-lg z-20">
-                {clerkUser?.imageUrl ? (
-                  <img src={clerkUser.imageUrl} className="w-full h-full object-cover" alt="" />
-                ) : (
-                  <img
-                    src="https://images.unsplash.com/photo-1544005313-94ddf0286df2?q=80&w=150&auto=format&fit=crop"
-                    className="w-full h-full object-cover"
-                    alt=""
-                  />
-                )}
-              </div>
+  useEffect(() => {
+    const step = currentStep;
+    let newLogs: string[] = [];
+    if (step === 1) {
+      newLogs = [
+        "STATUS: ASSEMBLY MODE // EXPLODED STATE ACTIVED",
+        "CONNECTING structural segments to launchpad turntable...",
+        "WAITING for mission pilot assignment..."
+      ];
+    } else if (step === 2) {
+      newLogs = [
+        "STATUS: CREW BOARDING IN PROGRESS",
+        `PILOT LOGGED: ${username || clerkUser?.fullName || "ASTRONAUT"}`,
+        `BIO-SYNC ROLE: ${selectedRole || "SPECIALIST"}`,
+        "COMMENCING structural module docking locking sequence..."
+      ];
+    } else if (step === 3) {
+      newLogs = [
+        "STATUS: ALL HARDPOINTS LOCKED & DOCKED",
+        `VESSEL NAME DECLARED: [${projectName || "WEKRAFT-01"}]`,
+        "IGNITING fusion reactor plasma rings...",
+        "CHECKING fuel rods pressure metrics [OK]"
+      ];
+    } else if (step === 4) {
+      newLogs = [
+        `VESSEL ID: ${projectName || "WEKRAFT-01"}`,
+        "CALIBRATING engine core output & exhaust valves...",
+        "DEPRESSURIZATION steam venting [ACTIVE]",
+        "WARNING: minor chassis vibration detected, damping stabilizers..."
+      ];
+    } else if (step === 5) {
+      newLogs = [
+        "STATUS: WARP DRIVE ENGAGED // GO FOR LAUNCH",
+        "VELOCITY: OVERDRIVE warp speed index [OK]",
+        "ATMOSPHERIC drag shield deployed [100%]",
+        "WELCOME ABOARD WEKRAFT WORKSPACE!"
+      ];
+    }
+    setLogs(newLogs);
+  }, [currentStep, username, selectedRole, projectName, clerkUser]);
 
-              {/* White card body */}
-              <div className="bg-white rounded-t-[32px] rounded-b-[40px] p-6 pt-12 flex flex-col justify-between h-[68%] text-zinc-800 relative z-10">
-                <div>
-                  {/* Name & Occupation badges */}
-                  <div className="flex items-center justify-between">
-                    <div className="pl-[100px] -mt-11">
-                      <h4 className="text-base font-bold text-zinc-900 tracking-tight leading-none mb-1.5 truncate max-w-44 capitalize font-sans">
-                        {username || clerkUser?.fullName || "Verona Nov"}
-                      </h4>
-                      <div className="flex gap-1">
-                        <span className="bg-purple-100 text-purple-700 px-2 py-0.5 rounded-full text-[8.5px] font-semibold capitalize">
-                          {selectedRole || "Writer"}
-                        </span>
-                        <span className="bg-amber-100 text-amber-800 px-2 py-0.5 rounded-full text-[8.5px] font-semibold">
-                          Golden User
-                        </span>
-                      </div>
-                    </div>
-                  </div>
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    if (!ctx) return;
 
-                  {/* Bio description */}
-                  <p className="text-[10.5px] text-zinc-500 leading-relaxed mt-4 font-normal">
-                    {selectedRole
-                      ? `Passionate ${selectedRole.toLowerCase()} collaborating on WeKraft workspaces to design, build, and deploy projects.`
-                      : "I write short stories and fanfiction for the most popular fandoms"}
-                  </p>
-                </div>
+    let animFrame: number;
+    let isRunning = true;
 
-                {/* Row of buttons */}
-                <div className="flex items-center gap-2 mt-4">
-                  <button className="flex-1 bg-black text-white hover:bg-zinc-800 transition-colors font-semibold text-[10px] uppercase tracking-wider py-3.5 rounded-full flex items-center justify-center gap-1.5">
-                    <Plus className="w-3.5 h-3.5 text-white" />
-                    Follow
-                  </button>
-                  <button className="w-11 h-11 rounded-full border border-zinc-200 hover:bg-zinc-50 flex items-center justify-center text-zinc-500 transition-colors">
-                    <Mail className="w-4 h-4" />
-                  </button>
-                  <button className="w-11 h-11 rounded-full border border-zinc-200 hover:bg-zinc-50 flex items-center justify-center text-zinc-500 transition-colors">
-                    <Bell className="w-4 h-4" />
-                  </button>
-                </div>
+    // Component geometries
+    const topCap = generateTopCap();
+    const upperSleeve = generateUpperSleeve();
+    const core = generateReactorCore();
+    const base = generateBaseReceptacle();
 
-              </div>
-            </div>
-          </div>
-        );
+    // Base component center Y layout positions when locked (stacked larger height offsets)
+    const lockedY = {
+      topCap: -140,
+      upperSleeve: -70,
+      core: 30,
+      base: 125
+    };
 
-      case 3:
-        return (
-          <div
-            style={{
-              transform: "perspective(1500px) rotateY(-16deg) rotateX(14deg) rotateZ(-2deg)",
-              transformStyle: "preserve-3d"
-            }}
-            className="absolute bottom-[-50px] right-[-60px] w-[860px] h-[550px] bg-gradient-to-br from-[#0e0e11] to-[#050506] border border-white/[0.08] rounded-2xl shadow-[0_40px_80px_rgba(0,0,0,0.95)] flex overflow-hidden font-sans"
-          >
-            {/* Fine border highlight reflection at top edge and glowing radial backdrop */}
-            <div className="absolute top-0 left-0 right-0 h-[1.5px] bg-gradient-to-r from-transparent via-white/15 to-transparent pointer-events-none" />
-            <div className="absolute -top-32 -left-32 w-80 h-80 bg-blue-600/[0.08] blur-[80px] rounded-full pointer-events-none" />
+    // Current animated component offsets (starts exploded)
+    // Redesigned: topCap target offset is reduced (-220 instead of -280) to fix the gap
+    const offsets = {
+      topCap: -220,
+      upperSleeve: -145,
+      core: 20,
+      base: 190
+    };
 
-            {/* Sidebar */}
-            <aside className="w-48 border-r border-white/[0.06] bg-[#09090b]/80 p-5 flex flex-col gap-6 shrink-0 text-zinc-400 backdrop-blur-md">
-              {/* Workspace Logo & Header */}
-              <div className="flex items-center gap-2.5 pb-2">
-                <div className="w-6 h-6 rounded-lg bg-blue-600 flex items-center justify-center text-white text-[10px] font-bold shadow-[0_0_12px_rgba(37,99,235,0.4)]">
-                  W
-                </div>
-                <span className="font-bold text-sm text-zinc-100 tracking-tight font-sans">WeKraft</span>
-                <ChevronDown className="w-3.5 h-3.5 text-zinc-500 ml-auto" />
-              </div>
+    // Rotation angles
+    let pitch = 0.35; // perspective tilt
+    let yaw = 0.0;    // spin
+    let roll = 0.0;   // roll wobble
+    let time = 0;
 
-              {/* Sidebar Menu items */}
-              <div className="space-y-1.5">
-                <span className="text-[8px] uppercase font-bold text-zinc-500 tracking-wider px-2 block">Menu</span>
-                {[
-                  { label: "Dashboard", icon: LayoutDashboard, active: true },
-                  { label: "Projects", icon: Folder },
-                  { label: "Tasks", icon: ListTodo },
-                  { label: "Integrations", icon: Layers },
-                  { label: "Workflows", icon: LayersPlusIcon },
-                  { label: "Community", icon: Globe },
-                  { label: "Profile", icon: User2 },
-                ].map((item) => (
-                  <div
-                    key={item.label}
-                    className={cn(
-                      "flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium transition-all cursor-pointer",
-                      item.active
-                        ? "text-white border border-white/[0.08] bg-white/[0.02]"
-                        : "text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.01]"
-                    )}
-                  >
-                    <item.icon className={cn("w-4 h-4", item.active ? "text-zinc-300" : "text-zinc-500")} />
-                    <span className="font-sans">{item.label}</span>
-                  </div>
-                ))}
-              </div>
+    // Displacement offsets (for vertical flying motion in Step 5)
+    let vesselCenterYOffset = 0;
 
-              {/* Settings link at bottom */}
-              <div className="mt-auto">
-                <div className="flex items-center gap-3 px-3 py-2.5 rounded-xl text-xs font-medium text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.01] cursor-pointer transition-colors">
-                  <Settings className="w-4 h-4 text-zinc-500" />
-                  <span className="font-sans">Settings</span>
-                </div>
-              </div>
-            </aside>
+    // Particle types
+    interface Star {
+      x: number;
+      y: number;
+      z: number;
+      prevZ: number;
+      brightness: number;
+    }
 
-            {/* Dashboard content area */}
-            <main className="flex-1 p-8 flex flex-col gap-6 text-zinc-350">
+    interface SmokePoint {
+      x: number;
+      y: number;
+      z: number;
+    }
 
-              {/* Header (Project Name & Status chosen by user) */}
-              <div className="flex items-center justify-between pb-5 border-b border-white/[0.06]">
-                <div>
-                  <span className="text-[9px] text-zinc-500 uppercase tracking-widest font-mono">WORKSPACE</span>
-                  <div className="flex items-center gap-3 mt-1">
-                    <h1 className="text-xl font-bold text-white tracking-tight leading-none font-sans">
-                      {projectName || "Acme SaaS"}
-                    </h1>
-                    <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
-                    <span className="text-[9px] tracking-wider uppercase font-bold border border-white/[0.08] bg-white/[0.03] text-zinc-300 px-2 py-0.5 rounded-full font-mono">
-                      {projectStatus || "Validation"}
-                    </span>
-                  </div>
-                </div>
-              </div>
+    interface Smoke {
+      path: SmokePoint[];
+      vx: number;
+      vy: number;
+      vz: number;
+      life: number;
+      opacity: number;
+      side: number; // -1 for left, 1 for right
+      width: number;
+    }
 
-              {/* Stats Cards */}
-              <div className="grid grid-cols-3 gap-4">
-                {[
-                  { label: "SPRINT COMPLETION", value: "76%", sub: "6 / 11 Tasks" },
-                  { label: "ACTIVE TEAM", value: "3 Online", sub: "Out of 4" },
-                  { label: "SYSTEM LATENCY", value: "12ms", sub: "Convex Node" }
-                ].map((card) => (
-                  <div
-                    key={card.label}
-                    className="border border-white/[0.06] bg-white/[0.02] p-4 rounded-xl flex flex-col text-left shadow-xs transition-colors hover:border-white/[0.1]"
-                  >
-                    <span className="text-[9px] font-bold text-zinc-500 uppercase tracking-wider font-sans">{card.label}</span>
-                    <span className="text-lg font-bold text-zinc-200 mt-2 font-mono tracking-tight">{card.value}</span>
-                    <span className="text-[9px] text-zinc-500 mt-1 font-medium font-sans">{card.sub}</span>
-                  </div>
-                ))}
-              </div>
+    interface Flame {
+      x: number;
+      y: number;
+      z: number;
+      vy: number;
+      length: number;
+      life: number;
+    }
 
-              {/* Task Backlog Table */}
-              <div className="flex flex-col gap-3 mt-2">
-                <div className="flex items-center justify-between text-[9px] font-bold text-zinc-500 uppercase tracking-wider px-1 font-sans">
-                  <span>Task Backlog</span>
-                  <span>Status</span>
-                </div>
+    interface AirSplash {
+      y: number;
+      radius: number;
+      opacity: number;
+    }
 
-                <div className="space-y-2">
-                  {[
-                    { task: "Design Landing Page UI", status: "Done", color: "text-emerald-400 border-emerald-500/15 bg-emerald-500/5" },
-                    { task: "Setup authentication channels", status: "In Progress", color: "text-blue-400 border-blue-500/15 bg-blue-500/5" },
-                    { task: "Run Convex mutations sync", status: "To Do", color: "text-zinc-400 border-zinc-500/15 bg-zinc-500/5" }
-                  ].map((row) => (
-                    <div
-                      key={row.task}
-                      className="flex items-center justify-between p-3.5 border border-white/[0.05] bg-white/[0.01] rounded-xl hover:border-white/[0.08] transition-colors"
-                    >
-                      <span className="text-xs text-zinc-350 font-medium font-sans">{row.task}</span>
-                      <span className={cn("px-2.5 py-1 rounded-lg text-[9px] font-semibold tracking-wide border font-sans", row.color)}>
-                        {row.status}
-                      </span>
-                    </div>
-                  ))}
-                </div>
-              </div>
+    // Full dense stars background (300 stars)
+    const stars: Star[] = [];
+    for (let i = 0; i < 300; i++) {
+      stars.push({
+        x: (Math.random() - 0.5) * 1500,
+        y: (Math.random() - 0.5) * 1500,
+        z: Math.random() * 900,
+        prevZ: 0,
+        brightness: 0.2 + Math.random() * 0.8
+      });
+    }
 
-            </main>
-          </div>
-        );
+    const smokeParticles: Smoke[] = [];
+    const flameParticles: Flame[] = [];
+    const splashRings: AirSplash[] = [];
 
-      case 4: {
-        const isLight = theme === "light";
-        return (
-          <div
-            style={{
-              transform: "perspective(2000px) rotateX(50deg) rotateY(-16deg) rotateZ(26deg)",
-              transformStyle: "preserve-3d"
-            }}
-            className={cn(
-              "absolute bottom-[-100px] right-[-120px] w-[920px] h-[600px] rounded-2xl flex overflow-hidden font-sans transition-all duration-500 border",
-              isLight
-                ? "bg-white border-zinc-200/80 shadow-[0_40px_80px_rgba(0,0,0,0.1)] text-zinc-800"
-                : "bg-[#0b0b0c] border-white/[0.08] shadow-[0_40px_80px_rgba(0,0,0,0.95)] text-zinc-200"
-            )}
-          >
-            {/* Fine border highlight reflection at top edge and glowing radial backdrop */}
-            <div className={cn(
-              "absolute top-0 left-0 right-0 h-[1.5px] pointer-events-none transition-all duration-500",
-              isLight
-                ? "bg-gradient-to-r from-transparent via-zinc-200 to-transparent"
-                : "bg-gradient-to-r from-transparent via-white/15 to-transparent"
-            )} />
-            <div className={cn(
-              "absolute -top-32 -left-32 w-80 h-80 blur-[80px] rounded-full pointer-events-none transition-all duration-500",
-              isLight
-                ? "bg-blue-600/[0.03]"
-                : "bg-blue-600/[0.08]"
-            )} />
+    // Camera settings
+    const fov = 420;
+    const cameraDistance = 300;
+    const cameraShake = { x: 0, y: 0 };
+    let launchpadY = 0;
 
-            {/* Sidebar */}
-            <aside className={cn(
-              "w-14 flex flex-col items-center py-6 gap-5 shrink-0 border-r transition-all duration-500",
-              isLight
-                ? "bg-zinc-50 border-zinc-200/60 text-zinc-400"
-                : "bg-[#08080a]/80 border-white/[0.06] text-zinc-500 backdrop-blur-md"
-            )}>
-              {/* Top Sparkles Icon */}
-              <div className={cn(
-                "w-8 h-8 rounded-lg flex items-center justify-center transition-all",
-                isLight ? "text-zinc-700" : "text-zinc-200"
-              )}>
-                <Sparkles className="w-4 h-4" />
-              </div>
+    const resize = () => {
+      const parent = canvas.parentElement;
+      if (parent) {
+        canvas.width = parent.clientWidth;
+        canvas.height = parent.clientHeight;
+      }
+    };
+    window.addEventListener("resize", resize);
+    resize();
 
-              {/* Separator line */}
-              <div className={cn("w-6 h-[1px]", isLight ? "bg-zinc-200" : "bg-white/[0.05]")} />
+    // Render loop
+    const render = () => {
+      if (!isRunning) return;
 
-              {/* Action Icons */}
-              <div className="flex flex-col gap-4">
-                {[
-                  { icon: Settings, id: "settings" },
-                  { icon: HelpCircle, id: "help" },
-                  { icon: Zap, id: "workflows" },
-                  { icon: Home, id: "home" },
-                  { icon: DollarSign, id: "billing", active: true },
-                  { icon: Compass, id: "navigation" },
-                  { icon: FileText, id: "docs" },
-                  { icon: BarChart2, id: "analytics" },
-                  { icon: Mail, id: "messages" },
-                  { icon: Users, id: "team" },
-                  { icon: Database, id: "data" }
-                ].map((item) => {
-                  const isActive = item.active;
-                  return (
-                    <div
-                      key={item.id}
-                      className={cn(
-                        "w-8 h-8 rounded-lg flex items-center justify-center cursor-pointer transition-all",
-                        isActive
-                          ? isLight
-                            ? "bg-blue-50 text-blue-600 shadow-[0_2px_8px_rgba(37,99,235,0.15)]"
-                            : "bg-blue-600/10 text-blue-400 shadow-[0_2px_12px_rgba(59,130,246,0.2)] border border-blue-500/20"
-                          : isLight
-                            ? "text-zinc-400 hover:text-zinc-700 hover:bg-zinc-100"
-                            : "text-zinc-500 hover:text-zinc-300 hover:bg-white/[0.02]"
-                      )}
-                    >
-                      <item.icon className="w-4 h-4" />
-                    </div>
-                  );
-                })}
-              </div>
-            </aside>
+      const width = canvas.width;
+      const height = canvas.height;
+      const step = currentStepRef.current;
+      time += 1;
 
-            {/* Main Table Area */}
-            <main className={cn(
-              "flex-1 p-6 flex flex-col gap-4 overflow-hidden transition-all duration-500",
-              isLight ? "text-zinc-600" : "text-zinc-400"
-            )}>
-              {/* Opportunities Title Bar */}
-              <div className={cn("flex items-center justify-between pb-3 border-b transition-colors", isLight ? "border-zinc-200/50" : "border-white/[0.04]")}>
-                <div className="flex items-center gap-2">
-                  <h2 className={cn("text-sm font-bold tracking-tight font-sans transition-colors", isLight ? "text-zinc-800" : "text-white")}>
-                    Opportunities
-                  </h2>
-                  <MoreHorizontal className="w-3.5 h-3.5 text-zinc-400 cursor-pointer hover:text-zinc-300" />
-                </div>
+      // 1. Interpolate visual states based on active step
+      let targetOffsets = { topCap: 0, upperSleeve: 0, core: 0, base: 0 };
+      let targetPitch = 0.38;
+      let targetRoll = 0.0;
+      let targetStarSpeed = 0.8;
+      let targetLaunchpadY = 0;
+      let targetVesselCenterYOffset = 0;
+      let shakeAmt = 0;
 
-                <div className="flex items-center gap-2">
-                  <div className={cn(
-                    "flex items-center gap-1.5 px-2.5 py-1 rounded-md text-[10px] font-medium border cursor-pointer select-none transition-all",
-                    isLight
-                      ? "bg-zinc-50 border-zinc-200/60 hover:bg-zinc-100 text-zinc-600"
-                      : "bg-[#0e0e11] border-white/[0.05] hover:bg-white/[0.01] text-zinc-400"
-                  )}>
-                    <span className="w-3 h-3 text-[8px] font-bold">📋</span>
-                    <span className="font-sans">Paid Customers</span>
-                    <ChevronDown className="w-3 h-3 text-zinc-500" />
-                  </div>
-
-                  <div className={cn(
-                    "flex items-center gap-1 px-2 py-1 rounded-md text-[10px] font-medium border cursor-pointer select-none transition-all",
-                    isLight
-                      ? "bg-zinc-50 border-zinc-200/60 hover:bg-zinc-100 text-zinc-600"
-                      : "bg-[#0e0e11] border-white/[0.05] hover:bg-white/[0.01] text-zinc-400"
-                  )}>
-                    <Filter className="w-3.5 h-3.5 text-zinc-500" />
-                    <span className="font-sans">Filter</span>
-                  </div>
-                </div>
-              </div>
-
-              {/* Table View */}
-              <div className="flex-1 overflow-y-auto space-y-0.5 pr-1 text-left min-h-0 select-none">
-                {/* Table Header Row */}
-                <div className={cn(
-                  "flex items-center border-b py-2 text-[9px] font-semibold uppercase tracking-wider transition-colors",
-                  isLight
-                    ? "border-zinc-200/50 text-zinc-500 bg-zinc-50/50"
-                    : "border-white/[0.04] text-zinc-500 bg-[#0c0c0e]/30"
-                )}>
-                  <div className="w-[8%] pl-3 flex items-center justify-center">
-                    <div className={cn("w-3 h-3 rounded border transition-all", isLight ? "border-zinc-300" : "border-white/[0.08]")} />
-                  </div>
-                  <div className="w-[8%] font-mono text-center">#</div>
-                  <div className="w-[44%] font-sans pl-2">Name</div>
-                  <div className="w-[40%] font-sans pl-2">Status</div>
-                </div>
-
-                {/* Rows */}
-                {[
-                  { name: "Resend Deal", status: "on", color: "text-emerald-500 border-emerald-500/15 bg-emerald-500/5" },
-                  { name: "OpenAI Deal", status: "on", color: "text-emerald-500 border-emerald-500/15 bg-emerald-500/5" },
-                  { name: "CitiBank Deal", status: "ng", color: "text-amber-500 border-amber-500/15 bg-amber-500/5", activePanel: true },
-                  { name: "Linear Deal", status: "ion", color: "text-blue-500 border-blue-500/15 bg-blue-500/5" },
-                  { name: "Stripe Deal", status: "ng", color: "text-amber-500 border-amber-500/15 bg-amber-500/5" },
-                  { name: "X Deal", status: "on", color: "text-emerald-500 border-emerald-500/15 bg-emerald-500/5" },
-                  { name: "WorkOS Deal", status: "ion", color: "text-blue-500 border-blue-500/15 bg-blue-500/5" },
-                  { name: "Oracle Deal", status: "ng", color: "text-amber-500 border-amber-500/15 bg-amber-500/5" },
-                  { name: "Fidelity Deal", status: "on", color: "text-emerald-500 border-emerald-500/15 bg-emerald-500/5" },
-                  { name: "Momentic Deal", status: "ion", color: "text-blue-500 border-blue-500/15 bg-blue-500/5" },
-                ].map((row, idx) => {
-                  const isHoveredRow = row.activePanel;
-                  return (
-                    <div
-                      key={row.name}
-                      className={cn(
-                        "flex items-center py-2.5 text-xs font-medium border-b relative group transition-colors",
-                        isLight
-                          ? "border-zinc-200/40 hover:bg-zinc-50"
-                          : "border-white/[0.03] hover:bg-white/[0.01]",
-                        isLight
-                          ? isHoveredRow ? "bg-zinc-50" : "bg-transparent"
-                          : isHoveredRow ? "bg-white/[0.01]" : "bg-transparent"
-                      )}
-                    >
-                      <div className="w-[8%] flex items-center justify-center">
-                        <div className={cn("w-3 h-3 rounded border transition-all", isLight ? "border-zinc-300" : "border-white/[0.08]")} />
-                      </div>
-                      <div className={cn("w-[8%] text-center font-mono text-[10px]", isLight ? "text-zinc-400" : "text-zinc-500")}>
-                        {idx + 1}
-                      </div>
-
-                      <div className={cn("w-[44%] font-sans pl-2 truncate transition-colors", isLight ? "text-zinc-800" : "text-zinc-200")}>
-                        {row.name}
-                      </div>
-
-                      <div className="w-[40%] font-sans pl-2 flex items-center">
-                        <span className={cn("px-2 py-0.5 rounded text-[8px] font-bold tracking-wide border uppercase font-mono", row.color)}>
-                          {row.status}
-                        </span>
-                      </div>
-
-                      {/* Tooltip & Floating action buttons exactly as shown in screenshot */}
-                      {isHoveredRow && (
-                        <>
-                          <div className="absolute right-[22%] top-[-8px] z-20 flex items-center gap-1 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-white/[0.08] px-2 py-1.5 rounded-xl shadow-[0_8px_20px_rgba(0,0,0,0.15)] select-none">
-                            <button type="button" className="p-1 rounded-md bg-blue-50 dark:bg-blue-600/10 text-blue-600 dark:text-blue-400">
-                              <FileText className="w-3.5 h-3.5" />
-                            </button>
-                            <button type="button" className="p-1 rounded-md text-amber-500 hover:bg-zinc-100 dark:hover:bg-white/[0.02]">
-                              <Sparkles className="w-3.5 h-3.5" />
-                            </button>
-                            <button type="button" className="p-1 rounded-md text-zinc-400 hover:bg-zinc-100 dark:hover:bg-white/[0.02]">
-                              <MoreHorizontal className="w-3.5 h-3.5" />
-                            </button>
-                          </div>
-
-                          <div className="absolute right-[16%] top-[34px] z-20 bg-zinc-950 text-white text-[10px] font-semibold px-3 py-1.5 rounded-lg shadow-lg flex items-center gap-1.5 select-none pointer-events-none">
-                            <span className="font-sans">Open in Side Panel</span>
-                          </div>
-                        </>
-                      )}
-                    </div>
-                  );
-                })}
-              </div>
-            </main>
-          </div>
-        );
+      if (step === 1) {
+        // Exploded view - topCap gap is reduced to prevent huge gaps
+        targetOffsets = { topCap: -220, upperSleeve: -145, core: 20, base: 190 };
+      } else if (step === 2) {
+        // Halfways assembled - topCap gap is reduced
+        targetOffsets = { topCap: -70, upperSleeve: -45, core: 5, base: 70 };
+      } else if (step === 3) {
+        // Fully locked & Ignited (rumble starts!)
+        targetOffsets = { topCap: 0, upperSleeve: 0, core: 0, base: 0 };
+        shakeAmt = 1.8;
+      } else if (step === 4) {
+        // Calibrating core (shake & smoke - pressure builds up!)
+        targetOffsets = { topCap: 0, upperSleeve: 0, core: 0, base: 0 };
+        shakeAmt = 2.4;
+      } else if (step === 5) {
+        // Launch warp speed (blastoff up the frame!)
+        targetOffsets = { topCap: 0, upperSleeve: 0, core: 0, base: 0 };
+        targetPitch = 1.35; // tilt rocket nose pointing "into/up" screen
+        targetRoll = Math.sin(time * 0.06) * 0.12; // flight banking wobble
+        targetStarSpeed = 24.0;
+        targetLaunchpadY = 500; // discard turntable launchpad down out of frame
+        targetVesselCenterYOffset = -185; // fly upwards towards top-center
+        shakeAmt = 5.0; // heavy liftoff rumble
       }
 
-      default:
-        return (
-          <div className="flex items-center justify-center h-full font-sans">
-            <span className="text-zinc-650 text-xs font-mono">
-              Step {currentStep} Preview coming soon
-            </span>
-          </div>
-        );
-    }
-  };
+      // Smooth step variables transitions
+      offsets.topCap += (targetOffsets.topCap - offsets.topCap) * 0.08;
+      offsets.upperSleeve += (targetOffsets.upperSleeve - offsets.upperSleeve) * 0.08;
+      offsets.core += (targetOffsets.core - offsets.core) * 0.08;
+      offsets.base += (targetOffsets.base - offsets.base) * 0.08;
+      pitch += (targetPitch - pitch) * 0.04;
+      roll += (targetRoll - roll) * 0.04;
+      launchpadY += (targetLaunchpadY - launchpadY) * 0.06;
+      vesselCenterYOffset += (targetVesselCenterYOffset - vesselCenterYOffset) * 0.05;
 
-  const isLight = theme === "light";
-  const isAbsoluteAligned = currentStep === 3 || currentStep === 4;
+      // Handle continuous rotation
+      if (step === 5) {
+        yaw += 0.015;
+      } else {
+        yaw += 0.005;
+      }
+
+      // Set camera shake displacement
+      if (shakeAmt > 0) {
+        cameraShake.x = (Math.random() - 0.5) * shakeAmt;
+        cameraShake.y = (Math.random() - 0.5) * shakeAmt;
+      } else {
+        cameraShake.x = 0;
+        cameraShake.y = 0;
+      }
+
+      // Draw background
+      ctx.fillStyle = "#020203";
+      ctx.fillRect(0, 0, width, height);
+
+      // Draw blueprint grid pattern
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.012)";
+      ctx.lineWidth = 1;
+      const gridSize = 45;
+      ctx.beginPath();
+      for (let x = 0; x < width; x += gridSize) {
+        ctx.moveTo(x, 0);
+        ctx.lineTo(x, height);
+      }
+      for (let y = 0; y < height; y += gridSize) {
+        ctx.moveTo(0, y);
+        ctx.lineTo(width, y);
+      }
+      ctx.stroke();
+
+      const centerX = width / 2;
+      // Shifted rocket slightly downwards (+30) for a cleaner layout
+      const centerY = height / 2 + 30;
+
+      // Projection for the rocket (shifting vertically with vesselCenterYOffset)
+      const project = (p: Point3D) => {
+        const scale = fov / (fov + p.z + cameraDistance);
+        return {
+          x: centerX + p.x * scale + cameraShake.x,
+          y: centerY + (p.y + vesselCenterYOffset) * scale + cameraShake.y,
+          scale: scale,
+          z: p.z
+        };
+      };
+
+      // Projector for static hangar objects (launchpad, assembly layout arrows)
+      const projectHangar = (p: Point3D) => {
+        const scale = fov / (fov + p.z + cameraDistance);
+        return {
+          x: centerX + p.x * scale + cameraShake.x,
+          y: centerY + p.y * scale + cameraShake.y, // ignores rocket fly-up offset
+          scale: scale,
+          z: p.z
+        };
+      };
+
+      // 2. Draw dense 3D stars (Warp speed streaking)
+      stars.forEach(star => {
+        star.prevZ = star.z;
+        star.z -= targetStarSpeed;
+
+        if (star.z <= 0) {
+          star.z = 900;
+          star.prevZ = 900;
+          star.x = (Math.random() - 0.5) * 1500;
+          star.y = (Math.random() - 0.5) * 1500;
+        }
+
+        const pCurrent = projectHangar(star);
+        const pPrev = projectHangar({ x: star.x, y: star.y, z: star.prevZ });
+
+        ctx.beginPath();
+        ctx.moveTo(pPrev.x, pPrev.y);
+        ctx.lineTo(pCurrent.x, pCurrent.y);
+        const opacity = Math.min(1, (900 - star.z) / 450) * (step === 5 ? 0.38 : 0.08) * star.brightness;
+        ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+        ctx.lineWidth = step === 5 ? 1.4 : 0.7;
+        ctx.stroke();
+      });
+
+      // 3. Draw 3D holographic launchpad turntable (Much whiter/brighter)
+      const drawTurntableRing = (yPos: number, radius: number, opacity: number) => {
+        const segs = 32;
+        ctx.beginPath();
+        for (let i = 0; i <= segs; i++) {
+          const t = (i / segs) * Math.PI * 2;
+          const pt = rotatePoint({
+            x: Math.cos(t) * radius,
+            y: yPos,
+            z: Math.sin(t) * radius
+          }, pitch, yaw, roll);
+          const proj = projectHangar(pt);
+          if (i === 0) ctx.moveTo(proj.x, proj.y);
+          else ctx.lineTo(proj.x, proj.y);
+        }
+        ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+        ctx.lineWidth = 1;
+        ctx.stroke();
+      };
+
+      if (launchpadY < 450) {
+        const padBaseY = lockedY.base + offsets.base + 47 + launchpadY;
+        // Whiter base stand opacity (increased to 0.35 max)
+        const padOpacity = Math.max(0, 1 - launchpadY / 450) * 0.35;
+
+        // Concentric deck rings (widened to match enlarged base)
+        drawTurntableRing(padBaseY, 100, padOpacity);
+        drawTurntableRing(padBaseY, 145, padOpacity);
+        drawTurntableRing(padBaseY, 195, padOpacity);
+
+        // Draw radial deck ticks (very clear white)
+        const radialTics = 12;
+        ctx.beginPath();
+        for (let i = 0; i < radialTics; i++) {
+          const t = (i / radialTics) * Math.PI * 2;
+          const innerPt = rotatePoint({ x: Math.cos(t) * 100, y: padBaseY, z: Math.sin(t) * 100 }, pitch, yaw, roll);
+          const outerPt = rotatePoint({ x: Math.cos(t) * 195, y: padBaseY, z: Math.sin(t) * 195 }, pitch, yaw, roll);
+          const pInner = projectHangar(innerPt);
+          const pOuter = projectHangar(outerPt);
+          ctx.moveTo(pInner.x, pInner.y);
+          ctx.lineTo(pOuter.x, pOuter.y);
+        }
+        ctx.strokeStyle = `rgba(255, 255, 255, ${padOpacity * 0.95})`;
+        ctx.stroke();
+      }
+
+      // Helper function to draw 3D components with back-face line depth fading (Enhanced contrast/whiter)
+      const drawComponent3D = (geom: ComponentGeometry, yOffset: number, isAssembled: boolean) => {
+        const projectedVerts = geom.vertices.map(v => {
+          const localPt = { x: v.x, y: v.y + yOffset, z: v.z };
+          const rotated = rotatePoint(localPt, pitch, yaw, roll);
+          return {
+            proj: project(rotated),
+            rotatedZ: rotated.z
+          };
+        });
+
+        geom.edges.forEach(edge => {
+          if (edge.type === "pilot" && step < 2) return;
+          if (edge.type === "core" && step === 1 && !isAssembled) {
+            // Keep rods showing exploded
+          }
+
+          const v1 = projectedVerts[edge.v1];
+          const v2 = projectedVerts[edge.v2];
+
+          const avgZ = (v1.rotatedZ + v2.rotatedZ) / 2;
+
+          ctx.beginPath();
+          ctx.moveTo(v1.proj.x, v1.proj.y);
+          ctx.lineTo(v2.proj.x, v2.proj.y);
+
+          // Configure sketch strokes (increased structural opacities for brighter lines)
+          if (edge.type === "pilot") {
+            ctx.strokeStyle = avgZ > 0 ? "rgba(255, 255, 255, 0.12)" : "rgba(255, 255, 255, 0.45)";
+            ctx.lineWidth = 0.9;
+          } else if (edge.type === "latch") {
+            ctx.strokeStyle = avgZ > 0 ? "rgba(255, 255, 255, 0.16)" : "rgba(255, 255, 255, 0.65)";
+            ctx.lineWidth = 1.3;
+          } else if (edge.type === "cone") {
+            ctx.strokeStyle = avgZ > 0 ? "rgba(255, 255, 255, 0.14)" : "rgba(255, 255, 255, 0.55)";
+            ctx.lineWidth = 1.2;
+          } else {
+            // Standard structures (Whiter & clearer lines)
+            ctx.strokeStyle = avgZ > 0 ? "rgba(255, 255, 255, 0.12)" : "rgba(255, 255, 255, 0.38)";
+            ctx.lineWidth = 1.0;
+          }
+
+          ctx.stroke();
+        });
+      };
+
+      // 4. Render the 4 rocket components with their respectiveOffsets
+      drawComponent3D(topCap, lockedY.topCap + offsets.topCap, step >= 3);
+      drawComponent3D(upperSleeve, lockedY.upperSleeve + offsets.upperSleeve, step >= 3);
+      drawComponent3D(core, lockedY.core + offsets.core, step >= 3);
+      drawComponent3D(base, lockedY.base + offsets.base, step >= 3);
+
+      // 5. Draw Exploded-view layout arrows (Step 1 Blueprint exact recreation)
+      if (step === 1 && Math.abs(offsets.base - 190) < 15) {
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.35)";
+        ctx.lineWidth = 1;
+
+        // Radial white arrow - Left (expanded for larger size)
+        const arrowLeftStart = projectHangar(rotatePoint({ x: -45, y: lockedY.core + offsets.core, z: 0 }, pitch, yaw, roll));
+        const arrowLeftEnd = projectHangar(rotatePoint({ x: -105, y: lockedY.core + offsets.core, z: 0 }, pitch, yaw, roll));
+
+        ctx.setLineDash([2, 2]);
+        ctx.beginPath();
+        ctx.moveTo(arrowLeftStart.x, arrowLeftStart.y);
+        ctx.lineTo(arrowLeftEnd.x, arrowLeftEnd.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Arrow head Left
+        ctx.beginPath();
+        ctx.moveTo(arrowLeftEnd.x, arrowLeftEnd.y);
+        ctx.lineTo(arrowLeftEnd.x + 6, arrowLeftEnd.y - 4);
+        ctx.lineTo(arrowLeftEnd.x + 6, arrowLeftEnd.y + 4);
+        ctx.closePath();
+        ctx.fillStyle = "rgba(255, 255, 255, 0.4)";
+        ctx.fill();
+
+        // Radial white arrow - Right
+        const arrowRightStart = projectHangar(rotatePoint({ x: 45, y: lockedY.core + offsets.core, z: 0 }, pitch, yaw, roll));
+        const arrowRightEnd = projectHangar(rotatePoint({ x: 105, y: lockedY.core + offsets.core, z: 0 }, pitch, yaw, roll));
+
+        ctx.setLineDash([2, 2]);
+        ctx.beginPath();
+        ctx.moveTo(arrowRightStart.x, arrowRightStart.y);
+        ctx.lineTo(arrowRightEnd.x, arrowRightEnd.y);
+        ctx.stroke();
+        ctx.setLineDash([]);
+
+        // Arrow head Right
+        ctx.beginPath();
+        ctx.moveTo(arrowRightEnd.x, arrowRightEnd.y);
+        ctx.lineTo(arrowRightEnd.x - 6, arrowRightEnd.y - 4);
+        ctx.lineTo(arrowRightEnd.x - 6, arrowRightEnd.y + 4);
+        ctx.closePath();
+        ctx.fill();
+
+        // Central Red Downward Arrow (relative to base position)
+        const redStart = projectHangar(rotatePoint({ x: 0, y: lockedY.base + offsets.base - 80, z: 0 }, pitch, yaw, roll));
+        const redEnd = projectHangar(rotatePoint({ x: 0, y: lockedY.base + offsets.base - 20, z: 0 }, pitch, yaw, roll));
+
+        ctx.strokeStyle = "rgba(239, 68, 68, 0.8)";
+        ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(redStart.x, redStart.y);
+        ctx.lineTo(redEnd.x, redEnd.y);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(redEnd.x, redEnd.y);
+        ctx.lineTo(redEnd.x - 4, redEnd.y - 6);
+        ctx.lineTo(redEnd.x + 4, redEnd.y - 6);
+        ctx.closePath();
+        ctx.fillStyle = "rgba(239, 68, 68, 0.9)";
+        ctx.fill();
+      }
+
+      // 6. Draw 3D Projected Vessel Name (Step 3)
+      if (step >= 3) {
+        const anchor = { x: 0, y: 0, z: -87 };
+        const rotAnchor = rotatePoint(
+          { x: anchor.x, y: anchor.y + lockedY.upperSleeve + offsets.upperSleeve, z: anchor.z },
+          pitch,
+          yaw,
+          roll
+        );
+
+        if (rotAnchor.z < 0) {
+          const projAnchor = project(rotAnchor);
+
+          const tangentPt = { x: 20, y: 0, z: -87 };
+          const rotTangent = rotatePoint(
+            { x: tangentPt.x, y: tangentPt.y + lockedY.upperSleeve + offsets.upperSleeve, z: tangentPt.z },
+            pitch,
+            yaw,
+            roll
+          );
+          const projTangent = project(rotTangent);
+
+          const dx = projTangent.x - projAnchor.x;
+          const dy = projTangent.y - projAnchor.y;
+          const textAngle = Math.atan2(dy, dx);
+
+          ctx.save();
+          ctx.translate(projAnchor.x, projAnchor.y);
+          ctx.rotate(textAngle);
+
+          const labelName = projectNameRef.current || "WEKRAFT-01";
+          ctx.font = `bold ${Math.round(9 * projAnchor.scale)}px monospace`;
+          ctx.fillStyle = "rgba(255, 255, 255, 0.55)";
+          ctx.textAlign = "center";
+          ctx.textBaseline = "middle";
+          ctx.fillText(labelName.toUpperCase(), 0, 0);
+
+          ctx.restore();
+        }
+      }
+
+      // 7. Draw ignition thruster energy rings (Step 3)
+      if (step >= 3) {
+        const ringBaseY = lockedY.base + offsets.base + 47;
+        const ringSpacing = 16;
+        const count = 3;
+
+        ctx.strokeStyle = "rgba(255, 255, 255, 0.25)";
+        for (let i = 0; i < count; i++) {
+          const ringRad = ((time * 0.8 + i * ringSpacing) % (ringSpacing * count)) + 10;
+          const ringOpacity = Math.max(0, 1 - ringRad / (ringSpacing * count)) * 0.35;
+          const drawHolographicRingLocal = (yPos: number, radius: number, opacity: number) => {
+            const segs = 32;
+            ctx.beginPath();
+            for (let j = 0; j <= segs; j++) {
+              const t = (j / segs) * Math.PI * 2;
+              const pt = rotatePoint({
+                x: Math.cos(t) * radius,
+                y: yPos,
+                z: Math.sin(t) * radius
+              }, pitch, yaw, roll);
+              const proj = project(pt);
+              if (j === 0) ctx.moveTo(proj.x, proj.y);
+              else ctx.lineTo(proj.x, proj.y);
+            }
+            ctx.strokeStyle = `rgba(255, 255, 255, ${opacity})`;
+            ctx.lineWidth = 1;
+            ctx.stroke();
+          };
+          drawHolographicRingLocal(ringBaseY, ringRad, ringOpacity);
+        }
+      }
+
+      // 8. Physics-based exhaust flame lines (Step 3 onwards - Heavy ignition density)
+      if (step >= 3) {
+        const nozzleBaseY = lockedY.base + offsets.base + 45;
+
+        // Spawn flame particles
+        const flameSpawns = step === 5 ? 4 : 3;
+        for (let k = 0; k < flameSpawns; k++) {
+          const theta = Math.random() * Math.PI * 2;
+          const r = Math.random() * 32; 
+          flameParticles.push({
+            x: Math.cos(theta) * r,
+            y: nozzleBaseY,
+            z: Math.sin(theta) * r,
+            vy: 7.0 + Math.random() * 9.0,
+            length: 15 + Math.random() * 25,
+            life: 1.0
+          });
+        }
+
+        // Update and draw flames
+        flameParticles.forEach((f, idx) => {
+          f.y += f.vy;
+          f.life -= 0.09;
+
+          if (f.life <= 0) {
+            flameParticles.splice(idx, 1);
+            return;
+          }
+
+          const rotStart = rotatePoint(f, pitch, yaw, roll);
+          const rotEnd = rotatePoint({ x: f.x, y: f.y + f.length, z: f.z }, pitch, yaw, roll);
+
+          const projStart = project(rotStart);
+          const projEnd = project(rotEnd);
+
+          ctx.beginPath();
+          ctx.moveTo(projStart.x, projStart.y);
+          ctx.lineTo(projEnd.x, projEnd.y);
+          ctx.strokeStyle = `rgba(255, 255, 255, ${f.life * 0.65})`;
+          ctx.lineWidth = 1.3;
+          ctx.stroke();
+        });
+      }
+
+      // 9. Volumetric Smoke/Steam (Spreads OUTSIDE the rocket and flows DOWNWARDS + LEFT/RIGHT - Ribbon CAD Wind lines & soft shadows)
+      if (step >= 3) {
+        const nozzleBaseY = lockedY.base + offsets.base + 45;
+        const shipProjBase = project({ x: 0, y: nozzleBaseY, z: 0 });
+
+        // A. Draw soft radial shadow/fog core under nozzle first (extremely light weight shadows)
+        const fogRad = 40 + Math.sin(time * 0.1) * 10;
+        const grad = ctx.createRadialGradient(
+          shipProjBase.x, shipProjBase.y + 15, 5 * shipProjBase.scale,
+          shipProjBase.x, shipProjBase.y + 35, 120 * shipProjBase.scale
+        );
+        grad.addColorStop(0, "rgba(255, 255, 255, 0.05)");
+        grad.addColorStop(0.3, "rgba(255, 255, 255, 0.02)");
+        grad.addColorStop(1, "rgba(255, 255, 255, 0)");
+
+        ctx.fillStyle = grad;
+        ctx.beginPath();
+        ctx.ellipse(shipProjBase.x, shipProjBase.y + 35, 220 * shipProjBase.scale, 75 * shipProjBase.scale, 0, 0, Math.PI * 2);
+        ctx.fill();
+
+        // B. Spawn sweeping flow line streamers (comes from bottom and spreads left/right)
+        if (time % 2 === 0 && smokeParticles.length < 50) {
+          const side = Math.random() < 0.5 ? -1 : 1;
+          const startPt = {
+            x: (Math.random() - 0.5) * 20,
+            y: nozzleBaseY + 12, // start outside bottom
+            z: (Math.random() - 0.5) * 20
+          };
+          smokeParticles.push({
+            path: [startPt],
+            // Shoot down and outwards
+            vx: side * (1.5 + Math.random() * 3.0),
+            vy: 1.2 + Math.random() * 2.5,
+            vz: (Math.random() - 0.5) * 2.0,
+            life: 1.0,
+            opacity: 0.12 + Math.random() * 0.12,
+            side: side,
+            width: 0.8 + Math.random() * 1.0
+          });
+        }
+
+        // C. Update and draw the sweeping fluid wind lines
+        smokeParticles.forEach((p, idx) => {
+          const lastPt = p.path[p.path.length - 1];
+
+          // Physics: curve outwards horizontally and drift downwards
+          const nextX = lastPt.x + p.vx;
+          const nextY = lastPt.y + p.vy;
+          const nextZ = lastPt.z + p.vz;
+
+          p.vx += p.side * 0.14; // curve outwards
+          p.vy += 0.08;          // fall downwards
+
+          p.vx *= 0.96;
+          p.vy *= 0.96;
+          p.vz *= 0.96;
+
+          p.path.push({ x: nextX, y: nextY, z: nextZ });
+          if (p.path.length > 12) {
+            p.path.shift(); // keep length finite
+          }
+
+          p.life -= 0.012; // decay life
+
+          if (p.life <= 0) {
+            smokeParticles.splice(idx, 1);
+            return;
+          }
+
+          // Draw the stream lines using a drafting CAD line-dash pattern
+          ctx.beginPath();
+          p.path.forEach((pt, pIdx) => {
+            const rot = rotatePoint(pt, pitch, yaw, roll);
+            const proj = project(rot);
+            if (pIdx === 0) ctx.moveTo(proj.x, proj.y);
+            else ctx.lineTo(proj.x, proj.y);
+          });
+
+          ctx.strokeStyle = `rgba(255, 255, 255, ${p.life * p.opacity})`;
+          ctx.lineWidth = p.width;
+          ctx.setLineDash([6, 3, 2, 3]); // CAD wind lines dash pattern
+          ctx.stroke();
+          ctx.setLineDash([]);
+        });
+      }
+
+      // 10. Warp aerodynamic air-splashes (Step 5 warp speed)
+      if (step === 5) {
+        if (time % 8 === 0 && splashRings.length < 5) {
+          splashRings.push({
+            y: lockedY.topCap - 80, 
+            radius: 12,
+            opacity: 0.9
+          });
+        }
+
+        splashRings.forEach((ring, idx) => {
+          ring.y += 7.0; 
+          ring.radius += 6.5; 
+          ring.opacity = Math.max(0, 1 - (ring.y - (lockedY.topCap - 80)) / 260);
+
+          if (ring.opacity <= 0) {
+            splashRings.splice(idx, 1);
+            return;
+          }
+
+          const segments = 24;
+          ctx.beginPath();
+          ctx.setLineDash([3, 3]);
+
+          for (let i = 0; i <= segments; i++) {
+            const t = (i / segments) * Math.PI * 2;
+            const pt = rotatePoint({
+              x: Math.cos(t) * ring.radius,
+              y: ring.y,
+              z: Math.sin(t) * ring.radius
+            }, pitch, yaw, roll);
+            const proj = project(pt);
+            if (i === 0) ctx.moveTo(proj.x, proj.y);
+            else ctx.lineTo(proj.x, proj.y);
+          }
+
+          ctx.strokeStyle = `rgba(255, 255, 255, ${ring.opacity * 0.3})`;
+          ctx.lineWidth = 1.0;
+          ctx.stroke();
+          ctx.setLineDash([]);
+        });
+      }
+
+      animFrame = requestAnimationFrame(render);
+    };
+
+    render();
+
+    return () => {
+      isRunning = false;
+      cancelAnimationFrame(animFrame);
+      window.removeEventListener("resize", resize);
+    };
+  }, []);
 
   return (
-    <div className={cn(
-      "hidden lg:flex lg:w-[60%] relative overflow-hidden select-none h-screen transition-all duration-500",
-      "bg-linear-to-bl from-neutral-950 via-blue-950/25 to-blue-900/60",
-      isAbsoluteAligned ? "items-end justify-end p-0" : "items-center justify-center p-12"
-    )}>
-      {/* <div className="absolute bg-blue-700 w-[600px] h-[600px] -top-60 -right-60 rounded-full opacity-15 blur-3xl"></div> */}
-      {isAbsoluteAligned ? (
-        renderContent()
-      ) : (
-        <div className="w-full flex items-center justify-center">
-          {renderContent()}
+    <div
+      ref={containerRef}
+      className={cn(
+        "hidden lg:flex lg:w-[60%] relative overflow-hidden select-none h-screen transition-all duration-500",
+        "bg-[#030304] border-l border-zinc-900"
+      )}
+    >
+      {/* 3D Blueprint Canvas */}
+      <canvas ref={canvasRef} className="w-full h-full block" />
+
+      {/* --- HUD OVERLAYS --- */}
+
+      {/* 1. Technical Corner Brackets */}
+      <div className="absolute top-6 left-6 w-8 h-8 border-t border-l border-zinc-700/80 pointer-events-none" />
+      <div className="absolute top-6 right-6 w-8 h-8 border-t border-r border-zinc-700/80 pointer-events-none" />
+      <div className="absolute bottom-6 left-6 w-8 h-8 border-b border-l border-zinc-700/80 pointer-events-none" />
+      <div className="absolute bottom-6 right-6 w-8 h-8 border-b border-r border-zinc-700/80 pointer-events-none" />
+
+      {/* 2. Top-Left System Status Header */}
+      <div className="absolute top-8 left-8 flex flex-col font-mono text-[9px] text-zinc-400 gap-1 tracking-wider uppercase select-none pointer-events-none">
+        <div className="flex items-center gap-1.5 text-zinc-100 font-bold">
+          <Activity className="w-3.5 h-3.5 text-zinc-400" />
+          <span>WEKRAFT LAUNCH STATION // R-01</span>
+        </div>
+        <div className="flex items-center gap-1.5 mt-1 text-zinc-500">
+          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span>Holographic grid sync online</span>
+        </div>
+      </div>
+
+      {/* 3. Top-Right Pilot Synced Card (Visible Step >= 2) */}
+      {currentStep >= 2 && (
+        <div className="absolute top-8 right-8 bg-[#07070a]/95 border border-zinc-800 rounded-xl p-3.5 flex items-center gap-3.5 max-w-[240px] shadow-2xl font-mono text-[9.5px] tracking-tight text-zinc-300">
+          <div className="relative shrink-0 w-9 h-9 rounded-lg border border-zinc-800 bg-zinc-950 overflow-hidden flex items-center justify-center">
+            {clerkUser?.imageUrl ? (
+              <img src={clerkUser.imageUrl} className="w-full h-full object-cover grayscale opacity-90" alt="" />
+            ) : (
+              <User className="w-4 h-4 text-zinc-500" />
+            )}
+            <div className="absolute inset-0 bg-linear-to-t from-black/60 to-transparent pointer-events-none" />
+            <div className="absolute bottom-0 left-0 w-full h-[1px] bg-white/20 animate-pulse" />
+          </div>
+
+          <div className="min-w-0">
+            <div className="text-zinc-500 text-[8px] uppercase tracking-wider">VESSEL CREW</div>
+            <div className="font-bold text-zinc-100 truncate mt-0.5 max-w-[130px] capitalize">
+              {username || clerkUser?.fullName || "VERONA NOV"}
+            </div>
+            <div className="text-zinc-400 text-[8.5px] mt-0.5 truncate uppercase">
+              ROLE: {selectedRole || "ENGINEER"}
+            </div>
+          </div>
         </div>
       )}
+
+      {/* 4. Bottom-Left Live Diagnostics Terminal */}
+      <div className="absolute bottom-8 left-8 flex flex-col max-w-[340px] font-mono text-[9.5px] text-zinc-500 gap-1.5 select-none pointer-events-none">
+        <div className="flex items-center gap-1.5 text-zinc-350 font-semibold mb-1 text-[10px]">
+          <Terminal className="w-3.5 h-3.5 text-zinc-500" />
+          <span>DIAGNOSTIC LOGS</span>
+        </div>
+        <div className="space-y-1 bg-[#050506]/40 border border-zinc-900/60 p-3 rounded-lg backdrop-blur-xs min-w-[260px]">
+          {logs.map((log, idx) => (
+            <div key={idx} className="flex gap-2 leading-relaxed">
+              <span className="text-zinc-650 shrink-0">&gt;</span>
+              <span className={cn(
+                idx === logs.length - 1 ? "text-zinc-300 font-bold" : "text-zinc-500"
+              )}>
+                {log}
+              </span>
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* 5. Bottom-Right Flight Telemetry panel */}
+      <div className="absolute bottom-8 right-8 flex flex-col font-mono text-[9px] text-zinc-500 gap-2 border border-zinc-900/60 bg-[#050506]/40 p-3.5 rounded-lg min-w-[180px] backdrop-blur-xs select-none pointer-events-none text-right">
+        <div className="flex items-center justify-end gap-1.5 text-zinc-350 font-semibold mb-1 text-[10px]">
+          <Compass className="w-3.5 h-3.5 text-zinc-500" />
+          <span>MISSION TELEMETRY</span>
+        </div>
+
+        <div className="space-y-1">
+          <div className="flex justify-between">
+            <span className="text-zinc-650 text-left">SPEED:</span>
+            <span className="text-zinc-300 font-bold font-mono">
+              {currentStep === 5 ? "MAX WARP" : "0.00 MACH"}
+            </span>
+          </div>
+
+          <div className="flex justify-between">
+            <span className="text-zinc-650 text-left">ALTITUDE:</span>
+            <span className="text-zinc-300 font-mono">
+              {currentStep === 5 ? "89,450 M" : "0 M (DOCK)"}
+            </span>
+          </div>
+
+          <div className="flex justify-between">
+            <span className="text-zinc-650 text-left">EST. YAW:</span>
+            <span className="text-zinc-300 font-mono">
+              {currentStep === 5 ? "COSMIC L-0" : "STATION CORE"}
+            </span>
+          </div>
+        </div>
+
+        {/* Dynamic Loading telemetry bar */}
+        <div className="w-full bg-zinc-950 h-1 rounded-full overflow-hidden mt-1 border border-zinc-900">
+          <div
+            className={cn(
+              "h-full bg-zinc-400 transition-all duration-700 rounded-full",
+              currentStep === 1 && "w-[20%]",
+              currentStep === 2 && "w-[40%]",
+              currentStep === 3 && "w-[60%]",
+              currentStep === 4 && "w-[80%]",
+              currentStep === 5 && "w-[100%] bg-emerald-500 animate-pulse"
+            )}
+          />
+        </div>
+      </div>
     </div>
   );
 }
