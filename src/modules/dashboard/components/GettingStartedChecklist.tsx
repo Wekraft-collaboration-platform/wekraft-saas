@@ -15,6 +15,7 @@ import {
   ListTodo,
   Puzzle,
   Sparkles,
+  Compass,
   ArrowRight,
   Zap,
 } from "lucide-react";
@@ -183,15 +184,11 @@ export function GettingStartedChecklist() {
     <div className="border-b border-border/40 shrink-0">
       {/* Header */}
       <div className="flex items-center justify-between px-4 pt-4 pb-2">
-        <div className="flex items-center gap-2">
-          <div className="h-5 w-5 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-            <Sparkles className="h-2.5 w-2.5 text-primary" />
-          </div>
-          <div>
-            <p className="text-xs font-semibold text-foreground leading-none">Getting Started</p>
-            <p className="text-[10px] text-muted-foreground/60 mt-0.5 leading-none">
-              {totalDone} of {totalSteps} done
-            </p>
+        <div className="flex items-center gap-3">
+          <Compass className="h-[22px] w-[22px] text-white" />
+          <div className="flex flex-col items-start gap-1">
+            <h2 className="text-[15px] font-medium text-white leading-none">Getting Started</h2>
+            <span className="text-[10px] font-medium text-slate-400 leading-none">{totalDone} of {totalSteps} completed</span>
           </div>
         </div>
         <div className="flex items-center gap-1.5">
@@ -211,9 +208,9 @@ export function GettingStartedChecklist() {
 
       {/* Progress Bar */}
       <div className="px-4 pb-3">
-        <div className="w-full h-[3px] bg-accent/50 rounded-full overflow-hidden">
+        <div className="w-full h-1.5 bg-neutral-800 rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-primary to-blue-500 rounded-full transition-all duration-700 ease-out"
+            className="h-full bg-gradient-to-r from-blue-200 to-blue-500 rounded-full transition-all duration-700 ease-out"
             style={{ width: `${pct}%` }}
           />
         </div>
@@ -227,7 +224,7 @@ export function GettingStartedChecklist() {
           const open = activeId === step.id && !done;
 
           return (
-            <div key={step.id}>
+            <div key={step.id} className={cn("rounded-md transition-colors", open && "bg-white/5")}>
               {/* Step Row */}
               <button
                 id={`tour-step-${step.id}`}
@@ -238,8 +235,8 @@ export function GettingStartedChecklist() {
                   done
                     ? "cursor-default"
                     : open
-                    ? "bg-accent/30 cursor-pointer"
-                    : "hover:bg-accent/20 data-[tour-active=true]:bg-accent/20 cursor-pointer group"
+                    ? "cursor-pointer"
+                    : "hover:bg-white/5 data-[tour-active=true]:bg-white/5 cursor-pointer group"
                 )}
               >
                 {/* Completion status */}
@@ -276,10 +273,10 @@ export function GettingStartedChecklist() {
                     className={cn(
                       "text-[13px] font-medium leading-none transition-colors",
                       done
-                        ? "text-muted-foreground/40 line-through decoration-muted-foreground/20"
+                        ? "text-muted-foreground line-through decoration-muted-foreground/50"
                         : open
-                        ? "text-foreground"
-                        : "text-muted-foreground/80 group-hover:text-foreground group-data-[tour-active=true]:text-foreground"
+                        ? "text-white"
+                        : "text-white group-hover:text-white data-[tour-active=true]:text-white"
                     )}
                   >
                     {step.label}
@@ -295,8 +292,8 @@ export function GettingStartedChecklist() {
                 {!done && (
                   <ChevronDown
                     className={cn(
-                      "h-3.5 w-3.5 shrink-0 transition-transform duration-200 text-muted-foreground/25",
-                      open ? "rotate-180 text-muted-foreground/50" : ""
+                      "h-4 w-4 shrink-0 transition-transform duration-200 text-slate-500",
+                      open ? "rotate-180 text-white" : ""
                     )}
                   />
                 )}
@@ -304,8 +301,8 @@ export function GettingStartedChecklist() {
 
               {/* Expanded detail panel */}
               {open && (
-                <div className="mx-3 mt-0.5 mb-1.5 px-3 py-3 rounded-md border border-border/50 bg-muted/20">
-                  <p className="text-[11px] leading-relaxed text-muted-foreground mb-2.5">
+                <div className="pl-10 pr-3 pb-3 pt-1">
+                  <p className="text-[12px] leading-relaxed text-slate-300 mb-2.5">
                     {step.description}
                   </p>
                   <button
@@ -314,7 +311,7 @@ export function GettingStartedChecklist() {
                       step.action(router);
                       setExpandedStep(null);
                     }}
-                    className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-foreground hover:text-primary transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-white hover:text-primary transition-colors cursor-pointer"
                   >
                     {step.cta}
                     <ArrowRight className="h-3 w-3" />

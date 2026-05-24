@@ -92,7 +92,7 @@ export function WelcomeDialog() {
           const boxHeight = tooltipRef.current?.offsetHeight || 180;
           const margin = 24;
 
-          const placements = ['top', 'right', 'bottom', 'top', 'right', 'bottom'];
+          const placements = ['top', 'right'];
           const currentPlacement = placements[(tourStep - 1) % placements.length];
           
           const gap = 70; // Set gap perfectly to arrow length (75 - 5 = 70)
