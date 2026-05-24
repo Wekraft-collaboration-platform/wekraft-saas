@@ -4,7 +4,7 @@ import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { STEPS } from "./GettingStartedChecklist";
 import { useRouter } from "next/navigation";
-import { useQuery } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 
 const MinimalArrow = ({ type, placement }: { type: number, placement: string }) => {
@@ -45,13 +45,13 @@ export function WelcomeDialog() {
   const progressData = useQuery(api.user.getOnboardingProgress);
   const userProjects = useQuery(api.project.getUserProjects);
   const completedIds = progressData?.completedSteps ?? [];
+  const markWorkspaceVisited = useMutation(api.user.markWorkspaceVisited);
 
   useEffect(() => {
-    // Check local storage to see if the user has already seen the welcome dialog
-    // const hasSeen = localStorage.getItem("wekraft_has_seen_welcome");
-    // if (!hasSeen) {
+    const hasSeen = localStorage.getItem("wekraft_has_seen_welcome");
+    if (!hasSeen) {
       setShow(true);
-    // }
+    }
   }, []);
 
   useEffect(() => {
@@ -75,12 +75,12 @@ export function WelcomeDialog() {
     if (tourStep === 4) targetId = "sidebar-first-project";
 
     const el = targetId ? document.getElementById(targetId) : null;
-    let animationFrameId: number;
+    let animationFrameId: number = 0;
+    let scrollTimer: ReturnType<typeof setTimeout>;
 
     if (tourStep > 0) {
       if (el) {
-        // Delay scroll slightly to ensure smooth behavior after state updates
-        setTimeout(() => {
+        scrollTimer = setTimeout(() => {
           el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 10);
         
@@ -160,7 +160,8 @@ export function WelcomeDialog() {
 
     // Cleanup previous element if we move to next step
     return () => {
-      if (animationFrameId) cancelAnimationFrame(animationFrameId);
+      clearTimeout(scrollTimer);
+      cancelAnimationFrame(animationFrameId);
       if (el) {
         el.style.position = "";
         el.style.zIndex = "";
@@ -180,6 +181,10 @@ export function WelcomeDialog() {
     setShow(false);
     setTourStep(0);
     const currentStepConfig = STEPS[tourStep - 1];
+    // Mark step 4 (Visit workspace) as visited when CTA is clicked from tour
+    if (tourStep === 4) {
+      markWorkspaceVisited().catch(() => {});
+    }
     if (currentStepConfig?.action) {
       currentStepConfig.action(router, { projects: userProjects });
     }

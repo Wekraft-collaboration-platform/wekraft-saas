@@ -75,12 +75,21 @@ const ProjectPage = () => {
       if (tab) {
         setHomeTab(tab);
       }
+
+      let t1: ReturnType<typeof setTimeout> | undefined;
+      let t2: ReturnType<typeof setTimeout> | undefined;
+
       if (searchParams.get("invite") === "true") {
-        setTimeout(() => setInviteOpen(true), 300);
+        t1 = setTimeout(() => setInviteOpen(true), 300);
       }
       if (searchParams.get("tour") === "workspace") {
-        setTimeout(() => setShowWorkspaceTour(true), 400);
+        t2 = setTimeout(() => setShowWorkspaceTour(true), 400);
       }
+
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+      };
     }
   }, []);
 

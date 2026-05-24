@@ -20,6 +20,8 @@ export default defineSchema({
     // For Onboarding
     hasCompletedOnboarding: v.boolean(),
     primaryUsage: v.optional(v.array(v.string())),
+    hasVisitedWorkspace: v.optional(v.boolean()),
+    hasSeenWelcome: v.optional(v.boolean()),
     createdAt: v.number(),
     updatedAt: v.number(),
     planExpiry: v.optional(v.number()), // For temporary upgrades/coupons

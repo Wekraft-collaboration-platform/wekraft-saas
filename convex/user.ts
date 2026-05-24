@@ -516,7 +516,7 @@ export const getOnboardingProgress = query({
     if (hasTasks) steps.push(6);
 
     // Step 4: Visit workspace
-    if ((user as any).hasVisitedWorkspace) steps.push(4);
+    if (user.hasVisitedWorkspace) steps.push(4);
 
     // Step 7 (Download extension) might be checked locally or if we have a field in DB
     // Currently relying on the Zustand local storage or a local flag.
@@ -526,7 +526,7 @@ export const getOnboardingProgress = query({
 });
 
 // ==================================
-// MARK WORKSPACE AS VISITED (Step 7)
+// MARK WORKSPACE AS VISITED (Step 4)
 // ==================================
 export const markWorkspaceVisited = mutation({
   handler: async (ctx) => {
@@ -545,6 +545,47 @@ export const markWorkspaceVisited = mutation({
     await ctx.db.patch(user._id, {
       hasVisitedWorkspace: true,
       updatedAt: Date.now(),
-    } as any);
+    });
+  },
+});
+
+// ==================================
+// MARK WELCOME DIALOG AS SEEN (new user, once)
+// ==================================
+export const markWelcomeSeen = mutation({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) throw new Error("User not found");
+    if (user.hasSeenWelcome) return; // already marked — idempotent
+
+    await ctx.db.patch(user._id, {
+      hasSeenWelcome: true,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+export const getHasSeenWelcome = query({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return true; // not logged in → don't show
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    return user?.hasSeenWelcome ?? false;
   },
 });
