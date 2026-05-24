@@ -22,6 +22,8 @@ export default defineSchema({
     primaryUsage: v.optional(v.array(v.string())),
     hasVisitedWorkspace: v.optional(v.boolean()),
     hasSeenWelcome: v.optional(v.boolean()),
+    gettingstartedcompleted: v.optional(v.boolean()),
+    hasSeenGettingStartedComplete: v.optional(v.boolean()),
     createdAt: v.number(),
     updatedAt: v.number(),
     planExpiry: v.optional(v.number()), // For temporary upgrades/coupons
@@ -37,8 +39,8 @@ export default defineSchema({
     bio: v.optional(v.string()),
     socialLinks: v.optional(v.array(v.string())), // max 3 links (excluding github)
 
-    // Kaya AI usage tracking (Global)
-    kayaLimit: v.optional(v.number()), // Monthly limit (default 360)
+    // usage tracking (Global)
+    cloudStorageUsage: v.optional(v.number()), // How much used 
     kayaUsage: v.optional(v.number()), // Current usage count for this month
   })
     .index("by_token", ["clerkToken"])
@@ -439,22 +441,7 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_project_user", ["projectId", "userId"]),
 
-  // Admin messages to all users -----------------------
-  announcements: defineTable({
-    title: v.string(),
-    description: v.string(),
-    isActive: v.boolean(),
-    createdBy: v.id("users"),
-    createdAt: v.number(),
-  }).index("by_active", ["isActive"]),
 
-  announcementDismissals: defineTable({
-    announcementId: v.string(),
-    userId: v.id("users"),
-    dismissedAt: v.number(),
-  })
-    .index("by_user_announcement", ["userId", "announcementId"])
-    .index("by_announcement", ["announcementId"]),
 
   // ─── Real-time Notifications (Convex-native) ────────────────────────────
   notifications: defineTable({

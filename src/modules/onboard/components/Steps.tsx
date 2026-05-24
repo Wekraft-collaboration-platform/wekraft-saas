@@ -490,25 +490,26 @@ export function MultiStepOnboarding() {
               <div className="flex items-center justify-between mt-8 pt-5 border-t border-zinc-900">
                 <div>
                   {currentStep > 1 && (
-                    <button
+                    <Button
+                      variant={'outline'}
                       type="button"
                       onClick={handleBack}
                       disabled={isLoading}
-                      className="flex items-center gap-1 text-xs font-medium text-zinc-400 hover:text-zinc-200 transition-colors disabled:opacity-40 cursor-pointer"
+                      className="flex items-center gap-1 bg-white/5 border-white/15 text-xs font-medium  transition-colors disabled:opacity-40 cursor-pointer"
                     >
                       <ChevronLeft className="w-3.5 h-3.5" />
                       Back
-                    </button>
+                    </Button>
                   )}
                 </div>
-                <div className="flex items-center gap-6">
+                <div className="flex items-center gap-3">
                   {isSkip && (
                     <Button
                       variant={'ghost'}
                       type="button"
                       onClick={handleSkip}
                       disabled={isLoading}
-                      className="text-xs px-2! font-medium text-zinc-200 hover:text-white transition-colors cursor-pointer"
+                      className="text-xs px-3! font-medium text-zinc-200 hover:text-white transition-colors cursor-pointer"
                     >
                       Skip
                     </Button>

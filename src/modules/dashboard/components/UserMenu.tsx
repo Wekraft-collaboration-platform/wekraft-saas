@@ -14,6 +14,7 @@ import { useQuery } from "convex/react";
 import { ChevronDown, Github, LogOut, Settings, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { api } from "../../../../convex/_generated/api";
+import { toast } from "sonner";
 
 export function UserMenu() {
   const user = useQuery(api.user.getCurrentUser);
@@ -24,8 +25,16 @@ export function UserMenu() {
   if (!user) return null;
 
   const handleSignOut = async () => {
-    await signOut();
-    router.push("/web");
+    const toastId = toast.loading("Logging you out...", {
+      position: "top-center",
+    });
+    try {
+      await signOut();
+      toast.dismiss(toastId);
+      router.push("/web");
+    } catch (error) {
+      toast.error("Failed to log out", { id: toastId });
+    }
   };
 
   return (
