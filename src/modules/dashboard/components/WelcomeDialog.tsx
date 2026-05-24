@@ -22,7 +22,7 @@ export function WelcomeDialog() {
       if (el) {
         const rect = el.getBoundingClientRect();
         // Point to the right side of the checklist, near the top (step 1 area)
-        setPos({ top: rect.top + 60, left: rect.right + 10 });
+        setPos({ top: rect.top + 50, left: rect.right + 10 });
       } else {
         // Fallback positioning
         setPos({ top: 200, left: 400 });
@@ -62,25 +62,29 @@ export function WelcomeDialog() {
           className="absolute z-50 pointer-events-auto flex items-start animate-in fade-in slide-in-from-right-8 duration-500"
           style={{ top: pos.top, left: pos.left }}
         >
-          {/* SVG White Arrow pointing left */}
-          <div className="mt-4 -mr-1 z-10 text-white drop-shadow-md">
-            <svg width="40" height="24" viewBox="0 0 40 24" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M40 12L4 12M4 12L12 4M4 12L12 20" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+          {/* SVG Curvy Arrow pointing left */}
+          <div className="mt-6 -mr-2 z-10 text-white drop-shadow-md">
+            <svg width="50" height="50" viewBox="0 0 50 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M45 40 C 45 20 25 15 10 15 M 10 15 L 18 8 M 10 15 L 18 22" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
           </div>
           
-          <div className="bg-card text-card-foreground border border-border shadow-2xl rounded-lg p-5 w-[320px] ml-1">
-            <div className="flex items-center gap-2 mb-2">
-              <span className="flex items-center justify-center bg-primary text-primary-foreground text-[10px] font-bold w-5 h-5 rounded-full">
-                1
-              </span>
-              <h3 className="text-sm font-semibold text-foreground">Connect GitHub</h3>
+          <div className="flex flex-col ml-1 w-[320px]">
+            <div className="bg-card text-card-foreground border border-border shadow-2xl rounded-lg p-5">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="flex items-center justify-center bg-primary text-primary-foreground text-[10px] font-bold w-5 h-5 rounded-full">
+                  1
+                </span>
+                <h3 className="text-sm font-semibold text-foreground">Connect GitHub</h3>
+              </div>
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                Link your GitHub account to unlock commit tracking, pull-request syncing, and developer stats across all your projects.
+              </p>
             </div>
-            <p className="text-xs text-muted-foreground mb-5 leading-relaxed">
-              Link your GitHub account to unlock commit tracking, pull-request syncing, and developer stats across all your projects.
-            </p>
-            <div className="flex items-center justify-end gap-3">
-              <Button variant="ghost" onClick={handleSkip} className="h-8 px-3 text-xs">
+
+            {/* Buttons outside the box */}
+            <div className="mt-3 flex items-center justify-end gap-3">
+              <Button variant="ghost" onClick={handleSkip} className="h-8 px-3 text-xs text-white hover:bg-white/10">
                 Skip
               </Button>
               <Button onClick={handleConnect} className="h-8 px-4 text-xs bg-white text-black hover:bg-neutral-200">
