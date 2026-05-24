@@ -7,12 +7,38 @@ import { useRouter } from "next/navigation";
 import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 
+const MinimalArrow = ({ type, placement }: { type: number, placement: string }) => {
+  const getPath = () => {
+    switch (type) {
+      case 1: return "M 30 5 L 30 75 M 30 75 L 22 65 M 30 75 L 38 65";
+      case 2: return "M 10 5 C 10 40, 30 50, 30 75 M 30 75 L 22 65 M 30 75 L 38 65";
+      case 3: return "M 50 5 C 50 40, 30 50, 30 75 M 30 75 L 22 65 M 30 75 L 38 65";
+      case 4: return "M 15 5 C 15 30, 45 40, 30 75 M 30 75 L 22 65 M 30 75 L 38 65";
+      case 5: return "M 45 5 C 45 30, 15 40, 30 75 M 30 75 L 22 65 M 30 75 L 38 65";
+      default: return "M 30 5 L 30 75 M 30 75 L 22 65 M 30 75 L 38 65"; 
+    }
+  };
+
+  let rotateClass = "";
+  if (placement === 'bottom') rotateClass = "rotate-180";
+  if (placement === 'left') rotateClass = "-rotate-90";
+  if (placement === 'right') rotateClass = "rotate-90";
+
+  return (
+    <div className={`text-white drop-shadow-md ${rotateClass}`}>
+      <svg width="60" height="80" viewBox="0 0 60 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d={getPath()} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+      </svg>
+    </div>
+  );
+};
+
 export function WelcomeDialog() {
   const [show, setShow] = useState(false);
   const [tourStep, setTourStep] = useState<number>(0); 
   // 0: Welcome Modal, 1-6: Checklist Steps
   
-  const [pos, setPos] = useState({ bottom: 0, left: 0 });
+  const [pos, setPos] = useState({ top: -1000, left: -1000, arrowX: 160, arrowY: 90, placement: 'top', arrowType: 1 });
   const router = useRouter();
 
   const progressData = useQuery(api.user.getOnboardingProgress);
@@ -62,17 +88,62 @@ export function WelcomeDialog() {
         // Continuously update position to glue the tooltip to the element during smooth scroll
         const updatePos = () => {
           const rect = el.getBoundingClientRect();
-          setPos({ 
-            bottom: window.innerHeight - rect.top + 5, 
-            left: rect.left + (rect.width / 2) - 160 
-          });
+          const boxWidth = 320;
+          const boxHeight = 180;
+          const margin = 24;
+
+          const placements = ['top', 'right', 'bottom', 'top', 'right', 'bottom'];
+          const currentPlacement = placements[(tourStep - 1) % placements.length];
+          
+          let top = 0;
+          let left = 0;
+
+          switch (currentPlacement) {
+            case 'top':
+              top = rect.top - boxHeight - margin - 20;
+              left = rect.left + rect.width / 2 - boxWidth / 2;
+              break;
+            case 'right':
+              top = rect.top + rect.height / 2 - boxHeight / 2;
+              left = rect.right + margin + 20;
+              break;
+            case 'bottom':
+              top = rect.bottom + margin + 20;
+              left = rect.left + rect.width / 2 - boxWidth / 2;
+              break;
+            case 'left':
+              top = rect.top + rect.height / 2 - boxHeight / 2;
+              left = rect.left - boxWidth - margin - 20;
+              break;
+          }
+
+          // Clamp left and top to ensure the tooltip stays within the screen
+          left = Math.max(margin, Math.min(window.innerWidth - boxWidth - margin, left));
+          top = Math.max(margin, Math.min(window.innerHeight - boxHeight - margin, top));
+
+          // Calculate arrow position based on clamped tooltip position
+          const targetCenterX = rect.left + rect.width / 2;
+          const targetCenterY = rect.top + rect.height / 2;
+          
+          let arrowX = 160;
+          let arrowY = 90;
+
+          if (currentPlacement === 'top' || currentPlacement === 'bottom') {
+            arrowX = targetCenterX - left;
+            arrowX = Math.max(40, Math.min(boxWidth - 40, arrowX));
+          } else {
+            arrowY = targetCenterY - top;
+            arrowY = Math.max(40, Math.min(boxHeight - 40, arrowY));
+          }
+
+          setPos({ top, left, arrowX, arrowY, placement: currentPlacement, arrowType: ((tourStep - 1) % 5) + 1 });
           animationFrameId = requestAnimationFrame(updatePos);
         };
         updatePos();
 
       } else {
         // Fallback positioning if element not found
-        setPos({ bottom: 200, left: 400 });
+        setPos({ top: 200, left: window.innerWidth / 2 - 160, arrowX: 160, arrowY: 90, placement: 'top', arrowType: 1 });
       }
     } else {
       if (el) {
@@ -149,12 +220,28 @@ export function WelcomeDialog() {
           className="absolute inset-0 bg-background/50 backdrop-blur-[1px] pointer-events-auto transition-opacity" 
         />
         
-        {/* Tooltip positioned ABOVE the target */}
+        {/* Tooltip positioned according to current placement */}
         <div 
-          className="absolute z-50 pointer-events-auto flex flex-col items-center animate-in fade-in slide-in-from-bottom-8 duration-500"
-          style={{ bottom: pos.bottom, left: pos.left, width: 320 }}
+          className="absolute z-50 pointer-events-auto flex flex-col items-center animate-in fade-in zoom-in-95 duration-500"
+          style={{ top: pos.top, left: pos.left, width: 320 }}
         >
-          <div className="flex flex-col w-full">
+          {pos.placement === 'bottom' && (
+            <div className="absolute -top-[40px] z-10 transition-all duration-75" style={{ left: pos.arrowX - 30 }}>
+              <MinimalArrow type={pos.arrowType} placement={pos.placement} />
+            </div>
+          )}
+          {pos.placement === 'right' && (
+            <div className="absolute -left-[30px] z-10 transition-all duration-75" style={{ top: pos.arrowY - 40 }}>
+              <MinimalArrow type={pos.arrowType} placement={pos.placement} />
+            </div>
+          )}
+          {pos.placement === 'left' && (
+            <div className="absolute -right-[30px] z-10 transition-all duration-75" style={{ top: pos.arrowY - 40 }}>
+              <MinimalArrow type={pos.arrowType} placement={pos.placement} />
+            </div>
+          )}
+
+          <div className="flex flex-col w-full relative z-20">
             {/* Tooltip Card */}
             <div className="bg-card text-card-foreground border border-border shadow-2xl rounded-lg p-5">
               <div className="flex items-center gap-2">
@@ -196,12 +283,11 @@ export function WelcomeDialog() {
             </div>
           </div>
 
-          {/* SVG Arrow pointing down with 2 curves */}
-          <div className="-mt-1 flex justify-center w-full z-10 text-white drop-shadow-md shrink-0">
-            <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M30 5 C 50 20, 10 40, 30 55 M 30 55 L 20 45 M 30 55 L 40 45" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
+          {pos.placement === 'top' && (
+            <div className="absolute -bottom-[40px] z-10 transition-all duration-75" style={{ left: pos.arrowX - 30 }}>
+              <MinimalArrow type={pos.arrowType} placement={pos.placement} />
+            </div>
+          )}
         </div>
       </div>
     );
