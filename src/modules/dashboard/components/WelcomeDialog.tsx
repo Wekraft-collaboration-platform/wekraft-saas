@@ -2,11 +2,14 @@
 
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
+import { STEPS } from "./GettingStartedChecklist";
 
 export function WelcomeDialog() {
   const [show, setShow] = useState(false);
-  const [stage, setStage] = useState<"welcome" | "tooltip">("welcome");
-  const [pos, setPos] = useState({ top: 0, left: 0 });
+  const [tourStep, setTourStep] = useState<number>(0); 
+  // 0: Welcome Modal, 1-6: Checklist Steps, 7: Tabs
+  
+  const [pos, setPos] = useState({ bottom: 0, left: 0 });
 
   useEffect(() => {
     // Check local storage to see if the user has already seen the welcome dialog
@@ -17,46 +20,58 @@ export function WelcomeDialog() {
   }, []);
 
   useEffect(() => {
-    // Target the first step specifically
-    const el = document.getElementById("tour-step-1");
+    let targetId = null;
+    if (tourStep >= 1 && tourStep <= 6) targetId = `tour-step-${tourStep}`;
 
-    if (stage === "tooltip") {
+    const el = targetId ? document.getElementById(targetId) : null;
+
+    if (tourStep > 0) {
       if (el) {
-        // Bring step element above the backdrop and ensure it has an opaque background
+        el.scrollIntoView({ behavior: 'smooth', block: 'center' });
+        
         el.style.position = "relative";
         el.style.zIndex = "51";
-        el.style.backgroundColor = "var(--sidebar)";
         el.style.borderRadius = "0.5rem";
-        // Add a visible border/glow to make it clearly visible against the dark background
-        el.style.boxShadow = "0 0 0 1px rgba(255,255,255,0.15), 0 10px 30px rgba(0,0,0,0.8)";
+        el.classList.add("bg-accent/20");
         
+        // Use a small timeout to let the smooth scroll settle before measuring
+        setTimeout(() => {
+          const rect = el.getBoundingClientRect();
+          setPos({ 
+            bottom: window.innerHeight - rect.top + 5, 
+            left: rect.left + 20 
+          });
+        }, 300);
+
+        // Initial position before scroll settles
         const rect = el.getBoundingClientRect();
-        // Point right next to the step, aligned neatly
-        setPos({ top: rect.top, left: rect.right + 5 });
+        setPos({ 
+          bottom: window.innerHeight - rect.top + 5, 
+          left: rect.left + 20 
+        });
       } else {
-        // Fallback positioning
-        setPos({ top: 200, left: 400 });
+        // Fallback positioning if element not found
+        setPos({ bottom: 200, left: 400 });
       }
     } else {
       if (el) {
         el.style.position = "";
         el.style.zIndex = "";
-        el.style.backgroundColor = "";
         el.style.borderRadius = "";
-        el.style.boxShadow = "";
+        el.classList.remove("bg-accent/20");
       }
     }
 
+    // Cleanup previous element if we move to next step
     return () => {
       if (el) {
         el.style.position = "";
         el.style.zIndex = "";
-        el.style.backgroundColor = "";
         el.style.borderRadius = "";
-        el.style.boxShadow = "";
+        el.classList.remove("bg-accent/20");
       }
     };
-  }, [stage]);
+  }, [tourStep]);
 
   const handleSkip = () => {
     localStorage.setItem("wekraft_has_seen_welcome", "true");
@@ -72,52 +87,84 @@ export function WelcomeDialog() {
   };
 
   const startTour = () => {
-    setStage("tooltip");
+    setTourStep(1);
   };
 
   if (!show) return null;
 
-  if (stage === "tooltip") {
+  if (tourStep > 0) {
+    const currentStepConfig = STEPS[tourStep - 1];
+
+    const stepTitle = currentStepConfig?.label;
+    const stepDescription = currentStepConfig?.description;
+
     return (
       <div className="fixed inset-0 z-50 pointer-events-none">
         <div 
           className="absolute inset-0 bg-background/50 backdrop-blur-[1px] pointer-events-auto transition-opacity" 
         />
         
-        {/* Tooltip positioned near the checklist */}
+        {/* Tooltip positioned ABOVE the target */}
         <div 
-          className="absolute z-50 pointer-events-auto flex items-start animate-in fade-in slide-in-from-right-8 duration-500"
-          style={{ top: pos.top, left: pos.left }}
+          className="absolute z-50 pointer-events-auto flex flex-col items-start animate-in fade-in slide-in-from-bottom-8 duration-500"
+          style={{ bottom: pos.bottom, left: pos.left }}
         >
-          {/* SVG Curvy Arrow pointing left with 2 curves */}
-          <div className="mt-1 -mr-1 z-10 text-white drop-shadow-md shrink-0">
-            <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M55 40 C 40 40, 45 10, 25 25 S 10 10, 2 15 M 2 15 L 10 10 M 2 15 L 7 23" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
-            </svg>
-          </div>
-          
-          <div className="flex flex-col ml-1 w-[320px]">
+          <div className="flex flex-col w-[320px]">
+            {/* Tooltip Card */}
             <div className="bg-card text-card-foreground border border-border shadow-2xl rounded-lg p-5">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="flex items-center justify-center bg-primary text-primary-foreground text-[10px] font-bold w-5 h-5 rounded-full">
-                  1
+              <div className="flex items-center gap-2">
+                <span className="flex items-center justify-center bg-primary text-primary-foreground text-[10px] font-bold w-5 h-5 rounded-full shrink-0">
+                  {tourStep}
                 </span>
-                <h3 className="text-sm font-semibold text-foreground">Connect GitHub</h3>
+                <h3 className="text-sm font-semibold text-foreground">
+                  {stepTitle}
+                </h3>
               </div>
+              
+              <div className="h-px w-full bg-border/60 my-3" />
+              
               <p className="text-xs text-muted-foreground leading-relaxed">
-                Link your GitHub account to unlock commit tracking, pull-request syncing, and developer stats across all your projects.
+                {stepDescription}
               </p>
             </div>
 
             {/* Buttons outside the box */}
-            <div className="mt-3 flex items-center justify-end gap-3">
-              <Button variant="ghost" onClick={handleSkip} className="h-8 px-3 text-xs text-white hover:bg-white/10">
-                Skip
+            <div className="mt-3 flex items-center justify-between gap-3 px-1">
+              <Button variant="ghost" onClick={handleSkip} className="h-8 px-3 text-xs text-muted-foreground hover:text-white">
+                Skip Tour
               </Button>
-              <Button onClick={handleConnect} className="h-8 px-4 text-xs bg-white text-black hover:bg-neutral-200">
-                Connect
-              </Button>
+              <div className="flex gap-2">
+                {tourStep > 1 && (
+                  <Button variant="secondary" onClick={() => setTourStep(tourStep - 1)} className="h-8 px-3 text-xs">
+                    Back
+                  </Button>
+                )}
+                {tourStep < 6 && (
+                  <Button variant="secondary" onClick={() => setTourStep(tourStep + 1)} className="h-8 px-3 text-xs">
+                    Next
+                  </Button>
+                )}
+                
+                {tourStep === 1 && (
+                  <Button onClick={handleConnect} className="h-8 px-4 text-xs bg-white text-black hover:bg-neutral-200">
+                    Connect
+                  </Button>
+                )}
+                
+                {tourStep === 6 && (
+                  <Button onClick={handleSkip} className="h-8 px-4 text-xs bg-white text-black hover:bg-neutral-200">
+                    Done
+                  </Button>
+                )}
+              </div>
             </div>
+          </div>
+
+          {/* SVG Arrow pointing down with 2 curves */}
+          <div className="-mt-1 ml-10 z-10 text-white drop-shadow-md shrink-0">
+            <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <path d="M30 5 C 50 20, 10 40, 30 55 M 30 55 L 20 45 M 30 55 L 40 45" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
+            </svg>
           </div>
         </div>
       </div>

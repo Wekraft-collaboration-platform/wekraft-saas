@@ -32,7 +32,7 @@ interface StepConfig {
 }
 
 // ─── Steps ─────────────────────────────────────────────────────────────────
-const STEPS: StepConfig[] = [
+export const STEPS: StepConfig[] = [
   {
     id: 1,
     icon: Github,
