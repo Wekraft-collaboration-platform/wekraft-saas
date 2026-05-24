@@ -16,10 +16,12 @@ import {
   Puzzle,
   Sparkles,
   Compass,
+  LayoutDashboard,
   ArrowRight,
   Zap,
 } from "lucide-react";
 import { useState } from "react";
+import { createPortal } from "react-dom";
 
 // ─── Types ─────────────────────────────────────────────────────────────────
 interface StepConfig {
@@ -80,6 +82,23 @@ export const STEPS: StepConfig[] = [
   },
   {
     id: 4,
+    icon: LayoutDashboard,
+    label: "Visit your workspace",
+    hint: "Explore tasks, sprints & team tools",
+    description:
+      "Your workspace is the command center for your project. Explore tasks, sprints, issues, and your team — all in one place.",
+    cta: "Go to workspace",
+    action: (router, context) => {
+      const projects = context?.projects;
+      if (projects && projects.length > 0) {
+        router.push(`/dashboard/my-projects/${projects[0].slug}?tour=workspace`);
+      } else {
+        router.push("/dashboard");
+      }
+    },
+  },
+  {
+    id: 5,
     icon: CalendarClock,
     label: "Set a project deadline",
     hint: "Keeps the team focused",
@@ -97,7 +116,7 @@ export const STEPS: StepConfig[] = [
     },
   },
   {
-    id: 5,
+    id: 6,
     icon: ListTodo,
     label: "Create your first task",
     hint: "Assign, prioritize & track work",
@@ -115,7 +134,7 @@ export const STEPS: StepConfig[] = [
     },
   },
   {
-    id: 6,
+    id: 7,
     icon: Puzzle,
     label: "Install the VS Code extension",
     hint: "Manage tasks without leaving your editor",
@@ -134,6 +153,7 @@ export function GettingStartedChecklist() {
   const userProjects = useQuery(api.project.getUserProjects);
   const router = useRouter();
   const [expandedStep, setExpandedStep] = useState<number | null>(-1);
+  const [extensionDialogOpen, setExtensionDialogOpen] = useState(false);
 
   // Skeleton while Convex query loads
   if (progressData === undefined) {
@@ -308,13 +328,17 @@ export function GettingStartedChecklist() {
                   <button
                     type="button"
                     onClick={() => {
-                      step.action(router, { projects: userProjects });
-                      setExpandedStep(null);
+                      if (step.id === 7) {
+                        setExtensionDialogOpen(true);
+                      } else {
+                        step.action(router, { projects: userProjects });
+                        setExpandedStep(null);
+                      }
                     }}
-                    className="inline-flex items-center gap-1.5 text-[13px] font-bold text-white hover:text-primary transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-white border border-white/20 rounded-md px-3 py-1.5 hover:bg-white/10 hover:border-white/40 transition-all cursor-pointer"
                   >
                     {step.cta}
-                    <ArrowRight className="h-4 w-4" />
+                    <ArrowRight className="h-3.5 w-3.5" />
                   </button>
                 </div>
               )}
@@ -322,6 +346,62 @@ export function GettingStartedChecklist() {
           );
         })}
       </div>
+
+      {/* VS Code Extension Dialog — rendered via portal to escape sidebar overflow */}
+      {extensionDialogOpen && typeof document !== "undefined" && createPortal(
+        <div
+          className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/60 backdrop-blur-sm"
+          onClick={() => setExtensionDialogOpen(false)}
+        >
+          <div
+            className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden animate-in fade-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header */}
+            <div className="p-5 pb-3">
+              <div className="flex items-center gap-2 mb-1">
+                <span className="flex items-center justify-center bg-primary text-primary-foreground text-[10px] font-bold w-5 h-5 rounded-full shrink-0">7</span>
+                <h3 className="text-sm font-semibold text-foreground">Install VS Code Extension</h3>
+              </div>
+              <div className="h-px w-full bg-border/60 my-3" />
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                The Wekraft VS Code extension lets you view tasks, log time, and push updates to your project — all without leaving your editor.
+              </p>
+            </div>
+
+            {/* Extension preview card */}
+            <div className="mx-5 mb-4 p-3 rounded-lg border border-border bg-muted/20 flex items-center gap-3">
+              <div className="w-10 h-10 rounded-md bg-blue-600 flex items-center justify-center shrink-0">
+                <Puzzle className="w-5 h-5 text-white" />
+              </div>
+              <div className="flex flex-col min-w-0">
+                <span className="text-[12px] font-semibold text-foreground truncate">Wekraft</span>
+                <span className="text-[10px] text-muted-foreground">VS Code Extension · Free</span>
+              </div>
+            </div>
+
+            {/* Buttons */}
+            <div className="px-5 pb-5 flex items-center justify-between gap-3">
+              <button
+                onClick={() => setExtensionDialogOpen(false)}
+                className="h-8 px-3 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={() => {
+                  window.open("https://marketplace.visualstudio.com/", "_blank");
+                  setExtensionDialogOpen(false);
+                }}
+                className="h-8 px-4 text-xs bg-white text-black hover:bg-neutral-200 rounded-md font-medium transition-colors cursor-pointer"
+              >
+                Open VS Code Marketplace
+              </button>
+            </div>
+          </div>
+        </div>,
+        document.body
+      )}
     </div>
   );
 }

@@ -512,12 +512,39 @@ export const getOnboardingProgress = query({
     }
 
     if (hasTeamMembers) steps.push(3);
-    if (hasDeadline) steps.push(4);
-    if (hasTasks) steps.push(5);
+    if (hasDeadline) steps.push(5);
+    if (hasTasks) steps.push(6);
 
-    // Step 6 (Download extension) might be checked locally or if we have a field in DB
+    // Step 4: Visit workspace
+    if ((user as any).hasVisitedWorkspace) steps.push(4);
+
+    // Step 7 (Download extension) might be checked locally or if we have a field in DB
     // Currently relying on the Zustand local storage or a local flag.
 
     return { completedSteps: steps };
+  },
+});
+
+// ==================================
+// MARK WORKSPACE AS VISITED (Step 7)
+// ==================================
+export const markWorkspaceVisited = mutation({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) throw new Error("User not found");
+
+    await ctx.db.patch(user._id, {
+      hasVisitedWorkspace: true,
+      updatedAt: Date.now(),
+    } as any);
   },
 });

@@ -70,7 +70,7 @@ export function WelcomeDialog() {
 
   useEffect(() => {
     let targetId = null;
-    if (tourStep >= 1 && tourStep <= 6) targetId = `tour-step-${tourStep}`;
+    if (tourStep >= 1 && tourStep <= 7) targetId = `tour-step-${tourStep}`;
 
     const el = targetId ? document.getElementById(targetId) : null;
     let animationFrameId: number;
@@ -188,7 +188,7 @@ export function WelcomeDialog() {
   };
 
   const getNextStep = (current: number) => {
-    for (let i = current + 1; i <= 6; i++) {
+    for (let i = current + 1; i <= 7; i++) {
       if (!completedIds.includes(i)) return i;
     }
     return null;
@@ -201,9 +201,10 @@ export function WelcomeDialog() {
       case 1: return "Connect";
       case 2: return "Link Repo";
       case 3: return "Invite";
-      case 4: return "Set Deadline";
-      case 5: return "Create Task";
-      case 6: return "Get Extension";
+      case 4: return "Visit Workspace";
+      case 5: return "Set Deadline";
+      case 6: return "Create Task";
+      case 7: return "Get Extension";
       default: return "Action";
     }
   };
