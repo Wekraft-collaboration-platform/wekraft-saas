@@ -53,6 +53,7 @@ import { DashboardProjects } from "./DashboardProjects";
 import { toast } from "sonner";
 import { useUser } from "@clerk/nextjs";
 import { CommunitySearchBar } from "@/modules/dashboard/components/SearchBar";
+import Image from "next/image";
 
 // ─── Utility: human-readable relative time ─────────────────────────────────
 function timeAgo(ts: number): string {
@@ -612,11 +613,17 @@ export default function DashboardPage() {
             {/* Discover Tab */}
             <div className={cn("w-full space-y-8 animate-in fade-in-50 duration-300", activeTab !== "discover" && "hidden")}>
               <div className="text-center py-6 max-w-2xl mx-auto space-y-3">
+                <Image
+                  src='/pat106.svg'
+                  height="100"
+                  width='100'
+                  className="flex items-center justify-center mx-auto"
+                  alt="Discover" />
                 <h3 className="text-xl font-bold tracking-tight text-foreground/90">
                   Explore Community Creations
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Search and discover public workspaces, request to join active development squads, or showcase your own builds.
+                  Coming Soon. Build in public and collaborate with others worldwide.
                 </p>
                 {/* <div className="pt-4">
                   <CommunitySearchBar />

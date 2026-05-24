@@ -70,6 +70,7 @@ export default defineSchema({
     tags: v.optional(v.array(v.string())), // (2-5)
     isPublic: v.boolean(),
     projectLiveLink: v.optional(v.string()),
+    shortcut: v.optional(v.string()), // Keyboard shortcut, e.g. "Alt+1"
     // for repo---
     repositoryId: v.optional(v.id("repositories")),
     repoName: v.optional(v.string()),
@@ -186,8 +187,8 @@ export default defineSchema({
         v.object({
           name: v.string(),
           url: v.string(),
-        })
-      )
+        }),
+      ),
     ),
     // Insights
     finalCompletedAt: v.optional(v.number()), // date when finally its marked as completed.
@@ -257,8 +258,8 @@ export default defineSchema({
         v.object({
           name: v.string(),
           url: v.string(),
-        })
-      )
+        }),
+      ),
     ),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -411,7 +412,6 @@ export default defineSchema({
     .index("by_project", ["projectId"])
     .index("by_issue_user", ["issueId", "userId"]),
 
-
   // -------------- IDE Extension Support ---------------------
   userApiKeys: defineTable({
     userId: v.id("users"),
@@ -425,8 +425,7 @@ export default defineSchema({
     token: v.string(), // Short-lived one-time token (5 min TTL)
     userId: v.id("users"),
     expiresAt: v.number(),
-  })
-    .index("by_token", ["token"]),
+  }).index("by_token", ["token"]),
 
   // -------------- Project Upvotes (per-user join table) ---------------------
   projectUpvoteRecords: defineTable({
@@ -437,7 +436,6 @@ export default defineSchema({
     .index("by_project", ["projectId"])
     .index("by_user", ["userId"])
     .index("by_project_user", ["projectId", "userId"]),
-
 
   // Admin messages to all users -----------------------
   announcements: defineTable({
@@ -469,19 +467,19 @@ export default defineSchema({
     projectName: v.optional(v.string()),
     // Event type — maps to the full event matrix
     type: v.union(
-      v.literal("member_joined"),       // User joins project
-      v.literal("member_left"),          // User leaves project
-      v.literal("member_removed"),       // User is removed
-      v.literal("join_request"),         // New join request submitted
-      v.literal("request_accepted"),     // Request accepted
-      v.literal("request_rejected"),     // Request rejected
-      v.literal("role_changed"),         // Role changed
-      v.literal("mentioned"),            // @mention in comment
+      v.literal("member_joined"), // User joins project
+      v.literal("member_left"), // User leaves project
+      v.literal("member_removed"), // User is removed
+      v.literal("join_request"), // New join request submitted
+      v.literal("request_accepted"), // Request accepted
+      v.literal("request_rejected"), // Request rejected
+      v.literal("role_changed"), // Role changed
+      v.literal("mentioned"), // @mention in comment
     ),
     // Human-readable notification body
     body: v.string(),
     // Optional deep-link metadata
-    entityId: v.optional(v.string()),   // taskId / issueId / sprintId as string
+    entityId: v.optional(v.string()), // taskId / issueId / sprintId as string
     entityTitle: v.optional(v.string()),
     // Read state
     isRead: v.boolean(),

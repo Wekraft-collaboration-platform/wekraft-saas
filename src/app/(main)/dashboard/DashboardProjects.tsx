@@ -1,20 +1,33 @@
 "use client";
 
-import React from "react";
-import { useRouter } from "next/navigation";
+import { useMutation } from "convex/react";
 import {
-  Plus,
-  Globe,
-  Lock,
-  MoreVertical,
-  FolderCode,
-  Settings2,
+  ChevronDown,
   ExternalLink,
-  GitPullRequest,
+  FolderCode,
+  Keyboard,
+  Loader2,
+  Plus,
+  Settings2,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import React from "react";
+import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import CreateProjectDialog from "@/modules/project/CreateProjectDialog";
+import { api } from "../../../../convex/_generated/api";
 
 interface DashboardProject {
   _id: string;
@@ -27,6 +40,7 @@ interface DashboardProject {
   slug: string;
   createdAt?: number;
   role: "owned" | "joined";
+  shortcut?: string;
   members?: {
     userId: string;
     userImage?: string;
@@ -55,12 +69,263 @@ const formatRelativeTime = (ts: number): string => {
   return d === 1 ? "1 day ago" : `${d} days ago`;
 };
 
+const ShortcutSelector = ({
+  projectId,
+  currentShortcut,
+  projects,
+  onSave,
+}: {
+  projectId: string;
+  currentShortcut?: string;
+  projects: DashboardProject[] | undefined;
+  onSave: (shortcut?: string) => Promise<void>;
+}) => {
+  const [open, setOpen] = React.useState(false);
+  const [modifier, setModifier] = React.useState<"Alt" | "Alt+Shift">("Alt");
+  const [key, setKey] = React.useState<string>("1");
+  const [saving, setSaving] = React.useState(false);
+  const [errorMsg, setErrorMsg] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    if (open && currentShortcut) {
+      if (currentShortcut.startsWith("Alt+Shift+")) {
+        setModifier("Alt+Shift");
+        setKey(currentShortcut.replace("Alt+Shift+", ""));
+      } else if (currentShortcut.startsWith("Alt+")) {
+        setModifier("Alt");
+        setKey(currentShortcut.replace("Alt+", ""));
+      }
+    }
+  }, [currentShortcut, open]);
+
+  React.useEffect(() => {
+    setErrorMsg(null);
+    if (!key) {
+      setErrorMsg("Enter a key");
+      return;
+    }
+
+    const candidate = `${modifier}+${key}`;
+    const normalizedCandidate = candidate.toLowerCase();
+
+    if (projects) {
+      const conflictingProject = projects.find(
+        (p) =>
+          p._id !== projectId &&
+          p.shortcut?.toLowerCase() === normalizedCandidate,
+      );
+      if (conflictingProject) {
+        setErrorMsg(`Already in use in "${conflictingProject.projectName}"`);
+        return;
+      }
+    }
+
+    if (modifier === "Alt") {
+      const browserDefaults = ["D", "F", "E", "V", "H", "T"];
+      if (browserDefaults.includes(key.toUpperCase())) {
+        setErrorMsg(`"${candidate}" is reserved in some browsers`);
+        return;
+      }
+    }
+  }, [modifier, key, projects, projectId]);
+
+  const handleSave = async () => {
+    if (errorMsg) return;
+    setSaving(true);
+    try {
+      const shortcutStr = `${modifier}+${key}`;
+      await onSave(shortcutStr);
+      setOpen(false);
+    } catch (_err) {
+      // Error is handled by parent toast
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  const handleClear = async () => {
+    setSaving(true);
+    try {
+      await onSave(undefined);
+      setOpen(false);
+    } catch (_err) {
+      // Error is handled by parent toast
+    } finally {
+      setSaving(false);
+    }
+  };
+
+  return (
+    <Popover open={open} onOpenChange={setOpen}>
+      <PopoverTrigger asChild>
+        {currentShortcut ? (
+          <button
+            type="button"
+            className="flex items-center gap-1 text-[10px] font-semibold font-mono bg-blue-500/10 hover:bg-blue-500/20 text-primary/80 dark:text-blue-400 border border-primary/15 border-dashed rounded-md px-1.5 py-0.5 transition-all shadow-xs cursor-pointer select-none"
+            title="Click to edit shortcut"
+          >
+            <Keyboard className="size-3" />
+            <span>{currentShortcut}</span>
+          </button>
+        ) : (
+          <button
+            type="button"
+            className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground bg-accent/80 hover:text-foreground border border-primary/15 border-dashed rounded-md px-1.5 py-0.5 transition-all cursor-pointer select-none"
+            title="Assign keyboard shortcut"
+          >
+            <Keyboard className="size-3 opacity-60" />
+            <span>+ Shortcut</span>
+          </button>
+        )}
+      </PopoverTrigger>
+      <PopoverContent
+        className="w-56 p-3 bg-popover border border-border rounded-xl shadow-xl z-50"
+        align="end"
+      >
+        <div className="space-y-3">
+          <div className="space-y-1">
+            <h4 className="text-xs font-semibold text-foreground flex items-center gap-1.5">
+              <Keyboard className="size-3.5 text-primary" />
+              Keyboard Shortcut
+            </h4>
+            <p className="text-[10px] text-muted-foreground leading-snug">
+              Choose Alt or Alt+Shift combination to open this workspace.
+            </p>
+          </div>
+
+          <div className="grid grid-cols-2 gap-2">
+            <div className="flex flex-col gap-1">
+              <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">
+                Modifier
+              </span>
+              <select
+                value={modifier}
+                onChange={(e) =>
+                  setModifier(e.target.value as "Alt" | "Alt+Shift")
+                }
+                className="text-xs border border-border bg-card text-foreground rounded-md p-1 outline-hidden"
+              >
+                <option value="Alt">Alt</option>
+                <option value="Alt+Shift">Alt + Shift</option>
+              </select>
+            </div>
+            <div className="flex flex-col gap-1">
+              <span className="text-[9px] font-semibold text-muted-foreground uppercase tracking-wider">
+                Key
+              </span>
+              <input
+                type="text"
+                value={key}
+                onChange={(e) => {
+                  const val = e.target.value.trim().slice(-1).toUpperCase();
+                  if (val === "" || val.match(/^[A-Z0-9]$/)) {
+                    setKey(val);
+                  }
+                }}
+                placeholder="e.g. A"
+                className="text-xs text-center border border-border bg-card text-foreground rounded-md p-1 outline-hidden uppercase"
+                maxLength={1}
+              />
+            </div>
+          </div>
+
+          {errorMsg && (
+            <p className="text-[10px] text-red-500 font-medium leading-tight">
+              {errorMsg}
+            </p>
+          )}
+
+          <div className="flex items-center justify-between gap-2 pt-1 border-t border-border/50">
+            {currentShortcut ? (
+              <Button
+                variant="ghost"
+                size="xs"
+                onClick={handleClear}
+                disabled={saving}
+                className="text-[10px] h-7 text-red-500 hover:text-red-600 hover:bg-red-500/10 cursor-pointer"
+              >
+                Clear
+              </Button>
+            ) : (
+              <div />
+            )}
+            <Button
+              size="xs"
+              onClick={handleSave}
+              disabled={saving || !!errorMsg}
+              className="text-[10px] h-7 cursor-pointer"
+            >
+              {saving ? <Loader2 className="size-3 animate-spin" /> : "Save"}
+            </Button>
+          </div>
+        </div>
+      </PopoverContent>
+    </Popover>
+  );
+};
 
 export const DashboardProjects = ({
   projects,
   isRightSidebarExpanded,
 }: DashboardProjectsProps) => {
   const router = useRouter();
+  const updateShortcut = useMutation(api.project.updateProjectShortcut);
+  const [filter, setFilter] = React.useState<"all" | "owned" | "joined">("all");
+
+  const filteredProjects = React.useMemo(() => {
+    if (!projects) return [];
+    if (filter === "owned") {
+      return projects.filter((p) => p.role === "owned");
+    }
+    if (filter === "joined") {
+      return projects.filter((p) => p.role === "joined");
+    }
+    return projects;
+  }, [projects, filter]);
+
+  React.useEffect(() => {
+    const handleKeyDown = (e: KeyboardEvent) => {
+      const target = e.target as HTMLElement;
+      if (
+        target.tagName === "INPUT" ||
+        target.tagName === "TEXTAREA" ||
+        target.isContentEditable
+      ) {
+        return;
+      }
+
+      if (!projects) return;
+
+      for (const project of projects) {
+        if (!project.shortcut) continue;
+
+        const keys = project.shortcut.toLowerCase().split("+");
+        const hasAlt = keys.includes("alt");
+        const hasShift = keys.includes("shift");
+        const hasCtrl = keys.includes("ctrl");
+        const keyChar = keys[keys.length - 1];
+
+        const matchAlt = e.altKey === hasAlt;
+        const matchShift = e.shiftKey === hasShift;
+        const matchCtrl = e.ctrlKey === hasCtrl;
+        const matchKey = e.key.toLowerCase() === keyChar;
+
+        if (matchAlt && matchShift && matchCtrl && matchKey) {
+          e.preventDefault();
+          toast.success(
+            `Opening workspace for ${project.projectName} (${project.shortcut})`,
+          );
+          router.push(`/dashboard/my-projects/${project.slug}/workspace`);
+          break;
+        }
+      }
+    };
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => {
+      window.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [projects, router]);
 
   return (
     <div className="space-y-5 w-full animate-in fade-in slide-in-from-bottom-2 duration-300">
@@ -68,20 +333,70 @@ export const DashboardProjects = ({
       <div className="flex items-center justify-between pb-4">
         <div>
           <h2 className="text-lg tracking-tight text-foreground flex items-center gap-2">
-            Your All Projects
-
+            {filter === "all"
+              ? "Your All Projects"
+              : filter === "owned"
+                ? "Your Created Projects"
+                : "Your Joined Projects"}
           </h2>
           <p className="text-sm text-muted-foreground mt-0.5">
             Manage your creations and team collaboration workspaces.
           </p>
         </div>
-        <CreateProjectDialog
-          trigger={
-            <Button size="sm" className="h-8 text-xs gap-1.5 cursor-pointer shadow-xs hover:shadow-md transition-all duration-200">
-              <Plus className="h-3.5 w-3.5" /> Create Project
-            </Button>
-          }
-        />
+
+        <div className="flex items-center gap-4">
+          {/* Dropdown for filtering */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="outline"
+                size="sm"
+                className="text-xs gap-2 cursor-pointer select-none"
+              >
+                <span>
+                  Show:{" "}
+                  {filter === "all"
+                    ? "All Projects"
+                    : filter === "owned"
+                      ? "My Projects"
+                      : "Team Projects"}
+                </span>
+                <ChevronDown className="h-4 w-4" />
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-[160px] z-50">
+              <DropdownMenuItem
+                onClick={() => setFilter("all")}
+                className="text-xs cursor-pointer"
+              >
+                All Projects
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setFilter("owned")}
+                className="text-xs cursor-pointer"
+              >
+                My Projects
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={() => setFilter("joined")}
+                className="text-xs cursor-pointer"
+              >
+                Team Projects
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          <CreateProjectDialog
+            trigger={
+              <Button
+                size="sm"
+                className="h-8 text-xs gap-1.5 cursor-pointer shadow-xs hover:shadow-md transition-all duration-200"
+              >
+                <Plus className="h-3.5 w-3.5" /> Create Project
+              </Button>
+            }
+          />
+        </div>
       </div>
 
       {/* Projects Grid */}
@@ -91,7 +406,7 @@ export const DashboardProjects = ({
             "grid gap-4",
             isRightSidebarExpanded
               ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
-              : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+              : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4",
           )}
         >
           {Array.from({ length: 4 }).map((_, i) => (
@@ -106,7 +421,7 @@ export const DashboardProjects = ({
             </div>
           ))}
         </div>
-      ) : projects.length === 0 ? (
+      ) : filteredProjects.length === 0 ? (
         <div className="flex flex-col items-center justify-center p-12 border border-border border-dashed rounded-xl bg-muted text-center h-[260px] transition-all">
           <div className="h-10 w-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-3 animate-bounce">
             <FolderCode className="h-5 w-5" />
@@ -115,15 +430,25 @@ export const DashboardProjects = ({
             No Projects Found
           </h4>
           <p className="text-xs text-muted-foreground max-w-sm mt-1.5 leading-relaxed">
-            Start a new workspace to collaborate, track stats, and manage tasks.
+            {filter === "all"
+              ? "Start a new workspace to collaborate, track stats, and manage tasks."
+              : filter === "owned"
+                ? "You haven't created any projects yet."
+                : "You haven't joined any team projects yet."}
           </p>
-          <CreateProjectDialog
-            trigger={
-              <Button variant="outline" size="sm" className="mt-4 h-8 text-xs gap-1.5 cursor-pointer">
-                <Plus className="h-3.5 w-3.5" /> Create First Project
-              </Button>
-            }
-          />
+          {filter === "owned" && (
+            <CreateProjectDialog
+              trigger={
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="mt-4 h-8 text-xs gap-1.5 cursor-pointer"
+                >
+                  <Plus className="h-3.5 w-3.5" /> Create First Project
+                </Button>
+              }
+            />
+          )}
         </div>
       ) : (
         <div
@@ -131,10 +456,10 @@ export const DashboardProjects = ({
             "grid gap-4",
             isRightSidebarExpanded
               ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
-              : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4"
+              : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4",
           )}
         >
-          {projects.map((project) => (
+          {filteredProjects.map((project) => (
             <div
               key={project._id}
               className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-muted shadow-md h-full"
@@ -150,14 +475,13 @@ export const DashboardProjects = ({
                 ) : (
                   <div
                     className={cn(
-                      "w-full h-full bg-linear-to-br flex items-center justify-center"
+                      "w-full h-full bg-linear-to-br flex items-center justify-center",
                     )}
                   >
                     <div className="absolute inset-0 bg-black/10 backdrop-blur-[1.5px]" />
                     <FolderCode className="h-9 w-9 text-white/30 drop-shadow-sm" />
                   </div>
                 )}
-
               </div>
 
               {/* Card Body - Overlapping cover image & scooped corner background */}
@@ -171,7 +495,6 @@ export const DashboardProjects = ({
                   `,
                 }}
               >
-
                 {/* Top Metadata Line */}
                 <div className="flex items-center gap-4 text-xs text-muted-foreground mb-1 font-medium">
                   <span>
@@ -182,17 +505,15 @@ export const DashboardProjects = ({
                   <div className="flex flex-wrap gap-1 z-10">
                     <span
                       className={cn(
-                        "text-[9px] font-semibold px-2 py-0.5 rounded-full border uppercase tracking-wider backdrop-blur-md shrink-0",
+                        "text-[10px]  px-2 py-0.5 rounded-full border backdrop-blur-md shrink-0",
                         project.role === "owned"
-                          ? "bg-blue-500/10 text-blue-500 dark:text-blue-400 border-blue-500/25"
-                          : "bg-emerald-500/10 text-emerald-500 dark:text-emerald-400 border-emerald-500/25"
+                          ? "bg-muted/40 border-accent! text-primary"
+                          : "bg-muted border-accent! text-accent-foreground",
                       )}
                     >
                       {project.role}
                     </span>
                   </div>
-
-
                 </div>
 
                 {/* Project Name Title */}
@@ -207,7 +528,7 @@ export const DashboardProjects = ({
                   </span>
                 </h3>
 
-                {/* Footer Info: Avatars and Repository Bubble */}
+                {/* Footer Info: Avatars and Shortcut */}
                 <div className="mt-auto flex items-center justify-between gap-4 ">
                   {/* Avatars Stack */}
                   {project.totalMembers > 0 ? (
@@ -243,7 +564,29 @@ export const DashboardProjects = ({
                     </span>
                   )}
 
-
+                  {/* Keyboard Shortcut Select Widget */}
+                  <ShortcutSelector
+                    projectId={project._id}
+                    currentShortcut={project.shortcut}
+                    projects={projects}
+                    onSave={async (shortcut) => {
+                      try {
+                        await updateShortcut({
+                          // @ts-expect-error
+                          projectId: project._id,
+                          shortcut,
+                        });
+                        toast.success(
+                          shortcut
+                            ? `Shortcut updated to ${shortcut}`
+                            : "Shortcut cleared",
+                        );
+                      } catch (err: any) {
+                        toast.error(err.message || "Failed to update shortcut");
+                        throw err;
+                      }
+                    }}
+                  />
                 </div>
 
                 {/* Action buttons view/workspace */}
@@ -262,7 +605,7 @@ export const DashboardProjects = ({
                     size="sm"
                     onClick={() =>
                       router.push(
-                        `/dashboard/my-projects/${project.slug}/workspace`
+                        `/dashboard/my-projects/${project.slug}/workspace`,
                       )
                     }
                     className="h-7 text-[10px] gap-1 cursor-pointer"
@@ -274,8 +617,7 @@ export const DashboardProjects = ({
             </div>
           ))}
         </div>
-      )
-      }
-    </div >
+      )}
+    </div>
   );
 };

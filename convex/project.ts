@@ -1,8 +1,8 @@
-import { mutation, query } from "./_generated/server";
-import { internal } from "./_generated/api";
 import { v } from "convex/values";
-import { getPlanLimits, getActiveUserPlan, PlanType } from "./pricing";
 import { customAlphabet } from "nanoid";
+import { internal } from "./_generated/api";
+import { mutation, query } from "./_generated/server";
+import { getActiveUserPlan, getPlanLimits, type PlanType } from "./pricing";
 
 const slugId = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 5);
 
@@ -379,6 +379,7 @@ export const getUserProjects = query({
           projectWorkStatus: p.projectWorkStatus,
           slug: p.slug,
           createdAt: p.createdAt,
+          shortcut: p.shortcut,
           members: members.slice(0, 4).map((m) => ({
             userId: m.userId,
             userImage: m.userImage,
@@ -739,7 +740,7 @@ export const getProjectJoinRequests = query({
           ...req,
           clerkUserId: user?.clerkToken?.split("|").pop() ?? null,
         };
-      })
+      }),
     );
 
     // Sort: Pending first, then by date descending
@@ -919,6 +920,83 @@ export const updateProject = mutation({
 });
 // ---------------------------------------------
 
+// =============================================
+// UPDATE PROJECT SHORTCUT
+// ============================================
+export const updateProjectShortcut = mutation({
+  args: {
+    projectId: v.id("projects"),
+    shortcut: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthenticated");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) throw new Error("User not found");
+
+    const project = await ctx.db.get(args.projectId);
+    if (!project) throw new Error("Project not found");
+
+    const membership = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .filter((q) => q.eq(q.field("userId"), user._id))
+      .unique();
+
+    const isMember = project.ownerId === user._id || !!membership;
+    if (!isMember) {
+      throw new Error("Unauthorized");
+    }
+
+    if (args.shortcut) {
+      const owned = await ctx.db
+        .query("projects")
+        .withIndex("by_owner", (q) => q.eq("ownerId", user._id))
+        .collect();
+
+      const memberships = await ctx.db
+        .query("projectMembers")
+        .withIndex("by_user", (q) => q.eq("userId", user._id))
+        .collect();
+
+      const joinedIds = memberships.map((m) => m.projectId);
+
+      for (const p of owned) {
+        if (p._id !== args.projectId && p.shortcut === args.shortcut) {
+          throw new Error(
+            `Shortcut "${args.shortcut}" is already assigned to project "${p.projectName}"`,
+          );
+        }
+      }
+      for (const id of joinedIds) {
+        if (id !== args.projectId) {
+          const p = await ctx.db.get(id);
+          if (p && p.shortcut === args.shortcut) {
+            throw new Error(
+              `Shortcut "${args.shortcut}" is already assigned to project "${p.projectName}"`,
+            );
+          }
+        }
+      }
+    }
+
+    await ctx.db.patch(args.projectId, {
+      shortcut: args.shortcut,
+      updatedAt: Date.now(),
+    });
+
+    return { success: true };
+  },
+});
+// ---------------------------------------------
+
 export const getProjectMembers = query({
   args: { projectId: v.id("projects") },
   handler: async (ctx, args) => {
@@ -1012,6 +1090,7 @@ export const getJoinedProjects = query({
           projectWorkStatus: p.projectWorkStatus,
           slug: p.slug,
           createdAt: p.createdAt,
+          shortcut: p.shortcut,
           members: members.slice(0, 4).map((mt) => ({
             userId: mt.userId,
             userImage: mt.userImage,
@@ -1055,7 +1134,7 @@ export const updateProjectThumbnail = mutation({
     const user = await ctx.db
       .query("users")
       .withIndex("by_token", (q) =>
-        q.eq("clerkToken", identity.tokenIdentifier)
+        q.eq("clerkToken", identity.tokenIdentifier),
       )
       .unique();
 
@@ -1138,8 +1217,7 @@ export const getTeamPageData = query({
       members.map(async (m) => {
         const user = await ctx.db.get(m.userId);
         const role =
-          m.AccessRole ||
-          (m.userId === project.ownerId ? "owner" : "member");
+          m.AccessRole || (m.userId === project.ownerId ? "owner" : "member");
 
         if (role === "owner") ownerCount++;
         else if (role === "admin") adminCount++;
@@ -1197,7 +1275,7 @@ export const removeMember = mutation({
     const user = await ctx.db
       .query("users")
       .withIndex("by_token", (q) =>
-        q.eq("clerkToken", identity.tokenIdentifier)
+        q.eq("clerkToken", identity.tokenIdentifier),
       )
       .unique();
     if (!user) throw new Error("User not found");
@@ -1213,8 +1291,7 @@ export const removeMember = mutation({
       .unique();
 
     const isPower =
-      project.ownerId === user._id ||
-      callerMembership?.AccessRole === "admin";
+      project.ownerId === user._id || callerMembership?.AccessRole === "admin";
     if (!isPower) throw new Error("Unauthorized");
 
     const target = await ctx.db.get(args.memberId);
@@ -1277,7 +1354,7 @@ export const leaveProject = mutation({
     const user = await ctx.db
       .query("users")
       .withIndex("by_token", (q) =>
-        q.eq("clerkToken", identity.tokenIdentifier)
+        q.eq("clerkToken", identity.tokenIdentifier),
       )
       .unique();
     if (!user) throw new Error("User not found");
@@ -1352,7 +1429,7 @@ export const updateMemberRole = mutation({
     const user = await ctx.db
       .query("users")
       .withIndex("by_token", (q) =>
-        q.eq("clerkToken", identity.tokenIdentifier)
+        q.eq("clerkToken", identity.tokenIdentifier),
       )
       .unique();
     if (!user) throw new Error("User not found");
@@ -1408,7 +1485,7 @@ export const getPublicProjectProfile = query({
       ? await ctx.db
           .query("users")
           .withIndex("by_token", (q) =>
-            q.eq("clerkToken", identity.tokenIdentifier)
+            q.eq("clerkToken", identity.tokenIdentifier),
           )
           .unique()
       : null;
@@ -1482,7 +1559,7 @@ export const getPublicProjectProfile = query({
       const upvoteRecord = await ctx.db
         .query("projectUpvoteRecords")
         .withIndex("by_project_user", (q) =>
-          q.eq("projectId", project._id).eq("userId", currentUserDb._id)
+          q.eq("projectId", project._id).eq("userId", currentUserDb._id),
         )
         .unique();
 
@@ -1550,7 +1627,7 @@ export const toggleProjectUpvote = mutation({
     const user = await ctx.db
       .query("users")
       .withIndex("by_token", (q) =>
-        q.eq("clerkToken", identity.tokenIdentifier)
+        q.eq("clerkToken", identity.tokenIdentifier),
       )
       .unique();
     if (!user) throw new Error("User not found");
@@ -1562,7 +1639,7 @@ export const toggleProjectUpvote = mutation({
     const existing = await ctx.db
       .query("projectUpvoteRecords")
       .withIndex("by_project_user", (q) =>
-        q.eq("projectId", args.projectId).eq("userId", user._id)
+        q.eq("projectId", args.projectId).eq("userId", user._id),
       )
       .unique();
 
@@ -1598,7 +1675,7 @@ export const getUpcomingDeadlines = query({
     const user = await ctx.db
       .query("users")
       .withIndex("by_token", (q) =>
-        q.eq("clerkToken", identity.tokenIdentifier)
+        q.eq("clerkToken", identity.tokenIdentifier),
       )
       .unique();
 
@@ -1635,9 +1712,12 @@ export const getUpcomingDeadlines = query({
         .withIndex("by_project", (q) => q.eq("projectId", p._id))
         .unique();
 
-      if (details && details.targetDate) {
+      if (details?.targetDate) {
         // Only those whose deadlines are in 3 weeks (21 days) and in the future
-        if (details.targetDate >= now && details.targetDate <= threeWeeksFromNow) {
+        if (
+          details.targetDate >= now &&
+          details.targetDate <= threeWeeksFromNow
+        ) {
           results.push({
             _id: p._id,
             projectName: p.projectName,
@@ -1656,4 +1736,3 @@ export const getUpcomingDeadlines = query({
     return results.slice(0, 15);
   },
 });
-
