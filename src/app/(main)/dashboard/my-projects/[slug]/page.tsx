@@ -25,7 +25,7 @@ import {
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
@@ -63,6 +63,10 @@ const ProjectPage = () => {
 
   const [isUploading, setIsUploading] = useState(false);
   const [homeTab, setHomeTab] = useState("settings");
+  const [inviteOpen, setInviteOpen] = useState(false);
+  const [showWorkspaceTour, setShowWorkspaceTour] = useState(false);
+  const visitBtnRef = useRef<HTMLAnchorElement>(null);
+  const markWorkspaceVisited = useMutation(api.user.markWorkspaceVisited);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -71,6 +75,21 @@ const ProjectPage = () => {
       if (tab) {
         setHomeTab(tab);
       }
+
+      let t1: ReturnType<typeof setTimeout> | undefined;
+      let t2: ReturnType<typeof setTimeout> | undefined;
+
+      if (searchParams.get("invite") === "true") {
+        t1 = setTimeout(() => setInviteOpen(true), 300);
+      }
+      if (searchParams.get("tour") === "workspace") {
+        t2 = setTimeout(() => setShowWorkspaceTour(true), 400);
+      }
+
+      return () => {
+        clearTimeout(t1);
+        clearTimeout(t2);
+      };
     }
   }, []);
 
@@ -201,8 +220,16 @@ const ProjectPage = () => {
             </Button>
           </Link>
 
-          <Link href={`/dashboard/my-projects/${project?.slug}/workspace`}>
-            <Button size="sm" className="px-6! text-xs" variant={"default"}>
+          <Link
+            href={`/dashboard/my-projects/${project?.slug}/workspace`}
+            ref={visitBtnRef}
+            id="visit-workspace-btn"
+          >
+            <Button size="sm" className="px-6! text-xs" variant={"default"}
+              onClick={async () => {
+                try { await markWorkspaceVisited(); } catch {}
+              }}
+            >
               Visit workspace{" "}
               <LucideExternalLink className="ml-2 w-3.5 h-3.5" />
             </Button>
@@ -258,6 +285,25 @@ const ProjectPage = () => {
         )}
       </div>
 
+      {/* WORKSPACE TOUR TOOLTIP */}
+      {showWorkspaceTour && (
+        <div
+          className="fixed inset-0 z-50 pointer-events-none"
+          onClick={() => setShowWorkspaceTour(false)}
+        >
+          <div className="absolute inset-0 bg-background/40 backdrop-blur-[1px] pointer-events-auto" onClick={() => setShowWorkspaceTour(false)} />
+          <WorkspaceTourTooltip
+            targetId="visit-workspace-btn"
+            onDismiss={() => setShowWorkspaceTour(false)}
+            onVisit={async () => {
+              try { await markWorkspaceVisited(); } catch {}
+              setShowWorkspaceTour(false);
+              router.push(`/dashboard/my-projects/${project?.slug}/workspace`);
+            }}
+          />
+        </div>
+      )}
+
       {/* ---------------------TABS / SETTINGS BELOW---------------- */}
       <div className="w-full flex items-center justify-end mb-10">
         <div className="flex items-center gap-5">
@@ -278,10 +324,13 @@ const ProjectPage = () => {
 
           <InviteDialog
             inviteLink={projectInviteLink}
+            open={inviteOpen}
+            onOpenChange={setInviteOpen}
             trigger={
               <Button
                 className="px-5! h-7! rounded-md text-xs cursor-pointer bg-blue-500 text-white hover:bg-blue-600"
                 size="sm"
+                onClick={() => setInviteOpen(true)}
               >
                 Invite <CopyPlus className="ml-2 w-3.5 h-3.5" />
               </Button>
@@ -417,3 +466,92 @@ const ProjectSkeleton = () => {
 };
 
 export default ProjectPage;
+
+// ─── Workspace Tour Tooltip ─────────────────────────────────────────────────
+function WorkspaceTourTooltip({
+  targetId,
+  onDismiss,
+  onVisit,
+}: {
+  targetId: string;
+  onDismiss: () => void;
+  onVisit: () => void;
+}) {
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+
+  useEffect(() => {
+    const calculate = () => {
+      const el = document.getElementById(targetId);
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const tooltipWidth = 320;
+      const margin = 12;
+      const rawLeft = rect.left + rect.width / 2 - tooltipWidth / 2;
+      const clampedLeft = Math.min(
+        Math.max(margin, rawLeft),
+        window.innerWidth - tooltipWidth - margin
+      );
+      setPos({
+        top: rect.bottom + 20,
+        left: clampedLeft,
+      });
+    };
+    calculate();
+    window.addEventListener("resize", calculate);
+    return () => window.removeEventListener("resize", calculate);
+  }, [targetId]);
+
+  if (!pos) return null;
+
+  return (
+    <div
+      className="fixed z-[60] pointer-events-auto animate-in fade-in duration-200 flex flex-col items-center"
+      style={{ top: pos.top, left: pos.left, width: 320 }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      {/* Curvy arrow pointing up */}
+      <div className="self-center mb-1 -mt-5">
+        <svg width="60" height="80" viewBox="0 0 60 80" fill="none" className="text-white drop-shadow-md rotate-180">
+          <path
+            d="M 30 5 C 45 30, 15 50, 30 75 M 30 75 L 22 65 M 30 75 L 38 65"
+            stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+          />
+        </svg>
+      </div>
+
+      <div className="flex flex-col w-full">
+        {/* Tooltip Card — matches WelcomeDialog exactly */}
+        <div className="bg-card text-card-foreground border border-border shadow-2xl rounded-lg p-5">
+          <div className="flex items-center gap-2">
+            <span className="flex items-center justify-center bg-primary text-primary-foreground text-[10px] font-bold w-5 h-5 rounded-full shrink-0">
+              4
+            </span>
+            <h3 className="text-sm font-semibold text-foreground">Visit your workspace</h3>
+          </div>
+
+          <div className="h-px w-full bg-border/60 my-3" />
+
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Click the &quot;Visit workspace&quot; button above to enter your workspace and explore tasks, sprints, issues, and your team.
+          </p>
+        </div>
+
+        {/* Buttons outside the box — matches WelcomeDialog layout */}
+        <div className="mt-3 flex items-center justify-between gap-3 px-1 w-full">
+          <button
+            onClick={onDismiss}
+            className="h-8 px-3 text-xs text-muted-foreground hover:text-white transition-colors cursor-pointer"
+          >
+            Skip Tour
+          </button>
+          <button
+            onClick={onVisit}
+            className="h-8 px-4 text-xs bg-white text-black hover:bg-neutral-200 rounded-md font-medium transition-colors cursor-pointer whitespace-nowrap"
+          >
+            Visit Workspace
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}

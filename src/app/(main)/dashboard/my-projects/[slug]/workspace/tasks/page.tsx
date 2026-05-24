@@ -321,7 +321,7 @@ const TaskPage = () => {
             ownerClerkId={(project as any).ownerClerkId}
             trigger={
               canCreate ? (
-                <Button size="sm" className="text-xs">
+                <Button id="create-task-btn" size="sm" className="text-xs">
                   <Plus className="w-5 h-5 mr-2" />
                   New Task
                 </Button>

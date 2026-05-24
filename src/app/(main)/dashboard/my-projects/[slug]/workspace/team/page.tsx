@@ -184,6 +184,7 @@ export default function TeamPage() {
             inviteLink={project?.inviteLink}
             trigger={
               <Button
+                id="invite-member-btn"
                 size="sm"
                 className="text-xs cursor-pointer px-6! bg-primary text-primary-foreground hover:bg-primary/90"
               >

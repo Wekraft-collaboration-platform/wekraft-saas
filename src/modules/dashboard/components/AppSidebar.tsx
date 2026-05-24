@@ -319,9 +319,10 @@ export const AppSidebar = () => {
                     ) : (
                       <>
                         <div className="flex flex-col gap-0.5">
-                          {ownerProjects.map((project) => (
+                          {ownerProjects.map((project, index) => (
                             <Link
                               key={project._id}
+                              id={index === 0 ? "sidebar-first-project" : undefined}
                               href={`/dashboard/my-projects/${project.slug}`}
                               className="flex items-center justify-between gap-2 p-0.5 rounded-md hover:bg-accent/40 cursor-pointer transition-all border border-transparent hover:border-sidebar-border"
                             >

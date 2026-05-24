@@ -187,6 +187,12 @@
 @layer base {
   * {
     @apply border-border outline-ring/50;
+    user-select: none;
+    -webkit-user-select: none;
+  }
+  input, textarea, [contenteditable] {
+    user-select: text;
+    -webkit-user-select: text;
   }
   body {
     @apply bg-background text-foreground;
@@ -687,3 +693,4 @@
     offset-distance: 100%;
   }
 }
+

@@ -295,6 +295,7 @@ const ProjectWorkspace = () => {
               <div className="flex w-full items-center justify-between px-2">
                 {/* Deadline button */}
                 <Button
+                  id="create-deadline-btn"
                   size="sm"
                   variant="outline"
                   onClick={() => setIsDeadlineDialogOpen(true)}

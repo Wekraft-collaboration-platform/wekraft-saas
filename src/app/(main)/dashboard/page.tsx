@@ -32,6 +32,7 @@ import {
   Github,
   DraftingCompass,
   Bot,
+  Download,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
@@ -54,6 +55,8 @@ import { toast } from "sonner";
 import { useUser } from "@clerk/nextjs";
 import { CommunitySearchBar } from "@/modules/dashboard/components/SearchBar";
 import Image from "next/image";
+import { GettingStartedChecklist } from "@/modules/dashboard/components/GettingStartedChecklist";
+import { WelcomeDialog } from "@/modules/dashboard/components/WelcomeDialog";
 
 // ─── Utility: human-readable relative time ─────────────────────────────────
 function timeAgo(ts: number): string {
@@ -66,21 +69,6 @@ function timeAgo(ts: number): string {
   if (h < 24) return `${h}h ago`;
   return `${d}d ago`;
 }
-
-// Onboarding Steps Checklist Data
-interface Step {
-  id: number;
-  text: string;
-}
-
-const STATIC_STEPS: Step[] = [
-  { id: 1, text: "Connect GitHub if not!" },
-  { id: 2, text: "Connect repo to your project" },
-  { id: 3, text: "Invite teammates" },
-  { id: 4, text: "Make a project deadline" },
-  { id: 5, text: "Create first task!" },
-  { id: 6, text: "Download extension" },
-];
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -199,22 +187,9 @@ export default function DashboardPage() {
     ? undefined
     : allProjects.sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
 
-
-
-  // Dynamic interactive checklist state (starts with first two items completed)
-  const [completedSteps, setCompletedSteps] = useState<number[]>([1, 2]);
-
-  const toggleStep = (id: number) => {
-    setCompletedSteps((prev) =>
-      prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id],
-    );
-  };
-
-  const activeCount = completedSteps.length;
-  const progressPercent = Math.round((activeCount / STATIC_STEPS.length) * 100);
-
   return (
     <div className="w-full bg-background min-h-full text-foreground">
+      <WelcomeDialog />
 
       {/* Parent Divided */}
       <main className="flex flex-col w-full">
@@ -225,17 +200,23 @@ export default function DashboardPage() {
             {/* {!githubUsername && (
               <div className="flex items-center gap-5">
                 <h2 className="text-base italic font-medium tracking-tight font-inter">
+            {!githubUsername && (
+              <div id="connect-github-banner" className="flex items-center gap-5">
+                <h2 className="text-sm font-medium text-muted-foreground bg-primary/10 border border-primary/20 px-3 py-1.5 rounded-full flex items-center gap-2">
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
+                  </span>
                   You havent connected github yet, connect to unlock full potential.
                 </h2>
-                <Button
-                  onClick={handleConnectGithub} className="text-sm rounded-sm! cursor-pointer px-5! h-7.5! ml-2" size='sm'>
+                <Button id="connect-github-btn" onClick={handleConnectGithub} className="text-sm rounded-sm! cursor-pointer px-5! h-7.5! ml-2" size='sm'>
                   Connect <Github />
                 </Button>
               </div>
             )} */}
 
             {/* 3 Metric Cards */}
-            <div className={cn("grid grid-cols-3 gap-8", isSidebarOpen && "gap-5")}>
+            <div id="tour-metrics" className={cn("grid grid-cols-3 gap-8", isSidebarOpen && "gap-5")}>
               {/* Total Commits Card */}
               <div className="dark:bg-sidebar bg-card border border-border rounded-xl p-4 shadow-md flex items-center justify-between group h-[126px]">
                 <div className="flex flex-col justify-between h-full w-full">
@@ -364,7 +345,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Tabs Navigation */}
-            <div className="flex items-center gap-2 border-b border-accent pb-px mt-4">
+            <div id="tour-tabs" className="flex items-center gap-2 border-b border-accent pb-px mt-4">
               <button
                 type="button"
                 onClick={() => setActiveTab("stats")}
@@ -378,6 +359,7 @@ export default function DashboardPage() {
                 Stats <GitGraph className="inline ml-1 w-4 h-4" />
               </button>
               <button
+                id="tour-projects-tab"
                 type="button"
                 onClick={() => setActiveTab("projects")}
                 className={cn(
@@ -407,60 +389,9 @@ export default function DashboardPage() {
             {/* Stats Tab */}
             <div className={cn("grid grid-cols-1 md:grid-cols-2 gap-8 w-full animate-in fade-in-50 duration-300", activeTab !== "stats" && "hidden")}>
               {/* Left Side Column: Notifications Card */}
-              <div className="flex flex-col rounded-lg border border-border bg-sidebar shadow-md h-150 overflow-hidden">
+              <div id="tour-getting-started" className="flex flex-col rounded-lg border border-border bg-sidebar shadow-md h-150 overflow-hidden">
                 {/* Onboarding Guide Top Section */}
-                <div className="p-5 border-b border-border/40 bg-muted/10 shrink-0">
-                  <div className="flex items-center justify-between mb-3">
-                    <h3 className="text-base font-medium text-muted-foreground flex items-center gap-1.5">
-                      <Compass className="h-4 w-4 text-primary" />
-                      Getting Started
-                    </h3>
-                    <span className="text-[11px] font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full">
-                      {activeCount} of {STATIC_STEPS.length} completed
-                    </span>
-                  </div>
-
-                  {/* Progress bar */}
-                  <div className="w-full h-2.5 bg-accent rounded-full overflow-hidden mb-4">
-                    <div
-                      className="h-full bg-linear-to-r from-primary to-blue-500 transition-all duration-500 ease-out"
-                      style={{ width: `${progressPercent}%` }}
-                    />
-                  </div>
-
-                  {/* Checklist Items */}
-                  <div className="grid grid-cols-1 gap-3">
-                    {STATIC_STEPS.map((step) => {
-                      const isCompleted = completedSteps.includes(step.id);
-                      return (
-                        <button
-                          key={step.id}
-                          type="button"
-                          onClick={() => toggleStep(step.id)}
-                          className="flex items-center gap-3 text-left w-full group py-0.5 outline-none"
-                        >
-                          <span className="shrink-0 transition-transform duration-200 group-hover:scale-110">
-                            {isCompleted ? (
-                              <CheckCircle2 className="h-4.5 w-4.5 text-primary fill-primary/10" />
-                            ) : (
-                              <Circle className="h-4.5 w-4.5 text-muted-foreground/45 group-hover:text-muted-foreground/75" />
-                            )}
-                          </span>
-                          <span
-                            className={cn(
-                              "text-[13px] transition-all duration-200 tracking-wide font-normal",
-                              isCompleted
-                                ? "text-muted-foreground/70 line-through decoration-muted-foreground/60"
-                                : "text-foreground group-hover:text-foreground",
-                            )}
-                          >
-                            {step.text}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </div>
+                <GettingStartedChecklist />
 
                 {/* Announcements / Notifications List */}
                 <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-border custom-scrollbar scrollbar-hide">
@@ -634,6 +565,7 @@ export default function DashboardPage() {
 
           {/* Right Side */}
           <div
+            id="tour-right-sidebar"
             className={cn(
               "relative transition-all duration-200 ease-in-out shrink-0 w-full self-stretch min-h-screen",
               isRightSidebarExpanded ? "w-80" : "w-14",
@@ -661,10 +593,15 @@ export default function DashboardPage() {
               )}
             >
               {isRightSidebarExpanded && (
-                <span className="px-2 transition-opacity duration-300">
-                  user account, cloud storage &amp; usage: this will come here
-                  future todo
-                </span>
+                <div className="flex flex-col gap-4 px-2 transition-opacity duration-300 w-full items-center">
+                  <span>
+                    user account, cloud storage &amp; usage: this will come here
+                    future todo
+                  </span>
+                  <Button id="download-extension-btn" variant="outline" size="sm" className="w-full text-xs cursor-pointer">
+                    <Download className="w-4 h-4 mr-1.5" /> Download Extension
+                  </Button>
+                </div>
               )}
             </div>
           </div>
