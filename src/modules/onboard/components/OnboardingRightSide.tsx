@@ -557,12 +557,11 @@ export function OnboardingRightSide({
 
   return (
     <div className={cn(
-      "hidden lg:flex lg:w-[60%] relative overflow-hidden select-none min-h-screen transition-all duration-500",
-      isLight
-        ? "bg-gradient-to-bl from-zinc-200 via-zinc-100 to-indigo-50/40"
-        : "bg-linear-to-bl from-neutral-950 via-neutral-950 to-blue-900/40",
+      "hidden lg:flex lg:w-[60%] relative overflow-hidden select-none h-screen transition-all duration-500",
+      "bg-linear-to-bl from-neutral-950 via-blue-950/25 to-blue-900/60",
       isAbsoluteAligned ? "items-end justify-end p-0" : "items-center justify-center p-12"
     )}>
+      {/* <div className="absolute bg-blue-700 w-[600px] h-[600px] -top-60 -right-60 rounded-full opacity-15 blur-3xl"></div> */}
       {isAbsoluteAligned ? (
         renderContent()
       ) : (

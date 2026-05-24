@@ -233,7 +233,7 @@ export function MultiStepOnboarding() {
               className="w-full flex flex-col"
             >
               {/* Step Header */}
-              <div className="mb-6">
+              <div className="mb-8">
                 <h2 className="text-lg font-bold tracking-tight text-white">
                   {currentStep === 1 && "What brings you to WeKraft"}
                   {currentStep === 2 && "Let’s set up your identity"}
@@ -241,7 +241,7 @@ export function MultiStepOnboarding() {
                   {currentStep === 4 && "Personalize your space"}
                   {currentStep === 5 && "Share invite link"}
                 </h2>
-                <p className="text-xs text-zinc-300 mt-1">
+                <p className="text-xs text-zinc-200 mt-1">
                   {currentStep === 1 && "Pick one or more options to help us customize your workspace."}
                   {currentStep === 2 && "Choose a unique username and select your role to build with others."}
                   {currentStep === 3 && "Create your project workspace to start syncing and collaborating."}
@@ -263,7 +263,7 @@ export function MultiStepOnboarding() {
                           type="button"
                           onClick={() => togglePurpose(p.id)}
                           className={cn(
-                            "w-full flex items-center bg-muted/60! justify-between p-3 rounded-lg border text-left transition-all duration-200 cursor-pointer select-none",
+                            "w-full flex items-center bg-muted/40! justify-between p-3 rounded-lg border text-left transition-all duration-200 cursor-pointer select-none",
                             selected
                               ? "bg-zinc-900! border-white/10"
                               : "bg-zinc-950/20 border-border hover:border-white/20 hover:bg-zinc-900/10"
@@ -271,8 +271,8 @@ export function MultiStepOnboarding() {
                         >
                           <div className="flex items-center gap-3">
                             <div className={cn(
-                              "w-8 h-8 rounded-lg flex items-center justify-center transition-all",
-                              selected ? "bg-blue-800 text-white" : "bg-zinc-900 text-zinc-400"
+                              "w-8 h-8 rounded-md border flex items-center justify-center transition-all",
+                              selected ? "bg-blue-800 text-white" : "bg-muted/80 text-zinc-400"
                             )}>
                               <p.icon className="w-4 h-4" />
                             </div>
