@@ -309,21 +309,21 @@ export function MultiStepOnboarding() {
                 {currentStep === 3 && (
                   <div className="space-y-5">
                     <div className="space-y-1.5 font-sans">
-                      <Label htmlFor="projectName" className="text-xs text-zinc-300 font-medium">
+                      <Label htmlFor="projectName" className="text-sm text-zinc-300 font-medium">
                         Project Name
                       </Label>
                       <Input
                         id="projectName"
                         placeholder="e.g. Acme SaaS"
-                        className="bg-zinc-900/50 border border-zinc-800 text-white placeholder:text-zinc-500 rounded-lg h-9 text-xs transition-all focus-visible:ring-1 focus-visible:ring-[#5e6ad2]!"
+                        className="bg-zinc-900/50 border border-zinc-800 text-white placeholder:text-zinc-500 rounded-lg h-9 text-xs transition-all focus-visible:ring-1 focus-visible:ring-blue-500/20"
                         value={projectName}
                         onChange={(e) => setProjectName(e.target.value)}
                       />
                     </div>
 
                     <div className="space-y-1.5  font-sans">
-                      <Label className="text-xs text-zinc-300 font-medium block">
-                        Project Status <span className="text-zinc-400 font-normal ml-1">(community indicators)</span>
+                      <Label className="text-sm text-zinc-300 font-medium block">
+                        Project Status <span className="text-zinc-300 font-normal ml-1">(community indicators)</span>
                       </Label>
                       <div className="grid grid-cols-3 gap-4 mt-6">
                         {PROJECT_STATUS.map((status) => {
@@ -339,19 +339,19 @@ export function MultiStepOnboarding() {
                               type="button"
                               onClick={() => setProjectStatus(status)}
                               className={cn(
-                                "flex flex-col items-center justify-center p-3 rounded-xl border text-center transition-all duration-200 cursor-pointer h-16 select-none",
+                                "flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all duration-200 cursor-pointer h-18 select-none",
                                 isSelected
                                   ? "bg-zinc-900/60 border-blue-500/30 text-white shadow-[0_0_12px_rgba(94,106,210,0.08)]"
-                                  : "bg-zinc-9050 border-zinc-800 text-zinc-400 hover:border-zinc-800/80 hover:text-zinc-200"
+                                  : "bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-800/80 hover:text-zinc-200"
                               )}
                             >
                               <config.icon
                                 className={cn(
-                                  "w-4 h-4 mb-2 transition-colors",
-                                  isSelected ? "text-blue-500" : "text-zinc-500"
+                                  "w-5 h-5! mb-2 transition-colors",
+                                  isSelected ? "text-blue-500" : "text-zinc-400"
                                 )}
                               />
-                              <span className="text-[10px] font-semibold capitalize">{config.label}</span>
+                              <span className="text-[10px] capitalize">{config.label}</span>
                             </button>
                           );
                         })}
@@ -377,13 +377,13 @@ export function MultiStepOnboarding() {
                           className={cn(
                             "flex flex-col items-center justify-center p-4 rounded-xl border text-center transition-all duration-200 cursor-pointer select-none",
                             isSelected
-                              ? "bg-zinc-900/60 border-[#5e6ad2]/70 text-white shadow-[0_0_12px_rgba(94,106,210,0.08)]"
+                              ? "bg-zinc-900/60 border-blue-500/40 text-white shadow-[0_0_12px_rgba(94,106,210,0.08)]"
                               : "bg-zinc-950/20 border-zinc-900 text-zinc-400 hover:border-zinc-800/80 hover:text-zinc-200"
                           )}
                         >
                           <div className={cn(
                             "w-8 h-8 rounded-full flex items-center justify-center mb-2.5 transition-colors",
-                            isSelected ? "bg-[#5e6ad2]/15 text-[#5e6ad2]" : "bg-zinc-900 text-zinc-500"
+                            isSelected ? "bg-white/10 text-white/80" : "bg-zinc-900 text-zinc-500"
                           )}>
                             <t.icon className="w-4 h-4" />
                           </div>
@@ -399,7 +399,7 @@ export function MultiStepOnboarding() {
                 {currentStep === 5 && (
                   <div className="space-y-4 font-sans">
                     <div className="space-y-1.5">
-                      <Label className="text-xs text-zinc-400 font-medium">Project Invite Link</Label>
+                      <Label className="text-sm text-zinc-300 font-medium">Project Invite Link</Label>
                       <div className="flex gap-2">
                         <Input
                           readOnly
@@ -409,7 +409,7 @@ export function MultiStepOnboarding() {
                         <Button
                           variant="default"
                           size="sm"
-                          className="bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white rounded-lg h-9 text-xs px-3 flex items-center gap-1.5 cursor-pointer"
+                          className="bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white rounded-lg h-9 text-xs px-5! flex items-center gap-1.5 cursor-pointer"
                           onClick={() => {
                             navigator.clipboard.writeText(`${INVITE_LINK}${generatedInviteLink}`);
                             toast.success("Link copied to clipboard!");
@@ -422,15 +422,15 @@ export function MultiStepOnboarding() {
                     </div>
 
                     <div className="flex items-center gap-3 my-6">
-                      <div className="h-[1px] flex-1 bg-zinc-900" />
+                      <div className="h-[1px] flex-1 bg-zinc-800" />
                       <span className="text-[9px] text-zinc-600 uppercase tracking-widest font-bold">Share via</span>
-                      <div className="h-[1px] flex-1 bg-zinc-900" />
+                      <div className="h-[1px] flex-1 bg-zinc-800" />
                     </div>
 
                     <div className="grid grid-cols-3 gap-2">
                       <Button
                         variant="outline"
-                        className="h-14 flex flex-col items-center justify-center gap-1.5 bg-zinc-950/20 border-zinc-800 hover:border-zinc-700/80 hover:bg-zinc-900/10 transition-all rounded-xl group cursor-pointer"
+                        className="h-16 flex flex-col items-center justify-center gap-1.5 bg-zinc-950 transition-all rounded-lg group cursor-pointer"
                         onClick={() => {
                           navigator.clipboard.writeText(`${INVITE_LINK}/invite/${generatedInviteLink}`);
                           toast.success("Link copied for WhatsApp!");
@@ -441,16 +441,16 @@ export function MultiStepOnboarding() {
                           alt="WhatsApp"
                           width={18}
                           height={18}
-                          className="opacity-50 group-hover:opacity-100 transition-opacity"
+                          className=""
                         />
-                        <span className="text-[9px] font-semibold text-zinc-500 group-hover:text-zinc-300 transition-colors">
+                        <span className="text-[10px] font-semibold text-zinc-400 group-hover:text-zinc-300 transition-colors">
                           WhatsApp
                         </span>
                       </Button>
 
                       <Button
                         variant="outline"
-                        className="h-14 flex flex-col items-center justify-center gap-1.5 bg-zinc-950/20 border-zinc-800 hover:border-zinc-700/80 hover:bg-zinc-900/10 transition-all rounded-xl group cursor-pointer"
+                        className="h-16 flex flex-col items-center justify-center gap-1.5 bg-zinc-950 transition-all rounded-lg group cursor-pointer"
                         onClick={() => window.open("https://discord.com", "_blank")}
                       >
                         <Image
@@ -458,16 +458,16 @@ export function MultiStepOnboarding() {
                           alt="Discord"
                           width={18}
                           height={18}
-                          className="opacity-50 group-hover:opacity-100 transition-opacity"
+                          className=""
                         />
-                        <span className="text-[9px] font-semibold text-zinc-500 group-hover:text-zinc-300 transition-colors">
+                        <span className="text-[10px] font-semibold text-zinc-400 group-hover:text-zinc-300 transition-colors">
                           Discord
                         </span>
                       </Button>
 
                       <Button
                         variant="outline"
-                        className="h-14 flex flex-col items-center justify-center gap-1.5 bg-zinc-950/20 border-zinc-800 hover:border-zinc-700/80 hover:bg-zinc-900/10 transition-all rounded-xl group cursor-pointer"
+                        className="h-16 flex flex-col items-center justify-center gap-1.5 bg-zinc-950 transition-all rounded-lg group cursor-pointer"
                         onClick={() => window.open("https://slack.com", "_blank")}
                       >
                         <Image
@@ -475,9 +475,9 @@ export function MultiStepOnboarding() {
                           alt="Slack"
                           width={18}
                           height={18}
-                          className="opacity-50 group-hover:opacity-100 transition-opacity"
+                          className=""
                         />
-                        <span className="text-[9px] font-semibold text-zinc-500 group-hover:text-zinc-300 transition-colors">
+                        <span className="text-[10px] font-semibold text-zinc-400 group-hover:text-zinc-300 transition-colors">
                           Slack
                         </span>
                       </Button>
@@ -503,14 +503,15 @@ export function MultiStepOnboarding() {
                 </div>
                 <div className="flex items-center gap-6">
                   {isSkip && (
-                    <button
+                    <Button
+                      variant={'ghost'}
                       type="button"
                       onClick={handleSkip}
                       disabled={isLoading}
-                      className="text-xs font-medium text-zinc-200 hover:text-white transition-colors cursor-pointer"
+                      className="text-xs px-2! font-medium text-zinc-200 hover:text-white transition-colors cursor-pointer"
                     >
                       Skip
-                    </button>
+                    </Button>
                   )}
                   <Button
                     onClick={handleNext}

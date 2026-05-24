@@ -197,6 +197,9 @@ export default function DashboardPage() {
           {/* Left Side */}
           <div className="flex-1 min-w-0 flex flex-col gap-6 py-8 pl-8">
             {/* Connect Github */}
+            {/* {!githubUsername && (
+              <div className="flex items-center gap-5">
+                <h2 className="text-base italic font-medium tracking-tight font-inter">
             {!githubUsername && (
               <div id="connect-github-banner" className="flex items-center gap-5">
                 <h2 className="text-sm font-medium text-muted-foreground bg-primary/10 border border-primary/20 px-3 py-1.5 rounded-full flex items-center gap-2">
@@ -210,7 +213,7 @@ export default function DashboardPage() {
                   Connect <Github />
                 </Button>
               </div>
-            )}
+            )} */}
 
             {/* 3 Metric Cards */}
             <div id="tour-metrics" className={cn("grid grid-cols-3 gap-8", isSidebarOpen && "gap-5")}>
