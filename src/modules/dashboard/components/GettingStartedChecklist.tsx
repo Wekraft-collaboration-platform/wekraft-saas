@@ -15,7 +15,6 @@ import {
   ListTodo,
   Puzzle,
   Sparkles,
-  X,
   ArrowRight,
   Zap,
 } from "lucide-react";
@@ -134,9 +133,6 @@ export function GettingStartedChecklist() {
   const progressData = useQuery(api.user.getOnboardingProgress);
   const router = useRouter();
   const [expandedStep, setExpandedStep] = useState<number | null>(null);
-  const [dismissed, setDismissed] = useState(false);
-
-  if (dismissed) return null;
 
   // Skeleton while Convex query loads
   if (progressData === undefined) {
@@ -211,14 +207,6 @@ export function GettingStartedChecklist() {
           >
             <Zap className="h-2.5 w-2.5" />
             Quick Tour
-          </button>
-          <button
-            type="button"
-            onClick={() => setDismissed(true)}
-            title="Dismiss"
-            className="h-5 w-5 rounded flex items-center justify-center text-muted-foreground/40 hover:text-muted-foreground hover:bg-accent/50 transition-colors cursor-pointer"
-          >
-            <X className="h-3 w-3" />
           </button>
         </div>
       </div>
