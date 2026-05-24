@@ -32,6 +32,7 @@ interface GetRepoStructureProps {
   onSelect: (path: string | null) => void;
   selectedPath: string | null;
   ownerClerkId?: string;
+  onClose?: () => void;
 }
 
 export const GetRepoStructure = ({
@@ -39,6 +40,7 @@ export const GetRepoStructure = ({
   onSelect,
   selectedPath,
   ownerClerkId,
+  onClose,
 }: GetRepoStructureProps) => {
   const [elements, setElements] = useState<TreeViewElement[]>([]);
   const [loadingMap, setLoadingMap] = useState<Record<string, boolean>>({});
@@ -189,11 +191,21 @@ export const GetRepoStructure = ({
   return (
     <div className="flex flex-col h-[340px] overflow-hidden bg-[#1c1c1c]">
       <div className="p-3 border-b border-[#2b2b2b] flex items-center justify-between bg-[#222]">
-        <span className="text-xs font-semibold text-neutral-300">
-          Repository Structure
-        </span>
-        {loadingMap.root && (
-          <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+        <div className="flex items-center gap-2">
+          <span className="text-xs font-semibold text-neutral-300">
+            Repository Structure
+          </span>
+          {loadingMap.root && (
+            <Loader2 className="h-4 w-4 animate-spin text-blue-500" />
+          )}
+        </div>
+        {onClose && (
+          <button
+            onClick={onClose}
+            className="text-neutral-400 hover:text-white transition-colors cursor-pointer"
+          >
+            <X className="h-4 w-4" />
+          </button>
         )}
       </div>
 

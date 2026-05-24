@@ -146,6 +146,66 @@ export function MessageFeed({
     currentUserName,
   )
 
+  const [optimisticUploads, setOptimisticUploads] = useState<Array<{
+    id: string;
+    file: File;
+    previewUrl: string;
+    caption: string;
+  }>>([]);
+
+  const handleUploadMedia = async (file: File, caption: string) => {
+    const id = "optimistic-upload-" + crypto.randomUUID();
+    const previewUrl = URL.createObjectURL(file);
+    
+    setOptimisticUploads(prev => [...prev, { id, file, previewUrl, caption }]);
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("projectId", projectId);
+
+      const res = await fetch("/api/teamspace/media", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!res.ok) {
+        throw new Error(await res.text());
+      }
+
+      const data = await res.json();
+      if (data.url) {
+        const isImage = file.type.startsWith("image/");
+        const markdownLink = isImage
+          ? `![${file.name}](${data.url})`
+          : `[${file.name}](${data.url})`;
+
+        let finalContent = markdownLink;
+        if (caption.trim()) {
+          finalContent += "\n\n" + caption.trim();
+        }
+
+        await sendMessage(
+          finalContent,
+          currentUserId,
+          currentUserName,
+          currentUserImage,
+          replyingTo?.id,
+          undefined
+        );
+      }
+    } catch (err) {
+      console.error(err);
+      toast.error("Failed to upload media");
+    } finally {
+      setOptimisticUploads(prev => prev.filter(u => u.id !== id));
+      URL.revokeObjectURL(previewUrl);
+      if (replyingTo) {
+        setReplyingTo(null);
+      }
+    }
+  };
+
   const projectMembers = useQuery(api.project.getProjectMembers, {
     projectId: projectId as Id<"projects">,
   });
@@ -855,6 +915,48 @@ export function MessageFeed({
                 />
               );
             })}
+            
+            {/* Optimistic Media Uploads */}
+            {optimisticUploads.map(upload => {
+              const isImage = upload.file.type.startsWith("image/");
+              const mdLink = isImage ? `![${upload.file.name}](${upload.previewUrl})` : `[${upload.file.name}](${upload.previewUrl})`;
+              const msgContent = upload.caption ? `${mdLink}\n\n${upload.caption}` : mdLink;
+              
+              const msg: Message = {
+                id: upload.id,
+                channel_id: channel!.id,
+                project_id: projectId,
+                user_id: currentUserId,
+                user_name: currentUserName || "You",
+                user_image: currentUserImage || null,
+                content: msgContent,
+                created_at: Date.now(),
+                edited_at: null,
+                reactions: [],
+                thread_parent_id: replyingTo?.id || null,
+              };
+
+              return (
+                <MessageItem
+                  key={msg.id}
+                  message={msg}
+                  isGrouped={false}
+                  currentUserId={currentUserId}
+                  isPinned={false}
+                  canModerateAll={false}
+                  onReply={() => {}}
+                  onEdit={async () => {}}
+                  onDelete={async () => {}}
+                  onReact={async () => {}}
+                  onPin={async () => {}}
+                  onPollVote={async () => {}}
+                  onEditPoll={async () => {}}
+                  projectMembers={projectMembers}
+                  channelReads={channelReads}
+                />
+              );
+            })}
+            
             <div ref={bottomRef} />
           </div>
         )}
@@ -892,6 +994,7 @@ export function MessageFeed({
         replyingTo={replyingTo}
         onClearReply={() => setReplyingTo(null)}
         onSend={handleSend}
+        onUploadMedia={handleUploadMedia}
         onTyping={setTypingStatus}
         disabled={!canSend}
         isAnnouncement={isAnnouncement}
