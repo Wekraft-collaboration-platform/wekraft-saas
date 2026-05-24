@@ -227,9 +227,10 @@ export function GettingStartedChecklist() {
           const open = activeId === step.id && !done;
 
           return (
-            <div key={step.id} id={`tour-step-${step.id}`}>
+            <div key={step.id}>
               {/* Step Row */}
               <button
+                id={`tour-step-${step.id}`}
                 type="button"
                 onClick={() => handleRowClick(step.id, done)}
                 className={cn(
@@ -238,7 +239,7 @@ export function GettingStartedChecklist() {
                     ? "cursor-default"
                     : open
                     ? "bg-accent/30 cursor-pointer"
-                    : "hover:bg-accent/20 cursor-pointer group"
+                    : "hover:bg-accent/20 data-[tour-active=true]:bg-accent/20 cursor-pointer group"
                 )}
               >
                 {/* Completion status */}
@@ -251,7 +252,7 @@ export function GettingStartedChecklist() {
                         "h-4 w-4 transition-colors",
                         open
                           ? "text-muted-foreground/60"
-                          : "text-muted-foreground/25 group-hover:text-muted-foreground/50"
+                          : "text-muted-foreground/25 group-hover:text-muted-foreground/50 group-data-[tour-active=true]:text-muted-foreground/50"
                       )}
                     />
                   )}
@@ -265,7 +266,7 @@ export function GettingStartedChecklist() {
                       ? "text-muted-foreground/30"
                       : open
                       ? "text-foreground/60"
-                      : "text-muted-foreground/40 group-hover:text-muted-foreground/60"
+                      : "text-muted-foreground/40 group-hover:text-muted-foreground/60 group-data-[tour-active=true]:text-muted-foreground/60"
                   )}
                 />
 
@@ -278,7 +279,7 @@ export function GettingStartedChecklist() {
                         ? "text-muted-foreground/40 line-through decoration-muted-foreground/20"
                         : open
                         ? "text-foreground"
-                        : "text-muted-foreground/80 group-hover:text-foreground"
+                        : "text-muted-foreground/80 group-hover:text-foreground group-data-[tour-active=true]:text-foreground"
                     )}
                   >
                     {step.label}

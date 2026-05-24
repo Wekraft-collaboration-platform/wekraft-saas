@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import { Button } from "@/components/ui/button";
 import { STEPS } from "./GettingStartedChecklist";
 import { useRouter } from "next/navigation";
@@ -10,12 +10,12 @@ import { api } from "../../../../convex/_generated/api";
 const MinimalArrow = ({ type, placement }: { type: number, placement: string }) => {
   const getPath = () => {
     switch (type) {
-      case 1: return "M 30 5 L 30 75 M 30 75 L 22 65 M 30 75 L 38 65";
-      case 2: return "M 10 5 C 10 40, 30 50, 30 75 M 30 75 L 22 65 M 30 75 L 38 65";
-      case 3: return "M 50 5 C 50 40, 30 50, 30 75 M 30 75 L 22 65 M 30 75 L 38 65";
-      case 4: return "M 15 5 C 15 30, 45 40, 30 75 M 30 75 L 22 65 M 30 75 L 38 65";
-      case 5: return "M 45 5 C 45 30, 15 40, 30 75 M 30 75 L 22 65 M 30 75 L 38 65";
-      default: return "M 30 5 L 30 75 M 30 75 L 22 65 M 30 75 L 38 65"; 
+      case 1: return "M 30 5 C 15 30, 45 50, 30 75 M 30 75 L 22 65 M 30 75 L 38 65";
+      case 2: return "M 30 5 C 45 30, 15 50, 30 75 M 30 75 L 22 65 M 30 75 L 38 65";
+      case 3: return "M 30 5 C 20 25, 50 45, 30 75 M 30 75 L 22 65 M 30 75 L 38 65";
+      case 4: return "M 30 5 C 40 25, 10 45, 30 75 M 30 75 L 22 65 M 30 75 L 38 65";
+      case 5: return "M 30 5 C 10 40, 50 60, 30 75 M 30 75 L 22 65 M 30 75 L 38 65";
+      default: return "M 30 5 C 15 30, 45 50, 30 75 M 30 75 L 22 65 M 30 75 L 38 65"; 
     }
   };
 
@@ -40,6 +40,7 @@ export function WelcomeDialog() {
   
   const [pos, setPos] = useState({ top: -1000, left: -1000, arrowX: 160, arrowY: 90, placement: 'top', arrowType: 1 });
   const router = useRouter();
+  const tooltipRef = useRef<HTMLDivElement>(null);
 
   const progressData = useQuery(api.user.getOnboardingProgress);
   const completedIds = progressData?.completedSteps ?? [];
@@ -82,38 +83,39 @@ export function WelcomeDialog() {
         
         el.style.position = "relative";
         el.style.zIndex = "51";
-        el.style.borderRadius = "0.5rem";
-        el.classList.add("bg-accent/20");
+        el.setAttribute("data-tour-active", "true");
         
         // Continuously update position to glue the tooltip to the element during smooth scroll
         const updatePos = () => {
           const rect = el.getBoundingClientRect();
-          const boxWidth = 320;
-          const boxHeight = 180;
+          const boxWidth = tooltipRef.current?.offsetWidth || 320;
+          const boxHeight = tooltipRef.current?.offsetHeight || 180;
           const margin = 24;
 
           const placements = ['top', 'right', 'bottom', 'top', 'right', 'bottom'];
           const currentPlacement = placements[(tourStep - 1) % placements.length];
+          
+          const gap = 70; // Set gap perfectly to arrow length (75 - 5 = 70)
           
           let top = 0;
           let left = 0;
 
           switch (currentPlacement) {
             case 'top':
-              top = rect.top - boxHeight - margin - 20;
+              top = rect.top - boxHeight - gap;
               left = rect.left + rect.width / 2 - boxWidth / 2;
               break;
             case 'right':
               top = rect.top + rect.height / 2 - boxHeight / 2;
-              left = rect.right + margin + 20;
+              left = rect.right + gap;
               break;
             case 'bottom':
-              top = rect.bottom + margin + 20;
+              top = rect.bottom + gap;
               left = rect.left + rect.width / 2 - boxWidth / 2;
               break;
             case 'left':
               top = rect.top + rect.height / 2 - boxHeight / 2;
-              left = rect.left - boxWidth - margin - 20;
+              left = rect.left - boxWidth - gap;
               break;
           }
 
@@ -149,8 +151,7 @@ export function WelcomeDialog() {
       if (el) {
         el.style.position = "";
         el.style.zIndex = "";
-        el.style.borderRadius = "";
-        el.classList.remove("bg-accent/20");
+        el.removeAttribute("data-tour-active");
       }
     }
 
@@ -160,8 +161,7 @@ export function WelcomeDialog() {
       if (el) {
         el.style.position = "";
         el.style.zIndex = "";
-        el.style.borderRadius = "";
-        el.classList.remove("bg-accent/20");
+        el.removeAttribute("data-tour-active");
       }
     };
   }, [tourStep]);
@@ -225,25 +225,30 @@ export function WelcomeDialog() {
           className="absolute z-50 pointer-events-auto flex flex-col items-center animate-in fade-in zoom-in-95 duration-500"
           style={{ top: pos.top, left: pos.left, width: 320 }}
         >
+          {pos.placement === 'top' && (
+            <div className="absolute z-10 transition-all duration-75" style={{ top: (tooltipRef.current?.offsetHeight || 180) - 5, left: pos.arrowX - 30 }}>
+              <MinimalArrow type={pos.arrowType} placement={pos.placement} />
+            </div>
+          )}
           {pos.placement === 'bottom' && (
-            <div className="absolute -top-[40px] z-10 transition-all duration-75" style={{ left: pos.arrowX - 30 }}>
+            <div className="absolute z-10 transition-all duration-75" style={{ top: -75, left: pos.arrowX - 30 }}>
               <MinimalArrow type={pos.arrowType} placement={pos.placement} />
             </div>
           )}
           {pos.placement === 'right' && (
-            <div className="absolute -left-[30px] z-10 transition-all duration-75" style={{ top: pos.arrowY - 40 }}>
+            <div className="absolute z-10 transition-all duration-75" style={{ right: 'calc(100% + 5px)', top: pos.arrowY - 40 }}>
               <MinimalArrow type={pos.arrowType} placement={pos.placement} />
             </div>
           )}
           {pos.placement === 'left' && (
-            <div className="absolute -right-[30px] z-10 transition-all duration-75" style={{ top: pos.arrowY - 40 }}>
+            <div className="absolute z-10 transition-all duration-75" style={{ left: 'calc(100% + 5px)', top: pos.arrowY - 40 }}>
               <MinimalArrow type={pos.arrowType} placement={pos.placement} />
             </div>
           )}
 
           <div className="flex flex-col w-full relative z-20">
             {/* Tooltip Card */}
-            <div className="bg-card text-card-foreground border border-border shadow-2xl rounded-lg p-5">
+            <div ref={tooltipRef} className="bg-card text-card-foreground border border-border shadow-2xl rounded-lg p-5">
               <div className="flex items-center gap-2">
                 <span className="flex items-center justify-center bg-primary text-primary-foreground text-[10px] font-bold w-5 h-5 rounded-full shrink-0">
                   {tourStep}
@@ -283,11 +288,7 @@ export function WelcomeDialog() {
             </div>
           </div>
 
-          {pos.placement === 'top' && (
-            <div className="absolute -bottom-[40px] z-10 transition-all duration-75" style={{ left: pos.arrowX - 30 }}>
-              <MinimalArrow type={pos.arrowType} placement={pos.placement} />
-            </div>
-          )}
+          {/* Bottom placement arrow is already handled above */}
         </div>
       </div>
     );
