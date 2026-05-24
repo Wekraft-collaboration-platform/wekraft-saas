@@ -71,6 +71,8 @@ export function WelcomeDialog() {
   useEffect(() => {
     let targetId = null;
     if (tourStep >= 1 && tourStep <= 7) targetId = `tour-step-${tourStep}`;
+    // Step 4: point to the first project in the sidebar instead
+    if (tourStep === 4) targetId = "sidebar-first-project";
 
     const el = targetId ? document.getElementById(targetId) : null;
     let animationFrameId: number;
@@ -201,7 +203,7 @@ export function WelcomeDialog() {
       case 1: return "Connect";
       case 2: return "Link Repo";
       case 3: return "Invite";
-      case 4: return "Visit Workspace";
+      case 4: return "Open Project";
       case 5: return "Set Deadline";
       case 6: return "Create Task";
       case 7: return "Get Extension";
