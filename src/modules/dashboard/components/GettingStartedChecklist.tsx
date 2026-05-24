@@ -17,6 +17,7 @@ import {
   Sparkles,
   X,
   ArrowRight,
+  Zap,
 } from "lucide-react";
 import { useState } from "react";
 
@@ -197,14 +198,29 @@ export function GettingStartedChecklist() {
             </p>
           </div>
         </div>
-        <button
-          type="button"
-          onClick={() => setDismissed(true)}
-          title="Dismiss"
-          className="h-5 w-5 rounded flex items-center justify-center text-muted-foreground/40 hover:text-muted-foreground hover:bg-accent/50 transition-colors cursor-pointer"
-        >
-          <X className="h-3 w-3" />
-        </button>
+        <div className="flex items-center gap-1.5">
+          <button
+            type="button"
+            onClick={() => {
+              // Expand the first incomplete step to start the guided flow
+              const firstId = STEPS.find((s) => !completedIds.includes(s.id))?.id ?? null;
+              setExpandedStep(firstId);
+            }}
+            title="Quick Tour"
+            className="flex items-center gap-1 h-5 px-2 rounded text-[10px] font-medium text-primary/70 hover:text-primary bg-primary/8 hover:bg-primary/15 transition-colors cursor-pointer border border-primary/15"
+          >
+            <Zap className="h-2.5 w-2.5" />
+            Quick Tour
+          </button>
+          <button
+            type="button"
+            onClick={() => setDismissed(true)}
+            title="Dismiss"
+            className="h-5 w-5 rounded flex items-center justify-center text-muted-foreground/40 hover:text-muted-foreground hover:bg-accent/50 transition-colors cursor-pointer"
+          >
+            <X className="h-3 w-3" />
+          </button>
+        </div>
       </div>
 
       {/* Progress Bar */}
