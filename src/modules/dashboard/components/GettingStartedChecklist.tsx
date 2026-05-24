@@ -29,7 +29,7 @@ interface StepConfig {
   hint: string;
   description: string;
   cta: string;
-  action: (router: ReturnType<typeof useRouter>) => void;
+  action: (router: ReturnType<typeof useRouter>, context?: any) => void;
 }
 
 // ─── Steps ─────────────────────────────────────────────────────────────────
@@ -67,16 +67,15 @@ export const STEPS: StepConfig[] = [
     label: "Invite teammates",
     hint: "Share the invite link or email",
     description:
-      "Bring your whole team in. Assign roles, control permissions, and collaborate in real time. The more the merrier.",
-    cta: "Go to your workspace team",
-    action: (router) => {
-      router.push("/dashboard");
-      setTimeout(() => {
-        document.getElementById("tour-projects-tab")?.click();
-        setTimeout(() => {
-          document.getElementById("workspace-link-btn")?.click();
-        }, 350);
-      }, 450);
+      "Bring your whole team in. Assign roles, control permissions, and collaborate in real time",
+    cta: "Go to your project",
+    action: (router, context) => {
+      const projects = context?.projects;
+      if (projects && projects.length > 0) {
+        router.push(`/dashboard/my-projects/${projects[0].slug}?invite=true`);
+      } else {
+        router.push("/dashboard");
+      }
     },
   },
   {
@@ -132,6 +131,7 @@ export const STEPS: StepConfig[] = [
 // ─── Component ─────────────────────────────────────────────────────────────
 export function GettingStartedChecklist() {
   const progressData = useQuery(api.user.getOnboardingProgress);
+  const userProjects = useQuery(api.project.getUserProjects);
   const router = useRouter();
   const [expandedStep, setExpandedStep] = useState<number | null>(-1);
 
@@ -224,7 +224,7 @@ export function GettingStartedChecklist() {
           const open = activeId === step.id && !done;
 
           return (
-            <div key={step.id} className={cn("rounded-md transition-colors", open && "bg-white/5")}>
+            <div key={step.id} className={cn("rounded-md transition-colors border", open ? "bg-white/5 border-white/5" : "border-transparent")}>
               {/* Step Row */}
               <button
                 id={`tour-step-${step.id}`}
@@ -301,20 +301,20 @@ export function GettingStartedChecklist() {
 
               {/* Expanded detail panel */}
               {open && (
-                <div className="pl-10 pr-3 pb-3 pt-1">
-                  <p className="text-[12px] leading-relaxed text-slate-300 mb-2.5">
+                <div className="pl-10 pr-3 pb-4 pt-1">
+                  <p className="text-[13px] leading-relaxed text-slate-300 mb-4">
                     {step.description}
                   </p>
                   <button
                     type="button"
                     onClick={() => {
-                      step.action(router);
+                      step.action(router, { projects: userProjects });
                       setExpandedStep(null);
                     }}
-                    className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-white hover:text-primary transition-colors cursor-pointer"
+                    className="inline-flex items-center gap-1.5 text-[13px] font-bold text-white hover:text-primary transition-colors cursor-pointer"
                   >
                     {step.cta}
-                    <ArrowRight className="h-3 w-3" />
+                    <ArrowRight className="h-4 w-4" />
                   </button>
                 </div>
               )}

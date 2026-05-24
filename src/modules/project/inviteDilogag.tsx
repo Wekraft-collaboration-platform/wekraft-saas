@@ -19,9 +19,11 @@ import { toast } from "sonner";
 interface InviteDialogProps {
   inviteLink?: string;
   trigger?: React.ReactNode;
+  open?: boolean;
+  onOpenChange?: (open: boolean) => void;
 }
 
-export function InviteDialog({ inviteLink, trigger }: InviteDialogProps) {
+export function InviteDialog({ inviteLink, trigger, open, onOpenChange }: InviteDialogProps) {
   const [copied, setCopied] = React.useState(false);
 
   const fullInviteLink = inviteLink ? `${INVITE_LINK}invite/${inviteLink}` : "";
@@ -35,7 +37,7 @@ export function InviteDialog({ inviteLink, trigger }: InviteDialogProps) {
   };
 
   return (
-    <Dialog>
+    <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogTrigger asChild>
         {trigger || <Button variant="outline">Invite</Button>}
       </DialogTrigger>

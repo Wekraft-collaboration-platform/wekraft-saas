@@ -43,6 +43,7 @@ export function WelcomeDialog() {
   const tooltipRef = useRef<HTMLDivElement>(null);
 
   const progressData = useQuery(api.user.getOnboardingProgress);
+  const userProjects = useQuery(api.project.getUserProjects);
   const completedIds = progressData?.completedSteps ?? [];
 
   useEffect(() => {
@@ -178,7 +179,7 @@ export function WelcomeDialog() {
     setTourStep(0);
     const currentStepConfig = STEPS[tourStep - 1];
     if (currentStepConfig?.action) {
-      currentStepConfig.action(router);
+      currentStepConfig.action(router, { projects: userProjects });
     }
   };
 

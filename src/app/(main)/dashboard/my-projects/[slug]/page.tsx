@@ -63,6 +63,7 @@ const ProjectPage = () => {
 
   const [isUploading, setIsUploading] = useState(false);
   const [homeTab, setHomeTab] = useState("settings");
+  const [inviteOpen, setInviteOpen] = useState(false);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -70,6 +71,10 @@ const ProjectPage = () => {
       const tab = searchParams.get("tab");
       if (tab) {
         setHomeTab(tab);
+      }
+      if (searchParams.get("invite") === "true") {
+        // Small delay to let the page render before opening dialog
+        setTimeout(() => setInviteOpen(true), 300);
       }
     }
   }, []);
@@ -278,10 +283,13 @@ const ProjectPage = () => {
 
           <InviteDialog
             inviteLink={projectInviteLink}
+            open={inviteOpen}
+            onOpenChange={setInviteOpen}
             trigger={
               <Button
                 className="px-5! h-7! rounded-md text-xs cursor-pointer bg-blue-500 text-white hover:bg-blue-600"
                 size="sm"
+                onClick={() => setInviteOpen(true)}
               >
                 Invite <CopyPlus className="ml-2 w-3.5 h-3.5" />
               </Button>
