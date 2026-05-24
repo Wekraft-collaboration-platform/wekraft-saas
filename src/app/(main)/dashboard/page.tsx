@@ -56,6 +56,7 @@ import { useUser } from "@clerk/nextjs";
 import { CommunitySearchBar } from "@/modules/dashboard/components/SearchBar";
 import Image from "next/image";
 import { GettingStartedChecklist } from "@/modules/dashboard/components/GettingStartedChecklist";
+import { WelcomeDialog } from "@/modules/dashboard/components/WelcomeDialog";
 
 // ─── Utility: human-readable relative time ─────────────────────────────────
 function timeAgo(ts: number): string {
@@ -188,6 +189,7 @@ export default function DashboardPage() {
 
   return (
     <div className="w-full bg-background min-h-full text-foreground">
+      <WelcomeDialog />
 
       {/* Parent Divided */}
       <main className="flex flex-col w-full">
