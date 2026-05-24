@@ -3,6 +3,7 @@
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { STEPS } from "./GettingStartedChecklist";
+import { useRouter } from "next/navigation";
 
 export function WelcomeDialog() {
   const [show, setShow] = useState(false);
@@ -10,6 +11,7 @@ export function WelcomeDialog() {
   // 0: Welcome Modal, 1-6: Checklist Steps, 7: Tabs
   
   const [pos, setPos] = useState({ bottom: 0, left: 0 });
+  const router = useRouter();
 
   useEffect(() => {
     // Check local storage to see if the user has already seen the welcome dialog
@@ -39,15 +41,15 @@ export function WelcomeDialog() {
           const rect = el.getBoundingClientRect();
           setPos({ 
             bottom: window.innerHeight - rect.top + 5, 
-            left: rect.left + 20 
+            left: rect.left + (rect.width / 2) - 160 
           });
         }, 300);
 
-        // Initial position before scroll settles
+        // Position ABOVE the target element, centered horizontally
         const rect = el.getBoundingClientRect();
         setPos({ 
           bottom: window.innerHeight - rect.top + 5, 
-          left: rect.left + 20 
+          left: rect.left + (rect.width / 2) - 160 
         });
       } else {
         // Fallback positioning if element not found
@@ -76,14 +78,17 @@ export function WelcomeDialog() {
   const handleSkip = () => {
     localStorage.setItem("wekraft_has_seen_welcome", "true");
     setShow(false);
+    setTourStep(0);
   };
 
-  const handleConnect = () => {
+  const handleCtaClick = () => {
     localStorage.setItem("wekraft_has_seen_welcome", "true");
     setShow(false);
-    setTimeout(() => {
-      document.getElementById("connect-github-btn")?.click();
-    }, 100);
+    setTourStep(0);
+    const currentStepConfig = STEPS[tourStep - 1];
+    if (currentStepConfig?.action) {
+      currentStepConfig.action(router);
+    }
   };
 
   const startTour = () => {
@@ -91,6 +96,18 @@ export function WelcomeDialog() {
   };
 
   if (!show) return null;
+
+  const getShortCta = (stepId: number) => {
+    switch (stepId) {
+      case 1: return "Connect";
+      case 2: return "Link Repo";
+      case 3: return "Invite";
+      case 4: return "Set Deadline";
+      case 5: return "Create Task";
+      case 6: return "Get Extension";
+      default: return "Action";
+    }
+  };
 
   if (tourStep > 0) {
     const currentStepConfig = STEPS[tourStep - 1];
@@ -106,10 +123,10 @@ export function WelcomeDialog() {
         
         {/* Tooltip positioned ABOVE the target */}
         <div 
-          className="absolute z-50 pointer-events-auto flex flex-col items-start animate-in fade-in slide-in-from-bottom-8 duration-500"
-          style={{ bottom: pos.bottom, left: pos.left }}
+          className="absolute z-50 pointer-events-auto flex flex-col items-center animate-in fade-in slide-in-from-bottom-8 duration-500"
+          style={{ bottom: pos.bottom, left: pos.left, width: 320 }}
         >
-          <div className="flex flex-col w-[320px]">
+          <div className="flex flex-col w-full">
             {/* Tooltip Card */}
             <div className="bg-card text-card-foreground border border-border shadow-2xl rounded-lg p-5">
               <div className="flex items-center gap-2">
@@ -129,39 +146,30 @@ export function WelcomeDialog() {
             </div>
 
             {/* Buttons outside the box */}
-            <div className="mt-3 flex items-center justify-between gap-3 px-1">
+            <div className="mt-3 flex items-center justify-between gap-3 px-1 w-full">
               <Button variant="ghost" onClick={handleSkip} className="h-8 px-3 text-xs text-muted-foreground hover:text-white">
                 Skip Tour
               </Button>
               <div className="flex gap-2">
-                {tourStep > 1 && (
-                  <Button variant="secondary" onClick={() => setTourStep(tourStep - 1)} className="h-8 px-3 text-xs">
-                    Back
-                  </Button>
-                )}
-                {tourStep < 6 && (
+                {tourStep < 6 ? (
                   <Button variant="secondary" onClick={() => setTourStep(tourStep + 1)} className="h-8 px-3 text-xs">
                     Next
                   </Button>
-                )}
-                
-                {tourStep === 1 && (
-                  <Button onClick={handleConnect} className="h-8 px-4 text-xs bg-white text-black hover:bg-neutral-200">
-                    Connect
-                  </Button>
-                )}
-                
-                {tourStep === 6 && (
-                  <Button onClick={handleSkip} className="h-8 px-4 text-xs bg-white text-black hover:bg-neutral-200">
+                ) : (
+                  <Button variant="secondary" onClick={handleSkip} className="h-8 px-3 text-xs">
                     Done
                   </Button>
                 )}
+                
+                <Button onClick={handleCtaClick} className="h-8 px-4 text-xs bg-white text-black hover:bg-neutral-200 whitespace-nowrap">
+                  {getShortCta(tourStep)}
+                </Button>
               </div>
             </div>
           </div>
 
           {/* SVG Arrow pointing down with 2 curves */}
-          <div className="-mt-1 ml-10 z-10 text-white drop-shadow-md shrink-0">
+          <div className="-mt-1 flex justify-center w-full z-10 text-white drop-shadow-md shrink-0">
             <svg width="60" height="60" viewBox="0 0 60 60" fill="none" xmlns="http://www.w3.org/2000/svg">
               <path d="M30 5 C 50 20, 10 40, 30 55 M 30 55 L 20 45 M 30 55 L 40 45" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"/>
             </svg>
