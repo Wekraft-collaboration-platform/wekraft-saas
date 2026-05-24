@@ -1,11 +1,12 @@
 "use client";
 
-import { useEffect, useState, useRef } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { Button } from "@/components/ui/button";
 import { STEPS } from "./GettingStartedChecklist";
 import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
+import { ChevronRight, X, Sparkles, GitBranch, Calendar, Users, ClipboardCheck } from "lucide-react";
 
 const MinimalArrow = ({ type, placement }: { type: number, placement: string }) => {
   const getPath = () => {
@@ -15,7 +16,7 @@ const MinimalArrow = ({ type, placement }: { type: number, placement: string }) 
       case 3: return "M 30 5 C 20 25, 50 45, 30 75 M 30 75 L 22 65 M 30 75 L 38 65";
       case 4: return "M 30 5 C 40 25, 10 45, 30 75 M 30 75 L 22 65 M 30 75 L 38 65";
       case 5: return "M 30 5 C 10 40, 50 60, 30 75 M 30 75 L 22 65 M 30 75 L 38 65";
-      default: return "M 30 5 C 15 30, 45 50, 30 75 M 30 75 L 22 65 M 30 75 L 38 65"; 
+      default: return "M 30 5 C 15 30, 45 50, 30 75 M 30 75 L 22 65 M 30 75 L 38 65";
     }
   };
 
@@ -27,40 +28,59 @@ const MinimalArrow = ({ type, placement }: { type: number, placement: string }) 
   return (
     <div className={`text-white drop-shadow-md ${rotateClass}`}>
       <svg width="60" height="80" viewBox="0 0 60 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d={getPath()} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/>
+        <path d={getPath()} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
       </svg>
     </div>
   );
 };
 
 export function WelcomeDialog() {
+  const currentUser = useQuery(api.user.getCurrentUser);
+  const markWelcomeSeen = useMutation(api.user.markWelcomeSeen);
+  const markWorkspaceVisited = useMutation(api.user.markWorkspaceVisited);
+
   const [show, setShow] = useState(false);
-  const [tourStep, setTourStep] = useState<number>(0); 
+  const [tourStep, setTourStep] = useState<number>(0);
   // 0: Welcome Modal, 1-6: Checklist Steps
-  
+
   const [pos, setPos] = useState({ top: -1000, left: -1000, arrowX: 160, arrowY: 90, placement: 'top', arrowType: 1 });
   const router = useRouter();
   const tooltipRef = useRef<HTMLDivElement>(null);
 
   const progressData = useQuery(api.user.getOnboardingProgress);
   const userProjects = useQuery(api.project.getUserProjects);
-  const completedIds = progressData?.completedSteps ?? [];
+  const [extensionInstalled, setExtensionInstalled] = useState(false);
+
+  useEffect(() => {
+    const handleExtensionInstalledEvent = () => {
+      setExtensionInstalled(true);
+    };
+    window.addEventListener('mark-extension-installed', handleExtensionInstalledEvent);
+    return () => window.removeEventListener('mark-extension-installed', handleExtensionInstalledEvent);
+  }, []);
+
+  const completedIds = useMemo(() => [
+    ...(progressData?.completedSteps ?? []),
+    ...(extensionInstalled ? [7] : [])
+  ], [progressData?.completedSteps, extensionInstalled]);
+
   const hasSeenWelcome = useQuery(api.user.getHasSeenWelcome);
-  const markWelcomeSeen = useMutation(api.user.markWelcomeSeen);
-  const markWorkspaceVisited = useMutation(api.user.markWorkspaceVisited);
 
   useEffect(() => {
     // Still undefined = Convex loading, don't decide yet
-    if (hasSeenWelcome === undefined) return;
-    // Use localStorage as an instant cache to avoid flicker on revisits
-    const localSeen = localStorage.getItem("wekraft_has_seen_welcome");
-    if (!hasSeenWelcome && !localSeen) {
+    if (hasSeenWelcome === undefined || currentUser === undefined) return;
+
+    // Only show if user hasn't seen/skipped the welcome dialog, and hasn't finished the checklist yet
+    if (!hasSeenWelcome && !currentUser?.gettingstartedcompleted) {
       setShow(true);
+    } else {
+      setShow(false);
     }
-  }, [hasSeenWelcome]);
+  }, [hasSeenWelcome, currentUser]);
 
   useEffect(() => {
     const handleStartTour = () => {
+      markWelcomeSeen().catch(() => { });
       setShow(true);
       const firstIncomplete = STEPS.find(s => !completedIds.includes(s.id));
       if (firstIncomplete) {
@@ -71,7 +91,7 @@ export function WelcomeDialog() {
     };
     window.addEventListener('start-quick-tour', handleStartTour);
     return () => window.removeEventListener('start-quick-tour', handleStartTour);
-  }, [completedIds]);
+  }, [completedIds, markWelcomeSeen]);
 
   useEffect(() => {
     let targetId = null;
@@ -88,11 +108,11 @@ export function WelcomeDialog() {
         scrollTimer = setTimeout(() => {
           el.scrollIntoView({ behavior: 'smooth', block: 'center' });
         }, 10);
-        
+
         el.style.position = "relative";
         el.style.zIndex = "51";
         el.setAttribute("data-tour-active", "true");
-        
+
         // Continuously update position to glue the tooltip to the element during smooth scroll
         const updatePos = () => {
           const rect = el.getBoundingClientRect();
@@ -102,9 +122,9 @@ export function WelcomeDialog() {
 
           const placements = ['top', 'right'];
           const currentPlacement = placements[(tourStep - 1) % placements.length];
-          
+
           const gap = 70; // Set gap perfectly to arrow length (75 - 5 = 70)
-          
+
           let top = 0;
           let left = 0;
 
@@ -134,7 +154,7 @@ export function WelcomeDialog() {
           // Calculate arrow position based on clamped tooltip position
           const targetCenterX = Math.round(rect.left + rect.width / 2);
           const targetCenterY = Math.round(rect.top + rect.height / 2);
-          
+
           let arrowX = 160;
           let arrowY = 90;
 
@@ -176,21 +196,24 @@ export function WelcomeDialog() {
   }, [tourStep]);
 
   const handleSkip = () => {
-    localStorage.setItem("wekraft_has_seen_welcome", "true");
-    markWelcomeSeen().catch(() => {});
+    markWelcomeSeen().catch(() => { });
     setShow(false);
     setTourStep(0);
   };
 
   const handleCtaClick = () => {
-    localStorage.setItem("wekraft_has_seen_welcome", "true");
-    markWelcomeSeen().catch(() => {});
+    markWelcomeSeen().catch(() => { });
     setShow(false);
     setTourStep(0);
     const currentStepConfig = STEPS[tourStep - 1];
     // Mark step 4 (Visit workspace) as visited when CTA is clicked from tour
     if (tourStep === 4) {
-      markWorkspaceVisited().catch(() => {});
+      markWorkspaceVisited().catch(() => { });
+    }
+    // Mark step 7 (extension) as installed locally when CTA is clicked from tour
+    if (tourStep === 7) {
+      setExtensionInstalled(true);
+      window.dispatchEvent(new CustomEvent('mark-extension-installed'));
     }
     if (currentStepConfig?.action) {
       currentStepConfig.action(router, { projects: userProjects });
@@ -198,7 +221,9 @@ export function WelcomeDialog() {
   };
 
   const startTour = () => {
-    setTourStep(1);
+    markWelcomeSeen().catch(() => { });
+    const firstIncomplete = STEPS.find(s => !completedIds.includes(s.id));
+    setTourStep(firstIncomplete ? firstIncomplete.id : 1);
   };
 
   const getNextStep = (current: number) => {
@@ -207,6 +232,8 @@ export function WelcomeDialog() {
     }
     return null;
   };
+
+
 
   if (!show) return null;
 
@@ -218,7 +245,7 @@ export function WelcomeDialog() {
       case 4: return "Open Project";
       case 5: return "Set Deadline";
       case 6: return "Create Task";
-      case 7: return "Get Extension";
+      case 7: return "Complete";
       default: return "Action";
     }
   };
@@ -232,124 +259,152 @@ export function WelcomeDialog() {
 
     return (
       <div className="fixed inset-0 z-50 pointer-events-none">
-        <div 
-          className="absolute inset-0 bg-background/50 backdrop-blur-[1px] pointer-events-auto transition-opacity" 
+        <div
+          className="absolute inset-0 bg-background/40 backdrop-blur-[1px] pointer-events-auto transition-opacity"
         />
-        
+
         {/* Tooltip positioned according to current placement */}
         {pos.top !== -1000 && (
-          <div 
+          <div
             className="absolute z-50 pointer-events-auto flex flex-col items-center animate-in fade-in transition-all duration-300 ease-out"
             style={{ top: pos.top, left: pos.left, width: 320 }}
           >
-          {pos.placement === 'top' && (
-            <div className="absolute z-10 transition-all duration-75" style={{ top: (tooltipRef.current?.offsetHeight || 180) - 5, left: pos.arrowX - 30 }}>
-              <MinimalArrow type={pos.arrowType} placement={pos.placement} />
-            </div>
-          )}
-          {pos.placement === 'bottom' && (
-            <div className="absolute z-10 transition-all duration-75" style={{ top: -75, left: pos.arrowX - 30 }}>
-              <MinimalArrow type={pos.arrowType} placement={pos.placement} />
-            </div>
-          )}
-          {pos.placement === 'right' && (
-            <div className="absolute z-10 transition-all duration-75" style={{ right: 'calc(100% + 5px)', top: pos.arrowY - 40 }}>
-              <MinimalArrow type={pos.arrowType} placement={pos.placement} />
-            </div>
-          )}
-          {pos.placement === 'left' && (
-            <div className="absolute z-10 transition-all duration-75" style={{ left: 'calc(100% + 5px)', top: pos.arrowY - 40 }}>
-              <MinimalArrow type={pos.arrowType} placement={pos.placement} />
-            </div>
-          )}
-
-          <div className="flex flex-col w-full relative z-20">
-            {/* Tooltip Card */}
-            <div ref={tooltipRef} className="bg-card text-card-foreground border border-border shadow-2xl rounded-lg p-5">
-              <div className="flex items-center gap-2">
-                <span className="flex items-center justify-center bg-primary text-primary-foreground text-[10px] font-bold w-5 h-5 rounded-full shrink-0">
-                  {tourStep}
-                </span>
-                <h3 className="text-sm font-semibold text-foreground">
-                  {stepTitle}
-                </h3>
+            {pos.placement === 'top' && (
+              <div className="absolute z-10 transition-all duration-75" style={{ top: (tooltipRef.current?.offsetHeight || 180) - 5, left: pos.arrowX - 30 }}>
+                <MinimalArrow type={pos.arrowType} placement={pos.placement} />
               </div>
-              
-              <div className="h-px w-full bg-border/60 my-3" />
-              
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                {stepDescription}
-              </p>
-            </div>
+            )}
+            {pos.placement === 'bottom' && (
+              <div className="absolute z-10 transition-all duration-75" style={{ top: -75, left: pos.arrowX - 30 }}>
+                <MinimalArrow type={pos.arrowType} placement={pos.placement} />
+              </div>
+            )}
+            {pos.placement === 'right' && (
+              <div className="absolute z-10 transition-all duration-75" style={{ right: 'calc(100% + 5px)', top: pos.arrowY - 40 }}>
+                <MinimalArrow type={pos.arrowType} placement={pos.placement} />
+              </div>
+            )}
+            {pos.placement === 'left' && (
+              <div className="absolute z-10 transition-all duration-75" style={{ left: 'calc(100% + 5px)', top: pos.arrowY - 40 }}>
+                <MinimalArrow type={pos.arrowType} placement={pos.placement} />
+              </div>
+            )}
 
-            {/* Buttons outside the box */}
-            <div className="mt-3 flex items-center justify-between gap-3 px-1 w-full">
-              <Button variant="ghost" onClick={handleSkip} className="h-8 px-3 text-xs text-muted-foreground hover:text-white">
-                Skip Tour
-              </Button>
-              <div className="flex gap-2">
-                {nextStep !== null ? (
-                  <Button variant="secondary" onClick={() => setTourStep(nextStep)} className="h-8 px-3 text-xs">
-                    Next
-                  </Button>
-                ) : (
-                  <Button variant="secondary" onClick={handleSkip} className="h-8 px-3 text-xs">
-                    Done
-                  </Button>
-                )}
-                
-                <Button onClick={handleCtaClick} className="h-8 px-4 text-xs bg-white text-black hover:bg-neutral-200 whitespace-nowrap">
-                  {getShortCta(tourStep)}
+            <div className="flex flex-col w-full relative z-20">
+              {/* Tooltip Card */}
+              <div ref={tooltipRef} className="bg-linear-to-br from-neutral-800 to-neutral-950 text-card-foreground border border-border shadow-2xl rounded-lg p-5">
+                <div className="flex items-center gap-2">
+                  <span className="flex items-center justify-center bg-primary text-primary-foreground text-[10px] font-bold w-5 h-5 rounded-full shrink-0">
+                    {tourStep}
+                  </span>
+                  <h3 className="text-sm font-semibold text-foreground">
+                    {stepTitle}
+                  </h3>
+                </div>
+
+                <div className="h-px w-full bg-accent my-3" />
+
+                <p className="text-xs text-muted-foreground leading-relaxed">
+                  {stepDescription}
+                </p>
+              </div>
+
+              {/* Buttons outside the box */}
+              <div className="mt-3 flex items-center justify-between gap-3 px-1 w-full">
+                <Button variant="ghost" onClick={handleSkip} className="h-8 px-3 text-xs text-muted-foreground hover:text-white">
+                  Skip Tour
                 </Button>
+                <div className="flex gap-2">
+                  {nextStep !== null ? (
+                    <Button variant="secondary" onClick={() => setTourStep(nextStep)} className="h-8 px-3 text-xs">
+                      Next
+                    </Button>
+                  ) : (
+                    <Button variant="secondary" onClick={handleSkip} className="h-8 px-3 text-xs">
+                      Done
+                    </Button>
+                  )}
+
+                  <Button onClick={handleCtaClick} className="h-8 text-xs">
+                    {getShortCta(tourStep)}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
-
-          {/* Bottom placement arrow is already handled above */}
-        </div>
         )}
       </div>
     );
   }
 
-  return (
-    <div className="fixed inset-0 z-50 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm p-4">
-      <div className="bg-card text-card-foreground rounded-lg shadow-2xl max-w-[400px] w-full border border-border flex flex-col overflow-hidden animate-in fade-in zoom-in-95 duration-200">
-        
-        {/* Header Section */}
-        <div className="p-3 flex flex-col items-center text-center">
-          <h2 className="text-sm font-semibold text-foreground">Welcome to Wekraft</h2>
-          <p className="text-muted-foreground text-[11px] mt-0.5">
-            Your quick guide to getting started
-          </p>
-        </div>
-        
-        {/* Separator */}
-        <div className="h-px w-full bg-border/60" />
-        
-        {/* Content Section */}
-        <div className="p-5 bg-muted/10 text-center">
-          <p className="text-foreground/90 text-sm leading-relaxed">
-            Get ready to supercharge your workflow. Connect your GitHub, track projects, and collaborate with your team all in one place.
-          </p>
-        </div>
-      </div>
 
-      {/* Footer Section (Outside Box) */}
-      <div className="mt-4 flex items-center justify-end gap-3 max-w-[400px] w-full animate-in fade-in zoom-in-95 duration-200 delay-75">
-        <Button 
-          variant="ghost" 
-          onClick={handleSkip} 
-          className="text-muted-foreground hover:text-foreground text-sm font-medium h-9 px-4"
-        >
-          Skip
-        </Button>
-        <Button 
-          onClick={startTour} 
-          className="bg-white text-black hover:bg-neutral-200 rounded-md px-5 py-2 h-9 text-sm font-medium shadow-sm transition-all"
-        >
-          Get Started
-        </Button>
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-[2px] p-4 transition-all duration-300 animate-in fade-in">
+      <div className="bg-sidebar text-sidebar-foreground rounded-2xl max-w-[440px] w-full min-h-[440px] border border-accent shadow-xl flex flex-col justify-between p-6 overflow-hidden animate-in fade-in-50 zoom-in-95 duration-200">
+
+        {/* Top Section */}
+        <div className="flex flex-col gap-4">
+          {/* Get Started (outside inner box) */}
+          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold bg-white/10 text-white/80 w-fit">
+            Get Started <ChevronRight className="w-3 h-3 ml-1" />
+          </span>
+
+          {/* Inner Box: heading and SVG only */}
+          <div className="relative overflow-hidden bg-linear-to-br from-muted via-muted to-indigo-500/40 rounded-xl border border-neutral-800 p-5 pr-28 min-h-[140px] flex items-center">
+            {/* Flower SVG Background */}
+            <img
+              src="/flw2.svg"
+              alt="Welcome illustration"
+              className="absolute -right-10 top-5 w-42 h-42 object-cover pointer-events-none select-none"
+            />
+            <h2 className="relative z-10 text-lg font-semibold text-white leading-snug">
+              Welcome to Wekraft! Let&apos;s start your journey.
+            </h2>
+          </div>
+
+          {/* Description list (outside inner box, below it) */}
+          <div className="mt-2 flex flex-col gap-3 px-1">
+            <h3 className="text-sm text-center underline underline-offset-4 font-semibold text-white">How to use Wekraft</h3>
+            <ul className="flex flex-col gap-2.5 text-sm text-neutral-400 px-5">
+              <li className="flex items-center gap-2">
+                <GitBranch className="w-3.5 h-3.5 text-white shrink-0" />
+                <span>Connect repo to your project</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Calendar className="w-3.5 h-3.5 text-white shrink-0" />
+                <span>Set deadline</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <Users className="w-3.5 h-3.5 text-white shrink-0" />
+                <span>Invite your teamates</span>
+              </li>
+              <li className="flex items-center gap-2">
+                <ClipboardCheck className="w-3.5 h-3.5 text-white shrink-0" />
+                <span>Create Tasks / Import issues</span>
+              </li>
+            </ul>
+          </div>
+        </div>
+
+        {/* Centered Footer Buttons */}
+        <div className="flex items-center justify-center gap-5 mt-6">
+          <Button
+            variant="outline"
+            onClick={handleSkip}
+            className="text-xs"
+          >
+            <X className="w-3.5 h-3.5" />
+            Skip
+          </Button>
+          <Button
+            onClick={startTour}
+            className="text-xs"
+          >
+            Continue tour
+            <Sparkles className="w-3.5 h-3.5" />
+          </Button>
+        </div>
       </div>
     </div>
   );

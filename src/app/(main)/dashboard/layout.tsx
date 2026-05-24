@@ -15,7 +15,6 @@ import {
   SidebarTrigger,
 } from "@/components/ui/sidebar";
 import { useStoreUser } from "@/hooks/use-user-store";
-import { AnnouncementBanner } from "@/modules/dashboard/components/AnnouncementBanner";
 import { DashboardBreadcrumbs } from "@/modules/dashboard/components/HeaderCrumbs";
 import { NotificationCenter } from "@/modules/dashboard/components/NotificationCenter";
 import { ShareProjectDialog } from "@/modules/dashboard/components/ShareProjectDialog";
@@ -35,6 +34,7 @@ export default function Layout({
   children: React.ReactNode;
   sidebar: React.ReactNode;
 }) {
+  // Cache trigger comment
   const { isLoading: isStoreLoading } = useStoreUser();
   const user = useQuery(api.user.getCurrentUser);
   const router = useRouter();
@@ -147,7 +147,6 @@ export default function Layout({
               </div>
             </header>
             <div className="flex-1 min-h-0 overflow-hidden">
-              <AnnouncementBanner />
               <ScrollArea className="h-full scroll-smooth scrollbar-hide">
                 {children}
               </ScrollArea>

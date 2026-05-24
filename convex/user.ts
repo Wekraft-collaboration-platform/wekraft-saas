@@ -86,11 +86,11 @@ export const checkUsernameAvailability = query({
     const identity = await ctx.auth.getUserIdentity();
     const currentUser = identity
       ? await ctx.db
-          .query("users")
-          .withIndex("by_token", (q) =>
-            q.eq("clerkToken", identity.tokenIdentifier),
-          )
-          .unique()
+        .query("users")
+        .withIndex("by_token", (q) =>
+          q.eq("clerkToken", identity.tokenIdentifier),
+        )
+        .unique()
       : null;
 
     const existingUser = await ctx.db
@@ -379,7 +379,7 @@ export const updateGithubUsername = mutation({
     console.log("Found user in DB:", user);
 
     await ctx.db.patch(user._id, {
-      githubUsername: args.githubUsername, 
+      githubUsername: args.githubUsername,
       updatedAt: Date.now(),
     });
   },
@@ -589,3 +589,46 @@ export const getHasSeenWelcome = query({
     return user?.hasSeenWelcome ?? false;
   },
 });
+
+export const completeGettingStarted = mutation({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) throw new Error("User not found");
+
+    await ctx.db.patch(user._id, {
+      gettingstartedcompleted: true,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+export const markGettingStartedCompleteSeen = mutation({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) throw new Error("User not found");
+
+    await ctx.db.patch(user._id, {
+      hasSeenGettingStartedComplete: true,
+      updatedAt: Date.now(),
+    });
+  },
+});
+

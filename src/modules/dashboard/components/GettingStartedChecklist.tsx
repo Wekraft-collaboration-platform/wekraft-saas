@@ -1,6 +1,6 @@
 "use client";
 
-import { useQuery } from "convex/react";
+import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
@@ -19,8 +19,9 @@ import {
   LayoutDashboard,
   ArrowRight,
   Zap,
+  TramFront,
 } from "lucide-react";
-import { useState } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { createPortal } from "react-dom";
 
 // ─── Types ─────────────────────────────────────────────────────────────────
@@ -140,23 +141,53 @@ export const STEPS: StepConfig[] = [
     hint: "Manage tasks without leaving your editor",
     description:
       "The Wekraft VS Code extension lets you view tasks, log time, and push updates to your project — all inside your editor.",
-    cta: "Open VS Code Marketplace",
-    action: () => {
-      window.open("https://marketplace.visualstudio.com/", "_blank");
+    cta: "Installed",
+    action: (router, context) => {
+      if (context?.markExtensionInstalled) {
+        context.markExtensionInstalled();
+      }
     },
   },
 ];
 
 // ─── Component ─────────────────────────────────────────────────────────────
 export function GettingStartedChecklist() {
+  const currentUser = useQuery(api.user.getCurrentUser);
+  const completeGettingStarted = useMutation(api.user.completeGettingStarted);
   const progressData = useQuery(api.user.getOnboardingProgress);
   const userProjects = useQuery(api.project.getUserProjects);
   const router = useRouter();
   const [expandedStep, setExpandedStep] = useState<number | null>(-1);
-  const [extensionDialogOpen, setExtensionDialogOpen] = useState(false);
+
+  const [extensionInstalled, setExtensionInstalled] = useState(false);
+
+  useEffect(() => {
+    const handleExtensionInstalledEvent = () => {
+      setExtensionInstalled(true);
+    };
+    window.addEventListener('mark-extension-installed', handleExtensionInstalledEvent);
+    return () => window.removeEventListener('mark-extension-installed', handleExtensionInstalledEvent);
+  }, []);
+
+  const handleMarkExtensionInstalled = () => {
+    setExtensionInstalled(true);
+    window.dispatchEvent(new CustomEvent('mark-extension-installed'));
+  };
+
+  const completedIds = useMemo(() => [
+    ...(progressData?.completedSteps ?? []),
+    ...(extensionInstalled ? [7] : [])
+  ], [progressData?.completedSteps, extensionInstalled]);
+
+  // Auto-mark completed in DB if all steps finished locally
+  useEffect(() => {
+    if (currentUser && !currentUser.gettingstartedcompleted && completedIds.length >= 7) {
+      completeGettingStarted().catch((err) => console.error("Error completing getting started checklist:", err));
+    }
+  }, [currentUser, completedIds, completeGettingStarted]);
 
   // Skeleton while Convex query loads
-  if (progressData === undefined) {
+  if (progressData === undefined || currentUser === undefined) {
     return (
       <div className="border-b border-border/40 p-4 shrink-0">
         <div className="flex items-center gap-2.5 mb-3">
@@ -177,7 +208,9 @@ export function GettingStartedChecklist() {
     );
   }
 
-  const completedIds: number[] = progressData.completedSteps ?? [];
+  // Hide when fully done in DB
+  if (currentUser?.gettingstartedcompleted) return null;
+
   const totalDone = completedIds.length;
   const totalSteps = STEPS.length;
   const pct = Math.round((totalDone / totalSteps) * 100);
@@ -208,7 +241,7 @@ export function GettingStartedChecklist() {
           <Compass className="h-[22px] w-[22px] text-white" />
           <div className="flex flex-col items-start gap-1">
             <h2 className="text-[15px] font-medium text-white leading-none">Getting Started</h2>
-            <span className="text-[10px] font-medium text-slate-400 leading-none">{totalDone} of {totalSteps} completed</span>
+            <span className="text-[10px] font-medium text-neutral-300 leading-none">{totalDone} of {totalSteps} completed</span>
           </div>
         </div>
         <div className="flex items-center gap-1.5">
@@ -218,9 +251,9 @@ export function GettingStartedChecklist() {
               window.dispatchEvent(new CustomEvent('start-quick-tour'));
             }}
             title="Quick Tour"
-            className="flex items-center gap-1 h-5 px-2 rounded text-[10px] font-medium text-primary/70 hover:text-primary bg-primary/8 hover:bg-primary/15 transition-colors cursor-pointer border border-primary/15"
+            className="flex items-center gap-1 h-7 px-3! rounded text-[10px] font-medium text-primary/70 hover:text-primary bg-primary/5 hover:bg-primary/15 transition-colors cursor-pointer border border-primary/15"
           >
-            <Zap className="h-2.5 w-2.5" />
+            <TramFront className="h-4 w-4" />
             Quick Tour
           </button>
         </div>
@@ -230,7 +263,7 @@ export function GettingStartedChecklist() {
       <div className="px-4 pb-3">
         <div className="w-full h-1.5 bg-neutral-800 rounded-full overflow-hidden">
           <div
-            className="h-full bg-gradient-to-r from-blue-200 to-blue-500 rounded-full transition-all duration-700 ease-out"
+            className="h-full bg-linear-to-r from-blue-200 to-blue-500 rounded-full transition-all duration-700 ease-out"
             style={{ width: `${pct}%` }}
           />
         </div>
@@ -255,8 +288,8 @@ export function GettingStartedChecklist() {
                   done
                     ? "cursor-default"
                     : open
-                    ? "cursor-pointer"
-                    : "hover:bg-white/5 data-[tour-active=true]:bg-white/5 cursor-pointer group"
+                      ? "cursor-pointer"
+                      : "hover:bg-white/5 data-[tour-active=true]:bg-white/5 cursor-pointer group"
                 )}
               >
                 {/* Completion status */}
@@ -275,18 +308,6 @@ export function GettingStartedChecklist() {
                   )}
                 </span>
 
-                {/* Step icon */}
-                <Icon
-                  className={cn(
-                    "h-3.5 w-3.5 shrink-0 transition-colors",
-                    done
-                      ? "text-muted-foreground/30"
-                      : open
-                      ? "text-foreground/60"
-                      : "text-muted-foreground/40 group-hover:text-muted-foreground/60 group-data-[tour-active=true]:text-muted-foreground/60"
-                  )}
-                />
-
                 {/* Label + hint */}
                 <span className="flex flex-col flex-1 min-w-0">
                   <span
@@ -295,14 +316,14 @@ export function GettingStartedChecklist() {
                       done
                         ? "text-muted-foreground line-through decoration-muted-foreground/50"
                         : open
-                        ? "text-white"
-                        : "text-white group-hover:text-white data-[tour-active=true]:text-white"
+                          ? "text-white"
+                          : "text-white group-hover:text-white data-[tour-active=true]:text-white"
                     )}
                   >
                     {step.label}
                   </span>
                   {!done && (
-                    <span className="text-[10px] text-muted-foreground/40 mt-0.5 leading-none truncate">
+                    <span className="text-[10px] text-muted-foreground mt-1 leading-none truncate">
                       {step.hint}
                     </span>
                   )}
@@ -312,7 +333,7 @@ export function GettingStartedChecklist() {
                 {!done && (
                   <ChevronDown
                     className={cn(
-                      "h-4 w-4 shrink-0 transition-transform duration-200 text-slate-500",
+                      "h-4 w-4 shrink-0 transition-transform duration-200 text-primary",
                       open ? "rotate-180 text-white" : ""
                     )}
                   />
@@ -322,20 +343,19 @@ export function GettingStartedChecklist() {
               {/* Expanded detail panel */}
               {open && (
                 <div className="pl-10 pr-3 pb-4 pt-1">
-                  <p className="text-[13px] leading-relaxed text-slate-300 mb-4">
+                  <p className="text-[11px] leading-relaxed text-muted-foreground mb-4">
                     {step.description}
                   </p>
                   <button
                     type="button"
                     onClick={() => {
-                      if (step.id === 7) {
-                        setExtensionDialogOpen(true);
-                      } else {
-                        step.action(router, { projects: userProjects });
-                        setExpandedStep(null);
-                      }
+                      step.action(router, {
+                        projects: userProjects,
+                        markExtensionInstalled: handleMarkExtensionInstalled,
+                      });
+                      setExpandedStep(null);
                     }}
-                    className="inline-flex items-center gap-1.5 text-[12px] font-semibold text-white border border-white/20 rounded-md px-3 py-1.5 hover:bg-white/10 hover:border-white/40 transition-all cursor-pointer"
+                    className="inline-flex items-center gap-1.5 text-xs text-white border border-white/10 rounded-md px-2 py-1.5 hover:bg-white/10 hover:border-white/40 transition-all cursor-pointer"
                   >
                     {step.cta}
                     <ArrowRight className="h-3.5 w-3.5" />
@@ -347,61 +367,7 @@ export function GettingStartedChecklist() {
         })}
       </div>
 
-      {/* VS Code Extension Dialog — rendered via portal to escape sidebar overflow */}
-      {extensionDialogOpen && typeof document !== "undefined" && createPortal(
-        <div
-          className="fixed inset-0 z-[9999] flex items-center justify-center bg-background/60 backdrop-blur-sm"
-          onClick={() => setExtensionDialogOpen(false)}
-        >
-          <div
-            className="bg-card border border-border rounded-xl shadow-2xl w-full max-w-sm mx-4 overflow-hidden animate-in fade-in zoom-in-95 duration-200"
-            onClick={(e) => e.stopPropagation()}
-          >
-            {/* Header */}
-            <div className="p-5 pb-3">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="flex items-center justify-center bg-primary text-primary-foreground text-[10px] font-bold w-5 h-5 rounded-full shrink-0">7</span>
-                <h3 className="text-sm font-semibold text-foreground">Install VS Code Extension</h3>
-              </div>
-              <div className="h-px w-full bg-border/60 my-3" />
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                The Wekraft VS Code extension lets you view tasks, log time, and push updates to your project — all without leaving your editor.
-              </p>
-            </div>
 
-            {/* Extension preview card */}
-            <div className="mx-5 mb-4 p-3 rounded-lg border border-border bg-muted/20 flex items-center gap-3">
-              <div className="w-10 h-10 rounded-md bg-blue-600 flex items-center justify-center shrink-0">
-                <Puzzle className="w-5 h-5 text-white" />
-              </div>
-              <div className="flex flex-col min-w-0">
-                <span className="text-[12px] font-semibold text-foreground truncate">Wekraft</span>
-                <span className="text-[10px] text-muted-foreground">VS Code Extension · Free</span>
-              </div>
-            </div>
-
-            {/* Buttons */}
-            <div className="px-5 pb-5 flex items-center justify-between gap-3">
-              <button
-                onClick={() => setExtensionDialogOpen(false)}
-                className="h-8 px-3 text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => {
-                  window.open("https://marketplace.visualstudio.com/", "_blank");
-                  setExtensionDialogOpen(false);
-                }}
-                className="h-8 px-4 text-xs bg-white text-black hover:bg-neutral-200 rounded-md font-medium transition-colors cursor-pointer"
-              >
-                Open VS Code Marketplace
-              </button>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
     </div>
   );
 }

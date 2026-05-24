@@ -35,7 +35,7 @@ import {
   Download,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import {
@@ -57,6 +57,7 @@ import { CommunitySearchBar } from "@/modules/dashboard/components/SearchBar";
 import Image from "next/image";
 import { GettingStartedChecklist } from "@/modules/dashboard/components/GettingStartedChecklist";
 import { WelcomeDialog } from "@/modules/dashboard/components/WelcomeDialog";
+import { GettingStartedCompleteDialog } from "@/modules/dashboard/components/GettingStartedCompleteDialog";
 
 // ─── Utility: human-readable relative time ─────────────────────────────────
 function timeAgo(ts: number): string {
@@ -114,10 +115,28 @@ export default function DashboardPage() {
   const notifications = useQuery(api.notifications.getMyNotifications);
   const markAsRead = useMutation(api.notifications.markAsRead);
   const deleteNotification = useMutation(api.notifications.deleteNotification);
+  const progressData = useQuery(api.user.getOnboardingProgress);
+
+  const [extensionInstalled, setExtensionInstalled] = useState(false);
+
+  useEffect(() => {
+    const handleExtensionInstalledEvent = () => {
+      setExtensionInstalled(true);
+    };
+    window.addEventListener('mark-extension-installed', handleExtensionInstalledEvent);
+    return () => window.removeEventListener('mark-extension-installed', handleExtensionInstalledEvent);
+  }, []);
+
+  const completedIds = useMemo(() => [
+    ...(progressData?.completedSteps ?? []),
+    ...(extensionInstalled ? [7] : [])
+  ], [progressData?.completedSteps, extensionInstalled]);
 
   // Fetch current user details (for GitHub username & account type limits)
   const currentUser = useQuery(api.user.getCurrentUser);
+  const isGettingStartedCompleted = currentUser?.gettingstartedcompleted ?? false;
   const githubUsername = currentUser?.githubUsername;
+  const updateGithubUsername = useMutation(api.user.updateGithubUsername);
   const userPlan = currentUser?.accountType || "free";
   const createLimit = userPlan === "pro" ? 20 : userPlan === "plus" ? 10 : 2;
   const joinLimit = userPlan === "pro" ? 20 : userPlan === "plus" ? 10 : 2;
@@ -141,6 +160,30 @@ export default function DashboardPage() {
   useEffect(() => {
     setMounted(true);
   }, []);
+
+  useEffect(() => {
+    if (currentUser === undefined || clerkUser === undefined) return;
+    if (!currentUser || !clerkUser) return;
+    if (currentUser.githubUsername) return;
+
+    const syncGithub = async () => {
+      await clerkUser.reload();
+      const githubAccount = clerkUser.externalAccounts.find(
+        (acc) => acc.provider === "github",
+      );
+      if (
+        githubAccount?.username &&
+        githubAccount?.verification?.status === "verified"
+      ) {
+        try {
+          await updateGithubUsername({ githubUsername: githubAccount.username });
+        } catch (err) {
+          console.error("Failed to update GitHub username in Convex:", err);
+        }
+      }
+    };
+    syncGithub();
+  }, [currentUser, clerkUser, updateGithubUsername]);
 
   const handleConnectGithub = async () => {
     try {
@@ -190,6 +233,7 @@ export default function DashboardPage() {
   return (
     <div className="w-full bg-background min-h-full text-foreground">
       <WelcomeDialog />
+      <GettingStartedCompleteDialog />
 
       {/* Parent Divided */}
       <main className="flex flex-col w-full">
@@ -197,23 +241,7 @@ export default function DashboardPage() {
           {/* Left Side */}
           <div className="flex-1 min-w-0 flex flex-col gap-6 py-8 pl-8">
             {/* Connect Github */}
-            {/* {!githubUsername && (
-              <div className="flex items-center gap-5">
-                <h2 className="text-base italic font-medium tracking-tight font-inter">
-            {!githubUsername && (
-              <div id="connect-github-banner" className="flex items-center gap-5">
-                <h2 className="text-sm font-medium text-muted-foreground bg-primary/10 border border-primary/20 px-3 py-1.5 rounded-full flex items-center gap-2">
-                  <span className="relative flex h-2 w-2">
-                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
-                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary"></span>
-                  </span>
-                  You havent connected github yet, connect to unlock full potential.
-                </h2>
-                <Button id="connect-github-btn" onClick={handleConnectGithub} className="text-sm rounded-sm! cursor-pointer px-5! h-7.5! ml-2" size='sm'>
-                  Connect <Github />
-                </Button>
-              </div>
-            )} */}
+
 
             {/* 3 Metric Cards */}
             <div id="tour-metrics" className={cn("grid grid-cols-3 gap-8", isSidebarOpen && "gap-5")}>
@@ -230,7 +258,7 @@ export default function DashboardPage() {
                     {currentUser === undefined || isStatsLoading ? (
                       <span className="inline-block h-9 w-20 bg-muted animate-pulse rounded" />
                     ) : !githubUsername ? (
-                      <span className="text-sm font-medium text-muted-foreground/60">Not Connected</span>
+                      <Button id="connect-github-btn" variant='outline' onClick={handleConnectGithub} className="text-xs h-7! px-3! font-medium text-muted-foreground cursor-pointer hover:text-primary transition-all">Connect Now</Button>
                     ) : (
                       <span>{dashboardStats?.totalCommits ?? 0}</span>
                     )}
@@ -257,7 +285,7 @@ export default function DashboardPage() {
                       {currentUser === undefined || isStatsLoading ? (
                         <span className="inline-block h-9 w-12 bg-muted animate-pulse rounded" />
                       ) : !githubUsername ? (
-                        <span className="text-sm font-medium text-muted-foreground/60">--</span>
+                        <span className="text-lg font-medium text-muted-foreground">....</span>
                       ) : (
                         <span>{dashboardStats?.totalPRs ?? 0}</span>
                       )}
@@ -277,7 +305,7 @@ export default function DashboardPage() {
                       {currentUser === undefined || isStatsLoading ? (
                         <span className="inline-block h-9 w-12 bg-muted animate-pulse rounded" />
                       ) : !githubUsername ? (
-                        <span className="text-sm font-medium text-muted-foreground/60">--</span>
+                        <span className="text-lg font-medium text-muted-foreground">....</span>
                       ) : (
                         <span>{dashboardStats?.totalMergedPRs ?? 0}</span>
                       )}
@@ -392,6 +420,18 @@ export default function DashboardPage() {
               <div id="tour-getting-started" className="flex flex-col rounded-lg border border-border bg-sidebar shadow-md h-150 overflow-hidden">
                 {/* Onboarding Guide Top Section */}
                 <GettingStartedChecklist />
+
+                {isGettingStartedCompleted && (
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-sidebar/40 shrink-0">
+                    <div className="flex items-center gap-2">
+                      <Bell className="h-4 w-4 text-white/80" />
+                      <span className="text-sm font-semibold text-white">Notifications</span>
+                    </div>
+                    <span className="text-xs font-medium text-neutral-300 bg-neutral-800 px-2 py-0.5 rounded-full border border-neutral-700/50">
+                      Total: {notifications?.length ?? 0}
+                    </span>
+                  </div>
+                )}
 
                 {/* Announcements / Notifications List */}
                 <div className="flex-1 min-h-0 overflow-y-auto divide-y divide-border custom-scrollbar scrollbar-hide">
