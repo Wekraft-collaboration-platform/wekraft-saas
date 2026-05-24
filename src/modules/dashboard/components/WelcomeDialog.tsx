@@ -45,14 +45,19 @@ export function WelcomeDialog() {
   const progressData = useQuery(api.user.getOnboardingProgress);
   const userProjects = useQuery(api.project.getUserProjects);
   const completedIds = progressData?.completedSteps ?? [];
+  const hasSeenWelcome = useQuery(api.user.getHasSeenWelcome);
+  const markWelcomeSeen = useMutation(api.user.markWelcomeSeen);
   const markWorkspaceVisited = useMutation(api.user.markWorkspaceVisited);
 
   useEffect(() => {
-    const hasSeen = localStorage.getItem("wekraft_has_seen_welcome");
-    if (!hasSeen) {
+    // Still undefined = Convex loading, don't decide yet
+    if (hasSeenWelcome === undefined) return;
+    // Use localStorage as an instant cache to avoid flicker on revisits
+    const localSeen = localStorage.getItem("wekraft_has_seen_welcome");
+    if (!hasSeenWelcome && !localSeen) {
       setShow(true);
     }
-  }, []);
+  }, [hasSeenWelcome]);
 
   useEffect(() => {
     const handleStartTour = () => {
@@ -172,12 +177,14 @@ export function WelcomeDialog() {
 
   const handleSkip = () => {
     localStorage.setItem("wekraft_has_seen_welcome", "true");
+    markWelcomeSeen().catch(() => {});
     setShow(false);
     setTourStep(0);
   };
 
   const handleCtaClick = () => {
     localStorage.setItem("wekraft_has_seen_welcome", "true");
+    markWelcomeSeen().catch(() => {});
     setShow(false);
     setTourStep(0);
     const currentStepConfig = STEPS[tourStep - 1];
