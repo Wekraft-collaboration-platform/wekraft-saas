@@ -67,9 +67,9 @@ export const PURPOSES = [
     glow: "bg-white/5",
   },
   {
-    id: "explore",
-    label: "Just Exploring",
-    description: "Discover what WeKraft has to offer",
+    id: "Track",
+    label: "Track Deadlines",
+    description: "Track deadlines of projects",
     icon: Compass,
     color: "from-white/10 to-transparent",
     accent: "text-white",

@@ -1,5 +1,5 @@
 "use client";
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   ChevronRight,
@@ -19,6 +19,10 @@ import {
   Code2,
   Globe,
   TrendingUp,
+  Compass,
+  User,
+  Sliders,
+  Share2,
 } from "lucide-react";
 import { useTheme } from "next-themes";
 import { Button } from "@/components/ui/button";
@@ -36,6 +40,7 @@ import { nanoid } from "nanoid";
 import { IdentityRolePicker } from "./IdentityRolePicker";
 import { useClerk, useUser } from "@clerk/nextjs";
 import { OnboardingRightSide } from "./OnboardingRightSide";
+import { Textarea } from "@/components/ui/textarea";
 
 const stepVariants = {
   enter: (direction: number) => ({
@@ -95,7 +100,13 @@ export function MultiStepOnboarding() {
   const [generatedInviteLink, setGeneratedInviteLink] = useState("");
 
   // step 4
-  const { theme, setTheme } = useTheme();
+  const { setTheme } = useTheme();
+  const [selectedTheme, setSelectedTheme] = useState("dark");
+
+  const handleThemeChange = (newTheme: string) => {
+    setSelectedTheme(newTheme);
+    setTheme(newTheme);
+  };
 
   const handleNext = async () => {
     try {
@@ -201,15 +212,15 @@ export function MultiStepOnboarding() {
       <div className="noise-bg" />
 
       {/* Left Column (40% width on Desktop, full width on Mobile) */}
-      <div className="w-full lg:w-[40%] flex flex-col justify-between p-6 min-h-screen relative z-10 border-r border-zinc-800 bg-black">
+      <div className="w-full lg:w-[40%] flex flex-col justify-between p-6 min-h-screen relative z-10 border-r border-zinc-800 bg-[#09090b]">
         {/* Header */}
         <header className="flex justify-between items-center w-full">
           <div className="flex items-center gap-2 select-none">
             <Image src="/logo.svg" alt="WeKraft Logo" width={28} height={28} className="shrink-0" />
-            <span className="font-bold text-lg tracking-tight text-white font-pop">WeKraft</span>
+            <span className="font-bold text-xl tracking-tight text-white font-pop">WeKraft</span>
           </div>
 
-          <div className="flex items-center gap-4 text-[11px] text-zinc-200">
+          <div className="flex items-center gap-4 text-[11px] truncate max-w-[200px] text-zinc-100">
             {isUserLoaded && clerkUser?.primaryEmailAddress?.emailAddress && (
               <span className="hidden sm:inline">
                 Logged in as <span className="text-zinc-400 font-medium">{clerkUser.primaryEmailAddress.emailAddress}</span>
@@ -220,7 +231,7 @@ export function MultiStepOnboarding() {
         </header>
 
         {/* Center content containing active step */}
-        <main className="flex-1 flex flex-col justify-center py-10 w-full max-w-sm mx-auto">
+        <main className="flex-1 flex flex-col justify-center py-10 w-full max-w-[420px] mx-auto">
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={currentStep}
@@ -233,28 +244,53 @@ export function MultiStepOnboarding() {
               className="w-full flex flex-col"
             >
               {/* Step Header */}
-              <div className="mb-8">
-                <h2 className="text-lg font-bold tracking-tight text-white">
-                  {currentStep === 1 && "What brings you to WeKraft"}
-                  {currentStep === 2 && "Let’s set up your identity"}
-                  {currentStep === 3 && "Create your first project"}
-                  {currentStep === 4 && "Personalize your space"}
-                  {currentStep === 5 && "Share invite link"}
+              <div className="mb-6">
+                <h2 className="text-2xl font-semibold tracking-tight text-white flex items-center gap-2.5">
+                  {currentStep === 1 && (
+                    <>
+                      {/* <Compass className="w-5.5 h-5.5 text-zinc-300 shrink-0" /> */}
+                      <span>What brings you to WeKraft</span>
+                    </>
+                  )}
+                  {currentStep === 2 && (
+                    <>
+                      {/* <User className="w-5.5 h-5.5 text-zinc-300 shrink-0" /> */}
+                      <span>Let’s set up your identity</span>
+                    </>
+                  )}
+                  {currentStep === 3 && (
+                    <>
+                      {/* <FolderGit className="w-5.5 h-5.5 text-zinc-300 shrink-0" /> */}
+                      <span>Let's create your first project</span>
+                    </>
+                  )}
+                  {currentStep === 4 && (
+                    <>
+                      {/* <Sliders className="w-5.5 h-5.5 text-zinc-300 shrink-0" /> */}
+                      <span>Now Personalize your space</span>
+                    </>
+                  )}
+                  {currentStep === 5 && (
+                    <>
+                      {/* <Share2 className="w-5.5 h-5.5 text-zinc-300 shrink-0" /> */}
+                      <span>Share invite link</span>
+                    </>
+                  )}
                 </h2>
-                <p className="text-xs text-zinc-200 mt-1">
+                {/* <p className="text-sm text-zinc-200 mt-1">
                   {currentStep === 1 && "Pick one or more options to help us customize your workspace."}
-                  {currentStep === 2 && "Choose a unique username and select your role to build with others."}
+                  {currentStep === 2 && "Choose a unique username and select your role."}
                   {currentStep === 3 && "Create your project workspace to start syncing and collaborating."}
                   {currentStep === 4 && "Choose a theme preference that best fits your working style."}
                   {currentStep === 5 && "Invite your friends or teammates to start working together."}
-                </p>
+                </p> */}
               </div>
 
               {/* Step Content */}
               <div className="flex-1 min-h-[250px] flex flex-col justify-center">
                 {/* STEP 1 */}
                 {currentStep === 1 && (
-                  <div className="space-y-2.5">
+                  <div className="space-y-3.5">
                     {PURPOSES.map((p) => {
                       const selected = purposes.includes(p.id);
                       return (
@@ -263,29 +299,35 @@ export function MultiStepOnboarding() {
                           type="button"
                           onClick={() => togglePurpose(p.id)}
                           className={cn(
-                            "w-full flex items-center bg-muted/40! justify-between p-3 rounded-lg border text-left transition-all duration-200 cursor-pointer select-none",
+                            "w-full flex items-center justify-between px-4 py-3.5 rounded-sm border text-left transition-all duration-200 cursor-pointer select-none",
                             selected
-                              ? "bg-zinc-900! border-white/10"
-                              : "bg-zinc-950/20 border-border hover:border-white/20 hover:bg-zinc-900/10"
+                              ? "bg-zinc-900/40! border-zinc-600! shadow-[0_0_12px_rgba(255,255,255,0.015)]"
+                              : "bg-neutral-900/50! border-zinc-800! hover:border-zinc-600! hover:bg-zinc-900/10!"
                           )}
                         >
-                          <div className="flex items-center gap-3">
+                          <div className="flex items-center gap-3.5">
                             <div className={cn(
-                              "w-8 h-8 rounded-md border flex items-center justify-center transition-all",
-                              selected ? "bg-blue-800 text-white" : "bg-muted/80 text-zinc-400"
+                              "w-8.5 h-8.5 rounded-md border flex items-center justify-center transition-all",
+                              selected ? "bg-neutral-800 text-zinc-100 border-zinc-700" : "bg-[#161619] text-zinc-450 border-zinc-800/60"
                             )}>
                               <p.icon className="w-4 h-4" />
                             </div>
                             <div>
-                              <h4 className="text-xs font-semibold text-zinc-100">{p.label}</h4>
-                              <p className="text-[10px] text-zinc-300 mt-0.5">{p.description}</p>
+                              <h4 className={cn(
+                                "text-sm font-medium tracking-wide transition-colors",
+                                selected ? "text-white" : "text-zinc-200"
+                              )}>{p.label}</h4>
+                              <p className={cn(
+                                "text-[11px] transition-colors mt-0.5",
+                                selected ? "text-zinc-200" : "text-zinc-400"
+                              )}>{p.description}</p>
                             </div>
                           </div>
                           <div className={cn(
-                            "w-4 h-4 rounded-full border flex items-center justify-center transition-all",
-                            selected ? "border-[#5e6ad2] bg-blue-600" : "border-zinc-850 bg-transparent"
+                            "w-4 h-4 rounded-full border flex items-center justify-center transition-all shrink-0",
+                            selected ? "border-zinc-400 bg-zinc-200" : "border-zinc-700 bg-transparent"
                           )}>
-                            {selected && <Check className="w-2.5 h-2.5 text-white stroke-[3px]" />}
+                            {selected && <Check className="w-2.5 h-2.5 text-zinc-900 stroke-[3.5px]" />}
                           </div>
                         </button>
                       );
@@ -309,23 +351,23 @@ export function MultiStepOnboarding() {
                 {currentStep === 3 && (
                   <div className="space-y-5">
                     <div className="space-y-1.5 font-sans">
-                      <Label htmlFor="projectName" className="text-sm text-zinc-300 font-medium">
+                      <Label htmlFor="projectName" className="text-base text-zinc-300 font-medium">
                         Project Name
                       </Label>
                       <Input
                         id="projectName"
                         placeholder="e.g. Acme SaaS"
-                        className="bg-zinc-900/50 border border-zinc-800 text-white placeholder:text-zinc-500 rounded-lg h-9 text-xs transition-all focus-visible:ring-1 focus-visible:ring-blue-500/20"
+                        className="border border-zinc-800! text-white placeholder:text-zinc-550 rounded-sm h-9 text-xs transition-all focus-visible:ring-1 focus-visible:ring-zinc-500/30! focus-visible:border-zinc-550!"
                         value={projectName}
                         onChange={(e) => setProjectName(e.target.value)}
                       />
                     </div>
 
                     <div className="space-y-1.5  font-sans">
-                      <Label className="text-sm text-zinc-300 font-medium block">
-                        Project Status <span className="text-zinc-300 font-normal ml-1">(community indicators)</span>
+                      <Label className="text-base text-zinc-300 font-medium block">
+                        Project Status <span className="text-zinc-400 font-normal ml-1">(community indicators)</span>
                       </Label>
-                      <div className="grid grid-cols-3 gap-4 mt-6">
+                      <div className="grid grid-cols-3 gap-3.5 mt-4">
                         {PROJECT_STATUS.map((status) => {
                           const isSelected = projectStatus === status;
                           const config = STATUS_CONFIG[status] || {
@@ -339,16 +381,16 @@ export function MultiStepOnboarding() {
                               type="button"
                               onClick={() => setProjectStatus(status)}
                               className={cn(
-                                "flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all duration-200 cursor-pointer h-18 select-none",
+                                "flex flex-col items-center justify-center p-4 rounded-lg border text-center transition-all duration-200 cursor-pointer h-20 select-none",
                                 isSelected
-                                  ? "bg-zinc-900/60 border-blue-500/30 text-white shadow-[0_0_12px_rgba(94,106,210,0.08)]"
-                                  : "bg-zinc-950 border-zinc-800 text-zinc-400 hover:border-zinc-800/80 hover:text-zinc-200"
+                                  ? "bg-zinc-900/40! border-zinc-500! text-zinc-100! shadow-[0_0_12px_rgba(255,255,255,0.015)]"
+                                  : "bg-[#0f0f12]! border-zinc-800! text-zinc-300 hover:border-zinc-600! hover:bg-zinc-900/10! hover:text-white"
                               )}
                             >
                               <config.icon
                                 className={cn(
-                                  "w-5 h-5! mb-2 transition-colors",
-                                  isSelected ? "text-blue-500" : "text-zinc-400"
+                                  "w-5 h-5 mb-2 transition-colors",
+                                  isSelected ? "text-zinc-100" : "text-zinc-450"
                                 )}
                               />
                               <span className="text-[10px] capitalize">{config.label}</span>
@@ -362,33 +404,39 @@ export function MultiStepOnboarding() {
 
                 {/* STEP 4 */}
                 {currentStep === 4 && (
-                  <div className="grid grid-cols-3 gap-2.5">
+                  <div className="grid grid-cols-3 gap-3.5">
                     {[
                       { id: "light", label: "Light", icon: Sun, desc: "Clean & Minimal" },
                       { id: "dark", label: "Dark", icon: Moon, desc: "Sleek & Focused" },
                       { id: "system", label: "System", icon: Monitor, desc: "Auto Sync" },
                     ].map((t) => {
-                      const isSelected = theme === t.id;
+                      const isSelected = selectedTheme === t.id;
                       return (
                         <button
                           key={t.id}
                           type="button"
-                          onClick={() => setTheme(t.id)}
+                          onClick={() => handleThemeChange(t.id)}
                           className={cn(
-                            "flex flex-col items-center justify-center p-4 rounded-xl border text-center transition-all duration-200 cursor-pointer select-none",
+                            "flex flex-col items-center justify-center py-5 px-4 rounded-lg border text-center transition-all duration-200 cursor-pointer select-none",
                             isSelected
-                              ? "bg-zinc-900/60 border-blue-500/40 text-white shadow-[0_0_12px_rgba(94,106,210,0.08)]"
-                              : "bg-zinc-950/20 border-zinc-900 text-zinc-400 hover:border-zinc-800/80 hover:text-zinc-200"
+                              ? "bg-zinc-900/40! border-zinc-500! shadow-[0_0_12px_rgba(255,255,255,0.015)]"
+                              : "bg-[#0f0f12]! border-zinc-800! hover:border-zinc-600! hover:bg-zinc-900/10!"
                           )}
                         >
                           <div className={cn(
-                            "w-8 h-8 rounded-full flex items-center justify-center mb-2.5 transition-colors",
-                            isSelected ? "bg-white/10 text-white/80" : "bg-zinc-900 text-zinc-500"
+                            "w-9 h-9 rounded-md border flex items-center justify-center mb-3 transition-all",
+                            isSelected ? "bg-neutral-100 text-zinc-900 border-zinc-700" : "bg-zinc-900! text-zinc-500 border-zinc-800/60"
                           )}>
-                            <t.icon className="w-4 h-4" />
+                            <t.icon className="w-4.5 h-4.5" />
                           </div>
-                          <span className="text-[11px] font-semibold">{t.label}</span>
-                          <span className="text-[9px] text-zinc-500 mt-1 leading-tight">{t.desc}</span>
+                          <span className={cn(
+                            "text-sm font-medium tracking-wide transition-colors",
+                            isSelected ? "text-white" : "text-zinc-300"
+                          )}>{t.label}</span>
+                          <span className={cn(
+                            "text-[10px] transition-colors mt-1 leading-normal text-center max-w-[80px]",
+                            isSelected ? "text-zinc-200" : "text-zinc-450"
+                          )}>{t.desc}</span>
                         </button>
                       );
                     })}
@@ -399,17 +447,17 @@ export function MultiStepOnboarding() {
                 {currentStep === 5 && (
                   <div className="space-y-4 font-sans">
                     <div className="space-y-1.5">
-                      <Label className="text-sm text-zinc-300 font-medium">Project Invite Link</Label>
-                      <div className="flex gap-2">
+                      <Label className="text-base text-zinc-300 font-medium">Project Invite Link</Label>
+                      <div className="flex gap-4">
                         <Input
                           readOnly
                           value={`${INVITE_LINK}${generatedInviteLink}`}
-                          className="flex-1 bg-zinc-900/50 border border-zinc-800 text-white rounded-lg h-9 text-xs px-3 focus-visible:ring-1 focus-visible:ring-[#5e6ad2]!"
+                          className="flex-1 bg-[#0f0f12]! h-11 text-sm tracking-tight border border-zinc-800! rounded-sm focus-visible:ring-1 focus-visible:ring-zinc-500/25!"
                         />
                         <Button
                           variant="default"
                           size="sm"
-                          className="bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-300 hover:text-white rounded-lg h-9 text-xs px-5! flex items-center gap-1.5 cursor-pointer"
+                          className="bg-zinc-950 hover:bg-zinc-900/60 h-11 text-white px-4 border border-zinc-700/80 rounded-sm cursor-pointer transition-all"
                           onClick={() => {
                             navigator.clipboard.writeText(`${INVITE_LINK}${generatedInviteLink}`);
                             toast.success("Link copied to clipboard!");
@@ -421,73 +469,24 @@ export function MultiStepOnboarding() {
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 my-6">
+                    <div className="flex items-center gap-3 my-5">
                       <div className="h-[1px] flex-1 bg-zinc-800" />
-                      <span className="text-[9px] text-zinc-600 uppercase tracking-widest font-bold">Share via</span>
+                      <span className="text-[9px] text-zinc-400 uppercase tracking-widest font-normal">Share via</span>
                       <div className="h-[1px] flex-1 bg-zinc-800" />
                     </div>
 
-                    <div className="grid grid-cols-3 gap-2">
-                      <Button
-                        variant="outline"
-                        className="h-16 flex flex-col items-center justify-center gap-1.5 bg-zinc-950 transition-all rounded-lg group cursor-pointer"
-                        onClick={() => {
-                          navigator.clipboard.writeText(`${INVITE_LINK}/invite/${generatedInviteLink}`);
-                          toast.success("Link copied for WhatsApp!");
-                        }}
-                      >
-                        <Image
-                          src="/whatsapp.png"
-                          alt="WhatsApp"
-                          width={18}
-                          height={18}
-                          className=""
-                        />
-                        <span className="text-[10px] font-semibold text-zinc-400 group-hover:text-zinc-300 transition-colors">
-                          WhatsApp
-                        </span>
-                      </Button>
-
-                      <Button
-                        variant="outline"
-                        className="h-16 flex flex-col items-center justify-center gap-1.5 bg-zinc-950 transition-all rounded-lg group cursor-pointer"
-                        onClick={() => window.open("https://discord.com", "_blank")}
-                      >
-                        <Image
-                          src="/discord.png"
-                          alt="Discord"
-                          width={18}
-                          height={18}
-                          className=""
-                        />
-                        <span className="text-[10px] font-semibold text-zinc-400 group-hover:text-zinc-300 transition-colors">
-                          Discord
-                        </span>
-                      </Button>
-
-                      <Button
-                        variant="outline"
-                        className="h-16 flex flex-col items-center justify-center gap-1.5 bg-zinc-950 transition-all rounded-lg group cursor-pointer"
-                        onClick={() => window.open("https://slack.com", "_blank")}
-                      >
-                        <Image
-                          src="/slack.png"
-                          alt="Slack"
-                          width={18}
-                          height={18}
-                          className=""
-                        />
-                        <span className="text-[10px] font-semibold text-zinc-400 group-hover:text-zinc-300 transition-colors">
-                          Slack
-                        </span>
-                      </Button>
+                    <div className="">
+                      <Textarea
+                        placeholder="enter your Teammate email here...."
+                        className="resize-none bg-[#0f0f12]! border border-zinc-800! h-24! placeholder:text-zinc-500 text-neutral-100 rounded-sm focus-visible:ring-1 focus-visible:ring-zinc-500/25!"
+                      />
                     </div>
                   </div>
                 )}
               </div>
 
               {/* Step Action Buttons */}
-              <div className="flex items-center justify-between mt-8 pt-5 border-t border-zinc-900">
+              <div className="flex items-center justify-between mt-8 pt-5 border-t border-zinc-700!">
                 <div>
                   {currentStep > 1 && (
                     <Button
@@ -495,7 +494,7 @@ export function MultiStepOnboarding() {
                       type="button"
                       onClick={handleBack}
                       disabled={isLoading}
-                      className="flex items-center gap-1 bg-white/5 border-white/15 text-xs font-medium  transition-colors disabled:opacity-40 cursor-pointer"
+                      className="flex items-center gap-1 bg-zinc-950/20 hover:bg-zinc-900/40 border border-zinc-800 text-xs font-normal text-zinc-300 hover:text-white transition-colors disabled:opacity-40 cursor-pointer rounded-md h-8 px-4"
                     >
                       <ChevronLeft className="w-3.5 h-3.5" />
                       Back
@@ -509,7 +508,7 @@ export function MultiStepOnboarding() {
                       type="button"
                       onClick={handleSkip}
                       disabled={isLoading}
-                      className="text-xs px-3! font-medium text-zinc-200 hover:text-white transition-colors cursor-pointer"
+                      className="text-xs px-3! font-normal text-zinc-450 hover:text-zinc-200 hover:bg-transparent transition-colors cursor-pointer"
                     >
                       Skip
                     </Button>
@@ -517,7 +516,7 @@ export function MultiStepOnboarding() {
                   <Button
                     onClick={handleNext}
                     disabled={isLoading}
-                    className="bg-blue-600 hover:bg-blue-700 text-white text-xs font-medium px-5 h-8 rounded-lg flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-95 cursor-pointer disabled:opacity-50 border-none"
+                    className="bg-blue-600 hover:bg-blue-500 text-white text-xs font-normal px-5 h-8 rounded-md flex items-center justify-center gap-1.5 transition-all shadow-md active:scale-95 cursor-pointer disabled:opacity-50 border-none"
                   >
                     {isLoading ? (
                       <>   Saving  <Loader2 className="w-3 h-3 animate-spin" /> </>
@@ -566,7 +565,7 @@ export function MultiStepOnboarding() {
         selectedRole={selectedRole}
         projectName={projectName}
         projectStatus={projectStatus}
-        theme={theme}
+        theme={selectedTheme}
         clerkUser={clerkUser}
       />
     </div>

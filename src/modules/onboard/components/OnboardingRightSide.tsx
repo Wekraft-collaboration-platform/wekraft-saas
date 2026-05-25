@@ -72,7 +72,7 @@ export const ROCKET_HUD_CONFIG = {
 
   // Color Palette Definitions (Colors & Opacity values)
   colors: {
-    background: "#020203",                       // Canvas background color
+    background: "#000000",                       // Canvas background color
     gridLine: "rgba(255, 255, 255, 0.012)",      // Background grid lines
 
     // RGB channels (0-255, 0-255, 0-255) for dynamic opacity elements
@@ -598,6 +598,7 @@ export function OnboardingRightSide({
 
     // Displacement offsets (for vertical flying motion in Step 5)
     let vesselCenterYOffset = 0;
+    let takeoffY = 0;
 
     // Particle types
     interface Star {
@@ -718,12 +719,19 @@ export function OnboardingRightSide({
       } else if (step === 5) {
         // Launch warp speed (blastoff up the frame!)
         targetOffsets = { topCap: 0, upperSleeve: 0, core: 0, base: 0 };
-        targetPitch = 1.35; // tilt rocket nose pointing "into/up" screen
-        targetRoll = Math.sin(time * 0.06) * 0.12; // flight banking wobble
         targetStarSpeed = ROCKET_HUD_CONFIG.sizes.starSpeedWarp;
         targetLaunchpadY = 500; // discard turntable launchpad down out of frame
-        targetVesselCenterYOffset = ROCKET_HUD_CONFIG.sizes.vesselWarpYOffset; // fly upwards towards top-center
+        targetVesselCenterYOffset = 0; // Handled by takeoffY flying loop
         shakeAmt = 5.0; // heavy liftoff rumble
+
+        // Tilted state depends on whether it has reached takeoff hover height
+        if (takeoffY <= -149) {
+          targetPitch = 0.85; // tilted towards us to see the top part!
+          targetRoll = Math.sin(time * 0.04) * 0.08; // subtle banking wobble
+        } else {
+          targetPitch = 0.05; // fly straight up during launch
+          targetRoll = 0.0;
+        }
       }
 
       // Smooth step variables transitions
@@ -735,6 +743,17 @@ export function OnboardingRightSide({
       roll += (targetRoll - roll) * 0.04;
       launchpadY += (targetLaunchpadY - launchpadY) * 0.06;
       vesselCenterYOffset += (targetVesselCenterYOffset - vesselCenterYOffset) * 0.05;
+
+      // Update takeoff vertical position in Step 5
+      if (step === 5) {
+        // Slowly fly up to -150 (approx 20% of screen height) and hover there
+        if (takeoffY > -150) {
+          takeoffY -= 4.5;
+          if (takeoffY < -150) takeoffY = -150;
+        }
+      } else {
+        takeoffY += (0 - takeoffY) * 0.1; // return smoothly to launchpad if step back
+      }
 
       // Handle continuous rotation
       if (step === 5) {
@@ -794,12 +813,12 @@ export function OnboardingRightSide({
       // Shifted rocket slightly downwards for a cleaner layout
       const centerY = height / 2 + ROCKET_HUD_CONFIG.sizes.centerYOffset;
 
-      // Projection for the rocket (shifting vertically with vesselCenterYOffset)
+      // Projection for the rocket (shifting vertically with vesselCenterYOffset and takeoffY)
       const project = (p: Point3D) => {
         const scale = fov / (fov + p.z + cameraDistance);
         return {
           x: centerX + p.x * scale + cameraShake.x,
-          y: centerY + (p.y + vesselCenterYOffset) * scale + cameraShake.y,
+          y: centerY + (p.y + vesselCenterYOffset + takeoffY) * scale + cameraShake.y,
           scale: scale,
           z: p.z
         };
@@ -984,12 +1003,45 @@ export function OnboardingRightSide({
         ctx.closePath();
         ctx.fill();
 
-        // Central Red Downward Arrow (relative to base position)
-        const redStart = projectHangar(rotatePointOpt({ x: 0, y: lockedY.base + offsets.base - 80, z: 0 }));
-        const redEnd = projectHangar(rotatePointOpt({ x: 0, y: lockedY.base + offsets.base - 20, z: 0 }));
+        // Central Red Downward Arrow 1 (between topCap and upperSleeve)
+        const red1Start = projectHangar(rotatePointOpt({ x: 0, y: lockedY.upperSleeve + offsets.upperSleeve - 110, z: 0 }));
+        const red1End = projectHangar(rotatePointOpt({ x: 0, y: lockedY.upperSleeve + offsets.upperSleeve - 60, z: 0 }));
 
         ctx.strokeStyle = ROCKET_HUD_CONFIG.colors.redDownwardArrowLine;
         ctx.lineWidth = 1.2;
+        ctx.beginPath();
+        ctx.moveTo(red1Start.x, red1Start.y);
+        ctx.lineTo(red1End.x, red1End.y);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(red1End.x, red1End.y);
+        ctx.lineTo(red1End.x - 4, red1End.y - 6);
+        ctx.lineTo(red1End.x + 4, red1End.y - 6);
+        ctx.closePath();
+        ctx.fillStyle = ROCKET_HUD_CONFIG.colors.redDownwardArrowFill;
+        ctx.fill();
+
+        // Central Red Downward Arrow 2 (between upperSleeve and core)
+        const red2Start = projectHangar(rotatePointOpt({ x: 0, y: lockedY.core + offsets.core - 180, z: 0 }));
+        const red2End = projectHangar(rotatePointOpt({ x: 0, y: lockedY.core + offsets.core - 100, z: 0 }));
+
+        ctx.beginPath();
+        ctx.moveTo(red2Start.x, red2Start.y);
+        ctx.lineTo(red2End.x, red2End.y);
+        ctx.stroke();
+
+        ctx.beginPath();
+        ctx.moveTo(red2End.x, red2End.y);
+        ctx.lineTo(red2End.x - 4, red2End.y - 6);
+        ctx.lineTo(red2End.x + 4, red2End.y - 6);
+        ctx.closePath();
+        ctx.fill();
+
+        // Central Red Downward Arrow 3 (between core and base - relative to base position)
+        const redStart = projectHangar(rotatePointOpt({ x: 0, y: lockedY.base + offsets.base - 80, z: 0 }));
+        const redEnd = projectHangar(rotatePointOpt({ x: 0, y: lockedY.base + offsets.base - 20, z: 0 }));
+
         ctx.beginPath();
         ctx.moveTo(redStart.x, redStart.y);
         ctx.lineTo(redEnd.x, redEnd.y);
@@ -1000,7 +1052,6 @@ export function OnboardingRightSide({
         ctx.lineTo(redEnd.x - 4, redEnd.y - 6);
         ctx.lineTo(redEnd.x + 4, redEnd.y - 6);
         ctx.closePath();
-        ctx.fillStyle = ROCKET_HUD_CONFIG.colors.redDownwardArrowFill;
         ctx.fill();
       }
 
@@ -1327,7 +1378,7 @@ export function OnboardingRightSide({
       ref={containerRef}
       className={cn(
         "hidden lg:flex lg:w-[60%] relative overflow-hidden select-none h-screen transition-all duration-500",
-        "bg-[#030304]! border-l border-zinc-900"
+        "bg-black! border-l border-zinc-900"
       )}
     >
       {/* 3D Blueprint Canvas */}
@@ -1361,7 +1412,7 @@ export function OnboardingRightSide({
       >
         <div className="text-sm text-primary/80 flex items-center gap-1.5 font-sans!">
           <span className="w-1.5 h-1.5 rounded-full bg-neutral-500 animate-pulse shrink-0" />
-          Pilot Cockpit
+          Name of Pilot
         </div>
         <div className="flex items-center gap-3">
           <div className="relative shrink-0 w-9 h-9 rounded-lg border border-zinc-800 bg-zinc-800! overflow-hidden flex items-center justify-center">
@@ -1412,7 +1463,7 @@ export function OnboardingRightSide({
       >
         <div className="text-sm text-primary/80 flex items-center gap-1.5 font-sans!">
           <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse shrink-0" />
-          Spaceship Designation
+          Project Name
         </div>
         <div className="text-xs text-zinc-100 truncate max-w-[200px] capitalize">
           Name: {projectName || "WEKRAFT-01"}
@@ -1424,19 +1475,21 @@ export function OnboardingRightSide({
 
       {/* 1. Technical Corner Brackets */}
       {/* To customize size/color of corner brackets, adjust borders & spacing classes below */}
-      <div className="absolute top-6 left-6 w-8 h-8 border-t border-l border-zinc-700/90 pointer-events-none" />
-      <div className="absolute top-6 right-6 w-8 h-8 border-t border-r border-zinc-700/90 pointer-events-none" />
-      <div className="absolute bottom-6 left-6 w-8 h-8 border-b border-l border-zinc-700/90 pointer-events-none" />
-      <div className="absolute bottom-6 right-6 w-8 h-8 border-b border-r border-zinc-700/90 pointer-events-none" />
+      <div className="absolute top-6 left-6 w-8 h-8 border-t border-l border-zinc-600 pointer-events-none" />
+      <div className="absolute top-6 right-6 w-8 h-8 border-t border-r border-zinc-600 pointer-events-none" />
+      <div className="absolute bottom-6 left-6 w-8 h-8 border-b border-l border-zinc-600 pointer-events-none" />
+      <div className="absolute bottom-6 right-6 w-8 h-8 border-b border-r border-zinc-600 pointer-events-none" />
 
       {/* 2. Top-Left System Status Header */}
       {/* To customize top-left header text size (e.g. text-[9px]) or color (e.g. text-zinc-400), tweak classes here */}
-      <div className="absolute top-8 left-8 max-w-[240px] flex flex-col font-pop! text-xs text-zinc-300 gap-1 tracking-wide select-none pointer-events-none">
-        <div className="flex items-start  gap-1.5 text-zinc-300 font-bold">
-          <Activity className="w-3.5 h-3.5 shrink-0! text-zinc-300" />
-          <span>Wekraft - where you launch product at the speed of Light</span>
+      <div className="absolute top-8 left-8 flex flex-col font-mono text-xs text-zinc-300 gap-1 tracking-wider uppercase select-none pointer-events-none">
+        <div className="flex items-center gap-1.5 text-zinc-300 font-normal">
+          <Activity className="w-3.5 h-3.5 shrink-0 text-zinc-300" />
+          <span>Wekraft // Product Delivery Workspace</span>
         </div>
-
+        <div className="text-[10px] text-zinc-300  ml-5 mt-0.5">
+          Launch At the speed of Light
+        </div>
       </div>
 
       {/* 3. Top-Right Pilot Synced Card (Visible Step >= 3) */}
@@ -1452,7 +1505,7 @@ export function OnboardingRightSide({
           </div>
 
           <div className="min-w-0">
-            <div className="text-zinc-400 text-xs">Vessel Crew</div>
+            <div className="text-zinc-400 text-xs">Personal Details</div>
             <div className="font-bold text-zinc-100 truncate mt-0.5 max-w-[130px] capitalize">
               Name:   {username || clerkUser?.fullName || ROCKET_HUD_CONFIG.hudLabels.crewCardDefaultName}
             </div>
@@ -1465,39 +1518,52 @@ export function OnboardingRightSide({
 
       {/* 4. Minimal Bottom Onboarding Status & Progress Bar */}
       <div className="absolute bottom-8 left-8 right-8 flex flex-col gap-3 font-sans select-none pointer-events-none">
-        <div className="flex justify-between items-center text-[10px] tracking-wider text-zinc-500 font-medium">
+        <div className="flex justify-between items-center text-xs text-zinc-400 font-medium">
           <span className="uppercase">SYSTEM STATUS</span>
           <span className="text-zinc-400 flex items-center gap-1">
-            <span>Complete Onboarding to launch spaceship //</span>
-            <span className="text-emerald-400">
-              <Typewriter
-                key={currentStep}
-                words={[
-                  currentStep === 1 ? " awaiting purpose selection..." : "",
-                  currentStep === 2 ? " awaiting pilot authorization..." : "",
-                  currentStep === 3 ? " awaiting spaceship designation registry..." : "",
-                  currentStep === 4 ? " awaiting workspace styling sync..." : "",
-                  currentStep === 5 ? " liftoff authorization granted. go for launch!" : "",
-                ].filter(Boolean)}
-                loop={1}
-                cursor
-                cursorStyle="_"
-                typeSpeed={60}
-                delaySpeed={1000}
-              />
-            </span>
+            {currentStep === 5 ? (
+              <span className="text-emerald-500 font-mono">
+                <Typewriter
+                  words={["your workspace is ready . launching the system...."]}
+                  loop={1}
+                  cursor
+                  cursorStyle="_"
+                  typeSpeed={55}
+                />
+              </span>
+            ) : (
+              <>
+                <span>Complete Onboarding to launch spaceship ||</span>
+                <span className="text-blue-500">
+                  <Typewriter
+                    key={currentStep}
+                    words={[
+                      currentStep === 1 ? " awaiting purpose selection..." : "",
+                      currentStep === 2 ? " awaiting pilot authorization..." : "",
+                      currentStep === 3 ? " awaiting spaceship designation registry..." : "",
+                      currentStep === 4 ? " awaiting workspace styling sync..." : "",
+                    ].filter(Boolean)}
+                    loop={1}
+                    cursor
+                    cursorStyle="_"
+                    typeSpeed={60}
+                    delaySpeed={1000}
+                  />
+                </span>
+              </>
+            )}
           </span>
-          <span className="font-mono">ONBOARDING SEQUENCE // STEP {currentStep} OF 5</span>
+          <span className="font-mono">ONBOARDING STEP {currentStep} OF 5</span>
         </div>
-        <div className="w-full bg-zinc-950 h-1 rounded-full overflow-hidden border border-zinc-900/50">
+        <div className="w-full bg-zinc-950 h-1.5 rounded-full overflow-hidden border border-zinc-800">
           <div
             className={cn(
-              "h-full bg-zinc-400 transition-all duration-700 rounded-full",
+              "h-full bg-blue-600 transition-all duration-700 rounded-full",
               currentStep === 1 && "w-[20%]",
               currentStep === 2 && "w-[40%]",
               currentStep === 3 && "w-[60%]",
               currentStep === 4 && "w-[80%]",
-              currentStep === 5 && "w-[100%] bg-emerald-500 animate-pulse"
+              currentStep === 5 && "w-full bg-emerald-500 animate-pulse"
             )}
           />
         </div>
