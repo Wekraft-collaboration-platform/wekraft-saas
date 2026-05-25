@@ -1,5 +1,6 @@
 import crypto from "crypto";
 import { type NextRequest, NextResponse } from "next/server";
+import Razorpay from "razorpay";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../../../../../convex/_generated/api";
 
@@ -15,7 +16,7 @@ function getRazorpayKeySecret(): string {
 
 export async function POST(req: NextRequest) {
   try {
-    const {
+    let {
       razorpay_subscription_id,
       razorpay_payment_id,
       razorpay_signature,
@@ -88,6 +89,36 @@ export async function POST(req: NextRequest) {
       );
     }
 
+    let currentPeriodEnd: number | undefined;
+    try {
+      const razorpayKeyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
+      if (razorpayKeyId) {
+        const razorpay = new Razorpay({
+          key_id: razorpayKeyId,
+          key_secret: keySecret,
+        });
+        const subscription = await razorpay.subscriptions.fetch(razorpay_subscription_id);
+        if (subscription && subscription.current_end) {
+          currentPeriodEnd = subscription.current_end * 1000;
+        }
+
+        // SECURITY: Override the client-provided plan with the actual plan from Razorpay
+        if (subscription && subscription.plan_id) {
+          if (subscription.plan_id === process.env.RAZORPAY_PRO_PLAN_ID) {
+            plan = "pro";
+          } else if (subscription.plan_id === process.env.RAZORPAY_PLUS_PLAN_ID) {
+            plan = "plus";
+          } else {
+            console.error(`[Razorpay Verify] Unknown plan_id ${subscription.plan_id}`);
+            return NextResponse.json({ success: false, error: "Unknown subscription plan" }, { status: 400 });
+          }
+        }
+      }
+    } catch (err) {
+      console.error("[Razorpay Verify] Failed to fetch subscription details:", err);
+      currentPeriodEnd = Date.now() + 30 * 24 * 60 * 60 * 1000; // Fallback to 30 days
+    }
+
     const convex = new ConvexHttpClient(convexUrl);
     
     await convex.mutation(api.razorpay.updatePlanServerSide, {
@@ -96,6 +127,7 @@ export async function POST(req: NextRequest) {
       plan,
       subscriptionId: razorpay_subscription_id,
       status: "active",
+      currentPeriodEnd,
     });
 
     return NextResponse.json({

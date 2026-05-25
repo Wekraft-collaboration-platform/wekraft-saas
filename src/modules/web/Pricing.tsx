@@ -19,10 +19,13 @@ import {
   Flame,
   Sparkles,
   HeadphonesIcon,
-  Map
+  Map,
+  ArrowLeft
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useConvexAuth, useAction, useQuery } from "convex/react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { api } from "../../../convex/_generated/api";
 import { useRazorpay } from "@/modules/payments/hooks/useRazorpay";
@@ -241,16 +244,34 @@ const Pricing = () => {
       </div>
 
       {/* ── Hero ── */}
-      <section className="relative pt-30 pb-12 px-4 z-10 flex flex-col items-center">
+      <section className="relative pt-30 pb-12 px-4 z-10 flex flex-col items-center w-full">
         
-        <motion.h1
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="text-4xl md:text-7xl font-medium tracking-tight text-center text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-gray-500 mb-6 leading-tight max-w-4xl"
-        >
-          Choose your plan
-        </motion.h1>
+        <div className="w-full max-w-6xl relative flex flex-col md:flex-row items-center justify-center mb-6">
+          <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="md:absolute md:left-0 lg:-left-12 xl:-left-24 mb-6 md:mb-0"
+          >
+            <Link href={isAuthenticated ? "/dashboard" : "/"}>
+              <Button
+                variant="outline"
+                className="gap-2 bg-[#0a0a0a]/90 text-white border-white/10 hover:bg-white hover:text-black rounded-full shadow-[0_0_15px_-3px_rgba(255,255,255,0.1)] transition-all"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                {isAuthenticated ? "Back to Dashboard" : "Back to Website"}
+              </Button>
+            </Link>
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-4xl md:text-7xl font-medium tracking-tight text-center text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-gray-500 leading-tight max-w-4xl"
+          >
+            Choose your plan
+          </motion.h1>
+        </div>
 
         <motion.p
           initial={{ opacity: 0, y: 18 }}
@@ -427,7 +448,7 @@ const Pricing = () => {
                               toast.error(e.message || "Something went wrong.");
                             }
                           }}
-                          className="mt-3 py-1.5 px-4 rounded-full text-xs font-medium border border-white/10 text-gray-400 hover:text-red-400 hover:border-red-400/30 hover:bg-red-400/10 transition-all cursor-pointer"
+                          className="mt-3 py-1.5 px-4 rounded-full text-xs font-medium text-gray-400 hover:text-red-400 hover:bg-red-400/10 transition-all cursor-pointer"
                         >
                           Cancel Subscription
                         </button>

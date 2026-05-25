@@ -10,6 +10,7 @@ export const updatePlanServerSide = mutation({
     subscriptionId: v.optional(v.string()),
     customerId: v.optional(v.string()),
     status: v.string(),
+    currentPeriodEnd: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     // Validate secret
@@ -25,6 +26,7 @@ export const updatePlanServerSide = mutation({
       customerId: args.customerId,
       subscriptionStatus: args.status,
       subscriptionProvider: "razorpay",
+      currentPeriodEnd: args.currentPeriodEnd,
       cancelAtPeriodEnd: false, // Reset this so the UI doesn't think the new plan is cancelling
       updatedAt: Date.now(),
     });
