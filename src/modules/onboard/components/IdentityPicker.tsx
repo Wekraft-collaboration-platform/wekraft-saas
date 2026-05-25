@@ -74,7 +74,7 @@ export function IdentityPicker({
   return (
     <div className="space-y-1.5 font-sans">
       <div className="flex items-center justify-between">
-        <Label htmlFor="username" className="text-sm text-zinc-300 font-medium">
+        <Label htmlFor="username" className="text-base text-zinc-300 font-medium">
           Username
         </Label>
       </div>
@@ -85,11 +85,11 @@ export function IdentityPicker({
           autoComplete="off"
           spellCheck={false}
           className={cn(
-            "bg-zinc-900/50 border border-zinc-800 text-white placeholder:text-zinc-400 rounded-lg h-9 text-xs transition-all focus-visible:ring-1 focus-visible:ring-blue-500!",
+            "bg-zinc-900/70! border border-zinc-700 text-white placeholder:text-zinc-550 rounded-md h-9 text-xs transition-all focus-visible:ring-1 focus-visible:ring-zinc-500/30!",
             (value.length >= 3 && isAvailable === false && !isTyping) ||
               (value.length > 0 && !isLengthValid)
               ? "border-destructive/50! focus-visible:ring-destructive/20!"
-              : "focus-visible:ring-[#5e6ad2]/40!",
+              : "focus-visible:border-zinc-550! focus-visible:ring-zinc-500/25!",
           )}
           value={value}
           onChange={(e) =>

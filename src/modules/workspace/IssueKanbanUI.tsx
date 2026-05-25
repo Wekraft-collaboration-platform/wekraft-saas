@@ -53,6 +53,12 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useProjectPermissions } from "@/hooks/use-project-permissions";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -88,6 +94,9 @@ export interface Issue {
 
 // ─── Static Config ───────────────────────────────────────────────────────────
 
+import { GoIssueReopened, GoIssueOpened, GoIssueClosed } from "react-icons/go";
+import { LuEyeClosed } from "react-icons/lu";
+
 const ISSUE_COLUMNS: {
   id: IssueStatus;
   label: string;
@@ -96,22 +105,22 @@ const ISSUE_COLUMNS: {
   {
     id: "not opened",
     label: "Not Opened",
-    icon: <Circle className="w-4 h-4 dark:text-primary" />,
+    icon: <LuEyeClosed className="w-4 h-4 dark:text-primary" />,
   },
   {
     id: "opened",
     label: "Opened",
-    icon: <AlertTriangle className="w-4 h-4 dark:text-primary" />,
+    icon: <GoIssueOpened className="w-4 h-4 dark:text-primary" />,
   },
   {
     id: "reopened",
     label: "Reopened",
-    icon: <RotateCcw className="w-4 h-4 dark:text-primary" />,
+    icon: <GoIssueReopened className="w-4 h-4 dark:text-primary" />,
   },
   {
     id: "closed",
     label: "Closed",
-    icon: <CheckCircle2 className="w-4 h-4 dark:text-primary" />,
+    icon: <GoIssueClosed className="w-4 h-4 dark:text-primary" />,
   },
 ];
 
@@ -699,17 +708,25 @@ export const IssueCard = ({
           </div>
 
           <div className="flex -space-x-1.5">
-            {issue.assignedTo?.slice(0, 3).map((assignee, i) => (
-              <Avatar
-                key={i}
-                className="h-5 w-5 border border-sidebar group-hover:border-neutral-800 transition-all"
-              >
-                <AvatarImage src={assignee.avatar} />
-                <AvatarFallback className="text-[8px] dark:bg-neutral-800 bg-neutral-200 dark:text-neutral-400 text-neutral-600">
-                  {assignee.name[0]}
-                </AvatarFallback>
-              </Avatar>
-            ))}
+            <TooltipProvider>
+              {issue.assignedTo?.slice(0, 3).map((assignee, i) => (
+                <Tooltip key={i}>
+                  <TooltipTrigger asChild>
+                    <Avatar
+                      className="h-5 w-5 border border-sidebar group-hover:border-neutral-800 transition-all cursor-pointer"
+                    >
+                      <AvatarImage src={assignee.avatar} />
+                      <AvatarFallback className="text-[8px] dark:bg-neutral-800 bg-neutral-200 dark:text-neutral-400 text-neutral-600">
+                        {assignee.name[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-popover border border-border text-popover-foreground text-[10px] py-1 px-1.5 rounded-md">
+                    <p>{assignee.name}</p>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </TooltipProvider>
           </div>
         </div>
       </div>

@@ -40,7 +40,7 @@ export const STEPS: StepConfig[] = [
   {
     id: 1,
     icon: Github,
-    label: "Connect GitHub",
+    label: "Connect your GitHub Account",
     hint: "Required to track commits & PRs",
     description:
       "Link your GitHub account to unlock commit tracking, pull-request syncing, and developer stats across all your projects.",
@@ -55,7 +55,7 @@ export const STEPS: StepConfig[] = [
   {
     id: 2,
     icon: GitBranch,
-    label: "Link a repository",
+    label: "Link repository to your Project",
     hint: "Connect GitHub repo to your project",
     description:
       "Connect a GitHub repository to your project so Wekraft can sync commits, pull requests, and branches automatically.",
@@ -66,9 +66,9 @@ export const STEPS: StepConfig[] = [
   },
   {
     id: 3,
-    icon: LayoutDashboard,
-    label: "Visit your workspace",
-    hint: "Explore tasks, sprints & team tools",
+    icon: Users,
+    label: "Invite teammates to collaborate",
+    hint: "Share the invite link or email",
     description:
       "Your workspace is the command center for your project. Explore tasks, sprints, issues, and your team — all in one place.",
     cta: "Go to workspace",
@@ -83,9 +83,9 @@ export const STEPS: StepConfig[] = [
   },
   {
     id: 4,
-    icon: Users,
-    label: "Invite teammates",
-    hint: "Share the invite link or email",
+    icon: LayoutDashboard,
+    label: "Visit your Project workspace",
+    hint: "Explore tasks, sprints & team tools",
     description:
       "Bring your whole team in. Assign roles, control permissions, and collaborate in real time",
     cta: "Go to your project",
@@ -101,7 +101,7 @@ export const STEPS: StepConfig[] = [
   {
     id: 5,
     icon: CalendarClock,
-    label: "Set a project deadline",
+    label: "Set a project deadline to Track",
     hint: "Keeps the team focused",
     description:
       "Define a target delivery date for your project. Wekraft will track your time-to-deadline and alert you as it approaches.",
@@ -249,7 +249,7 @@ export function GettingStartedChecklist() {
               window.dispatchEvent(new CustomEvent('start-quick-tour'));
             }}
             title="Quick Tour"
-            className="flex items-center gap-1 h-7 px-3! rounded text-[10px] font-medium text-primary/70 hover:text-primary bg-primary/5 hover:bg-primary/15 transition-colors cursor-pointer border border-primary/15"
+            className="flex items-center gap-1 h-7 px-3! rounded text-xs font-medium text-primary/70 hover:text-primary bg-primary/5 hover:bg-primary/15 transition-colors cursor-pointer border border-primary/15"
           >
             <TramFront className="h-4 w-4" />
             Quick Tour
@@ -306,7 +306,7 @@ export function GettingStartedChecklist() {
                 <span className="flex flex-col flex-1 min-w-0">
                   <span
                     className={cn(
-                      "text-[13px] font-medium leading-none transition-colors",
+                      "text-sm font-medium leading-none transition-colors",
                       done
                         ? "text-muted-foreground line-through decoration-muted-foreground/50"
                         : open

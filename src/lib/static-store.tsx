@@ -234,12 +234,15 @@ export const priorityIcons2: Record<string, React.ReactNode> = {
   ),
 };
 // =========================ISSSUES STATIC STORE===========================
+import { GoIssueReopened, GoIssueOpened, GoIssueClosed } from "react-icons/go";
+import { LuEyeClosed } from "react-icons/lu";
+
 export const ISSUE_STATUS_ICONS: Record<string, React.ReactNode> = {
-  "not opened": <AlertCircle className="w-3.5 h-3.5 text-neutral-400" />,
-  opened: <AlertCircle className="w-3.5 h-3.5 text-blue-500" />,
+  "not opened": <LuEyeClosed className="w-3.5 h-3.5 text-neutral-400" />,
+  opened: <GoIssueOpened className="w-3.5 h-3.5 text-blue-500" />,
   "in review": <Clock className="w-3.5 h-3.5 text-yellow-500" />,
-  reopened: <AlertCircle className="w-3.5 h-3.5 text-purple-500" />,
-  closed: <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500" />,
+  reopened: <GoIssueReopened className="w-3.5 h-3.5 text-purple-500" />,
+  closed: <GoIssueClosed className="w-3.5 h-3.5 text-emerald-500" />,
 };
 
 export const ISSUE_SEVERITY_ICONS: Record<string, React.ReactNode> = {
