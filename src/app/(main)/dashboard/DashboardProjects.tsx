@@ -174,7 +174,7 @@ const ShortcutSelector = ({
             title="Assign keyboard shortcut"
           >
             <Keyboard className="size-3 " />
-            <span>No Shortcut created</span>
+            <span>Create Shortcut</span>
           </button>
         )}
       </PopoverTrigger>

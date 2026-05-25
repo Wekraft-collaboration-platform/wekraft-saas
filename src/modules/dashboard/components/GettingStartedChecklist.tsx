@@ -66,9 +66,9 @@ export const STEPS: StepConfig[] = [
   },
   {
     id: 3,
-    icon: Users,
-    label: "Invite teammates to collaborate",
-    hint: "Share the invite link or email",
+    icon: LayoutDashboard,
+    label: "Visit your Project workspace",
+    hint: "Explore tasks, sprints & team tools",
     description:
       "Your workspace is the command center for your project. Explore tasks, sprints, issues, and your team — all in one place.",
     cta: "Go to workspace",
@@ -83,12 +83,12 @@ export const STEPS: StepConfig[] = [
   },
   {
     id: 4,
-    icon: LayoutDashboard,
-    label: "Visit your Project workspace",
-    hint: "Explore tasks, sprints & team tools",
+    icon: Users,
+    label: "Invite teammates to collaborate",
+    hint: "Share the invite link or email",
     description:
-      "Bring your whole team in. Assign roles, control permissions, and collaborate in real time",
-    cta: "Go to your project",
+      "Bring your whole team in. Assign roles, control permissions, and collaborate in real time.",
+    cta: "Invite teammates",
     action: (router, context) => {
       const projects = context?.projects;
       if (projects && projects.length > 0) {
@@ -280,10 +280,13 @@ export function GettingStartedChecklist() {
               <button
                 id={`tour-step-${step.id}`}
                 type="button"
-                onClick={() => handleRowClick(step.id)}
+                onClick={() => {
+                  if (!done) handleRowClick(step.id);
+                }}
                 className={cn(
-                  "w-full flex items-center gap-3 px-3 py-2 rounded-md text-left transition-all duration-150 outline-none cursor-pointer group",
-                  open ? "bg-white/5" : "hover:bg-white/5 data-[tour-active=true]:bg-white/5"
+                  "w-full flex items-center gap-3 px-3 py-2 rounded-md text-left transition-all duration-150 outline-none group",
+                  open ? "bg-white/5" : "hover:bg-white/5 data-[tour-active=true]:bg-white/5",
+                  !done ? "cursor-pointer" : "cursor-default"
                 )}
               >
                 {/* Completion status */}
