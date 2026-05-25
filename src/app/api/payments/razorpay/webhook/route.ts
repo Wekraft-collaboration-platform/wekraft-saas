@@ -29,7 +29,17 @@ export async function POST(req: NextRequest) {
       .update(bodyText)
       .digest("hex");
 
-    if (expectedSignature.length !== signature.length || !crypto.timingSafeEqual(Buffer.from(expectedSignature), Buffer.from(signature))) {
+    let isValid = false;
+    try {
+      isValid = crypto.timingSafeEqual(
+        Buffer.from(expectedSignature),
+        Buffer.from(signature)
+      );
+    } catch {
+      isValid = false;
+    }
+
+    if (!isValid) {
       return NextResponse.json(
         { error: "Invalid signature" },
         { status: 400 },

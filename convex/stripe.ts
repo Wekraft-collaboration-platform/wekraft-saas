@@ -26,8 +26,16 @@ export const updatePlanServerSide = mutation({
       throw new Error("Invalid user ID");
     }
 
+    const user = await ctx.db.get(normalizedUserId);
+    
+    // Only upgrade the plan if the subscription is active or in trial
+    let newPlan = args.plan;
+    if (args.status !== "active" && args.status !== "trialing") {
+      newPlan = user?.accountType || "free";
+    }
+
     await ctx.db.patch(normalizedUserId, {
-      accountType: args.plan,
+      accountType: newPlan,
       subscriptionId: args.subscriptionId,
       customerId: args.customerId,
       subscriptionStatus: args.status,
@@ -58,10 +66,17 @@ export const handleSubscriptionUpdate = mutation({
     }
 
     // Find the user with this customerId or subscriptionId
-    const user = await ctx.db
+    let user = await ctx.db
       .query("users")
-      .withIndex("by_customerId", (q) => q.eq("customerId", args.customerId))
+      .withIndex("by_subscriptionId", (q) => q.eq("subscriptionId", args.subscriptionId))
       .first();
+
+    if (!user) {
+      user = await ctx.db
+        .query("users")
+        .withIndex("by_customerId", (q) => q.eq("customerId", args.customerId))
+        .first();
+    }
 
     if (!user) {
       throw new Error(`[Stripe Webhook] User not found for customerId: ${args.customerId}`);

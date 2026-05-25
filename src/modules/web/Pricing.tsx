@@ -19,10 +19,13 @@ import {
   Flame,
   Sparkles,
   HeadphonesIcon,
-  Map
+  Map,
+  ArrowLeft
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useConvexAuth, useAction, useQuery } from "convex/react";
+import Link from "next/link";
+import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { api } from "../../../convex/_generated/api";
 import { useRazorpay } from "@/modules/payments/hooks/useRazorpay";
@@ -74,6 +77,7 @@ const freeFeatures: FeatureItem[] = [
   { label: "2 Project Creation",  icon: <FolderGit2 className="h-3.5 w-3.5" /> },
   { label: "2 Project Joining",   icon: <GitBranch className="h-3.5 w-3.5" /> },
   { label: "Up to 3 team members", icon: <UserPlus className="h-3.5 w-3.5" /> },
+  { label: "2 GB Cloud Storage",   icon: <Cpu className="h-3.5 w-3.5" /> },
 ];
 
 const plusFeatures: FeatureItem[] = [
@@ -81,7 +85,7 @@ const plusFeatures: FeatureItem[] = [
   { label: "10 Project Joining",           icon: <GitBranch className="h-3.5 w-3.5" /> },
   { label: "Up to 6 team members",         icon: <UserPlus className="h-3.5 w-3.5" /> },
   { label: "Full Team & Community Insights",icon: <BarChart3 className="h-3.5 w-3.5" /> },
-  { label: "Basic Cloud Storage",          icon: <Cpu className="h-3.5 w-3.5" /> },
+  { label: "15 GB Cloud Storage",          icon: <Cpu className="h-3.5 w-3.5" /> },
 
   { label: "Project Heatmaps",             icon: <Map className="h-3.5 w-3.5" /> },
 ];
@@ -92,7 +96,7 @@ const proFeatures: FeatureItem[] = [
   { label: "Up to 15 team members",        icon: <UserPlus className="h-3.5 w-3.5" /> },
   { label: "Kaya AI & PM Agent",           icon: <Bot className="h-3.5 w-3.5" /> },
   { label: "Automated Reporting",          icon: <CalendarCheck className="h-3.5 w-3.5" /> },
-  { label: "Higher Cloud Storage",         icon: <Cpu className="h-3.5 w-3.5" /> },
+  { label: "30 GB Cloud Storage",         icon: <Cpu className="h-3.5 w-3.5" /> },
   { label: "Priority Support",             icon: <Star className="h-3.5 w-3.5" /> },
 ];
 
@@ -129,8 +133,8 @@ const plans: Plan[] = [
     key: "pro",
     name: "Pro",
     badge: "20% OFF",
-    priceLabel: "$16",
-    oldPrice: "$20",
+    priceLabel: "$20",
+    oldPrice: "$25",
     priceSub: "Growing startup needs intelligence",
     description: "Growing startup needs intelligence.",
     cta: "Get Pro",
@@ -138,7 +142,7 @@ const plans: Plan[] = [
     highlighted: false,
     icon: <Shield className="h-4 w-4" />,
     features: proFeatures,
-    priceUSD: 16,
+    priceUSD: 20,
   },
 ];
 
@@ -150,7 +154,7 @@ const featureCategories: FeatureCat[] = [
       { label: "Project Creation", icon: <FolderGit2 className="h-3.5 w-3.5" />, free: "2", plus: "10", pro: "20" },
       { label: "Project Joining", icon: <GitBranch className="h-3.5 w-3.5" />, free: "2", plus: "10", pro: "20" },
       { label: "Team Members per Project", icon: <UserPlus className="h-3.5 w-3.5" />, free: "3", plus: "6", pro: "15" },
-      { label: "Cloud Storage", icon: <Cpu className="h-3.5 w-3.5" />, free: "None", plus: "Basic", pro: "Higher" },
+      { label: "Cloud Storage", icon: <Cpu className="h-3.5 w-3.5" />, free: "2 GB", plus: "15 GB", pro: "30 GB" },
     ],
   },
   {
@@ -240,16 +244,34 @@ const Pricing = () => {
       </div>
 
       {/* ── Hero ── */}
-      <section className="relative pt-30 pb-12 px-4 z-10 flex flex-col items-center">
+      <section className="relative pt-30 pb-12 px-4 z-10 flex flex-col items-center w-full">
         
-        <motion.h1
-          initial={{ opacity: 0, y: 18 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="text-4xl md:text-7xl font-medium tracking-tight text-center text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-gray-500 mb-6 leading-tight max-w-4xl"
-        >
-          Choose your plan
-        </motion.h1>
+        <div className="w-full max-w-6xl relative flex flex-col md:flex-row items-center justify-center mb-6">
+          <motion.div
+            initial={{ opacity: 0, x: -10 }}
+            animate={{ opacity: 1, x: 0 }}
+            className="md:absolute md:left-0 lg:-left-12 xl:-left-24 mb-6 md:mb-0"
+          >
+            <Link href={isAuthenticated ? "/dashboard" : "/"}>
+              <Button
+                variant="outline"
+                className="gap-2 bg-[#0a0a0a]/90 text-white border-white/10 hover:bg-white hover:text-black rounded-full shadow-[0_0_15px_-3px_rgba(255,255,255,0.1)] transition-all"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                {isAuthenticated ? "Back to Dashboard" : "Back to Website"}
+              </Button>
+            </Link>
+          </motion.div>
+
+          <motion.h1
+            initial={{ opacity: 0, y: 18 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: 0.1 }}
+            className="text-4xl md:text-7xl font-medium tracking-tight text-center text-transparent bg-clip-text bg-gradient-to-b from-white via-white to-gray-500 leading-tight max-w-4xl"
+          >
+            Choose your plan
+          </motion.h1>
+        </div>
 
         <motion.p
           initial={{ opacity: 0, y: 18 }}
@@ -266,11 +288,11 @@ const Pricing = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-6xl mx-auto">
           {plans.map((plan, idx) => {
             const displayPriceLabel = isIndia 
-              ? (plan.key === "free" ? "₹0" : plan.key === "plus" ? "₹649" : "₹1499") 
+              ? (plan.key === "free" ? "₹0" : plan.key === "plus" ? "₹649" : "₹1900") 
               : plan.priceLabel;
 
             const displayOldPrice = isIndia 
-              ? (plan.key === "free" ? undefined : plan.key === "plus" ? "₹1099" : "₹1999") 
+              ? (plan.key === "free" ? undefined : plan.key === "plus" ? "₹999" : "₹2499") 
               : plan.oldPrice;
 
             return (
@@ -426,7 +448,7 @@ const Pricing = () => {
                               toast.error(e.message || "Something went wrong.");
                             }
                           }}
-                          className="mt-3 py-1.5 px-4 rounded-full text-xs font-medium border border-white/10 text-gray-400 hover:text-red-400 hover:border-red-400/30 hover:bg-red-400/10 transition-all cursor-pointer"
+                          className="mt-3 py-1.5 px-4 rounded-full text-xs font-medium text-gray-400 hover:text-red-400 hover:bg-red-400/10 transition-all cursor-pointer"
                         >
                           Cancel Subscription
                         </button>
