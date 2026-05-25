@@ -71,6 +71,11 @@ export function WelcomeDialog() {
     // Still undefined = Convex loading, don't decide yet
     if (hasSeenWelcome === undefined || currentUser === undefined) return;
 
+    if (sessionStorage.getItem("wekraft_tour_active") === "true") {
+      setShow(true);
+      return;
+    }
+
     // Only show if user hasn't seen/skipped the welcome dialog, and hasn't finished the checklist yet
     if (!hasSeenWelcome && !currentUser?.gettingstartedcompleted) {
       setShow(true);
@@ -239,6 +244,7 @@ export function WelcomeDialog() {
   };
 
   const startTour = () => {
+    sessionStorage.setItem("wekraft_tour_active", "true");
     markWelcomeSeen().catch(() => { });
     const firstIncomplete = STEPS.find(s => !completedIds.includes(s.id));
     setTourStep(firstIncomplete ? firstIncomplete.id : 1);
