@@ -74,6 +74,7 @@ const freeFeatures: FeatureItem[] = [
   { label: "2 Project Creation",  icon: <FolderGit2 className="h-3.5 w-3.5" /> },
   { label: "2 Project Joining",   icon: <GitBranch className="h-3.5 w-3.5" /> },
   { label: "Up to 3 team members", icon: <UserPlus className="h-3.5 w-3.5" /> },
+  { label: "2 GB Cloud Storage",   icon: <Cpu className="h-3.5 w-3.5" /> },
 ];
 
 const plusFeatures: FeatureItem[] = [
@@ -81,7 +82,7 @@ const plusFeatures: FeatureItem[] = [
   { label: "10 Project Joining",           icon: <GitBranch className="h-3.5 w-3.5" /> },
   { label: "Up to 6 team members",         icon: <UserPlus className="h-3.5 w-3.5" /> },
   { label: "Full Team & Community Insights",icon: <BarChart3 className="h-3.5 w-3.5" /> },
-  { label: "Basic Cloud Storage",          icon: <Cpu className="h-3.5 w-3.5" /> },
+  { label: "15 GB Cloud Storage",          icon: <Cpu className="h-3.5 w-3.5" /> },
 
   { label: "Project Heatmaps",             icon: <Map className="h-3.5 w-3.5" /> },
 ];
@@ -92,7 +93,7 @@ const proFeatures: FeatureItem[] = [
   { label: "Up to 15 team members",        icon: <UserPlus className="h-3.5 w-3.5" /> },
   { label: "Kaya AI & PM Agent",           icon: <Bot className="h-3.5 w-3.5" /> },
   { label: "Automated Reporting",          icon: <CalendarCheck className="h-3.5 w-3.5" /> },
-  { label: "Higher Cloud Storage",         icon: <Cpu className="h-3.5 w-3.5" /> },
+  { label: "30 GB Cloud Storage",         icon: <Cpu className="h-3.5 w-3.5" /> },
   { label: "Priority Support",             icon: <Star className="h-3.5 w-3.5" /> },
 ];
 
@@ -129,8 +130,8 @@ const plans: Plan[] = [
     key: "pro",
     name: "Pro",
     badge: "20% OFF",
-    priceLabel: "$16",
-    oldPrice: "$20",
+    priceLabel: "$20",
+    oldPrice: "$25",
     priceSub: "Growing startup needs intelligence",
     description: "Growing startup needs intelligence.",
     cta: "Get Pro",
@@ -138,7 +139,7 @@ const plans: Plan[] = [
     highlighted: false,
     icon: <Shield className="h-4 w-4" />,
     features: proFeatures,
-    priceUSD: 16,
+    priceUSD: 20,
   },
 ];
 
@@ -150,7 +151,7 @@ const featureCategories: FeatureCat[] = [
       { label: "Project Creation", icon: <FolderGit2 className="h-3.5 w-3.5" />, free: "2", plus: "10", pro: "20" },
       { label: "Project Joining", icon: <GitBranch className="h-3.5 w-3.5" />, free: "2", plus: "10", pro: "20" },
       { label: "Team Members per Project", icon: <UserPlus className="h-3.5 w-3.5" />, free: "3", plus: "6", pro: "15" },
-      { label: "Cloud Storage", icon: <Cpu className="h-3.5 w-3.5" />, free: "None", plus: "Basic", pro: "Higher" },
+      { label: "Cloud Storage", icon: <Cpu className="h-3.5 w-3.5" />, free: "2 GB", plus: "15 GB", pro: "30 GB" },
     ],
   },
   {
@@ -266,11 +267,11 @@ const Pricing = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-6xl mx-auto">
           {plans.map((plan, idx) => {
             const displayPriceLabel = isIndia 
-              ? (plan.key === "free" ? "₹0" : plan.key === "plus" ? "₹649" : "₹1499") 
+              ? (plan.key === "free" ? "₹0" : plan.key === "plus" ? "₹649" : "₹1900") 
               : plan.priceLabel;
 
             const displayOldPrice = isIndia 
-              ? (plan.key === "free" ? undefined : plan.key === "plus" ? "₹1099" : "₹1999") 
+              ? (plan.key === "free" ? undefined : plan.key === "plus" ? "₹999" : "₹2499") 
               : plan.oldPrice;
 
             return (
