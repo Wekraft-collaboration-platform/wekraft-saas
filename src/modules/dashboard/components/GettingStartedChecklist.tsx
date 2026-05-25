@@ -222,8 +222,7 @@ export function GettingStartedChecklist() {
   const firstIncompleteId = STEPS.find((s) => !completedIds.includes(s.id))?.id ?? null;
   const activeId = expandedStep === -1 ? null : expandedStep !== null ? expandedStep : firstIncompleteId;
 
-  const handleRowClick = (stepId: number, isDone: boolean) => {
-    if (isDone) return;
+  const handleRowClick = (stepId: number) => {
     // If this step is currently open → close it (use -1 sentinel so auto-expand doesn't re-open)
     if (activeId === stepId) {
       setExpandedStep(-1);
@@ -273,7 +272,7 @@ export function GettingStartedChecklist() {
         {STEPS.map((step) => {
           const Icon = step.icon;
           const done = completedIds.includes(step.id);
-          const open = activeId === step.id && !done;
+          const open = activeId === step.id;
 
           return (
             <div key={step.id} className={cn("rounded-md transition-colors border", open ? "bg-white/5 border-white/5" : "border-transparent")}>
@@ -281,14 +280,10 @@ export function GettingStartedChecklist() {
               <button
                 id={`tour-step-${step.id}`}
                 type="button"
-                onClick={() => handleRowClick(step.id, done)}
+                onClick={() => handleRowClick(step.id)}
                 className={cn(
-                  "w-full flex items-center gap-3 px-3 py-2 rounded-md text-left transition-all duration-150 outline-none",
-                  done
-                    ? "cursor-default"
-                    : open
-                      ? "cursor-pointer"
-                      : "hover:bg-white/5 data-[tour-active=true]:bg-white/5 cursor-pointer group"
+                  "w-full flex items-center gap-3 px-3 py-2 rounded-md text-left transition-all duration-150 outline-none cursor-pointer group",
+                  open ? "bg-white/5" : "hover:bg-white/5 data-[tour-active=true]:bg-white/5"
                 )}
               >
                 {/* Completion status */}

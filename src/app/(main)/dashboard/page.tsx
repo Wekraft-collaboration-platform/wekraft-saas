@@ -137,13 +137,15 @@ export default function DashboardPage() {
       const searchParams = new URLSearchParams(window.location.search);
       if (searchParams.get("tour") === "resume") {
         const stepStr = searchParams.get("step");
+        const resumeAfterStr = searchParams.get("resumeAfter");
         const timer = setTimeout(() => {
           if (stepStr) {
             window.dispatchEvent(new CustomEvent("start-quick-tour", { detail: { step: parseInt(stepStr) } }));
+          } else if (resumeAfterStr) {
+            window.dispatchEvent(new CustomEvent("start-quick-tour", { detail: { resumeAfter: parseInt(resumeAfterStr) } }));
           } else {
             window.dispatchEvent(new CustomEvent("start-quick-tour"));
           }
-          // Optionally remove the query param so it doesn't trigger again on refresh
           window.history.replaceState(null, "", "/dashboard");
         }, 500);
         return () => clearTimeout(timer);

@@ -86,6 +86,14 @@ export function WelcomeDialog() {
       const customEvent = e as CustomEvent;
       if (customEvent.detail?.step) {
         setTourStep(customEvent.detail.step);
+      } else if (customEvent.detail?.resumeAfter) {
+        const next = getNextStep(customEvent.detail.resumeAfter);
+        if (next) {
+          setTourStep(next);
+        } else {
+          setTourStep(0);
+          setShow(false);
+        }
       } else {
         const firstIncomplete = STEPS.find(s => !completedIds.includes(s.id));
         if (firstIncomplete) {
@@ -233,7 +241,9 @@ export function WelcomeDialog() {
   };
 
   const getNextStep = (current: number) => {
-    if (current < 7) return current + 1;
+    for (let i = current + 1; i <= 7; i++) {
+      if (!completedIds.includes(i)) return i;
+    }
     return null;
   };
 

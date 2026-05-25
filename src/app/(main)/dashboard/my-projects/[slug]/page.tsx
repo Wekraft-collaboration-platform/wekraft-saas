@@ -551,7 +551,7 @@ function WorkspaceTourTooltip({
               variant="secondary"
               onClick={() => {
                 onDismiss();
-                router.push("/dashboard?tour=resume&step=5");
+                router.push("/dashboard?tour=resume&resumeAfter=4");
               }}
               className="h-8 px-3 text-xs"
             >
