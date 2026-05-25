@@ -124,14 +124,13 @@ export const STEPS: StepConfig[] = [
     description:
       "Break your project into actionable tasks. Assign them to teammates, set priorities, link to code, and track completion.",
     cta: "Go to Tasks",
-    action: (router) => {
-      router.push("/dashboard");
-      setTimeout(() => {
-        document.getElementById("tour-projects-tab")?.click();
-        setTimeout(() => {
-          document.getElementById("workspace-link-btn")?.click();
-        }, 350);
-      }, 450);
+    action: (router, context) => {
+      const projects = context?.projects;
+      if (projects && projects.length > 0) {
+        router.push(`/dashboard/my-projects/${projects[0].slug}/workspace/tasks?tour=create-task`);
+      } else {
+        router.push("/dashboard");
+      }
     },
   },
   {
