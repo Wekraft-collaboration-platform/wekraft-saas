@@ -66,23 +66,6 @@ export const STEPS: StepConfig[] = [
   },
   {
     id: 3,
-    icon: Users,
-    label: "Invite teammates",
-    hint: "Share the invite link or email",
-    description:
-      "Bring your whole team in. Assign roles, control permissions, and collaborate in real time",
-    cta: "Go to your project",
-    action: (router, context) => {
-      const projects = context?.projects;
-      if (projects && projects.length > 0) {
-        router.push(`/dashboard/my-projects/${projects[0].slug}?invite=true`);
-      } else {
-        router.push("/dashboard");
-      }
-    },
-  },
-  {
-    id: 4,
     icon: LayoutDashboard,
     label: "Visit your workspace",
     hint: "Explore tasks, sprints & team tools",
@@ -93,6 +76,23 @@ export const STEPS: StepConfig[] = [
       const projects = context?.projects;
       if (projects && projects.length > 0) {
         router.push(`/dashboard/my-projects/${projects[0].slug}?tour=workspace`);
+      } else {
+        router.push("/dashboard");
+      }
+    },
+  },
+  {
+    id: 4,
+    icon: Users,
+    label: "Invite teammates",
+    hint: "Share the invite link or email",
+    description:
+      "Bring your whole team in. Assign roles, control permissions, and collaborate in real time",
+    cta: "Go to your project",
+    action: (router, context) => {
+      const projects = context?.projects;
+      if (projects && projects.length > 0) {
+        router.push(`/dashboard/my-projects/${projects[0].slug}?invite=true`);
       } else {
         router.push("/dashboard");
       }

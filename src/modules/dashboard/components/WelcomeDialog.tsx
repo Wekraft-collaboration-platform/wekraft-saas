@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation";
 import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { ChevronRight, X, Sparkles, GitBranch, Calendar, Users, ClipboardCheck } from "lucide-react";
+import { usePathname } from "next/navigation";
 
 const MinimalArrow = ({ type, placement }: { type: number, placement: string }) => {
   const getPath = () => {
@@ -45,6 +46,7 @@ export function WelcomeDialog() {
 
   const [pos, setPos] = useState({ top: -1000, left: -1000, arrowX: 160, arrowY: 90, placement: 'top', arrowType: 1 });
   const router = useRouter();
+  const pathname = usePathname();
   const tooltipRef = useRef<HTMLDivElement>(null);
 
   const progressData = useQuery(api.user.getOnboardingProgress);
@@ -80,6 +82,7 @@ export function WelcomeDialog() {
 
   useEffect(() => {
     const handleStartTour = (e: CustomEvent | Event) => {
+      sessionStorage.setItem("wekraft_tour_active", "true");
       markWelcomeSeen().catch(() => { });
       setShow(true);
       
@@ -110,8 +113,8 @@ export function WelcomeDialog() {
   useEffect(() => {
     let targetId = null;
     if (tourStep >= 1 && tourStep <= 7) targetId = `tour-step-${tourStep}`;
-    // Step 4: point to the first project in the sidebar instead
-    if (tourStep === 4) targetId = "sidebar-first-project";
+    // Step 3: point to the first project in the sidebar instead
+    if (tourStep === 3) targetId = "sidebar-first-project";
 
     const el = targetId ? document.getElementById(targetId) : null;
     let animationFrameId: number = 0;
@@ -135,7 +138,12 @@ export function WelcomeDialog() {
           const margin = 24;
 
           const placements = ['top', 'right'];
-          const currentPlacement = placements[(tourStep - 1) % placements.length];
+          let currentPlacement = placements[(tourStep - 1) % placements.length];
+          
+          // Step 3 targets the sidebar, so it should always be placed to the right
+          if (tourStep === 3) {
+            currentPlacement = 'right';
+          }
 
           const gap = 70; // Set gap perfectly to arrow length (75 - 5 = 70)
 
@@ -210,6 +218,7 @@ export function WelcomeDialog() {
   }, [tourStep]);
 
   const handleSkip = () => {
+    sessionStorage.removeItem("wekraft_tour_active");
     markWelcomeSeen().catch(() => { });
     setShow(false);
     setTourStep(0);
@@ -220,11 +229,7 @@ export function WelcomeDialog() {
     setShow(false);
     setTourStep(0);
     const currentStepConfig = STEPS[tourStep - 1];
-    // Mark step 4 (Visit workspace) as visited when CTA is clicked from tour
-    if (tourStep === 4) {
-      markWorkspaceVisited().catch(() => { });
-    }
-    // Mark step 7 (extension) as installed locally when CTA is clicked from tour
+    
     if (tourStep === 7) {
       setExtensionInstalled(true);
       window.dispatchEvent(new CustomEvent('mark-extension-installed'));
@@ -250,13 +255,14 @@ export function WelcomeDialog() {
 
 
   if (!show) return null;
+  if (pathname !== "/dashboard") return null;
 
   const getShortCta = (stepId: number) => {
     switch (stepId) {
       case 1: return "Connect";
       case 2: return "Link Repo";
-      case 3: return "Invite";
-      case 4: return "Open Project";
+      case 3: return "Open Project";
+      case 4: return "Invite";
       case 5: return "Set Deadline";
       case 6: return "Create Task";
       case 7: return "Complete";

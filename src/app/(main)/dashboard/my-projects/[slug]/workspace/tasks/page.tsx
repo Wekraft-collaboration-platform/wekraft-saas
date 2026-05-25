@@ -545,7 +545,10 @@ function CreateTaskTourTooltip({
         <div className="mt-3 flex items-center justify-between gap-3 px-1 w-full">
           <Button
             variant="ghost"
-            onClick={onDismiss}
+            onClick={() => {
+              sessionStorage.removeItem("wekraft_tour_active");
+              onDismiss();
+            }}
             className="h-8 px-3 text-xs text-muted-foreground hover:text-white"
           >
             Skip Tour
