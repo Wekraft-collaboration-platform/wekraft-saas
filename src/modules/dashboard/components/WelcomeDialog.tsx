@@ -79,18 +79,24 @@ export function WelcomeDialog() {
   }, [hasSeenWelcome, currentUser]);
 
   useEffect(() => {
-    const handleStartTour = () => {
+    const handleStartTour = (e: CustomEvent | Event) => {
       markWelcomeSeen().catch(() => { });
       setShow(true);
-      const firstIncomplete = STEPS.find(s => !completedIds.includes(s.id));
-      if (firstIncomplete) {
-        setTourStep(firstIncomplete.id);
+      
+      const customEvent = e as CustomEvent;
+      if (customEvent.detail?.step) {
+        setTourStep(customEvent.detail.step);
       } else {
-        setTourStep(1); // fallback if all completed
+        const firstIncomplete = STEPS.find(s => !completedIds.includes(s.id));
+        if (firstIncomplete) {
+          setTourStep(firstIncomplete.id);
+        } else {
+          setTourStep(1); // fallback if all completed
+        }
       }
     };
-    window.addEventListener('start-quick-tour', handleStartTour);
-    return () => window.removeEventListener('start-quick-tour', handleStartTour);
+    window.addEventListener('start-quick-tour', handleStartTour as EventListener);
+    return () => window.removeEventListener('start-quick-tour', handleStartTour as EventListener);
   }, [completedIds, markWelcomeSeen]);
 
   useEffect(() => {
@@ -227,9 +233,7 @@ export function WelcomeDialog() {
   };
 
   const getNextStep = (current: number) => {
-    for (let i = current + 1; i <= 7; i++) {
-      if (!completedIds.includes(i)) return i;
-    }
+    if (current < 7) return current + 1;
     return null;
   };
 

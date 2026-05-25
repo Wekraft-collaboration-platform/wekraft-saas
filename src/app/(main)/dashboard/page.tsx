@@ -132,6 +132,25 @@ export default function DashboardPage() {
     ...(extensionInstalled ? [7] : [])
   ], [progressData?.completedSteps, extensionInstalled]);
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const searchParams = new URLSearchParams(window.location.search);
+      if (searchParams.get("tour") === "resume") {
+        const stepStr = searchParams.get("step");
+        const timer = setTimeout(() => {
+          if (stepStr) {
+            window.dispatchEvent(new CustomEvent("start-quick-tour", { detail: { step: parseInt(stepStr) } }));
+          } else {
+            window.dispatchEvent(new CustomEvent("start-quick-tour"));
+          }
+          // Optionally remove the query param so it doesn't trigger again on refresh
+          window.history.replaceState(null, "", "/dashboard");
+        }, 500);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, []);
+
   // Fetch current user details (for GitHub username & account type limits)
   const currentUser = useQuery(api.user.getCurrentUser);
   const isGettingStartedCompleted = currentUser?.gettingstartedcompleted ?? false;

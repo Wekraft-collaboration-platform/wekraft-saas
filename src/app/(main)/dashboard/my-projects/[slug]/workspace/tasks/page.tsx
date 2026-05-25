@@ -176,7 +176,7 @@ const TaskPage = () => {
             onDismiss={() => setShowTaskTour(false)}
             onNext={() => {
               setShowTaskTour(false);
-              router.push("/dashboard");
+              router.push("/dashboard?tour=resume&step=7");
             }}
             onCreate={() => {
               setShowTaskTour(false);

@@ -478,6 +478,7 @@ function WorkspaceTourTooltip({
   onVisit: () => void;
 }) {
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const calculate = () => {
@@ -521,7 +522,7 @@ function WorkspaceTourTooltip({
 
       <div className="flex flex-col w-full">
         {/* Tooltip Card — matches WelcomeDialog exactly */}
-        <div className="bg-card text-card-foreground border border-border shadow-2xl rounded-lg p-5">
+        <div className="bg-linear-to-br from-neutral-800 to-neutral-950 text-card-foreground border border-border shadow-2xl rounded-lg p-5">
           <div className="flex items-center gap-2">
             <span className="flex items-center justify-center bg-primary text-primary-foreground text-[10px] font-bold w-5 h-5 rounded-full shrink-0">
               4
@@ -529,7 +530,7 @@ function WorkspaceTourTooltip({
             <h3 className="text-sm font-semibold text-foreground">Visit your workspace</h3>
           </div>
 
-          <div className="h-px w-full bg-border/60 my-3" />
+          <div className="h-px w-full bg-accent my-3" />
 
           <p className="text-xs text-muted-foreground leading-relaxed">
             Click the &quot;Visit workspace&quot; button above to enter your workspace and explore tasks, sprints, issues, and your team.
@@ -538,18 +539,31 @@ function WorkspaceTourTooltip({
 
         {/* Buttons outside the box — matches WelcomeDialog layout */}
         <div className="mt-3 flex items-center justify-between gap-3 px-1 w-full">
-          <button
+          <Button
+            variant="ghost"
             onClick={onDismiss}
-            className="h-8 px-3 text-xs text-muted-foreground hover:text-white transition-colors cursor-pointer"
+            className="h-8 px-3 text-xs text-muted-foreground hover:text-white"
           >
             Skip Tour
-          </button>
-          <button
-            onClick={onVisit}
-            className="h-8 px-4 text-xs bg-white text-black hover:bg-neutral-200 rounded-md font-medium transition-colors cursor-pointer whitespace-nowrap"
-          >
-            Visit Workspace
-          </button>
+          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="secondary"
+              onClick={() => {
+                onDismiss();
+                router.push("/dashboard?tour=resume&step=5");
+              }}
+              className="h-8 px-3 text-xs"
+            >
+              Next
+            </Button>
+            <Button
+              onClick={onVisit}
+              className="h-8 px-4 text-xs"
+            >
+              Visit Workspace
+            </Button>
+          </div>
         </div>
       </div>
     </div>
