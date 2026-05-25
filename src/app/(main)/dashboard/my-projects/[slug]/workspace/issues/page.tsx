@@ -316,7 +316,7 @@ const IssuesPage = () => {
 
         <div className="flex items-center gap-3">
           {/* Search */}
-          <div className="relative">
+          {/* <div className="relative">
             <Search className="w-4 h-4 absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
             <Input
               type="text"
@@ -325,7 +325,7 @@ const IssuesPage = () => {
               onChange={(e) => setSearchQuery(e.target.value)}
               className="pl-9 h-9 w-[300px] border-muted"
             />
-          </div>
+          </div> */}
 
           {/* <Button variant="outline" size="sm" className="h-9 text-xs">
             <Filter className="w-5 h-5 mr-2" />
@@ -340,7 +340,7 @@ const IssuesPage = () => {
             className="bg-linear-to-t from-indigo-600/30 via-purple-600/10 to-transparent text-xs cursor-pointer"
           >
             <Image src="/kaya.svg" alt="Kaya AI" width={18} height={18} />
-            Ask bout Issues
+            Ask about Issues
           </Button>
 
           {/* New Issue */}

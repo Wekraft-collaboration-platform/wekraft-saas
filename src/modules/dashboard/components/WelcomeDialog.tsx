@@ -67,22 +67,29 @@ export function WelcomeDialog() {
 
   const hasSeenWelcome = useQuery(api.user.getHasSeenWelcome);
 
+  const initialCheckDone = useRef(false);
+
   useEffect(() => {
-    // Still undefined = Convex loading, don't decide yet
+    if (initialCheckDone.current) return;
     if (hasSeenWelcome === undefined || currentUser === undefined) return;
 
     if (sessionStorage.getItem("wekraft_tour_active") === "true") {
       setShow(true);
+      initialCheckDone.current = true;
       return;
     }
 
     // Only show if user hasn't seen/skipped the welcome dialog, and hasn't finished the checklist yet
     if (!hasSeenWelcome && !currentUser?.gettingstartedcompleted) {
       setShow(true);
+      // Mark as seen immediately so it doesn't pop up again on subsequent visits/refreshes
+      markWelcomeSeen().catch(() => {});
+      initialCheckDone.current = true;
     } else {
       setShow(false);
+      initialCheckDone.current = true;
     }
-  }, [hasSeenWelcome, currentUser]);
+  }, [hasSeenWelcome, currentUser, markWelcomeSeen]);
 
   useEffect(() => {
     const handleStartTour = (e: CustomEvent | Event) => {
