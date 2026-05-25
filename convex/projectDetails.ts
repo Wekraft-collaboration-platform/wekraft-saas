@@ -60,7 +60,7 @@ export const updateProjectConfig = mutation({
     projectId: v.id("projects"),
     memberCanCreate: v.optional(v.boolean()),
     memberUseKaya: v.optional(v.boolean()),
-    kayaThreshold: v.optional(v.number()),
+    canUseAITeamspace: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
     const existing = await ctx.db
@@ -71,15 +71,15 @@ export const updateProjectConfig = mutation({
     const updates: {
       memberCanCreate?: boolean;
       memberUseKaya?: boolean;
-      kayaThreshold?: number;
+      canUseAITeamspace?: boolean;
     } = {};
 
     if (args.memberCanCreate !== undefined)
       updates.memberCanCreate = args.memberCanCreate;
     if (args.memberUseKaya !== undefined)
       updates.memberUseKaya = args.memberUseKaya;
-    if (args.kayaThreshold !== undefined)
-      updates.kayaThreshold = args.kayaThreshold;
+    if (args.canUseAITeamspace !== undefined)
+      updates.canUseAITeamspace = args.canUseAITeamspace;
 
     if (existing) {
       await ctx.db.patch(existing._id, updates);

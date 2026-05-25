@@ -298,8 +298,7 @@ export default defineSchema({
     // Project Configuration
     memberCanCreate: v.optional(v.boolean()), // Members can create tasks/issues
     memberUseKaya: v.optional(v.boolean()), // Members can use Kaya AI
-    kayaThreshold: v.optional(v.number()), // Max Kaya calls for this project
-    kayaUsage: v.optional(v.number()), // Current usage for this project
+    canUseAITeamspace: v.optional(v.boolean()), // Members can use AI in teamspace
   })
     .index("by_project", ["projectId"])
     .index("by_repo", ["repoId"]),
