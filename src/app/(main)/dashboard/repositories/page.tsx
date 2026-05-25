@@ -55,7 +55,7 @@ const RepositoriesPage = () => {
             <Search className="absolute left-3 top-2 w-4 h-4 text-muted-foreground" />
             <Input
               placeholder="Search repositories..."
-              className="bg-accent border-muted-foreground/10 pl-10 focus:ring-1 focus:ring-primary/20"
+              className="bg-muted/70! border h-10!  pl-10 focus:ring-1 focus:ring-primary/20"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
             />

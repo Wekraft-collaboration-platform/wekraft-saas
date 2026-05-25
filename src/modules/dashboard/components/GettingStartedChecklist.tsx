@@ -251,7 +251,7 @@ export function GettingStartedChecklist() {
               window.dispatchEvent(new CustomEvent('start-quick-tour'));
             }}
             title="Quick Tour"
-            className="flex items-center gap-1 h-7 px-3! rounded text-[10px] font-medium text-primary/70 hover:text-primary bg-primary/5 hover:bg-primary/15 transition-colors cursor-pointer border border-primary/15"
+            className="flex items-center gap-1 h-7 px-3! rounded text-xs font-medium text-primary/70 hover:text-primary bg-primary/5 hover:bg-primary/15 transition-colors cursor-pointer border border-primary/15"
           >
             <TramFront className="h-4 w-4" />
             Quick Tour

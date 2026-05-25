@@ -43,6 +43,7 @@ import { api } from "../../../convex/_generated/api";
 import { useUser } from "@clerk/nextjs";
 import { useEffect, useRef } from "react";
 import { Github, FolderGit2 } from "lucide-react";
+import { LuLayers2 } from "react-icons/lu";
 
 interface RepositoryListProps {
   searchQuery: string;
@@ -97,7 +98,7 @@ const ShowRepo = ({
       if (githubAccount?.verification?.status === "failed") {
         toast.error(
           (githubAccount.verification as any)?.error?.longMessage ||
-            "This GitHub account is already linked to another user.",
+          "This GitHub account is already linked to another user.",
         );
         return;
       }
@@ -145,7 +146,7 @@ const ShowRepo = ({
       console.error("❌ Failed to connect GitHub:", error);
       toast.error(
         error?.errors?.[0]?.message ||
-          "Something went wrong while connecting GitHub",
+        "Something went wrong while connecting GitHub",
       );
     }
   };
@@ -428,7 +429,7 @@ const ShowRepo = ({
                   className={cn(
                     "bg-accent/5 border-accent/20 hover:bg-accent/10 cursor-pointer transition-all",
                     filteredRepos.length < ITEMS_PER_PAGE &&
-                      "pointer-events-none opacity-30",
+                    "pointer-events-none opacity-30",
                   )}
                 />
               </PaginationItem>
@@ -477,6 +478,7 @@ const ShowRepo = ({
           ) : (
             <ScrollArea className="max-h-[min(320px,50vh)] pr-3 my-2">
               <div className="flex flex-col gap-2">
+                <h3 className="text-sm mb-2 text-primary text-center">Select your below created Projects to connect <LuLayers2 className="inline w-3.5 h-3.5" /></h3>
                 {unlinkedProjects.map((project) => {
                   const isSelected = selectedProjectId === project._id;
                   return (
@@ -485,10 +487,10 @@ const ShowRepo = ({
                       type="button"
                       onClick={() => setSelectedProjectId(project._id)}
                       className={cn(
-                        "w-full text-left flex items-center justify-between rounded-md border p-2",
+                        "w-full text-left flex items-center justify-between rounded-md border p-1.5 px-3",
                         isSelected
                           ? "border-primary/20 bg-primary/5"
-                          : "border-accent/30 bg-muted/30 text-muted-foreground hover:text-foreground hover:bg-accent/40 hover:border-accent"
+                          : " bg-muted/80 text-primary border-accent"
                       )}
                     >
                       <div className="flex items-center gap-3 min-w-0">
@@ -544,7 +546,7 @@ const ShowRepo = ({
               }
               onClick={handleConfirmConnect}
             >
-              Connect <LucideLayersPlus/>
+              Connect <LucideLayersPlus />
             </Button>
           </DialogFooter>
         </DialogContent>
