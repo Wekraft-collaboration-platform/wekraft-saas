@@ -28,6 +28,8 @@ import {
 import { cn } from "@/lib/utils";
 import CreateProjectDialog from "@/modules/project/CreateProjectDialog";
 import { api } from "../../../../convex/_generated/api";
+import { useSidebar } from "@/components/ui/sidebar";
+
 
 interface DashboardProject {
   _id: string;
@@ -269,8 +271,13 @@ export const DashboardProjects = ({
   isRightSidebarExpanded,
 }: DashboardProjectsProps) => {
   const router = useRouter();
+  const { open: isLeftSidebarOpen } = useSidebar();
   const updateShortcut = useMutation(api.project.updateProjectShortcut);
   const [filter, setFilter] = React.useState<"all" | "owned" | "joined">("all");
+
+  // Use 3 columns when both sidebars are open to prevent cards from being too small
+  const gridCols = isLeftSidebarOpen && isRightSidebarExpanded ? "grid-cols-3" : "grid-cols-4";
+
 
   const filteredProjects = React.useMemo(() => {
     if (!projects) return [];
@@ -452,145 +459,135 @@ export const DashboardProjects = ({
           )}
         </div>
       ) : (
-        <div
-          className={cn(
-            "grid gap-4",
-            isRightSidebarExpanded
-              ? "grid-cols-1 sm:grid-cols-2 lg:grid-cols-3"
-              : "grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4",
-          )}
-        >
+        <div className={cn("grid gap-3", gridCols)}>
+
+
           {filteredProjects.map((project) => (
             <div
               key={project._id}
-              className="group relative flex flex-col overflow-hidden rounded-2xl border border-border bg-muted shadow-md h-full"
+              className="relative w-full aspect-[4/3.2] group transition-all duration-300 hover:-translate-y-1"
             >
-              {/* Top Part: Cover Image with float badges */}
-              <div className="aspect-video w-full bg-card relative overflow-hidden shrink-0">
-                {project.thumbnailUrl ? (
-                  <img
-                    src={project.thumbnailUrl}
-                    alt={project.projectName}
-                    className="object-cover w-full h-full"
-                  />
-                ) : (
-                  <div
-                    className={cn(
-                      "w-full h-full bg-linear-to-br flex items-center justify-center",
-                    )}
-                  >
-                    <div className="absolute inset-0 bg-black/10 " />
-                    <FolderCode className="h-9 w-9 text-white/30 drop-shadow-sm" />
-                  </div>
-                )}
-              </div>
 
-              {/* Card Body - Overlapping cover image & scooped corner background */}
-              <div
-                className="relative flex flex-col flex-1 p-3 -mt-14 rounded-t-[20px]"
-                style={{
-                  background: `
-                    radial-gradient(circle at 100% 0, transparent 60px, var(--muted) 27px) top right / 60px 0px no-repeat,
-                    linear-gradient(var(--muted), var(--muted)) left top / calc(100% - 60px) 80% no-repeat,
-                    linear-gradient(var(--muted), var(--muted)) right bottom / 60px calc(100% - 26px) no-repeat
-                  `,
-                }}
+              {/* Folder SVG Background */}
+              <svg
+                viewBox="109.7 58.4 230.6 191.4"
+                className="absolute inset-0 w-full h-full filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.4)] transition-transform duration-300 group-hover:scale-[1.015]"
+                preserveAspectRatio="none"
               >
-                {/* Top Metadata Line */}
-                <div className="flex items-center gap-4 text-xs text-muted-foreground mb-1 font-medium">
+                {/* Back part of folder */}
+                <path
+                  fill="#22222a"
+                  stroke="rgba(255,255,255,0.06)"
+                  strokeWidth="1"
+                  d="M 109.789062 112.761719 L 109.789062 79.15625 C 109.789062 67.703125 119.070312 58.421875 130.523438 58.421875 L 175.066406 58.421875 C 179.457031 58.421875 183.734375 59.8125 187.28125 62.398438 L 206.675781 76.535156 L 319.476562 76.535156 C 330.925781 76.535156 340.210938 85.816406 340.210938 97.269531 L 340.210938 112.761719 L 109.789062 112.761719"
+                />
+                {/* Front pocket of folder */}
+                <path
+                  fill="#15151a"
+                  stroke="rgba(255,255,255,0.06)"
+                  strokeWidth="1"
+                  d="M 319.476562 90.4375 L 130.523438 90.4375 C 119.070312 90.4375 109.789062 99.71875 109.789062 111.171875 L 109.789062 228.933594 C 109.789062 240.382812 119.070312 249.667969 130.523438 249.667969 L 319.476562 249.667969 C 330.925781 249.667969 340.210938 240.382812 340.210938 228.933594 L 340.210938 111.171875 C 340.210938 99.71875 330.925781 90.4375 319.476562 90.4375"
+                />
+              </svg>
+
+              {/* Folder Content Overlay */}
+              <div className="relative z-10 flex flex-col justify-between h-full w-full p-4.5 select-none text-left">
+                {/* Top Section - Back Tab */}
+                <div className="flex items-center justify-between text-xs text-muted-foreground px-0.5">
                   <span>
                     {project.createdAt
                       ? formatRelativeTime(project.createdAt)
                       : "some time ago"}
                   </span>
-                  <div className="flex flex-wrap gap-1 z-10">
+
+                </div>
+
+                {/* Middle Section - Pocket Top */}
+                <div className="flex flex-col gap-1.5 flex-1 justify-center mt-3.5 px-0.5">
+                  <div className="flex items-center gap-4">
+                    <h3
+                      className="text-base font-bold capitalize text-foreground truncate tracking-tight hover:text-primary transition-colors cursor-pointer"
+                      onClick={() =>
+                        router.push(`/dashboard/my-projects/${project.slug}`)
+                      }
+                    >
+                      {project.projectName}
+                    </h3>
                     <span
                       className={cn(
-                        "text-[10px]  px-2 py-0.5 rounded-full border backdrop-blur-md shrink-0",
+                        "text-xs px-2 py-1 rounded-full border backdrop-blur-md shrink-0",
                         project.role === "owned"
-                          ? "bg-muted/40 border-accent! text-primary"
-                          : "bg-muted border-accent! text-accent-foreground",
+                          ? "border-accent! text-primary"
+                          : "border-border text-muted-foreground",
                       )}
                     >
                       {project.role}
                     </span>
+
+                  </div>
+
+                  <div className="flex items-center justify-between gap-2 mt-0.5">
+                    {/* Avatars Stack */}
+                    {project.totalMembers > 0 ? (
+                      <div className="flex -space-x-1.5">
+                        {project.members?.slice(0, 3).map((member, i) => (
+                          <div
+                            key={i}
+                            className="size-6 rounded-full border border-sidebar bg-accent overflow-hidden shadow-xs"
+                            title={member.userName}
+                          >
+                            {member.userImage ? (
+                              <img
+                                src={member.userImage}
+                                alt={member.userName}
+                                className="w-full h-full object-cover"
+                              />
+                            ) : (
+                              <div className="w-full h-full flex items-center justify-center text-[8px] bg-primary/20 text-primary font-bold">
+                                {member.userName.charAt(0)}
+                              </div>
+                            )}
+                          </div>
+                        ))}
+                        {project.totalMembers > 3 && (
+                          <div className="size-6 rounded-full border border-sidebar bg-accent flex items-center justify-center text-[8px] text-muted-foreground font-extrabold">
+                            +{project.totalMembers - 3}
+                          </div>
+                        )}
+                      </div>
+                    ) : (
+                      <span className="text-[9px] text-muted-foreground/60 font-medium">
+                        0 members
+                      </span>
+                    )}
+
+                    {/* Keyboard Shortcut Select Widget */}
+                    <ShortcutSelector
+                      projectId={project._id}
+                      currentShortcut={project.shortcut}
+                      projects={projects}
+                      onSave={async (shortcut) => {
+                        try {
+                          await updateShortcut({
+                            // @ts-expect-error
+                            projectId: project._id,
+                            shortcut,
+                          });
+                          toast.success(
+                            shortcut
+                              ? `Shortcut updated to ${shortcut}`
+                              : "Shortcut cleared",
+                          );
+                        } catch (err: any) {
+                          toast.error(err.message || "Failed to update shortcut");
+                          throw err;
+                        }
+                      }}
+                    />
                   </div>
                 </div>
 
-                {/* Project Name Title */}
-                <h3 className="text-sm font-semibold capitalize text-foreground/90 truncate tracking-tight mb-3">
-                  <span
-                    onClick={() =>
-                      router.push(`/dashboard/my-projects/${project.slug}`)
-                    }
-                    className="hover:text-primary transition-colors cursor-pointer"
-                  >
-                    {project.projectName}
-                  </span>
-                </h3>
-
-                {/* Footer Info: Avatars and Shortcut */}
-                <div className="mt-auto flex items-center justify-between gap-4 ">
-                  {/* Avatars Stack */}
-                  {project.totalMembers > 0 ? (
-                    <div className="flex -space-x-1">
-                      {project.members?.slice(0, 3).map((member, i) => (
-                        <div
-                          key={i}
-                          className="size-6 rounded-full border border-sidebar bg-accent overflow-hidden shadow-xs"
-                          title={member.userName}
-                        >
-                          {member.userImage ? (
-                            <img
-                              src={member.userImage}
-                              alt={member.userName}
-                              className="w-full h-full object-cover"
-                            />
-                          ) : (
-                            <div className="w-full h-full flex items-center justify-center text-[8px] bg-primary/20 text-primary font-bold">
-                              {member.userName.charAt(0)}
-                            </div>
-                          )}
-                        </div>
-                      ))}
-                      {project.totalMembers > 3 && (
-                        <div className="size-5 rounded-full border border-sidebar bg-accent flex items-center justify-center text-[8px] text-muted-foreground font-bold">
-                          +{project.totalMembers - 3}
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <span className="text-[9px] text-muted-foreground/60">
-                      0 members
-                    </span>
-                  )}
-
-                  {/* Keyboard Shortcut Select Widget */}
-                  <ShortcutSelector
-                    projectId={project._id}
-                    currentShortcut={project.shortcut}
-                    projects={projects}
-                    onSave={async (shortcut) => {
-                      try {
-                        await updateShortcut({
-                          // @ts-expect-error
-                          projectId: project._id,
-                          shortcut,
-                        });
-                        toast.success(
-                          shortcut
-                            ? `Shortcut updated to ${shortcut}`
-                            : "Shortcut cleared",
-                        );
-                      } catch (err: any) {
-                        toast.error(err.message || "Failed to update shortcut");
-                        throw err;
-                      }
-                    }}
-                  />
-                </div>
-
-                {/* Action buttons view/workspace */}
+                {/* Bottom Section - Pocket Bottom */}
                 <div className="grid grid-cols-2 gap-2 mt-3">
                   <Button
                     variant="outline"
@@ -598,7 +595,7 @@ export const DashboardProjects = ({
                     onClick={() =>
                       router.push(`/dashboard/my-projects/${project.slug}`)
                     }
-                    className="h-7 text-[10px] gap-1 border-accent! cursor-pointer"
+                    className="h-7 text-xs border-accent!"
                   >
                     <Settings2 className="size-3" /> View
                   </Button>
@@ -610,7 +607,7 @@ export const DashboardProjects = ({
                         `/dashboard/my-projects/${project.slug}/workspace`,
                       )
                     }
-                    className="h-7 text-[10px] gap-1 cursor-pointer"
+                    className="h-7 text-xs"
                   >
                     <ExternalLink className="size-3" /> Workspace
                   </Button>

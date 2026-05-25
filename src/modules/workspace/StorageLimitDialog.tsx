@@ -12,6 +12,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { Copy, Mail, AlertTriangle } from "lucide-react";
 import { toast } from "sonner";
+import Image from "next/image";
 
 interface StorageLimitDialogProps {
   isOpen: boolean;
@@ -35,13 +36,17 @@ export function StorageLimitDialog({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-[420px] bg-background border-border/40 text-foreground overflow-hidden p-6 rounded-2xl shadow-2xl backdrop-blur-xl">
-        <div className="flex flex-col items-center text-center space-y-4 pt-4">
-          {/* Header Icon with Premium Glow */}
-          <div className="relative flex items-center justify-center w-16 h-16 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-500 shadow-[0_0_20px_rgba(245,158,11,0.15)]">
-            <AlertTriangle className="w-8 h-8 animate-pulse" />
-          </div>
+      <DialogContent className="sm:max-w-[420px] bg-sidebar border-accent text-foreground overflow-hidden p-0 rounded-xl shadow-xl">
+        <div className="relative w-full h-40">
+          <Image
+            src="/2.svg"
+            alt="Storage Limit Reached"
+            fill
+            className="object-cover"
+          />
+        </div>
 
+        <div className="p-4 space-y-4 flex flex-col items-center text-center">
           <DialogHeader className="space-y-2">
             <DialogTitle className="text-xl font-bold tracking-tight text-foreground">
               Storage Limit Reached
@@ -53,7 +58,7 @@ export function StorageLimitDialog({
 
           {/* Owner details card */}
           <div className="w-full bg-accent/25 border border-border/50 rounded-xl p-4 space-y-2.5 text-left">
-            <div className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+            <div className="text-sm text-muted-foreground">
               Project Owner Details
             </div>
             <div className="flex items-center justify-between">
@@ -68,41 +73,19 @@ export function StorageLimitDialog({
                 )}
               </div>
 
-              {ownerEmail && (
-                <div className="flex items-center gap-1.5 shrink-0">
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="w-8 h-8 rounded-lg hover:bg-accent"
-                    onClick={handleCopyEmail}
-                    title="Copy Email"
-                  >
-                    <Copy className="w-3.5 h-3.5" />
-                  </Button>
-                  <Button
-                    size="icon"
-                    variant="ghost"
-                    className="w-8 h-8 rounded-lg hover:bg-accent"
-                    asChild
-                  >
-                    <a href={`mailto:${ownerEmail}`} title="Email Owner">
-                      <Mail className="w-3.5 h-3.5" />
-                    </a>
-                  </Button>
-                </div>
-              )}
+
             </div>
           </div>
-        </div>
 
-        <DialogFooter className="mt-6 flex sm:justify-center gap-2">
-          <Button
-            onClick={onClose}
-            className="w-full sm:w-auto font-medium rounded-xl px-6"
-          >
-            Okay, got it
-          </Button>
-        </DialogFooter>
+          <DialogFooter className="w-full pt-2 flex sm:justify-center gap-2">
+            <Button
+              onClick={onClose}
+              className="w-full sm:w-auto font-medium rounded px-6"
+            >
+              Okay, got it
+            </Button>
+          </DialogFooter>
+        </div>
       </DialogContent>
     </Dialog>
   );
