@@ -42,6 +42,7 @@ export const createTask = mutation({
         v.object({
           name: v.string(),
           url: v.string(),
+          size: v.optional(v.number()),
         }),
       ),
     ),
@@ -434,6 +435,7 @@ export const editTask = mutation({
         v.object({
           name: v.string(),
           url: v.string(),
+          size: v.optional(v.number()),
         }),
       ),
     ),
@@ -796,6 +798,30 @@ export const deleteTasks = mutation({
         await Promise.all(comments.map((c) => ctx.db.delete(c._id)));
 
         // 3. Delete the task itself
+                // 3. Free attachment storage
+        const task = await ctx.db.get(taskId);
+        if (task) {
+          const currentAttachments = task.attachments ?? [];
+          let totalSizeToFree = 0;
+          for (const att of currentAttachments) {
+            if (att.size) {
+              totalSizeToFree += att.size;
+            }
+          }
+          if (totalSizeToFree > 0) {
+            const project = await ctx.db.get(task.projectId);
+            if (project) {
+              const owner = await ctx.db.get(project.ownerId);
+              if (owner) {
+                const currentUsage = owner.cloudStorageUsage ?? 0;
+                await ctx.db.patch(owner._id, {
+                  cloudStorageUsage: Math.max(0, currentUsage - totalSizeToFree),
+                  updatedAt: Date.now(),
+                });
+              }
+            }
+          }
+        }
         await ctx.db.delete(taskId);
       }),
     );
@@ -807,6 +833,7 @@ export const addTaskAttachment = mutation({
     taskId: v.id("tasks"),
     name: v.string(),
     url: v.string(),
+    size: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -818,7 +845,7 @@ export const addTaskAttachment = mutation({
     const currentAttachments = task.attachments ?? [];
 
     await ctx.db.patch(args.taskId, {
-      attachments: [...currentAttachments, { name: args.name, url: args.url }],
+      attachments: [...currentAttachments, { name: args.name, url: args.url, size: args.size }],
       updatedAt: Date.now(),
     });
   },
@@ -838,6 +865,22 @@ export const removeTaskAttachment = mutation({
 
     const currentAttachments = task.attachments ?? [];
     const newAttachments = currentAttachments.filter((a) => a.url !== args.url);
+
+    // Decrement owner storage
+    const removedAttachment = currentAttachments.find((a) => a.url === args.url);
+    if (removedAttachment && removedAttachment.size) {
+      const project = await ctx.db.get(task.projectId);
+      if (project) {
+        const owner = await ctx.db.get(project.ownerId);
+        if (owner) {
+          const currentUsage = owner.cloudStorageUsage ?? 0;
+          await ctx.db.patch(owner._id, {
+            cloudStorageUsage: Math.max(0, currentUsage - removedAttachment.size),
+            updatedAt: Date.now(),
+          });
+        }
+      }
+    }
 
     await ctx.db.patch(args.taskId, {
       attachments: newAttachments,

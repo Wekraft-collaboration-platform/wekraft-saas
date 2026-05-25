@@ -51,6 +51,7 @@ import { api } from "../../../../convex/_generated/api";
 import { useSidebar } from "@/components/ui/sidebar";
 import CreateProjectDialog from "@/modules/project/CreateProjectDialog";
 import { DashboardProjects } from "./DashboardProjects";
+import RightSidebar from "./RightSidebar";
 import { toast } from "sonner";
 import { useUser } from "@clerk/nextjs";
 import { CommunitySearchBar } from "@/modules/dashboard/components/SearchBar";
@@ -78,8 +79,14 @@ export default function DashboardPage() {
   const { user: clerkUser } = useUser();
   const searchParams = useSearchParams();
 
+
+
   const [activeTab, setActiveTab] = useState<"stats" | "projects" | "discover">("stats");
   const [isRightSidebarExpanded, setIsRightSidebarExpanded] = useState(false);
+
+
+
+
 
   const [deadlines, setDeadlines] = useState<any[] | null>(null);
   const [events, setEvents] = useState<any[] | null>(null);
@@ -135,20 +142,20 @@ export default function DashboardPage() {
 
   useEffect(() => {
     if (searchParams.get("tour") === "resume") {
-        const stepStr = searchParams.get("step");
-        const resumeAfterStr = searchParams.get("resumeAfter");
-        const timer = setTimeout(() => {
-          if (stepStr) {
-            window.dispatchEvent(new CustomEvent("start-quick-tour", { detail: { step: parseInt(stepStr) } }));
-          } else if (resumeAfterStr) {
-            window.dispatchEvent(new CustomEvent("start-quick-tour", { detail: { resumeAfter: parseInt(resumeAfterStr) } }));
-          } else {
-            window.dispatchEvent(new CustomEvent("start-quick-tour"));
-          }
-          window.history.replaceState(null, "", "/dashboard");
-        }, 500);
-        return () => clearTimeout(timer);
-      }
+      const stepStr = searchParams.get("step");
+      const resumeAfterStr = searchParams.get("resumeAfter");
+      const timer = setTimeout(() => {
+        if (stepStr) {
+          window.dispatchEvent(new CustomEvent("start-quick-tour", { detail: { step: parseInt(stepStr) } }));
+        } else if (resumeAfterStr) {
+          window.dispatchEvent(new CustomEvent("start-quick-tour", { detail: { resumeAfter: parseInt(resumeAfterStr) } }));
+        } else {
+          window.dispatchEvent(new CustomEvent("start-quick-tour"));
+        }
+        window.history.replaceState(null, "", "/dashboard");
+      }, 500);
+      return () => clearTimeout(timer);
+    }
   }, [searchParams]);
 
   // Fetch current user details (for GitHub username & account type limits)
@@ -159,6 +166,8 @@ export default function DashboardPage() {
   const userPlan = currentUser?.accountType || "free";
   const createLimit = userPlan === "pro" ? 20 : userPlan === "plus" ? 10 : 2;
   const joinLimit = userPlan === "pro" ? 20 : userPlan === "plus" ? 10 : 2;
+
+
 
   // React query for git stats
   const { data: dashboardStats, isLoading: isStatsLoading } = useReactQuery({
@@ -623,47 +632,10 @@ export default function DashboardPage() {
           </div>
 
           {/* Right Side */}
-          <div
-            id="tour-right-sidebar"
-            className={cn(
-              "relative transition-all duration-200 ease-in-out shrink-0 w-full self-stretch min-h-screen",
-              isRightSidebarExpanded ? "w-80" : "w-14",
-            )}
-          >
-            <button
-              type="button"
-              onClick={() => setIsRightSidebarExpanded(!isRightSidebarExpanded)}
-              className="w-5 h-14 bg-primary hover:bg-primary/95 text-primary-foreground absolute top-[45%] -left-2.5 rounded-full flex items-center justify-center shadow-md cursor-pointer transition-all duration-200 z-20 focus:outline-none focus:ring-1 focus:ring-primary/50"
-              aria-label={
-                isRightSidebarExpanded ? "Collapse sidebar" : "Expand sidebar"
-              }
-            >
-              {isRightSidebarExpanded ? (
-                <ChevronRight className="w-3.5 h-3.5" />
-              ) : (
-                <ChevronLeft className="w-3.5 h-3.5" />
-              )}
-            </button>
-
-            <div
-              className={cn(
-                "flex flex-col h-full min-h-screen items-center justify-center border border-border bg-card dark:bg-sidebar rounded text-center text-muted-foreground/50 text-xs transition-all duration-300",
-                isRightSidebarExpanded ? "p-4" : "p-1",
-              )}
-            >
-              {isRightSidebarExpanded && (
-                <div className="flex flex-col gap-4 px-2 transition-opacity duration-300 w-full items-center">
-                  <span>
-                    user account, cloud storage &amp; usage: this will come here
-                    future todo
-                  </span>
-                  <Button id="download-extension-btn" variant="outline" size="sm" className="w-full text-xs cursor-pointer">
-                    <Download className="w-4 h-4 mr-1.5" /> Download Extension
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
+          <RightSidebar
+            isRightSidebarExpanded={isRightSidebarExpanded}
+            setIsRightSidebarExpanded={setIsRightSidebarExpanded}
+          />
         </div>
       </main>
     </div>

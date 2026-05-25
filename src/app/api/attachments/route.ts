@@ -4,6 +4,8 @@ import {
   S3Client,
 } from "@aws-sdk/client-s3";
 import { NextResponse } from "next/server";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "../../../../convex/_generated/api";
 
 const client = new S3Client({
   credentials: {
@@ -14,20 +16,26 @@ const client = new S3Client({
 });
 
 const BUCKET_NAME = "wekraft-saas-upload-s3";
+const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 export async function POST(req: Request) {
   console.log("POST /api/attachments - Upload request received");
   try {
     const formData = await req.formData();
     const file = formData.get("file") as File;
+    const projectId = formData.get("projectId") as string;
 
     if (!file) {
       console.error("No file found in formData");
       return NextResponse.json({ error: "No file uploaded" }, { status: 400 });
     }
 
+    if (!projectId) {
+      return NextResponse.json({ error: "projectId is required" }, { status: 400 });
+    }
+
     console.log(
-      `Processing attachment: ${file.name}, Size: ${file.size}, Type: ${file.type}`,
+      `Processing attachment: ${file.name}, Size: ${file.size}, Type: ${file.type}, ProjectId: ${projectId}`,
     );
 
     // Validation: Max size 10MB for attachments
@@ -38,6 +46,21 @@ export async function POST(req: Request) {
         { status: 400 },
       );
     }
+
+    // Quota Limit Check
+    try {
+      await convex.mutation(api.user.checkAndIncrementStorage, {
+        projectId: projectId as any,
+        fileSize: file.size,
+      });
+    } catch (quotaError: any) {
+      console.warn("Storage quota check failed:", quotaError);
+      return NextResponse.json(
+        { error: quotaError.message || "Storage limit reached. Please upgrade your plan." },
+        { status: 400 }
+      );
+    }
+
 
     const buffer = Buffer.from(await file.arrayBuffer());
     // Sanitize filename and add timestamp

@@ -59,6 +59,7 @@ import {
 
 import { priorityIcons, statusIcons } from "@/lib/static-store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { StorageLimitDialog } from "./StorageLimitDialog";
 
 interface CreateTaskDialogProps {
   projectName: string;
@@ -99,12 +100,17 @@ export const CreateTaskDialog = ({
   >([]);
   const [isPending, setIsPending] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [showStorageLimitDialog, setShowStorageLimitDialog] = useState(false);
 
   const members = useQuery(api.project.getProjectMembers, { projectId });
   const project = useQuery(api.project.getProjectById, { projectId });
   const projectDetails = useQuery(api.projectDetails.getProjectDetails, {
     projectId,
   });
+  const owner = useQuery(
+    api.user.getUserById,
+    project?.ownerId ? { userId: project.ownerId } : "skip",
+  );
 
   const createTask = useMutation(api.workspace.createTask);
   const existingTags = useQuery(api.workspace.getUniqueTags, { projectId });
@@ -183,6 +189,7 @@ export const CreateTaskDialog = ({
     try {
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("projectId", projectId);
 
       const response = await fetch("/api/attachments", {
         method: "POST",
@@ -192,10 +199,21 @@ export const CreateTaskDialog = ({
       const data = await response.json();
       if (data.error) throw new Error(data.error);
 
-      setAttachments((prev) => [...prev, { name: data.name, url: data.url }]);
+      setAttachments((prev) => [...prev, { name: data.name, url: data.url, size: file.size }]);
       toast.success("File uploaded successfully", { id: toastId });
     } catch (error: any) {
-      toast.error(error.message || "Failed to upload file", { id: toastId });
+      const msg = error.message || "";
+      if (
+        msg.includes("limit") ||
+        msg.includes("disabled") ||
+        msg.includes("exceeded") ||
+        msg.includes("upgrade")
+      ) {
+        toast.dismiss(toastId);
+        setShowStorageLimitDialog(true);
+      } else {
+        toast.error(msg || "Failed to upload file", { id: toastId });
+      }
     } finally {
       setIsUploading(false);
     }
@@ -754,6 +772,13 @@ export const CreateTaskDialog = ({
           </div>
         </div>
       </DialogContent>
+
+      <StorageLimitDialog
+        isOpen={showStorageLimitDialog}
+        onClose={() => setShowStorageLimitDialog(false)}
+        ownerName={owner?.name}
+        ownerEmail={owner?.email}
+      />
     </Dialog>
   );
 };
