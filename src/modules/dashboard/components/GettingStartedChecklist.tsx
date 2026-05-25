@@ -70,12 +70,12 @@ export const STEPS: StepConfig[] = [
     label: "Invite teammates to collaborate",
     hint: "Share the invite link or email",
     description:
-      "Bring your whole team in. Assign roles, control permissions, and collaborate in real time",
-    cta: "Go to your project",
+      "Your workspace is the command center for your project. Explore tasks, sprints, issues, and your team — all in one place.",
+    cta: "Go to workspace",
     action: (router, context) => {
       const projects = context?.projects;
       if (projects && projects.length > 0) {
-        router.push(`/dashboard/my-projects/${projects[0].slug}?invite=true`);
+        router.push(`/dashboard/my-projects/${projects[0].slug}?tour=workspace`);
       } else {
         router.push("/dashboard");
       }
@@ -87,12 +87,12 @@ export const STEPS: StepConfig[] = [
     label: "Visit your Project workspace",
     hint: "Explore tasks, sprints & team tools",
     description:
-      "Your workspace is the command center for your project. Explore tasks, sprints, issues, and your team — all in one place.",
-    cta: "Go to workspace",
+      "Bring your whole team in. Assign roles, control permissions, and collaborate in real time",
+    cta: "Go to your project",
     action: (router, context) => {
       const projects = context?.projects;
       if (projects && projects.length > 0) {
-        router.push(`/dashboard/my-projects/${projects[0].slug}?tour=workspace`);
+        router.push(`/dashboard/my-projects/${projects[0].slug}?invite=true`);
       } else {
         router.push("/dashboard");
       }
@@ -124,14 +124,13 @@ export const STEPS: StepConfig[] = [
     description:
       "Break your project into actionable tasks. Assign them to teammates, set priorities, link to code, and track completion.",
     cta: "Go to Tasks",
-    action: (router) => {
-      router.push("/dashboard");
-      setTimeout(() => {
-        document.getElementById("tour-projects-tab")?.click();
-        setTimeout(() => {
-          document.getElementById("workspace-link-btn")?.click();
-        }, 350);
-      }, 450);
+    action: (router, context) => {
+      const projects = context?.projects;
+      if (projects && projects.length > 0) {
+        router.push(`/dashboard/my-projects/${projects[0].slug}/workspace/tasks?tour=create-task`);
+      } else {
+        router.push("/dashboard");
+      }
     },
   },
   {
@@ -223,8 +222,7 @@ export function GettingStartedChecklist() {
   const firstIncompleteId = STEPS.find((s) => !completedIds.includes(s.id))?.id ?? null;
   const activeId = expandedStep === -1 ? null : expandedStep !== null ? expandedStep : firstIncompleteId;
 
-  const handleRowClick = (stepId: number, isDone: boolean) => {
-    if (isDone) return;
+  const handleRowClick = (stepId: number) => {
     // If this step is currently open → close it (use -1 sentinel so auto-expand doesn't re-open)
     if (activeId === stepId) {
       setExpandedStep(-1);
@@ -274,7 +272,7 @@ export function GettingStartedChecklist() {
         {STEPS.map((step) => {
           const Icon = step.icon;
           const done = completedIds.includes(step.id);
-          const open = activeId === step.id && !done;
+          const open = activeId === step.id;
 
           return (
             <div key={step.id} className={cn("rounded-md transition-colors border", open ? "bg-white/5 border-white/5" : "border-transparent")}>
@@ -282,14 +280,10 @@ export function GettingStartedChecklist() {
               <button
                 id={`tour-step-${step.id}`}
                 type="button"
-                onClick={() => handleRowClick(step.id, done)}
+                onClick={() => handleRowClick(step.id)}
                 className={cn(
-                  "w-full flex items-center gap-3 px-3 py-2 rounded-md text-left transition-all duration-150 outline-none",
-                  done
-                    ? "cursor-default"
-                    : open
-                      ? "cursor-pointer"
-                      : "hover:bg-white/5 data-[tour-active=true]:bg-white/5 cursor-pointer group"
+                  "w-full flex items-center gap-3 px-3 py-2 rounded-md text-left transition-all duration-150 outline-none cursor-pointer group",
+                  open ? "bg-white/5" : "hover:bg-white/5 data-[tour-active=true]:bg-white/5"
                 )}
               >
                 {/* Completion status */}

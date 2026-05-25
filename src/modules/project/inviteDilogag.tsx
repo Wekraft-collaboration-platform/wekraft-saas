@@ -33,12 +33,18 @@ export function InviteDialog({ inviteLink, trigger, open, onOpenChange }: Invite
     if (!fullInviteLink) return;
     navigator.clipboard.writeText(fullInviteLink);
     setCopied(true);
-    toast.success("Invite link copied!");
+    toast.success("Invite link copied!", {
+      style: {
+        background: "var(--popover)",
+        color: "var(--popover-foreground)",
+        border: "1px solid var(--border)",
+      }
+    });
     setTimeout(() => setCopied(false), 2000);
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange} modal={false}>
       <DialogTrigger asChild>
         {trigger || <Button variant="outline">Invite</Button>}
       </DialogTrigger>
@@ -64,6 +70,7 @@ export function InviteDialog({ inviteLink, trigger, open, onOpenChange }: Invite
               className="border-0 bg-transparent focus-visible:ring-0 text-xs font-medium text-primary/80 px-2 h-9 truncate"
             />
             <Button
+              id="copy-invite-link-btn"
               size="sm"
               onClick={handleCopy}
               disabled={!fullInviteLink}

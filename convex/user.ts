@@ -511,12 +511,12 @@ export const getOnboardingProgress = query({
       }
     }
 
-    if (hasTeamMembers) steps.push(3);
+    if (hasTeamMembers) steps.push(4);
     if (hasDeadline) steps.push(5);
     if (hasTasks) steps.push(6);
 
-    // Step 4: Visit workspace
-    if (user.hasVisitedWorkspace) steps.push(4);
+    // Step 3: Visit workspace
+    if (user.hasVisitedWorkspace) steps.push(3);
 
     // Step 7 (Download extension) might be checked locally or if we have a field in DB
     // Currently relying on the Zustand local storage or a local flag.

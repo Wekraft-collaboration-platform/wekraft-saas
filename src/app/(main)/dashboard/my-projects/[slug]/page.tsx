@@ -65,6 +65,7 @@ const ProjectPage = () => {
   const [homeTab, setHomeTab] = useState("settings");
   const [inviteOpen, setInviteOpen] = useState(false);
   const [showWorkspaceTour, setShowWorkspaceTour] = useState(false);
+  const [showInviteTour, setShowInviteTour] = useState(false);
   const visitBtnRef = useRef<HTMLAnchorElement>(null);
   const markWorkspaceVisited = useMutation(api.user.markWorkspaceVisited);
 
@@ -80,7 +81,12 @@ const ProjectPage = () => {
       let t2: ReturnType<typeof setTimeout> | undefined;
 
       if (searchParams.get("invite") === "true") {
-        t1 = setTimeout(() => setInviteOpen(true), 300);
+        t1 = setTimeout(() => {
+          setInviteOpen(true);
+          if (sessionStorage.getItem("wekraft_tour_active") === "true") {
+            setShowInviteTour(true);
+          }
+        }, 300);
       }
       if (searchParams.get("tour") === "workspace") {
         t2 = setTimeout(() => setShowWorkspaceTour(true), 400);
@@ -295,10 +301,32 @@ const ProjectPage = () => {
           <WorkspaceTourTooltip
             targetId="visit-workspace-btn"
             onDismiss={() => setShowWorkspaceTour(false)}
+            onNext={() => {
+              setShowWorkspaceTour(false);
+              setInviteOpen(true);
+              setTimeout(() => setShowInviteTour(true), 300);
+            }}
             onVisit={async () => {
               try { await markWorkspaceVisited(); } catch {}
               setShowWorkspaceTour(false);
               router.push(`/dashboard/my-projects/${project?.slug}/workspace`);
+            }}
+          />
+        </div>
+      )}
+
+      {/* INVITE TOUR TOOLTIP */}
+      {showInviteTour && inviteOpen && (
+        <div
+          className="fixed inset-0 z-[100] pointer-events-none"
+          onClick={() => setShowInviteTour(false)}
+        >
+          <InviteTourTooltip
+            targetId="copy-invite-link-btn"
+            onDismiss={() => setShowInviteTour(false)}
+            onNext={() => {
+              // Resume tour for Step 5 (Set Deadline) on dashboard
+              router.push("/dashboard?tour=resume&resumeAfter=4");
             }}
           />
         </div>
@@ -471,13 +499,16 @@ export default ProjectPage;
 function WorkspaceTourTooltip({
   targetId,
   onDismiss,
+  onNext,
   onVisit,
 }: {
   targetId: string;
   onDismiss: () => void;
+  onNext: () => void;
   onVisit: () => void;
 }) {
   const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const router = useRouter();
 
   useEffect(() => {
     const calculate = () => {
@@ -497,8 +528,12 @@ function WorkspaceTourTooltip({
       });
     };
     calculate();
+    const timer = setTimeout(calculate, 150);
     window.addEventListener("resize", calculate);
-    return () => window.removeEventListener("resize", calculate);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", calculate);
+    };
   }, [targetId]);
 
   if (!pos) return null;
@@ -521,15 +556,15 @@ function WorkspaceTourTooltip({
 
       <div className="flex flex-col w-full">
         {/* Tooltip Card — matches WelcomeDialog exactly */}
-        <div className="bg-card text-card-foreground border border-border shadow-2xl rounded-lg p-5">
+        <div className="bg-linear-to-br from-neutral-800 to-neutral-950 text-card-foreground border border-border shadow-2xl rounded-lg p-5">
           <div className="flex items-center gap-2">
             <span className="flex items-center justify-center bg-primary text-primary-foreground text-[10px] font-bold w-5 h-5 rounded-full shrink-0">
-              4
+              3
             </span>
             <h3 className="text-sm font-semibold text-foreground">Visit your workspace</h3>
           </div>
 
-          <div className="h-px w-full bg-border/60 my-3" />
+          <div className="h-px w-full bg-accent my-3" />
 
           <p className="text-xs text-muted-foreground leading-relaxed">
             Click the &quot;Visit workspace&quot; button above to enter your workspace and explore tasks, sprints, issues, and your team.
@@ -538,18 +573,136 @@ function WorkspaceTourTooltip({
 
         {/* Buttons outside the box — matches WelcomeDialog layout */}
         <div className="mt-3 flex items-center justify-between gap-3 px-1 w-full">
-          <button
-            onClick={onDismiss}
-            className="h-8 px-3 text-xs text-muted-foreground hover:text-white transition-colors cursor-pointer"
+          <Button
+            variant="ghost"
+            onClick={() => {
+              sessionStorage.removeItem("wekraft_tour_active");
+              onDismiss();
+            }}
+            className="h-8 px-3 text-xs text-muted-foreground hover:text-white"
           >
             Skip Tour
-          </button>
-          <button
-            onClick={onVisit}
-            className="h-8 px-4 text-xs bg-white text-black hover:bg-neutral-200 rounded-md font-medium transition-colors cursor-pointer whitespace-nowrap"
+          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="secondary"
+              onClick={onNext}
+              className="h-8 px-3 text-xs"
+            >
+              Next
+            </Button>
+            <Button
+              onClick={onVisit}
+              className="h-8 px-4 text-xs"
+            >
+              Visit Workspace
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Invite Tour Tooltip ─────────────────────────────────────────────────
+function InviteTourTooltip({
+  targetId,
+  onDismiss,
+  onNext,
+}: {
+  targetId: string;
+  onDismiss: () => void;
+  onNext: () => void;
+}) {
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+
+  useEffect(() => {
+    const calculate = () => {
+      const el = document.getElementById(targetId);
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const tooltipWidth = 320;
+      const margin = 12;
+      const rawLeft = rect.left + rect.width / 2 - tooltipWidth / 2;
+      const clampedLeft = Math.min(
+        Math.max(margin, rawLeft),
+        window.innerWidth - tooltipWidth - margin
+      );
+      setPos({
+        top: rect.bottom + 20,
+        left: clampedLeft,
+      });
+    };
+    calculate();
+    // Re-calculate shortly after mount in case dialog animation shifts layout
+    const timer = setTimeout(calculate, 150);
+    window.addEventListener("resize", calculate);
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("resize", calculate);
+    }
+  }, [targetId]);
+
+  if (!pos) return null;
+
+  return (
+    <div
+      className="fixed z-[100] pointer-events-auto animate-in fade-in duration-200 flex flex-col items-center"
+      style={{ top: pos.top, left: pos.left, width: 320 }}
+      onClick={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
+    >
+      <div className="self-center mb-1 -mt-5">
+        <svg width="60" height="80" viewBox="0 0 60 80" fill="none" className="text-white drop-shadow-md rotate-180">
+          <path
+            d="M 30 5 C 45 30, 15 50, 30 75 M 30 75 L 22 65 M 30 75 L 38 65"
+            stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+          />
+        </svg>
+      </div>
+
+      <div className="flex flex-col w-full">
+        {/* Tooltip Card — matches WelcomeDialog exactly */}
+        <div className="bg-linear-to-br from-neutral-800 to-neutral-950 text-card-foreground border border-border shadow-2xl rounded-lg p-5">
+          <div className="flex items-center gap-2">
+            <span className="flex items-center justify-center bg-primary text-primary-foreground text-[10px] font-bold w-5 h-5 rounded-full shrink-0">
+              4
+            </span>
+            <h3 className="text-sm font-semibold text-foreground">Invite your teammates</h3>
+          </div>
+
+          <div className="h-px w-full bg-accent my-3" />
+
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Bring your whole team in. Assign roles, control permissions, and collaborate in real time
+          </p>
+        </div>
+
+        {/* Buttons outside the box */}
+        <div className="mt-3 flex items-center justify-between gap-3 px-1 w-full">
+          <Button
+            variant="ghost"
+            onPointerDown={(e) => {
+              e.preventDefault();
+              sessionStorage.removeItem("wekraft_tour_active");
+              onDismiss();
+            }}
+            className="h-8 px-3 text-xs text-muted-foreground hover:text-white"
           >
-            Visit Workspace
-          </button>
+            Skip Tour
+          </Button>
+
+          <div className="flex gap-2">
+            <Button
+              className="h-8 px-4 text-xs bg-white text-black hover:bg-white/90"
+              onPointerDown={(e) => {
+                e.preventDefault();
+                onNext();
+              }}
+            >
+              Next
+            </Button>
+          </div>
         </div>
       </div>
     </div>

@@ -26,6 +26,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { TourOrchestrator } from "@/modules/dashboard/components/TourOrchestrator";
 
 export default function Layout({
   children,
@@ -68,6 +69,7 @@ export default function Layout({
         <RedirectToSignIn />
       </Unauthenticated>
       <Authenticated>
+        <TourOrchestrator />
         <SidebarProvider defaultOpen={true}>
           {sidebar}
           <SidebarInset className="border-l h-screen flex flex-col">

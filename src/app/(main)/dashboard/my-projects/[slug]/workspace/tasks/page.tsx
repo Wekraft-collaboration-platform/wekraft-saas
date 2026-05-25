@@ -13,7 +13,7 @@ import {
   UserPlus,
 } from "lucide-react";
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useParams, useRouter } from "next/navigation";
 import { startTransition, useEffect, useState, ViewTransition } from "react";
 import { toast } from "sonner";
 import {
@@ -60,6 +60,8 @@ const TaskPage = () => {
   const { setIsOpen } = useKayaStore();
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [tagFilter, setTagFilter] = useState<string | null>(null);
+  const [showTaskTour, setShowTaskTour] = useState(false);
+  const router = useRouter();
 
   const currentUser = useQuery(api.user.getCurrentUser);
   const project = useQuery(api.project.getProjectBySlug, { slug });
@@ -78,6 +80,24 @@ const TaskPage = () => {
       }
     }
   }, [project?._id]);
+
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const searchParams = new URLSearchParams(window.location.search);
+      if (searchParams.get("tour") === "create-task") {
+        const timer = setTimeout(() => {
+          // Ensure page is at the top so the header and button are visible
+          window.scrollTo({ top: 0, behavior: "instant" });
+          const btn = document.getElementById("create-task-btn");
+          if (btn) {
+            btn.scrollIntoView({ behavior: "instant", block: "center" });
+          }
+          setShowTaskTour(true);
+        }, 400);
+        return () => clearTimeout(timer);
+      }
+    }
+  }, []);
 
   const handleIncreaseLimit = () => {
     setTaskLimit((prev) => {
@@ -144,7 +164,27 @@ const TaskPage = () => {
     );
 
   return (
-    <div className="w-full h-full p-6 2xl:p-8">
+    <div className="w-full h-full p-6 2xl:p-8 relative">
+      {showTaskTour && (
+        <div
+          className="fixed inset-0 z-[100] pointer-events-none"
+          onClick={() => setShowTaskTour(false)}
+        >
+          <div className="absolute inset-0 bg-background/40 backdrop-blur-[1px] pointer-events-auto" onClick={() => setShowTaskTour(false)} />
+          <CreateTaskTourTooltip
+            targetId="create-task-btn"
+            onDismiss={() => setShowTaskTour(false)}
+            onNext={() => {
+              setShowTaskTour(false);
+              router.push("/dashboard?tour=resume&resumeAfter=6");
+            }}
+            onCreate={() => {
+              setShowTaskTour(false);
+              document.getElementById("create-task-btn")?.click();
+            }}
+          />
+        </div>
+      )}
       <header className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">
           <Layers3 className="w-6 h-6 ml-1 text-primary inline" /> {projectName}
@@ -428,3 +468,108 @@ const TaskPage = () => {
 };
 
 export default TaskPage;
+
+// ─── Create Task Tour Tooltip ─────────────────────────────────────────────────
+function CreateTaskTourTooltip({
+  targetId,
+  onDismiss,
+  onNext,
+  onCreate,
+}: {
+  targetId: string;
+  onDismiss: () => void;
+  onNext: () => void;
+  onCreate: () => void;
+}) {
+  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+
+  useEffect(() => {
+    const calculate = () => {
+      const el = document.getElementById(targetId);
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const tooltipWidth = 320;
+      const margin = 12;
+      const rawLeft = rect.left + rect.width / 2 - tooltipWidth / 2;
+      const clampedLeft = Math.min(
+        Math.max(margin, rawLeft),
+        window.innerWidth - tooltipWidth - margin
+      );
+      setPos({
+        top: rect.bottom + 20,
+        left: clampedLeft,
+      });
+    };
+    calculate();
+    window.addEventListener("resize", calculate);
+    window.addEventListener("scroll", calculate, true);
+    return () => {
+      window.removeEventListener("resize", calculate);
+      window.removeEventListener("scroll", calculate, true);
+    };
+  }, [targetId]);
+
+  if (!pos) return null;
+
+  return (
+    <div
+      className="fixed z-[100] pointer-events-auto animate-in fade-in duration-200 flex flex-col items-center"
+      style={{ top: pos.top, left: pos.left, width: 320 }}
+      onClick={(e) => e.stopPropagation()}
+    >
+      <div className="self-center mb-1 -mt-5">
+        <svg width="60" height="80" viewBox="0 0 60 80" fill="none" className="text-white drop-shadow-md rotate-180">
+          <path
+            d="M 30 5 C 45 30, 15 50, 30 75 M 30 75 L 22 65 M 30 75 L 38 65"
+            stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+          />
+        </svg>
+      </div>
+
+      <div className="flex flex-col w-full">
+        <div className="bg-linear-to-br from-neutral-800 to-neutral-950 text-card-foreground border border-border shadow-2xl rounded-lg p-5">
+          <div className="flex items-center gap-2">
+            <span className="flex items-center justify-center bg-primary text-primary-foreground text-[10px] font-bold w-5 h-5 rounded-full shrink-0">
+              6
+            </span>
+            <h3 className="text-sm font-semibold text-foreground">Create your first task</h3>
+          </div>
+
+          <div className="h-px w-full bg-accent my-3" />
+
+          <p className="text-xs text-muted-foreground leading-relaxed">
+            Click the &quot;New Task&quot; button above to create a task, assign it to a teammate, set priorities, and track progress.
+          </p>
+        </div>
+
+        <div className="mt-3 flex items-center justify-between gap-3 px-1 w-full">
+          <Button
+            variant="ghost"
+            onClick={() => {
+              sessionStorage.removeItem("wekraft_tour_active");
+              onDismiss();
+            }}
+            className="h-8 px-3 text-xs text-muted-foreground hover:text-white"
+          >
+            Skip Tour
+          </Button>
+          <div className="flex gap-2">
+            <Button
+              variant="secondary"
+              onClick={onNext}
+              className="h-8 px-3 text-xs"
+            >
+              Next
+            </Button>
+            <Button
+              onClick={onCreate}
+              className="h-8 text-xs px-4"
+            >
+              Create Task
+            </Button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
