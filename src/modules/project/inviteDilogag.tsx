@@ -43,7 +43,7 @@ export function InviteDialog({ inviteLink, trigger, open, onOpenChange }: Invite
   };
 
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <Dialog open={open} onOpenChange={onOpenChange} modal={false}>
       <DialogTrigger asChild>
         {trigger || <Button variant="outline">Invite</Button>}
       </DialogTrigger>

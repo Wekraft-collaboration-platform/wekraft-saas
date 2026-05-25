@@ -325,12 +325,8 @@ const ProjectPage = () => {
             targetId="copy-invite-link-btn"
             onDismiss={() => setShowInviteTour(false)}
             onNext={() => {
-              setShowInviteTour(false);
-              setInviteOpen(false);
               // Resume tour for Step 5 (Set Deadline) on dashboard
-              setTimeout(() => {
-                router.push("/dashboard?tour=resume&resumeAfter=4");
-              }, 300);
+              router.push("/dashboard?tour=resume&resumeAfter=4");
             }}
           />
         </div>
@@ -654,6 +650,7 @@ function InviteTourTooltip({
       className="fixed z-[100] pointer-events-auto animate-in fade-in duration-200 flex flex-col items-center"
       style={{ top: pos.top, left: pos.left, width: 320 }}
       onClick={(e) => e.stopPropagation()}
+      onPointerDown={(e) => e.stopPropagation()}
     >
       <div className="self-center mb-1 -mt-5">
         <svg width="60" height="80" viewBox="0 0 60 80" fill="none" className="text-white drop-shadow-md rotate-180">
@@ -685,7 +682,8 @@ function InviteTourTooltip({
         <div className="mt-3 flex items-center justify-between gap-3 px-1 w-full">
           <Button
             variant="ghost"
-            onClick={() => {
+            onPointerDown={(e) => {
+              e.preventDefault();
               sessionStorage.removeItem("wekraft_tour_active");
               onDismiss();
             }}
@@ -697,7 +695,10 @@ function InviteTourTooltip({
           <div className="flex gap-2">
             <Button
               className="h-8 px-4 text-xs bg-white text-black hover:bg-white/90"
-              onClick={onNext}
+              onPointerDown={(e) => {
+                e.preventDefault();
+                onNext();
+              }}
             >
               Next
             </Button>

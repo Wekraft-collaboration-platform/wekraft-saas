@@ -38,7 +38,6 @@ const MinimalArrow = ({ type, placement }: { type: number, placement: string }) 
 export function WelcomeDialog() {
   const currentUser = useQuery(api.user.getCurrentUser);
   const markWelcomeSeen = useMutation(api.user.markWelcomeSeen);
-  const markWorkspaceVisited = useMutation(api.user.markWorkspaceVisited);
 
   const [show, setShow] = useState(false);
   const [tourStep, setTourStep] = useState<number>(0);

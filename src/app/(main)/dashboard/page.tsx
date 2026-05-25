@@ -34,7 +34,7 @@ import {
   Bot,
   Download,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
+import { useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useState, useMemo } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
@@ -76,6 +76,7 @@ export default function DashboardPage() {
   const { open: isSidebarOpen } = useSidebar();
   const [mounted, setMounted] = useState(false);
   const { user: clerkUser } = useUser();
+  const searchParams = useSearchParams();
 
   const [activeTab, setActiveTab] = useState<"stats" | "projects" | "discover">("stats");
   const [isRightSidebarExpanded, setIsRightSidebarExpanded] = useState(false);
@@ -133,9 +134,7 @@ export default function DashboardPage() {
   ], [progressData?.completedSteps, extensionInstalled]);
 
   useEffect(() => {
-    if (typeof window !== "undefined") {
-      const searchParams = new URLSearchParams(window.location.search);
-      if (searchParams.get("tour") === "resume") {
+    if (searchParams.get("tour") === "resume") {
         const stepStr = searchParams.get("step");
         const resumeAfterStr = searchParams.get("resumeAfter");
         const timer = setTimeout(() => {
@@ -150,8 +149,7 @@ export default function DashboardPage() {
         }, 500);
         return () => clearTimeout(timer);
       }
-    }
-  }, []);
+  }, [searchParams]);
 
   // Fetch current user details (for GitHub username & account type limits)
   const currentUser = useQuery(api.user.getCurrentUser);
