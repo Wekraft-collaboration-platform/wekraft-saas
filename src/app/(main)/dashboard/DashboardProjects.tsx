@@ -161,7 +161,7 @@ const ShortcutSelector = ({
         {currentShortcut ? (
           <button
             type="button"
-            className="flex items-center gap-1 text-[10px] font-semibold font-mono bg-blue-500/10 hover:bg-blue-500/20 text-primary/80 dark:text-blue-400 border border-primary/15 border-dashed rounded-md px-1.5 py-0.5 transition-all shadow-xs cursor-pointer select-none"
+            className="flex items-center gap-1 text-[10px] font-semibold font-mono bg-blue-500/10 hover:bg-blue-500/20 text-primary/80 dark:text-primary border border-primary/15 border-dashed rounded px-2.5 py-1 transition-all shadow-xs cursor-pointer select-none"
             title="Click to edit shortcut"
           >
             <Keyboard className="size-3" />
@@ -170,10 +170,10 @@ const ShortcutSelector = ({
         ) : (
           <button
             type="button"
-            className="flex items-center gap-1 text-[10px] font-medium text-muted-foreground bg-accent/80 hover:text-foreground border border-primary/15 border-dashed rounded-md px-1.5 py-0.5 transition-all cursor-pointer select-none"
+            className="flex items-center gap-1 text-[10px] font-medium bg-accent/70 border border-primary/20 border-dashed rounded px-2.5 py-1 transition-all cursor-pointer select-none"
             title="Assign keyboard shortcut"
           >
-            <Keyboard className="size-3 opacity-60" />
+            <Keyboard className="size-3 " />
             <span>+ Shortcut</span>
           </button>
         )}
@@ -423,14 +423,14 @@ export const DashboardProjects = ({
           ))}
         </div>
       ) : filteredProjects.length === 0 ? (
-        <div className="flex flex-col items-center justify-center p-12 border border-border border-dashed rounded-xl bg-muted text-center h-[260px] transition-all">
-          <div className="h-10 w-10 rounded-full bg-primary/10 border border-primary/20 flex items-center justify-center text-primary mb-3 animate-bounce">
-            <FolderCode className="h-5 w-5" />
-          </div>
-          <h4 className="text-sm font-semibold text-foreground tracking-tight">
+        <div className="flex flex-col items-center justify-center p-12 border border-border border-dashed rounded-xl bg-muted/40 text-center h-[260px] transition-all">
+
+          <FolderCode className="h-7 w-7 opacity-50 mb-2" />
+
+          <h4 className="text-base mb-2 text-foreground tracking-tight">
             No Projects Found
           </h4>
-          <p className="text-xs text-muted-foreground max-w-sm mt-1.5 leading-relaxed">
+          <p className="text-sm text-muted-foreground max-w-sm mt-1.5 leading-relaxed">
             {filter === "all"
               ? "Start a new workspace to collaborate, track stats, and manage tasks."
               : filter === "owned"
@@ -479,7 +479,7 @@ export const DashboardProjects = ({
                       "w-full h-full bg-linear-to-br flex items-center justify-center",
                     )}
                   >
-                    <div className="absolute inset-0 bg-black/10 backdrop-blur-[1.5px]" />
+                    <div className="absolute inset-0 bg-black/10 " />
                     <FolderCode className="h-9 w-9 text-white/30 drop-shadow-sm" />
                   </div>
                 )}

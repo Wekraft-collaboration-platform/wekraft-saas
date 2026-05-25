@@ -40,7 +40,7 @@ export const STEPS: StepConfig[] = [
   {
     id: 1,
     icon: Github,
-    label: "Connect GitHub",
+    label: "Connect your GitHub Account",
     hint: "Required to track commits & PRs",
     description:
       "Link your GitHub account to unlock commit tracking, pull-request syncing, and developer stats across all your projects.",
@@ -55,7 +55,7 @@ export const STEPS: StepConfig[] = [
   {
     id: 2,
     icon: GitBranch,
-    label: "Link a repository",
+    label: "Link repository to your Project",
     hint: "Connect GitHub repo to your project",
     description:
       "Connect a GitHub repository to your project so Wekraft can sync commits, pull requests, and branches automatically.",
@@ -67,7 +67,7 @@ export const STEPS: StepConfig[] = [
   {
     id: 3,
     icon: Users,
-    label: "Invite teammates",
+    label: "Invite teammates to collaborate",
     hint: "Share the invite link or email",
     description:
       "Bring your whole team in. Assign roles, control permissions, and collaborate in real time",
@@ -84,7 +84,7 @@ export const STEPS: StepConfig[] = [
   {
     id: 4,
     icon: LayoutDashboard,
-    label: "Visit your workspace",
+    label: "Visit your Project workspace",
     hint: "Explore tasks, sprints & team tools",
     description:
       "Your workspace is the command center for your project. Explore tasks, sprints, issues, and your team — all in one place.",
@@ -101,7 +101,7 @@ export const STEPS: StepConfig[] = [
   {
     id: 5,
     icon: CalendarClock,
-    label: "Set a project deadline",
+    label: "Set a project deadline to Track",
     hint: "Keeps the team focused",
     description:
       "Define a target delivery date for your project. Wekraft will track your time-to-deadline and alert you as it approaches.",
@@ -312,7 +312,7 @@ export function GettingStartedChecklist() {
                 <span className="flex flex-col flex-1 min-w-0">
                   <span
                     className={cn(
-                      "text-[13px] font-medium leading-none transition-colors",
+                      "text-sm font-medium leading-none transition-colors",
                       done
                         ? "text-muted-foreground line-through decoration-muted-foreground/50"
                         : open
