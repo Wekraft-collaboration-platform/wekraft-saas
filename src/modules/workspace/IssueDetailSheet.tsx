@@ -45,6 +45,7 @@ import {
 import { Loader2 } from "lucide-react";
 import { EditIssueDialog } from "./EditIssueDialog";
 import { MoveToSprintDialog } from "./MoveToSprintDialog";
+import { ISSUE_STATUS_ICONS } from "@/lib/static-store";
 import {
   Tooltip,
   TooltipContent,
@@ -407,7 +408,7 @@ export const IssueDetailSheet = ({
                       "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] border capitalize",
                       statusColors[realIssue.status] || "bg-accent border-border text-neutral-400"
                     )}>
-                      <Circle size={8} className="fill-current" />
+                      {ISSUE_STATUS_ICONS[realIssue.status] || <Circle size={8} className="fill-current" />}
                       {realIssue.status}
                     </span>
                   </div>
@@ -425,17 +426,25 @@ export const IssueDetailSheet = ({
                           {realIssue.assignedTo && realIssue.assignedTo.length > 0 ? (
                             <div className="flex items-center gap-2">
                               <div className="flex -space-x-1.5">
-                                {realIssue.assignedTo.map((person: any, i: number) => (
-                                  <Avatar
-                                    key={i}
-                                    className="w-6.5 h-6.5 border-2 border-neutral-900 shadow-sm"
-                                  >
-                                    <AvatarImage src={person.avatar} />
-                                    <AvatarFallback className="text-[10px] bg-neutral-800 text-neutral-400">
-                                      {person.name[0]}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                ))}
+                                <TooltipProvider>
+                                  {realIssue.assignedTo.map((person: any, i: number) => (
+                                    <Tooltip key={i}>
+                                      <TooltipTrigger asChild>
+                                        <Avatar
+                                          className="w-6.5 h-6.5 border-2 border-neutral-900 shadow-sm cursor-pointer"
+                                        >
+                                          <AvatarImage src={person.avatar} />
+                                          <AvatarFallback className="text-[10px] bg-neutral-800 text-neutral-400">
+                                            {person.name[0]}
+                                          </AvatarFallback>
+                                        </Avatar>
+                                      </TooltipTrigger>
+                                      <TooltipContent className="bg-popover border border-border text-popover-foreground text-xs py-1 px-2 rounded-md">
+                                        <p>{person.name}</p>
+                                      </TooltipContent>
+                                    </Tooltip>
+                                  ))}
+                                </TooltipProvider>
                               </div>
                               <div className="w-6 h-6 rounded-full border border-neutral-800 bg-neutral-800/30 hover:bg-neutral-800 flex items-center justify-center text-neutral-400 hover:text-neutral-200 transition-colors">
                                 <Plus size={10} />

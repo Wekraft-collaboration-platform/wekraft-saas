@@ -31,6 +31,7 @@ import {
 } from "@/components/ui/tooltip";
 import { cn } from "@/lib/utils";
 import { CreateIssueDialog } from "@/modules/workspace/CreateIssueDialog";
+import { InviteDialog } from "@/modules/project/inviteDilogag";
 import { ImportGithubIssueDialog } from "@/modules/workspace/heatmaps/ImportGithubIssueDialog";
 import { IssueDetailSheet } from "@/modules/workspace/IssueDetailSheet";
 import {
@@ -42,12 +43,7 @@ import {
 import { useKayaStore } from "@/store/useKayaStore";
 import { api } from "../../../../../../../../convex/_generated/api";
 
-const users = [
-  { name: "Ritesh", img: "https://i.pravatar.cc/40?img=1" },
-  { name: "Mia", img: "https://i.pravatar.cc/40?img=2" },
-  { name: "Alex", img: "https://i.pravatar.cc/40?img=3" },
-  { name: "John", img: "https://i.pravatar.cc/40?img=4" },
-];
+// Project members list is retrieved dynamically via query below
 
 const GithubIssueCard = ({
   issue,
@@ -59,10 +55,10 @@ const GithubIssueCard = ({
   const severity = issue.severity
     ? SEVERITY_CONFIG[issue.severity]
     : {
-        label: "No Severity",
-        iconColor: "text-neutral-500",
-        icon: null,
-      };
+      label: "No Severity",
+      iconColor: "text-neutral-500",
+      icon: null,
+    };
   const type = TYPE_CONFIG[issue.type];
 
   return (
@@ -159,17 +155,25 @@ const GithubIssueCard = ({
           </div>
 
           <div className="flex -space-x-1.5">
-            {issue.assignedTo?.slice(0, 3).map((assignee, i) => (
-              <Avatar
-                key={i}
-                className="h-5.5 w-5.5 border dark:border-sidebar border-neutral-200 dark:group-hover:border-neutral-800 group-hover:border-neutral-300 transition-all"
-              >
-                <AvatarImage src={assignee.avatar} />
-                <AvatarFallback className="text-[8px] dark:bg-neutral-800 bg-neutral-200 dark:text-neutral-400 text-neutral-600">
-                  {assignee.name[0]}
-                </AvatarFallback>
-              </Avatar>
-            ))}
+            <TooltipProvider>
+              {issue.assignedTo?.slice(0, 3).map((assignee, i) => (
+                <Tooltip key={i}>
+                  <TooltipTrigger asChild>
+                    <Avatar
+                      className="h-5.5 w-5.5 border dark:border-sidebar border-neutral-200 dark:group-hover:border-neutral-800 group-hover:border-neutral-300 transition-all cursor-pointer"
+                    >
+                      <AvatarImage src={assignee.avatar} />
+                      <AvatarFallback className="text-[8px] dark:bg-neutral-800 bg-neutral-200 dark:text-neutral-400 text-neutral-600">
+                        {assignee.name[0]}
+                      </AvatarFallback>
+                    </Avatar>
+                  </TooltipTrigger>
+                  <TooltipContent className="bg-popover border border-border text-popover-foreground text-[10px] py-1 px-1.5 rounded-md">
+                    <p>{assignee.name}</p>
+                  </TooltipContent>
+                </Tooltip>
+              ))}
+            </TooltipProvider>
           </div>
         </div>
       </div>
@@ -238,25 +242,41 @@ const IssuesPage = () => {
         <div className="flex items-center gap-5">
           {/* Avatar Stack */}
           <div className="flex -space-x-3">
-            {users.map((user, i) => (
-              <Avatar
-                key={i}
-                className="w-8 h-8 border-2 border-background hover:z-10 transition"
-              >
-                <AvatarImage src={user.img} />
-                <AvatarFallback>{user.name[0]}</AvatarFallback>
-              </Avatar>
-            ))}
+            <TooltipProvider>
+              {members &&
+                members.slice(0, 5).map((member) => (
+                  <Tooltip key={member.userId}>
+                    <TooltipTrigger asChild>
+                      <Avatar
+                        className="w-8 h-8 border-2 border-background hover:z-10 transition cursor-pointer"
+                      >
+                        <AvatarImage src={member.userImage} />
+                        <AvatarFallback className="text-[10px] uppercase font-bold">
+                          {member.userName?.[0] || "?"}
+                        </AvatarFallback>
+                      </Avatar>
+                    </TooltipTrigger>
+                    <TooltipContent className="bg-popover border border-border text-popover-foreground text-xs py-2 px-4! rounded-md">
+                      <p>{member.userName}</p>
+                    </TooltipContent>
+                  </Tooltip>
+                ))}
+            </TooltipProvider>
           </div>
 
           {/* Invite Button */}
-          <Button
-            className="text-xs cursor-pointer px-4 bg-blue-600 text-white hover:bg-blue-700"
-            size="sm"
-          >
-            <UserPlus className="w-5 h-5 mr-1" />
-            Invite
-          </Button>
+          <InviteDialog
+            inviteLink={project.inviteLink}
+            trigger={
+              <Button
+                className="text-xs cursor-pointer px-5! bg-blue-600 text-white hover:bg-blue-700"
+                size="sm"
+              >
+                <UserPlus className="w-5 h-5 mr-1" />
+                Invite
+              </Button>
+            }
+          />
         </div>
       </header>
 

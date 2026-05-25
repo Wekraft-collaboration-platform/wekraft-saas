@@ -259,7 +259,7 @@ const ProjectWorkspace = () => {
             </div>
             <Progress
               value={calculateProgress()}
-              className="h-4.5! bg-blue-100/50 dark:bg-accent [&>div]:bg-blue-500 transition-all duration-500"
+              className="h-4! bg-blue-100/50 dark:bg-accent [&>div]:bg-blue-500 transition-all duration-500"
             />
           </CardContent>
           <CardFooter className="flex flex-col items-start gap-3 border-t pt-5! px-2!">
@@ -281,7 +281,7 @@ const ProjectWorkspace = () => {
 
                 {/* Deadline Date */}
                 <div className="flex flex-col items-center gap-0.5 text-center">
-                  <span className="flex items-center gap-1 text-[10px]  font-medium text-muted-foreground ">
+                  <span className="flex items-center gap-1 text-xs  font-medium text-muted-foreground ">
                     <FlagTriangleRight className="w-3 h-3 text-muted-foreground" />{" "}
                     Deadline
                   </span>
@@ -307,7 +307,7 @@ const ProjectWorkspace = () => {
                       : "cursor-not-allowed opacity-50",
                   )}
                 >
-                  Change <ClockFading className="w-3 h-3!" />
+                  Set Deadline <ClockFading className="w-3 h-3!" />
                 </Button>
 
                 {/* Alerts Dropdown Button */}
@@ -327,27 +327,14 @@ const ProjectWorkspace = () => {
                       Set Alerts <AlertCircle className="w-3 h-3!" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-48">
-                    <DropdownMenuLabel className="text-[11px] font-semibold text-muted-foreground">
+                  <DropdownMenuContent align="end" className="w-60">
+                    <DropdownMenuLabel className="text-sm  text-center">
                       Project Alerts
                     </DropdownMenuLabel>
                     <DropdownMenuSeparator />
-                    <DropdownMenuItem className="cursor-pointer text-xs">
-                      <span>25% Duration Reached</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="cursor-pointer text-xs">
-                      <span>50% Duration Reached</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="cursor-pointer text-xs">
-                      <span>75% Duration Reached</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuItem className="cursor-pointer text-xs">
-                      <span>90% Duration Reached</span>
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem className="cursor-pointer text-xs text-primary focus:text-primary">
-                      <span>+ Custom Alert...</span>
-                    </DropdownMenuItem>
+                    <div className="h-20 flex items-center justify-center">
+                      Coming soon....
+                    </div>
                   </DropdownMenuContent>
                 </DropdownMenu>
               </div>
