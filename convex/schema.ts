@@ -191,6 +191,7 @@ export default defineSchema({
         v.object({
           name: v.string(),
           url: v.string(),
+          size: v.optional(v.number()),
         }),
       ),
     ),
@@ -262,6 +263,7 @@ export default defineSchema({
         v.object({
           name: v.string(),
           url: v.string(),
+          size: v.optional(v.number()),
         }),
       ),
     ),

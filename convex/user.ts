@@ -345,6 +345,7 @@ export const getUserById = query({
       avatarUrl: user.avatarUrl ?? null,
       accountType: user.accountType,
       clerkToken: user.clerkToken,
+      email: user.email,
     };
   },
 });
@@ -631,4 +632,69 @@ export const markGettingStartedCompleteSeen = mutation({
     });
   },
 });
+
+// =======================================
+// CLOUD STORAGE MANAGEMENT (Owner-based)
+// =======================================
+export const checkAndIncrementStorage = mutation({
+  args: {
+    projectId: v.id("projects"),
+    fileSize: v.number(),
+    isTeamspace: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args) => {
+    const project = await ctx.db.get(args.projectId);
+    if (!project) throw new Error("Project not found");
+
+    const owner = await ctx.db.get(project.ownerId);
+    if (!owner) throw new Error("Project owner not found");
+
+    // Check 1: Free plan owner cannot upload task/issue attachments
+    const plan = owner.accountType || "free";
+    if (!args.isTeamspace && plan === "free") {
+      throw new Error("Attachments are disabled for Free projects. Upgrade to Plus/Pro to unlock.");
+    }
+
+    const limits = getPlanLimits(owner);
+    const limit = limits.cloud_storage;
+    const currentUsage = owner.cloudStorageUsage ?? 0;
+
+    if (currentUsage + args.fileSize > limit) {
+      throw new Error("Storage limit exceeded");
+    }
+
+    const newUsage = currentUsage + args.fileSize;
+    await ctx.db.patch(owner._id, {
+      cloudStorageUsage: newUsage,
+      updatedAt: Date.now(),
+    });
+
+    return { success: true, currentUsage: newUsage, limit };
+  },
+});
+
+export const decrementStorage = mutation({
+  args: {
+    projectId: v.id("projects"),
+    fileSize: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const project = await ctx.db.get(args.projectId);
+    if (!project) throw new Error("Project not found");
+
+    const owner = await ctx.db.get(project.ownerId);
+    if (!owner) throw new Error("Project owner not found");
+
+    const currentUsage = owner.cloudStorageUsage ?? 0;
+    const newUsage = Math.max(0, currentUsage - args.fileSize);
+
+    await ctx.db.patch(owner._id, {
+      cloudStorageUsage: newUsage,
+      updatedAt: Date.now(),
+    });
+
+    return { success: true, currentUsage: newUsage };
+  },
+});
+
 

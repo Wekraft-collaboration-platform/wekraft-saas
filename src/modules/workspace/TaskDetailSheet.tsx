@@ -61,6 +61,7 @@ import {
 import { Loader2 } from "lucide-react";
 import { EditTaskDialog } from "./EditTaskDialog";
 import { MoveToSprintDialog } from "./MoveToSprintDialog";
+import { StorageLimitDialog } from "./StorageLimitDialog";
 import {
   Tooltip,
   TooltipContent,
@@ -134,6 +135,12 @@ export const TaskDetailSheet = ({
   const [isMarkingIssue, setIsMarkingIssue] = useState(false);
   const [showConfirmDialog, setShowConfirmDialog] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
+  const [showStorageLimitDialog, setShowStorageLimitDialog] = useState(false);
+
+  const owner = useQuery(
+    api.user.getUserById,
+    project?.ownerId ? { userId: project.ownerId } : "skip",
+  );
 
   if (!currentTask) return null;
 
@@ -217,6 +224,7 @@ export const TaskDetailSheet = ({
     try {
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("projectId", currentTask.projectId);
 
       const response = await fetch("/api/attachments", {
         method: "POST",
@@ -230,13 +238,25 @@ export const TaskDetailSheet = ({
         taskId: currentTask._id,
         name: data.name,
         url: data.url,
+        size: file.size,
       });
 
       toast.success("Attachment added successfully", { id: toastId });
     } catch (error: any) {
-      toast.error(error.message || "Failed to upload attachment", {
-        id: toastId,
-      });
+      const msg = error.message || "";
+      if (
+        msg.includes("limit") ||
+        msg.includes("disabled") ||
+        msg.includes("exceeded") ||
+        msg.includes("upgrade")
+      ) {
+        setShowStorageLimitDialog(true);
+        toast.dismiss(toastId);
+      } else {
+        toast.error(msg || "Failed to upload attachment", {
+          id: toastId,
+        });
+      }
     } finally {
       setIsUploading(false);
     }
@@ -850,6 +870,13 @@ export const TaskDetailSheet = ({
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      <StorageLimitDialog
+        isOpen={showStorageLimitDialog}
+        onClose={() => setShowStorageLimitDialog(false)}
+        ownerName={owner?.name}
+        ownerEmail={owner?.email}
+      />
     </Sheet>
   );
 };

@@ -61,6 +61,7 @@ import {
   ISSUE_STATUS_ICONS,
 } from "@/lib/static-store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { StorageLimitDialog } from "./StorageLimitDialog";
 
 interface CreateIssueDialogProps {
   projectName?: string;
@@ -95,14 +96,19 @@ export const CreateIssueDialog = ({
     { userId: Id<"users">; name: string; avatar?: string }[]
   >([]);
   const [isPending, setIsPending] = useState(false);
-  const [attachments, setAttachments] = useState<{ name: string; url: string }[]>([]);
+  const [attachments, setAttachments] = useState<{ name: string; url: string; size?: number }[]>([]);
   const [isUploading, setIsUploading] = useState(false);
+  const [showStorageLimitDialog, setShowStorageLimitDialog] = useState(false);
 
   const members = useQuery(api.project.getProjectMembers, { projectId });
   const project = useQuery(api.project.getProjectById, { projectId });
   const projectDetails = useQuery(api.projectDetails.getProjectDetails, {
     projectId,
   });
+  const owner = useQuery(
+    api.user.getUserById,
+    project?.ownerId ? { userId: project.ownerId } : "skip",
+  );
   const createIssue = useMutation(api.issue.createIssue);
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -120,6 +126,7 @@ export const CreateIssueDialog = ({
     try {
       const formData = new FormData();
       formData.append("file", file);
+      formData.append("projectId", projectId);
 
       const response = await fetch("/api/issue-attachments", {
         method: "POST",
@@ -129,10 +136,21 @@ export const CreateIssueDialog = ({
       const data = await response.json();
       if (data.error) throw new Error(data.error);
 
-      setAttachments((prev) => [...prev, { name: data.name, url: data.url }]);
+      setAttachments((prev) => [...prev, { name: data.name, url: data.url, size: file.size }]);
       toast.success("File uploaded successfully", { id: toastId });
     } catch (error: any) {
-      toast.error(error.message || "Failed to upload file", { id: toastId });
+      const msg = error.message || "";
+      if (
+        msg.includes("limit") ||
+        msg.includes("disabled") ||
+        msg.includes("exceeded") ||
+        msg.includes("upgrade")
+      ) {
+        setShowStorageLimitDialog(true);
+        toast.dismiss(toastId);
+      } else {
+        toast.error(msg || "Failed to upload file", { id: toastId });
+      }
     } finally {
       setIsUploading(false);
     }
@@ -596,6 +614,13 @@ export const CreateIssueDialog = ({
           </div>
         </div>
       </DialogContent>
+
+      <StorageLimitDialog
+        isOpen={showStorageLimitDialog}
+        onClose={() => setShowStorageLimitDialog(false)}
+        ownerName={owner?.name}
+        ownerEmail={owner?.email}
+      />
     </Dialog>
   );
 };

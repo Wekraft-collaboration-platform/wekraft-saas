@@ -31,7 +31,7 @@ export const PLAN_CONFIGS: Record<PlanType, PlanLimits> = {
     message_before_join: false,
     project_heatmap: "limited",
     dedicated_support: "basic",
-    cloud_storage: 0,
+    cloud_storage: 2 * 1024 * 1024 * 1024, // 2 gb
     kaya_ai: "none",
     automated_reporting: false,
     experimental_features: false,

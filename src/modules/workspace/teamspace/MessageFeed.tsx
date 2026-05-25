@@ -69,6 +69,7 @@ import { Id } from "../../../../convex/_generated/dataModel";
 import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { useChannelReads } from "./hooks/useChannelReads";
+import { StorageLimitDialog } from "../StorageLimitDialog";
 
 interface Props {
   channel: Channel | null;
@@ -152,6 +153,16 @@ export function MessageFeed({
     previewUrl: string;
     caption: string;
   }>>([]);
+  const [showStorageLimitDialog, setShowStorageLimitDialog] = useState(false);
+
+  const project = useQuery(api.project.getProjectById, {
+    projectId: projectId as Id<"projects">,
+  });
+
+  const owner = useQuery(
+    api.user.getUserById,
+    project?.ownerId ? { userId: project.ownerId } : "skip",
+  );
 
   const handleUploadMedia = async (file: File, caption: string) => {
     const id = "optimistic-upload-" + crypto.randomUUID();
@@ -170,7 +181,14 @@ export function MessageFeed({
       });
 
       if (!res.ok) {
-        throw new Error(await res.text());
+        let errMsg = "Failed to upload media";
+        try {
+          const errData = await res.json();
+          errMsg = errData.error || errMsg;
+        } catch {
+          errMsg = await res.text() || errMsg;
+        }
+        throw new Error(errMsg);
       }
 
       const data = await res.json();
@@ -194,9 +212,19 @@ export function MessageFeed({
           undefined
         );
       }
-    } catch (err) {
+    } catch (err: any) {
       console.error(err);
-      toast.error("Failed to upload media");
+      const msg = err.message || "";
+      if (
+        msg.includes("limit") ||
+        msg.includes("disabled") ||
+        msg.includes("exceeded") ||
+        msg.includes("upgrade")
+      ) {
+        setShowStorageLimitDialog(true);
+      } else {
+        toast.error("Failed to upload media");
+      }
     } finally {
       setOptimisticUploads(prev => prev.filter(u => u.id !== id));
       URL.revokeObjectURL(previewUrl);
@@ -1025,6 +1053,13 @@ export function MessageFeed({
           </motion.div>
         )}
       </AnimatePresence>
+
+      <StorageLimitDialog
+        isOpen={showStorageLimitDialog}
+        onClose={() => setShowStorageLimitDialog(false)}
+        ownerName={owner?.name}
+        ownerEmail={owner?.email}
+      />
     </div>
   );
 }

@@ -78,8 +78,22 @@ export default function DashboardPage() {
   const { user: clerkUser } = useUser();
   const searchParams = useSearchParams();
 
+
+
   const [activeTab, setActiveTab] = useState<"stats" | "projects" | "discover">("stats");
   const [isRightSidebarExpanded, setIsRightSidebarExpanded] = useState(false);
+
+  // Helper to format bytes into human readable format
+  const formatBytes = (bytes: number, decimals = 1) => {
+    if (bytes === 0) return "0 Bytes";
+    const k = 1024;
+    const dm = decimals < 0 ? 0 : decimals;
+    const sizes = ["Bytes", "KB", "MB", "GB", "TB"];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(dm)) + " " + sizes[i];
+  };
+
+
 
   const [deadlines, setDeadlines] = useState<any[] | null>(null);
   const [events, setEvents] = useState<any[] | null>(null);
@@ -159,6 +173,11 @@ export default function DashboardPage() {
   const userPlan = currentUser?.accountType || "free";
   const createLimit = userPlan === "pro" ? 20 : userPlan === "plus" ? 10 : 2;
   const joinLimit = userPlan === "pro" ? 20 : userPlan === "plus" ? 10 : 2;
+
+  const userLimits = useQuery(api.user.getUserLimits);
+  const cloudStorageLimit = userLimits?.cloud_storage ?? 2 * 1024 * 1024 * 1024;
+  const cloudStorageUsage = currentUser?.cloudStorageUsage ?? 0;
+  const storagePercentage = Math.min(100, Math.round((cloudStorageUsage / cloudStorageLimit) * 100));
 
   // React query for git stats
   const { data: dashboardStats, isLoading: isStatsLoading } = useReactQuery({
@@ -652,12 +671,64 @@ export default function DashboardPage() {
               )}
             >
               {isRightSidebarExpanded && (
-                <div className="flex flex-col gap-4 px-2 transition-opacity duration-300 w-full items-center">
-                  <span>
-                    user account, cloud storage &amp; usage: this will come here
-                    future todo
-                  </span>
-                  <Button id="download-extension-btn" variant="outline" size="sm" className="w-full text-xs cursor-pointer">
+                <div className="flex flex-col gap-5 px-2 transition-opacity duration-300 w-full text-left">
+                  {/* Account & Plan Header */}
+                  {currentUser && (
+                    <div className="flex items-center gap-3 bg-neutral-900/50 dark:bg-neutral-800/40 p-3 rounded-2xl border border-border/60">
+                      <Avatar className="h-10 w-10 border border-border">
+                        <AvatarImage src={currentUser.avatarUrl ?? clerkUser?.imageUrl} />
+                        <AvatarFallback className="bg-primary/10 text-primary font-bold">
+                          {(currentUser.name || clerkUser?.fullName || "?").substring(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-semibold text-sm text-foreground truncate">
+                          {currentUser.name || clerkUser?.fullName || "Developer"}
+                        </span>
+                        <div className="flex items-center gap-1.5 mt-0.5">
+                          <span className={cn(
+                            "text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full tracking-wider border",
+                            currentUser.accountType === "pro" && "bg-gradient-to-r from-violet-600/20 to-indigo-600/20 border-violet-500/30 text-violet-400 shadow-[0_0_10px_rgba(139,92,246,0.1)]",
+                            currentUser.accountType === "plus" && "bg-gradient-to-r from-blue-600/20 to-sky-600/20 border-blue-500/30 text-blue-400 shadow-[0_0_10px_rgba(59,130,246,0.1)]",
+                            currentUser.accountType === "free" && "bg-neutral-800/60 border-neutral-700/60 text-neutral-400"
+                          )}>
+                            {currentUser.accountType}
+                          </span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Cloud Storage Usage Card */}
+                  <div className="bg-neutral-900/50 dark:bg-neutral-800/40 p-4 rounded-2xl border border-border/60 space-y-3">
+                    <div className="flex items-center justify-between text-xs text-foreground/80 font-medium">
+                      <span className="flex items-center gap-1.5">
+                        <Gem className="w-3.5 h-3.5 text-blue-500" /> Cloud Storage
+                      </span>
+                      <span className="text-[10px] font-bold text-muted-foreground">
+                        {storagePercentage}% used
+                      </span>
+                    </div>
+
+                    {/* Beautiful Progress Bar */}
+                    <div className="w-full bg-neutral-800 dark:bg-neutral-950 rounded-full h-2 overflow-hidden border border-border/20">
+                      <div
+                        className={cn(
+                          "h-full rounded-full transition-all duration-500 ease-out",
+                          storagePercentage > 85 ? "bg-gradient-to-r from-red-500 to-amber-500" : "bg-gradient-to-r from-blue-500 to-indigo-500"
+                        )}
+                        style={{ width: `${storagePercentage}%` }}
+                      />
+                    </div>
+
+                    {/* Numeric Storage details */}
+                    <div className="flex justify-between items-center text-[10px] text-muted-foreground font-medium">
+                      <span>{formatBytes(cloudStorageUsage)}</span>
+                      <span>of {formatBytes(cloudStorageLimit)}</span>
+                    </div>
+                  </div>
+
+                  <Button id="download-extension-btn" variant="outline" size="sm" className="w-full text-xs cursor-pointer rounded-xl">
                     <Download className="w-4 h-4 mr-1.5" /> Download Extension
                   </Button>
                 </div>
