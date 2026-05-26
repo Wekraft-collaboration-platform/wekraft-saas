@@ -25,30 +25,30 @@ const MyProfilePage = () => {
   }
 
   return (
-    <div className="w-full min-h-full bg-background text-foreground">
-      <div className="max-w-[1400px] mx-auto px-4 sm:px-6 md:px-8 py-6 md:py-8 flex flex-col gap-4">
+    <div className="w-full min-h-full bg-background text-foreground overflow-x-clip">
+      <div className="max-w-[1200px] mx-auto px-5 sm:px-7 md:px-10 py-6 md:py-8 flex flex-col gap-6">
 
         {/* ── 1. Profile Header ── */}
         <ProfileHeader user={user} isUpgraded={isUpgraded} />
 
         {/* ── 2. About Me (left) + Skills & Social Links (right) ── */}
-        <div className="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-4 items-stretch">
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-6 items-stretch">
 
           {/* About Me */}
-          <div className="bg-sidebar border border-border rounded-xl shadow-sm flex flex-col min-h-[160px]">
+          <div className="bg-card border border-border rounded-xl shadow-sm flex flex-col min-h-[160px]">
             <div className="px-4 pt-4 pb-0">
               <BioEditor initialBio={user.bio} isUpgraded={isUpgraded} />
             </div>
           </div>
 
           {/* Right column: Skills + Social Links */}
-          <div className="flex flex-col gap-4 h-full">
+          <div className="flex flex-col gap-6 h-full">
 
-            <div className="bg-sidebar border border-border rounded-xl shadow-sm px-4 pt-4 pb-4">
+            <div className="bg-card border border-border rounded-xl shadow-sm px-4 pt-4 pb-4">
               <ProfileSkills skills={user?.skills} />
             </div>
 
-            <div className="bg-sidebar border border-border rounded-xl shadow-sm px-4 pt-4 pb-4 flex-1">
+            <div className="bg-card border border-border rounded-xl shadow-sm px-4 pt-4 pb-4 flex-1">
               <SocialLinks socialLinks={user?.socialLinks} />
             </div>
 

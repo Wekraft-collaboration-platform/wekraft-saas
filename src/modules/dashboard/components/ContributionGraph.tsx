@@ -110,41 +110,43 @@ const ContributionGraph = () => {
   });
 
   return (
-    <div className="flex w-full flex-col gap-3" ref={containerRef}>
-      <div className="w-full">
-        <ActivityCalendar
-          data={processedContributions}
-          theme={{
-            light: ["#ebedf0", "#9be9a8", "#40c463", "#30a14e", "#216e39"],
-            dark: ["#161b22", "#0e4429", "#006d32", "#26a641", "#39d353"],
-          }}
-          colorScheme={theme === "dark" ? "dark" : "light"}
-          blockSize={dims.blockSize}
-          blockMargin={dims.blockMargin}
-          fontSize={dims.fontSize}
-          showColorLegend
-          showTotalCount
-          showMonthLabels
-          style={{ width: "100%" }}
-          labels={{
-            totalCount: "{{count}} contributions in the last year",
-          }}
-          tooltips={{
-            activity: {
-              text: (activity) => {
-                const countStr = activity.count === 0 ? "No" : activity.count;
-                const suffixStr = activity.count === 1 ? "commit" : "commits";
-                let dateStr = activity.date;
-                try {
-                  dateStr = format(parseISO(activity.date), "MMMM d, yyyy");
-                } catch (_) {
-                  /* Fallback */
-                }
-                return `${countStr} ${suffixStr} on ${dateStr}`;
+    <div className="w-full overflow-hidden" ref={containerRef}>
+      <div className="w-full overflow-x-auto pb-2 flex justify-start sm:justify-center">
+        <div className="min-w-max p-1">
+          <ActivityCalendar
+            data={processedContributions}
+            theme={{
+              light: ["#ebedf0", "#9be9a8", "#40c463", "#30a14e", "#216e39"],
+              dark: ["#161b22", "#0e4429", "#006d32", "#26a641", "#39d353"],
+            }}
+            colorScheme={theme === "dark" ? "dark" : "light"}
+            blockSize={dims.blockSize}
+            blockMargin={dims.blockMargin}
+            fontSize={dims.fontSize}
+            showColorLegend
+            showTotalCount
+            showMonthLabels
+            showWeekdayLabels
+            labels={{
+              totalCount: "{{count}} contributions in the last year",
+            }}
+            tooltips={{
+              activity: {
+                text: (activity) => {
+                  const countStr = activity.count === 0 ? "No" : activity.count;
+                  const suffixStr = activity.count === 1 ? "commit" : "commits";
+                  let dateStr = activity.date;
+                  try {
+                    dateStr = format(parseISO(activity.date), "MMMM d, yyyy");
+                  } catch (_) {
+                    /* Fallback */
+                  }
+                  return `${countStr} ${suffixStr} on ${dateStr}`;
+                },
               },
-            },
-          }}
-        />
+            }}
+          />
+        </div>
       </div>
     </div>
   );

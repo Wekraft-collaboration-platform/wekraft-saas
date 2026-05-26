@@ -38,14 +38,14 @@ interface KpiCardProps {
 
 function KpiCard({ title, icon: Icon, isConnected, isLoading, children }: KpiCardProps) {
   return (
-    <Card className="bg-sidebar border border-border shadow-sm hover:shadow-md transition-all duration-200 group flex flex-col">
+    <Card className="bg-card border border-border shadow-sm hover:shadow-md transition-all duration-200 group flex flex-col">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pt-3 pb-1">
         <CardTitle className="text-sm font-medium text-muted-foreground">
           {title}
         </CardTitle>
         <Icon className="h-4 w-4 text-muted-foreground group-hover:text-primary transition-colors duration-200 shrink-0" />
       </CardHeader>
-      <CardContent className="px-3 pb-3 pt-1 flex-1 flex flex-col justify-end">
+      <CardContent className="px-3 pb-3 pt-2 flex-1 flex flex-col justify-end">
         {!isConnected ? (
           <div className="flex items-center gap-1.5 text-[11px] font-medium text-destructive/80 py-0.5">
             <AlertCircle className="h-3 w-3" />
@@ -68,7 +68,7 @@ function KpiCard({ title, icon: Icon, isConnected, isLoading, children }: KpiCar
 function StatValue({ value, label }: { value: number; label: string }) {
   return (
     <div className="flex flex-col">
-      <span className="text-2xl font-bold font-mono tracking-tight text-foreground leading-none">
+      <span className="text-xl font-bold font-mono tracking-tight text-foreground leading-none">
         {value.toLocaleString()}
       </span>
       <span className="text-[11px] text-muted-foreground mt-1 font-medium whitespace-nowrap">{label}</span>
@@ -194,10 +194,10 @@ export function GithubStats() {
       )}
 
       {/* ── Main grid: Impact Profile (left) + KPIs (right, 2×2) ── */}
-      <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] xl:grid-cols-[340px_1fr] gap-4 items-stretch">
+      <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] xl:grid-cols-[340px_1fr] gap-6 items-stretch">
 
         {/* Left — Impact Profile */}
-        <Card className="bg-sidebar border border-border shadow-sm flex flex-col">
+        <Card className="bg-card border border-border shadow-sm flex flex-col">
           <CardHeader className="px-3 pt-3 pb-1">
             <CardTitle className="text-sm font-semibold tracking-tight text-foreground flex items-center gap-2">
               <span className={cn("h-2 w-2 rounded-full shrink-0", isConnected ? "bg-primary animate-pulse" : "bg-foreground/20")} />
@@ -205,7 +205,7 @@ export function GithubStats() {
             </CardTitle>
           </CardHeader>
 
-          <CardContent className="px-3 pb-3 pt-0 flex flex-col items-center justify-center flex-1 min-h-[140px]">
+          <CardContent className="px-3 pb-3 pt-0 flex flex-col items-center justify-center flex-1 min-h-[150px]">
             {!isConnected ? (
               <div className="flex flex-col items-center gap-3 text-center">
                 <div className="flex h-14 w-14 items-center justify-center rounded-full bg-muted/50">
@@ -244,7 +244,7 @@ export function GithubStats() {
         </Card>
 
         {/* Right — KPI 2×2 grid, same height as left */}
-        <div className="grid grid-cols-2 grid-rows-2 gap-4 h-full">
+        <div className="grid grid-cols-2 grid-rows-2 gap-6 h-full">
 
           <KpiCard title="Commits" icon={LucideGitCommit} isConnected={isConnected} isLoading={isLoading}>
             <StatValue value={dashboardStats?.totalCommits ?? 0} label="Last year" />
@@ -274,8 +274,8 @@ export function GithubStats() {
       </div>
 
       {/* ── Contribution Graph ── */}
-      <Card className="bg-sidebar border border-border shadow-sm hover:shadow-md transition-all duration-200">
-        <CardHeader className="flex items-center justify-center px-4 pt-4 pb-0">
+      <Card className="bg-card border border-border shadow-sm hover:shadow-md transition-all duration-200 overflow-hidden">
+        <CardHeader className="flex flex-row items-center justify-between space-y-0 px-4 pt-4 pb-1">
           <CardTitle className="flex items-center gap-2 text-sm font-semibold text-foreground">
             <Github className="h-4 w-4 text-foreground/40" />
             Contribution Graph
