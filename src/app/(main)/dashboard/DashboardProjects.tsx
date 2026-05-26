@@ -7,6 +7,7 @@ import {
   FolderCode,
   Keyboard,
   Loader2,
+  Minus,
   Plus,
   Settings2,
 } from "lucide-react";
@@ -29,6 +30,7 @@ import { cn } from "@/lib/utils";
 import CreateProjectDialog from "@/modules/project/CreateProjectDialog";
 import { api } from "../../../../convex/_generated/api";
 import { useSidebar } from "@/components/ui/sidebar";
+import { LuGitBranch } from "react-icons/lu";
 
 
 interface DashboardProject {
@@ -503,7 +505,7 @@ export const DashboardProjects = ({
                 </div>
 
                 {/* Middle Section - Pocket Top */}
-                <div className="flex flex-col gap-1.5 flex-1 justify-center mt-3.5 px-0.5">
+                <div className="flex flex-col gap-1.5 flex-1 justify-center mt-5  px-0.5">
                   <div className="flex items-center gap-4">
                     <h3
                       className="text-base font-bold capitalize text-foreground truncate tracking-tight hover:text-primary transition-colors cursor-pointer"
@@ -524,16 +526,32 @@ export const DashboardProjects = ({
                       {project.role}
                     </span>
 
+                    <div className="ml-auto">
+                      {project?.repoName && project?.repoId ? (
+                        <>
+                          <Button variant={'outline'} size='icon-xs' className="">
+                            <LuGitBranch className="inline w-4 h-4" />
+                          </Button>
+                        </>
+                      ) : (
+                        <>
+                          <Button variant={'outline'} size='icon-xs' className="">
+                            <Minus className="inline w-4 h-4" />
+                          </Button>
+                        </>
+                      )}
+                    </div>
+
                   </div>
 
-                  <div className="flex items-center justify-between gap-2 mt-0.5">
+                  <div className="flex items-center justify-between gap-2 mt-5">
                     {/* Avatars Stack */}
                     {project.totalMembers > 0 ? (
                       <div className="flex -space-x-1.5">
                         {project.members?.slice(0, 3).map((member, i) => (
                           <div
                             key={i}
-                            className="size-6 rounded-full border border-sidebar bg-accent overflow-hidden shadow-xs"
+                            className="size-7.5 rounded-full border border-sidebar bg-accent overflow-hidden shadow-xs"
                             title={member.userName}
                           >
                             {member.userImage ? (
@@ -597,7 +615,7 @@ export const DashboardProjects = ({
                     }
                     className="h-7 text-xs border-accent!"
                   >
-                    <Settings2 className="size-3" /> View
+                    <Settings2 className="size-3" /> Edit
                   </Button>
                   <Button
                     id="workspace-link-btn"
