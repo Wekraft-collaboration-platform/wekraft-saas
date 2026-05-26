@@ -9,7 +9,7 @@ import {
   DialogDescription,
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
-import { Infinity, Zap } from "lucide-react";
+import { Clover, Infinity, Zap } from "lucide-react";
 
 interface MemberLimitDialogProps {
   open: boolean;
@@ -39,24 +39,31 @@ export const MemberLimitDialog = ({
     onOpenChange(false);
   };
 
-  //  <Image
-  //           src="/22.svg"
-  //           alt="Member limit reached illustration"
-  //           width={160}
-  //           height={160}
-  //           className="relative z-10 drop-shadow-xl select-none"
-  //           priority
-  //           unoptimized
-  //         />
+
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md px-4 overflow-hidden border border-accent bg-sidebar rounded-xl">
         <h2 className="px-3 py-1 text-sm border border-accent rounded-full w-fit bg-muted mt-4 ">Member Limit Reached  <Infinity className="inline w-4 h-4" /></h2>
 
-        <div className="h-40 border border-accent bg-linear-to-br from-muted via-muted to-indigo-600/40 rounded-lg relative overflow-hidden">
+        <div className="h-40 border border-accent bg-linear-to-br from-muted via-muted to-blue-600/40 rounded-lg relative overflow-hidden flex items-center">
+          {/* Left text */}
+          <div className="pl-6 z-10">
+            <p className="text-2xl font-semibold leading-tight tracking-tight text-foreground">
+              Looks Like, Limit<br /> is reached ??
+            </p>
+          </div>
 
-          <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_center,_rgba(99,102,241,0.3)_0%,_rgba(255,255,255,0.1)_30%,_transparent_70%)] mix-blend-overlay animate-pulse" />
+          {/* Right illustration */}
+          <Image
+            src="/22.svg"
+            alt="Limit reached"
+            width={250}
+            height={250}
+            className="absolute -right-10 -bottom-2 select-none"
+            priority
+            unoptimized
+          />
         </div>
 
         {/* Body */}
@@ -96,11 +103,11 @@ export const MemberLimitDialog = ({
           {/* Actions */}
           <div className="flex items-center gap-3 pt-1">
             <Button
-              className="flex-1 gap-2 font-semibold text-sm"
+              className="flex-1 gap-2 text-sm"
               onClick={handleUpgrade}
             >
-              <Zap className="w-4 h-4" />
               Upgrade Now
+              <Clover className="ml-2 h-4 w-4" />
             </Button>
             <Button
               variant="outline"

@@ -116,6 +116,7 @@ export const ProjectJoinRequests = ({
               isPower={isPower}
               onAction={onAction}
               isLimitReached={isLimitReached}
+              onLimitReached={() => setLimitDialogOpen(true)}
             />
           ))}
         </div>
@@ -146,13 +147,21 @@ interface RequestCardProps {
   isPower: boolean;
   onAction: (request: any, action: "accepted" | "rejected") => void;
   isLimitReached: boolean;
+  onLimitReached?: () => void;
 }
 
-const RequestCard = ({ request, isPower, onAction, isLimitReached }: RequestCardProps) => {
+const RequestCard = ({ request, isPower, onAction, isLimitReached, onLimitReached }: RequestCardProps) => {
   const isPending = request.status === "pending";
 
   return (
-    <Card className={`group p-0 border border-accent! rounded-md bg-sidebar transition-all duration-200 ${!isPending ? "opacity-90" : "hover:bg-accent/60 cursor-pointer"}`}>
+    <Card
+      className={`group p-0 border border-accent! rounded-md bg-sidebar transition-all duration-200 ${!isPending ? "opacity-90" : "hover:bg-accent/60 cursor-pointer"}`}
+      onClick={() => {
+        if (isPending && isLimitReached && onLimitReached) {
+          onLimitReached();
+        }
+      }}
+    >
       <CardContent className="p-4 flex items-start justify-between ">
         <div className="flex gap-4 w-full">
           <ShoAvatar className="h-10 w-10 border border-border">
