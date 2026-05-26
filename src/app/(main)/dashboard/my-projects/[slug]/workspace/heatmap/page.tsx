@@ -16,6 +16,7 @@ const HeatmapPage = () => {
   const [recentlyChangedPaths, setRecentlyChangedPaths] = useState<string[]>(
     [],
   );
+  const [tasks, setTasks] = useState<any[]>([]);
 
   const params = useParams();
   const slug = params.slug as string;
@@ -68,6 +69,7 @@ const HeatmapPage = () => {
         setRecentlyChangedPaths={setRecentlyChangedPaths}
         setStructure={setStructure}
         isFreeTier={isFreeTier}
+        onTasksLoaded={setTasks}
         onToggle={(open) => {
           setIsPanelOpen(open);
           if (open) setSidebarOpen(false);
@@ -80,6 +82,7 @@ const HeatmapPage = () => {
           issuePaths={issuePaths}
           recentlyChangedPaths={recentlyChangedPaths}
           isFreeTier={isFreeTier}
+          tasks={tasks}
         />
       </div>
     </div>

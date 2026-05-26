@@ -1,41 +1,44 @@
 "use client";
 
-import { useSidebar } from "@/components/ui/sidebar";
 import {
+  FileIcon as FileSymbol,
+  DefaultFolderOpenedIcon as FolderOpenSymbol,
+  FolderIcon as FolderSymbol,
+} from "@react-symbols/icons/utils";
+import { useConvex, useQuery } from "convex/react";
+import { formatDistanceToNow } from "date-fns";
+import { AnimatePresence, motion } from "framer-motion";
+import {
+  Bug,
   ChevronDown,
   ChevronLeft,
   ChevronRight,
-  Network,
-  RefreshCw,
-  Info,
-  Package,
-  Bug,
-  GitCommit,
+  CloudSync,
   Clover,
+  ExternalLink,
+  GitCommit,
+  Github,
+  Info,
+  Loader2,
+  Network,
+  Package,
+  RefreshCw,
 } from "lucide-react";
-import {
-  FileIcon as FileSymbol,
-  FolderIcon as FolderSymbol,
-  DefaultFolderOpenedIcon as FolderOpenSymbol,
-} from "@react-symbols/icons/utils";
-import { memo, useEffect, useState, useCallback, useMemo } from "react";
-import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { useQuery } from "convex/react";
-import { ExternalLink, Github } from "lucide-react";
-import { Id } from "../../../../convex/_generated/dataModel";
-import { api } from "../../../../convex/_generated/api";
-import {
-  getRepoStructure,
-  getRecentlyChangedPaths,
-  getLatestCommits,
-  type FolderNode,
-  type CommitInfo,
-} from "./action";
-import { motion, AnimatePresence } from "framer-motion";
-import { formatDistanceToNow } from "date-fns";
-import { toast } from "sonner";
 import { useRouter } from "next/navigation";
+import { memo, useCallback, useEffect, useMemo, useState } from "react";
+import { toast } from "sonner";
+import { Button } from "@/components/ui/button";
+import { useSidebar } from "@/components/ui/sidebar";
+import { cn } from "@/lib/utils";
+import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
+import {
+  type CommitInfo,
+  type FolderNode,
+  getLatestCommits,
+  getRecentlyChangedPaths,
+  getRepoStructure,
+} from "./action";
 
 interface HeatmapPanelProps {
   isOpen: boolean;
@@ -48,6 +51,7 @@ interface HeatmapPanelProps {
   setRecentlyChangedPaths?: (paths: string[]) => void;
   setStructure: (structure: FolderNode | null) => void;
   isFreeTier?: boolean;
+  onTasksLoaded?: (tasks: any[]) => void;
 }
 
 // Helper to filter the tree for issues
@@ -270,10 +274,12 @@ export const HeatmapPanel = memo(
     setRecentlyChangedPaths,
     setStructure,
     isFreeTier,
+    onTasksLoaded,
   }: HeatmapPanelProps) => {
     const { setOpen: setSidebarOpen } = useSidebar();
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
+    const convex = useConvex();
 
     const project = useQuery(
       api.project.getProjectById,
@@ -357,6 +363,17 @@ export const HeatmapPanel = memo(
             setStructure(result.data.root);
             setRecentlyChangedPaths?.(churnData);
             setLastUpdated(result.data.lastUpdated);
+
+            if (result.data.tasks) {
+              onTasksLoaded?.(result.data.tasks);
+            } else if (projectId) {
+              const tasksData = await convex.query(
+                api.workspace.getTimelineTasks,
+                { projectId },
+              );
+              onTasksLoaded?.(tasksData);
+            }
+
             if (force) toast.success("Refreshed from GitHub!");
           }
         } catch (error) {
@@ -365,7 +382,7 @@ export const HeatmapPanel = memo(
           setIsLoading(false);
         }
       },
-      [repository, setStructure],
+      [repository, setStructure, projectId, convex, onTasksLoaded],
     );
 
     const loadCommits = useCallback(
@@ -470,12 +487,16 @@ export const HeatmapPanel = memo(
                   size="icon-sm"
                   onClick={() => loadStructure(true)}
                   disabled={isLoading}
-                  className={cn("h-8 w-8")}
+                  className={cn("h-8.5 w-8.5")}
                 >
-                  <RefreshCw
-                    size={14}
-                    className={cn(isLoading && "animate-spin")}
-                  />
+                  {isLoading ? (
+                    <Loader2
+                      size={16}
+                      className={cn(isLoading && "animate-spin")}
+                    />
+                  ) : (
+                    <CloudSync size={16} />
+                  )}
                 </Button>
               </div>
 
@@ -537,12 +558,12 @@ export const HeatmapPanel = memo(
                 <div className="py-10 text-center">
                   <p className="text-sm text-muted-foreground font-medium">
                     This is Premium Feature. <br />
-                    <span className="text-primary">Upgrade to Plus</span> to
-                    see insights / errors and more.
+                    <span className="text-primary">Upgrade to Plus</span> to see
+                    insights / errors and more.
                   </p>
 
-                  <Button className="text-xs cursor-pointer mt-4" size='sm'>
-                    Upgrade Now <Clover/>
+                  <Button className="text-xs cursor-pointer mt-4" size="sm">
+                    Upgrade Now <Clover />
                   </Button>
                 </div>
               ) : (
