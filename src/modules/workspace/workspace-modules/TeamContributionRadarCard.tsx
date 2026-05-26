@@ -53,14 +53,14 @@ export const TeamContributionRadarCard = ({
   });
   const contributions = (providedData || queryData) as
     | {
-        userId: string;
-        name: string;
-        avatar: string;
-        tasks: number;
-        issues: number;
-        speed: number;
-        reliability: number;
-      }[]
+      userId: string;
+      name: string;
+      avatar: string;
+      tasks: number;
+      issues: number;
+      speed: number;
+      reliability: number;
+    }[]
     | undefined;
 
   const radarData = useMemo(() => {

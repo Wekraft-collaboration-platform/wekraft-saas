@@ -90,9 +90,9 @@ export const MemberWorkloadCard = ({
             <TooltipProvider delayDuration={100}>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <button className="group relative flex items-center h-6 rounded-full border border-border bg-accent/30 text-muted-foreground hover:text-foreground transition-all duration-300 ease-in-out w-6 hover:w-24 overflow-hidden text-[10px] font-medium flex-none">
+                  <button className="group relative flex items-center h-6 rounded-full border border-border bg-accent/30 text-muted-foreground hover:text-foreground transition-all duration-300 ease-in-out w-7 hover:w-28 overflow-hidden text-[10px] font-medium flex-none">
                     <div className="absolute left-[4px] flex items-center gap-1.5">
-                      <HelpCircle className="w-3.5 h-3.5 shrink-0" />
+                      <HelpCircle className="w-4 h-4 shrink-0" />
                       <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out whitespace-nowrap">
                         Know more
                       </span>
@@ -146,9 +146,9 @@ export const MemberWorkloadCard = ({
           <TooltipProvider delayDuration={100}>
             <Tooltip>
               <TooltipTrigger asChild>
-                <button className="group relative flex items-center h-6 rounded-full border border-border bg-accent/30 text-muted-foreground hover:text-foreground transition-all duration-300 ease-in-out w-6 hover:w-24 overflow-hidden text-[10px] font-medium flex-none">
+                <button className="group relative flex items-center h-6 rounded-full border border-border bg-accent/30 text-muted-foreground hover:text-foreground transition-all duration-300 ease-in-out w-7 hover:w-28 overflow-hidden text-[10px] font-medium flex-none">
                   <div className="absolute left-[4px] flex items-center gap-1.5">
-                    <HelpCircle className="w-3.5 h-3.5 shrink-0" />
+                    <HelpCircle className="w-4 h-4 shrink-0" />
                     <span className="opacity-0 group-hover:opacity-100 transition-opacity duration-300 ease-in-out whitespace-nowrap">
                       Know more
                     </span>

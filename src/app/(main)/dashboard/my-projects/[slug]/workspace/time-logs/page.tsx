@@ -123,13 +123,13 @@ const TimeLogsPage = () => {
             />
           </div>
         ) : (
-          <div className="flex flex-col mt-20 items-start justify-center space-y-1.5 p-4 w-[380px] mx-auto">
+          <div className="flex flex-col mt-28 items-start justify-center space-y-1.5 p-4 w-[380px] mx-auto">
             <Image
               src="/pat103.svg"
               alt="Empty Workspace"
               width={100}
               height={100}
-              className="opacity-90"
+              className="opacity-100"
             />
             <p className="text-base font-medium  text-primary">
               Deadline not set
