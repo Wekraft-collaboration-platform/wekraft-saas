@@ -1,128 +1,82 @@
 "use client";
+
 import { useQuery as useConvexQuery } from "convex/react";
-import { Gem, Loader, Settings2, Share2, Star } from "lucide-react";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Button } from "@/components/ui/button";
-import { Card } from "@/components/ui/card";
+import { Loader2 } from "lucide-react";
+import { useState } from "react";
 import { useUserPlan } from "@/hooks/use-user-plan";
 import { useStoreUser } from "@/hooks/use-user-store";
 import { BioEditor } from "@/modules/profile/components/BioEditor";
 import { GithubStats } from "@/modules/profile/components/githubstats";
+import { ProfileHeader } from "@/modules/profile/components/ProfileHeader";
+import { ProfileSkills } from "@/modules/profile/components/ProfileSkills";
+import { SocialLinks } from "@/modules/profile/components/SocialLinks";
+import { ProfileSettings } from "@/modules/profile/components/ProfileSettings";
 import { api } from "../../../../../convex/_generated/api";
 
 const MyProfilePage = () => {
   const user = useConvexQuery(api.user.getCurrentUser);
   const { isLoading: isStoreLoading } = useStoreUser();
   const { isUpgraded } = useUserPlan(user as any);
+  const [showSettings, setShowSettings] = useState(false);
 
   if (isStoreLoading || !user) {
     return (
-      <div className="w-full h-full p-8 2xl:py-7 2xl:px-10 flex items-center justify-center">
-        <Loader className="h-10 w-10 animate-spin" />
+      <div className="w-full h-screen flex flex-col items-center justify-center gap-3 text-muted-foreground">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" />
+        <p className="text-sm">Loading your profile…</p>
       </div>
     );
   }
 
   return (
-    <div className="w-full h-full p-8 2xl:py-7 2xl:px-10 overflow-y-auto overflow-x-hidden no-scrollbar">
-      <div className="flex gap-10">
-        <Card className="min-w-[360px] flex flex-col items-center p-0 overflow-hidden relative shadow-lg border border-dashed">
-          <div
-            className={`${isUpgraded ? "bg-yellow-500/20" : "bg-blue-600/20"} h-24 w-full absolute z-0 blur-xl opacity-50`}
-          ></div>
-          {isUpgraded ? (
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-yellow-500/20 to-transparent z-0"></div>
-          ) : (
-            <div className="absolute top-0 left-0 w-full h-full bg-gradient-to-b from-blue-600/20 to-transparent z-0"></div>
-          )}
+    <div className="w-full min-h-full bg-background text-foreground overflow-x-clip">
+      <div className="max-w-[1200px] mx-auto px-5 sm:px-7 md:px-10 py-6 md:py-8 flex flex-col gap-6">
 
-          <div className="flex justify-end w-full gap-4 z-10 px-4 pt-4">
-            <Button
-              variant={"outline"}
-              size="icon-sm"
-              className="bg-background/50 border-none backdrop-blur-sm shadow-none"
-            >
-              <Share2 className="h-4 w-4" />
-            </Button>
-            <Button
-              variant={"outline"}
-              size="icon-sm"
-              className="bg-background/50 border-none backdrop-blur-sm shadow-none"
-            >
-              <Settings2 className="h-4 w-4" />
-            </Button>
-          </div>
+        {/* ── 1. Profile Header ── */}
+        <ProfileHeader 
+          user={user} 
+          isUpgraded={isUpgraded} 
+          showSettings={showSettings}
+          onToggleSettings={() => setShowSettings(!showSettings)}
+        />
 
-          <div className="flex flex-col gap-3 items-center -mt-10 z-10">
-            <Avatar className="h-40 w-40 border-4 border-card shadow-2xl">
-              <AvatarImage src={user.avatarUrl || ""} />
-              <AvatarFallback className="text-4xl bg-muted font-bold font-pop">
-                {user.name?.charAt(0)}
-              </AvatarFallback>
-            </Avatar>
+        {showSettings ? (
+          <ProfileSettings 
+            user={user} 
+            isUpgraded={isUpgraded} 
+            onBack={() => setShowSettings(false)} 
+          />
+        ) : (
+          <>
+            {/* ── 2. About Me (left) + Skills & Social Links (right) ── */}
+            <div className="grid grid-cols-1 lg:grid-cols-[1fr_260px] gap-6 items-stretch">
 
-            <div className="mt-2 flex flex-col items-center gap-2 pb-4">
-              <div className="flex items-center gap-2">
-                <h2 className="text-xl font-bold font-pop tracking-tight">
-                  {user.name}
-                </h2>
-                {isUpgraded && (
-                  <div className="bg-yellow-400 dark:bg-yellow-500 p-1 rounded-full shadow-lg ring-2 ring-yellow-400/20">
-                    <Star className="h-3 w-3 text-black fill-black" />
-                  </div>
-                )}
-              </div>
-              <p className="text-muted-foreground text-sm font-pop font-medium">
-                @
-                {user.githubUsername ||
-                  user?.name?.toLowerCase().replace(" ", "")}
-                <span className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-                  {" "}
-                  | joined{" "}
-                  {new Date(user._creationTime).toLocaleDateString("en-US", {
-                    month: "long",
-                    year: "numeric",
-                  })}
-                </span>
-              </p>
-
-              <div className="flex  gap-3">
-                {user?.skills?.map((skill) => (
-                  <span
-                    key={skill}
-                    className="px-2 bg-accent/30 py-1 text-[10px] font-normal tracking-wider text-muted-foreground border rounded-full"
-                  >
-                    {skill}
-                  </span>
-                ))}
+              {/* About Me */}
+              <div className="bg-card border border-border rounded-xl shadow-sm flex flex-col min-h-[160px]">
+                <div className="px-4 pt-4 pb-0">
+                  <BioEditor initialBio={user.bio} isUpgraded={isUpgraded} />
+                </div>
               </div>
 
-              <div className="flex w-full items-center justify-evenly border-t pt-3 mt-3">
-                <Button variant={"outline"} size={"sm"} className="text-xs">
-                  Share <Share2 className="h-4 w-4" />
-                </Button>
-                {isUpgraded ? (
-                  <p className="text-xs text-muted-foreground font-medium uppercase tracking-wider">
-                    <span className="text-white">Plan:</span>{" "}
-                    {user?.accountType}
-                  </p>
-                ) : (
-                  <Button variant={"default"} size={"sm"} className="text-xs">
-                    Upgrade <Gem className="h-4 w-4" />
-                  </Button>
-                )}
+              {/* Right column: Skills + Social Links */}
+              <div className="flex flex-col gap-6 h-full">
+
+                <div className="bg-card border border-border rounded-xl shadow-sm px-4 pt-4 pb-4">
+                  <ProfileSkills skills={user?.skills} />
+                </div>
+
+                <div className="bg-card border border-border rounded-xl shadow-sm px-4 pt-4 pb-4 flex-1">
+                  <SocialLinks socialLinks={user?.socialLinks} />
+                </div>
+
               </div>
             </div>
-          </div>
-        </Card>
 
-        <div className="flex-1 border bg-card rounded-lg p-4 shadow-sm  flex flex-col">
-          <BioEditor initialBio={user.bio} isUpgraded={isUpgraded} />
-        </div>
-      </div>
+            {/* ── 3. GitHub Stats ── */}
+            <GithubStats />
+          </>
+        )}
 
-      <div className="mt-8">
-        <GithubStats />
       </div>
     </div>
   );
