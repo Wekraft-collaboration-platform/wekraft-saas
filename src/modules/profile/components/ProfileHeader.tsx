@@ -1,6 +1,4 @@
 import {
-  Gem,
-  Settings2,
   Share2,
   Star,
   Upload,
@@ -10,16 +8,21 @@ import {
   Briefcase,
   CreditCard,
   Sparkles,
+  Pencil,
+  Loader2,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
+import { cn } from "@/lib/utils";
 
 interface ProfileHeaderProps {
   user: any;
   isUpgraded: boolean;
+  showSettings?: boolean;
+  onToggleSettings?: () => void;
 }
 
 interface MetaChipProps {
@@ -46,7 +49,12 @@ function MetaChip({ icon: Icon, label, value }: MetaChipProps) {
   );
 }
 
-export const ProfileHeader = ({ user, isUpgraded }: ProfileHeaderProps) => {
+export const ProfileHeader = ({ 
+  user, 
+  isUpgraded,
+  showSettings = false,
+  onToggleSettings
+}: ProfileHeaderProps) => {
   const handle =
     user.githubUsername ||
     user?.name?.toLowerCase().replace(/\s+/g, "") ||
@@ -160,22 +168,19 @@ export const ProfileHeader = ({ user, isUpgraded }: ProfileHeaderProps) => {
               <Share2 className="h-3.5 w-3.5" />
               Share
             </Button>
-            <Button
-              variant="outline"
-              size="icon"
-              className="h-9 w-9 bg-background/60 backdrop-blur-sm shadow-none"
-              aria-label="Settings"
-            >
-              <Settings2 className="h-4 w-4" />
-            </Button>
-            {!isPro && (
+
+            {onToggleSettings && (
               <Button
-                variant="default"
+                variant="outline"
                 size="sm"
-                className="bg-blue-600 hover:bg-blue-700 text-white h-9 gap-1.5 text-xs"
+                onClick={onToggleSettings}
+                className={cn(
+                  "gap-1.5 bg-background/60 backdrop-blur-sm shadow-none h-9 text-xs transition-colors",
+                  showSettings && "bg-foreground text-background hover:bg-foreground hover:text-background/90"
+                )}
               >
-                Upgrade
-                <Gem className="h-3.5 w-3.5" />
+                <Pencil className="h-3.5 w-3.5" />
+                {showSettings ? "View Profile" : "Edit"}
               </Button>
             )}
           </div>

@@ -111,7 +111,7 @@ const ContributionGraph = () => {
 
   return (
     <div className="w-full overflow-hidden" ref={containerRef}>
-      <div className="w-full overflow-x-auto pb-2 flex justify-start sm:justify-center">
+      <div className="w-full overflow-x-auto pb-2 flex justify-center">
         <div className="min-w-max p-1">
           <ActivityCalendar
             data={processedContributions}
