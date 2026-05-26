@@ -83,7 +83,7 @@ export function PieChartVariant1({ stats }: ImpactScoreDisplayProps) {
       <h1 className="text-center text-sm capitalize text-primary mb-2.5">
        {/* Impact Score */}
       </h1>
-      <ChartContainer config={chartConfig} className="h-[190px] w-full">
+      <ChartContainer config={chartConfig} className="h-[200px] w-full max-w-[320px] mx-auto">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <ChartTooltip
@@ -174,7 +174,7 @@ export function ScoreDetailsDialog({
           </Button>
         )}
       </DialogTrigger>
-      <DialogContent className="sm:max-w-[500px] border-border bg-card ">
+      <DialogContent className="w-[calc(100vw-2rem)] sm:max-w-[500px] border-border bg-card max-h-[90dvh] overflow-y-auto">
         <DialogHeader>
           <div className="flex items-center justify-between py-4 mt-2">
             <DialogTitle className="text-2xl font-bold">

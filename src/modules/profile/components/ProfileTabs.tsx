@@ -106,44 +106,47 @@ export function ProfileTabs({ user, isUpgraded }: ProfileTabsProps) {
   return (
     <div className="w-full mt-6">
       <Tabs defaultValue="github" className="w-full">
-        <TabsList className="w-full justify-start bg-transparent border-b rounded-none p-0 mb-6  gap-1">
-          <TabsTrigger
-            value="github"
-            className="flex items-center gap-2 px-6 py-3 border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent rounded-none transition-all"
-          >
-            <Github className="h-4 w-4" />
-            <span className="text-sm font-semibold">GitHub</span>
-          </TabsTrigger>
+        {/* Horizontally scrollable tab bar for small screens */}
+        <div className="overflow-x-auto scrollbar-hide border-b">
+          <TabsList className="w-max min-w-full justify-start bg-transparent rounded-none p-0 mb-0 gap-1 border-none">
+            <TabsTrigger
+              value="github"
+              className="flex items-center gap-1.5 px-4 sm:px-6 py-3 border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent rounded-none transition-all whitespace-nowrap"
+            >
+              <Github className="h-4 w-4" />
+              <span className="text-sm font-semibold">GitHub</span>
+            </TabsTrigger>
 
-          {slots.map((index) => {
-            const hasLink = socialLinks[index];
-            const isLocked = !isUpgraded;
-            const info = getPlatformInfo(hasLink);
+            {slots.map((index) => {
+              const hasLink = socialLinks[index];
+              const isLocked = !isUpgraded;
+              const info = getPlatformInfo(hasLink);
 
-            return (
-              <TabsTrigger
-                key={index}
-                value={`slot-${index}`}
-                disabled={isLocked}
-                className={cn(
-                  "flex items-center gap-2 px-6 py-2 border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent rounded-none transition-all relative",
-                  isLocked && "grayscale opacity-50 cursor-not-allowed border-none"
-                )}
-              >
-                <info.icon className="h-4 w-4" />
-                <span className="text-sm font-medium">
-                  {hasLink ? info.label : `Slot ${index + 1}`}
-                </span>
-                {isLocked && (
-                  <Lock className="h-3 w-3 absolute top-2 right-2 opacity-100" />
-                )}
-              </TabsTrigger>
-            );
-          })}
-        </TabsList>
+              return (
+                <TabsTrigger
+                  key={index}
+                  value={`slot-${index}`}
+                  disabled={isLocked}
+                  className={cn(
+                    "flex items-center gap-1.5 px-4 sm:px-6 py-2 border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent rounded-none transition-all relative whitespace-nowrap",
+                    isLocked && "grayscale opacity-50 cursor-not-allowed border-none"
+                  )}
+                >
+                  <info.icon className="h-4 w-4" />
+                  <span className="text-sm font-medium">
+                    {hasLink ? info.label : `Slot ${index + 1}`}
+                  </span>
+                  {isLocked && (
+                    <Lock className="h-3 w-3 absolute top-2 right-2 opacity-100" />
+                  )}
+                </TabsTrigger>
+              );
+            })}
+          </TabsList>
+        </div>
 
-        <TabsContent value="github" className="mt-0 focus-visible:outline-none">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <TabsContent value="github" className="mt-6 focus-visible:outline-none">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card className="bg-card border-dashed">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm font-medium text-muted-foreground flex items-center justify-between">
@@ -161,7 +164,7 @@ export function ProfileTabs({ user, isUpgraded }: ProfileTabsProps) {
                     <PieChartVariant1 stats={dashboardStats} />
                   </div>
                 ) : (
-                  <div className="h-[200px] flex items-center justify-center text-sm text-muted-foreground">
+                  <div className="h-[200px] flex items-center justify-center text-sm text-muted-foreground text-center px-4">
                     Connect GitHub to see Impact Score
                   </div>
                 )}
