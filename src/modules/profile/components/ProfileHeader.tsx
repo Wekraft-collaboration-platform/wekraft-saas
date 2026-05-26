@@ -1,3 +1,4 @@
+import { useState, useEffect } from "react";
 import {
   Star,
   Clock,
@@ -89,6 +90,49 @@ export const ProfileHeader = ({
   const isPro =
     user.accountType === "plus" || user.accountType === "pro" || isUpgraded;
 
+  const [country, setCountry] = useState("Global");
+
+  useEffect(() => {
+    // 1. Fast local fallback using timezone
+    try {
+      const tz = Intl.DateTimeFormat().resolvedOptions().timeZone;
+      if (tz) {
+        if (tz.includes("Kolkata") || tz.includes("Calcutta")) {
+          setCountry("India");
+        } else if (tz.includes("New_York") || tz.includes("Chicago") || tz.includes("Los_Angeles") || tz.includes("Denver")) {
+          setCountry("United States");
+        } else if (tz.includes("London")) {
+          setCountry("United Kingdom");
+        } else if (tz.includes("Paris") || tz.includes("Berlin") || tz.includes("Rome") || tz.includes("Madrid")) {
+          setCountry("Europe");
+        }
+      }
+    } catch (e) {}
+
+    // 2. Fetch accurate IP-based location
+    fetch("https://ipapi.co/json/")
+      .then((res) => {
+        if (!res.ok) throw new Error();
+        return res.json();
+      })
+      .then((data) => {
+        if (data && data.country_name) {
+          setCountry(data.country_name);
+        }
+      })
+      .catch(() => {
+        // Fallback option 2
+        fetch("https://ip-api.com/json")
+          .then((res) => res.json())
+          .then((data) => {
+            if (data && data.country) {
+              setCountry(data.country);
+            }
+          })
+          .catch(() => {});
+      });
+  }, []);
+
   return (
     <Card className="w-full overflow-hidden shadow-sm border border-zinc-800 relative bg-black text-white rounded-2xl">
       {/* ── Banner ── */}
@@ -158,7 +202,7 @@ export const ProfileHeader = ({
 
           <div className="flex items-center gap-1.5">
             <MapPin className="h-3.5 w-3.5 text-zinc-500" />
-            <span>Global</span>
+            <span>{country}</span>
           </div>
 
           <div className="flex items-center gap-1.5">

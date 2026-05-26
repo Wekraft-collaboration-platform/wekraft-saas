@@ -147,7 +147,13 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
   const handleAddSkill = () => {
     const trimmed = newSkill.trim();
     if (!trimmed) return;
-    if (editSkills.includes(trimmed)) {
+    
+    const normalizedNew = trimmed.toLowerCase().replace(/[\.\s-]/g, "");
+    const alreadyExists = editSkills.some((s) => 
+      s.toLowerCase().replace(/[\.\s-]/g, "") === normalizedNew
+    );
+    
+    if (alreadyExists) {
       toast.error("Skill already exists in the list");
       return;
     }
@@ -434,7 +440,7 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
                 {editSkills.map((skill) => (
                   <span
                     key={skill}
-                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-muted border border-border/40 text-xs font-semibold text-foreground/90"
+                    className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-white border-none text-xs font-bold text-black shadow-sm"
                   >
                     {skill}
                     <button
@@ -482,7 +488,7 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
                 <div className="flex flex-wrap gap-1">
                   {user?.skills && user.skills.length > 0 ? (
                     user.skills.map((skill: string) => (
-                      <span key={skill} className="px-2 py-0.5 rounded bg-muted/60 border text-[10px] font-semibold text-foreground/80">
+                      <span key={skill} className="px-2.5 py-1 rounded bg-white text-xs font-bold text-black border-none shadow-sm">
                         {skill}
                       </span>
                     ))
