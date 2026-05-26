@@ -220,7 +220,7 @@ const FolderNodeComponent = (props: NodeProps) => {
                     onClick={(e) => e.stopPropagation()}
                     className="z-10 bg-zinc-900 border-zinc-800 hover:bg-zinc-800"
                   >
-                    <ChevronUp className="w-4 h-4 text-zinc-400" />
+                    <ChevronUp className="w-4 h-4 text-zinc-200" />
                   </Button>
                 </PopoverTrigger>
                 <PopoverContent
@@ -616,7 +616,7 @@ const HeatmapFlowInner = ({
     // Automatic view fitting on update (smoothly)
     setTimeout(() => {
       fitView({
-        padding: 0.8, // Increased padding to make nodes look "not too big"
+        padding: 0.3, // Decreased padding to bring the view closer
         maxZoom: 0.85, // Constrained limit for premium look
         duration: 1000,
       });
@@ -644,7 +644,7 @@ const HeatmapFlowInner = ({
         onNodeClick={onNodeClick}
         nodeTypes={nodeTypes}
         fitView
-        fitViewOptions={{ padding: 0.8, maxZoom: 0.85 }}
+        fitViewOptions={{ padding: 0.2, maxZoom: 0.85 }}
         colorMode="dark"
         proOptions={{ hideAttribution: true }}
         panOnScroll
@@ -667,7 +667,7 @@ const HeatmapFlowInner = ({
           {/* Docked Control Strip */}
           <div className="bg-[#050505]/80 backdrop-blur-2xl p-1 rounded-2xl border border-white/10 flex flex-col gap-0.5 shadow-2xl justify-center">
             <button
-              onClick={() => fitView({ duration: 800, padding: 0.8 })}
+              onClick={() => fitView({ duration: 800, padding: 0.2 })}
               className="p-2.5 hover:bg-white/5 text-zinc-500 hover:text-white rounded-xl transition-all duration-200 group/btn"
               title="Reset View"
             >
