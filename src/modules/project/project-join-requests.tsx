@@ -9,6 +9,8 @@ import { Badge } from "@/components/ui/badge";
 import { useProjectPermissions } from "@/hooks/use-project-permissions";
 import { toast } from "sonner";
 import { Card, CardContent } from "@/components/ui/card";
+import { useState } from "react";
+import { MemberLimitDialog } from "@/components/member-limit-dialog";
 
 // Assuming these are available in the project
 import {
@@ -30,6 +32,7 @@ export const ProjectJoinRequests = ({
   currentMemberCount,
   memberLimit,
 }: ProjectJoinRequestsProps) => {
+  const [limitDialogOpen, setLimitDialogOpen] = useState(false);
   const requests = useQuery(api.project.getProjectJoinRequests, { projectId });
   const handleRequest = useMutation(api.project.handleJoinRequest);
   const { isPower, isLoading: isPermsLoading } =
@@ -80,18 +83,31 @@ export const ProjectJoinRequests = ({
 
   return (
     <div className="space-y-4 py-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+      {/* Global member-limit dialog */}
+      <MemberLimitDialog
+        open={limitDialogOpen}
+        onOpenChange={setLimitDialogOpen}
+        currentMemberCount={currentMemberCount}
+        memberLimit={memberLimit}
+      />
+
       {isLimitReached && pendingRequests.length > 0 && (
-        <div className="bg-amber-500/10 border border-amber-500/20 rounded-md p-3 mb-4 flex items-center gap-3">
-          <AlertCircle className="w-5 h-5 text-amber-500 shrink-0" />
-          <p className="text-xs font-medium">
+        <button
+          type="button"
+          onClick={() => setLimitDialogOpen(true)}
+          className="w-full text-left bg-blue-600/60 rounded-md p-3 mb-4 flex items-center gap-3  transition-colors cursor-pointer"
+        >
+          <AlertCircle className="w-5 h-5 text-white shrink-0" />
+          <p className="text-sm font-medium">
             Member limit reached ({currentMemberCount}/{memberLimit}). You cannot accept new members until you upgrade.
+            <span className="ml-1 underline text-white">Upgrade →</span>
           </p>
-        </div>
+        </button>
       )}
       {pendingRequests.length > 0 && (
         <div className="space-y-4">
-          <h3 className="text-sm font-semibold text-muted-foreground  px-1 flex items-center gap-2">
-          <LucideTimer className="h-4 w-4"/>  Pending Requests ({pendingRequests.length})
+          <h3 className="text-base   px-1 flex items-center gap-2">
+            <LucideTimer className="h-4 w-4" />  Pending Requests ({pendingRequests.length})
           </h3>
           {pendingRequests.map((request) => (
             <RequestCard
@@ -107,8 +123,8 @@ export const ProjectJoinRequests = ({
 
       {historyRequests.length > 0 && (
         <div className="space-y-4 pt-4">
-          <h3 className="text-sm font-semibold text-muted-foreground px-1 flex items-center gap-2">
-           <LucideHistory className="h-4 w-4"/> History
+          <h3 className="text-base text-muted-foreground px-1 flex items-center gap-2">
+            <LucideHistory className="h-4 w-4" /> History
           </h3>
           {historyRequests.map((request) => (
             <RequestCard
@@ -136,7 +152,7 @@ const RequestCard = ({ request, isPower, onAction, isLimitReached }: RequestCard
   const isPending = request.status === "pending";
 
   return (
-    <Card className={`group p-0 border border-border! rounded-md bg-accent/30 transition-all duration-200 ${!isPending ? "opacity-90" : "hover:bg-accent/40"}`}>
+    <Card className={`group p-0 border border-accent! rounded-md bg-sidebar transition-all duration-200 ${!isPending ? "opacity-90" : "hover:bg-accent/60 cursor-pointer"}`}>
       <CardContent className="p-4 flex items-start justify-between ">
         <div className="flex gap-4 w-full">
           <ShoAvatar className="h-10 w-10 border border-border">
@@ -148,10 +164,10 @@ const RequestCard = ({ request, isPower, onAction, isLimitReached }: RequestCard
 
           <div className="flex-1 space-y-1">
             <div className="flex items-center gap-2">
-              <span className="font-medium text-sm">{request.userName}</span>
+              <span className="font-medium text-sm capitalize">{request.userName}</span>
               <Badge
                 variant="secondary"
-                className="text-[10px] px-2 py-0.5 h-4 cursor-pointer hover:bg-accent transition-colors"
+                className="text-[11px] px-3 py-1 h-6! cursor-pointer hover:bg-accent transition-colors"
               >
                 <User2 className="w-3 h-3 mr-1" /> Visit Profile
               </Badge>

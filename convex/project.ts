@@ -430,7 +430,7 @@ export const getProjectBySlug = query({
       ownerClerkId,
       ownerAccountType: owner?.accountType,
       memberLimit: limits?.members_per_project_limit ?? 3,
-      totalMemberCount: membersTable.length + 1,
+      totalMemberCount: membersTable.length,
     };
 
     // Security: Only return if public OR user is the owner OR user is a member
@@ -803,7 +803,7 @@ export const handleJoinRequest = mutation({
         .withIndex("by_project", (q) => q.eq("projectId", request.projectId))
         .collect();
 
-      if (members.length + 1 >= limits.members_per_project_limit) {
+      if (members.length >= limits.members_per_project_limit) {
         throw new Error(
           `Member limit reached! Your ${owner.accountType || "free"} plan allows maximum ${limits.members_per_project_limit} seats (including you).`,
         );
