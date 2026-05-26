@@ -469,7 +469,6 @@ const TaskPage = () => {
 
 export default TaskPage;
 
-// ─── Create Task Tour Tooltip ─────────────────────────────────────────────────
 function CreateTaskTourTooltip({
   targetId,
   onDismiss,
@@ -481,7 +480,7 @@ function CreateTaskTourTooltip({
   onNext: () => void;
   onCreate: () => void;
 }) {
-  const [pos, setPos] = useState<{ top: number; left: number } | null>(null);
+  const [pos, setPos] = useState<{ top: number; left: number; arrowOffset?: number } | null>(null);
 
   useEffect(() => {
     const calculate = () => {
@@ -490,7 +489,8 @@ function CreateTaskTourTooltip({
       const rect = el.getBoundingClientRect();
       const tooltipWidth = 320;
       const margin = 12;
-      const rawLeft = rect.left + rect.width / 2 - tooltipWidth / 2;
+      const targetCenter = rect.left + rect.width / 2;
+      const rawLeft = targetCenter - tooltipWidth / 2;
       const clampedLeft = Math.min(
         Math.max(margin, rawLeft),
         window.innerWidth - tooltipWidth - margin
@@ -498,6 +498,7 @@ function CreateTaskTourTooltip({
       setPos({
         top: rect.bottom + 20,
         left: clampedLeft,
+        arrowOffset: targetCenter - clampedLeft,
       });
     };
     calculate();
@@ -517,7 +518,10 @@ function CreateTaskTourTooltip({
       style={{ top: pos.top, left: pos.left, width: 320 }}
       onClick={(e) => e.stopPropagation()}
     >
-      <div className="self-center mb-1 -mt-5">
+      <div 
+        className="mb-1 -mt-5"
+        style={{ transform: `translateX(${pos.arrowOffset ? pos.arrowOffset - 160 : 0}px)` }}
+      >
         <svg width="60" height="80" viewBox="0 0 60 80" fill="none" className="text-white drop-shadow-md rotate-180">
           <path
             d="M 30 5 C 45 30, 15 50, 30 75 M 30 75 L 22 65 M 30 75 L 38 65"
