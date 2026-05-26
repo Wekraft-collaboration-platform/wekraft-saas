@@ -17,9 +17,10 @@ import {
   Settings2,
   Sparkles,
   X,
+  Clover,
 } from "lucide-react";
 import Image from "next/image";
-import { useParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import type React from "react";
 import { useEffect, useRef, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -34,6 +35,9 @@ import {
 import { Spinner } from "@/components/ui/spinner";
 import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
+import Link from "next/link";
+import { useKayaStore } from "@/store/useKayaStore";
+import { useHarryStore } from "@/store/useHarryStore";
 import type {
   AgentState,
   CalendarEventInterrupt,
@@ -122,6 +126,10 @@ const AIWorkspace = () => {
 
   const currentUser = useQuery(api.user.getCurrentUser);
   const userId = currentUser?._id;
+
+  const searchParams = useSearchParams();
+  const isHarry = searchParams?.get("harry") === "true";
+  const router = useRouter();
   const project = useQuery(
     api.project.getProjectBySlug,
     slug ? { slug } : "skip",
@@ -145,6 +153,14 @@ const AIWorkspace = () => {
     restoring,
     isStreaming,
   } = useLangGraphAgent<AgentState, InterruptValue, ResumeValue>();
+
+  const isPro = project && (project as any).ownerAccountType === "pro";
+
+  // Close both sheets when landing on workspace AI page
+  useEffect(() => {
+    useKayaStore.getState().setIsOpen(false);
+    useHarryStore.getState().setIsOpen(false);
+  }, []);
 
   useEffect(() => {
     if (appCheckpoints.length > 0 && shouldAutoScroll) {
@@ -313,32 +329,82 @@ const AIWorkspace = () => {
                 transition={{ duration: 0.3 }}
                 className="flex flex-col items-center pt-10 gap-8"
               >
-                <div className="flex items-center gap-3">
-                  <Image src="/kaya.svg" alt="Kaya AI" width={50} height={50} />
-                  <span className="text-3xl font-semibold tracking-tight text-primary font-pop">
-                    Kaya
-                  </span>
+                <div className="flex items-center gap-3 h-[50px]">
+                  <AnimatePresence mode="wait">
+                    <motion.div
+                      key={isHarry ? "harry-logo" : "kaya-logo"}
+                      initial={{ opacity: 0, scale: 0.8, rotate: -15 }}
+                      animate={{ opacity: 1, scale: 1, rotate: 0 }}
+                      exit={{ opacity: 0, scale: 0.8, rotate: 15 }}
+                      transition={{ duration: 0.2 }}
+                      className="relative w-[50px] h-[50px]"
+                    >
+                      <Image
+                        src={isHarry ? "/harry.svg" : "/kaya.svg"}
+                        alt={isHarry ? "Harry AI" : "Kaya AI"}
+                        fill
+                        className="object-contain"
+                      />
+                    </motion.div>
+                  </AnimatePresence>
+                  <AnimatePresence mode="wait">
+                    <motion.span
+                      key={isHarry ? "harry-text" : "kaya-text"}
+                      initial={{ opacity: 0, y: 8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -8 }}
+                      transition={{ duration: 0.2 }}
+                      className={cn(
+                        "text-3xl font-semibold tracking-tight font-pop"
+                      )}
+                    >
+                      {isHarry ? "Harry" : "Kaya"}
+                    </motion.span>
+                  </AnimatePresence>
                 </div>
 
                 <div className="w-full max-w-2xl flex flex-col relative group">
-                  <div className="flex ml-3">
-                    <div
-                      className="flex items-center gap-2 px-4 pt-2 pb-1 rounded-t-full text-sm font-medium text-primary-foreground"
-                      style={{
-                        background:
-                          "linear-gradient(135deg, #f9a8d4 0%, #93c5fd 40%, #c4b5fd 70%, #fda4af 100%)",
-                      }}
+                  <div className="flex ml-3 gap-1">
+                    <button
+                      onClick={() => router.replace(`/dashboard/my-projects/${slug}/workspace/ai?kaya=true`)}
+                      className={cn(
+                        "flex items-center gap-2 px-5 pt-2 pb-1.5 cursor-pointer rounded-t-2xl text-sm font-medium tracking-tight transition-all duration-300 relative",
+                        !isHarry
+                          ? "text-black"
+                          : "text-muted-foreground hover:text-foreground bg-muted"
+                      )}
+                      style={!isHarry ? { background: "linear-gradient(135deg, #f9a8d4 0%, #93c5fd 40%, #c4b5fd 70%, #fda4af 100%)" } : undefined}
                     >
-                      <Image src="/kaya.svg" alt="" width={18} height={18} />
-                      Ask Kaya
-                    </div>
+                      <Image src="/kaya.svg" alt="" width={20} height={20} className="shrink-0" />
+                      <span>Ask Kaya</span>
+                    </button>
+
+                    <button
+                      onClick={() => router.replace(`/dashboard/my-projects/${slug}/workspace/ai?harry=true`)}
+                      className={cn(
+                        "flex items-center gap-2 px-5 pt-2 pb-1.5 cursor-pointer rounded-t-2xl text-sm font-medium tracking-tight transition-all duration-300 relative",
+                        isHarry
+                          ? "text-white"
+                          : "text-muted-foreground hover:text-foreground bg-muted"
+                      )}
+                      style={isHarry ? { background: "linear-gradient(135deg, #fcd34d 0%, #f97316 50%, #ef4444 100%)" } : undefined}
+                    >
+                      <Image src="/harry.svg" alt="" width={20} height={20} className="shrink-0" />
+                      <span>Ask Harry</span>
+                    </button>
                   </div>
 
                   <div
-                    className="rounded-2xl p-0.5 shadow-2xl transition-all duration-500 group-hover:shadow-[#818cf8]/10"
+                    className={cn(
+                      "rounded-2xl p-0.5 shadow-2xl transition-all duration-500",
+                      isHarry
+                        ? "group-hover:shadow-orange-500/10"
+                        : "group-hover:shadow-indigo-500/10"
+                    )}
                     style={{
-                      background:
-                        "linear-gradient(135deg, #f9a8d4 0%, #93c5fd 40%, #c4b5fd 70%, #fda4af 100%)",
+                      background: isHarry
+                        ? "linear-gradient(135deg, #fcd34d 0%, #f97316 50%, #ef4444 100%)"
+                        : "linear-gradient(135deg, #f9a8d4 0%, #93c5fd 40%, #c4b5fd 70%, #fda4af 100%)",
                     }}
                   >
                     <div className="rounded-2xl bg-background flex flex-col relative overflow-hidden">
@@ -351,40 +417,74 @@ const AIWorkspace = () => {
                             handleSendMessage(message);
                           }
                         }}
-                        placeholder="Get instant answers, insights, and ideas."
+                        disabled={!isPro}
+                        placeholder={
+                          !isPro
+                            ? (isHarry ? "Harry is available for Pro projects. Upgrade to Pro to unlock." : "Kaya is available for Pro projects. Upgrade to Pro to unlock.")
+                            : (isHarry ? "Ask Harry to review code, suggest architecture or write PR summaries..." : "Get instant answers, insights, and ideas.")
+                        }
                         className="resize-none border-none outline-none focus:ring-0 min-h-[130px] text-primary/90 placeholder:text-muted-foreground text-[16px] px-5 pt-5 pb-2 bg-input/30 rounded-2xl w-full"
                       />
 
                       <div className="flex items-center justify-between px-4 py-3 border-t border-border/10">
                         <div className="flex items-center gap-2">
                           <Select defaultValue="auto">
-                            <SelectTrigger className="h-7! px-3 rounded-full border border-border bg-accent text-xs text-primary font-medium shadow-none focus:ring-0 gap-1.5 min-w-[110px]">
+                            <SelectTrigger disabled={!isPro} className="h-7! px-3 rounded-full border border-border bg-accent text-xs text-primary font-medium shadow-none focus:ring-0 gap-1.5 min-w-[110px]">
                               <Brain size={15} />
                               <SelectValue placeholder="Auto" />
                             </SelectTrigger>
                             <SelectContent>
                               <SelectItem value="auto">Auto</SelectItem>
-                              <SelectItem value="kaya-fast">
-                                Kaya Fast
-                              </SelectItem>
-                              <SelectItem value="kaya-pro">Kaya Pro</SelectItem>
+                              {isHarry ? (
+                                <>
+                                  <SelectItem value="harry-fast">
+                                    Harry Fast
+                                  </SelectItem>
+                                  <SelectItem value="harry-pro">Harry Pro</SelectItem>
+                                </>
+                              ) : (
+                                <>
+                                  <SelectItem value="kaya-fast">
+                                    Kaya Fast
+                                  </SelectItem>
+                                  <SelectItem value="kaya-pro">Kaya Pro</SelectItem>
+                                </>
+                              )}
                             </SelectContent>
                           </Select>
                         </div>
 
                         <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => handleSendMessage(message)}
-                            disabled={!message.trim() || status === "running"}
-                            className={cn(
-                              "w-8 h-8 rounded-full flex items-center justify-center transition-all",
-                              message.trim()
-                                ? "bg-linear-to-br from-[#f472b6] to-[#818cf8] text-white"
-                                : "bg-muted text-muted-foreground",
-                            )}
-                          >
+                          {!isPro ? (
+                            <Link href="/web/pricing">
+                              <Button
+                                size="sm"
+                                className={cn(
+                                  "h-8 px-4 rounded-full font-semibold text-xs text-white transition-all cursor-pointer flex items-center gap-1 shrink-0",
+                                  isHarry
+                                    ? "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700"
+                                    : "bg-gradient-to-r from-pink-500 to-violet-600 hover:from-pink-600 hover:to-violet-700"
+                                )}
+                              >
+                                Upgrade to Pro <Clover className="w-3.5 h-3.5" />
+                              </Button>
+                            </Link>
+                          ) : (
+                            <button
+                              onClick={() => handleSendMessage(message)}
+                              disabled={!message.trim() || status === "running"}
+                              className={cn(
+                                "w-8 h-8 rounded-full flex items-center justify-center transition-all",
+                                message.trim()
+                                  ? isHarry
+                                    ? "bg-linear-to-br from-[#f59e0b] to-[#ea580c] text-white"
+                                    : "bg-linear-to-br from-[#f472b6] to-[#818cf8] text-white"
+                                  : "bg-muted text-muted-foreground",
+                              )}
+                            >
                             <ArrowRight size={15} />
                           </button>
+                          )}
                         </div>
                       </div>
                     </div>
@@ -490,25 +590,37 @@ const AIWorkspace = () => {
                 onKeyDown={(e) => {
                   if (e.key === "Enter") handleSendMessage(message);
                 }}
-                placeholder="Ask follow up..."
+                disabled={!isPro}
+                placeholder={!isPro ? "Upgrade to Pro to send follow up messages..." : "Ask follow up..."}
                 className="flex-1 bg-transparent border-none outline-none text-[14px] text-primary placeholder:text-muted-foreground py-2"
               />
-              <button
-                onClick={() => handleSendMessage(message)}
-                disabled={!message.trim() || status === "running"}
-                className={cn(
-                  "w-8 h-8 rounded-full flex items-center justify-center transition-all",
-                  message.trim()
-                    ? "bg-primary text-primary-foreground"
-                    : "bg-muted text-muted-foreground",
-                )}
-              >
+              {!isPro ? (
+                <Link href="/web/pricing">
+                  <Button
+                    size="sm"
+                    className="h-8 px-4 rounded-full font-semibold text-xs text-white bg-primary cursor-pointer shrink-0 flex items-center gap-1"
+                  >
+                    Upgrade to Pro <Clover className="w-3.5 h-3.5" />
+                  </Button>
+                </Link>
+              ) : (
+                <button
+                  onClick={() => handleSendMessage(message)}
+                  disabled={!message.trim() || status === "running"}
+                  className={cn(
+                    "w-8 h-8 rounded-full flex items-center justify-center transition-all",
+                    message.trim()
+                      ? "bg-primary text-primary-foreground"
+                      : "bg-muted text-muted-foreground",
+                  )}
+                >
                 {status === "running" ? (
                   <Spinner className="w-4 h-4 text-primary-foreground" />
                 ) : (
                   <ArrowRight size={16} />
                 )}
               </button>
+              )}
             </div>
           </motion.div>
         )}

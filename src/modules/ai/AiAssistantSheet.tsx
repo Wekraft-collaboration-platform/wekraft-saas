@@ -34,7 +34,7 @@ import { useLangGraphAgent } from "@/modules/ai/langGraphAgent/useLangGraphAgent
 import { AppCheckpoint, GraphNode } from "@/modules/ai/langGraphAgent/types";
 import { api } from "../../../convex/_generated/api";
 import { useQuery } from "convex/react";
-import { useParams } from "next/navigation";
+import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { CalendarApprovalCard } from "@/modules/ai/CalendarApprovalCard";
 import { CalendarEventInterrupt } from "@/modules/ai/AgentTypes";
 import { ToolCallCard } from "@/modules/ai/ToolCard";
@@ -51,8 +51,9 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 
 import { useKayaStore } from "@/store/useKayaStore";
+import { useHarryStore } from "@/store/useHarryStore";
 
-interface AiAssistantSheetProps {}
+interface AiAssistantSheetProps { }
 
 const KayaLoader = () => (
   <svg
@@ -101,11 +102,22 @@ const KayaLoader = () => (
   </svg>
 );
 
-export function AiAssistantSheet({}: AiAssistantSheetProps) {
+export function AiAssistantSheet({ }: AiAssistantSheetProps) {
   const { isOpen, setIsOpen, threadId, createNewSession } = useKayaStore();
   const currentUser = useQuery(api.user.getCurrentUser);
   const userId = currentUser?._id;
   const userName = currentUser?.name || "User";
+
+  const searchParams = useSearchParams();
+  const isHarryActive = searchParams?.get("harry") === "true";
+  const router = useRouter();
+
+  // Mutually exclusive sheets
+  useEffect(() => {
+    if (isOpen) {
+      useHarryStore.getState().setIsOpen(false);
+    }
+  }, [isOpen]);
 
   const params = useParams();
   const slug = params?.slug as string;
@@ -177,13 +189,17 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
+        if (typeof window !== "undefined" && window.location.pathname.includes("/workspace/ai")) {
+          return;
+        }
+        if (isHarryActive) return; // Let Harry's sheet handle it
         e.preventDefault();
         setIsOpen(!isOpen);
       }
     };
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
-  }, [isOpen, setIsOpen]);
+  }, [isOpen, setIsOpen, isHarryActive]);
 
   // Focus input when not running
   useEffect(() => {
@@ -399,7 +415,7 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
             </div>
             <div className="flex items-center gap-4">
               {/* If messages */}
-              {appCheckpoints.length > 0 && (
+              {appCheckpoints.length > 0 ? (
                 <Button
                   className="text-[11px] cursor-pointer"
                   size="sm"
@@ -410,6 +426,22 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                   }}
                 >
                   new <MessageSquare className="h-3! w-3!" />
+                </Button>
+              ) : (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-[11px]  shrink-0 cursor-pointer"
+                  onClick={() => {
+                    setIsOpen(false);
+                    useHarryStore.getState().setIsOpen(true);
+                    if (typeof window !== "undefined" && window.location.pathname.includes("/workspace/ai")) {
+                      router.replace(`/dashboard/my-projects/${slug}/workspace/ai?harry=true`);
+                    }
+                  }}
+                >
+                  <Image src="/harry.svg" alt="Harry" width={24} height={24} />
+                  Open Harry
                 </Button>
               )}
               <Button size="sm" variant="default" className="text-[10px]">
