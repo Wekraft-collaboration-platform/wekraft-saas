@@ -28,9 +28,27 @@ import {
   Check,
   User,
   X,
-  FileText,
   Trash2,
 } from "lucide-react";
+import Image from "next/image";
+
+const getFileIcon = (fileName: string) => {
+  const ext = fileName.split(".").pop()?.toLowerCase() ?? "";
+  const map: Record<string, string> = {
+    pdf: "/pdf.svg",
+    jpg: "/jpg.svg",
+    jpeg: "/jpg.svg",
+    png: "/png.svg",
+    doc: "/doc.svg",
+    docx: "/doc.svg",
+    ppt: "/ppt.svg",
+    pptx: "/ppt.svg",
+    xls: "/xls.svg",
+    xlsx: "/xls.svg",
+    svg: "/svg.svg",
+  };
+  return map[ext] ?? "/file.svg";
+};
 import { Label } from "@/components/ui/label";
 import {
   Tooltip,
@@ -571,7 +589,13 @@ export const CreateIssueDialog = ({
                   key={idx}
                   className="flex items-center gap-2 bg-[#252525] border border-[#333] rounded-md px-2 py-1 group"
                 >
-                  <FileText className="w-3.5 h-3.5 text-blue-400" />
+                  <Image
+                    src={getFileIcon(file.name)}
+                    alt={file.name}
+                    width={200}
+                    height={200}
+                    className="shrink-0 w-12 h-12 object-cover"
+                  />
                   <span className="text-[10px] text-neutral-300 max-w-[120px] truncate">
                     {file.name}
                   </span>

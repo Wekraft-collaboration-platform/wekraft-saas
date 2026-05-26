@@ -26,10 +26,28 @@ import {
   Paperclip,
   Clock,
   Check,
-  FileText,
   Trash2,
   AlertCircle,
 } from "lucide-react";
+import Image from "next/image";
+
+const getFileIcon = (fileName: string) => {
+  const ext = fileName.split(".").pop()?.toLowerCase() ?? "";
+  const map: Record<string, string> = {
+    pdf: "/pdf.svg",
+    jpg: "/jpg.svg",
+    jpeg: "/jpg.svg",
+    png: "/png.svg",
+    doc: "/doc.svg",
+    docx: "/doc.svg",
+    ppt: "/ppt.svg",
+    pptx: "/ppt.svg",
+    xls: "/xls.svg",
+    xlsx: "/xls.svg",
+    svg: "/svg.svg",
+  };
+  return map[ext] ?? "/file.svg";
+};
 import { Badge } from "@/components/ui/badge";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
@@ -237,7 +255,7 @@ export const CreateTaskDialog = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="w-full max-w-[800px] h-full max-h-[560px] dark:bg-[#1c1c1c] border-[#2b2b2b] p-0 overflow-hidden dark:text-neutral-200">
+      <DialogContent className="w-full max-w-[800px] h-[560px] dark:bg-[#1c1c1c] border-[#2b2b2b] p-0 overflow-hidden dark:text-neutral-200">
         <DialogHeader className="p-4 flex flex-row items-center gap-2 border-b border-[#2b2b2b]">
           <div className="flex items-center gap-1.5 text-xs text-neutral-400 font-medium">
             <div className="w-3 h-3 rounded-full bg-blue-600 flex items-center justify-center text-[10px] text-white"></div>
@@ -247,7 +265,7 @@ export const CreateTaskDialog = ({
           </div>
         </DialogHeader>
 
-        <div className="p-6 pb-2 space-y-4">
+        <div className="p-6 pb-2 space-y-4  overflow-y-auto scrollbar-thin">
           <div className="flex flex-col space-y-1.5">
             <Label className="text-sm">Task Title</Label>
             <Input
@@ -331,7 +349,7 @@ export const CreateTaskDialog = ({
                   className={cn(
                     "h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-3 gap-1.5 rounded-full text-[11px]",
                     assignedMembers.length > 0 &&
-                      "text-blue-400 border-blue-900/40 bg-blue-900/10",
+                    "text-blue-400 border-blue-900/40 bg-blue-900/10",
                   )}
                 >
                   <User className="w-3.5 h-3.5" />
@@ -418,7 +436,7 @@ export const CreateTaskDialog = ({
                   className={cn(
                     "h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
                     date?.from &&
-                      "text-blue-400 border-blue-900/40 bg-blue-900/10",
+                    "text-blue-400 border-blue-900/40 bg-blue-900/10",
                   )}
                 >
                   <Clock className="w-3.5 h-3.5" />
@@ -474,7 +492,7 @@ export const CreateTaskDialog = ({
                         className={cn(
                           "h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
                           attachments.length > 0 &&
-                            "text-blue-400 border-blue-900/40 bg-blue-900/10",
+                          "text-blue-400 border-blue-900/40 bg-blue-900/10",
                         )}
                         disabled={isUploading || project?.ownerAccountType === "free"}
                         onClick={() => document.getElementById("file-upload")?.click()}
@@ -539,14 +557,14 @@ export const CreateTaskDialog = ({
                             ? "ring-1 ring-white/50"
                             : "opacity-70 hover:opacity-100",
                           t.color === "green" &&
-                            "bg-emerald-500/20 text-emerald-400",
+                          "bg-emerald-500/20 text-emerald-400",
                           t.color === "yellow" &&
-                            "bg-yellow-500/20 text-yellow-400",
+                          "bg-yellow-500/20 text-yellow-400",
                           t.color === "purple" &&
-                            "bg-purple-500/20 text-purple-400",
+                          "bg-purple-500/20 text-purple-400",
                           t.color === "blue" && "bg-blue-500/20 text-blue-400",
                           t.color === "grey" &&
-                            "bg-neutral-500/20 text-neutral-400",
+                          "bg-neutral-500/20 text-neutral-400",
                         )}
                       >
                         {t.label}
@@ -568,15 +586,15 @@ export const CreateTaskDialog = ({
                         className={cn(
                           "text-[10px] py-0 px-2 h-5 gap-1 border-none font-medium capitalize",
                           tag.color === "green" &&
-                            "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30",
+                          "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30",
                           tag.color === "yellow" &&
-                            "bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30",
+                          "bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30",
                           tag.color === "purple" &&
-                            "bg-purple-500/20 text-purple-400 hover:bg-purple-500/30",
+                          "bg-purple-500/20 text-purple-400 hover:bg-purple-500/30",
                           tag.color === "blue" &&
-                            "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30",
+                          "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30",
                           tag.color === "grey" &&
-                            "bg-neutral-500/20 text-neutral-400 hover:bg-neutral-500/30",
+                          "bg-neutral-500/20 text-neutral-400 hover:bg-neutral-500/30",
                         )}
                       >
                         {tag.label}
@@ -689,7 +707,7 @@ export const CreateTaskDialog = ({
                   className={cn(
                     "h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
                     selectedPath &&
-                      "text-blue-400 border-blue-900/50 bg-blue-900/10",
+                    "text-blue-400 border-blue-900/50 bg-blue-900/10",
                   )}
                 >
                   <Link2 className="w-3.5 h-3.5" />
@@ -722,7 +740,13 @@ export const CreateTaskDialog = ({
                   key={idx}
                   className="flex items-center gap-2 bg-[#252525] border border-[#333] rounded-md px-2 py-1 group"
                 >
-                  <FileText className="w-3.5 h-3.5 text-blue-400" />
+                  <Image
+                    src={getFileIcon(file.name)}
+                    alt={file.name}
+                    width={200}
+                    height={200}
+                    className="shrink-0 w-12 h-12 object-cover"
+                  />
                   <span className="text-[10px] text-neutral-300 max-w-[120px] truncate">
                     {file.name}
                   </span>

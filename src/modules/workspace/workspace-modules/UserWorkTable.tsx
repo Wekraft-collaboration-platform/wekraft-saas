@@ -142,37 +142,41 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
     { id: "tickets", label: "Tickets", icon: Ticket },
   ];
 
-  // ─── Empty state (untouched from original) ───
+  // ─── Empty state ───
   const renderEmptyState = (id: string) => {
     const config: Record<string, any> = {
       tasks: {
-        icon: ClipboardList,
+        image: "/emp.svg",
         title: "No tasks found for today",
         desc: "You're all caught up! Enjoy your day or check other tabs for pending work.",
       },
       issues: {
-        icon: Bug,
+        image: "/isssue.svg",
         title: "No issues assigned",
         desc: "Great job! There are no critical bugs requiring your immediate attention.",
       },
       tickets: {
-        icon: Ticket,
+        image: "/ticket.svg",
         title: "No open tickets",
         desc: "Support queue is empty. No tickets are currently assigned to you.",
       },
     };
 
     const state = config[id];
-    const Icon = state.icon;
 
     return (
       <div className=" flex flex-col items-center justify-center text-center p-12 mt-20 dark:bg-sidebar bg-accent/10 rounded-xl border border-dashed border-accent transition-all duration-300">
-        <Icon className="w-10 h-10 text-primary opacity-50 mb-5" />
-
-        <h3 className="text-sm font-semibold tracking-tight text-primary">
+        <Image
+          src={state.image}
+          alt={state.title}
+          width={220}
+          height={220}
+          className="-mb-3 opacity-90"
+        />
+        <h3 className="text-lg tracking-tight text-primary">
           {state.title}
         </h3>
-        <p className="text-[11px] text-muted-foreground max-w-[240px] mt-2 font-medium leading-relaxed">
+        <p className="text-sm text-muted-foreground max-w-[240px] mt-2 font-medium leading-relaxed">
           {state.desc}
         </p>
       </div>
@@ -372,11 +376,11 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
             const s = issue.severity ? severityConfig[issue.severity] : null;
             const dueLabel = issue.due_date
               ? (() => {
-                  const d = Math.ceil(
-                    (issue.due_date - Date.now()) / (1000 * 60 * 60 * 24),
-                  );
-                  return d > 0 ? `${d}d left` : `${Math.abs(d)}d overdue`;
-                })()
+                const d = Math.ceil(
+                  (issue.due_date - Date.now()) / (1000 * 60 * 60 * 24),
+                );
+                return d > 0 ? `${d}d left` : `${Math.abs(d)}d overdue`;
+              })()
               : null;
             const isOverdue = issue.due_date && issue.due_date < Date.now();
 
@@ -450,7 +454,7 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Avatar className="w-6 h-6 border border-border shrink-0">
-                             
+
                               <AvatarImage
                                 // @ts-ignore
                                 src={issue.creator.avatar}
@@ -481,7 +485,7 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
                               <TooltipTrigger asChild>
                                 <Avatar className="w-6 h-6 border border-background shadow-xs hover:z-10 transition-transform duration-200 shrink-0">
                                   <AvatarImage
-                                  // @ts-ignore
+                                    // @ts-ignore
                                     src={assignee.avatar}
                                     alt={assignee.name}
                                   />

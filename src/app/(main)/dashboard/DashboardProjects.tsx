@@ -31,6 +31,7 @@ import CreateProjectDialog from "@/modules/project/CreateProjectDialog";
 import { api } from "../../../../convex/_generated/api";
 import { useSidebar } from "@/components/ui/sidebar";
 import { LuGitBranch } from "react-icons/lu";
+import Image from "next/image";
 
 
 interface DashboardProject {
@@ -432,9 +433,15 @@ export const DashboardProjects = ({
           ))}
         </div>
       ) : filteredProjects.length === 0 ? (
-        <div className="flex flex-col items-center justify-center p-12 border border-border border-dashed rounded-xl bg-muted/40 text-center h-[260px] transition-all">
+        <div className="flex flex-col items-center justify-center p-12 border border-border border-dashed rounded-xl bg-muted/80 text-center h-[260px] transition-all">
 
-          <FolderCode className="h-7 w-7 opacity-50 mb-2" />
+          <Image
+            src="/project.svg"
+            alt="Empty"
+            width={100}
+            height={100}
+            className="mb-2 opacity-80"
+          />
 
           <h4 className="text-base mb-2 text-foreground tracking-tight">
             No Projects Found

@@ -25,6 +25,25 @@ import {
   Trash2,
   ExternalLink,
 } from "lucide-react";
+import Image from "next/image";
+
+const getFileIcon = (fileName: string) => {
+  const ext = fileName.split(".").pop()?.toLowerCase() ?? "";
+  const map: Record<string, string> = {
+    pdf: "/pdf.svg",
+    jpg: "/jpg.svg",
+    jpeg: "/jpg.svg",
+    png: "/png.svg",
+    doc: "/doc.svg",
+    docx: "/doc.svg",
+    ppt: "/ppt.svg",
+    pptx: "/ppt.svg",
+    xls: "/xls.svg",
+    xlsx: "/xls.svg",
+    svg: "/svg.svg",
+  };
+  return map[ext] ?? "/file.svg";
+};
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
@@ -632,9 +651,13 @@ export const TaskDetailSheet = ({
                             className="flex items-center justify-between bg-accent/20 border border-[#333] rounded-xl px-4 py-2 group hover:border-blue-500/50 transition-all duration-200"
                           >
                             <div className="flex items-center gap-3 overflow-hidden">
-                              <div className="p-2 bg-blue-500/10 rounded-lg">
-                                <FileText className="w-5 h-5 text-blue-400" />
-                              </div>
+                              <Image
+                                src={getFileIcon(file.name)}
+                                alt={file.name}
+                                width={140}
+                                height={140}
+                                className="shrink-0 w-12 h-12 object-cover"
+                              />
                               <div className="flex flex-col min-w-0">
                                 <span className="text-xs font-medium text-primary truncate max-w-[200px]">
                                   {file.name}

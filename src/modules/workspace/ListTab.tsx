@@ -348,15 +348,15 @@ const TaskGroup = ({
                     colSpan={8}
                     className="py-14 text-center text-sm text-muted-foreground"
                   >
-                    <div className="flex flex-col items-center justify-center gap-2">
+                    <div className="flex flex-col items-center justify-center ">
                       <Image
-                        src="/pat103.svg"
-                        alt="Empty Workspace"
-                        width={80}
-                        height={80}
-                        className="opacity-80"
+                        src="/emp.svg"
+                        alt="Empty"
+                        width={250}
+                        height={250}
+                        className=" opacity-80"
                       />
-                      <div className="flex flex-col items-center gap-1.5">
+                      <div className="flex flex-col items-center gap-1.5 -mt-5">
                         <span className="text-base text-primary/70">
                           {hasMoreTasks
                             ? `No tasks loaded yet under ${title.toLowerCase()}`
