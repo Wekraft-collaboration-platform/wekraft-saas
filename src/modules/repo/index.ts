@@ -4,7 +4,7 @@ import { getRepositories } from "../github/actions/action";
 import { Repository } from "@/types/types";
 
 
-export function useRepositories(page: number = 1, perPage: number = 10) {
+export function useRepositories(page: number = 1, perPage: number = 10, enabled: boolean = true) {
   return useQuery<Repository[]>({
     queryKey: ["repositories", page, perPage],
     queryFn: async () => {
@@ -13,6 +13,7 @@ export function useRepositories(page: number = 1, perPage: number = 10) {
     },
     staleTime: 30 * 60 * 1000, // 30 minutes
     gcTime: 30 * 60 * 1000,
+    enabled,
     refetchOnMount: false,
     refetchOnWindowFocus: false,
     retry: 3,

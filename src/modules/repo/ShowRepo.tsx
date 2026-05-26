@@ -69,15 +69,15 @@ const ShowRepo = ({
   const [selectedProjectId, setSelectedProjectId] = useState<
     Id<"projects"> | ""
   >("");
+  const user = useConvexQuery(api.user.getCurrentUser);
+  const { user: clerkUser } = useUser();
+
   const {
     data: repositories,
     isLoading,
     isFetching,
     error,
-  } = useRepositories(currentPage, ITEMS_PER_PAGE);
-
-  const user = useConvexQuery(api.user.getCurrentUser);
-  const { user: clerkUser } = useUser();
+  } = useRepositories(currentPage, ITEMS_PER_PAGE, !!user?.githubUsername);
   const updateGithubUsername = useMutation(api.user.updateGithubUsername);
   const hasCheckedGithub = useRef(false);
 

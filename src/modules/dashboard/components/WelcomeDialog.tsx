@@ -9,29 +9,81 @@ import { api } from "../../../../convex/_generated/api";
 import { ChevronRight, X, Sparkles, GitBranch, Calendar, Users, ClipboardCheck } from "lucide-react";
 import { usePathname } from "next/navigation";
 
-const MinimalArrow = ({ type, placement }: { type: number, placement: string }) => {
-  const getPath = () => {
-    switch (type) {
-      case 1: return "M 30 5 C 15 30, 45 50, 30 75 M 30 75 L 22 65 M 30 75 L 38 65";
-      case 2: return "M 30 5 C 45 30, 15 50, 30 75 M 30 75 L 22 65 M 30 75 L 38 65";
-      case 3: return "M 30 5 C 20 25, 50 45, 30 75 M 30 75 L 22 65 M 30 75 L 38 65";
-      case 4: return "M 30 5 C 40 25, 10 45, 30 75 M 30 75 L 22 65 M 30 75 L 38 65";
-      case 5: return "M 30 5 C 10 40, 50 60, 30 75 M 30 75 L 22 65 M 30 75 L 38 65";
-      default: return "M 30 5 C 15 30, 45 50, 30 75 M 30 75 L 22 65 M 30 75 L 38 65";
-    }
-  };
+const DynamicArrowOverlay = ({ pos }: { pos: any }) => {
+  if (!pos || pos.top === -1000 || !pos.targetX) return null;
+  
+  let startX = 0;
+  let startY = 0;
+  let endX = pos.targetX;
+  let endY = pos.targetY;
+  
+  if (pos.placement === 'top') {
+    startX = pos.left + pos.arrowX;
+    startY = pos.top + pos.boxHeight + 5;
+    endY -= (pos.targetHeight / 2 + 5);
+  } else if (pos.placement === 'bottom') {
+    startX = pos.left + pos.arrowX;
+    startY = pos.top - 5;
+    endY += (pos.targetHeight / 2 + 5);
+  } else if (pos.placement === 'left') {
+    startX = pos.left + pos.boxWidth + 5;
+    startY = pos.top + pos.arrowY;
+    endX -= (pos.targetWidth / 2 + 5);
+  } else if (pos.placement === 'right') {
+    startX = pos.left - 5;
+    startY = pos.top + pos.arrowY;
+    endX += (pos.targetWidth / 2 + 5);
+  }
 
-  let rotateClass = "";
-  if (placement === 'bottom') rotateClass = "rotate-180";
-  if (placement === 'left') rotateClass = "-rotate-90";
-  if (placement === 'right') rotateClass = "rotate-90";
+  const dx = endX - startX;
+  const dy = endY - startY;
+  const dist = Math.sqrt(dx * dx + dy * dy);
+  
+  // Normalize ratios based on original 70px length
+  const getP = (val: number) => (val / 70) * dist;
+
+  let f1 = 0, s1 = 0, f2 = 0, s2 = 0;
+  switch (pos.arrowType) {
+    case 1: f1 = getP(25); s1 = getP(-15); f2 = getP(25); s2 = getP(15); break;
+    case 2: f1 = getP(25); s1 = getP(15);  f2 = getP(25); s2 = getP(-15); break;
+    case 3: f1 = getP(20); s1 = getP(-10); f2 = getP(30); s2 = getP(20); break;
+    case 4: f1 = getP(20); s1 = getP(10);  f2 = getP(30); s2 = getP(-20); break;
+    case 5: f1 = getP(35); s1 = getP(-20); f2 = getP(15); s2 = getP(20); break;
+    default: f1 = getP(25); s1 = getP(-15); f2 = getP(25); s2 = getP(15); break;
+  }
+
+  let cp1x = startX, cp1y = startY, cp2x = endX, cp2y = endY;
+
+  if (pos.placement === 'top') {
+    cp1y += f1; cp1x += s1;
+    cp2y -= f2; cp2x += s2;
+  } else if (pos.placement === 'bottom') {
+    cp1y -= f1; cp1x += s1;
+    cp2y += f2; cp2x += s2;
+  } else if (pos.placement === 'left') {
+    cp1x += f1; cp1y += s1;
+    cp2x -= f2; cp2y += s2;
+  } else if (pos.placement === 'right') {
+    cp1x -= f1; cp1y += s1;
+    cp2x += f2; cp2y += s2;
+  }
 
   return (
-    <div className={`text-white drop-shadow-md ${rotateClass}`}>
-      <svg width="60" height="80" viewBox="0 0 60 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-        <path d={getPath()} stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      </svg>
-    </div>
+    <svg className="fixed inset-0 w-full h-full pointer-events-none z-[60]" style={{ filter: "drop-shadow(0 4px 6px rgba(0,0,0,0.5))" }}>
+      <defs>
+        <marker id="arrowhead" markerWidth="20" markerHeight="20" refX="7" refY="10" orient="auto" markerUnits="userSpaceOnUse">
+          <path d="M 3 4 L 11 10 L 3 16" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+        </marker>
+      </defs>
+      <path
+        d={`M ${startX} ${startY} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${endX} ${endY}`}
+        fill="none"
+        stroke="white"
+        strokeWidth="2"
+        strokeLinecap="round"
+        markerEnd="url(#arrowhead)"
+      />
+    </svg>
   );
 };
 
@@ -43,7 +95,7 @@ export function WelcomeDialog() {
   const [tourStep, setTourStep] = useState<number>(0);
   // 0: Welcome Modal, 1-6: Checklist Steps
 
-  const [pos, setPos] = useState({ top: -1000, left: -1000, arrowX: 160, arrowY: 90, placement: 'top', arrowType: 1 });
+  const [pos, setPos] = useState<any>({ top: -1000, left: -1000, arrowX: 160, arrowY: 90, placement: 'top', arrowType: 1 });
   const router = useRouter();
   const pathname = usePathname();
   const tooltipRef = useRef<HTMLDivElement>(null);
@@ -200,7 +252,18 @@ export function WelcomeDialog() {
             arrowY = Math.round(Math.max(40, Math.min(boxHeight - 40, arrowY)));
           }
 
-          setPos({ top, left, arrowX, arrowY, placement: currentPlacement, arrowType: ((tourStep - 1) % 5) + 1 });
+          setPos({ 
+            top, left, 
+            arrowX, arrowY, 
+            placement: currentPlacement, 
+            arrowType: ((tourStep - 1) % 5) + 1,
+            targetX: targetCenterX,
+            targetY: targetCenterY,
+            targetWidth: rect.width,
+            targetHeight: rect.height,
+            boxWidth,
+            boxHeight
+          });
           animationFrameId = requestAnimationFrame(updatePos);
         };
         updatePos();
@@ -296,34 +359,14 @@ export function WelcomeDialog() {
           className="absolute inset-0 bg-background/40 backdrop-blur-[1px] pointer-events-auto transition-opacity"
         />
 
-        {/* Tooltip positioned according to current placement */}
         {pos.top !== -1000 && (
-          <div
-            className="absolute z-50 pointer-events-auto flex flex-col items-center animate-in fade-in transition-all duration-300 ease-out"
-            style={{ top: pos.top, left: pos.left, width: 320 }}
-          >
-            {pos.placement === 'top' && (
-              <div className="absolute z-10 transition-all duration-75" style={{ top: (tooltipRef.current?.offsetHeight || 180) - 5, left: pos.arrowX - 30 }}>
-                <MinimalArrow type={pos.arrowType} placement={pos.placement} />
-              </div>
-            )}
-            {pos.placement === 'bottom' && (
-              <div className="absolute z-10 transition-all duration-75" style={{ top: -75, left: pos.arrowX - 30 }}>
-                <MinimalArrow type={pos.arrowType} placement={pos.placement} />
-              </div>
-            )}
-            {pos.placement === 'right' && (
-              <div className="absolute z-10 transition-all duration-75" style={{ right: 'calc(100% + 5px)', top: pos.arrowY - 40 }}>
-                <MinimalArrow type={pos.arrowType} placement={pos.placement} />
-              </div>
-            )}
-            {pos.placement === 'left' && (
-              <div className="absolute z-10 transition-all duration-75" style={{ left: 'calc(100% + 5px)', top: pos.arrowY - 40 }}>
-                <MinimalArrow type={pos.arrowType} placement={pos.placement} />
-              </div>
-            )}
-
-            <div className="flex flex-col w-full relative z-20">
+          <>
+            <DynamicArrowOverlay pos={pos} />
+            <div
+              className="absolute z-50 pointer-events-auto flex flex-col items-center animate-in fade-in transition-all duration-300 ease-out"
+              style={{ top: pos.top, left: pos.left, width: 320 }}
+            >
+              <div className="flex flex-col w-full relative z-20">
               {/* Tooltip Card */}
               <div ref={tooltipRef} className="bg-linear-to-br from-neutral-800 to-neutral-950 text-card-foreground border border-border shadow-2xl rounded-lg p-5">
                 <div className="flex items-center gap-2">
@@ -362,9 +405,10 @@ export function WelcomeDialog() {
                     {getShortCta(tourStep)}
                   </Button>
                 </div>
+                </div>
               </div>
             </div>
-          </div>
+          </>
         )}
       </div>
     );
