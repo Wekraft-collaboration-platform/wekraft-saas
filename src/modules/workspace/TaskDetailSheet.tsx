@@ -539,9 +539,9 @@ export const TaskDetailSheet = ({
                   </div>
                   <div>
                     {currentTask.linkWithCodebase ? (
-                      <div className="text-xs font-medium text-primary pl-1 flex items-center gap-1">
+                      <div className="text-xs font-medium text-primary truncate max-w-[190px] pl-1 flex items-center gap-1">
                         <GitBranch size={12} className="inline text-muted-foreground" />{" "}
-                        {currentTask.linkWithCodebase.split("/").pop()}
+                        {currentTask.linkWithCodebase}
                       </div>
                     ) : (
                       <p className="text-[11px] text-muted-foreground italic pl-1 flex items-center gap-1">

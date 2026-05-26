@@ -6,6 +6,7 @@ import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { AiAssistantSheet } from "@/modules/ai/AiAssistantSheet";
+import { HarryAssistantSheet } from "@/modules/ai/HarryAssistantSheet";
 import { FloatingKaya } from "@/modules/ai/FloatingKaya";
 import ProjectSidebar from "@/modules/workspace/Projectsidebar";
 import { api } from "../../../../../../../convex/_generated/api";
@@ -112,6 +113,7 @@ export default function WorkspaceLayout({
       <main className="flex-1">{children}</main>
       <FloatingKaya />
       <AiAssistantSheet />
+      <HarryAssistantSheet />
     </div>
   );
 }

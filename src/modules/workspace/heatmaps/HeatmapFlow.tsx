@@ -1,41 +1,52 @@
 "use client";
 
-import React, { useState, useCallback, useMemo, useEffect } from "react";
 import {
-  ReactFlow,
-  Controls,
   Background,
-  useNodesState,
-  useEdgesState,
-  Panel,
   BackgroundVariant,
-  ReactFlowProvider,
-  useReactFlow,
-  type Node,
+  Controls,
   type Edge,
   Handle,
-  Position,
+  type Node,
   type NodeProps,
+  Panel,
+  Position,
+  ReactFlow,
+  ReactFlowProvider,
+  useEdgesState,
+  useNodesState,
+  useReactFlow,
 } from "@xyflow/react";
+import type React from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 import "@xyflow/react/dist/style.css";
-import { FolderNode } from "./action";
 import {
+  FileIcon as FileSymbol,
+  DefaultFolderOpenedIcon as FolderOpenSymbol,
+  FolderIcon as FolderSymbol,
+} from "@react-symbols/icons/utils";
+import {
+  BetweenVerticalEnd,
+  ChevronDown,
+  ChevronRight,
+  ChevronUp,
+  Info,
+  ListChevronsUpDown,
+  Minus,
   MoveRight,
   Network,
   Plus,
-  Minus,
-  ChevronRight,
-  ChevronUp,
-  ChevronDown,
-  Info,
 } from "lucide-react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
-  FileIcon as FileSymbol,
-  FolderIcon as FolderSymbol,
-  DefaultFolderOpenedIcon as FolderOpenSymbol,
-} from "@react-symbols/icons/utils";
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
+import type { FolderNode } from "./action";
+import { Separator } from "@/components/ui/separator";
 
 // --- Custom Node Component ---
 const FolderNodeComponent = (props: NodeProps) => {
@@ -47,6 +58,8 @@ const FolderNodeComponent = (props: NodeProps) => {
     fileCount?: number;
     hasIssue?: boolean;
     isChangedRecently?: boolean;
+    path: string;
+    tasks?: any[];
   };
   const {
     label,
@@ -56,8 +69,70 @@ const FolderNodeComponent = (props: NodeProps) => {
     fileCount,
     hasIssue,
     isChangedRecently,
+    path,
+    tasks = [],
   } = data;
   const isRoot = level === 0;
+
+  // Filter tasks that are linked to this folder path
+  const linkedTasks = useMemo(() => {
+    if (!path || !tasks) return [];
+    return tasks.filter((task) => {
+      if (!task.linkWithCodebase) return false;
+      return (
+        task.linkWithCodebase === path ||
+        task.linkWithCodebase.startsWith(path + "/")
+      );
+    });
+  }, [path, tasks]);
+
+  // Group into completed vs active
+  const { completedTasks, activeTasks } = useMemo(() => {
+    const completed: any[] = [];
+    const active: any[] = [];
+    linkedTasks.forEach((task) => {
+      if (task.status === "completed") {
+        completed.push(task);
+      } else {
+        active.push(task);
+      }
+    });
+    return { completedTasks: completed, activeTasks: active };
+  }, [linkedTasks]);
+
+  const [activeTab, setActiveTab] = useState<"assigned" | "completed">("assigned");
+
+  // Extract assigned members and their active tasks flattened as rows
+  const assignedRows = useMemo(() => {
+    const rows: { userId: string; name: string; avatar?: string; task: any }[] = [];
+    activeTasks.forEach((task) => {
+      task.assignees?.forEach((a: any) => {
+        rows.push({
+          userId: a.userId,
+          name: a.name,
+          avatar: a.avatar,
+          task,
+        });
+      });
+    });
+    return rows;
+  }, [activeTasks]);
+
+  // Extract members who completed tasks flattened as rows
+  const completedRows = useMemo(() => {
+    const rows: { userId: string; name: string; avatar?: string; task: any }[] = [];
+    completedTasks.forEach((task) => {
+      task.assignees?.forEach((a: any) => {
+        rows.push({
+          userId: a.userId,
+          name: a.name,
+          avatar: a.avatar,
+          task,
+        });
+      });
+    });
+    return rows;
+  }, [completedTasks]);
 
   return (
     <div
@@ -67,13 +142,13 @@ const FolderNodeComponent = (props: NodeProps) => {
           ? "bg-[#0D0D0D] text-white shadow-[0_20px_50px_rgba(0,0,0,0.4)] hover:scale-[1.02] hover:-translate-y-1 hover:border-primary/30"
           : "bg-[#0D0D0D]/90 backdrop-blur-md border-white/10 hover:border-white/25 text-zinc-100 shadow-[0_10px_30px_rgba(0,0,0,0.3)] hover:bg-[#111111] hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.98]",
         isExpanded &&
-          !isRoot &&
-          "ring-1 ring-white/10 border-white/50 bg-[#121212]",
+        !isRoot &&
+        "ring-1 ring-white/10 border-white/50 bg-[#121212]",
         hasIssue &&
-          "border-red-500/60 shadow-[0_0_20px_rgba(239,68,68,0.3)] ring-1 ring-red-500/40",
+        "border-red-500/60 shadow-[0_0_20px_rgba(239,68,68,0.3)] ring-1 ring-red-500/40",
         isChangedRecently &&
-          !hasIssue &&
-          "border-yellow-500/40 shadow-[0_0_20px_rgba(234,179,8,0.1)] ring-1 ring-yellow-500/20",
+        !hasIssue &&
+        "border-yellow-500/20 shadow-[0_0_20px_rgba(234,179,1,0.1)] ring-1 ring-yellow-500/20",
       )}
     >
       {/* Connection Points */}
@@ -106,8 +181,8 @@ const FolderNodeComponent = (props: NodeProps) => {
               "p-2.5 bg-zinc-900/80 rounded-lg border border-white/5 shrink-0 group-hover:bg-zinc-800/80 transition-colors shadow-inner",
               hasIssue && "border-red-500/30 bg-red-500/5",
               isChangedRecently &&
-                !hasIssue &&
-                "border-yellow-500/30 bg-yellow-500/5",
+              !hasIssue &&
+              "border-yellow-500/30 bg-yellow-500/5",
             )}
           >
             <div className="w-5 h-5 flex items-center justify-center">
@@ -121,33 +196,206 @@ const FolderNodeComponent = (props: NodeProps) => {
         )}
 
         <div className="flex flex-col flex-1 truncate">
-          <span
-            className={cn(
-              "text-[14px] tracking-tight truncate",
-              isRoot
-                ? "font-bold text-white"
-                : "font-medium text-zinc-200 group-hover:text-white",
-              hasIssue && "text-red-300",
-              isChangedRecently && !hasIssue,
+          <div className="flex items-center justify-between gap-4">
+            <p
+              className={cn(
+                "text-base tracking-tight truncate",
+                isRoot
+                  ? "font-bold text-white"
+                  : "font-medium text-zinc-100 group-hover:text-white",
+                hasIssue && "text-red-300",
+                isChangedRecently && !hasIssue,
+              )}
+              title={label}
+            >
+              {label}
+            </p>
+
+            {!isRoot && (
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button
+                    size="icon-xs"
+                    variant="outline"
+                    onClick={(e) => e.stopPropagation()}
+                    className="z-10 bg-zinc-900 border-zinc-800 hover:bg-zinc-800"
+                  >
+                    <ChevronUp className="w-4 h-4 text-zinc-200" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent
+                  className="w-[280px] h-[250px] p-0 bg-card border border-zinc-800 text-white rounded-xl shadow-2xl z-[9999] flex flex-col overflow-hidden"
+                  onClick={(e) => e.stopPropagation()}
+                  side="top"
+                  align="end"
+                >
+                  <div className="flex flex-col h-full overflow-hidden">
+                    <div className="border-b border-white/10 bg-muted py-3 px-3 flex items-center justify-between shrink-0 ">
+                      <h4 className="text-xs text-zinc-100 flex items-center gap-1.5">
+                        <span>Code Ownership</span>
+                      </h4>
+                      <p
+                        className="text-[11px] text-zinc-200 truncate max-w-[110px]"
+                        title={path}
+                      >
+                        /{path}
+                      </p>
+                    </div>
+
+                    {assignedRows.length === 0 && completedRows.length === 0 ? (
+                      <p className="text-xs text-zinc-500 italic py-8 text-center flex-1 flex items-center justify-center">
+                        No tasks linked to this folder yet.
+                      </p>
+                    ) : (
+                      <>
+                        {/* Tabs Bar */}
+                        <div className="flex border-b border-white/15 mb-3 p-2 shrink-0">
+                          <button
+                            type="button"
+                            className={cn(
+                              "flex-1 pb-2 text-xs text-center transition-colors cursor-pointer",
+                              activeTab === "assigned"
+                                ? "text-white"
+                                : "text-zinc-500 border-transparent hover:text-zinc-300"
+                            )}
+                            onClick={() => setActiveTab("assigned")}
+                          >
+                            Assigned ({assignedRows.length})
+                          </button>
+                          <Separator orientation="vertical" className="h-3 bg-white/30" />
+                          <button
+                            type="button"
+                            className={cn(
+                              "flex-1 pb-2 text-xs text-center border-b transition-colors cursor-pointer",
+                              activeTab === "completed"
+                                ? "text-white"
+                                : "text-zinc-500 border-transparent hover:text-zinc-300"
+                            )}
+                            onClick={() => setActiveTab("completed")}
+                          >
+                            Completed ({completedRows.length})
+                          </button>
+                        </div>
+
+                        {/* List Content */}
+                        <div className="flex-1 overflow-y-auto pr-1 scrollbar-thin space-y-2 px-3">
+                          {activeTab === "assigned" ? (
+                            assignedRows.length === 0 ? (
+                              <p className="text-xs text-zinc-500 italic py-8 text-center">
+                                No active tasks.
+                              </p>
+                            ) : (
+                              assignedRows.map((row) => (
+                                <div
+                                  key={`${row.userId}-${row.task._id}`}
+                                  className="flex items-center justify-between gap-3 py-1 last:border-0"
+                                >
+                                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                                    <Avatar className="w-5 h-5 border border-white/10 shrink-0">
+                                      <AvatarImage
+                                        src={row.avatar}
+                                        alt={row.name}
+                                      />
+                                      <AvatarFallback className="text-[9px] bg-zinc-800 text-zinc-300">
+                                        {row.name.charAt(0).toUpperCase()}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <span
+                                      className="text-xs font-medium text-zinc-100 truncate max-w-[100px]"
+                                      title={row.name}
+                                    >
+                                      {row.name}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1.5 shrink-0 max-w-[140px]">
+                                    <span
+                                      className="text-[11px] text-zinc-200 truncate"
+                                      title={row.task.title}
+                                    >
+                                      {row.task.title}
+                                    </span>
+                                    {row.task.priority && (
+                                      <span
+                                        className={cn(
+                                          "text-[8px] px-1 py-0.2 rounded-sm border capitalize shrink-0 font-mono",
+                                          row.task.priority === "high" &&
+                                          "text-red-400 border-red-500/20 bg-red-500/5",
+                                          row.task.priority === "medium" &&
+                                          "text-yellow-400 border-yellow-500/20 bg-yellow-500/5",
+                                          row.task.priority === "low" &&
+                                          "text-zinc-400 border-zinc-500/20 bg-zinc-500/5",
+                                        )}
+                                      >
+                                        {row.task.priority.charAt(0)}
+                                      </span>
+                                    )}
+                                  </div>
+                                </div>
+                              ))
+                            )
+                          ) : (
+                            completedRows.length === 0 ? (
+                              <p className="text-xs text-zinc-500 italic py-8 text-center">
+                                No completed tasks.
+                              </p>
+                            ) : (
+                              completedRows.map((row) => (
+                                <div
+                                  key={`${row.userId}-${row.task._id}`}
+                                  className="flex items-center justify-between gap-3 py-1 border-b border-white/5 last:border-0"
+                                >
+                                  <div className="flex items-center gap-2 min-w-0 flex-1">
+                                    <Avatar className="w-5 h-5 border border-white/10 shrink-0">
+                                      <AvatarImage
+                                        src={row.avatar}
+                                        alt={row.name}
+                                      />
+                                      <AvatarFallback className="text-[9px] bg-zinc-800 text-zinc-300">
+                                        {row.name.charAt(0).toUpperCase()}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <span
+                                      className="text-xs font-medium text-zinc-200 truncate max-w-[100px]"
+                                      title={row.name}
+                                    >
+                                      {row.name}
+                                    </span>
+                                  </div>
+                                  <div className="flex items-center gap-1.5 shrink-0 max-w-[140px]">
+                                    <span
+                                      className="text-[11px] text-zinc-400 line-through truncate"
+                                      title={row.task.title}
+                                    >
+                                      {row.task.title}
+                                    </span>
+                                  </div>
+                                </div>
+                              ))
+                            )
+                          )}
+                        </div>
+                      </>
+                    )}
+                  </div>
+                </PopoverContent>
+              </Popover>
             )}
-            title={label}
-          >
-            {label}
-          </span>
+          </div>
+
           <div className="flex items-center gap-2.5 mt-2">
             <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-zinc-900/50 border border-white/10 shadow-inner">
-              <div className="w-3 h-3">
+              <div className="w-4 h-4">
                 <FolderSymbol folderName="folder" className="w-full h-full" />
               </div>
-              <span className="text-[10px] font-semibold text-primary">
+              <span className="text-[11px] font-semibold text-primary">
                 {folderCount ?? 0}
               </span>
             </div>
             <div className="flex items-center gap-1.5 px-2 py-1 rounded-md bg-zinc-900/50 border border-white/10 shadow-inner">
-              <div className="w-3 h-3">
+              <div className="w-4 h-4">
                 <FileSymbol fileName="index.tsx" className="w-full h-full" />
               </div>
-              <span className="text-[10px] font-semibold text-primary">
+              <span className="text-[11px] font-semibold text-primary">
                 {fileCount ?? 0}
               </span>
             </div>
@@ -158,10 +406,8 @@ const FolderNodeComponent = (props: NodeProps) => {
           <ChevronRight
             size={14}
             className={cn(
-              "text-zinc-600 transition-all duration-300",
-              isExpanded ? "rotate-90 text-white" : "group-hover:text-zinc-400",
-              hasIssue && "text-red-400/70",
-              isChangedRecently && !hasIssue && "text-yellow-400/70",
+              "text-zinc-400 transition-all duration-300",
+              isExpanded ? "rotate-90 text-white" : "group-hover:text-white",
             )}
           />
         )}
@@ -185,6 +431,7 @@ interface HeatmapFlowProps {
   issuePaths?: string[];
   recentlyChangedPaths?: string[];
   isFreeTier?: boolean;
+  tasks?: any[];
 }
 
 const HeatmapFlowInner = ({
@@ -192,6 +439,7 @@ const HeatmapFlowInner = ({
   issuePaths = [],
   recentlyChangedPaths = [],
   isFreeTier = false,
+  tasks = [],
 }: HeatmapFlowProps) => {
   const [nodes, setNodes, onNodesChange] = useNodesState<Node>([]);
   const [edges, setEdges, onEdgesChange] = useEdgesState<Edge>([]);
@@ -300,7 +548,8 @@ const HeatmapFlowInner = ({
       const hasIssueChild = Object.values(node.children).some((child) =>
         containsIssue(child.path),
       );
-      const shouldBeRed = !isFreeTier && nodeHasIssue && (!isExpanded || !hasIssueChild);
+      const shouldBeRed =
+        !isFreeTier && nodeHasIssue && (!isExpanded || !hasIssueChild);
 
       // Vertical Centering Logic:
       // Offset y by half of the total height at this level
@@ -313,12 +562,15 @@ const HeatmapFlowInner = ({
         type: "folderNode",
         data: {
           label: node.name,
+          path: node.path || "",
           level,
           isExpanded,
           folderCount: node.folderCount,
           fileCount: node.fileCount,
           hasIssue: shouldBeRed,
-          isChangedRecently: !isFreeTier && recentlyChangedPaths.includes(node.path || ""),
+          isChangedRecently:
+            !isFreeTier && recentlyChangedPaths.includes(node.path || ""),
+          tasks: tasks,
         },
         position: { x, y },
       });
@@ -334,8 +586,9 @@ const HeatmapFlowInner = ({
             stroke:
               !isFreeTier && nodeHasIssue && !expandedPaths.has(id)
                 ? "rgba(239, 68, 68, 0.5)"
-                : !isFreeTier && recentlyChangedPaths.includes(node.path || "") &&
-                    !expandedPaths.has(id)
+                : !isFreeTier &&
+                  recentlyChangedPaths.includes(node.path || "") &&
+                  !expandedPaths.has(id)
                   ? "rgba(234, 179, 8, 0.5)"
                   : "rgba(59, 130, 246, 0.5)",
             strokeWidth: 2,
@@ -363,7 +616,7 @@ const HeatmapFlowInner = ({
     // Automatic view fitting on update (smoothly)
     setTimeout(() => {
       fitView({
-        padding: 0.8, // Increased padding to make nodes look "not too big"
+        padding: 0.3, // Decreased padding to bring the view closer
         maxZoom: 0.85, // Constrained limit for premium look
         duration: 1000,
       });
@@ -378,6 +631,7 @@ const HeatmapFlowInner = ({
     containsIssue,
     recentlyChangedPaths,
     isFreeTier,
+    tasks,
   ]);
 
   return (
@@ -390,7 +644,7 @@ const HeatmapFlowInner = ({
         onNodeClick={onNodeClick}
         nodeTypes={nodeTypes}
         fitView
-        fitViewOptions={{ padding: 0.8, maxZoom: 0.85 }}
+        fitViewOptions={{ padding: 0.2, maxZoom: 0.85 }}
         colorMode="dark"
         proOptions={{ hideAttribution: true }}
         panOnScroll
@@ -413,7 +667,7 @@ const HeatmapFlowInner = ({
           {/* Docked Control Strip */}
           <div className="bg-[#050505]/80 backdrop-blur-2xl p-1 rounded-2xl border border-white/10 flex flex-col gap-0.5 shadow-2xl justify-center">
             <button
-              onClick={() => fitView({ duration: 800, padding: 0.8 })}
+              onClick={() => fitView({ duration: 800, padding: 0.2 })}
               className="p-2.5 hover:bg-white/5 text-zinc-500 hover:text-white rounded-xl transition-all duration-200 group/btn"
               title="Reset View"
             >
@@ -521,6 +775,7 @@ export const HeatmapFlow = ({
   issuePaths,
   recentlyChangedPaths,
   isFreeTier,
+  tasks,
 }: HeatmapFlowProps) => {
   return (
     <ReactFlowProvider>
@@ -529,6 +784,7 @@ export const HeatmapFlow = ({
         issuePaths={issuePaths}
         recentlyChangedPaths={recentlyChangedPaths}
         isFreeTier={isFreeTier}
+        tasks={tasks}
       />
     </ReactFlowProvider>
   );
