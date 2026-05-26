@@ -76,14 +76,15 @@ export function WelcomeDialog() {
     if (sessionStorage.getItem("wekraft_tour_active") === "true") {
       setShow(true);
       initialCheckDone.current = true;
+      // Calculate the first incomplete step instead of leaving tourStep at 0 (which shows the welcome modal)
+      const firstIncomplete = STEPS.find((s) => !completedIds.includes(s.id));
+      setTourStep(firstIncomplete ? firstIncomplete.id : 1);
       return;
     }
 
     // Only show if user hasn't seen/skipped the welcome dialog, and hasn't finished the checklist yet
     if (!hasSeenWelcome && !currentUser?.gettingstartedcompleted) {
       setShow(true);
-      // Mark as seen immediately so it doesn't pop up again on subsequent visits/refreshes
-      markWelcomeSeen().catch(() => {});
       initialCheckDone.current = true;
     } else {
       setShow(false);
