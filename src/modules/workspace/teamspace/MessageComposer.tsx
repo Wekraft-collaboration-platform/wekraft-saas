@@ -24,7 +24,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogD
 import { motion, AnimatePresence } from "framer-motion";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
-import { getUserColor } from "./lib/utils";
+import { getUserColor, getFileIconPath } from "./lib/utils";
 import { Message } from "./hooks/useMessages";
 import { CreatePollDialog } from "./CreatePollDialog";
 import { GetRepoStructure } from "../GetRepoStructure";
@@ -748,7 +748,7 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
               </div>
             ) : selectedMediaFile ? (
               <div className="flex flex-col items-center justify-center p-8 bg-muted/30 w-full rounded-md border border-border/50">
-                <FileIcon className="h-16 w-16 text-muted-foreground mb-4" />
+                <img src={getFileIconPath(selectedMediaFile.name)} alt="File icon" className="h-16 w-16 mb-4 object-contain" />
                 <span className="text-sm font-medium text-center break-all">{selectedMediaFile.name}</span>
                 <span className="text-xs text-muted-foreground mt-1">{(selectedMediaFile.size / 1024 / 1024).toFixed(2)} MB</span>
               </div>

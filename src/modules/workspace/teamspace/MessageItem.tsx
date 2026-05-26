@@ -26,7 +26,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
-import { getUserColor } from "./lib/utils";
+import { getUserColor, getFileIconPath } from "./lib/utils";
 import {
   SmilePlus,
   MoreHorizontal,
@@ -572,8 +572,8 @@ export function MessageItem({
                                  }}
                                  className="flex items-center gap-3 p-2.5 mt-0.5 mb-1 bg-black/5 dark:bg-white/5 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer max-w-[280px]"
                               >
-                                 <div className="p-2 bg-primary/10 rounded-md shrink-0">
-                                    <FileIcon className="h-6 w-6 text-primary" />
+                                 <div className="p-1 shrink-0">
+                                    <img src={getFileIconPath(fileName)} alt="icon" className="h-8 w-8 object-contain" />
                                  </div>
                                  <div className="flex flex-col overflow-hidden min-w-[120px] flex-1">
                                     <span className="text-sm font-medium truncate" title={fileName}>{fileName}</span>

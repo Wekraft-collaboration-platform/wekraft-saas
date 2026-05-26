@@ -31,3 +31,21 @@ export function formatNotificationContent(content: string | undefined, maxLength
   
   return formatted;
 }
+export function getFileIconPath(fileName: string) {
+  const ext = fileName.split('.').pop()?.toLowerCase();
+  switch (ext) {
+    case 'pdf': return '/pdf.svg';
+    case 'ppt':
+    case 'pptx': return '/ppt.svg';
+    case 'doc':
+    case 'docx': return '/doc.svg';
+    case 'xls':
+    case 'xlsx':
+    case 'csv': return '/xls.svg';
+    case 'png': return '/png.svg';
+    case 'jpg':
+    case 'jpeg': return '/jpg.svg';
+    case 'svg': return '/svg.svg';
+    default: return '/file.svg';
+  }
+}
