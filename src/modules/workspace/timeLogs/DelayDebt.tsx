@@ -60,9 +60,9 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
 
   if (!isReady) {
     return (
-      <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-neutral-900/90 shadow-sm dark:shadow-none p-4 flex flex-col relative overflow-hidden">
+      <div className="h-full w-full border border-neutral-200 dark:border-neutral-800 rounded-lg bg-card dark:bg-neutral-900/80 shadow-sm dark:shadow-none p-4 flex flex-col relative overflow-hidden">
         <div className="flex items-center gap-2 mb-3">
-          <div className={cn("p-1.5 rounded-md border bg-card")}>
+          <div className={cn("p-1.5 rounded-md border bg-muted")}>
             <Hourglass className={cn("w-3 h-3! text-primary")} />
           </div>
           <h3 className="text-base font-medium tracking-tight text-black  dark:text-white">
