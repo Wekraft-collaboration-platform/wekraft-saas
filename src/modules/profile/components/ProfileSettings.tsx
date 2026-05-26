@@ -28,6 +28,7 @@ import {
 import { useUser, useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
 import { Badge } from "@/components/ui/badge";
+import { SocialLinksDialog } from "./SocialLinksDialog";
 
 interface ProfileSettingsProps {
   user: any;
@@ -50,12 +51,8 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
   const [editBio, setEditBio] = useState(user?.bio || "");
   const [editSkills, setEditSkills] = useState<string[]>(user?.skills || []);
   const [newSkill, setNewSkill] = useState("");
-  const [editSocials, setEditSocials] = useState<string[]>([
-    user?.socialLinks?.[0] || "",
-    user?.socialLinks?.[1] || "",
-    user?.socialLinks?.[2] || ""
-  ]);
   const [editGithub, setEditGithub] = useState(user?.githubUsername || "");
+  const [showSocialLinksDialog, setShowSocialLinksDialog] = useState(false);
 
   // Convex mutations
   const updateIdentity = useMutation(api.user.updateUserIdentity);
@@ -71,11 +68,6 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
       setEditOccupation(user.occupation || "");
       setEditBio(user.bio || "");
       setEditSkills(user.skills || []);
-      setEditSocials([
-        user.socialLinks?.[0] || "",
-        user.socialLinks?.[1] || "",
-        user.socialLinks?.[2] || ""
-      ]);
       setEditGithub(user.githubUsername || "");
     }
   }, [user, activeEditRow]);
@@ -126,19 +118,6 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
     }
   };
 
-  const handleSaveSocials = async () => {
-    try {
-      setIsSaving(true);
-      const cleaned = editSocials.map(url => url.trim()).filter(Boolean);
-      await updateSocialLinks({ links: cleaned });
-      toast.success("Social links updated successfully!");
-      setActiveEditRow(null);
-    } catch (error: any) {
-      toast.error(error.message || "Failed to update social links");
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   const handleSaveGithub = async () => {
     try {
@@ -506,60 +485,24 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
             </span>
           </div>
 
-          {activeEditRow === "socials" ? (
-            <div className="flex-1 flex flex-col gap-3">
-              <p className="text-xs text-muted-foreground">Up to 3 professional URLs (YouTube, Kaggle, dev.to, StackOverflow, etc.)</p>
-              <div className="flex flex-col gap-2 max-w-md">
-                {editSocials.map((link, idx) => (
-                  <div key={idx} className="flex flex-col gap-1">
-                    <Label htmlFor={`social-slot-${idx}`} className="text-[10px] text-muted-foreground font-semibold">
-                      Slot {idx + 1}
-                    </Label>
-                    <Input 
-                      id={`social-slot-${idx}`}
-                      value={link}
-                      onChange={(e) => {
-                        const next = [...editSocials];
-                        next[idx] = e.target.value;
-                        setEditSocials(next);
-                      }}
-                      placeholder="https://..."
-                      className="bg-background text-xs h-8"
-                    />
-                  </div>
-                ))}
-              </div>
-              <div className="flex gap-2">
-                <Button size="sm" onClick={handleSaveSocials} disabled={isSaving} className="h-8 text-xs">
-                  {isSaving && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />} Save
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => setActiveEditRow(null)} disabled={isSaving} className="h-8 text-xs">
-                  Cancel
-                </Button>
-              </div>
+          <div className="flex-1 min-w-0">
+            <div className="flex flex-col gap-1.5">
+              {user?.socialLinks && user.socialLinks.filter(Boolean).length > 0 ? (
+                user.socialLinks.filter(Boolean).map((link: string, idx: number) => (
+                  <a key={idx} href={link} target="_blank" rel="noopener noreferrer" className="text-xs text-primary font-mono truncate hover:underline block max-w-md">
+                    {link}
+                  </a>
+                ))
+              ) : (
+                <span className="text-muted-foreground/60 italic text-xs">No social links set</span>
+              )}
             </div>
-          ) : (
-            <>
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-col gap-1.5">
-                  {user?.socialLinks && user.socialLinks.filter(Boolean).length > 0 ? (
-                    user.socialLinks.filter(Boolean).map((link: string, idx: number) => (
-                      <a key={idx} href={link} target="_blank" rel="noopener noreferrer" className="text-xs text-primary font-mono truncate hover:underline block max-w-md">
-                        {link}
-                      </a>
-                    ))
-                  ) : (
-                    <span className="text-muted-foreground/60 italic text-xs">No social links set</span>
-                  )}
-                </div>
-              </div>
-              <div className="shrink-0">
-                <Button variant="link" onClick={() => setActiveEditRow("socials")} className="text-xs text-primary font-semibold h-auto p-0">
-                  Edit
-                </Button>
-              </div>
-            </>
-          )}
+          </div>
+          <div className="shrink-0">
+            <Button variant="link" onClick={() => setShowSocialLinksDialog(true)} className="text-xs text-primary font-semibold h-auto p-0">
+              Edit
+            </Button>
+          </div>
         </div>
 
         {/* ROW 9: Account Security / Clerk Management */}
@@ -599,6 +542,11 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
         </div>
 
       </div>
+      <SocialLinksDialog
+        open={showSocialLinksDialog}
+        onOpenChange={setShowSocialLinksDialog}
+        currentLinks={user?.socialLinks}
+      />
     </div>
   );
 }

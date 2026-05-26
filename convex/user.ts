@@ -323,7 +323,7 @@ export const updateSocialLinks = mutation({
 
     if (!user) throw new Error("User not found");
 
-    const trimmedLinks = args.links.slice(0, 3);
+    const trimmedLinks = args.links.slice(0, 20);
 
     await ctx.db.patch(user._id, {
       socialLinks: trimmedLinks,
