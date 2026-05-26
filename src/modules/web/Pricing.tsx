@@ -118,8 +118,8 @@ const plans: Plan[] = [
     key: "plus",
     name: "Plus",
     badge: "40% OFF",
-    priceLabel: "$7",
-    oldPrice: "$10",
+    priceLabel: "$9",
+    oldPrice: "$12",
     priceSub: "Serious team building",
     description: "Serious team building",
     cta: "Upgrade to Plus",
@@ -127,7 +127,7 @@ const plans: Plan[] = [
     highlighted: true,
     icon: <Flame className="h-4 w-4" />,
     features: plusFeatures,
-    priceUSD: 7,
+    priceUSD: 9,
   },
   {
     key: "pro",
@@ -288,11 +288,11 @@ const Pricing = () => {
         <div className="grid grid-cols-1 md:grid-cols-3 gap-5 max-w-6xl mx-auto">
           {plans.map((plan, idx) => {
             const displayPriceLabel = isIndia 
-              ? (plan.key === "free" ? "₹0" : plan.key === "plus" ? "₹649" : "₹1900") 
+              ? (plan.key === "free" ? "₹0" : plan.key === "plus" ? "₹899" : "₹1899") 
               : plan.priceLabel;
 
             const displayOldPrice = isIndia 
-              ? (plan.key === "free" ? undefined : plan.key === "plus" ? "₹999" : "₹2499") 
+              ? (plan.key === "free" ? undefined : plan.key === "plus" ? "₹1199" : "₹2499") 
               : plan.oldPrice;
 
             return (
