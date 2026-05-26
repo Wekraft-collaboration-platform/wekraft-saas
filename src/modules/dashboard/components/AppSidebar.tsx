@@ -84,6 +84,7 @@ import { UserAvatar, useUser, useClerk } from "@clerk/nextjs";
 import { ThemeButtons } from "./ThemeButton";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
+import CreateProjectDialog from "@/modules/project/CreateProjectDialog";
 
 export const AppSidebar = () => {
   const { theme, setTheme } = useTheme();
@@ -366,17 +367,18 @@ export const AppSidebar = () => {
                             </Link>
                           ))}
                         </div>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          asChild
-                          className="text-[10px] mt-2 h-7 w-full cursor-pointer"
-                        >
-                          <Link href="/dashboard/my-projects">
-                            <Layers3 className="h-4 w-4 mr-1" />
-                            Create New
-                          </Link>
-                        </Button>
+                        <CreateProjectDialog 
+                          trigger={
+                            <Button
+                              size="sm"
+                              variant="outline"
+                              className="text-[10px] mt-2 h-7 w-full cursor-pointer"
+                            >
+                              <Layers3 className="h-4 w-4 mr-1" />
+                              Create New
+                            </Button>
+                          }
+                        />
                       </>
                     )}
                   </div>
