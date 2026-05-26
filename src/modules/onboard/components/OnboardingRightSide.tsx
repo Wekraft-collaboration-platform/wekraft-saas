@@ -1,22 +1,26 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
 import {
   Activity,
-  Terminal,
-  Cpu,
+  AlertCircle,
+  CheckCircle2,
   Compass,
+  Cpu,
+  Loader2,
+  PackageCheck,
+  Rocket,
+  Settings,
   Shield,
   Sliders,
+  Terminal,
+  User,
   Wind,
   Zap,
-  Settings,
-  User,
-  CheckCircle2,
-  AlertCircle
 } from "lucide-react";
-import { cn } from "@/lib/utils";
+import React, { useEffect, useRef, useState } from "react";
 import { Typewriter } from "react-simple-typewriter";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
 
 interface OnboardingRightSideProps {
   currentStep: number;
@@ -27,6 +31,8 @@ interface OnboardingRightSideProps {
   projectStatus: string;
   theme?: string;
   clerkUser?: any;
+  onLaunch?: () => Promise<void>;
+  isLaunching?: boolean;
 }
 
 // ============================================================================
@@ -35,21 +41,21 @@ interface OnboardingRightSideProps {
 export const ROCKET_HUD_CONFIG = {
   // Performance and Frame-rate settings
   performance: {
-    maxFps: 40,                // Cap FPS to avoid high CPU usage (especially on 120Hz Mac ProMotion screens)
-    pauseWhenHidden: true      // Pause canvas animation entirely when tab is inactive (saves battery/CPU)
+    maxFps: 40, // Cap FPS to avoid high CPU usage (especially on 120Hz Mac ProMotion screens)
+    pauseWhenHidden: true, // Pause canvas animation entirely when tab is inactive (saves battery/CPU)
   },
 
   // Dimensions, Scaling, and Viewports
   sizes: {
-    gridSize: 45,              // Size of each background grid cell in pixels
-    fov: 400,                  // Field of View depth projection (lower = more fish-eye, higher = flatter)
-    cameraDistance: 300,       // Camera distance from the object
-    starCount: 300,            // Total number of background warp stars
-    starMaxZ: 900,             // Max depth range for stars
-    starSpeedBase: 0.8,        // Normal speed for stars
-    starSpeedWarp: 24.0,       // Warp speed for stars (Step 5)
-    centerYOffset: 30,         // Additional vertical coordinate adjustment to center the rocket in layout
-    vesselWarpYOffset: -185,   // Fly-up height offset when step 5 is active
+    gridSize: 45, // Size of each background grid cell in pixels
+    fov: 400, // Field of View depth projection (lower = more fish-eye, higher = flatter)
+    cameraDistance: 300, // Camera distance from the object
+    starCount: 300, // Total number of background warp stars
+    starMaxZ: 900, // Max depth range for stars
+    starSpeedBase: 0.8, // Normal speed for stars
+    starSpeedWarp: 24.0, // Warp speed for stars (Step 5)
+    centerYOffset: 30, // Additional vertical coordinate adjustment to center the rocket in layout
+    vesselWarpYOffset: -185, // Fly-up height offset when step 5 is active
 
     // Rocket line stroke widths
     rocketLineThickness: {
@@ -58,22 +64,22 @@ export const ROCKET_HUD_CONFIG = {
       cone: 1.2,
       structure: 1.0,
       flame: 1.3,
-      smoke: 1.0,              // Base multiplier for smoke fluid wind lines
-      warpSplash: 1.0
+      smoke: 1.0, // Base multiplier for smoke fluid wind lines
+      warpSplash: 1.0,
     },
 
     // Launchpad Turntable sizing (Step 1)
     padRadii: {
       inner: 100,
       middle: 145,
-      outer: 195
-    }
+      outer: 195,
+    },
   },
 
   // Color Palette Definitions (Colors & Opacity values)
   colors: {
-    background: "#000000",                       // Canvas background color
-    gridLine: "rgba(255, 255, 255, 0.012)",      // Background grid lines
+    background: "#000000", // Canvas background color
+    gridLine: "rgba(255, 255, 255, 0.012)", // Background grid lines
 
     // RGB channels (0-255, 0-255, 0-255) for dynamic opacity elements
     starRgb: "255, 255, 255",
@@ -84,9 +90,9 @@ export const ROCKET_HUD_CONFIG = {
     warpSplashRgb: "255, 255, 255",
 
     // Opacity bounds (0.0 to 1.0)
-    starWarpOpacity: 0.38,                       // Star line opacity at warp speed (Step 5)
-    starNormalOpacity: 0.08,                     // Star line opacity at normal speed (Steps 1-4)
-    padMaxOpacity: 0.35,                         // Launchpad platform max opacity
+    starWarpOpacity: 0.38, // Star line opacity at warp speed (Step 5)
+    starNormalOpacity: 0.08, // Star line opacity at normal speed (Steps 1-4)
+    padMaxOpacity: 0.35, // Launchpad platform max opacity
 
     // Wireframe parts (solid or semi-transparent)
     pilotBack: "rgba(255, 255, 255, 0.12)",
@@ -108,14 +114,14 @@ export const ROCKET_HUD_CONFIG = {
     vesselNameText: "rgba(255, 255, 255, 0.55)",
     smokeRadialFogStart: "rgba(255, 255, 255, 0.05)",
     smokeRadialFogMiddle: "rgba(255, 255, 255, 0.02)",
-    smokeRadialFogEnd: "rgba(255, 255, 255, 0)"
+    smokeRadialFogEnd: "rgba(255, 255, 255, 0)",
   },
 
   // 3D Text Typography Configurations
   fonts: {
     nameFontFamily: "monospace",
     nameFontWeight: "bold",
-    nameFontSize: 9
+    nameFontSize: 9,
   },
 
   // Outer HUD Static Text Customizations (Modify HTML texts here)
@@ -126,8 +132,8 @@ export const ROCKET_HUD_CONFIG = {
     crewCardDefaultName: "ASTRONAUT",
     crewCardDefaultRole: "SPECIALIST",
     diagnosticsTitle: "DIAGNOSTIC LOGS",
-    telemetryTitle: "MISSION TELEMETRY"
-  }
+    telemetryTitle: "MISSION TELEMETRY",
+  },
 };
 
 // --- 3D Geometry Utilities ---
@@ -154,7 +160,7 @@ function rotateX(p: Point3D, angle: number): Point3D {
   return {
     x: p.x,
     y: p.y * cos - p.z * sin,
-    z: p.y * sin + p.z * cos
+    z: p.y * sin + p.z * cos,
   };
 }
 
@@ -164,7 +170,7 @@ function rotateY(p: Point3D, angle: number): Point3D {
   return {
     x: p.x * cos + p.z * sin,
     y: p.y,
-    z: -p.x * sin + p.z * cos
+    z: -p.x * sin + p.z * cos,
   };
 }
 
@@ -174,11 +180,16 @@ function rotateZ(p: Point3D, angle: number): Point3D {
   return {
     x: p.x * cos - p.y * sin,
     y: p.x * sin + p.y * cos,
-    z: p.z
+    z: p.z,
   };
 }
 
-function rotatePoint(p: Point3D, pitch: number, yaw: number, roll: number): Point3D {
+function rotatePoint(
+  p: Point3D,
+  pitch: number,
+  yaw: number,
+  roll: number,
+): Point3D {
   let pt = rotateY(p, yaw);
   pt = rotateX(pt, pitch);
   pt = rotateZ(pt, roll);
@@ -196,9 +207,9 @@ function generateTopCap(): ComponentGeometry {
   const layers = [
     { y: -35, r: 45 }, // Cone base ring
     { y: -20, r: 75 }, // Outer rim upper
-    { y: 0, r: 85 },   // Mid-body outer
-    { y: 25, r: 85 },  // Lower outer
-    { y: 25, r: 65 }   // Inner sleeve insertion ring
+    { y: 0, r: 85 }, // Mid-body outer
+    { y: 25, r: 85 }, // Lower outer
+    { y: 25, r: 65 }, // Inner sleeve insertion ring
   ];
 
   // Generate standard layers
@@ -209,9 +220,13 @@ function generateTopCap(): ComponentGeometry {
       vertices.push({
         x: Math.cos(theta) * layer.r,
         y: layer.y,
-        z: Math.sin(theta) * layer.r
+        z: Math.sin(theta) * layer.r,
       });
-      edges.push({ v1: base + i, v2: base + ((i + 1) % segments), type: "structure" });
+      edges.push({
+        v1: base + i,
+        v2: base + ((i + 1) % segments),
+        type: "structure",
+      });
     }
   });
 
@@ -219,8 +234,16 @@ function generateTopCap(): ComponentGeometry {
   for (let i = 0; i < segments; i++) {
     edges.push({ v1: i, v2: segments + i, type: "structure" });
     edges.push({ v1: segments + i, v2: 2 * segments + i, type: "structure" });
-    edges.push({ v1: 2 * segments + i, v2: 3 * segments + i, type: "structure" });
-    edges.push({ v1: 3 * segments + i, v2: 4 * segments + i, type: "structure" });
+    edges.push({
+      v1: 2 * segments + i,
+      v2: 3 * segments + i,
+      type: "structure",
+    });
+    edges.push({
+      v1: 3 * segments + i,
+      v2: 4 * segments + i,
+      type: "structure",
+    });
   }
 
   // Conical Nose Cone Tip vertex at the very top (local Y = -80)
@@ -250,7 +273,7 @@ function generateUpperSleeve(): ComponentGeometry {
     { y: -50, r: 85 }, // Top collar
     { y: -15, r: 85 },
     { y: 15, r: 85 },
-    { y: 50, r: 85 }  // Bottom collar
+    { y: 50, r: 85 }, // Bottom collar
   ];
 
   layers.forEach((layer, layerIdx) => {
@@ -260,9 +283,13 @@ function generateUpperSleeve(): ComponentGeometry {
       vertices.push({
         x: Math.cos(theta) * layer.r,
         y: layer.y,
-        z: Math.sin(theta) * layer.r
+        z: Math.sin(theta) * layer.r,
       });
-      edges.push({ v1: base + i, v2: base + ((i + 1) % segments), type: "structure" });
+      edges.push({
+        v1: base + i,
+        v2: base + ((i + 1) % segments),
+        type: "structure",
+      });
     }
   });
 
@@ -270,16 +297,20 @@ function generateUpperSleeve(): ComponentGeometry {
   for (let i = 0; i < segments; i++) {
     edges.push({ v1: i, v2: segments + i, type: "structure" });
     edges.push({ v1: segments + i, v2: 2 * segments + i, type: "structure" });
-    edges.push({ v1: 2 * segments + i, v2: 3 * segments + i, type: "structure" });
+    edges.push({
+      v1: 2 * segments + i,
+      v2: 3 * segments + i,
+      type: "structure",
+    });
   }
 
   // Add Front Latch (from screenshot shield element) at theta = PI (front of the cylinder, z < 0)
   const latchBase = vertices.length;
   vertices.push({ x: -16, y: -12, z: -90 }); // 0: top-left
-  vertices.push({ x: 16, y: -12, z: -90 });  // 1: top-right
-  vertices.push({ x: 12, y: 18, z: -90 });   // 2: bottom-right
-  vertices.push({ x: -12, y: 18, z: -90 });  // 3: bottom-left
-  vertices.push({ x: 0, y: 28, z: -90 });   // 4: lower tip
+  vertices.push({ x: 16, y: -12, z: -90 }); // 1: top-right
+  vertices.push({ x: 12, y: 18, z: -90 }); // 2: bottom-right
+  vertices.push({ x: -12, y: 18, z: -90 }); // 3: bottom-left
+  vertices.push({ x: 0, y: 28, z: -90 }); // 4: lower tip
 
   edges.push({ v1: latchBase, v2: latchBase + 1, type: "latch" });
   edges.push({ v1: latchBase + 1, v2: latchBase + 2, type: "latch" });
@@ -314,7 +345,7 @@ function generateUpperSleeve(): ComponentGeometry {
       vertices.push({
         x: Math.cos(phi) * sinTheta * rad,
         y: cosTheta * rad - 5, // sitting centered in sleeve
-        z: Math.sin(phi) * sinTheta * rad
+        z: Math.sin(phi) * sinTheta * rad,
       });
     }
   }
@@ -327,18 +358,18 @@ function generateUpperSleeve(): ComponentGeometry {
 
       edges.push({
         v1: pilotBase + first,
-        v2: pilotBase + ((first + 1) % lonBands + lat * lonBands),
-        type: "pilot"
+        v2: pilotBase + (((first + 1) % lonBands) + lat * lonBands),
+        type: "pilot",
       });
       edges.push({
         v1: pilotBase + second,
-        v2: pilotBase + ((second + 1) % lonBands + (lat + 1) * lonBands),
-        type: "pilot"
+        v2: pilotBase + (((second + 1) % lonBands) + (lat + 1) * lonBands),
+        type: "pilot",
       });
       edges.push({
         v1: pilotBase + first,
         v2: pilotBase + second,
-        type: "pilot"
+        type: "pilot",
       });
     }
   }
@@ -368,9 +399,13 @@ function generateReactorCore(): ComponentGeometry {
       vertices.push({
         x: centerX + Math.cos(theta) * rodRadius,
         y: -rodHeight / 2,
-        z: centerZ + Math.sin(theta) * rodRadius
+        z: centerZ + Math.sin(theta) * rodRadius,
       });
-      edges.push({ v1: baseVertIdx + i, v2: baseVertIdx + ((i + 1) % segments), type: "core" });
+      edges.push({
+        v1: baseVertIdx + i,
+        v2: baseVertIdx + ((i + 1) % segments),
+        type: "core",
+      });
     }
 
     // Bottom cap of the rod
@@ -379,11 +414,19 @@ function generateReactorCore(): ComponentGeometry {
       vertices.push({
         x: centerX + Math.cos(theta) * rodRadius,
         y: rodHeight / 2,
-        z: centerZ + Math.sin(theta) * rodRadius
+        z: centerZ + Math.sin(theta) * rodRadius,
       });
-      edges.push({ v1: baseVertIdx + segments + i, v2: baseVertIdx + segments + ((i + 1) % segments), type: "core" });
+      edges.push({
+        v1: baseVertIdx + segments + i,
+        v2: baseVertIdx + segments + ((i + 1) % segments),
+        type: "core",
+      });
       // Vertical connector
-      edges.push({ v1: baseVertIdx + i, v2: baseVertIdx + segments + i, type: "core" });
+      edges.push({
+        v1: baseVertIdx + i,
+        v2: baseVertIdx + segments + i,
+        type: "core",
+      });
     }
   }
 
@@ -400,8 +443,8 @@ function generateBaseReceptacle(): ComponentGeometry {
     { y: -45, r: 85 }, // Top collar
     { y: -15, r: 85 },
     { y: 15, r: 85 },
-    { y: 45, r: 85 },  // Bottom collar
-    { y: 68, r: 55 }   // Engine nozzle bell
+    { y: 45, r: 85 }, // Bottom collar
+    { y: 68, r: 55 }, // Engine nozzle bell
   ];
 
   layers.forEach((layer, layerIdx) => {
@@ -411,9 +454,13 @@ function generateBaseReceptacle(): ComponentGeometry {
       vertices.push({
         x: Math.cos(theta) * layer.r,
         y: layer.y,
-        z: Math.sin(theta) * layer.r
+        z: Math.sin(theta) * layer.r,
       });
-      edges.push({ v1: base + i, v2: base + ((i + 1) % segments), type: "structure" });
+      edges.push({
+        v1: base + i,
+        v2: base + ((i + 1) % segments),
+        type: "structure",
+      });
     }
   });
 
@@ -421,8 +468,16 @@ function generateBaseReceptacle(): ComponentGeometry {
   for (let i = 0; i < segments; i++) {
     edges.push({ v1: i, v2: segments + i, type: "structure" });
     edges.push({ v1: segments + i, v2: 2 * segments + i, type: "structure" });
-    edges.push({ v1: 2 * segments + i, v2: 3 * segments + i, type: "structure" });
-    edges.push({ v1: 3 * segments + i, v2: 4 * segments + i, type: "structure" });
+    edges.push({
+      v1: 2 * segments + i,
+      v2: 3 * segments + i,
+      type: "structure",
+    });
+    edges.push({
+      v1: 3 * segments + i,
+      v2: 4 * segments + i,
+      type: "structure",
+    });
   }
 
   // Add 4 aerodynamic stabilizer fins
@@ -462,6 +517,8 @@ export function OnboardingRightSide({
   projectStatus,
   theme = "dark",
   clerkUser,
+  onLaunch,
+  isLaunching = false,
 }: OnboardingRightSideProps) {
   const containerRef = useRef<HTMLDivElement>(null);
   const canvasRef = useRef<HTMLCanvasElement>(null);
@@ -473,6 +530,10 @@ export function OnboardingRightSide({
   const nameArrowSvgRef = useRef<SVGSVGElement>(null);
   const nameArrowPathRef = useRef<SVGPathElement>(null);
   const nameArrowDotRef = useRef<SVGCircleElement>(null);
+
+  const [showLaunchOverlay, setShowLaunchOverlay] = useState(false);
+  const showLaunchOverlayRef = useRef(false);
+  const step5StartTimeRef = useRef<number | null>(null);
 
   // Sync props to refs to avoid restarting canvas loop on updates
   const currentStepRef = useRef(currentStep);
@@ -499,7 +560,7 @@ export function OnboardingRightSide({
   // Tech diagnostic logs
   const [logs, setLogs] = useState<string[]>([
     "SYS INIT // CORE SEQUENCE LOADED",
-    "PENDING hardpoint docking clamps release..."
+    "PENDING hardpoint docking clamps release...",
   ]);
 
   useEffect(() => {
@@ -509,35 +570,35 @@ export function OnboardingRightSide({
       newLogs = [
         "STATUS: ASSEMBLY MODE // EXPLODED STATE ACTIVED",
         "CONNECTING structural segments to launchpad turntable...",
-        "WAITING for mission pilot assignment..."
+        "WAITING for mission pilot assignment...",
       ];
     } else if (step === 2) {
       newLogs = [
         "STATUS: CREW BOARDING IN PROGRESS",
         `PILOT LOGGED: ${username || clerkUser?.fullName || ROCKET_HUD_CONFIG.hudLabels.crewCardDefaultName}`,
         `BIO-SYNC ROLE: ${selectedRole || ROCKET_HUD_CONFIG.hudLabels.crewCardDefaultRole}`,
-        "COMMENCING structural module docking locking sequence..."
+        "COMMENCING structural module docking locking sequence...",
       ];
     } else if (step === 3) {
       newLogs = [
         "STATUS: ALL HARDPOINTS LOCKED & DOCKED",
         `VESSEL NAME DECLARED: [${projectName || "WEKRAFT-01"}]`,
         "IGNITING fusion reactor plasma rings...",
-        "CHECKING fuel rods pressure metrics [OK]"
+        "CHECKING fuel rods pressure metrics [OK]",
       ];
     } else if (step === 4) {
       newLogs = [
         `VESSEL ID: ${projectName || "WEKRAFT-01"}`,
         "CALIBRATING engine core output & exhaust valves...",
         "DEPRESSURIZATION steam venting [ACTIVE]",
-        "WARNING: minor chassis vibration detected, damping stabilizers..."
+        "WARNING: minor chassis vibration detected, damping stabilizers...",
       ];
     } else if (step === 5) {
       newLogs = [
         "STATUS: WARP DRIVE ENGAGED // GO FOR LAUNCH",
         "VELOCITY: OVERDRIVE warp speed index [OK]",
         "ATMOSPHERIC drag shield deployed [100%]",
-        "WELCOME ABOARD WEKRAFT WORKSPACE!"
+        "WELCOME ABOARD WEKRAFT WORKSPACE!",
       ];
     }
     setLogs(newLogs);
@@ -578,7 +639,7 @@ export function OnboardingRightSide({
       topCap: -140,
       upperSleeve: -70,
       core: 30,
-      base: 125
+      base: 125,
     };
 
     // Current animated component offsets (starts exploded)
@@ -587,13 +648,13 @@ export function OnboardingRightSide({
       topCap: -220,
       upperSleeve: -145,
       core: 20,
-      base: 190
+      base: 190,
     };
 
     // Rotation angles
     let pitch = 0.35; // perspective tilt
-    let yaw = 0.0;    // spin
-    let roll = 0.0;   // roll wobble
+    let yaw = 0.0; // spin
+    let roll = 0.0; // roll wobble
     let time = 0;
 
     // Displacement offsets (for vertical flying motion in Step 5)
@@ -649,7 +710,7 @@ export function OnboardingRightSide({
         y: (Math.random() - 0.5) * 1500,
         z: Math.random() * ROCKET_HUD_CONFIG.sizes.starMaxZ,
         prevZ: 0,
-        brightness: 0.2 + Math.random() * 0.8
+        brightness: 0.2 + Math.random() * 0.8,
       });
     }
 
@@ -704,7 +765,12 @@ export function OnboardingRightSide({
 
       if (step === 1) {
         // Exploded view - topCap gap is reduced to prevent huge gaps
-        targetOffsets = { topCap: -220, upperSleeve: -145, core: 20, base: 190 };
+        targetOffsets = {
+          topCap: -220,
+          upperSleeve: -145,
+          core: 20,
+          base: 190,
+        };
       } else if (step === 2) {
         // Halfways assembled - topCap gap is reduced
         targetOffsets = { topCap: -70, upperSleeve: -45, core: 5, base: 70 };
@@ -719,39 +785,68 @@ export function OnboardingRightSide({
       } else if (step === 5) {
         // Launch warp speed (blastoff up the frame!)
         targetOffsets = { topCap: 0, upperSleeve: 0, core: 0, base: 0 };
-        targetStarSpeed = ROCKET_HUD_CONFIG.sizes.starSpeedWarp;
         targetLaunchpadY = 500; // discard turntable launchpad down out of frame
         targetVesselCenterYOffset = 0; // Handled by takeoffY flying loop
-        shakeAmt = 5.0; // heavy liftoff rumble
 
-        // Tilted state depends on whether it has reached takeoff hover height
-        if (takeoffY <= -149) {
-          targetPitch = 0.85; // tilted towards us to see the top part!
-          targetRoll = Math.sin(time * 0.04) * 0.08; // subtle banking wobble
+        targetPitch = 0.25; // elegant upright 3D angle
+        targetRoll = 0.0;
+
+        if (step5StartTimeRef.current === null) {
+          step5StartTimeRef.current = Date.now();
+        }
+        const elapsedStep5 = Date.now() - step5StartTimeRef.current;
+
+        if (elapsedStep5 <= 1000) {
+          // Phase 1: Go up a little (from 0 to -150)
+          const t = elapsedStep5 / 1000;
+          takeoffY = -150 * (t * (2 - t)); // easeOutQuad
+          targetStarSpeed = 2.0;
+          shakeAmt = 1.5;
+        } else if (elapsedStep5 <= 3000) {
+          // Phase 2: Hover/stay for 2.0 seconds (reduced by 1.5s)
+          takeoffY = -150 + Math.sin(time * 0.5) * 1.5;
+          targetStarSpeed = 2.5;
+          shakeAmt = 2.0;
+        } else if (elapsedStep5 <= 4000) {
+          // Phase 3: Go outside the window from top (1.0 second blastoff)
+          const warpT = (elapsedStep5 - 3000) / 1000;
+          takeoffY = -150 - 1200 * (warpT * warpT); // accelerate straight up
+          targetStarSpeed = ROCKET_HUD_CONFIG.sizes.starSpeedWarp;
+          shakeAmt = 5.0;
         } else {
-          targetPitch = 0.05; // fly straight up during launch
-          targetRoll = 0.0;
+          // Phase 4: Rocket is gone
+          takeoffY = -1500;
+          targetStarSpeed = 0.2;
+          shakeAmt = 0;
+
+          // Trigger completion overlay after 4.0s
+          if (!showLaunchOverlayRef.current) {
+            showLaunchOverlayRef.current = true;
+            setShowLaunchOverlay(true);
+          }
+        }
+      } else {
+        step5StartTimeRef.current = null;
+        if (showLaunchOverlayRef.current) {
+          showLaunchOverlayRef.current = false;
+          setShowLaunchOverlay(false);
         }
       }
 
       // Smooth step variables transitions
       offsets.topCap += (targetOffsets.topCap - offsets.topCap) * 0.08;
-      offsets.upperSleeve += (targetOffsets.upperSleeve - offsets.upperSleeve) * 0.08;
+      offsets.upperSleeve +=
+        (targetOffsets.upperSleeve - offsets.upperSleeve) * 0.08;
       offsets.core += (targetOffsets.core - offsets.core) * 0.08;
       offsets.base += (targetOffsets.base - offsets.base) * 0.08;
       pitch += (targetPitch - pitch) * 0.04;
       roll += (targetRoll - roll) * 0.04;
       launchpadY += (targetLaunchpadY - launchpadY) * 0.06;
-      vesselCenterYOffset += (targetVesselCenterYOffset - vesselCenterYOffset) * 0.05;
+      vesselCenterYOffset +=
+        (targetVesselCenterYOffset - vesselCenterYOffset) * 0.05;
 
-      // Update takeoff vertical position in Step 5
-      if (step === 5) {
-        // Slowly fly up to -150 (approx 20% of screen height) and hover there
-        if (takeoffY > -150) {
-          takeoffY -= 4.5;
-          if (takeoffY < -150) takeoffY = -150;
-        }
-      } else {
+      // Update takeoff vertical position when not in Step 5
+      if (step !== 5) {
         takeoffY += (0 - takeoffY) * 0.1; // return smoothly to launchpad if step back
       }
 
@@ -818,9 +913,12 @@ export function OnboardingRightSide({
         const scale = fov / (fov + p.z + cameraDistance);
         return {
           x: centerX + p.x * scale + cameraShake.x,
-          y: centerY + (p.y + vesselCenterYOffset + takeoffY) * scale + cameraShake.y,
+          y:
+            centerY +
+            (p.y + vesselCenterYOffset + takeoffY) * scale +
+            cameraShake.y,
           scale: scale,
-          z: p.z
+          z: p.z,
         };
       };
 
@@ -831,12 +929,12 @@ export function OnboardingRightSide({
           x: centerX + p.x * scale + cameraShake.x,
           y: centerY + p.y * scale + cameraShake.y, // ignores rocket fly-up offset
           scale: scale,
-          z: p.z
+          z: p.z,
         };
       };
 
       // 2. Draw dense 3D stars (Warp speed streaking)
-      stars.forEach(star => {
+      stars.forEach((star) => {
         star.prevZ = star.z;
         star.z -= targetStarSpeed;
 
@@ -853,8 +951,15 @@ export function OnboardingRightSide({
         ctx.beginPath();
         ctx.moveTo(pPrev.x, pPrev.y);
         ctx.lineTo(pCurrent.x, pCurrent.y);
-        const opacity = Math.min(1, (ROCKET_HUD_CONFIG.sizes.starMaxZ - star.z) / (ROCKET_HUD_CONFIG.sizes.starMaxZ / 2)) *
-          (step === 5 ? ROCKET_HUD_CONFIG.colors.starWarpOpacity : ROCKET_HUD_CONFIG.colors.starNormalOpacity) *
+        const opacity =
+          Math.min(
+            1,
+            (ROCKET_HUD_CONFIG.sizes.starMaxZ - star.z) /
+            (ROCKET_HUD_CONFIG.sizes.starMaxZ / 2),
+          ) *
+          (step === 5
+            ? ROCKET_HUD_CONFIG.colors.starWarpOpacity
+            : ROCKET_HUD_CONFIG.colors.starNormalOpacity) *
           star.brightness;
         ctx.strokeStyle = `rgba(${ROCKET_HUD_CONFIG.colors.starRgb}, ${opacity})`;
         ctx.lineWidth = step === 5 ? 1.4 : 0.7;
@@ -862,7 +967,11 @@ export function OnboardingRightSide({
       });
 
       // 3. Draw 3D holographic launchpad turntable (Much whiter/brighter)
-      const drawTurntableRing = (yPos: number, radius: number, opacity: number) => {
+      const drawTurntableRing = (
+        yPos: number,
+        radius: number,
+        opacity: number,
+      ) => {
         const segs = 32;
         ctx.beginPath();
         for (let i = 0; i <= segs; i++) {
@@ -870,7 +979,7 @@ export function OnboardingRightSide({
           const pt = rotatePointOpt({
             x: Math.cos(t) * radius,
             y: yPos,
-            z: Math.sin(t) * radius
+            z: Math.sin(t) * radius,
           });
           const proj = projectHangar(pt);
           if (i === 0) ctx.moveTo(proj.x, proj.y);
@@ -884,20 +993,42 @@ export function OnboardingRightSide({
       if (launchpadY < 450) {
         const padBaseY = lockedY.base + offsets.base + 47 + launchpadY;
         // Whiter base stand opacity (increased to 0.35 max)
-        const padOpacity = Math.max(0, 1 - launchpadY / 450) * ROCKET_HUD_CONFIG.colors.padMaxOpacity;
+        const padOpacity =
+          Math.max(0, 1 - launchpadY / 450) *
+          ROCKET_HUD_CONFIG.colors.padMaxOpacity;
 
         // Concentric deck rings (widened to match enlarged base)
-        drawTurntableRing(padBaseY, ROCKET_HUD_CONFIG.sizes.padRadii.inner, padOpacity);
-        drawTurntableRing(padBaseY, ROCKET_HUD_CONFIG.sizes.padRadii.middle, padOpacity);
-        drawTurntableRing(padBaseY, ROCKET_HUD_CONFIG.sizes.padRadii.outer, padOpacity);
+        drawTurntableRing(
+          padBaseY,
+          ROCKET_HUD_CONFIG.sizes.padRadii.inner,
+          padOpacity,
+        );
+        drawTurntableRing(
+          padBaseY,
+          ROCKET_HUD_CONFIG.sizes.padRadii.middle,
+          padOpacity,
+        );
+        drawTurntableRing(
+          padBaseY,
+          ROCKET_HUD_CONFIG.sizes.padRadii.outer,
+          padOpacity,
+        );
 
         // Draw radial deck ticks (very clear white)
         const radialTics = 12;
         ctx.beginPath();
         for (let i = 0; i < radialTics; i++) {
           const t = (i / radialTics) * Math.PI * 2;
-          const innerPt = rotatePointOpt({ x: Math.cos(t) * ROCKET_HUD_CONFIG.sizes.padRadii.inner, y: padBaseY, z: Math.sin(t) * ROCKET_HUD_CONFIG.sizes.padRadii.inner });
-          const outerPt = rotatePointOpt({ x: Math.cos(t) * ROCKET_HUD_CONFIG.sizes.padRadii.outer, y: padBaseY, z: Math.sin(t) * ROCKET_HUD_CONFIG.sizes.padRadii.outer });
+          const innerPt = rotatePointOpt({
+            x: Math.cos(t) * ROCKET_HUD_CONFIG.sizes.padRadii.inner,
+            y: padBaseY,
+            z: Math.sin(t) * ROCKET_HUD_CONFIG.sizes.padRadii.inner,
+          });
+          const outerPt = rotatePointOpt({
+            x: Math.cos(t) * ROCKET_HUD_CONFIG.sizes.padRadii.outer,
+            y: padBaseY,
+            z: Math.sin(t) * ROCKET_HUD_CONFIG.sizes.padRadii.outer,
+          });
           const pInner = projectHangar(innerPt);
           const pOuter = projectHangar(outerPt);
           ctx.moveTo(pInner.x, pInner.y);
@@ -908,17 +1039,21 @@ export function OnboardingRightSide({
       }
 
       // Helper function to draw 3D components with back-face line depth fading (Enhanced contrast/whiter)
-      const drawComponent3D = (geom: ComponentGeometry, yOffset: number, isAssembled: boolean) => {
-        const projectedVerts = geom.vertices.map(v => {
+      const drawComponent3D = (
+        geom: ComponentGeometry,
+        yOffset: number,
+        isAssembled: boolean,
+      ) => {
+        const projectedVerts = geom.vertices.map((v) => {
           const localPt = { x: v.x, y: v.y + yOffset, z: v.z };
           const rotated = rotatePointOpt(localPt);
           return {
             proj: project(rotated),
-            rotatedZ: rotated.z
+            rotatedZ: rotated.z,
           };
         });
 
-        geom.edges.forEach(edge => {
+        geom.edges.forEach((edge) => {
           if (edge.type === "pilot" && step < 2) return;
           if (edge.type === "core" && step === 1 && !isAssembled) {
             // Keep rods showing exploded
@@ -935,18 +1070,31 @@ export function OnboardingRightSide({
 
           // Configure sketch strokes (increased structural opacities for brighter lines)
           if (edge.type === "pilot") {
-            ctx.strokeStyle = avgZ > 0 ? ROCKET_HUD_CONFIG.colors.pilotBack : ROCKET_HUD_CONFIG.colors.pilotFront;
+            ctx.strokeStyle =
+              avgZ > 0
+                ? ROCKET_HUD_CONFIG.colors.pilotBack
+                : ROCKET_HUD_CONFIG.colors.pilotFront;
             ctx.lineWidth = ROCKET_HUD_CONFIG.sizes.rocketLineThickness.pilot;
           } else if (edge.type === "latch") {
-            ctx.strokeStyle = avgZ > 0 ? ROCKET_HUD_CONFIG.colors.latchBack : ROCKET_HUD_CONFIG.colors.latchFront;
+            ctx.strokeStyle =
+              avgZ > 0
+                ? ROCKET_HUD_CONFIG.colors.latchBack
+                : ROCKET_HUD_CONFIG.colors.latchFront;
             ctx.lineWidth = ROCKET_HUD_CONFIG.sizes.rocketLineThickness.latch;
           } else if (edge.type === "cone") {
-            ctx.strokeStyle = avgZ > 0 ? ROCKET_HUD_CONFIG.colors.coneBack : ROCKET_HUD_CONFIG.colors.coneFront;
+            ctx.strokeStyle =
+              avgZ > 0
+                ? ROCKET_HUD_CONFIG.colors.coneBack
+                : ROCKET_HUD_CONFIG.colors.coneFront;
             ctx.lineWidth = ROCKET_HUD_CONFIG.sizes.rocketLineThickness.cone;
           } else {
             // Standard structures (Whiter & clearer lines)
-            ctx.strokeStyle = avgZ > 0 ? ROCKET_HUD_CONFIG.colors.structureBack : ROCKET_HUD_CONFIG.colors.structureFront;
-            ctx.lineWidth = ROCKET_HUD_CONFIG.sizes.rocketLineThickness.structure;
+            ctx.strokeStyle =
+              avgZ > 0
+                ? ROCKET_HUD_CONFIG.colors.structureBack
+                : ROCKET_HUD_CONFIG.colors.structureFront;
+            ctx.lineWidth =
+              ROCKET_HUD_CONFIG.sizes.rocketLineThickness.structure;
           }
 
           ctx.stroke();
@@ -955,7 +1103,11 @@ export function OnboardingRightSide({
 
       // 4. Render the 4 rocket components with their respectiveOffsets
       drawComponent3D(topCap, lockedY.topCap + offsets.topCap, step >= 3);
-      drawComponent3D(upperSleeve, lockedY.upperSleeve + offsets.upperSleeve, step >= 3);
+      drawComponent3D(
+        upperSleeve,
+        lockedY.upperSleeve + offsets.upperSleeve,
+        step >= 3,
+      );
       drawComponent3D(core, lockedY.core + offsets.core, step >= 3);
       drawComponent3D(base, lockedY.base + offsets.base, step >= 3);
 
@@ -965,8 +1117,12 @@ export function OnboardingRightSide({
         ctx.lineWidth = 1;
 
         // Radial white arrow - Left (expanded for larger size)
-        const arrowLeftStart = projectHangar(rotatePointOpt({ x: -45, y: lockedY.core + offsets.core, z: 0 }));
-        const arrowLeftEnd = projectHangar(rotatePointOpt({ x: -105, y: lockedY.core + offsets.core, z: 0 }));
+        const arrowLeftStart = projectHangar(
+          rotatePointOpt({ x: -45, y: lockedY.core + offsets.core, z: 0 }),
+        );
+        const arrowLeftEnd = projectHangar(
+          rotatePointOpt({ x: -105, y: lockedY.core + offsets.core, z: 0 }),
+        );
 
         ctx.setLineDash([2, 2]);
         ctx.beginPath();
@@ -985,8 +1141,12 @@ export function OnboardingRightSide({
         ctx.fill();
 
         // Radial white arrow - Right
-        const arrowRightStart = projectHangar(rotatePointOpt({ x: 45, y: lockedY.core + offsets.core, z: 0 }));
-        const arrowRightEnd = projectHangar(rotatePointOpt({ x: 105, y: lockedY.core + offsets.core, z: 0 }));
+        const arrowRightStart = projectHangar(
+          rotatePointOpt({ x: 45, y: lockedY.core + offsets.core, z: 0 }),
+        );
+        const arrowRightEnd = projectHangar(
+          rotatePointOpt({ x: 105, y: lockedY.core + offsets.core, z: 0 }),
+        );
 
         ctx.setLineDash([2, 2]);
         ctx.beginPath();
@@ -1004,8 +1164,20 @@ export function OnboardingRightSide({
         ctx.fill();
 
         // Central Red Downward Arrow 1 (between topCap and upperSleeve)
-        const red1Start = projectHangar(rotatePointOpt({ x: 0, y: lockedY.upperSleeve + offsets.upperSleeve - 110, z: 0 }));
-        const red1End = projectHangar(rotatePointOpt({ x: 0, y: lockedY.upperSleeve + offsets.upperSleeve - 60, z: 0 }));
+        const red1Start = projectHangar(
+          rotatePointOpt({
+            x: 0,
+            y: lockedY.upperSleeve + offsets.upperSleeve - 110,
+            z: 0,
+          }),
+        );
+        const red1End = projectHangar(
+          rotatePointOpt({
+            x: 0,
+            y: lockedY.upperSleeve + offsets.upperSleeve - 60,
+            z: 0,
+          }),
+        );
 
         ctx.strokeStyle = ROCKET_HUD_CONFIG.colors.redDownwardArrowLine;
         ctx.lineWidth = 1.2;
@@ -1023,8 +1195,12 @@ export function OnboardingRightSide({
         ctx.fill();
 
         // Central Red Downward Arrow 2 (between upperSleeve and core)
-        const red2Start = projectHangar(rotatePointOpt({ x: 0, y: lockedY.core + offsets.core - 180, z: 0 }));
-        const red2End = projectHangar(rotatePointOpt({ x: 0, y: lockedY.core + offsets.core - 100, z: 0 }));
+        const red2Start = projectHangar(
+          rotatePointOpt({ x: 0, y: lockedY.core + offsets.core - 180, z: 0 }),
+        );
+        const red2End = projectHangar(
+          rotatePointOpt({ x: 0, y: lockedY.core + offsets.core - 100, z: 0 }),
+        );
 
         ctx.beginPath();
         ctx.moveTo(red2Start.x, red2Start.y);
@@ -1039,8 +1215,12 @@ export function OnboardingRightSide({
         ctx.fill();
 
         // Central Red Downward Arrow 3 (between core and base - relative to base position)
-        const redStart = projectHangar(rotatePointOpt({ x: 0, y: lockedY.base + offsets.base - 80, z: 0 }));
-        const redEnd = projectHangar(rotatePointOpt({ x: 0, y: lockedY.base + offsets.base - 20, z: 0 }));
+        const redStart = projectHangar(
+          rotatePointOpt({ x: 0, y: lockedY.base + offsets.base - 80, z: 0 }),
+        );
+        const redEnd = projectHangar(
+          rotatePointOpt({ x: 0, y: lockedY.base + offsets.base - 20, z: 0 }),
+        );
 
         ctx.beginPath();
         ctx.moveTo(redStart.x, redStart.y);
@@ -1058,17 +1238,21 @@ export function OnboardingRightSide({
       // 6. Draw 3D Projected Vessel Name (Step 3)
       if (step >= 3) {
         const anchor = { x: 0, y: 0, z: -87 };
-        const rotAnchor = rotatePointOpt(
-          { x: anchor.x, y: anchor.y + lockedY.upperSleeve + offsets.upperSleeve, z: anchor.z }
-        );
+        const rotAnchor = rotatePointOpt({
+          x: anchor.x,
+          y: anchor.y + lockedY.upperSleeve + offsets.upperSleeve,
+          z: anchor.z,
+        });
 
         if (rotAnchor.z < 0) {
           const projAnchor = project(rotAnchor);
 
           const tangentPt = { x: 20, y: 0, z: -87 };
-          const rotTangent = rotatePointOpt(
-            { x: tangentPt.x, y: tangentPt.y + lockedY.upperSleeve + offsets.upperSleeve, z: tangentPt.z }
-          );
+          const rotTangent = rotatePointOpt({
+            x: tangentPt.x,
+            y: tangentPt.y + lockedY.upperSleeve + offsets.upperSleeve,
+            z: tangentPt.z,
+          });
           const projTangent = project(rotTangent);
 
           const dx = projTangent.x - projAnchor.x;
@@ -1097,9 +1281,15 @@ export function OnboardingRightSide({
         const count = 3;
 
         for (let i = 0; i < count; i++) {
-          const ringRad = ((time * 0.8 + i * ringSpacing) % (ringSpacing * count)) + 10;
-          const ringOpacity = Math.max(0, 1 - ringRad / (ringSpacing * count)) * 0.35;
-          const drawHolographicRingLocal = (yPos: number, radius: number, opacity: number) => {
+          const ringRad =
+            ((time * 0.8 + i * ringSpacing) % (ringSpacing * count)) + 10;
+          const ringOpacity =
+            Math.max(0, 1 - ringRad / (ringSpacing * count)) * 0.35;
+          const drawHolographicRingLocal = (
+            yPos: number,
+            radius: number,
+            opacity: number,
+          ) => {
             const segs = 32;
             ctx.beginPath();
             for (let j = 0; j <= segs; j++) {
@@ -1107,7 +1297,7 @@ export function OnboardingRightSide({
               const pt = rotatePointOpt({
                 x: Math.cos(t) * radius,
                 y: yPos,
-                z: Math.sin(t) * radius
+                z: Math.sin(t) * radius,
               });
               const proj = project(pt);
               if (j === 0) ctx.moveTo(proj.x, proj.y);
@@ -1136,7 +1326,7 @@ export function OnboardingRightSide({
             z: Math.sin(theta) * r,
             vy: 7.0 + Math.random() * 9.0,
             length: 15 + Math.random() * 25,
-            life: 1.0
+            life: 1.0,
           });
         }
 
@@ -1172,16 +1362,31 @@ export function OnboardingRightSide({
 
         // A. Draw soft radial shadow/fog core under nozzle first (extremely light weight shadows)
         const grad = ctx.createRadialGradient(
-          shipProjBase.x, shipProjBase.y + 15, 5 * shipProjBase.scale,
-          shipProjBase.x, shipProjBase.y + 35, 120 * shipProjBase.scale
+          shipProjBase.x,
+          shipProjBase.y + 15,
+          5 * shipProjBase.scale,
+          shipProjBase.x,
+          shipProjBase.y + 35,
+          120 * shipProjBase.scale,
         );
         grad.addColorStop(0, ROCKET_HUD_CONFIG.colors.smokeRadialFogStart);
-        grad.addColorStop(0.3, `rgba(${ROCKET_HUD_CONFIG.colors.smokeRgb}, 0.02)`);
+        grad.addColorStop(
+          0.3,
+          `rgba(${ROCKET_HUD_CONFIG.colors.smokeRgb}, 0.02)`,
+        );
         grad.addColorStop(1, ROCKET_HUD_CONFIG.colors.smokeRadialFogEnd);
 
         ctx.fillStyle = grad;
         ctx.beginPath();
-        ctx.ellipse(shipProjBase.x, shipProjBase.y + 35, 220 * shipProjBase.scale, 75 * shipProjBase.scale, 0, 0, Math.PI * 2);
+        ctx.ellipse(
+          shipProjBase.x,
+          shipProjBase.y + 35,
+          220 * shipProjBase.scale,
+          75 * shipProjBase.scale,
+          0,
+          0,
+          Math.PI * 2,
+        );
         ctx.fill();
 
         // B. Spawn sweeping flow line streamers (comes from bottom and spreads left/right)
@@ -1190,7 +1395,7 @@ export function OnboardingRightSide({
           const startPt = {
             x: (Math.random() - 0.5) * 20,
             y: nozzleBaseY + 12, // start outside bottom
-            z: (Math.random() - 0.5) * 20
+            z: (Math.random() - 0.5) * 20,
           };
           smokeParticles.push({
             path: [startPt],
@@ -1201,7 +1406,7 @@ export function OnboardingRightSide({
             life: 1.0,
             opacity: 0.12 + Math.random() * 0.12,
             side: side,
-            width: 0.8 + Math.random() * 1.0
+            width: 0.8 + Math.random() * 1.0,
           });
         }
 
@@ -1215,7 +1420,7 @@ export function OnboardingRightSide({
           const nextZ = lastPt.z + p.vz;
 
           p.vx += p.side * 0.14; // curve outwards
-          p.vy += 0.08;          // fall downwards
+          p.vy += 0.08; // fall downwards
 
           p.vx *= 0.96;
           p.vy *= 0.96;
@@ -1243,7 +1448,8 @@ export function OnboardingRightSide({
           });
 
           ctx.strokeStyle = `rgba(${ROCKET_HUD_CONFIG.colors.smokeRgb}, ${p.life * p.opacity})`;
-          ctx.lineWidth = p.width * ROCKET_HUD_CONFIG.sizes.rocketLineThickness.smoke;
+          ctx.lineWidth =
+            p.width * ROCKET_HUD_CONFIG.sizes.rocketLineThickness.smoke;
           ctx.setLineDash([6, 3, 2, 3]); // CAD wind lines dash pattern
           ctx.stroke();
           ctx.setLineDash([]);
@@ -1256,14 +1462,17 @@ export function OnboardingRightSide({
           splashRings.push({
             y: lockedY.topCap - 80,
             radius: 12,
-            opacity: 0.9
+            opacity: 0.9,
           });
         }
 
         splashRings.forEach((ring, idx) => {
           ring.y += 7.0;
           ring.radius += 6.5;
-          ring.opacity = Math.max(0, 1 - (ring.y - (lockedY.topCap - 80)) / 260);
+          ring.opacity = Math.max(
+            0,
+            1 - (ring.y - (lockedY.topCap - 80)) / 260,
+          );
 
           if (ring.opacity <= 0) {
             splashRings.splice(idx, 1);
@@ -1279,7 +1488,7 @@ export function OnboardingRightSide({
             const pt = rotatePointOpt({
               x: Math.cos(t) * ring.radius,
               y: ring.y,
-              z: Math.sin(t) * ring.radius
+              z: Math.sin(t) * ring.radius,
             });
             const proj = project(pt);
             if (i === 0) ctx.moveTo(proj.x, proj.y);
@@ -1287,18 +1496,29 @@ export function OnboardingRightSide({
           }
 
           ctx.strokeStyle = `rgba(${ROCKET_HUD_CONFIG.colors.warpSplashRgb}, ${ring.opacity * 0.3})`;
-          ctx.lineWidth = ROCKET_HUD_CONFIG.sizes.rocketLineThickness.warpSplash;
+          ctx.lineWidth =
+            ROCKET_HUD_CONFIG.sizes.rocketLineThickness.warpSplash;
           ctx.stroke();
           ctx.setLineDash([]);
         });
       }
 
       // Calculate cockpit screen coordinates and position/update the HTML overlay and leader line arrow
-      const cockpitLocalPt = { x: 0, y: lockedY.upperSleeve + offsets.upperSleeve, z: 0 };
+      const cockpitLocalPt = {
+        x: 0,
+        y: lockedY.upperSleeve + offsets.upperSleeve,
+        z: 0,
+      };
       const cockpitRotated = rotatePointOpt(cockpitLocalPt);
       const cockpitProjected = project(cockpitRotated);
 
-      if (step === 2 && overlayRef.current && arrowSvgRef.current && arrowPathRef.current && arrowDotRef.current) {
+      if (
+        step === 2 &&
+        overlayRef.current &&
+        arrowSvgRef.current &&
+        arrowPathRef.current &&
+        arrowDotRef.current
+      ) {
         overlayRef.current.style.display = "flex";
         arrowSvgRef.current.style.display = "block";
 
@@ -1327,11 +1547,21 @@ export function OnboardingRightSide({
       }
 
       // Calculate spaceship tip coordinates
-      const tipLocalPt = { x: 0, y: lockedY.topCap + offsets.topCap - 80, z: 0 };
+      const tipLocalPt = {
+        x: 0,
+        y: lockedY.topCap + offsets.topCap - 80,
+        z: 0,
+      };
       const tipRotated = rotatePointOpt(tipLocalPt);
       const tipProjected = project(tipRotated);
 
-      if (step === 3 && nameOverlayRef.current && nameArrowSvgRef.current && nameArrowPathRef.current && nameArrowDotRef.current) {
+      if (
+        step === 3 &&
+        nameOverlayRef.current &&
+        nameArrowSvgRef.current &&
+        nameArrowPathRef.current &&
+        nameArrowDotRef.current
+      ) {
         nameOverlayRef.current.style.display = "flex";
         nameArrowSvgRef.current.style.display = "block";
 
@@ -1356,8 +1586,10 @@ export function OnboardingRightSide({
         nameArrowDotRef.current.setAttribute("cx", `${x1}`);
         nameArrowDotRef.current.setAttribute("cy", `${y1}`);
       } else {
-        if (nameOverlayRef.current) nameOverlayRef.current.style.display = "none";
-        if (nameArrowSvgRef.current) nameArrowSvgRef.current.style.display = "none";
+        if (nameOverlayRef.current)
+          nameOverlayRef.current.style.display = "none";
+        if (nameArrowSvgRef.current)
+          nameArrowSvgRef.current.style.display = "none";
       }
     };
 
@@ -1368,7 +1600,10 @@ export function OnboardingRightSide({
       cancelAnimationFrame(animFrame);
       window.removeEventListener("resize", resize);
       if (ROCKET_HUD_CONFIG.performance.pauseWhenHidden) {
-        document.removeEventListener("visibilitychange", handleVisibilityChange);
+        document.removeEventListener(
+          "visibilitychange",
+          handleVisibilityChange,
+        );
       }
     };
   }, []);
@@ -1378,7 +1613,7 @@ export function OnboardingRightSide({
       ref={containerRef}
       className={cn(
         "hidden lg:flex lg:w-[60%] relative overflow-hidden select-none h-screen transition-all duration-500",
-        "bg-black! border-l border-zinc-900"
+        "bg-black! border-l border-zinc-900",
       )}
     >
       {/* 3D Blueprint Canvas */}
@@ -1397,11 +1632,7 @@ export function OnboardingRightSide({
           strokeWidth="1.2"
           strokeDasharray="3 3"
         />
-        <circle
-          ref={arrowDotRef}
-          r="3"
-          fill="rgba(255, 255, 255, 0.85)"
-        />
+        <circle ref={arrowDotRef} r="3" fill="rgba(255, 255, 255, 0.85)" />
       </svg>
 
       {/* Cockpit HUD Overlay (Step 2 Only) */}
@@ -1417,19 +1648,26 @@ export function OnboardingRightSide({
         <div className="flex items-center gap-3">
           <div className="relative shrink-0 w-9 h-9 rounded-lg border border-zinc-800 bg-zinc-800! overflow-hidden flex items-center justify-center">
             {clerkUser?.imageUrl ? (
-              <img src={clerkUser.imageUrl} className="w-full h-full object-cover" alt="" />
+              <img
+                src={clerkUser.imageUrl}
+                className="w-full h-full object-cover"
+                alt=""
+              />
             ) : (
               <User className="w-4 h-4 text-zinc-500" />
             )}
-
           </div>
 
           <div className="min-w-0">
             <div className="text-xs text-zinc-100 truncate max-w-[130px] capitalize">
-              Name:  {username || clerkUser?.fullName || ROCKET_HUD_CONFIG.hudLabels.crewCardDefaultName}
+              Name:{" "}
+              {username ||
+                clerkUser?.fullName ||
+                ROCKET_HUD_CONFIG.hudLabels.crewCardDefaultName}
             </div>
             <div className="text-zinc-450 mt-2 text-[10px]  truncate">
-              Role: {selectedRole || ROCKET_HUD_CONFIG.hudLabels.crewCardDefaultRole}
+              Role:{" "}
+              {selectedRole || ROCKET_HUD_CONFIG.hudLabels.crewCardDefaultRole}
             </div>
           </div>
         </div>
@@ -1448,11 +1686,7 @@ export function OnboardingRightSide({
           strokeWidth="1.2"
           strokeDasharray="3 3"
         />
-        <circle
-          ref={nameArrowDotRef}
-          r="3"
-          fill="rgba(255, 255, 255, 0.85)"
-        />
+        <circle ref={nameArrowDotRef} r="3" fill="rgba(255, 255, 255, 0.85)" />
       </svg>
 
       {/* Spaceship Name HUD Overlay (Step 3 Only) */}
@@ -1475,14 +1709,26 @@ export function OnboardingRightSide({
 
       {/* 1. Technical Corner Brackets */}
       {/* To customize size/color of corner brackets, adjust borders & spacing classes below */}
-      <div className="absolute top-6 left-6 w-8 h-8 border-t border-l border-zinc-600 pointer-events-none" />
-      <div className="absolute top-6 right-6 w-8 h-8 border-t border-r border-zinc-600 pointer-events-none" />
-      <div className="absolute bottom-6 left-6 w-8 h-8 border-b border-l border-zinc-600 pointer-events-none" />
-      <div className="absolute bottom-6 right-6 w-8 h-8 border-b border-r border-zinc-600 pointer-events-none" />
+      <div
+        className={cn(
+          "transition-opacity duration-700",
+          showLaunchOverlay && "opacity-0 pointer-events-none",
+        )}
+      >
+        <div className="absolute top-6 left-6 w-8 h-8 border-t border-l border-zinc-600 pointer-events-none" />
+        <div className="absolute top-6 right-6 w-8 h-8 border-t border-r border-zinc-600 pointer-events-none" />
+        <div className="absolute bottom-6 left-6 w-8 h-8 border-b border-l border-zinc-600 pointer-events-none" />
+        <div className="absolute bottom-6 right-6 w-8 h-8 border-b border-r border-zinc-600 pointer-events-none" />
+      </div>
 
       {/* 2. Top-Left System Status Header */}
       {/* To customize top-left header text size (e.g. text-[9px]) or color (e.g. text-zinc-400), tweak classes here */}
-      <div className="absolute top-8 left-8 flex flex-col font-mono text-xs text-zinc-300 gap-1 tracking-wider uppercase select-none pointer-events-none">
+      <div
+        className={cn(
+          "absolute top-8 left-8 flex flex-col font-mono text-xs text-zinc-300 gap-1 tracking-wider uppercase select-none pointer-events-none transition-opacity duration-700",
+          showLaunchOverlay && "opacity-0",
+        )}
+      >
         <div className="flex items-center gap-1.5 text-zinc-300 font-normal">
           <Activity className="w-3.5 h-3.5 shrink-0 text-zinc-300" />
           <span>Wekraft // Product Delivery Workspace</span>
@@ -1495,10 +1741,19 @@ export function OnboardingRightSide({
       {/* 3. Top-Right Pilot Synced Card (Visible Step >= 3) */}
       {/* To customize pilot crew card background, padding (p-3.5) or borders, modify Tailwind classes here */}
       {currentStep >= 3 && (
-        <div className="absolute top-8 right-8 bg-neutral-900/60 border border-zinc-800 rounded-md p-3 flex items-center gap-3.5 max-w-[240px] shadow-2xl text-[9.5px] tracking-wide text-zinc-300">
+        <div
+          className={cn(
+            "absolute top-8 right-8 bg-neutral-900/60 border border-zinc-800 rounded-md p-3 flex items-center gap-3.5 max-w-[240px] shadow-2xl text-[9.5px] tracking-wide text-zinc-300 transition-opacity duration-700",
+            showLaunchOverlay && "opacity-0 pointer-events-none",
+          )}
+        >
           <div className="relative shrink-0 w-9 h-9 rounded-lg border border-zinc-800 bg-zinc-950 overflow-hidden flex items-center justify-center">
             {clerkUser?.imageUrl ? (
-              <img src={clerkUser.imageUrl} className="w-full h-full object-cover " alt="" />
+              <img
+                src={clerkUser.imageUrl}
+                className="w-full h-full object-cover "
+                alt=""
+              />
             ) : (
               <User className="w-4 h-4 text-zinc-500" />
             )}
@@ -1507,17 +1762,26 @@ export function OnboardingRightSide({
           <div className="min-w-0">
             <div className="text-zinc-400 text-xs">Personal Details</div>
             <div className="font-bold text-zinc-100 truncate mt-0.5 max-w-[130px] capitalize">
-              Name:   {username || clerkUser?.fullName || ROCKET_HUD_CONFIG.hudLabels.crewCardDefaultName}
+              Name:{" "}
+              {username ||
+                clerkUser?.fullName ||
+                ROCKET_HUD_CONFIG.hudLabels.crewCardDefaultName}
             </div>
             <div className="text-zinc-400 text-[10px] mt-0.5 truncate ">
-              Role: {selectedRole || ROCKET_HUD_CONFIG.hudLabels.crewCardDefaultRole}
+              Role:{" "}
+              {selectedRole || ROCKET_HUD_CONFIG.hudLabels.crewCardDefaultRole}
             </div>
           </div>
         </div>
       )}
 
       {/* 4. Minimal Bottom Onboarding Status & Progress Bar */}
-      <div className="absolute bottom-8 left-8 right-8 flex flex-col gap-3 font-sans select-none pointer-events-none">
+      <div
+        className={cn(
+          "absolute bottom-8 left-8 right-8 flex flex-col gap-3 font-sans select-none pointer-events-none transition-opacity duration-700",
+          showLaunchOverlay && "opacity-0 pointer-events-none",
+        )}
+      >
         <div className="flex justify-between items-center text-xs text-zinc-400 font-medium">
           <span className="uppercase">SYSTEM STATUS</span>
           <span className="text-zinc-400 flex items-center gap-1">
@@ -1539,9 +1803,15 @@ export function OnboardingRightSide({
                     key={currentStep}
                     words={[
                       currentStep === 1 ? " awaiting purpose selection..." : "",
-                      currentStep === 2 ? " awaiting pilot authorization..." : "",
-                      currentStep === 3 ? " awaiting spaceship designation registry..." : "",
-                      currentStep === 4 ? " awaiting workspace styling sync..." : "",
+                      currentStep === 2
+                        ? " awaiting pilot authorization..."
+                        : "",
+                      currentStep === 3
+                        ? " awaiting spaceship designation registry..."
+                        : "",
+                      currentStep === 4
+                        ? " awaiting workspace styling sync..."
+                        : "",
                     ].filter(Boolean)}
                     loop={1}
                     cursor
@@ -1563,11 +1833,49 @@ export function OnboardingRightSide({
               currentStep === 2 && "w-[40%]",
               currentStep === 3 && "w-[60%]",
               currentStep === 4 && "w-[80%]",
-              currentStep === 5 && "w-full bg-emerald-500 animate-pulse"
+              currentStep === 5 && "w-full bg-emerald-500 ",
             )}
           />
         </div>
       </div>
+
+      {/* 5. Onboarding Completed Overlay (Step 5 Phase 4) */}
+      {showLaunchOverlay && (
+        <div className="absolute inset-0 flex flex-col items-center justify-center bg-black z-30 transition-all duration-700 select-auto">
+          <div className="max-w-md w-full px-8 text-center space-y-6 animate-in fade-in zoom-in duration-500">
+            <PackageCheck className="size-16 mx-auto" />
+
+            <div className="space-y-2">
+              <h3 className="text-2xl font-semibold tracking-tight text-white font-sans">
+                Onboarding completed
+              </h3>
+              <p className="text-zinc-400 text-sm font-sans">
+                launching the workspace
+              </p>
+            </div>
+
+            <Button
+              onClick={onLaunch}
+              disabled={isLaunching}
+              className={cn(
+                "px-5! text-sm",
+              )}
+            >
+              {isLaunching ? (
+                <>
+                  Launching{" "}
+                  <Loader2 className="w-4 h-4 animate-spin text-black" />
+                </>
+              ) : (
+                <>
+                  Launch now
+                  <Rocket className="w-4.5 h-4.5 text-black stroke-[2.5px]" />
+                </>
+              )}
+            </Button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
