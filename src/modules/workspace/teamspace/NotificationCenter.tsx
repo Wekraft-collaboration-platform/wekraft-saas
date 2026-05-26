@@ -15,6 +15,7 @@ import { cn } from "@/lib/utils";
 import { useRouter } from "next/navigation";
 import { useConvex } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
+import { formatNotificationContent } from "./lib/utils";
 
 interface NotificationCenterProps {
   userId: string;
@@ -179,14 +180,17 @@ export function NotificationCenter({ userId, onSelectChannel }: NotificationCent
                           )}
                         </div>
                         
-                        {n.content && (
-                          <p className={cn(
-                            "text-xs text-muted-foreground/90 line-clamp-2 leading-relaxed bg-accent/25 dark:bg-accent/15 border-l-2 pl-2.5 py-1.5 rounded-r-md mt-1 shadow-[inset_1px_1px_3px_rgba(0,0,0,0.02)]",
-                            isMention ? "border-primary/20 italic" : "border-emerald-500/20"
-                          )}>
-                            {isMention ? `"${n.content}"` : n.content}
-                          </p>
-                        )}
+                        {n.content && (() => {
+                          const formattedContent = formatNotificationContent(n.content);
+                          return (
+                            <p className={cn(
+                              "text-xs text-muted-foreground/90 line-clamp-2 leading-relaxed bg-accent/25 dark:bg-accent/15 border-l-2 pl-2.5 py-1.5 rounded-r-md mt-1 shadow-[inset_1px_1px_3px_rgba(0,0,0,0.02)]",
+                              isMention ? "border-primary/20 italic" : "border-emerald-500/20"
+                            )}>
+                              {isMention ? `"${formattedContent}"` : formattedContent}
+                            </p>
+                          );
+                        })()}
                         
                         <div className="flex items-center justify-between mt-2">
                           <div className="flex items-center gap-2">

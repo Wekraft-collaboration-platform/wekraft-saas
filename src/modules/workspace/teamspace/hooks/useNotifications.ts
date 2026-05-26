@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from "react";
 import Ably from "ably";
 import { toast } from "sonner";
+import { formatNotificationContent } from "../lib/utils";
 
 export interface Notification {
   id: string;
@@ -66,8 +67,9 @@ export function useNotifications(userId: string) {
       setUnreadCount((prev) => prev + 1);
 
       if (notification.type === "mention") {
+        const formattedContent = formatNotificationContent(notification.content);
         toast(`✨ Mentioned in #${notification.channel_name || "channel"}`, {
-          description: `${notification.sender_name}: "${notification.content || "Mentioned you in a message."}"`,
+          description: `${notification.sender_name}: "${formattedContent || "Mentioned you in a message."}"`,
           duration: 5000,
         });
       } else if (notification.type === "join") {

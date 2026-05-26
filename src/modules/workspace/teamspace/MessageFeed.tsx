@@ -203,6 +203,9 @@ export function MessageFeed({
           finalContent += "\n\n" + caption.trim();
         }
 
+        // Remove from optimistic uploads before adding the optimistic message
+        setOptimisticUploads(prev => prev.filter(u => u.id !== id));
+
         await sendMessage(
           finalContent,
           currentUserId,
