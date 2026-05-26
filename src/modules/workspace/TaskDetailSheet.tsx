@@ -269,11 +269,17 @@ export const TaskDetailSheet = ({
         taskId: currentTask._id,
         url,
       });
-      // Optionally delete from S3 too
-      await fetch("/api/attachments", {
+      // Delete from S3
+      const res = await fetch("/api/attachments", {
         method: "DELETE",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
       });
+      if (res.ok) {
+        console.log("[Attachments] S3 delete successful:", url);
+      } else {
+        console.warn("[Attachments] S3 delete failed:", await res.text());
+      }
       toast.success("Attachment removed");
     } catch (error) {
       toast.error("Failed to remove attachment");

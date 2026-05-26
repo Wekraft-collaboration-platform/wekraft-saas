@@ -1,9 +1,12 @@
-import { DeleteObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, HeadObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { auth } from "@clerk/nextjs/server";
 import Ably from "ably";
+import { ConvexHttpClient } from "convex/browser";
 import { type NextRequest, NextResponse } from "next/server";
 import { turso } from "@/lib/turso";
 import { verifyProjectAccess } from "@/modules/workspace/teamspace/lib/auth";
+import { api } from "../../../../../../convex/_generated/api";
+
 
 const ably = new Ably.Rest(process.env.ABLY_API_KEY!);
 
@@ -16,6 +19,7 @@ const s3Client = new S3Client({
 });
 
 const BUCKET_NAME = "wekraft-saas-upload-s3";
+const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 function extractS3Keys(content: string): string[] {
   if (!content) return [];
@@ -29,12 +33,25 @@ function extractS3Keys(content: string): string[] {
   return keys;
 }
 
-async function deleteFromS3(keys: string[]) {
+async function deleteFromS3(keys: string[]): Promise<number> {
+  let totalFreed = 0;
   await Promise.allSettled(
-    keys.map((key) =>
-      s3Client.send(new DeleteObjectCommand({ Bucket: BUCKET_NAME, Key: key })),
-    ),
+    keys.map(async (key) => {
+      try {
+        // Get file size before deletion
+        const head = await s3Client.send(
+          new HeadObjectCommand({ Bucket: BUCKET_NAME, Key: key })
+        );
+        const size = head.ContentLength ?? 0;
+        totalFreed += size;
+        await s3Client.send(new DeleteObjectCommand({ Bucket: BUCKET_NAME, Key: key }));
+        console.log(`[Teamspace] S3 deleted: ${key} (${size} bytes)`);
+      } catch (err) {
+        console.error(`[Teamspace] S3 delete failed for key: ${key}`, err);
+      }
+    }),
   );
+  return totalFreed;
 }
 
 // PATCH /api/teamspace/messages/[messageId]
@@ -192,8 +209,23 @@ export async function DELETE(
 
   const oldContent = existing.rows[0].content as string;
   const keysToDelete = extractS3Keys(oldContent);
+  let totalFreed = 0;
   if (keysToDelete.length > 0) {
-    await deleteFromS3(keysToDelete);
+    totalFreed = await deleteFromS3(keysToDelete);
+    console.log(`[Teamspace] Freed ${totalFreed} bytes from S3 (${keysToDelete.length} file(s))`);
+  }
+
+  // Decrement Convex storage counter
+  if (totalFreed > 0) {
+    try {
+      await convex.mutation(api.user.decrementStorage, {
+        projectId: projectId as any,
+        fileSize: totalFreed,
+      });
+      console.log(`[Teamspace] Convex storage decremented by ${totalFreed} bytes`);
+    } catch (err) {
+      console.error("[Teamspace] Failed to decrement Convex storage:", err);
+    }
   }
 
   // Soft delete message

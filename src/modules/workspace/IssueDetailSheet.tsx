@@ -218,10 +218,17 @@ export const IssueDetailSheet = ({
         issueId: realIssue._id,
         url,
       });
-      await fetch("/api/issue-attachments", {
+      // Delete from S3
+      const res = await fetch("/api/issue-attachments", {
         method: "DELETE",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ url }),
       });
+      if (res.ok) {
+        console.log("[IssueAttachments] S3 delete successful:", url);
+      } else {
+        console.warn("[IssueAttachments] S3 delete failed:", await res.text());
+      }
       toast.success("Attachment removed");
     } catch (error) {
       toast.error("Failed to remove attachment");
