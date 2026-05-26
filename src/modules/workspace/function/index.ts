@@ -2,7 +2,7 @@
 
 import { Octokit } from "octokit";
 import { redis } from "@/lib/redis";
-import { getGithubAccessToken } from "@/modules/github/actions/action";
+import { getGithubAccessToken } from "@/lib/github-auth";
 
 const SKIP_FOLDERS = new Set([
   // Node / JS

@@ -86,7 +86,7 @@ export const useRazorpay = () => {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
-          amount: plan.planType === "plus" ? 649 : 1900,
+          amount: plan.planType === "plus" ? 899 : 1899,
           currency: "INR",
           planName: plan.name,
           planType: plan.planType,

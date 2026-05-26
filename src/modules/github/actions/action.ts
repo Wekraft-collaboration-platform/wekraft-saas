@@ -4,30 +4,9 @@ import { auth } from "@clerk/nextjs/server";
 import { clerkClient } from "@clerk/nextjs/server";
 import { Octokit } from "octokit";
 import pLimit from "p-limit";
+import { getGithubAccessToken } from "@/lib/github-auth";
 
-// ========================================
-// GETTING GITHUB ACCESS TOKEN FROM CLERK
-// ========================================
-export async function getGithubAccessToken(userId?: string) {
-  let targetUserId = userId;
 
-  if (!targetUserId) {
-    const { userId: currentUserId } = await auth();
-    if (!currentUserId) {
-      throw new Error("Not authenticated");
-    }
-    targetUserId = currentUserId;
-  }
-
-  const client = await clerkClient();
-  const tokens = await client.users.getUserOauthAccessToken(
-    targetUserId,
-    "github",
-  );
-  const accessToken = tokens.data[0]?.token;
-
-  return accessToken;
-}
 
 // ============================================
 // GETTING GITHUB REPOSITORIES
@@ -50,6 +29,27 @@ export const getRepositories = async (
   });
 
   return data;
+};
+
+export const searchRepositories = async (query: string) => {
+  const token = await getGithubAccessToken();
+  const octokit = new Octokit({ auth: token });
+  
+  const { data } = await octokit.rest.repos.listForAuthenticatedUser({
+    sort: "updated",
+    direction: "desc",
+    visibility: "all",
+    affiliation: "owner,organization_member",
+    per_page: 100, // Fetch the 100 most recently active repos
+  });
+
+  const lowerQuery = query.toLowerCase();
+  const filtered = data.filter((repo: any) => 
+    repo.name.toLowerCase().includes(lowerQuery) || 
+    (repo.description && repo.description.toLowerCase().includes(lowerQuery))
+  );
+
+  return filtered.slice(0, 10); // Return top 10 matches
 };
 
 // ============================================
