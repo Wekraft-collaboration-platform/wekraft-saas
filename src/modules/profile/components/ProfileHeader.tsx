@@ -1,22 +1,14 @@
 import {
-  Share2,
   Star,
-  Upload,
   Clock,
   MapPin,
   Globe,
   Briefcase,
   CreditCard,
-  Sparkles,
-  Pencil,
-  Loader2,
 } from "lucide-react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
-import { Separator } from "@/components/ui/separator";
-import { cn } from "@/lib/utils";
 import {
   FaGithub,
   FaLinkedin,
@@ -78,30 +70,6 @@ interface ProfileHeaderProps {
   onToggleSettings?: () => void;
 }
 
-interface MetaChipProps {
-  icon: React.ElementType;
-  label: string;
-  value: React.ReactNode;
-}
-
-function MetaChip({ icon: Icon, label, value }: MetaChipProps) {
-  return (
-    <div className="flex items-center gap-2.5 group">
-      <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-md bg-muted/60 border border-border/50 group-hover:bg-muted transition-colors">
-        <Icon className="h-3.5 w-3.5 text-muted-foreground" />
-      </div>
-      <div className="flex flex-col min-w-0">
-        <span className="text-[9px] font-bold uppercase tracking-widest text-muted-foreground/60 leading-none mb-0.5">
-          {label}
-        </span>
-        <span className="text-xs font-semibold text-foreground/85 truncate leading-none">
-          {value}
-        </span>
-      </div>
-    </div>
-  );
-}
-
 export const ProfileHeader = ({ 
   user, 
   isUpgraded,
@@ -122,192 +90,115 @@ export const ProfileHeader = ({
     user.accountType === "plus" || user.accountType === "pro" || isUpgraded;
 
   return (
-    <Card className="w-full overflow-hidden shadow-sm border relative">
+    <Card className="w-full overflow-hidden shadow-sm border border-zinc-800 relative bg-black text-white rounded-2xl">
       {/* ── Banner ── */}
-      <div className="h-32 sm:h-40 md:h-48 w-full relative group overflow-hidden bg-muted">
-        {user.coverUrl ? (
-          <img
-            src={user.coverUrl}
-            alt="Profile Cover"
-            className="absolute inset-0 w-full h-full object-cover z-0"
-          />
-        ) : (
-          <>
-            {/* Ambient blur */}
-            <div
-              className={`absolute inset-0 z-0 blur-2xl opacity-60 ${
-                isPro ? "bg-yellow-500/30" : "bg-blue-600/20"
-              }`}
-            />
-            {/* Gradient overlay */}
-            {isPro ? (
-              <div className="absolute inset-0 z-0 bg-gradient-to-br from-yellow-500/40 via-orange-400/20 to-transparent" />
-            ) : (
-              <div className="absolute inset-0 z-0 bg-gradient-to-br from-blue-600/35 via-indigo-500/20 to-transparent" />
-            )}
-            {/* Dot mesh */}
-            <div
-              className="absolute inset-0 z-0 opacity-[0.035]"
-              style={{
-                backgroundImage:
-                  "radial-gradient(circle at 1px 1px, currentColor 1px, transparent 0)",
-                backgroundSize: "24px 24px",
-              }}
-            />
-          </>
-        )}
-
-        {/* Upload cover button */}
-        <Button
-          variant="secondary"
-          size="icon"
-          className="absolute top-4 right-4 z-10 h-10 w-10 rounded-full bg-white text-primary hover:bg-white/90 shadow-md border-none flex items-center justify-center cursor-pointer transition-transform hover:scale-105"
-        >
-          <Pencil className="h-5 w-5 text-[#007acc] fill-none" />
-        </Button>
-
-        {/* Plus badge */}
-        {isPro && (
-          <div className="absolute top-3 left-3 z-10">
-            <Badge className="bg-yellow-500/90 text-black border-none text-[10px] font-bold shadow-sm backdrop-blur-sm gap-1">
-              <Star className="h-3 w-3 fill-black" />
-              Plus
-            </Badge>
-          </div>
-        )}
+      <div className="h-40 sm:h-52 md:h-60 w-full relative group overflow-hidden bg-zinc-900">
+        <img
+          src={user.coverUrl || "/banner.svg"}
+          alt="Profile Cover"
+          className="absolute -top-3 left-0 w-full h-[calc(100%+24px)] object-cover z-0"
+        />
       </div>
 
       {/* ── Profile body ── */}
-      <div className="px-4 sm:px-6 md:px-8 pb-5 sm:pb-6">
-
-        {/* Row 1: avatar + name + action buttons */}
-        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
-
-          {/* Avatar + identity */}
-          <div className="flex flex-col sm:flex-row items-start sm:items-end gap-3 sm:gap-4">
-            {/* Avatar overlapping banner */}
-            <div className="-mt-12 sm:-mt-14 shrink-0 relative z-20">
-              <Avatar className="h-24 w-24 sm:h-28 sm:w-28 border-4 border-card shadow-lg bg-card ring-2 ring-border/40">
-                <AvatarImage
-                  src={user.avatarUrl || ""}
-                  className="object-cover"
-                  alt={user.name}
-                />
-                <AvatarFallback className="text-3xl bg-muted font-bold font-pop">
-                  {user.name?.charAt(0)?.toUpperCase()}
-                </AvatarFallback>
-              </Avatar>
-            </div>
-
-            {/* Name / occupation / handle */}
-            <div className="flex flex-col gap-0.5 pb-1 min-w-0">
-              <div className="flex items-center gap-2 flex-wrap">
-                <h2 className="text-xl sm:text-2xl md:text-3xl font-bold font-pop tracking-tight leading-tight">
-                  {user.name}
-                </h2>
-                {isPro && (
-                  <div className="bg-yellow-400 dark:bg-yellow-500 p-1 rounded-full shadow ring-2 ring-yellow-400/30">
-                    <Star className="h-3.5 w-3.5 text-black fill-black" />
-                  </div>
-                )}
-              </div>
-              <p className="text-sm text-foreground/70 font-medium capitalize truncate">
-                {user.occupation || "Developer"}
-              </p>
-              <div className="flex items-center gap-3 mt-1.5 flex-wrap">
-                <p className="text-xs text-muted-foreground font-mono leading-none">
-                  @{handle}
-                </p>
-                {user.socialLinks && user.socialLinks.filter(Boolean).length > 0 && (
-                  <div className="flex items-center gap-2 border-l pl-3 border-border/60">
-                    {user.socialLinks.filter(Boolean).map((link: string) => {
-                      const info = getPlatformInfo(link);
-                      if (!info) return null;
-                      const Icon = info.icon;
-                      return (
-                        <a
-                          key={link}
-                          href={link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className={cn(
-                            "flex h-5 w-5 items-center justify-center rounded-md border border-border/40 bg-background/40 hover:bg-muted transition-all hover:scale-105",
-                            info.colorClass
-                          )}
-                          title={info.label}
-                        >
-                          <Icon className="h-3 w-3" />
-                        </a>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
-            </div>
+      <div className="px-6 pb-6 relative">
+        {/* Row 1: avatar (overlapping) + edit button (on the right) */}
+        <div className="flex justify-between items-start">
+          {/* Avatar overlapping banner */}
+          <div className="-mt-14 sm:-mt-20 shrink-0 relative z-20">
+            <Avatar className="h-28 w-28 sm:h-36 sm:w-36 border-4 border-black shadow-xl bg-zinc-900">
+              <AvatarImage
+                src={user.avatarUrl || ""}
+                className="object-cover"
+                alt={user.name}
+              />
+              <AvatarFallback className="text-4xl bg-zinc-800 text-white font-bold font-pop">
+                {user.name?.charAt(0)?.toUpperCase()}
+              </AvatarFallback>
+            </Avatar>
           </div>
 
-          {/* Action buttons */}
-          <div className="flex items-center pb-0 sm:pb-1 pr-2">
+          {/* Action buttons (on the right) */}
+          <div className="pt-3">
             {onToggleSettings && (
               <Button
-                variant="ghost"
-                size="icon"
                 onClick={onToggleSettings}
-                className={cn(
-                  "h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted rounded-md transition-colors",
-                  showSettings && "bg-muted text-foreground"
-                )}
+                className="rounded-full border border-zinc-700 bg-transparent text-white hover:bg-zinc-900 px-5 py-1.5 h-auto text-xs sm:text-sm font-bold transition-all"
                 aria-label="Edit Profile"
               >
-                <Pencil className="h-5 w-5" />
+                {showSettings ? "View Profile" : "Edit profile"}
               </Button>
             )}
           </div>
         </div>
 
-        {/* ── Separator ── */}
-        <Separator className="mt-5 mb-4 opacity-60" />
+        {/* Row 2: Name / Handle / Occupation */}
+        <div className="mt-3 flex flex-col gap-1 min-w-0">
+          <div className="flex items-center gap-2 flex-wrap">
+            <h2 className="text-2xl sm:text-3xl font-bold font-pop tracking-tight text-white leading-tight">
+              {user.name}
+            </h2>
+            {isPro && (
+              <div className="bg-yellow-500 p-0.5 rounded-full shadow">
+                <Star className="h-3 w-3 text-black fill-black" />
+              </div>
+            )}
+          </div>
+          <p className="text-sm text-zinc-400 font-mono">
+            @{handle}
+          </p>
+        </div>
 
-        {/* ── Row 2: Meta chips (the public info details) ── */}
-        <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-x-6 gap-y-4">
-          <MetaChip icon={Clock} label="Joined" value={joinedDate} />
+        {/* Row 3: Meta details & Social brand icons */}
+        <div className="mt-4 flex flex-wrap gap-x-4 gap-y-2 text-xs text-zinc-400 items-center">
+          <div className="flex items-center gap-1.5">
+            <Clock className="h-3.5 w-3.5 text-zinc-500" />
+            <span>Joined {joinedDate}</span>
+          </div>
 
-          <MetaChip icon={MapPin} label="Location" value="Global" />
+          <div className="flex items-center gap-1.5">
+            <MapPin className="h-3.5 w-3.5 text-zinc-500" />
+            <span>Global</span>
+          </div>
 
-          <MetaChip icon={Globe} label="Language" value="English" />
+          <div className="flex items-center gap-1.5">
+            <Globe className="h-3.5 w-3.5 text-zinc-500" />
+            <span>English</span>
+          </div>
 
-          <MetaChip
-            icon={Briefcase}
-            label="Role"
-            value={
-              <span className="capitalize">
-                {user.occupation || "Developer"}
-              </span>
-            }
-          />
+          {user.occupation && (
+            <div className="flex items-center gap-1.5">
+              <Briefcase className="h-3.5 w-3.5 text-zinc-500" />
+              <span>{user.occupation}</span>
+            </div>
+          )}
 
-          <MetaChip
-            icon={CreditCard}
-            label="Account"
-            value={
-              <span className="flex items-center gap-1.5">
-                <span className="capitalize">{user.accountType || "Free"}</span>
-                {isPro ? (
-                  <Badge className="bg-yellow-500/15 text-yellow-600 dark:text-yellow-400 border-yellow-500/30 text-[9px] h-4 px-1.5 gap-0.5 font-semibold leading-none">
-                    <Sparkles className="h-2.5 w-2.5" />
-                    Plus
-                  </Badge>
-                ) : (
-                  <Badge
-                    variant="outline"
-                    className="text-[9px] h-4 px-1.5 text-muted-foreground leading-none"
+          <div className="flex items-center gap-1.5">
+            <CreditCard className="h-3.5 w-3.5 text-zinc-500" />
+            <span className="capitalize">{user.accountType || "free"} User</span>
+          </div>
+
+          {user.socialLinks && user.socialLinks.filter(Boolean).length > 0 && (
+            <div className="flex items-center gap-2 border-l border-zinc-850 pl-3">
+              {user.socialLinks.filter(Boolean).map((link: string) => {
+                const info = getPlatformInfo(link);
+                if (!info) return null;
+                const Icon = info.icon;
+                return (
+                  <a
+                    key={link}
+                    href={link}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-zinc-400 hover:text-white transition-colors"
+                    title={info.label}
                   >
-                    Free
-                  </Badge>
-                )}
-              </span>
-            }
-          />
+                    <Icon className="h-4 w-4" />
+                  </a>
+                );
+              })}
+            </div>
+          )}
         </div>
       </div>
     </Card>

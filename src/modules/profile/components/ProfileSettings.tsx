@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useEffect } from "react";
-import { useMutation } from "convex/react";
+import { useMutation, useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,8 +22,7 @@ import {
   Plus,
   Compass,
   FileText,
-  KeyRound,
-  Laptop
+  CheckCircle2
 } from "lucide-react";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
@@ -47,11 +46,39 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
 
   // Field edit states
   const [editName, setEditName] = useState(user?.name || "");
+  const [debouncedName, setDebouncedName] = useState("");
+  const [isTypingName, setIsTypingName] = useState(false);
+
+  // Clean debounce logic for name/username
+  useEffect(() => {
+    const trimmed = editName.trim();
+    if (activeEditRow !== "name" || trimmed.length < 3) {
+      setDebouncedName("");
+      setIsTypingName(false);
+      return;
+    }
+
+    setIsTypingName(true);
+    const timer = setTimeout(() => {
+      setDebouncedName(trimmed);
+      setIsTypingName(false);
+    }, 500);
+
+    return () => clearTimeout(timer);
+  }, [editName, activeEditRow]);
+
+  const isNameAvailable = useQuery(
+    api.user.checkUsernameAvailability,
+    debouncedName.length >= 3 ? { name: debouncedName } : "skip"
+  );
+
+  const isNameLengthValid = editName.trim().length >= 3 && editName.trim().length <= 20;
+  const isNameTaken = debouncedName.length >= 3 && isNameAvailable === false && !isTypingName;
+  const isNameSaveDisabled = !isNameLengthValid || isNameTaken || isTypingName || isSaving;
   const [editOccupation, setEditOccupation] = useState(user?.occupation || "");
   const [editBio, setEditBio] = useState(user?.bio || "");
   const [editSkills, setEditSkills] = useState<string[]>(user?.skills || []);
   const [newSkill, setNewSkill] = useState("");
-  const [editGithub, setEditGithub] = useState(user?.githubUsername || "");
   const [showSocialLinksDialog, setShowSocialLinksDialog] = useState(false);
 
   // Convex mutations
@@ -59,7 +86,6 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
   const updateBio = useMutation(api.user.updateUserBio);
   const updateSkills = useMutation(api.user.updateUserSkills);
   const updateSocialLinks = useMutation(api.user.updateSocialLinks);
-  const updateGithubUsername = useMutation(api.user.updateGithubUsername);
 
   // Reset values when user updates or edit row cancels
   useEffect(() => {
@@ -68,7 +94,6 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
       setEditOccupation(user.occupation || "");
       setEditBio(user.bio || "");
       setEditSkills(user.skills || []);
-      setEditGithub(user.githubUsername || "");
     }
   }, [user, activeEditRow]);
 
@@ -118,19 +143,6 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
     }
   };
 
-
-  const handleSaveGithub = async () => {
-    try {
-      setIsSaving(true);
-      await updateGithubUsername({ githubUsername: editGithub.trim() });
-      toast.success("GitHub username updated!");
-      setActiveEditRow(null);
-    } catch (error: any) {
-      toast.error(error.message || "Failed to update GitHub username");
-    } finally {
-      setIsSaving(false);
-    }
-  };
 
   const handleAddSkill = () => {
     const trimmed = newSkill.trim();
@@ -187,16 +199,55 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
           </div>
 
           {activeEditRow === "name" ? (
-            <div className="flex-1 flex flex-col gap-3">
-              <Input 
-                value={editName}
-                onChange={(e) => setEditName(e.target.value)}
-                placeholder="Full Name"
-                className="max-w-md bg-background"
-                required
-              />
+            <div className="flex-1 flex flex-col gap-2.5">
+              <div className="relative max-w-md">
+                <Input 
+                  value={editName}
+                  onChange={(e) => setEditName(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
+                  placeholder="Username"
+                  className="bg-background pr-10"
+                  required
+                />
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  {editName.trim().length >= 3 && (
+                    isTypingName || isNameAvailable === undefined ? (
+                      <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
+                    ) : isNameAvailable === false ? (
+                      <X className="h-4 w-4 text-destructive" />
+                    ) : (
+                      <CheckCircle2 className="h-4 w-4 text-emerald-500" />
+                    )
+                  )}
+                </div>
+              </div>
+
+              {/* Status helper text */}
+              <div className="min-h-5 px-1">
+                {editName.trim().length > 0 && editName.trim().length < 3 && (
+                  <p className="text-[11px] text-zinc-500">
+                    Username needs to be at least 3 characters
+                  </p>
+                )}
+                {editName.trim().length > 20 && (
+                  <p className="text-[11px] text-destructive">Too long (max 20)</p>
+                )}
+                {editName.trim().length >= 3 && isNameAvailable === false && !isTypingName && (
+                  <p className="text-[11px] text-destructive animate-in fade-in slide-in-from-top-1">
+                    Username is already taken
+                  </p>
+                )}
+                {editName.trim().length >= 3 && isNameAvailable === true && !isTypingName && (
+                  <p className="text-[11px] text-emerald-500">Username is available</p>
+                )}
+              </div>
+
               <div className="flex gap-2">
-                <Button size="sm" onClick={handleSaveIdentity} disabled={isSaving} className="h-8 text-xs">
+                <Button 
+                  size="sm" 
+                  onClick={handleSaveIdentity} 
+                  disabled={isNameSaveDisabled} 
+                  className="h-8 text-xs"
+                >
                   {isSaving && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />} Save
                 </Button>
                 <Button size="sm" variant="outline" onClick={() => setActiveEditRow(null)} disabled={isSaving} className="h-8 text-xs">
@@ -273,7 +324,7 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
           )}
         </div>
 
-        {/* ROW 4: GitHub Connection */}
+        {/* ROW 4: GitHub Username (Read Only) */}
         <div className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors hover:bg-muted/5">
           <div className="w-full md:w-1/4 shrink-0">
             <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
@@ -281,52 +332,24 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
             </span>
           </div>
 
-          {activeEditRow === "github" ? (
-            <div className="flex-1 flex flex-col gap-3">
-              <div className="flex gap-2 max-w-md">
-                <Input 
-                  value={editGithub}
-                  onChange={(e) => setEditGithub(e.target.value)}
-                  placeholder="GitHub Username"
-                  className="bg-background"
-                />
-                {!user?.githubUsername && (
-                  <Button type="button" variant="secondary" onClick={handleConnectGithub} className="h-9 shrink-0 gap-1.5 text-xs">
-                    <Github className="h-3.5 w-3.5" /> Link OAuth
-                  </Button>
-                )}
-              </div>
-              <div className="flex gap-2">
-                <Button size="sm" onClick={handleSaveGithub} disabled={isSaving} className="h-8 text-xs">
-                  {isSaving && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />} Save
-                </Button>
-                <Button size="sm" variant="outline" onClick={() => setActiveEditRow(null)} disabled={isSaving} className="h-8 text-xs">
-                  Cancel
-                </Button>
-              </div>
-            </div>
-          ) : (
-            <>
-              <div className="flex-1 min-w-0 flex items-center gap-2">
-                {user?.githubUsername ? (
-                  <span className="text-sm font-semibold text-foreground flex items-center gap-1.5">
-                    <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                    @{user.githubUsername}
-                  </span>
-                ) : (
-                  <span className="text-sm font-semibold text-destructive/80 flex items-center gap-1.5">
-                    <span className="h-2 w-2 rounded-full bg-destructive/60" />
-                    Not connected
-                  </span>
-                )}
-              </div>
-              <div className="shrink-0">
-                <Button variant="link" onClick={() => setActiveEditRow("github")} className="text-xs text-primary font-semibold h-auto p-0">
-                  {user?.githubUsername ? "Edit" : "Connect"}
-                </Button>
-              </div>
-            </>
-          )}
+          <div className="flex-1 min-w-0 flex items-center gap-2">
+            {user?.githubUsername ? (
+              <span className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-emerald-500" />
+                @{user.githubUsername}
+              </span>
+            ) : (
+              <span className="text-sm font-semibold text-muted-foreground/60 italic flex items-center gap-1.5">
+                <span className="h-2 w-2 rounded-full bg-zinc-500" />
+                Not connected
+              </span>
+            )}
+          </div>
+          <div className="shrink-0">
+            <span className="text-xs text-muted-foreground italic select-none">
+              {user?.githubUsername ? "Linked via Auth" : "Not connected"}
+            </span>
+          </div>
         </div>
 
         {/* ROW 5: Bio */}
@@ -505,41 +528,7 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
           </div>
         </div>
 
-        {/* ROW 9: Account Security / Clerk Management */}
-        <div className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors hover:bg-muted/5">
-          <div className="w-full md:w-1/4 shrink-0">
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <KeyRound className="h-3.5 w-3.5" /> Password / Security
-            </span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <span className="text-sm font-semibold text-foreground/80 font-mono">••••••••</span>
-          </div>
-          <div className="shrink-0">
-            <Button variant="link" onClick={() => openUserProfile()} className="text-xs text-primary font-semibold h-auto p-0">
-              Edit
-            </Button>
-          </div>
-        </div>
 
-        {/* ROW 10: Device Sessions / Devices */}
-        <div className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors hover:bg-muted/5">
-          <div className="w-full md:w-1/4 shrink-0">
-            <span className="text-xs font-semibold uppercase tracking-wider text-muted-foreground flex items-center gap-1.5">
-              <Laptop className="h-3.5 w-3.5" /> Device Sessions
-            </span>
-          </div>
-          <div className="flex-1 min-w-0">
-            <Button variant="link" onClick={() => openUserProfile()} className="text-xs text-foreground/80 hover:text-primary font-semibold h-auto p-0 decoration-dotted underline">
-              Manage sessions & active devices
-            </Button>
-          </div>
-          <div className="shrink-0">
-            <Button variant="link" onClick={() => openUserProfile()} className="text-xs text-primary font-semibold h-auto p-0">
-              Edit
-            </Button>
-          </div>
-        </div>
 
       </div>
       <SocialLinksDialog
