@@ -80,8 +80,9 @@ const CreateProjectDialog = ({
   const usage = useQuery(api.project.getProjectUsage);
   const createProject = useMutation(api.project.projectInit);
   const connectRepo = useMutation(api.repo.connectRepository);
+  const user = useQuery(api.user.getCurrentUser);
 
-  const { data: repositories, isLoading: reposLoading } = useRepositories(repoPage, REPOS_PER_PAGE);
+  const { data: repositories, isLoading: reposLoading } = useRepositories(repoPage, REPOS_PER_PAGE, !!user?.githubUsername);
 
   const handleCreateProject = async () => {
     if (!projectName.trim()) {

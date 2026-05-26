@@ -182,9 +182,8 @@ export function MessageItem({
   const [editPollDialogOpen, setEditPollDialogOpen] = useState(false);
   const [readReceiptsOpen, setReadReceiptsOpen] = useState(false);
 
-  // WhatsApp-style full screen preview overlay
   const [previewMediaUrl, setPreviewMediaUrl] = useState<string | null>(null);
-  const [previewMediaType, setPreviewMediaType] = useState<"image" | "pdf" | null>(null);
+  const [previewMediaType, setPreviewMediaType] = useState<"image" | "pdf" | "office" | null>(null);
   const [previewMediaName, setPreviewMediaName] = useState<string>("");
 
   // FIX: Sync edit buffer when the message is updated externally (e.g. real-time
@@ -560,10 +559,12 @@ export function MessageItem({
                            ) : (
                               <div 
                                  onClick={(e) => {
-                                   if (fileName.toLowerCase().endsWith('.pdf')) {
+                                   const isPdf = fileName.toLowerCase().endsWith('.pdf');
+                                   const isOffice = fileName.toLowerCase().match(/\.(doc|docx|ppt|pptx|xls|xlsx)$/);
+                                   if (isPdf || isOffice) {
                                      e.preventDefault();
                                      setPreviewMediaUrl(fileUrl);
-                                     setPreviewMediaType("pdf");
+                                     setPreviewMediaType(isPdf ? "pdf" : "office");
                                      setPreviewMediaName(fileName);
                                    } else {
                                      handleDownload(e, fileUrl, fileName);
@@ -1001,6 +1002,13 @@ export function MessageItem({
             {previewMediaType === "pdf" && (
               <iframe 
                 src={previewMediaUrl!} 
+                title={previewMediaName} 
+                className="w-full h-full max-w-5xl rounded-lg bg-white shadow-2xl" 
+              />
+            )}
+            {previewMediaType === "office" && (
+              <iframe 
+                src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(previewMediaUrl!)}`}
                 title={previewMediaName} 
                 className="w-full h-full max-w-5xl rounded-lg bg-white shadow-2xl" 
               />
