@@ -382,16 +382,18 @@ const CreateProjectDialog = ({
             <div className="space-y-4 animate-in fade-in slide-in-from-right-4 duration-300">
               <div className="relative">
                 <ScrollArea className="h-[280px] pr-4">
-                  {reposLoading ? (
+                  {reposLoading && user?.githubUsername ? (
                     <div className="space-y-3">
                       {[1, 2, 3].map(i => (
                         <div key={i} className="h-14 rounded-lg bg-accent/20 animate-pulse" />
                       ))}
                     </div>
-                  ) : repositories?.length === 0 ? (
+                  ) : (!user?.githubUsername || repositories?.length === 0) ? (
                     <div className="flex flex-col items-center justify-center p-8 text-center bg-accent/10 rounded-xl border border-dashed border-accent/20">
                       <Github className="size-8 text-muted-foreground/30 mb-2" />
-                      <p className="text-xs text-muted-foreground">No repositories found.</p>
+                      <p className="text-xs text-muted-foreground">
+                        {!user?.githubUsername ? "Please connect your GitHub account." : "No repositories found."}
+                      </p>
                     </div>
                   ) : (
                     <div className="space-y-2">

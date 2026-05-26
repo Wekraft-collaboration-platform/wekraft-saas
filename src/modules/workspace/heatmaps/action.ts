@@ -3,7 +3,9 @@
 import { auth } from "@clerk/nextjs/server";
 import { Octokit } from "octokit";
 import { redis } from "@/lib/redis";
-import { getGithubAccessToken } from "@/modules/github/actions/action";
+import { getGithubAccessToken } from "@/lib/github-auth";
+import { ConvexHttpClient } from "convex/browser";
+import { api } from "../../../../convex/_generated/api";
 
 export interface FolderNode {
   name: string;
@@ -40,11 +42,28 @@ export async function getRepoStructure(
   owner: string,
   repo: string,
   forceRefresh: boolean = false,
-  ownerClerkId?: string
+  projectId?: string
 ): Promise<{ data: RepoStructure | null; error?: string; rateLimited?: boolean }> {
   try {
-    const { userId } = await auth();
+    const { userId, getToken } = await auth();
     if (!userId) throw new Error("Unauthorized");
+
+    let finalOwnerClerkId: string | undefined = undefined;
+    if (projectId) {
+      const token = await getToken({ template: "convex" });
+      const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+      if (token) convex.setAuth(token);
+
+      const projectPerms = await convex.query(api.project.getProjectPermissions, { projectId: projectId as any });
+      if (!projectPerms.isPower && !projectPerms.isMember && !projectPerms.isViewer) {
+        throw new Error("Unauthorized to access project repository");
+      }
+      
+      const projectData = await convex.query(api.project.getProjectById, { projectId: projectId as any });
+      if (projectData && projectData.ownerClerkId) {
+        finalOwnerClerkId = projectData.ownerClerkId;
+      }
+    }
 
     // ✅ Cache key has no userId — already shared across all users for this repo
     const cacheKey = `wekraft:repo-structure:${owner}:${repo}`;
@@ -71,8 +90,8 @@ export async function getRepoStructure(
     }
 
     // 3. Fetch from GitHub
-    console.log(`[Heatmap] Fetching repo structure for ${owner}/${repo}...`);
-    const accessToken = await getGithubAccessToken(ownerClerkId);
+    console.log(`[Heatmap] Fetching churn for ${owner}/${repo}...`);
+    const accessToken = await getGithubAccessToken(finalOwnerClerkId);
     const octokit = new Octokit({ auth: accessToken });
 
     const { data: repoData } = await octokit.rest.repos.get({ owner, repo });
@@ -177,10 +196,36 @@ export async function getRepoStructure(
 export async function getRecentlyChangedPaths(
   owner: string,
   repo: string,
-  ownerClerkId?: string
+  projectId?: string
 ): Promise<string[]> {
   try {
-    const accessToken = await getGithubAccessToken(ownerClerkId);
+    const { userId, getToken } = await auth();
+    if (!userId) throw new Error("Unauthorized");
+
+    let finalOwnerClerkId: string | undefined = undefined;
+    if (projectId) {
+      const token = await getToken({ template: "convex" });
+      const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+      if (token) convex.setAuth(token);
+
+      const projectPerms = await convex.query(api.project.getProjectPermissions, { projectId: projectId as any });
+      if (!projectPerms.isPower && !projectPerms.isMember && !projectPerms.isViewer) {
+        throw new Error("Unauthorized to access project repository");
+      }
+      
+      const projectData = await convex.query(api.project.getProjectById, { projectId: projectId as any });
+      if (projectData && projectData.ownerClerkId) {
+        finalOwnerClerkId = projectData.ownerClerkId;
+      }
+    }
+
+    const cacheKey = `wekraft:repo-churn:${owner}:${repo}`;
+    const cachedData = await redis.get<string[]>(cacheKey);
+    if (cachedData) {
+      return cachedData;
+    }
+
+    const accessToken = await getGithubAccessToken(finalOwnerClerkId);
     const octokit = new Octokit({ auth: accessToken });
 
     const since = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString();
@@ -215,7 +260,10 @@ export async function getRecentlyChangedPaths(
       }
     });
 
-    return Array.from(changedPaths);
+    const changedPathsArray = Array.from(changedPaths);
+    await redis.set(cacheKey, changedPathsArray, { ex: CACHE_TTL });
+
+    return changedPathsArray;
   } catch (error) {
     console.error(`[Heatmap] Error fetching recently changed paths:`, error);
     return [];
@@ -226,15 +274,32 @@ export async function getLatestCommits(
   owner: string,
   repo: string,
   forceRefresh: boolean = false,
-  ownerClerkId?: string,
+  projectId?: string
 ): Promise<{
   data: CommitInfo[] | null;
   error?: string;
   rateLimited?: boolean;
 }> {
   try {
-    const { userId } = await auth();
+    const { userId, getToken } = await auth();
     if (!userId) throw new Error("Unauthorized");
+
+    let finalOwnerClerkId: string | undefined = undefined;
+    if (projectId) {
+      const token = await getToken({ template: "convex" });
+      const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+      if (token) convex.setAuth(token);
+
+      const projectPerms = await convex.query(api.project.getProjectPermissions, { projectId: projectId as any });
+      if (!projectPerms.isPower && !projectPerms.isMember && !projectPerms.isViewer) {
+        throw new Error("Unauthorized to access project repository");
+      }
+      
+      const projectData = await convex.query(api.project.getProjectById, { projectId: projectId as any });
+      if (projectData && projectData.ownerClerkId) {
+        finalOwnerClerkId = projectData.ownerClerkId;
+      }
+    }
 
     const cacheKey = `wekraft:repo-commits:${owner}:${repo}`;
     const rateLimitKey = `wekraft:repo-commits-refresh-limit:${userId}:${owner}:${repo}`;
@@ -256,7 +321,7 @@ export async function getLatestCommits(
       }
     }
 
-    const accessToken = await getGithubAccessToken(ownerClerkId);
+    const accessToken = await getGithubAccessToken(finalOwnerClerkId);
     const octokit = new Octokit({ auth: accessToken });
 
     const { data: commits } = await octokit.rest.repos.listCommits({

@@ -72,12 +72,21 @@ const ShowRepo = ({
   const user = useConvexQuery(api.user.getCurrentUser);
   const { user: clerkUser } = useUser();
 
+  const [debouncedSearchQuery, setDebouncedSearchQuery] = useState(searchQuery);
+
+  useEffect(() => {
+    const handler = setTimeout(() => {
+      setDebouncedSearchQuery(searchQuery);
+    }, 500);
+    return () => clearTimeout(handler);
+  }, [searchQuery]);
+
   const {
     data: repositories,
     isLoading,
     isFetching,
     error,
-  } = useRepositories(currentPage, ITEMS_PER_PAGE, !!user?.githubUsername);
+  } = useRepositories(currentPage, ITEMS_PER_PAGE, !!user?.githubUsername, debouncedSearchQuery);
   const updateGithubUsername = useMutation(api.user.updateGithubUsername);
   const hasCheckedGithub = useRef(false);
 
@@ -205,36 +214,12 @@ const ShowRepo = ({
     }
   };
 
-  const filteredRepos =
-    repositories?.filter((repo: any) =>
-      repo.name.toLowerCase().includes(searchQuery.toLowerCase()),
-    ) || [];
+  const filteredRepos = repositories || [];
 
   const handlePageChange = (page: number) => {
     if (page < 1) return;
     setCurrentPage(page);
   };
-
-  if (isLoading) {
-    return (
-      <div className="space-y-8 mt-10">
-        {[...Array(5)].map((_, i) => (
-          <div
-            key={i}
-            className="w-full p-2.5 rounded-lg border border-accent/10 bg-accent/40"
-          >
-            <div className="flex items-center justify-between w-full">
-              <div className="flex items-center gap-3">
-                <Skeleton className="size-8 rounded-md dark:bg-white/5 bg-black/5" />
-                <Skeleton className="h-4 w-32 rounded dark:bg-white/10 bg-black/10" />
-              </div>
-              <Skeleton className="h-5 w-12 rounded-full dark:bg-white/10 bg-black/10" />
-            </div>
-          </div>
-        ))}
-      </div>
-    );
-  }
 
   if (error || (user && !user.githubUsername)) {
     return (
@@ -258,6 +243,27 @@ const ShowRepo = ({
           <Github className="size-4" />
           Connect GitHub
         </Button>
+      </div>
+    );
+  }
+
+  if (isLoading) {
+    return (
+      <div className="space-y-8 mt-10">
+        {[...Array(5)].map((_, i) => (
+          <div
+            key={i}
+            className="w-full p-2.5 rounded-lg border border-accent/10 bg-accent/40"
+          >
+            <div className="flex items-center justify-between w-full">
+              <div className="flex items-center gap-3">
+                <Skeleton className="size-8 rounded-md dark:bg-white/5 bg-black/5" />
+                <Skeleton className="h-4 w-32 rounded dark:bg-white/10 bg-black/10" />
+              </div>
+              <Skeleton className="h-5 w-12 rounded-full dark:bg-white/10 bg-black/10" />
+            </div>
+          </div>
+        ))}
       </div>
     );
   }

@@ -332,13 +332,13 @@ export const HeatmapPanel = memo(
             repository.repoOwner,
             repository.repoName,
             force,
-            repository.ownerClerkId,
+            projectId,
           );
 
           const churnData = await getRecentlyChangedPaths(
             repository.repoOwner,
             repository.repoName,
-            repository.ownerClerkId,
+            projectId,
           );
 
           if (result.rateLimited) {
@@ -378,7 +378,7 @@ export const HeatmapPanel = memo(
             repository.repoOwner,
             repository.repoName,
             force,
-            repository.ownerClerkId,
+            projectId,
           );
 
           if (result.rateLimited) {

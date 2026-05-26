@@ -1,13 +1,16 @@
 
 import { useQuery } from "@tanstack/react-query";
-import { getRepositories } from "../github/actions/action";
+import { getRepositories, searchRepositories } from "../github/actions/action";
 import { Repository } from "@/types/types";
 
-
-export function useRepositories(page: number = 1, perPage: number = 10, enabled: boolean = true) {
+export function useRepositories(page: number = 1, perPage: number = 10, enabled: boolean = true, searchQuery: string = "") {
   return useQuery<Repository[]>({
-    queryKey: ["repositories", page, perPage],
+    queryKey: ["repositories", page, perPage, searchQuery],
     queryFn: async () => {
+      if (searchQuery.trim()) {
+        const data = await searchRepositories(searchQuery.trim());
+        return data as Repository[];
+      }
       const data = await getRepositories(page, perPage);
       return data as Repository[];
     },
