@@ -45,8 +45,7 @@ export const searchRepositories = async (query: string) => {
 
   const lowerQuery = query.toLowerCase();
   const filtered = data.filter((repo: any) => 
-    repo.name.toLowerCase().includes(lowerQuery) || 
-    (repo.description && repo.description.toLowerCase().includes(lowerQuery))
+    repo.name.toLowerCase().includes(lowerQuery)
   );
 
   return filtered.slice(0, 10); // Return top 10 matches
