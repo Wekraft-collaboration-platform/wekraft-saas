@@ -243,12 +243,6 @@ export default function ProjectSidebar() {
     );
   });
 
-  const matchesTheme =
-    "theme".includes(searchQuery.toLowerCase()) ||
-    "appearance".includes(searchQuery.toLowerCase()) ||
-    "dark mode".includes(searchQuery.toLowerCase()) ||
-    "light mode".includes(searchQuery.toLowerCase());
-
   const matchesHelp =
     "help and support".includes(searchQuery.toLowerCase()) ||
     "support".includes(searchQuery.toLowerCase()) ||
@@ -267,7 +261,6 @@ export default function ProjectSidebar() {
     filteredWorkspaceMenu.length === 0 &&
     !matchesAi &&
     !matchesWorkspace &&
-    !matchesTheme &&
     !matchesHelp &&
     !matchesDelete;
 
@@ -771,48 +764,7 @@ export default function ProjectSidebar() {
           <>
             <SidebarSeparator className="my-2 mx-0 w-full" />
             <SidebarMenu className="flex flex-col space-y-1.5">
-              {(!searchQuery || matchesTheme) && (
-                <SidebarMenu>
-                  {/* THEME SWITCHER */}
-                  <Popover>
-                    <SidebarMenuButton
-                      asChild
-                      tooltip="Theme"
-                      className="group relative overflow-hidden cursor-pointer  group-data-[collapsible=icon]:hidden"
-                    >
-                      <PopoverTrigger asChild>
-                        <button
-                          type="button"
-                          className="relative z-10 flex w-full items-center gap-3 text-primary group-data-[collapsible=icon]:justify-center"
-                        >
-                          <Palette className="h-5 w-5" />
-                          <span className="text-sm group-data-[collapsible=icon]:hidden">
-                            Theme
-                          </span>
 
-                          {/* Active gradient */}
-                          <span
-                            className="
-              pointer-events-none absolute inset-0 -z-10
-              opacity-0 transition-opacity
-              group-data-[active=true]:opacity-100
-              bg-linear-to-l from-blue-600/50 via-transparent to-transparent
-            "
-                          />
-                        </button>
-                      </PopoverTrigger>
-                    </SidebarMenuButton>
-
-                    <PopoverContent
-                      align="start"
-                      side="right"
-                      className="w-48 rounded-lg p-2"
-                    >
-                      <ThemeButtons />
-                    </PopoverContent>
-                  </Popover>
-                </SidebarMenu>
-              )}
 
               {/* HELP & SUPPORT */}
               {(!searchQuery || matchesHelp) && (

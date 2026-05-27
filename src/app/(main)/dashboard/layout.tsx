@@ -92,25 +92,6 @@ export default function Layout({
                 <div className="flex items-center gap-3">
                   <TooltipProvider>
                     <NotificationCenter />
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          size="icon-sm"
-                          variant="outline"
-                          onClick={() =>
-                            setTheme(theme === "dark" ? "light" : "dark")
-                          }
-                          aria-label="Toggle theme"
-                        >
-                          {!mounted || theme === "light" ? (
-                            <SunMedium className="h-4 w-4" />
-                          ) : (
-                            <Moon className="h-4 w-4" />
-                          )}
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Theme Switcher</TooltipContent>
-                    </Tooltip>
                     {/* Only when workspace ! */}
                     {isWorkspaceRoute && (
                       <>

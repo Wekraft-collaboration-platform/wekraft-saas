@@ -124,19 +124,54 @@ export default function RightSidebar({
         )}
       >
         {isRightSidebarExpanded && (
-          <div className="flex flex-col gap-4 w-full h-[calc(100vh-80px)]">
+          <div className="flex flex-col gap-6 w-full h-[calc(100vh-80px)]">
 
-            {/* Card 1: Future To-Do */}
-            <div className="bg-sidebar border border-accent rounded-md p-3.5 flex items-center justify-center shadow-sm flex-1 min-h-0">
-              <span className="text-muted-foreground/80 text-sm font-semibold tracking-wide uppercase">
-                Future To-Do
-              </span>
+            {/* Card 1: Upgrade Promotion / Plan Details */}
+            <div className="relative overflow-hidden bg-linear-to-br dark:from-black/75 from-white to-blue-700/60 dark:text-white text-black border-accent rounded-xl p-4.5 flex flex-col justify-between shadow-lg flex-1 min-h-0 text-left">
+              <div className="space-y-3.5 z-10">
+                <div className="flex items-center justify-between">
+                  <span className="text-[10px] font-bold uppercase tracking-widest bg-white/20 px-2 py-0.5 rounded-full">
+                    Current Plan: {currentUser?.accountType ? currentUser.accountType.charAt(0).toUpperCase() + currentUser.accountType.slice(1) : "Free"}
+                  </span>
+                </div>
+
+                <div className="space-y-1">
+                  <h4 className="text-sm font-bold text-white tracking-tight">Upgrade to Plus</h4>
+                  <p className="text-[10px] text-blue-100/80 leading-normal font-medium">Get premium features to boost collaboration:</p>
+                </div>
+
+                <ul className="space-y-1.5 text-[10px] text-blue-50/90 font-semibold">
+                  <li className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-300" />
+                    Higher cloud storage
+                  </li>
+                  <li className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-300" />
+                    Higher member seat per project
+                  </li>
+                  <li className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-300" />
+                    Advance project analysis
+                  </li>
+                  <li className="flex items-center gap-1.5">
+                    <div className="w-1.5 h-1.5 rounded-full bg-blue-300" />
+                    And much more...
+                  </li>
+                </ul>
+              </div>
+
+              {/* Bottom right background illustration */}
+              <img
+                src="/22.svg"
+                alt="Upgrade illustration"
+                className="absolute -bottom-2 -right-2 w-24 h-24  object-cover pointer-events-none select-none z-0"
+              />
             </div>
 
-            {/* Card 2: Kaya AI Usage */}
+            {/* Card 2: AI Usage */}
             <div className="bg-sidebar border border-accent rounded-md p-3.5 flex flex-col items-center justify-between text-center shadow-sm flex-1 min-h-0">
               <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground shrink-0 mb-1">
-                Kaya AI Usage
+                AI Usage
               </div>
 
               {mounted ? (

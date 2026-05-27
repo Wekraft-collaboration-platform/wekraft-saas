@@ -33,7 +33,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="" suppressHydrationWarning>
+    <html lang="en" className="dark" suppressHydrationWarning>
       <body className={`antialiased font-sans`}>
         <ClerkProvider
           appearance={{
@@ -44,7 +44,7 @@ export default function RootLayout({
             <ThemeProvider
               attribute="class"
               defaultTheme="dark"
-              enableSystem
+              forcedTheme="dark"
               disableTransitionOnChange
             >
               <ConvexClientProvider>

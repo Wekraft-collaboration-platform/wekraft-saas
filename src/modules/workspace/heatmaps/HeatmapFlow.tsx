@@ -74,15 +74,18 @@ const FolderNodeComponent = (props: NodeProps) => {
   } = data;
   const isRoot = level === 0;
 
-  // Filter tasks that are linked to this folder path
+  // Filter tasks that are linked directly to this folder path (or direct parent folder of the linked file)
   const linkedTasks = useMemo(() => {
     if (!path || !tasks) return [];
     return tasks.filter((task) => {
       if (!task.linkWithCodebase) return false;
-      return (
-        task.linkWithCodebase === path ||
-        task.linkWithCodebase.startsWith(path + "/")
-      );
+      const link = task.linkWithCodebase;
+      const lastSlashIdx = link.lastIndexOf("/");
+      const lastSegment = lastSlashIdx !== -1 ? link.substring(lastSlashIdx + 1) : link;
+      const containingFolder = lastSegment.includes(".")
+        ? (lastSlashIdx !== -1 ? link.substring(0, lastSlashIdx) : "")
+        : link;
+      return containingFolder === path;
     });
   }, [path, tasks]);
 
