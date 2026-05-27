@@ -117,30 +117,30 @@ export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDi
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-      <DialogContent className="sm:max-w-[620px] p-4 rounded-xl h-[600px] overflow-hidden  bg-sidebar border border-accent shadow-2xl animate-in fade-in-50 zoom-in-95 duration-200">
+      <DialogContent className="sm:max-w-[580px] p-4 rounded-xl h-[560px] overflow-hidden  bg-sidebar border border-accent shadow-2xl animate-in fade-in-50 zoom-in-95 duration-200">
         <DialogHeader className="mb-4">
-          <DialogTitle className="text-lg font-bold text-white flex items-center gap-2">
+          <DialogTitle className="text-base font-semibold text-white flex items-center gap-2">
             <HelpCircleIcon className="h-5 w-5 shrink-0" />
             Help & Support
           </DialogTitle>
-          <DialogDescription className="text-zinc-200 text-sm mt-1">
+          <DialogDescription className="text-zinc-200 text-sm ">
             Submit a ticket to our team or consult the AI assistant.
           </DialogDescription>
         </DialogHeader>
 
         <Tabs defaultValue="contact" className="w-full -mt-1.5">
           <TabsList className="grid grid-cols-2 w-full h-10 rounded-lg p-[3px] bg-zinc-900 border border-zinc-800/80 mb-5">
-            <TabsTrigger value="contact" className="text-xs font-semibold text-zinc-400 data-[state=active]:text-white transition-all">
+            <TabsTrigger value="contact" className="text-xs text-zinc-400 data-[state=active]:text-white transition-all">
               <MessageSquare className="h-3.5 w-3.5 mr-1.5" />
               Contact Support
             </TabsTrigger>
-            <TabsTrigger value="ai" className="text-xs font-semibold text-zinc-400 data-[state=active]:text-white transition-all">
+            <TabsTrigger value="ai" className="text-xs text-zinc-400 data-[state=active]:text-white transition-all">
               <Bot className="h-3.5 w-3.5 mr-1.5" />
               Talk to AI
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="contact" className="space-y-4 focus:outline-none border-t pt-2 border-accent">
+          <TabsContent value="contact" className="space-y-4 focus:outline-none ">
             <form onSubmit={handleSubmit} className="space-y-4 text-left">
               {/* Support Tag select row */}
               <div className="space-y-2">
@@ -156,7 +156,7 @@ export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDi
                         data-state={isSelected ? "active" : "inactive"}
                         onClick={() => setSelectedTag(tag.id as any)}
                         className={cn(
-                          "flex items-center gap-2 px-3 py-1.5 text-xs rounded-full border font-medium cursor-pointer transition-all duration-200 select-none",
+                          "flex items-center gap-2 px-3 py-1.5 text-[10px] rounded-full border font-medium cursor-pointer transition-all duration-200 select-none",
                           isSelected
                             ? "bg-neutral-100 text-zinc-950 border-white shadow-sm"
                             : "bg-zinc-900/50 text-zinc-400 border-zinc-800 hover:bg-zinc-800 hover:text-zinc-200"
@@ -180,7 +180,7 @@ export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDi
                   placeholder={currentPlaceholder.title}
                   value={title}
                   onChange={(e) => setTitle(e.target.value)}
-                  className="bg-[#0f0f12]! border border-zinc-800! text-white placeholder:text-zinc-550 h-9 rounded-md text-xs focus-visible:border-neutral-400/60! focus-visible:ring-0!"
+                  className="bg-[#0f0f12]! border border-zinc-800! text-white placeholder:text-zinc-600 h-9 rounded-md text-xs focus-visible:border-neutral-700! focus-visible:ring-0!"
                 />
               </div>
 
@@ -194,7 +194,7 @@ export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDi
                   placeholder={currentPlaceholder.desc}
                   value={description}
                   onChange={(e) => setDescription(e.target.value)}
-                  className="resize-none bg-[#0f0f12]! h-30 border border-zinc-800! text-white placeholder:text-zinc-550 rounded-md text-xs focus-visible:border-neutral-400/60! focus-visible:ring-0! leading-relaxed"
+                  className="resize-none bg-[#0f0f12]! h-24 border border-zinc-800! text-white placeholder:text-zinc-600 rounded-md text-xs focus-visible:border-neutral-700! focus-visible:ring-0! leading-relaxed"
                 />
               </div>
 
