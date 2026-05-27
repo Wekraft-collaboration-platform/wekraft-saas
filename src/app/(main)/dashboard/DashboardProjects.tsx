@@ -10,6 +10,8 @@ import {
   Minus,
   Plus,
   Settings2,
+  MoreVertical,
+  Layers3,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
 import React from "react";
@@ -175,17 +177,17 @@ const ShortcutSelector = ({
         ) : (
           <button
             type="button"
-            className="flex items-center gap-1 text-[10px] font-medium bg-accent/70 border border-primary/20 border-dashed rounded px-2.5 py-1 transition-all cursor-pointer select-none"
+            className="flex items-center gap-1 text-[10px] font-medium bg-accent/70 border border-primary/20 border-dashed rounded px-2.5 py-0.5 transition-all cursor-pointer select-none"
             title="Assign keyboard shortcut"
           >
             <Keyboard className="size-3 " />
-            <span>Create Shortcut</span>
+            <span>Shortcut</span>
           </button>
         )}
       </PopoverTrigger>
       <PopoverContent
         className="w-56 p-3 bg-popover border border-border rounded-xl shadow-xl z-50"
-        align="end"
+        align="start"
       >
         <div className="space-y-3">
           <div className="space-y-1">
@@ -474,46 +476,127 @@ export const DashboardProjects = ({
           {filteredProjects.map((project) => (
             <div
               key={project._id}
-              className="relative w-full aspect-[4/3.2] group transition-all duration-300 hover:-translate-y-1"
+              className="relative w-full aspect-[4/3.6] min-h-[225px] rounded-2xl border border-zinc-200 dark:border-zinc-800 bg-[#0c0c0e] overflow-hidden group transition-all duration-300 hover:border-zinc-300 dark:hover:border-zinc-700/80 shadow-xs"
             >
+              {/* Full-size Cover Thumbnail or Fallback */}
+              <div className="absolute inset-0 w-full h-full overflow-hidden">
+                {project.thumbnailUrl ? (
+                  <img
+                    src={project.thumbnailUrl}
+                    alt={project.projectName}
+                    className="w-full h-full object-cover object-center group-hover:scale-102 transition-transform duration-500 ease-out"
+                  />
+                ) : (
+                  <div className="w-full h-full bg-zinc-900/40 dark:bg-[#0c0c0f] flex justify-center pt-5">
+                    <Layers3 className="size-10 text-zinc-700 dark:text-zinc-650" />
+                  </div>
+                )}
+              </div>
 
-              {/* Folder SVG Background */}
+              {/* Folder-like Flap SVG Background */}
               <svg
-                viewBox="109.7 58.4 230.6 191.4"
-                className="absolute inset-0 w-full h-full filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.08)] dark:drop-shadow-[0_4px_12px_rgba(0,0,0,0.4)] transition-transform duration-300 group-hover:scale-[1.015]"
+                viewBox="0 0 100 100"
+                className="absolute bottom-0 left-0 w-full h-[70%] filter drop-shadow-[0_-4px_12px_rgba(0,0,0,0.15)] dark:drop-shadow-[0_-4px_12px_rgba(0,0,0,0.45)] transition-transform duration-300 group-hover:scale-[1.01]"
                 preserveAspectRatio="none"
               >
-                {/* Back part of folder */}
                 <path
-                  className="fill-[#e4e4e7] dark:fill-[#22222a] stroke-black/5 dark:stroke-white/5"
-                  strokeWidth="1"
-                  d="M 109.789062 112.761719 L 109.789062 79.15625 C 109.789062 67.703125 119.070312 58.421875 130.523438 58.421875 L 175.066406 58.421875 C 179.457031 58.421875 183.734375 59.8125 187.28125 62.398438 L 206.675781 76.535156 L 319.476562 76.535156 C 330.925781 76.535156 340.210938 85.816406 340.210938 97.269531 L 340.210938 112.761719 L 109.789062 112.761719"
-                />
-                {/* Front pocket of folder */}
-                <path
-                  className="fill-[#f4f4f5] dark:fill-[#15151a] stroke-black/5 dark:stroke-white/5"
-                  strokeWidth="1"
-                  d="M 319.476562 90.4375 L 130.523438 90.4375 C 119.070312 90.4375 109.789062 99.71875 109.789062 111.171875 L 109.789062 228.933594 C 109.789062 240.382812 119.070312 249.667969 130.523438 249.667969 L 319.476562 249.667969 C 330.925781 249.667969 340.210938 240.382812 340.210938 228.933594 L 340.210938 111.171875 C 340.210938 99.71875 330.925781 90.4375 319.476562 90.4375"
+                  className="fill-white dark:fill-[#131317] stroke-black/5 dark:stroke-white/5"
+                  strokeWidth="0.5"
+                  d="M 0 100 L 0 12 Q 0 4, 8 4 L 56 4 C 64 4, 65 32, 73 32 L 94 32 Q 100 32, 100 38 L 100 100 Z"
                 />
               </svg>
 
+              {/* Cutout Dropdown Action Button */}
+              <div className="absolute right-3.5 top-[36%] z-20">
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <Button
+                      variant="outline"
+                      size="icon-xs"
+                      className="size-7 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 shadow-xs cursor-pointer flex items-center justify-center"
+                    >
+                      <MoreVertical className="size-3.5" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent align="end" className="w-56 p-3 bg-popover border border-border rounded-xl shadow-xl z-50">
+                    <div className="space-y-3.5 text-left">
+                      <div className="space-y-1">
+                        <h4 className="text-xs font-bold text-foreground">Project Details</h4>
+                        <p className="text-[10px] text-muted-foreground leading-normal">
+                          Quick access to repository and workspace.
+                        </p>
+                      </div>
+
+                      {/* Repo Name */}
+                      {project?.repoName && (
+                        <div className="space-y-1">
+                          <span className="text-[9px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+                            Connected Repository
+                          </span>
+                          <div className="flex items-center gap-2 text-xs text-foreground bg-accent/30 border border-accent/20 rounded-md p-2">
+                            <LuGitBranch className="size-3.5 text-zinc-400 shrink-0" />
+                            <span className="truncate font-mono">{project.repoName}</span>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Shortcut */}
+                      <div className="space-y-1">
+                        <span className="text-[9px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
+                          Keyboard Shortcut
+                        </span>
+                        <div className="flex items-center justify-between">
+                          {project.shortcut ? (
+                            <span className="text-xs font-semibold text-foreground font-mono bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded">
+                              {project.shortcut}
+                            </span>
+                          ) : (
+                            <span className="text-[10px] text-muted-foreground/60 italic">
+                              No shortcut assigned
+                            </span>
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Workspace Action */}
+                      <div className="pt-1.5 border-t border-border/50 flex flex-col gap-1.5">
+                        <Button
+                          size="sm"
+                          onClick={() => router.push(`/dashboard/my-projects/${project.slug}/workspace`)}
+                          className="w-full text-xs h-7.5 cursor-pointer"
+                        >
+                          <ExternalLink className="size-3 mr-1.5" /> Go to Workspace
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => router.push(`/dashboard/my-projects/${project.slug}`)}
+                          className="w-full text-xs h-7.5 cursor-pointer"
+                        >
+                          <Settings2 className="size-3 mr-1.5" /> Edit Settings
+                        </Button>
+                      </div>
+                    </div>
+                  </PopoverContent>
+                </Popover>
+              </div>
+
               {/* Folder Content Overlay */}
-              <div className="relative z-10 flex flex-col justify-between h-full w-full p-4.5 select-none text-left">
-                {/* Top Section - Back Tab */}
-                <div className="flex items-center justify-between text-xs text-muted-foreground px-0.5">
+              <div className="absolute bottom-0 left-0 w-full h-[70%] z-10 flex flex-col justify-between p-4.5 select-none text-left">
+                {/* Top Section - inside folder tab */}
+                <div className="flex items-center justify-between text-[10px] text-muted-foreground">
                   <span>
                     {project.createdAt
                       ? formatRelativeTime(project.createdAt)
                       : "some time ago"}
                   </span>
-
                 </div>
 
                 {/* Middle Section - Pocket Top */}
-                <div className="flex flex-col gap-1.5 flex-1 justify-center mt-5  px-0.5">
-                  <div className="flex items-center gap-4">
+                <div className="flex flex-col gap-1.5 flex-1 justify-center mt-3.5">
+                  <div className="flex items-center gap-2">
                     <h3
-                      className="text-base font-bold capitalize text-foreground truncate tracking-tight hover:text-primary transition-colors cursor-pointer"
+                      className="text-sm font-bold capitalize text-foreground truncate tracking-tight hover:text-primary transition-colors cursor-pointer"
                       onClick={() =>
                         router.push(`/dashboard/my-projects/${project.slug}`)
                       }
@@ -522,41 +605,50 @@ export const DashboardProjects = ({
                     </h3>
                     <span
                       className={cn(
-                        "text-xs px-2 py-1 rounded-full border backdrop-blur-md shrink-0",
+                        "text-[9px] px-1.5 py-0.5 rounded-full border backdrop-blur-md shrink-0 capitalize",
                         project.role === "owned"
-                          ? "border-accent! text-primary"
+                          ? "border-primary/20 bg-primary/10 text-primary font-medium"
                           : "border-border text-muted-foreground",
                       )}
                     >
                       {project.role}
                     </span>
 
+                    {/* ShortcutSelector replaces repo name here */}
                     <div className="ml-auto">
-                      {project?.repoName && project?.repoId ? (
-                        <>
-                          <Button variant={'outline'} size='icon-xs' className="">
-                            <LuGitBranch className="inline w-4 h-4" />
-                          </Button>
-                        </>
-                      ) : (
-                        <>
-                          <Button variant={'outline'} size='icon-xs' className="">
-                            <Minus className="inline w-4 h-4" />
-                          </Button>
-                        </>
-                      )}
+                      <ShortcutSelector
+                        projectId={project._id}
+                        currentShortcut={project.shortcut}
+                        projects={projects}
+                        onSave={async (shortcut) => {
+                          try {
+                            await updateShortcut({
+                              // @ts-expect-error
+                              projectId: project._id,
+                              shortcut,
+                            });
+                            toast.success(
+                              shortcut
+                                ? `Shortcut updated to ${shortcut}`
+                                : "Shortcut cleared",
+                            );
+                          } catch (err: any) {
+                            toast.error(err.message || "Failed to update shortcut");
+                            throw err;
+                          }
+                        }}
+                      />
                     </div>
-
                   </div>
 
-                  <div className="flex items-center justify-between gap-2 mt-5">
+                  <div className="flex items-center justify-between gap-2 mt-1">
                     {/* Avatars Stack */}
                     {project.totalMembers > 0 ? (
                       <div className="flex -space-x-1.5">
                         {project.members?.slice(0, 3).map((member, i) => (
                           <div
                             key={i}
-                            className="size-7.5 rounded-full border border-sidebar bg-accent overflow-hidden shadow-xs"
+                            className="size-6.5 rounded-full border border-sidebar bg-accent overflow-hidden shadow-xs"
                             title={member.userName}
                           >
                             {member.userImage ? (
@@ -573,7 +665,7 @@ export const DashboardProjects = ({
                           </div>
                         ))}
                         {project.totalMembers > 3 && (
-                          <div className="size-6 rounded-full border border-sidebar bg-accent flex items-center justify-center text-[8px] text-muted-foreground font-extrabold">
+                          <div className="size-6.5 rounded-full border border-sidebar bg-accent flex items-center justify-center text-[8px] text-muted-foreground font-extrabold">
                             +{project.totalMembers - 3}
                           </div>
                         )}
@@ -583,35 +675,11 @@ export const DashboardProjects = ({
                         0 members
                       </span>
                     )}
-
-                    {/* Keyboard Shortcut Select Widget */}
-                    <ShortcutSelector
-                      projectId={project._id}
-                      currentShortcut={project.shortcut}
-                      projects={projects}
-                      onSave={async (shortcut) => {
-                        try {
-                          await updateShortcut({
-                            // @ts-expect-error
-                            projectId: project._id,
-                            shortcut,
-                          });
-                          toast.success(
-                            shortcut
-                              ? `Shortcut updated to ${shortcut}`
-                              : "Shortcut cleared",
-                          );
-                        } catch (err: any) {
-                          toast.error(err.message || "Failed to update shortcut");
-                          throw err;
-                        }
-                      }}
-                    />
                   </div>
                 </div>
 
                 {/* Bottom Section - Pocket Bottom */}
-                <div className="grid grid-cols-2 gap-2 mt-3">
+                <div className="grid grid-cols-2 gap-2 mt-2">
                   <Button
                     variant="outline"
                     size="sm"

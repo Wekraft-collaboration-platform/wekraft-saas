@@ -128,7 +128,7 @@ export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDi
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="contact" className="w-full">
+        <Tabs defaultValue="contact" className="w-full -mt-1.5">
           <TabsList className="grid grid-cols-2 w-full h-10 rounded-lg p-[3px] bg-zinc-900 border border-zinc-800/80 mb-5">
             <TabsTrigger value="contact" className="text-xs font-semibold text-zinc-400 data-[state=active]:text-white transition-all">
               <MessageSquare className="h-3.5 w-3.5 mr-1.5" />
@@ -140,7 +140,7 @@ export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDi
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="contact" className="space-y-4 focus:outline-none">
+          <TabsContent value="contact" className="space-y-4 focus:outline-none border-t pt-2 border-accent">
             <form onSubmit={handleSubmit} className="space-y-4 text-left">
               {/* Support Tag select row */}
               <div className="space-y-2">
@@ -200,7 +200,7 @@ export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDi
 
               {/* Support SLA notice */}
               {isPro ? (
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 -mt-2">
                   <div className="h-8 w-8 rounded-full bg-blue-500/10 flex items-center justify-center shrink-0">
                     <Zap className="h-4.5 w-4.5 text-blue-400" />
                   </div>
@@ -213,7 +213,7 @@ export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDi
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center gap-3  p-3">
+                <div className="flex items-center gap-3  p-3 -mt-2">
                   <div className="h-8 w-8 rounded-full bg-zinc-900 flex items-center justify-center shrink-0">
                     <Clock className="h-4.5 w-4.5 text-zinc-400" />
                   </div>
