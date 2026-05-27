@@ -306,7 +306,7 @@ export const TableTab = ({
                       alt="Empty Workspace"
                       width={100}
                       height={100}
-                      className="opacity-80"
+                      className="opacity-80 dark:invert-0 invert"
                     />
                     <p className="text-base font-medium  text-primary">
                       Empty Workspace

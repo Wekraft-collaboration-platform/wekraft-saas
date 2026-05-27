@@ -101,8 +101,8 @@ export const CreateSprintDialog = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="w-full max-w-[480px] dark:bg-[#1c1c1c] border-[#2b2b2b] p-0 overflow-hidden dark:text-neutral-200">
-        <DialogHeader className="p-4 flex flex-row items-center gap-2 border-b border-[#2b2b2b]">
+      <DialogContent className="w-full max-w-[480px] bg-card dark:bg-[#1c1c1c] border-neutral-300 dark:border-[#2b2b2b] p-0 overflow-hidden text-foreground dark:text-neutral-200">
+        <DialogHeader className="p-4 flex flex-row items-center gap-2 border-b border-neutral-200 dark:border-[#2b2b2b]">
           <div className="flex items-center gap-1.5 text-xs text-neutral-400 font-medium">
             <div className="w-3 h-3 rounded-full bg-blue-600 flex items-center justify-center text-[10px] text-white" />
             <span className="text-sm">{projectName}</span>
@@ -137,7 +137,7 @@ export const CreateSprintDialog = ({
               placeholder="e.g. Sprint 1 — Auth Flow"
               value={sprintName}
               onChange={(e) => setSprintName(e.target.value)}
-              className="text-sm border bg-transparent focus-visible:ring-0 placeholder:text-neutral-600"
+              className="text-sm border bg-neutral-100/60 dark:bg-neutral-900 focus-visible:ring-0 placeholder:text-neutral-600"
             />
           </div>
 
@@ -148,7 +148,7 @@ export const CreateSprintDialog = ({
               placeholder="What should the team achieve by the end of this sprint?"
               value={sprintGoal}
               onChange={(e) => setSprintGoal(e.target.value)}
-              className="h-[80px] bg-transparent border focus-visible:ring-0 placeholder:text-neutral-600 resize-none text-sm"
+              className="h-[80px] bg-neutral-100/60 dark:bg-neutral-900 border focus-visible:ring-0 placeholder:text-neutral-600 resize-none text-sm"
             />
           </div>
 
@@ -160,7 +160,7 @@ export const CreateSprintDialog = ({
                 <Button
                   variant="outline"
                   className={cn(
-                    "w-full justify-start text-left text-sm h-9 bg-transparent border-[#333] hover:bg-[#2b2b2b]",
+                    "w-full justify-start text-left text-sm h-9 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-transparent dark:border-[#333] dark:hover:bg-[#2b2b2b]",
                     date?.from ? "text-primary" : "text-neutral-500",
                   )}
                 >
@@ -180,7 +180,7 @@ export const CreateSprintDialog = ({
                 </Button>
               </PopoverTrigger>
               <PopoverContent
-                className="w-auto p-0 bg-[#1c1c1c] border-[#2b2b2b]"
+                className="w-auto p-0 bg-popover dark:bg-[#1c1c1c] border-neutral-200 dark:border-[#2b2b2b]"
                 align="start"
               >
                 <Calendar
@@ -198,7 +198,7 @@ export const CreateSprintDialog = ({
                       : false;
                     return isPast || isPastDeadline;
                   }}
-                  className="bg-[#1c1c1c] text-neutral-200"
+                  className="bg-popover dark:bg-[#1c1c1c] text-foreground dark:text-neutral-200"
                 />
               </PopoverContent>
             </Popover>
@@ -215,11 +215,11 @@ export const CreateSprintDialog = ({
         </div>
 
         {/* Footer */}
-        <div className="p-4 border-t border-[#2b2b2b] flex items-center justify-end gap-3">
+        <div className="p-4 border-t border-neutral-200 dark:border-[#2b2b2b] flex items-center justify-end gap-3">
           <Button
             variant="ghost"
             onClick={() => setOpen(false)}
-            className="h-8 text-xs text-neutral-400 hover:text-white"
+            className="h-8 text-xs text-neutral-400 hover:text-foreground dark:hover:text-white"
           >
             Cancel
           </Button>

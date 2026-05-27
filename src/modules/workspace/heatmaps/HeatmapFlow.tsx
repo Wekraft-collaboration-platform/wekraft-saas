@@ -59,6 +59,72 @@ const FolderNodeComponent = (props: NodeProps) => {
   } = data;
   const isRoot = level === 0;
 
+<<<<<<< HEAD
+=======
+  // Filter tasks that are linked directly to this folder path (or direct parent folder of the linked file)
+  const linkedTasks = useMemo(() => {
+    if (!path || !tasks) return [];
+    return tasks.filter((task) => {
+      if (!task.linkWithCodebase) return false;
+      const link = task.linkWithCodebase;
+      const lastSlashIdx = link.lastIndexOf("/");
+      const lastSegment = lastSlashIdx !== -1 ? link.substring(lastSlashIdx + 1) : link;
+      const containingFolder = lastSegment.includes(".")
+        ? (lastSlashIdx !== -1 ? link.substring(0, lastSlashIdx) : "")
+        : link;
+      return containingFolder === path;
+    });
+  }, [path, tasks]);
+
+  // Group into completed vs active
+  const { completedTasks, activeTasks } = useMemo(() => {
+    const completed: any[] = [];
+    const active: any[] = [];
+    linkedTasks.forEach((task) => {
+      if (task.status === "completed") {
+        completed.push(task);
+      } else {
+        active.push(task);
+      }
+    });
+    return { completedTasks: completed, activeTasks: active };
+  }, [linkedTasks]);
+
+  const [activeTab, setActiveTab] = useState<"assigned" | "completed">("assigned");
+
+  // Extract assigned members and their active tasks flattened as rows
+  const assignedRows = useMemo(() => {
+    const rows: { userId: string; name: string; avatar?: string; task: any }[] = [];
+    activeTasks.forEach((task) => {
+      task.assignees?.forEach((a: any) => {
+        rows.push({
+          userId: a.userId,
+          name: a.name,
+          avatar: a.avatar,
+          task,
+        });
+      });
+    });
+    return rows;
+  }, [activeTasks]);
+
+  // Extract members who completed tasks flattened as rows
+  const completedRows = useMemo(() => {
+    const rows: { userId: string; name: string; avatar?: string; task: any }[] = [];
+    completedTasks.forEach((task) => {
+      task.assignees?.forEach((a: any) => {
+        rows.push({
+          userId: a.userId,
+          name: a.name,
+          avatar: a.avatar,
+          task,
+        });
+      });
+    });
+    return rows;
+  }, [completedTasks]);
+
+>>>>>>> b7fca422d03814cec537f577b7295c10c05b59f7
   return (
     <div
       className={cn(

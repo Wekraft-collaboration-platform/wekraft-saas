@@ -51,33 +51,7 @@ import { SchedulerSetupCard } from "@/modules/ai/SchedulerSetupCard";
 import { SprintItemSelectionCard } from "@/modules/ai/SprintItemSelectionCard";
 import { ToolCallCard } from "@/modules/ai/ToolCard";
 import { api } from "../../../../../../../../convex/_generated/api";
-
-const quickActions = [
-  {
-    icon: <ChartPie size={20} />,
-    title: "Project report",
-    sub: "Analysis & generates structured report.",
-    prompt: "Generate a project report for me",
-  },
-  {
-    icon: <CalendarCheck size={20} />,
-    title: "Set Reminder",
-    sub: "Creates events on your calendar.",
-    prompt: "Remind me to check the deployment tomorrow",
-  },
-  {
-    icon: <FastForward size={20} />,
-    title: "Creates Sprints",
-    sub: "Creates sprints for your team.",
-    prompt: "Help me create a new sprint",
-  },
-  {
-    icon: <CalendarSync size={20} />,
-    title: "Auto Schedulers",
-    sub: "Creates automated schedules for your team.",
-    prompt: "Setup an automated report scheduler",
-  },
-];
+import { QuickTemplates } from "@/modules/ai/QuickTemplates";
 
 const KayaLoader = () => (
   <svg
@@ -391,25 +365,17 @@ const AIWorkspace = () => {
                   </div>
                 </div>
 
-                <div className="grid grid-cols-4 w-full gap-3 mt-4">
-                  {quickActions.map((item, i) => (
-                    <button
-                      key={i}
-                      onClick={() => handleSendMessage(item.prompt)}
-                      className="flex flex-col gap-2 p-3 rounded-lg border border-border bg-linear-to-b from-card to-sidebar hover:bg-card text-left transition-all group"
-                    >
-                      <span className="text-muted-foreground ">
-                        {item.icon}
-                      </span>
-                      <span className="text-[14px] font-semibold text-primary leading-tight">
-                        {item.title}
-                      </span>
-                      <span className="text-[12px] text-muted-foreground leading-tight line-clamp-2">
-                        {item.sub}
-                      </span>
-                    </button>
-                  ))}
-                </div>
+                <QuickTemplates
+                  isHarry={isHarry}
+                  onSelectPrompt={handleSendMessage}
+                  onToggleAgent={(targetIsHarry) => {
+                    if (targetIsHarry) {
+                      router.replace(`/dashboard/my-projects/${slug}/workspace/ai?harry=true`);
+                    } else {
+                      router.replace(`/dashboard/my-projects/${slug}/workspace/ai?kaya=true`);
+                    }
+                  }}
+                />
               </motion.div>
             ) : (
               <motion.div

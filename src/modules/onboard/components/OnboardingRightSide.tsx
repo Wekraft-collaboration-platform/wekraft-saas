@@ -533,7 +533,7 @@ export function OnboardingRightSide({
 
   const [showLaunchOverlay, setShowLaunchOverlay] = useState(false);
   const showLaunchOverlayRef = useRef(false);
-  const step5StartTimeRef = useRef<number | null>(null);
+  const step4StartTimeRef = useRef<number | null>(null);
 
   // Sync props to refs to avoid restarting canvas loop on updates
   const currentStepRef = useRef(currentStep);
@@ -587,13 +587,6 @@ export function OnboardingRightSide({
         "CHECKING fuel rods pressure metrics [OK]",
       ];
     } else if (step === 4) {
-      newLogs = [
-        `VESSEL ID: ${projectName || "WEKRAFT-01"}`,
-        "CALIBRATING engine core output & exhaust valves...",
-        "DEPRESSURIZATION steam venting [ACTIVE]",
-        "WARNING: minor chassis vibration detected, damping stabilizers...",
-      ];
-    } else if (step === 5) {
       newLogs = [
         "STATUS: WARP DRIVE ENGAGED // GO FOR LAUNCH",
         "VELOCITY: OVERDRIVE warp speed index [OK]",
@@ -779,10 +772,6 @@ export function OnboardingRightSide({
         targetOffsets = { topCap: 0, upperSleeve: 0, core: 0, base: 0 };
         shakeAmt = 1.8;
       } else if (step === 4) {
-        // Calibrating core (shake & smoke - pressure builds up!)
-        targetOffsets = { topCap: 0, upperSleeve: 0, core: 0, base: 0 };
-        shakeAmt = 2.4;
-      } else if (step === 5) {
         // Launch warp speed (blastoff up the frame!)
         targetOffsets = { topCap: 0, upperSleeve: 0, core: 0, base: 0 };
         targetLaunchpadY = 500; // discard turntable launchpad down out of frame
@@ -791,10 +780,10 @@ export function OnboardingRightSide({
         targetPitch = 0.25; // elegant upright 3D angle
         targetRoll = 0.0;
 
-        if (step5StartTimeRef.current === null) {
-          step5StartTimeRef.current = Date.now();
+        if (step4StartTimeRef.current === null) {
+          step4StartTimeRef.current = Date.now();
         }
-        const elapsedStep5 = Date.now() - step5StartTimeRef.current;
+        const elapsedStep5 = Date.now() - step4StartTimeRef.current;
 
         if (elapsedStep5 <= 1000) {
           // Phase 1: Go up a little (from 0 to -150)
@@ -826,7 +815,7 @@ export function OnboardingRightSide({
           }
         }
       } else {
-        step5StartTimeRef.current = null;
+        step4StartTimeRef.current = null;
         if (showLaunchOverlayRef.current) {
           showLaunchOverlayRef.current = false;
           setShowLaunchOverlay(false);
@@ -845,13 +834,13 @@ export function OnboardingRightSide({
       vesselCenterYOffset +=
         (targetVesselCenterYOffset - vesselCenterYOffset) * 0.05;
 
-      // Update takeoff vertical position when not in Step 5
-      if (step !== 5) {
+      // Update takeoff vertical position when not in Step 4
+      if (step !== 4) {
         takeoffY += (0 - takeoffY) * 0.1; // return smoothly to launchpad if step back
       }
 
       // Handle continuous rotation
-      if (step === 5) {
+      if (step === 4) {
         yaw += 0.015;
       } else {
         yaw += 0.005;
@@ -957,12 +946,12 @@ export function OnboardingRightSide({
             (ROCKET_HUD_CONFIG.sizes.starMaxZ - star.z) /
             (ROCKET_HUD_CONFIG.sizes.starMaxZ / 2),
           ) *
-          (step === 5
+          (step === 4
             ? ROCKET_HUD_CONFIG.colors.starWarpOpacity
             : ROCKET_HUD_CONFIG.colors.starNormalOpacity) *
           star.brightness;
         ctx.strokeStyle = `rgba(${ROCKET_HUD_CONFIG.colors.starRgb}, ${opacity})`;
-        ctx.lineWidth = step === 5 ? 1.4 : 0.7;
+        ctx.lineWidth = step === 4 ? 1.4 : 0.7;
         ctx.stroke();
       });
 
@@ -1316,7 +1305,7 @@ export function OnboardingRightSide({
         const nozzleBaseY = lockedY.base + offsets.base + 45;
 
         // Spawn flame particles
-        const flameSpawns = step === 5 ? 4 : 3;
+        const flameSpawns = step === 4 ? 4 : 3;
         for (let k = 0; k < flameSpawns; k++) {
           const theta = Math.random() * Math.PI * 2;
           const r = Math.random() * 32;
@@ -1456,8 +1445,8 @@ export function OnboardingRightSide({
         });
       }
 
-      // 10. Warp aerodynamic air-splashes (Step 5 warp speed)
-      if (step === 5) {
+      // 10. Warp aerodynamic air-splashes (Step 4 warp speed)
+      if (step === 4) {
         if (time % 8 === 0 && splashRings.length < 5) {
           splashRings.push({
             y: lockedY.topCap - 80,
@@ -1785,7 +1774,7 @@ export function OnboardingRightSide({
         <div className="flex justify-between items-center text-xs text-zinc-400 font-medium">
           <span className="uppercase">SYSTEM STATUS</span>
           <span className="text-zinc-400 flex items-center gap-1">
-            {currentStep === 5 ? (
+            {currentStep === 4 ? (
               <span className="text-emerald-500 font-mono">
                 <Typewriter
                   words={["your workspace is ready . launching the system...."]}
@@ -1809,9 +1798,6 @@ export function OnboardingRightSide({
                       currentStep === 3
                         ? " awaiting spaceship designation registry..."
                         : "",
-                      currentStep === 4
-                        ? " awaiting workspace styling sync..."
-                        : "",
                     ].filter(Boolean)}
                     loop={1}
                     cursor
@@ -1823,17 +1809,16 @@ export function OnboardingRightSide({
               </>
             )}
           </span>
-          <span className="font-mono">ONBOARDING STEP {currentStep} OF 5</span>
+          <span className="font-mono">ONBOARDING STEP {currentStep} OF 4</span>
         </div>
         <div className="w-full bg-zinc-950 h-1.5 rounded-full overflow-hidden border border-zinc-800">
           <div
             className={cn(
               "h-full bg-blue-600 transition-all duration-700 rounded-full",
-              currentStep === 1 && "w-[20%]",
-              currentStep === 2 && "w-[40%]",
-              currentStep === 3 && "w-[60%]",
-              currentStep === 4 && "w-[80%]",
-              currentStep === 5 && "w-full bg-emerald-500 ",
+              currentStep === 1 && "w-[25%]",
+              currentStep === 2 && "w-[50%]",
+              currentStep === 3 && "w-[75%]",
+              currentStep === 4 && "w-full bg-emerald-500 ",
             )}
           />
         </div>

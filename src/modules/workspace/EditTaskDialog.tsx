@@ -180,10 +180,10 @@ export const EditTaskDialog = ({
         assignees:
           assignedMembers.length > 0
             ? assignedMembers.map((a) => ({
-                userId: a.userId,
-                name: a.name,
-                avatar: a.avatar,
-              }))
+              userId: a.userId,
+              name: a.name,
+              avatar: a.avatar,
+            }))
             : undefined,
         attachments: attachments.length > 0 ? attachments : undefined,
       });
@@ -258,8 +258,8 @@ export const EditTaskDialog = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="w-full max-w-[800px] h-full max-h-[560px] dark:bg-[#1c1c1c] border-[#2b2b2b] p-0 overflow-hidden dark:text-neutral-200">
-        <DialogHeader className="p-4 flex flex-row items-center gap-2 border-b border-[#2b2b2b]">
+      <DialogContent className="w-full max-w-[800px] h-full max-h-[560px] bg-card dark:bg-[#1c1c1c] border-neutral-300 dark:border-[#2b2b2b] p-0 overflow-hidden text-foreground dark:text-neutral-200">
+        <DialogHeader className="p-4 flex flex-row items-center gap-2 border-b border-neutral-200 dark:border-[#2b2b2b]">
           <div className="flex items-center gap-1.5 text-xs text-neutral-400 font-medium">
             <div className="w-3 h-3 rounded-full bg-blue-600 flex items-center justify-center text-[10px] text-white"></div>
             <span className="text-sm">{projectName}</span>
@@ -275,7 +275,7 @@ export const EditTaskDialog = ({
               placeholder="Task title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="text-base font-medium border bg-transparent p-2 focus-visible:ring-0 placeholder:text-neutral-600"
+              className="text-base font-medium border bg-neutral-100/60 dark:bg-neutral-900 p-2 focus-visible:ring-0 placeholder:text-neutral-600"
             />
           </div>
 
@@ -289,13 +289,13 @@ export const EditTaskDialog = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]"
+                  className="h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]"
                 >
                   {statusIcons[status]}
                   <span className="capitalize">{status.replace("-", " ")}</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200 ">
+              <DropdownMenuContent className="bg-popover dark:bg-[#1c1c1c] border-neutral-200 dark:border-[#2b2b2b] text-foreground dark:text-neutral-200">
                 <div className="text-xs text-center font-medium p-2 border-b border-accent">
                   Select Status
                 </div>
@@ -320,13 +320,13 @@ export const EditTaskDialog = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]"
+                  className="h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]"
                 >
                   {priorityIcons[priority]}
                   <span>Priority</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200">
+              <DropdownMenuContent className="bg-popover dark:bg-[#1c1c1c] border-neutral-200 dark:border-[#2b2b2b] text-foreground dark:text-neutral-200">
                 <div className="text-xs text-center font-medium p-2 border-b border-accent">
                   Select Priority
                 </div>
@@ -350,9 +350,9 @@ export const EditTaskDialog = ({
                   variant="outline"
                   size="sm"
                   className={cn(
-                    "h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-3 gap-1.5 rounded-full text-[11px]",
+                    "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-3 gap-1.5 rounded-full text-[11px]",
                     assignedMembers.length > 0 &&
-                      "text-blue-400 border-blue-900/40 bg-blue-900/10",
+                    "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
                   )}
                 >
                   <User className="w-3.5 h-3.5" />
@@ -363,7 +363,7 @@ export const EditTaskDialog = ({
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 className={cn(
-                  "bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200",
+                  "bg-popover dark:bg-[#1c1c1c] border-neutral-200 dark:border-[#2b2b2b] text-foreground dark:text-neutral-200",
                   members && members.length >= 4 ? "w-[360px]" : "w-48",
                 )}
               >
@@ -404,7 +404,7 @@ export const EditTaskDialog = ({
                             ]);
                           }
                         }}
-                        className="flex items-center gap-2 cursor-pointer p-1.5 rounded-md hover:bg-neutral-800 transition-colors"
+                        className="flex items-center gap-2 cursor-pointer p-1.5 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                       >
                         <Avatar className="h-5 w-5 shrink-0">
                           <AvatarImage src={member.userImage} />
@@ -437,9 +437,9 @@ export const EditTaskDialog = ({
                   variant="outline"
                   size="sm"
                   className={cn(
-                    "h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
+                    "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
                     date?.from &&
-                      "text-blue-400 border-blue-900/40 bg-blue-900/10",
+                    "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
                   )}
                 >
                   <Clock className="w-3.5 h-3.5" />
@@ -458,7 +458,7 @@ export const EditTaskDialog = ({
                 </Button>
               </PopoverTrigger>
               <PopoverContent
-                className="w-auto p-0 bg-[#1c1c1c] border-[#2b2b2b]"
+                className="w-auto p-0 bg-popover dark:bg-[#1c1c1c] border-neutral-200 dark:border-[#2b2b2b]"
                 align="start"
               >
                 <Calendar
@@ -478,7 +478,7 @@ export const EditTaskDialog = ({
                         : undefined,
                     ].filter(Boolean) as any
                   }
-                  className="bg-[#1c1c1c] text-neutral-200"
+                  className="bg-popover dark:bg-[#1c1c1c] text-foreground dark:text-neutral-200"
                 />
               </PopoverContent>
             </Popover>
@@ -493,9 +493,9 @@ export const EditTaskDialog = ({
                         variant="outline"
                         size="sm"
                         className={cn(
-                          "h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
+                          "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
                           attachments.length > 0 &&
-                            "text-blue-400 border-blue-900/40 bg-blue-900/10",
+                          "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
                         )}
                         disabled={
                           isUploading || project?.ownerAccountType === "free"
@@ -537,15 +537,15 @@ export const EditTaskDialog = ({
                   variant="outline"
                   size="sm"
                   className={cn(
-                    "h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
-                    tag && "text-blue-400 border-blue-900/40 bg-blue-900/10",
+                    "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
+                    tag && "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
                   )}
                 >
                   <Tag className="w-3.5 h-3.5" />
                   {tag ? "1 Tag" : "Tags"}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[280px] p-3 bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200">
+              <PopoverContent className="w-[280px] p-3 bg-popover dark:bg-[#1c1c1c] border-neutral-200 dark:border-[#2b2b2b] text-foreground dark:text-neutral-200">
                 <div className="space-y-3">
                   <p className="text-xs font-medium text-center text-muted-foreground border-b border-accent pb-2">
                     {existingTags && existingTags.length > 0
@@ -564,14 +564,14 @@ export const EditTaskDialog = ({
                             ? "ring-1 ring-white/50"
                             : "opacity-70 hover:opacity-100",
                           t.color === "green" &&
-                            "bg-emerald-500/20 text-emerald-400",
+                          "bg-emerald-500/20 text-emerald-400",
                           t.color === "yellow" &&
-                            "bg-yellow-500/20 text-yellow-400",
+                          "bg-yellow-500/20 text-yellow-400",
                           t.color === "purple" &&
-                            "bg-purple-500/20 text-purple-400",
+                          "bg-purple-500/20 text-purple-400",
                           t.color === "blue" && "bg-blue-500/20 text-blue-400",
                           t.color === "grey" &&
-                            "bg-neutral-500/20 text-neutral-400",
+                          "bg-neutral-500/20 text-neutral-400",
                         )}
                       >
                         {t.label}
@@ -593,15 +593,15 @@ export const EditTaskDialog = ({
                         className={cn(
                           "text-[10px] py-0 px-2 h-5 gap-1 border-none font-medium capitalize",
                           tag.color === "green" &&
-                            "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30",
+                          "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30",
                           tag.color === "yellow" &&
-                            "bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30",
+                          "bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30",
                           tag.color === "purple" &&
-                            "bg-purple-500/20 text-purple-400 hover:bg-purple-500/30",
+                          "bg-purple-500/20 text-purple-400 hover:bg-purple-500/30",
                           tag.color === "blue" &&
-                            "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30",
+                          "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30",
                           tag.color === "grey" &&
-                            "bg-neutral-500/20 text-neutral-400 hover:bg-neutral-500/30",
+                          "bg-neutral-500/20 text-neutral-400 hover:bg-neutral-500/30",
                         )}
                       >
                         {tag.label}
@@ -715,16 +715,16 @@ export const EditTaskDialog = ({
                   variant="outline"
                   size="sm"
                   className={cn(
-                    "h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
+                    "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
                     selectedPath &&
-                      "text-blue-400 border-blue-900/50 bg-blue-900/10",
+                    "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/50 dark:bg-blue-900/10",
                   )}
                 >
                   <Link2 className="w-3.5 h-3.5" />
                   {selectedPath ? selectedPath.split("/").pop() : "Link Code"}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[320px] p-0 bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200">
+              <PopoverContent className="w-[320px] p-0 bg-popover dark:bg-[#1c1c1c] border-neutral-200 dark:border-[#2b2b2b] text-foreground dark:text-neutral-200">
                 <GetRepoStructure
                   repoFullName={repoFullName}
                   onSelect={setSelectedPath}
@@ -739,7 +739,7 @@ export const EditTaskDialog = ({
             placeholder="Add a description, a project brief, or collect ideas..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="h-[180px] overflow-y-scroll bg-transparent border p-2 focus-visible:ring-0 placeholder:text-neutral-600 resize-none text-sm leading-relaxed"
+            className="h-[180px] overflow-y-scroll bg-neutral-100/60 dark:bg-neutral-900 border p-2 focus-visible:ring-0 placeholder:text-neutral-600 resize-none text-sm leading-relaxed"
           />
 
           {/* Attachments List */}
@@ -766,12 +766,12 @@ export const EditTaskDialog = ({
           )}
         </div>
 
-        <div className="p-4 border-t border-[#2b2b2b] flex items-center justify-end">
+        <div className="p-4 border-t border-neutral-200 dark:border-[#2b2b2b] flex items-center justify-end">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               onClick={() => setOpen(false)}
-              className="h-8 text-xs text-neutral-400 hover:text-white"
+              className="h-8 text-xs text-neutral-400 hover:text-foreground dark:hover:text-white"
             >
               Cancel
             </Button>

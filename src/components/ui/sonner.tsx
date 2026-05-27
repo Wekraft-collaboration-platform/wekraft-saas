@@ -7,43 +7,34 @@ import {
   OctagonXIcon,
   TriangleAlertIcon,
 } from "lucide-react"
-import { useTheme } from "next-themes"
 import { Toaster as Sonner, type ToasterProps } from "sonner"
 
 const Toaster = ({ ...props }: ToasterProps) => {
-  const { theme = "system" } = useTheme()
-
-  const isDark = theme === "dark"
-
   return (
     <Sonner
-      theme={theme as ToasterProps["theme"]}
+      theme="light"
       className="toaster group"
       icons={{
-        success: <CircleCheckIcon className="size-4 mt-0.5 shrink-0" />,
-        info: <InfoIcon className="size-4 mt-0.5 shrink-0" />,
-        warning: <TriangleAlertIcon className="size-4 mt-0.5 shrink-0" />,
-        error: <OctagonXIcon className="size-4 mt-0.5 shrink-0" />,
-        loading: <Loader2Icon className="size-4 mt-0.5 shrink-0 animate-spin" />,
+        success: <CircleCheckIcon className="size-4 mt-0.5 shrink-0 text-black" />,
+        info: <InfoIcon className="size-4 mt-0.5 shrink-0 text-black" />,
+        warning: <TriangleAlertIcon className="size-4 mt-0.5 shrink-0 text-black" />,
+        error: <OctagonXIcon className="size-4 mt-0.5 shrink-0 text-black" />,
+        loading: <Loader2Icon className="size-4 mt-0.5 shrink-0 animate-spin text-black" />,
       }}
       style={
         {
-          "--normal-bg": isDark ? "oklch(96.7% 0 0)" : "oklch(8.5% 0 0)",
-          "--normal-text": isDark ? "oklch(20.5% 0 0)" : "oklch(92.8% 0 0)",
-          "--normal-border": isDark ? "oklch(87% 0 0)" : "oklch(20% 0 0)",
+          "--normal-bg": "oklch(1 0 0)",
+          "--normal-text": "oklch(0.205 0 0)",
+          "--normal-border": "oklch(0.922 0 0)",
           "--border-radius": "var(--radius)",
         } as React.CSSProperties
       }
       toastOptions={{
         classNames: {
-          toast: "cn-toast !items-start",
+          toast: "cn-toast !bg-white !border-neutral-200 !items-start !text-neutral-900 !shadow-lg",
           icon: "!mt-0.5",
-          title: isDark
-            ? "!text-neutral-900 !font-semibold"
-            : "!text-neutral-100 !font-semibold",
-          description: isDark
-            ? "!text-neutral-700"
-            : "!text-neutral-300",
+          title: "!text-neutral-900 !font-semibold",
+          description: "!text-neutral-700",
         },
       }}
       {...props}

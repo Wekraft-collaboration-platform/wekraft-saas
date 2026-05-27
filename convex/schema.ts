@@ -301,6 +301,18 @@ export default defineSchema({
     memberCanCreate: v.optional(v.boolean()), // Members can create tasks/issues
     memberUseKaya: v.optional(v.boolean()), // Members can use Kaya AI
     canUseAITeamspace: v.optional(v.boolean()), // Members can use AI in teamspace
+
+    // Alerts Configuration
+    alerts: v.optional(v.array(v.number())),
+    triggeredAlerts: v.optional(v.array(v.number())),
+    scheduledJobs: v.optional(
+      v.array(
+        v.object({
+          percent: v.number(),
+          jobId: v.string(),
+        })
+      )
+    ),
   })
     .index("by_project", ["projectId"])
     .index("by_repo", ["repoId"]),
@@ -465,6 +477,7 @@ export default defineSchema({
       v.literal("request_rejected"), // Request rejected
       v.literal("role_changed"), // Role changed
       v.literal("mentioned"), // @mention in comment
+      v.literal("project_alert"), // Project duration alert
     ),
     // Human-readable notification body
     body: v.string(),
@@ -477,4 +490,16 @@ export default defineSchema({
   })
     .index("by_recipient", ["recipientId", "createdAt"])
     .index("by_recipient_unread", ["recipientId", "isRead"]),
+
+
+  // -------------------Support----------------
+  supportQueries: defineTable({
+    title: v.string(),
+    reason: v.string(),
+    description: v.string(),
+    createdAt: v.number(),
+    userId: v.id("users"),
+  })
+    .index("by_user", ["userId"])
+    .index("by_created", ["createdAt"]),
 });

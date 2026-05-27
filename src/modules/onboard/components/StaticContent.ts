@@ -20,8 +20,7 @@ export const STEPS = [
   { id: 1, title: "Usage" },
   { id: 2, title: "Identity" },
   { id: 3, title: "Project" },
-  { id: 4, title: "Theme" },
-  { id: 5, title: "Team" },
+  { id: 4, title: "Team" },
 ];
 
 export const SOURCES = [

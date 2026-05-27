@@ -210,19 +210,23 @@ export default function CalendarView({
           __html: `
         .fc-header-toolbar { display: none !important; }
         
-        /* Dark Theme Variables */
+        /* Default (Light) Theme Variables */
         :root {
-          --fc-border-color: #27272a; /* zinc-800 */
+          --fc-border-color: #e4e4e7; /* zinc-200 */
           --fc-daygrid-event-dot-width: 5px;
           --fc-now-indicator-color: #ef4444;
         }
-
+        
+        /* Dark Theme Variables */
+        .dark {
+          --fc-border-color: #27272a; /* zinc-800 */
+        }
 
         .fc .fc-scrollgrid { border-radius: 12px; }
         
         /* Day Headers */
         .fc-col-header-cell {
-          background-color: #09090b !important; /* zinc-950 */
+          background-color: #f4f4f5 !important; /* zinc-100 */
           padding: 16px 0 !important;
           text-transform: uppercase;
           font-size: 10.5px;
@@ -230,17 +234,24 @@ export default function CalendarView({
           font-weight: 800;
           color: #71717a; /* zinc-500 */
         }
+        .dark .fc-col-header-cell {
+          background-color: #09090b !important; /* zinc-950 */
+        }
         
         .fc .fc-col-header-cell-cushion { padding: 0 !important; }
         .fc-timegrid-axis-cushion, .fc-timegrid-slot-label-cushion {
           font-size: 10px;
           font-weight: 700;
-          color: #52525b; /* zinc-600 */
+          color: #71717a; /* zinc-500 */
           text-transform: uppercase;
+        }
+        .dark .fc-timegrid-axis-cushion, .dark .fc-timegrid-slot-label-cushion {
+          color: #52525b; /* zinc-600 */
         }
 
         .fc-timegrid-slot-label { border-right: none !important; }
-        .fc-timegrid-slot { height: 3.5em !important; border-top: 1px dashed #18181b !important; }
+        .fc-timegrid-slot { height: 3.5em !important; border-top: 1px dashed #e4e4e7 !important; }
+        .dark .fc-timegrid-slot { border-top: 1px dashed #18181b !important; }
         
         /* Universal Pointer Cursor */
         .fc, .fc-view, .fc-view-harness {
@@ -248,18 +259,26 @@ export default function CalendarView({
         }
 
         /* Highlight Today - premium indigo tint */
-        .fc .fc-day-today { background-color: rgba(141, 142, 149, 0.09) !important; }
-        .fc .fc-timegrid-col.fc-day-today { background-color: rgba(67, 67, 72, 0.07) !important; }
+        .fc .fc-day-today { background-color: rgba(99, 102, 241, 0.05) !important; }
+        .dark .fc .fc-day-today { background-color: rgba(141, 142, 149, 0.09) !important; }
+        .fc .fc-timegrid-col.fc-day-today { background-color: rgba(99, 102, 241, 0.03) !important; }
+        .dark .fc .fc-timegrid-col.fc-day-today { background-color: rgba(67, 67, 72, 0.07) !important; }
+        
         /* Today column header in indigo */
-        .fc .fc-day-today .fc-col-header-cell-cushion { color: #aaaaaaff !important; font-weight: 700 !important; }
+        .fc .fc-day-today .fc-col-header-cell-cushion { color: #4f46e5 !important; font-weight: 700 !important; }
+        .dark .fc .fc-day-today .fc-col-header-cell-cushion { color: #aaaaaaff !important; font-weight: 700 !important; }
 
         /* Column Headers - shown in week view */
         .fc-col-header-cell {
-          background-color: #09090b !important;
+          background-color: #f4f4f5 !important;
           padding: 10px 0 !important;
           font-size: 11px;
           letter-spacing: 0.05em;
           font-weight: 700;
+          color: #71717a;
+        }
+        .dark .fc-col-header-cell {
+          background-color: #09090b !important;
           color: #52525b;
         }
         .fc .fc-col-header-cell-cushion { padding: 0 !important; color: #71717a; }
@@ -270,8 +289,11 @@ export default function CalendarView({
 
         /* The axis frame - blank in col-header row, 'ALL DAY' in all-day slot handled by FC */
         .fc-timegrid-axis-frame { 
-          background-color: #09090b !important;
+          background-color: #f4f4f5 !important;
           border-color: var(--fc-border-color) !important;
+        }
+        .dark .fc-timegrid-axis-frame {
+          background-color: #09090b !important;
         }
 
         /* Hide all-day row in week view (blank row) */
@@ -288,6 +310,9 @@ export default function CalendarView({
 
         /* Ensure all axis cells are dark */
         .fc-timegrid-axis {
+           background-color: #f4f4f5 !important;
+        }
+        .dark .fc-timegrid-axis {
            background-color: #09090b !important;
         }
 
@@ -300,33 +325,50 @@ export default function CalendarView({
 
         .fc-event:hover {
           transform: translateY(-1px);
+          box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.2);
+          filter: brightness(1.05);
+          z-index: 50 !important;
+        }
+        .dark .fc-event:hover {
           box-shadow: 0 4px 12px -4px rgba(0, 0, 0, 0.4);
           filter: brightness(1.08);
-          z-index: 50 !important;
         }
 
         /* Week view: hover on specific date column only (not whole row) */
         .fc-timegrid-col:not(.fc-day-disabled):hover {
-          background-color: rgba(255, 255, 255, 0.025) !important;
+          background-color: rgba(0, 0, 0, 0.015) !important;
           cursor: pointer !important;
+        }
+        .dark .fc-timegrid-col:not(.fc-day-disabled):hover {
+          background-color: rgba(255, 255, 255, 0.025) !important;
         }
 
         /* Hover effect for day cells (Month view) */
         .fc-daygrid-day:hover {
-          background-color: rgba(255, 255, 255, 0.03) !important;
+          background-color: rgba(0, 0, 0, 0.02) !important;
           cursor: pointer !important;
         }
+        .dark .fc-daygrid-day:hover {
+          background-color: rgba(255, 255, 255, 0.03) !important;
+        }
 
-        /* Current month dates - white; other month dates - muted */
+        /* Current month dates - zinc-800; other month dates - muted */
         .fc .fc-daygrid-day:not(.fc-day-other) .fc-daygrid-day-number {
           padding: 8px !important;
           font-weight: 600;
-          color: #e4e4e7 !important; /* zinc-200 — bright white */
+          color: #27272a !important; /* zinc-800 */
         }
+        .dark .fc .fc-daygrid-day:not(.fc-day-other) .fc-daygrid-day-number {
+          color: #e4e4e7 !important; /* zinc-200 */
+        }
+        
         .fc .fc-daygrid-day.fc-day-other .fc-daygrid-day-number {
           padding: 8px !important;
           font-weight: 500;
-          color: #3f3f46 !important; /* zinc-700 — clearly dimmed */
+          color: #a1a1aa !important; /* zinc-400 */
+        }
+        .dark .fc .fc-daygrid-day.fc-day-other .fc-daygrid-day-number {
+          color: #3f3f46 !important; /* zinc-700 */
         }
 
         /* Premium Scrollbar styling */
@@ -338,17 +380,23 @@ export default function CalendarView({
           background: transparent !important; 
         }
         .fc-scroller::-webkit-scrollbar-thumb { 
-          background: #27272a !important; /* zinc-800 */
+          background: #e4e4e7 !important; /* zinc-200 */
           border-radius: 10px !important; 
         }
+        .dark .fc-scroller::-webkit-scrollbar-thumb { 
+          background: #27272a !important; /* zinc-800 */
+        }
         .fc-scroller::-webkit-scrollbar-thumb:hover {
+          background: #d4d4d8 !important; /* zinc-300 */
+        }
+        .dark .fc-scroller::-webkit-scrollbar-thumb:hover {
           background: #3f3f46 !important; /* zinc-700 */
         }
       `,
         }}
       />
 
-      <div className="h-fit overflow-visible rounded-2xl border border-zinc-800/70 shadow-[0_4px_16px_rgb(0,0,0,0.3)] bg-zinc-950">
+      <div className="h-fit overflow-visible rounded-2xl border border-zinc-200 dark:border-zinc-800/70 shadow-[0_4px_16px_rgba(0,0,0,0.08)] dark:shadow-[0_4px_16px_rgb(0,0,0,0.3)] bg-white dark:bg-zinc-950">
         <FullCalendar
           ref={calendarRef}
           plugins={[dayGridPlugin, timeGridPlugin, interactionPlugin]}

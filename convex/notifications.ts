@@ -12,6 +12,7 @@ const notificationType = v.union(
   v.literal("request_rejected"),
   v.literal("role_changed"),
   v.literal("mentioned"),
+  v.literal("project_alert"),
 );
 
 // ─── Helper: insert one notification record ──────────────────────────────────
@@ -553,6 +554,50 @@ export const deleteOldNotifications = internalMutation({
 
     console.log(`[Cron Cleanup] Successfully deleted ${count} notifications older than ${args.maxAgeDays} days.`);
     return { deletedCount: count };
+  },
+});
+
+/**
+ * Internal mutation called by the scheduler to send project alert.
+ */
+export const sendProjectDurationAlert = internalMutation({
+  args: {
+    projectId: v.id("projects"),
+    alertPercent: v.number(),
+  },
+  handler: async (ctx, args) => {
+    const project = await ctx.db.get(args.projectId);
+    if (!project) return;
+
+    const details = await ctx.db
+      .query("projectDetails")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .unique();
+
+    if (!details) return;
+
+    // Double check: if targetDate changed or alert was removed in the meantime, don't send
+    if (!details.alerts?.includes(args.alertPercent)) return;
+
+    // Send notifications to owner and admins
+    const powerUsers = await getPowerUsers(ctx, args.projectId);
+    const recipientIds = powerUsers.map((u: any) => u.userId as Id<"users">);
+
+    await fanOut(ctx, recipientIds, {
+      projectId: args.projectId,
+      projectName: project.projectName,
+      type: "project_alert",
+      body: `**Project Alert**: **${args.alertPercent}%** of project duration has passed for **${project.projectName}**.`,
+    });
+
+    // Mark as triggered in DB
+    const triggeredAlerts = details.triggeredAlerts || [];
+    if (!triggeredAlerts.includes(args.alertPercent)) {
+      triggeredAlerts.push(args.alertPercent);
+      await ctx.db.patch(details._id, {
+        triggeredAlerts,
+      });
+    }
   },
 });
 

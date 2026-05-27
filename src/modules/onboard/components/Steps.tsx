@@ -100,14 +100,7 @@ export function MultiStepOnboarding() {
   const [projectStatus, setProjectStatus] = useState("");
   const [generatedInviteLink, setGeneratedInviteLink] = useState("");
 
-  // step 4
-  const { setTheme } = useTheme();
-  const [selectedTheme, setSelectedTheme] = useState("dark");
-
-  const handleThemeChange = (newTheme: string) => {
-    setSelectedTheme(newTheme);
-    setTheme(newTheme);
-  };
+  const selectedTheme = "dark";
 
   const handleNext = async () => {
     try {
@@ -164,7 +157,7 @@ export function MultiStepOnboarding() {
         }
       }
 
-      if (currentStep === 5) {
+      if (currentStep === 4) {
         await completeOnboarding();
         toast.success("Welcome to WeKraft!");
         router.push("/dashboard");
@@ -274,12 +267,6 @@ export function MultiStepOnboarding() {
                     </>
                   )}
                   {currentStep === 4 && (
-                    <>
-                      {/* <Sliders className="w-5.5 h-5.5 text-zinc-300 shrink-0" /> */}
-                      <span>Now Personalize your space</span>
-                    </>
-                  )}
-                  {currentStep === 5 && (
                     <>
                       {/* <Share2 className="w-5.5 h-5.5 text-zinc-300 shrink-0" /> */}
                       <span>Share invite link</span>
@@ -441,74 +428,6 @@ export function MultiStepOnboarding() {
 
                 {/* STEP 4 */}
                 {currentStep === 4 && (
-                  <div className="grid grid-cols-3 gap-3.5">
-                    {[
-                      {
-                        id: "light",
-                        label: "Light",
-                        icon: Sun,
-                        desc: "Clean & Minimal",
-                      },
-                      {
-                        id: "dark",
-                        label: "Dark",
-                        icon: Moon,
-                        desc: "Sleek & Focused",
-                      },
-                      {
-                        id: "system",
-                        label: "System",
-                        icon: Monitor,
-                        desc: "Auto Sync",
-                      },
-                    ].map((t) => {
-                      const isSelected = selectedTheme === t.id;
-                      return (
-                        <button
-                          key={t.id}
-                          type="button"
-                          onClick={() => handleThemeChange(t.id)}
-                          className={cn(
-                            "flex flex-col items-center justify-center py-5 px-4 rounded-lg border text-center transition-all duration-200 cursor-pointer select-none",
-                            isSelected
-                              ? "bg-zinc-900/40! border-zinc-500! shadow-[0_0_12px_rgba(255,255,255,0.015)]"
-                              : "bg-[#0f0f12]! border-zinc-800! hover:border-zinc-600! hover:bg-zinc-900/10!",
-                          )}
-                        >
-                          <div
-                            className={cn(
-                              "w-9 h-9 rounded-md border flex items-center justify-center mb-3 transition-all",
-                              isSelected
-                                ? "bg-neutral-100 text-zinc-900 border-zinc-700"
-                                : "bg-zinc-900! text-zinc-500 border-zinc-800/60",
-                            )}
-                          >
-                            <t.icon className="w-4.5 h-4.5" />
-                          </div>
-                          <span
-                            className={cn(
-                              "text-sm font-medium tracking-wide transition-colors",
-                              isSelected ? "text-white" : "text-zinc-300",
-                            )}
-                          >
-                            {t.label}
-                          </span>
-                          <span
-                            className={cn(
-                              "text-[10px] transition-colors mt-1 leading-normal text-center max-w-[80px]",
-                              isSelected ? "text-zinc-200" : "text-zinc-450",
-                            )}
-                          >
-                            {t.desc}
-                          </span>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {/* STEP 5 */}
-                {currentStep === 5 && (
                   <div className="space-y-4 font-sans">
                     <div className="space-y-1.5">
                       <Label className="text-base text-zinc-300 font-medium">
@@ -593,7 +512,7 @@ export function MultiStepOnboarding() {
                         {" "}
                         Saving <Loader2 className="w-3 h-3 animate-spin" />{" "}
                       </>
-                    ) : currentStep === 5 ? (
+                    ) : currentStep === 4 ? (
                       <>
                         Get Started
                         <Rocket className="w-3.5 h-3.5" />

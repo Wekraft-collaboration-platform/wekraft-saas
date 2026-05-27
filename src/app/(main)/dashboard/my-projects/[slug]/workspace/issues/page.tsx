@@ -404,6 +404,7 @@ const IssuesPage = () => {
                     alt="Empty Workspace"
                     width={100}
                     height={100}
+                    className="dark:invert-0 invert"
                   />
                   <p className="text-base font-medium text-primary">
                     No Issues Found

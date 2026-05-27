@@ -94,6 +94,44 @@ export default function RightSidebar({
     },
   } satisfies ChartConfig;
 
+  const accountType = currentUser?.accountType || "free";
+
+  const promoContent = React.useMemo(() => {
+    if (accountType === "pro") {
+      return {
+        title: "Pro Plan Active",
+        description: "You have unlocked all elite features:",
+        features: [
+          "Unlimited cloud storage",
+          "AI agents and automations",
+          "Priority 24/7 support",
+          "Full enterprise suite"
+        ]
+      };
+    }
+    if (accountType === "plus") {
+      return {
+        title: "Upgrade to Pro",
+        description: "Get elite features to scale your projects:",
+        features: [
+          "Higher limits on cloud storage",
+          "AI agents and automations",
+          "Priority support"
+        ]
+      };
+    }
+    return {
+      title: "Upgrade to Plus",
+      description: "Get premium features to boost collaboration:",
+      features: [
+        "Higher cloud storage",
+        "Higher member seat per project",
+        "Advance project analysis",
+        "And much more..."
+      ]
+    };
+  }, [accountType]);
+
   return (
     <div
       id="tour-right-sidebar"
@@ -124,19 +162,44 @@ export default function RightSidebar({
         )}
       >
         {isRightSidebarExpanded && (
-          <div className="flex flex-col gap-4 w-full h-[calc(100vh-80px)]">
+          <div className="flex flex-col gap-6 w-full h-[calc(100vh-80px)]">
 
-            {/* Card 1: Future To-Do */}
-            <div className="bg-sidebar border border-accent rounded-md p-3.5 flex items-center justify-center shadow-sm flex-1 min-h-0">
-              <span className="text-muted-foreground/80 text-sm font-semibold tracking-wide uppercase">
-                Future To-Do
-              </span>
+            {/* Card 1: Upgrade Promotion / Plan Details */}
+            <div className="relative overflow-hidden bg-linear-to-br dark:from-black/75 from-white to-blue-700/60  border-accent rounded-xl p-4.5 flex flex-col justify-between shadow-lg flex-1 min-h-0 text-left">
+              <div className="space-y-3.5 z-10">
+                <div className="flex items-center justify-between">
+                  <span className="text-xs text-white/80 bg-white/20 px-2 py-0.5 rounded-full capitalize">
+                    Current Plan: {accountType}
+                  </span>
+                </div>
+
+                <div className="space-y-1">
+                  <h4 className="text-sm font-bold text-white tracking-tight">{promoContent.title}</h4>
+                  <p className="text-[10px] text-blue-100/80 leading-normal font-medium">{promoContent.description}</p>
+                </div>
+
+                <ul className="space-y-1.5 text-[10px] text-blue-50/90 font-semibold">
+                  {promoContent.features.map((feature, idx) => (
+                    <li key={idx} className="flex items-center gap-1.5">
+                      <div className="w-1.5 h-1.5 rounded-full bg-blue-300" />
+                      {feature}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Bottom right background illustration */}
+              <img
+                src="/22.svg"
+                alt="Upgrade illustration"
+                className="absolute -bottom-2 -right-2 w-24 h-24  object-cover pointer-events-none select-none z-0"
+              />
             </div>
 
-            {/* Card 2: Kaya AI Usage */}
+            {/* Card 2: AI Usage */}
             <div className="bg-sidebar border border-accent rounded-md p-3.5 flex flex-col items-center justify-between text-center shadow-sm flex-1 min-h-0">
               <div className="text-[11px] font-semibold uppercase tracking-wider text-muted-foreground shrink-0 mb-1">
-                Kaya AI Usage
+                AI Usage
               </div>
 
               {mounted ? (

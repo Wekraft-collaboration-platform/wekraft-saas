@@ -243,12 +243,6 @@ export default function ProjectSidebar() {
     );
   });
 
-  const matchesTheme =
-    "theme".includes(searchQuery.toLowerCase()) ||
-    "appearance".includes(searchQuery.toLowerCase()) ||
-    "dark mode".includes(searchQuery.toLowerCase()) ||
-    "light mode".includes(searchQuery.toLowerCase());
-
   const matchesHelp =
     "help and support".includes(searchQuery.toLowerCase()) ||
     "support".includes(searchQuery.toLowerCase()) ||
@@ -267,7 +261,6 @@ export default function ProjectSidebar() {
     filteredWorkspaceMenu.length === 0 &&
     !matchesAi &&
     !matchesWorkspace &&
-    !matchesTheme &&
     !matchesHelp &&
     !matchesDelete;
 
@@ -381,10 +374,114 @@ export default function ProjectSidebar() {
 
         {(!searchQuery || matchesAi) && (
           <SidebarMenu>
+<<<<<<< HEAD
             {/* =========AI ASSISTANT====== */}
             <SidebarMenuItem>
               <Popover>
                 <PopoverTrigger asChild>
+=======
+            {/* =========AI ASSISTANT COLLAPSIBLE====== */}
+            {!isCollapsed ? (
+              <Collapsible defaultOpen={false} className="group/collapsible">
+                <SidebarMenuItem>
+                  <CollapsibleTrigger asChild>
+                    <SidebarMenuButton
+                      tooltip="AI Assistant"
+                      className="group relative overflow-hidden group-data-[collapsible=icon]:bg-transparent! cursor-pointer"
+                    >
+                      <div className="relative z-10 flex items-center gap-3 w-full text-sm group-data-[collapsible=icon]:justify-center">
+                        <Image
+                          src="/kaya.svg"
+                          alt="Logo"
+                          width={24}
+                          height={24}
+                        />
+
+                        <span
+                          className={cn(
+                            "group-data-[collapsible=icon]:hidden transition-colors text-foreground",
+                          )}
+                        >
+                          AI Assistant
+                        </span>
+                        <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]:hidden text-primary!" />
+                      </div>
+                    </SidebarMenuButton>
+                  </CollapsibleTrigger>
+                  <CollapsibleContent>
+                    <SidebarMenuSub className="border-l border-dashed dark:border-neutral-400! border-muted-foreground ml-[21px] pl-3 gap-1.5">
+                      {/* Keyboard shortcut indicator */}
+                      <div className="flex items-center justify-between px-2.5 py-1 text-[10px] bg-muted rounded-md text-muted-foreground select-none">
+                        <span>Toggle AI Assistant</span>
+                        <div className="flex items-center gap-1">
+                          <Kbd className="bg-muted/50 font-sans text-[8px] px-1 py-0">
+                            Ctrl
+                          </Kbd>
+                          <span>+</span>
+                          <Kbd className="bg-muted/50 font-sans text-[8px] px-1 py-0">
+                            K
+                          </Kbd>
+                        </div>
+                      </div>
+
+                      {/* Kaya PM Agent */}
+                      <SidebarMenuSubItem>
+                        <SidebarMenuSubButton
+                          asChild
+                          isActive={pathname.includes("/workspace/ai") && pathname.includes("kaya=true")}
+                          className="group relative h-8 overflow-hidden"
+                        >
+                          <Link
+                            href={`/dashboard/my-projects/${slug}/workspace/ai?kaya=true`}
+                            className="relative z-10 flex items-center w-full gap-2.5"
+                          >
+                            <Image
+                              src="/kaya.svg"
+                              alt="Kaya PM"
+                              width={16}
+                              height={16}
+                              className="shrink-0"
+                            />
+                            <span className="text-sm text-muted-foreground hover:text-foreground">
+                              Kaya PM Agent
+                            </span>
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+
+                      {/* Harry Dev Agent */}
+                      <SidebarMenuSubItem>
+                        <SidebarMenuSubButton
+                          asChild
+                          isActive={pathname.includes("/workspace/ai") && pathname.includes("harry=true")}
+                          className="group relative h-8 overflow-hidden"
+                        >
+                          <Link
+                            href={`/dashboard/my-projects/${slug}/workspace/ai?harry=true`}
+                            className="relative z-10 flex items-center w-full gap-2.5"
+                          >
+                            <Image
+                              src="/harry.svg"
+                              alt="Harry Dev"
+                              width={16}
+                              height={16}
+                              className="shrink-0"
+                            />
+                            <span className="text-sm text-muted-foreground hover:text-foreground">
+                              Harry Dev Agent
+                            </span>
+                          </Link>
+                        </SidebarMenuSubButton>
+                      </SidebarMenuSubItem>
+                    </SidebarMenuSub>
+                  </CollapsibleContent>
+                </SidebarMenuItem>
+              </Collapsible>
+            ) : (
+              // Collapsed to icon view
+              <>
+                <SidebarMenuItem>
+>>>>>>> b7fca422d03814cec537f577b7295c10c05b59f7
                   <SidebarMenuButton
                     asChild
                     tooltip="AI Assistant"
@@ -569,6 +666,7 @@ export default function ProjectSidebar() {
                           href={`/dashboard/my-projects/${slug}/workspace/tasks`}
                           className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
                         >
+<<<<<<< HEAD
                           <ListTree className="h-5 w-5" />
                           <span className="text-sm font-medium group-data-[collapsible=icon]:hidden">
                             Manage
@@ -592,6 +690,31 @@ export default function ProjectSidebar() {
                                 <Link
                                   href={href}
                                   className="relative z-10 flex items-center w-full gap-2.5"
+=======
+                          <Link
+                            href={`/dashboard/my-projects/${slug}/workspace/tasks`}
+                            className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
+                          >
+                            <ListTree className="h-5 w-5" />
+                            <span className="text-sm font-medium group-data-[collapsible=icon]:hidden">
+                              Manage
+                            </span>
+                            <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]:hidden" />
+                          </Link>
+                        </SidebarMenuButton>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <SidebarMenuSub className="border-l border-dashed dark:border-neautral-400! border-muted-foreground ml-[21px] pl-3 gap-1.5">
+                          {filteredCollapsibleItems.map((item) => {
+                            const href = `/dashboard/my-projects/${slug}/${item.path}`;
+                            const active = isActive(href);
+                            return (
+                              <SidebarMenuSubItem key={item.path}>
+                                <SidebarMenuSubButton
+                                  asChild
+                                  isActive={active}
+                                  className="group relative h-8 overflow-hidden"
+>>>>>>> b7fca422d03814cec537f577b7295c10c05b59f7
                                 >
                                   <item.icon
                                     className={cn(
@@ -730,48 +853,7 @@ export default function ProjectSidebar() {
           <>
             <SidebarSeparator className="my-2 mx-0 w-full" />
             <SidebarMenu className="flex flex-col space-y-1.5">
-              {(!searchQuery || matchesTheme) && (
-                <SidebarMenu>
-                  {/* THEME SWITCHER */}
-                  <Popover>
-                    <SidebarMenuButton
-                      asChild
-                      tooltip="Theme"
-                      className="group relative overflow-hidden cursor-pointer  group-data-[collapsible=icon]:hidden"
-                    >
-                      <PopoverTrigger asChild>
-                        <button
-                          type="button"
-                          className="relative z-10 flex w-full items-center gap-3 text-primary group-data-[collapsible=icon]:justify-center"
-                        >
-                          <Palette className="h-5 w-5" />
-                          <span className="text-sm group-data-[collapsible=icon]:hidden">
-                            Theme
-                          </span>
 
-                          {/* Active gradient */}
-                          <span
-                            className="
-              pointer-events-none absolute inset-0 -z-10
-              opacity-0 transition-opacity
-              group-data-[active=true]:opacity-100
-              bg-linear-to-l from-blue-600/50 via-transparent to-transparent
-            "
-                          />
-                        </button>
-                      </PopoverTrigger>
-                    </SidebarMenuButton>
-
-                    <PopoverContent
-                      align="start"
-                      side="right"
-                      className="w-48 rounded-lg p-2"
-                    >
-                      <ThemeButtons />
-                    </PopoverContent>
-                  </Popover>
-                </SidebarMenu>
-              )}
 
               {/* HELP & SUPPORT */}
               {(!searchQuery || matchesHelp) && (

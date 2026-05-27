@@ -480,20 +480,18 @@ export const DashboardProjects = ({
               {/* Folder SVG Background */}
               <svg
                 viewBox="109.7 58.4 230.6 191.4"
-                className="absolute inset-0 w-full h-full filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.4)] transition-transform duration-300 group-hover:scale-[1.015]"
+                className="absolute inset-0 w-full h-full filter drop-shadow-[0_4px_12px_rgba(0,0,0,0.08)] dark:drop-shadow-[0_4px_12px_rgba(0,0,0,0.4)] transition-transform duration-300 group-hover:scale-[1.015]"
                 preserveAspectRatio="none"
               >
                 {/* Back part of folder */}
                 <path
-                  fill="#22222a"
-                  stroke="rgba(255,255,255,0.06)"
+                  className="fill-[#e4e4e7] dark:fill-[#22222a] stroke-black/5 dark:stroke-white/5"
                   strokeWidth="1"
                   d="M 109.789062 112.761719 L 109.789062 79.15625 C 109.789062 67.703125 119.070312 58.421875 130.523438 58.421875 L 175.066406 58.421875 C 179.457031 58.421875 183.734375 59.8125 187.28125 62.398438 L 206.675781 76.535156 L 319.476562 76.535156 C 330.925781 76.535156 340.210938 85.816406 340.210938 97.269531 L 340.210938 112.761719 L 109.789062 112.761719"
                 />
                 {/* Front pocket of folder */}
                 <path
-                  fill="#15151a"
-                  stroke="rgba(255,255,255,0.06)"
+                  className="fill-[#f4f4f5] dark:fill-[#15151a] stroke-black/5 dark:stroke-white/5"
                   strokeWidth="1"
                   d="M 319.476562 90.4375 L 130.523438 90.4375 C 119.070312 90.4375 109.789062 99.71875 109.789062 111.171875 L 109.789062 228.933594 C 109.789062 240.382812 119.070312 249.667969 130.523438 249.667969 L 319.476562 249.667969 C 330.925781 249.667969 340.210938 240.382812 340.210938 228.933594 L 340.210938 111.171875 C 340.210938 99.71875 330.925781 90.4375 319.476562 90.4375"
                 />
