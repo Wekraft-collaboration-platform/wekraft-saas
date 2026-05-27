@@ -450,12 +450,12 @@ export default function DashboardPage() {
                 <GettingStartedChecklist />
 
                 {isGettingStartedCompleted && (
-                  <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-sidebar/40 shrink-0">
+                  <div className="flex items-center justify-between px-4 py-3 border-b border-border dark:bg-muted bg-accent/80 shrink-0">
                     <div className="flex items-center gap-2">
-                      <Bell className="h-4 w-4 text-white/80" />
-                      <span className="text-sm font-semibold text-white">Notifications</span>
+                      <Bell className="h-4 w-4 text-primary" />
+                      <span className="text-sm font-semibold text-primary">Notifications</span>
                     </div>
-                    <span className="text-xs font-medium text-neutral-300 bg-neutral-800 px-2 py-0.5 rounded-full border border-neutral-700/50">
+                    <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/10">
                       Total: {notifications?.length ?? 0}
                     </span>
                   </div>

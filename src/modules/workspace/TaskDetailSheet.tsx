@@ -401,9 +401,9 @@ export const TaskDetailSheet = ({
             </div>
 
             {/* Stats Panel */}
-            <div className="border border-neutral-800 rounded-lg bg-neutral-900/10 overflow-hidden">
+            <div className="border border-neutral-200 dark:border-neutral-800 rounded-lg bg-neutral-100/50 dark:bg-neutral-900/10 overflow-hidden">
               {/* Row 1: Duration */}
-              <div className="grid grid-cols-[100px_1fr] items-center px-4 py-3 border-b border-neutral-800">
+              <div className="grid grid-cols-[100px_1fr] items-center px-4 py-3 border-b border-neutral-200 dark:border-neutral-800">
                 <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
                   <Calendar size={14} className="text-muted-foreground/80" /> Duration
                 </div>
@@ -420,14 +420,14 @@ export const TaskDetailSheet = ({
               </div>
 
               {/* Row 2: Status & Assignee */}
-              <div className="grid grid-cols-2 divide-x divide-neutral-800">
+              <div className="grid grid-cols-2 divide-x divide-neutral-200 dark:divide-neutral-800">
                 {/* Status */}
                 <div className="px-4 py-3 space-y-2">
                   <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
                     <Clock size={14} className="text-muted-foreground/80" /> Status
                   </div>
                   <div className="flex items-center">
-                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] bg-neutral-900 border border-neutral-800 text-neutral-300 capitalize">
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-300 capitalize">
                       {statusIconsNoColors[currentTask.status] || (
                         <Circle size={10} />
                       )}
@@ -452,16 +452,16 @@ export const TaskDetailSheet = ({
                                 {currentTask.assignees.map((person, i) => (
                                   <Avatar
                                     key={i}
-                                    className="w-6.5 h-6.5 border-2 border-neutral-900 shadow-sm"
+                                    className="w-6.5 h-6.5 border-2 border-white dark:border-neutral-900 shadow-sm"
                                   >
                                     <AvatarImage src={person.avatar} />
-                                    <AvatarFallback className="text-[10px] bg-neutral-800 text-neutral-400">
+                                    <AvatarFallback className="text-[10px] bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400">
                                       {person.name[0]}
                                     </AvatarFallback>
                                   </Avatar>
                                 ))}
                               </div>
-                              <div className="w-6 h-6 rounded-full border border-neutral-800 bg-neutral-800/30 hover:bg-neutral-800 flex items-center justify-center text-neutral-400 hover:text-neutral-200 transition-colors">
+                              <div className="w-6 h-6 rounded-full border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-800/30 hover:bg-neutral-200 dark:hover:bg-neutral-800 flex items-center justify-center text-neutral-600 dark:text-neutral-400 hover:text-neutral-800 dark:hover:text-neutral-200 transition-colors">
                                 <Plus size={10} />
                               </div>
                             </div>
@@ -520,7 +520,7 @@ export const TaskDetailSheet = ({
               </div>
 
               {/* Row 3: Priority & Codebase Link */}
-              <div className="grid grid-cols-2 divide-x divide-neutral-800 border-t border-neutral-800">
+              <div className="grid grid-cols-2 divide-x divide-neutral-200 dark:divide-neutral-800 border-t border-neutral-200 dark:border-neutral-800">
                 {/* Priority */}
                 <div className="px-4 py-3 space-y-4">
                   <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
@@ -582,7 +582,7 @@ export const TaskDetailSheet = ({
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center gap-2 border border-neutral-800 bg-neutral-900/5 rounded-xl p-3 text-muted-foreground text-xs">
+                <div className="flex items-center gap-2 border border-neutral-200 dark:border-neutral-800 bg-neutral-100/50 dark:bg-neutral-900/5 rounded-xl p-3 text-muted-foreground text-xs">
                   <CalendarClock size={14} className="text-muted-foreground/80" />
                   <span>Last updated:</span>
                   <span className="text-primary/95 ml-1">
@@ -613,14 +613,14 @@ export const TaskDetailSheet = ({
 
                 <TabsContent value="description" className="pt-4">
                   {currentTask.description ? (
-                    <div className="p-5 rounded-xl bg-neutral-950/10 border border-neutral-800 group">
+                    <div className="p-5 rounded-xl bg-neutral-100/50 dark:bg-neutral-950/10 border border-neutral-200 dark:border-neutral-800 group">
                       <p className="text-foreground/90 text-sm leading-relaxed whitespace-pre-wrap min-h-[100px] selection:bg-primary/20">
                         {currentTask.description}
                       </p>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center justify-center p-8 border border-dashed border-neutral-800 rounded-xl bg-neutral-950/5">
-                      <div className="p-3 rounded-full bg-neutral-900 text-muted-foreground transition-all duration-300">
+                    <div className="flex flex-col items-center justify-center p-8 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-xl bg-neutral-100/30 dark:bg-neutral-950/5">
+                      <div className="p-3 rounded-full bg-neutral-100 dark:bg-neutral-900 text-muted-foreground transition-all duration-300">
                         <FileText size={24} />
                       </div>
                       <p className="mt-4 text-sm font-medium text-foreground/70">
@@ -648,7 +648,7 @@ export const TaskDetailSheet = ({
                         {currentTask.attachments.map((file, idx) => (
                           <div
                             key={idx}
-                            className="flex items-center justify-between bg-accent/20 border border-[#333] rounded-xl px-4 py-2 group hover:border-blue-500/50 transition-all duration-200"
+                            className="flex items-center justify-between bg-neutral-50 dark:bg-accent/20 border border-neutral-200 dark:border-[#333] rounded-xl px-4 py-2 group hover:border-blue-500/50 transition-all duration-200"
                           >
                             <div className="flex items-center gap-3 overflow-hidden">
                               <Image

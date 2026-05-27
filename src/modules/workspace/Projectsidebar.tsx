@@ -410,7 +410,7 @@ export default function ProjectSidebar() {
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
                   <CollapsibleContent>
-                    <SidebarMenuSub className="border-l border-dashed dark:border-accent border-muted-foreground ml-[21px] pl-3 gap-1.5">
+                    <SidebarMenuSub className="border-l border-dashed dark:border-neutral-400! border-muted-foreground ml-[21px] pl-3 gap-1.5">
                       {/* Keyboard shortcut indicator */}
                       <div className="flex items-center justify-between px-2.5 py-1 text-[10px] bg-muted rounded-md text-muted-foreground select-none">
                         <span>Toggle AI Assistant</span>
@@ -619,7 +619,7 @@ export default function ProjectSidebar() {
                         </SidebarMenuButton>
                       </CollapsibleTrigger>
                       <CollapsibleContent>
-                        <SidebarMenuSub className="border-l border-dashed dark:border-accent border-muted-foreground ml-[21px] pl-3 gap-1.5">
+                        <SidebarMenuSub className="border-l border-dashed dark:border-neautral-400! border-muted-foreground ml-[21px] pl-3 gap-1.5">
                           {filteredCollapsibleItems.map((item) => {
                             const href = `/dashboard/my-projects/${slug}/${item.path}`;
                             const active = isActive(href);
