@@ -491,6 +491,8 @@ export default defineSchema({
     .index("by_recipient", ["recipientId", "createdAt"])
     .index("by_recipient_unread", ["recipientId", "isRead"]),
 
+
+  // -------------------Support----------------
   supportQueries: defineTable({
     title: v.string(),
     reason: v.string(),
