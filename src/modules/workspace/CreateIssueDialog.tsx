@@ -231,8 +231,8 @@ export const CreateIssueDialog = ({
   return (
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
-      <DialogContent className="w-full max-w-[800px] h-full max-h-[560px] flex flex-col dark:bg-[#1c1c1c] border-[#2b2b2b] p-0 overflow-hidden dark:text-neutral-200">
-        <DialogHeader className="p-4 flex flex-row items-center gap-2 border-b border-[#2b2b2b] shrink-0">
+      <DialogContent className="w-full max-w-[800px] h-full max-h-[560px] flex flex-col bg-card dark:bg-[#1c1c1c] border-neutral-300 dark:border-[#2b2b2b] p-0 overflow-hidden text-foreground dark:text-neutral-200">
+        <DialogHeader className="p-4 flex flex-row items-center gap-2 border-b border-neutral-200 dark:border-[#2b2b2b] shrink-0">
           <div className="flex items-center gap-1.5 text-xs text-neutral-400 font-medium">
             <div className="w-3 h-3 rounded-full bg-blue-600 flex items-center justify-center text-[10px] text-white"></div>
             <span className="text-sm">{projectName}</span>
@@ -248,7 +248,7 @@ export const CreateIssueDialog = ({
               placeholder="Issue title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="text-base font-medium border bg-transparent p-2 focus-visible:ring-0 placeholder:text-neutral-600"
+              className="text-base font-medium border bg-neutral-100/60 dark:bg-neutral-900 p-2 focus-visible:ring-0 placeholder:text-neutral-600"
             />
           </div>
 
@@ -263,8 +263,8 @@ export const CreateIssueDialog = ({
                   variant="outline"
                   size="sm"
                   className={cn(
-                    "h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
-                    status && "text-blue-400 border-blue-900/40 bg-blue-900/10",
+                    "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
+                    status && "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
                   )}
                 >
                   {status ? (
@@ -275,7 +275,7 @@ export const CreateIssueDialog = ({
                   <span className="capitalize">{status || "Status"}</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200 ">
+              <DropdownMenuContent className="bg-popover dark:bg-[#1c1c1c] border-neutral-200 dark:border-[#2b2b2b] text-foreground dark:text-neutral-200 ">
                 <div className="text-xs text-center font-medium p-2 border-b border-accent">
                   Select Status
                 </div>
@@ -301,9 +301,9 @@ export const CreateIssueDialog = ({
                   variant="outline"
                   size="sm"
                   className={cn(
-                    "h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
+                    "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
                     severity &&
-                      "text-blue-400 border-blue-900/40 bg-blue-900/10",
+                    "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
                   )}
                 >
                   {severity ? (
@@ -314,7 +314,7 @@ export const CreateIssueDialog = ({
                   <span className="capitalize">{severity || "Severity"}</span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200">
+              <DropdownMenuContent className="bg-popover dark:bg-[#1c1c1c] border-neutral-200 dark:border-[#2b2b2b] text-foreground dark:text-neutral-200">
                 <div className="text-xs text-center font-medium p-2 border-b border-accent">
                   Select Severity
                 </div>
@@ -338,9 +338,9 @@ export const CreateIssueDialog = ({
                   variant="outline"
                   size="sm"
                   className={cn(
-                    "h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
+                    "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
                     environment &&
-                      "text-blue-400 border-blue-900/40 bg-blue-900/10",
+                    "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
                   )}
                 >
                   {environment ? (
@@ -353,7 +353,7 @@ export const CreateIssueDialog = ({
                   </span>
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent className="bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200">
+              <DropdownMenuContent className="bg-popover dark:bg-[#1c1c1c] border-neutral-200 dark:border-[#2b2b2b] text-foreground dark:text-neutral-200">
                 <div className="text-xs text-center font-medium p-2 border-b border-accent">
                   Select Environment
                 </div>
@@ -379,9 +379,9 @@ export const CreateIssueDialog = ({
                   variant="outline"
                   size="sm"
                   className={cn(
-                    "h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
+                    "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
                     dueDate &&
-                      "text-blue-400 border-blue-900/40 bg-blue-900/10",
+                    "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
                   )}
                 >
                   <CalendarIcon className="w-3.5 h-3.5" />
@@ -393,7 +393,7 @@ export const CreateIssueDialog = ({
                 </Button>
               </PopoverTrigger>
               <PopoverContent
-                className="w-auto p-0 bg-[#1c1c1c] border-[#2b2b2b]"
+                className="w-auto p-0 bg-popover dark:bg-[#1c1c1c] border-neutral-200 dark:border-[#2b2b2b]"
                 align="start"
               >
                 <Calendar
@@ -411,7 +411,7 @@ export const CreateIssueDialog = ({
                         : undefined,
                     ].filter(Boolean) as any
                   }
-                  className="bg-[#1c1c1c] text-neutral-200"
+                  className="bg-popover dark:bg-[#1c1c1c] text-foreground dark:text-neutral-200"
                 />
               </PopoverContent>
             </Popover>
@@ -423,16 +423,16 @@ export const CreateIssueDialog = ({
                   variant="outline"
                   size="sm"
                   className={cn(
-                    "h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
+                    "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
                     selectedPath &&
-                      "text-blue-400 border-blue-900/50 bg-blue-900/10",
+                    "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/50 dark:bg-blue-900/10",
                   )}
                 >
                   <Link2 className="w-3.5 h-3.5" />
                   {selectedPath ? selectedPath.split("/").pop() : "Link Code"}
                 </Button>
               </PopoverTrigger>
-              <PopoverContent className="w-[320px] p-0 bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200">
+              <PopoverContent className="w-[320px] p-0 bg-popover dark:bg-[#1c1c1c] border-neutral-200 dark:border-[#2b2b2b] text-foreground dark:text-neutral-200">
                 <GetRepoStructure
                   repoFullName={repoFullName}
                   onSelect={setSelectedPath}
@@ -449,9 +449,9 @@ export const CreateIssueDialog = ({
                   variant="outline"
                   size="sm"
                   className={cn(
-                    "h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-3 gap-1.5 rounded-full text-[11px]",
+                    "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-3 gap-1.5 rounded-full text-[11px]",
                     assignedMembers.length > 0 &&
-                      "text-blue-400 border-blue-900/40 bg-blue-900/10",
+                    "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
                   )}
                 >
                   <User className="w-3.5 h-3.5" />
@@ -462,7 +462,7 @@ export const CreateIssueDialog = ({
               </DropdownMenuTrigger>
               <DropdownMenuContent
                 className={cn(
-                  "bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200",
+                  "bg-popover dark:bg-[#1c1c1c] border-neutral-200 dark:border-[#2b2b2b] text-foreground dark:text-neutral-200",
                   members && members.length >= 4 ? "w-[360px]" : "w-48",
                 )}
               >
@@ -503,7 +503,7 @@ export const CreateIssueDialog = ({
                             ]);
                           }
                         }}
-                        className="flex items-center gap-2 cursor-pointer p-1.5 rounded-md hover:bg-neutral-800 transition-colors"
+                        className="flex items-center gap-2 cursor-pointer p-1.5 rounded-md hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors"
                       >
                         <Avatar className="h-5 w-5 shrink-0">
                           <AvatarImage src={member.userImage} />
@@ -540,9 +540,9 @@ export const CreateIssueDialog = ({
                         variant="outline"
                         size="sm"
                         className={cn(
-                          "h-7 bg-[#252525] border-[#333] hover:bg-[#2b2b2b] text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
+                          "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
                           attachments.length > 0 &&
-                            "text-blue-400 border-blue-900/40 bg-blue-900/10",
+                          "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
                         )}
                         disabled={isUploading || project?.ownerAccountType === "free"}
                         onClick={() => document.getElementById("issue-file-upload")?.click()}
@@ -578,7 +578,7 @@ export const CreateIssueDialog = ({
             placeholder="Add a description, a project brief, or collect ideas..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="h-[220px] overflow-y-scroll bg-transparent border p-2 focus-visible:ring-0 placeholder:text-neutral-600 resize-none text-sm leading-relaxed [field-sizing:normal]"
+            className="h-[220px] overflow-y-scroll bg-neutral-100/60 dark:bg-neutral-900 border p-2 focus-visible:ring-0 placeholder:text-neutral-600 resize-none text-sm leading-relaxed [field-sizing:normal]"
           />
 
           {/* Attachments List */}
@@ -587,7 +587,7 @@ export const CreateIssueDialog = ({
               {attachments.map((file, idx) => (
                 <div
                   key={idx}
-                  className="flex items-center gap-2 bg-[#252525] border border-[#333] rounded-md px-2 py-1 group"
+                  className="flex items-center gap-2 bg-neutral-100 dark:bg-[#252525] border border-neutral-200 dark:border-[#333] rounded-md px-2 py-1 group"
                 >
                   <Image
                     src={getFileIcon(file.name)}
@@ -612,12 +612,12 @@ export const CreateIssueDialog = ({
           )}
         </div>
 
-        <div className="p-4 border-t border-[#2b2b2b] flex items-center justify-end shrink-0">
+        <div className="p-4 border-t border-neutral-200 dark:border-[#2b2b2b] flex items-center justify-end shrink-0">
           <div className="flex items-center gap-3">
             <Button
               variant="ghost"
               onClick={() => setOpen(false)}
-              className="h-8 text-xs text-neutral-400 hover:text-white"
+              className="h-8 text-xs text-neutral-400 hover:text-foreground dark:hover:text-white"
             >
               Cancel
             </Button>

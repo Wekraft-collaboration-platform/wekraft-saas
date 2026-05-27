@@ -80,24 +80,24 @@ interface IssueDetailSheetProps {
 }
 
 const severityConfig: Record<string, { label: string; color: string; bg: string }> = {
-  low: { label: "low", color: "text-blue-400", bg: "bg-blue-500/10 border-blue-400/20" },
-  medium: { label: "medium", color: "text-orange-400", bg: "bg-orange-500/10 border-orange-400/20" },
-  critical: { label: "critical", color: "text-red-500", bg: "bg-red-500/10 border-red-500/20" },
-  none: { label: "none", color: "text-slate-500", bg: "bg-slate-500/10 border-slate-500/20" },
+  low: { label: "low", color: "text-blue-600 dark:text-blue-400", bg: "bg-blue-50 dark:bg-blue-500/10 border-blue-100 dark:border-blue-400/20" },
+  medium: { label: "medium", color: "text-orange-600 dark:text-orange-400", bg: "bg-orange-50 dark:bg-orange-500/10 border-orange-100 dark:border-orange-400/20" },
+  critical: { label: "critical", color: "text-red-600 dark:text-red-500", bg: "bg-red-50 dark:bg-red-500/10 border-red-100 dark:border-red-500/20" },
+  none: { label: "none", color: "text-slate-600 dark:text-slate-500", bg: "bg-slate-50 dark:bg-slate-500/10 border-slate-100 dark:border-slate-500/20" },
 };
 
 const statusColors: Record<string, string> = {
-  "not opened": "bg-neutral-500/15 border-neutral-500/30 text-neutral-400",
-  opened: "bg-blue-500/15 border-blue-500/30 text-blue-400",
-  reopened: "bg-purple-500/15 border-purple-500/30 text-purple-400",
-  closed: "bg-emerald-500/15 border-emerald-500/30 text-emerald-400",
+  "not opened": "bg-neutral-100 dark:bg-neutral-500/15 border-neutral-200 dark:border-neutral-500/30 text-neutral-600 dark:text-neutral-400",
+  opened: "bg-blue-50 dark:bg-blue-500/15 border-blue-100 dark:border-blue-500/30 text-blue-600 dark:text-blue-400",
+  reopened: "bg-purple-50 dark:bg-purple-500/15 border-purple-100 dark:border-purple-500/30 text-purple-600 dark:text-purple-400",
+  closed: "bg-emerald-50 dark:bg-emerald-500/15 border-emerald-100 dark:border-emerald-500/30 text-emerald-600 dark:text-emerald-400",
 };
 
 const envConfig: Record<string, string> = {
-  local: "bg-slate-500/10 text-slate-400 border-slate-400/20",
-  dev: "bg-blue-500/10 text-blue-400 border-blue-400/20",
-  staging: "bg-purple-500/10 text-purple-400 border-purple-400/20",
-  production: "bg-rose-500/10 text-rose-500 border-rose-500/20",
+  local: "bg-slate-50 dark:bg-slate-500/10 text-slate-600 dark:text-slate-400 border border-slate-100 dark:border-slate-400/20",
+  dev: "bg-blue-50 dark:bg-blue-500/10 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-400/20",
+  staging: "bg-purple-50 dark:bg-purple-500/10 text-purple-600 dark:text-purple-400 border border-purple-100 dark:border-purple-400/20",
+  production: "bg-rose-50 dark:bg-rose-500/10 text-rose-600 dark:text-rose-500 border border-rose-100 dark:border-rose-500/20",
 };
 
 export const IssueDetailSheet = ({
@@ -343,7 +343,7 @@ export const IssueDetailSheet = ({
       <SheetContent className="sm:max-w-lg w-full p-0 border-l border-border bg-sidebar">
         <div className="flex flex-col h-full">
           {/* Top Actions */}
-          <div className="flex items-center justify-between px-6 py-4 border-b border-accent">
+          <div className="flex items-center justify-between px-6 py-4 border-b border-neutral-200 dark:border-accent">
             <div className="flex items-center gap-3">
               {project && (
                 <EditIssueDialog
@@ -364,7 +364,7 @@ export const IssueDetailSheet = ({
                 size="sm"
                 className={cn(
                   "text-[10px]",
-                  realIssue.status === "closed" && "text-emerald-400 hover:text-emerald-300 bg-emerald-500/10 border-emerald-500/20"
+                  realIssue.status === "closed" && "text-emerald-600 dark:text-emerald-400 bg-emerald-50/50 dark:bg-emerald-500/10 border-emerald-200 dark:border-emerald-500/20"
                 )}
                 onClick={handleToggleCloseIssue}
                 disabled={isUpdatingStatus}
@@ -427,9 +427,9 @@ export const IssueDetailSheet = ({
             </div>
 
             {/* Stats Panel */}
-            <div className="border border-neutral-800 rounded-lg bg-neutral-900/10 overflow-hidden mt-6">
+            <div className="border border-neutral-200 dark:border-neutral-800 rounded-lg bg-neutral-50 dark:bg-neutral-900/10 overflow-hidden mt-6">
               {/* Row 1: Due Date */}
-              <div className="grid grid-cols-[100px_1fr] items-center px-4 py-3 border-b border-neutral-800">
+              <div className="grid grid-cols-[100px_1fr] items-center px-4 py-3 border-b border-neutral-200 dark:border-neutral-800">
                 <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
                   <Calendar size={14} className="text-muted-foreground/80" /> Due Date
                 </div>
@@ -443,7 +443,7 @@ export const IssueDetailSheet = ({
               </div>
 
               {/* Row 2: Status & Assignee */}
-              <div className="grid grid-cols-2 divide-x divide-neutral-800">
+              <div className="grid grid-cols-2 divide-x divide-neutral-200 dark:divide-neutral-800">
                 {/* Status */}
                 <div className="px-4 py-3 space-y-2">
                   <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
@@ -477,7 +477,7 @@ export const IssueDetailSheet = ({
                                     <Tooltip key={i}>
                                       <TooltipTrigger asChild>
                                         <Avatar
-                                          className="w-6.5 h-6.5 border-2 border-neutral-900 shadow-sm cursor-pointer"
+                                          className="w-6.5 h-6.5 border-2 border-white dark:border-neutral-900 shadow-sm cursor-pointer"
                                         >
                                           <AvatarImage src={person.avatar} />
                                           <AvatarFallback className="text-[10px] bg-neutral-800 text-neutral-400">
@@ -492,7 +492,7 @@ export const IssueDetailSheet = ({
                                   ))}
                                 </TooltipProvider>
                               </div>
-                              <div className="w-6 h-6 rounded-full border border-neutral-800 bg-neutral-800/30 hover:bg-neutral-800 flex items-center justify-center text-neutral-400 hover:text-neutral-200 transition-colors">
+                              <div className="w-6 h-6 rounded-full border border-neutral-200 dark:border-neutral-800 bg-neutral-100/50 dark:bg-neutral-800/30 hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors">
                                 <Plus size={10} />
                               </div>
                             </div>
@@ -551,7 +551,7 @@ export const IssueDetailSheet = ({
               </div>
 
               {/* Row 3: Severity & Environment */}
-              <div className="grid grid-cols-2 divide-x divide-neutral-800 border-t border-neutral-800">
+              <div className="grid grid-cols-2 divide-x divide-neutral-200 dark:divide-neutral-800 border-t border-neutral-200 dark:border-neutral-800">
                 {/* Severity */}
                 <div className="px-4 py-3 space-y-2">
                   <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
@@ -589,7 +589,7 @@ export const IssueDetailSheet = ({
               </div>
 
               {/* Row 4: Link Code */}
-              <div className="grid grid-cols-[100px_1fr] items-center px-4 py-3 border-t border-neutral-800">
+              <div className="grid grid-cols-[100px_1fr] items-center px-4 py-3 border-t border-neutral-200 dark:border-neutral-800">
                 <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
                   <GitBranch size={14} className="text-muted-foreground/80" /> Link Code
                 </div>
@@ -619,7 +619,7 @@ export const IssueDetailSheet = ({
 
             <div className="mt-4">
               {realIssue.status === "closed" ? (
-                <div className="flex items-center justify-between bg-emerald-950/10 border border-emerald-900/30 rounded-xl p-3.5 shadow-sm transition-all duration-300">
+                <div className="flex items-center justify-between bg-emerald-50 dark:bg-emerald-950/10 border border-emerald-100 dark:border-emerald-900/30 rounded-xl p-3.5 shadow-sm transition-all duration-300">
                   <p className="text-xs text-muted-foreground flex items-center">
                     <Check size={14} className="mr-2 text-emerald-500" />
                     Resolved at:
@@ -629,21 +629,21 @@ export const IssueDetailSheet = ({
                         : format(realIssue.updatedAt, "d MMMM, yyyy")}
                     </span>
                   </p>
-                  <div className="flex items-center gap-2 border-l border-neutral-800 pl-4 shrink-0">
+                  <div className="flex items-center gap-2 border-l border-neutral-200 dark:border-neutral-800 pl-4 shrink-0">
                     <span className="text-[10px] text-muted-foreground">By:</span>
-                    <Avatar className="w-6 h-6 border border-neutral-800">
+                    <Avatar className="w-6 h-6 border border-neutral-200 dark:border-neutral-800">
                       <AvatarImage src={completer?.avatarUrl || ""} />
-                      <AvatarFallback className="text-[9px] bg-neutral-800 text-neutral-400 font-bold">
+                      <AvatarFallback className="text-[9px] bg-neutral-100 dark:bg-neutral-800 text-neutral-600 dark:text-neutral-400 font-bold">
                         {completer?.name?.[0]?.toUpperCase() || "?"}
                       </AvatarFallback>
                     </Avatar>
-                    <span className="text-xs text-neutral-300 truncate max-w-[100px]">
+                    <span className="text-xs text-neutral-700 dark:text-neutral-300 truncate max-w-[100px]">
                       {completer?.name || "Loading..."}
                     </span>
                   </div>
                 </div>
               ) : (
-                <div className="flex items-center gap-2 border border-neutral-800 bg-neutral-900/5 rounded-xl p-3 text-muted-foreground text-xs">
+                <div className="flex items-center gap-2 border border-neutral-200 dark:border-neutral-800 bg-neutral-50 dark:bg-neutral-900/5 rounded-xl p-3 text-muted-foreground text-xs">
                   <CalendarClock size={14} className="text-muted-foreground/80" />
                   <span>Last updated:</span>
                   <span className="text-primary/95 ml-1">
@@ -670,14 +670,14 @@ export const IssueDetailSheet = ({
 
                 <TabsContent value="description" className="pt-4">
                   {realIssue.description ? (
-                    <div className="p-5 rounded-xl bg-neutral-950/10 border border-neutral-800 group">
+                    <div className="p-5 rounded-xl bg-neutral-50 dark:bg-neutral-950/10 border border-neutral-200 dark:border-neutral-800 group">
                       <p className="text-foreground/90 text-sm leading-relaxed whitespace-pre-wrap min-h-[100px] selection:bg-primary/20">
                         {realIssue.description}
                       </p>
                     </div>
                   ) : (
-                    <div className="flex flex-col items-center justify-center p-8 border border-dashed border-neutral-800 rounded-xl bg-neutral-950/5">
-                      <div className="p-3 rounded-full bg-neutral-900 text-muted-foreground transition-all duration-300">
+                    <div className="flex flex-col items-center justify-center p-8 border border-dashed border-neutral-200 dark:border-neutral-800 rounded-xl bg-neutral-50 dark:bg-neutral-950/5">
+                      <div className="p-3 rounded-full bg-neutral-100 dark:bg-neutral-900 text-muted-foreground transition-all duration-300">
                         <FileText size={24} />
                       </div>
                       <p className="mt-4 text-sm font-medium text-foreground/70">
@@ -697,7 +697,7 @@ export const IssueDetailSheet = ({
                         {realIssue.attachments.map((file: any, idx: number) => (
                           <div
                             key={idx}
-                            className="flex items-center justify-between bg-accent/20 border border-[#333] rounded-xl px-4 py-2 group hover:border-blue-500/50 transition-all duration-200"
+                            className="flex items-center justify-between bg-accent/20 border border-neutral-200 dark:border-[#333] rounded-xl px-4 py-2 group hover:border-blue-500/50 transition-all duration-200"
                           >
                             <div className="flex items-center gap-3 overflow-hidden">
                               <Image
@@ -863,7 +863,7 @@ export const IssueDetailSheet = ({
                         ))}
                       </div>
                     ) : (
-                      <div className="flex flex-col items-center border border-dashed border-accent p-10 rounded-2xl justify-center text-center bg-accent/10">
+                      <div className="flex flex-col items-center border border-dashed border-neutral-200 dark:border-accent p-10 rounded-2xl justify-center text-center bg-neutral-50 dark:bg-accent/10">
                         <div className="p-3 rounded-full bg-muted/50 text-muted-foreground/40 group-hover:scale-110 transition-transform">
                           <MessagesSquare className="w-7 h-7" />
                         </div>

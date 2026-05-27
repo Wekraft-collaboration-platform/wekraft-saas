@@ -180,10 +180,10 @@ export const EditTaskDialog = ({
         assignees:
           assignedMembers.length > 0
             ? assignedMembers.map((a) => ({
-                userId: a.userId,
-                name: a.name,
-                avatar: a.avatar,
-              }))
+              userId: a.userId,
+              name: a.name,
+              avatar: a.avatar,
+            }))
             : undefined,
         attachments: attachments.length > 0 ? attachments : undefined,
       });
@@ -275,7 +275,7 @@ export const EditTaskDialog = ({
               placeholder="Task title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="text-base font-medium border bg-transparent p-2 focus-visible:ring-0 placeholder:text-neutral-600"
+              className="text-base font-medium border bg-neutral-100/60 dark:bg-neutral-900 p-2 focus-visible:ring-0 placeholder:text-neutral-600"
             />
           </div>
 
@@ -352,7 +352,7 @@ export const EditTaskDialog = ({
                   className={cn(
                     "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-3 gap-1.5 rounded-full text-[11px]",
                     assignedMembers.length > 0 &&
-                      "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
+                    "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
                   )}
                 >
                   <User className="w-3.5 h-3.5" />
@@ -439,7 +439,7 @@ export const EditTaskDialog = ({
                   className={cn(
                     "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
                     date?.from &&
-                      "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
+                    "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
                   )}
                 >
                   <Clock className="w-3.5 h-3.5" />
@@ -495,7 +495,7 @@ export const EditTaskDialog = ({
                         className={cn(
                           "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
                           attachments.length > 0 &&
-                            "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
+                          "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
                         )}
                         disabled={
                           isUploading || project?.ownerAccountType === "free"
@@ -564,14 +564,14 @@ export const EditTaskDialog = ({
                             ? "ring-1 ring-white/50"
                             : "opacity-70 hover:opacity-100",
                           t.color === "green" &&
-                            "bg-emerald-500/20 text-emerald-400",
+                          "bg-emerald-500/20 text-emerald-400",
                           t.color === "yellow" &&
-                            "bg-yellow-500/20 text-yellow-400",
+                          "bg-yellow-500/20 text-yellow-400",
                           t.color === "purple" &&
-                            "bg-purple-500/20 text-purple-400",
+                          "bg-purple-500/20 text-purple-400",
                           t.color === "blue" && "bg-blue-500/20 text-blue-400",
                           t.color === "grey" &&
-                            "bg-neutral-500/20 text-neutral-400",
+                          "bg-neutral-500/20 text-neutral-400",
                         )}
                       >
                         {t.label}
@@ -593,15 +593,15 @@ export const EditTaskDialog = ({
                         className={cn(
                           "text-[10px] py-0 px-2 h-5 gap-1 border-none font-medium capitalize",
                           tag.color === "green" &&
-                            "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30",
+                          "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30",
                           tag.color === "yellow" &&
-                            "bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30",
+                          "bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30",
                           tag.color === "purple" &&
-                            "bg-purple-500/20 text-purple-400 hover:bg-purple-500/30",
+                          "bg-purple-500/20 text-purple-400 hover:bg-purple-500/30",
                           tag.color === "blue" &&
-                            "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30",
+                          "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30",
                           tag.color === "grey" &&
-                            "bg-neutral-500/20 text-neutral-400 hover:bg-neutral-500/30",
+                          "bg-neutral-500/20 text-neutral-400 hover:bg-neutral-500/30",
                         )}
                       >
                         {tag.label}
@@ -717,7 +717,7 @@ export const EditTaskDialog = ({
                   className={cn(
                     "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
                     selectedPath &&
-                      "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/50 dark:bg-blue-900/10",
+                    "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/50 dark:bg-blue-900/10",
                   )}
                 >
                   <Link2 className="w-3.5 h-3.5" />
@@ -739,7 +739,7 @@ export const EditTaskDialog = ({
             placeholder="Add a description, a project brief, or collect ideas..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="h-[180px] overflow-y-scroll bg-transparent border p-2 focus-visible:ring-0 placeholder:text-neutral-600 resize-none text-sm leading-relaxed"
+            className="h-[180px] overflow-y-scroll bg-neutral-100/60 dark:bg-neutral-900 border p-2 focus-visible:ring-0 placeholder:text-neutral-600 resize-none text-sm leading-relaxed"
           />
 
           {/* Attachments List */}

@@ -218,7 +218,7 @@ const SprintPage = () => {
               alt="Empty Workspace"
               width={100}
               height={100}
-              className=""
+              className="dark:invert-0 invert"
             />
 
             <div className="space-y-1.5">

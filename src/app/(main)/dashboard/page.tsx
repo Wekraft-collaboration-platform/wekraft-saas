@@ -616,7 +616,7 @@ export default function DashboardPage() {
                   src='/pat106.svg'
                   height="100"
                   width='100'
-                  className="flex items-center justify-center mx-auto"
+                  className="flex items-center justify-center mx-auto dark:invert-0 invert"
                   alt="Discover" />
                 <h3 className="text-xl font-bold tracking-tight text-foreground/90">
                   Explore Community Creations

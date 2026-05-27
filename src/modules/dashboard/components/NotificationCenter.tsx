@@ -118,14 +118,7 @@ function NotificationItem({
         <p className="text-[11px] leading-relaxed text-foreground font-normal">
           {renderNotificationBody(notif.body)}
         </p>
-        {/* {notif.entityTitle && (
-          <p className="text-[10px] text-muted-foreground/60 mt-1 font-mono flex items-center gap-1.5">
-            <span className="text-[8px] opacity-40">↳</span>
-            <span className="truncate bg-muted/65 px-1.5 py-0.5 rounded border border-border/20">
-              {notif.entityTitle}
-            </span>
-          </p>
-        )} */}
+
       </div>
 
       {/* Action panel (Floating on hover - Linear Style) */}

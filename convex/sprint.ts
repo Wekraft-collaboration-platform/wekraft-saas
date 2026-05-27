@@ -414,7 +414,17 @@ export const getBacklogTasks = query({
       .collect();
 
     // Only backlog tasks: no sprintId AND not completed
-    return tasks.filter((t) => !t.sprintId && t.status !== "completed");
+    const backlogTasks = tasks.filter((t) => !t.sprintId && t.status !== "completed");
+
+    return await Promise.all(
+      backlogTasks.map(async (task) => {
+        const assignees = await ctx.db
+          .query("taskAssignees")
+          .withIndex("by_task", (q) => q.eq("taskId", task._id))
+          .collect();
+        return { ...task, assignees };
+      }),
+    );
   },
 });
 
@@ -431,7 +441,17 @@ export const getBacklogIssues = query({
       .collect();
 
     // Only backlog issues: no sprintId AND not closed
-    return issues.filter((i) => !i.sprintId && i.status !== "closed");
+    const backlogIssues = issues.filter((i) => !i.sprintId && i.status !== "closed");
+
+    return await Promise.all(
+      backlogIssues.map(async (issue) => {
+        const assignees = await ctx.db
+          .query("issueAssignees")
+          .withIndex("by_issue", (q) => q.eq("issueId", issue._id))
+          .collect();
+        return { ...issue, IssueAssignee: assignees };
+      }),
+    );
   },
 });
 

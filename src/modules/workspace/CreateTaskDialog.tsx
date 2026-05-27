@@ -272,7 +272,7 @@ export const CreateTaskDialog = ({
               placeholder="Task title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}
-              className="text-base font-medium border bg-transparent p-2 focus-visible:ring-0 placeholder:text-neutral-600"
+              className="text-base font-medium border bg-neutral-100/60 dark:bg-neutral-900 p-2 focus-visible:ring-0 placeholder:text-neutral-600"
             />
           </div>
 
@@ -729,7 +729,7 @@ export const CreateTaskDialog = ({
             placeholder="Add a description, a project brief, or collect ideas..."
             value={description}
             onChange={(e) => setDescription(e.target.value)}
-            className="h-[180px] overflow-y-scroll bg-transparent border p-2 focus-visible:ring-0 placeholder:text-neutral-600 resize-none text-sm leading-relaxed"
+            className="h-[180px] overflow-y-scroll bg-neutral-100/60 dark:bg-neutral-900 border p-2 focus-visible:ring-0 placeholder:text-neutral-600 resize-none text-sm leading-relaxed"
           />
 
           {/* Attachments List */}

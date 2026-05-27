@@ -81,7 +81,7 @@ export default function WorkspaceLayout({
             alt="Access Denied"
             width={100}
             height={100}
-            className="w-24 h-24 mx-auto"
+            className="w-24 h-24 mx-auto dark:invert-0 invert"
           />
           <h1 className="text-2xl font-semibold tracking-tight text-foreground">
             Access Denied
