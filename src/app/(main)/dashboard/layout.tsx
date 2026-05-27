@@ -2,7 +2,7 @@
 
 import { RedirectToSignIn } from "@clerk/nextjs";
 import { Authenticated, Unauthenticated, useQuery } from "convex/react";
-import { BugPlay, Home, Moon, Share2, SunMedium, Video } from "lucide-react";
+import { BugPlay, Home, Moon, Share2, SunMedium, Video, HelpCircle } from "lucide-react";
 import Link from "next/link";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -19,6 +19,7 @@ import { DashboardBreadcrumbs } from "@/modules/dashboard/components/HeaderCrumb
 import { NotificationCenter } from "@/modules/dashboard/components/NotificationCenter";
 import { ShareProjectDialog } from "@/modules/dashboard/components/ShareProjectDialog";
 import { UserMenu } from "@/modules/dashboard/components/UserMenu";
+import { HelpSupportDialog } from "@/modules/dashboard/components/HelpSupportDialog";
 import { api } from "../../../../convex/_generated/api";
 import {
   Tooltip,
@@ -46,6 +47,7 @@ export default function Layout({
 
   const [mounted, setMounted] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
 
   useEffect(() => {
     setMounted(true);
@@ -92,6 +94,20 @@ export default function Layout({
                 <div className="flex items-center gap-3">
                   <TooltipProvider>
                     <NotificationCenter />
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          size="icon-sm"
+                          variant="outline"
+                          onClick={() => setIsHelpOpen(true)}
+                          aria-label="Help & Support"
+                          className="cursor-pointer hover:scale-105 transition-all duration-200"
+                        >
+                          <HelpCircle className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Help & Support</TooltipContent>
+                    </Tooltip>
                     {/* Only when workspace ! */}
                     {isWorkspaceRoute && (
                       <>
@@ -142,6 +158,7 @@ export default function Layout({
               projectSlug={slug}
             />
           )}
+          <HelpSupportDialog open={isHelpOpen} onOpenChange={setIsHelpOpen} />
         </SidebarProvider>
       </Authenticated>
     </div>

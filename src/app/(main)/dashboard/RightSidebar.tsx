@@ -127,10 +127,10 @@ export default function RightSidebar({
           <div className="flex flex-col gap-6 w-full h-[calc(100vh-80px)]">
 
             {/* Card 1: Upgrade Promotion / Plan Details */}
-            <div className="relative overflow-hidden bg-linear-to-br dark:from-black/75 from-white to-blue-700/60 dark:text-white text-black border-accent rounded-xl p-4.5 flex flex-col justify-between shadow-lg flex-1 min-h-0 text-left">
+            <div className="relative overflow-hidden bg-linear-to-br dark:from-black/75 from-white to-blue-700/60  border-accent rounded-xl p-4.5 flex flex-col justify-between shadow-lg flex-1 min-h-0 text-left">
               <div className="space-y-3.5 z-10">
                 <div className="flex items-center justify-between">
-                  <span className="text-[10px] font-bold uppercase tracking-widest bg-white/20 px-2 py-0.5 rounded-full">
+                  <span className="text-xs text-white/80 bg-white/20 px-2 py-0.5 rounded-full">
                     Current Plan: {currentUser?.accountType ? currentUser.accountType.charAt(0).toUpperCase() + currentUser.accountType.slice(1) : "Free"}
                   </span>
                 </div>
