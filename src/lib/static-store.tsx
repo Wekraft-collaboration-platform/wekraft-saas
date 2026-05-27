@@ -304,6 +304,7 @@ export const NOTIFICATION_ICONS: Record<string, React.ComponentType<any>> = {
   request_rejected: XCircle,
   role_changed: UserCog,
   mentioned: MessageSquare,
+  project_alert: AlertCircle,
 };
 
 export function getNotificationRedirectUrl(notif: {
@@ -341,6 +342,7 @@ export function getNotificationRedirectUrl(notif: {
         return `${workspaceBase}/tasks`;
       }
 
+    case "project_alert":
     case "request_accepted":
     case "member_joined":
       return workspaceBase;

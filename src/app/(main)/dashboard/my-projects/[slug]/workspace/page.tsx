@@ -56,6 +56,7 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Progress } from "@/components/ui/progress";
 import { Separator } from "@/components/ui/separator";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -105,6 +106,7 @@ const ProjectWorkspace = () => {
   );
 
   // const updateDeadline = useMutation(api.projectDetails.updateTargetDate);
+  const updateProjectAlerts = useMutation(api.projectDetails.updateProjectAlerts);
 
   const tasks = useQuery(
     api.workspace.getTimelineTasks,
@@ -131,6 +133,28 @@ const ProjectWorkspace = () => {
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [projectId, activeTab]);
+
+  const handleToggleAlert = async (percent: number, checked: boolean) => {
+    if (!projectId) return;
+
+    const currentAlerts = projectDetails?.alerts || [];
+    let newAlerts: number[];
+    if (checked) {
+      newAlerts = [...currentAlerts, percent].sort((a, b) => a - b);
+    } else {
+      newAlerts = currentAlerts.filter((a) => a !== percent);
+    }
+
+    try {
+      await updateProjectAlerts({
+        projectId: projectId as Id<"projects">,
+        alerts: newAlerts,
+      });
+      toast.success(`Alert for ${percent}% duration updated!`);
+    } catch (e) {
+      toast.error("Failed to update project alerts");
+    }
+  };
 
   const handleRefresh = async () => {
     if (!projectId) return;
@@ -257,10 +281,38 @@ const ProjectWorkspace = () => {
                 {daysRemaining} Days
               </p>
             </div>
-            <Progress
-              value={calculateProgress()}
-              className="h-4! bg-blue-100/50 dark:bg-accent [&>div]:bg-blue-500 transition-all duration-500"
-            />
+            <div className="relative my-4">
+              <Progress
+                value={calculateProgress()}
+                className="h-3 bg-blue-100/50 dark:bg-accent [&>div]:bg-blue-500 transition-all duration-500"
+              />
+              {/* Alert Markers */}
+              {deadline && projectDetails?.alerts?.map((percent) => {
+                const progress = calculateProgress();
+                const isPassed = progress >= percent;
+                return (
+                  <div
+                    key={percent}
+                    className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 group"
+                    style={{ left: `${percent}%` }}
+                  >
+                    {/* Tooltip on hover */}
+                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:block bg-popover border border-border text-[9px] font-semibold text-popover-foreground px-1.5 py-0.5 rounded shadow-md whitespace-nowrap z-50">
+                      Alert set at {percent}%
+                    </div>
+                    {/* Tiny circle indicator */}
+                    <div
+                      className={cn(
+                        "w-2.5 h-2.5 rounded-full border-2 transition-all duration-300",
+                        isPassed
+                          ? "bg-blue-500 border-background dark:border-sidebar ring-1 ring-blue-500 scale-110"
+                          : "bg-background dark:bg-sidebar border-muted-foreground/60 hover:border-blue-400"
+                      )}
+                    />
+                  </div>
+                );
+              })}
+            </div>
           </CardContent>
           <CardFooter className="flex flex-col items-start gap-3 border-t pt-5! px-2!">
             <div className="flex flex-col gap-4 w-full">
@@ -310,9 +362,9 @@ const ProjectWorkspace = () => {
                   Set Deadline <ClockFading className="w-3 h-3!" />
                 </Button>
 
-                {/* Alerts Dropdown Button */}
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
+                {/* Alerts Popover Button */}
+                <Popover>
+                  <PopoverTrigger asChild>
                     <Button
                       size="sm"
                       variant="outline"
@@ -326,17 +378,58 @@ const ProjectWorkspace = () => {
                     >
                       Set Alerts <AlertCircle className="w-3 h-3!" />
                     </Button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-60">
-                    <DropdownMenuLabel className="text-sm  text-center">
-                      Project Alerts
-                    </DropdownMenuLabel>
-                    <DropdownMenuSeparator />
-                    <div className="h-20 flex items-center justify-center">
-                      Coming soon....
-                    </div>
-                  </DropdownMenuContent>
-                </DropdownMenu>
+                  </PopoverTrigger>
+                  <PopoverContent align="end" className="w-64 p-4 bg-card border border-accent rounded-xl shadow-xl dark:shadow-none">
+                    <h3 className="text-sm font-semibold mb-2 text-center text-foreground flex items-center justify-center gap-1.5">
+                      <AlertCircle className="w-4 h-4 text-primary" /> Project Alerts
+                    </h3>
+                    <Separator className="my-2 bg-accent" />
+                    {!deadline ? (
+                      <div className="text-center py-4 space-y-2">
+                        <AlertCircle className="w-7 h-7 text-amber-500/80 mx-auto" />
+                        <p className="text-[11px] text-muted-foreground leading-normal">
+                          Please set a project deadline first to enable duration alerts.
+                        </p>
+                      </div>
+                    ) : (
+                      <div className="space-y-2 mt-2">
+                        <p className="text-[11px] text-muted-foreground mb-3 leading-normal">
+                          Notify project owner and admins when elapsed project duration passes:
+                        </p>
+                        <div className="space-y-2">
+                          {[25, 50, 75, 90].map((percent) => {
+                            const isChecked = projectDetails?.alerts?.includes(percent) ?? false;
+                            return (
+                              <div
+                                key={percent}
+                                className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/40 transition-colors"
+                              >
+                                <div className="flex items-center gap-2.5">
+                                  <Checkbox
+                                    id={`alert-${percent}`}
+                                    checked={isChecked}
+                                    onCheckedChange={(checked) => {
+                                      handleToggleAlert(percent, !!checked);
+                                    }}
+                                  />
+                                  <label
+                                    htmlFor={`alert-${percent}`}
+                                    className="text-xs font-medium cursor-pointer select-none text-foreground/80 hover:text-foreground"
+                                  >
+                                    {percent}% passes
+                                  </label>
+                                </div>
+                                <span className="text-[10px] font-semibold bg-primary/10 text-primary px-1.5 py-0.5 rounded-md border border-primary/10">
+                                  {percent}%
+                                </span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </PopoverContent>
+                </Popover>
               </div>
 
               {projectId && (
