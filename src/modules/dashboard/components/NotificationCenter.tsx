@@ -186,6 +186,27 @@ export function NotificationCenter() {
     notifications.forEach((n) => {
       if (!prevIds.current.has(n._id)) {
         const IconComponent = NOTIFICATION_ICONS[n.type] ?? Bell;
+
+        let toastIcon: React.ReactNode;
+        if (n.senderAvatar) {
+          toastIcon = (
+            <Avatar className="h-6 w-6 border border-neutral-200 shadow-sm shrink-0">
+              <AvatarImage src={n.senderAvatar} />
+              <AvatarFallback className="text-[10px] font-bold bg-neutral-100 text-neutral-900">
+                {n.senderName?.[0]?.toUpperCase() ?? "?"}
+              </AvatarFallback>
+            </Avatar>
+          );
+        } else if (n.senderName) {
+          toastIcon = (
+            <div className="h-6 w-6 rounded-full bg-neutral-100 text-neutral-900 text-[10px] font-bold border border-neutral-200 flex items-center justify-center shadow-sm shrink-0">
+              {n.senderName[0].toUpperCase()}
+            </div>
+          );
+        } else {
+          toastIcon = <IconComponent className="h-4 w-4 text-neutral-600 shrink-0" />;
+        }
+
         toast(
           <div
             onClick={() => {
@@ -193,18 +214,18 @@ export function NotificationCenter() {
               const url = getNotificationRedirectUrl(n);
               router.push(url);
             }}
-            className="cursor-pointer w-full h-full"
+            className="cursor-pointer w-full h-full text-neutral-900"
           >
             {n.projectName && (
-              <span className="inline-flex items-center gap-1 text-[9.5px] font-semibold text-primary bg-primary/10 px-2 py-0.5 rounded-md border border-primary/20 tracking-wide mb-1.5 shadow-sm">
-                <FolderKanban className="h-3 w-3 text-primary/80 shrink-0" />
+              <span className="inline-flex items-center gap-1.5 text-[10px] font-semibold text-neutral-900 bg-neutral-100 px-2 py-0.5 rounded border border-neutral-200 tracking-wide mb-1.5 shadow-sm">
+                <FolderKanban className="h-3 w-3 text-neutral-600 shrink-0" />
                 <span className="truncate max-w-[180px]">{n.projectName}</span>
               </span>
             )}
-            <div className="text-sm font-normal">{renderNotificationBody(n.body)}</div>
+            <div className="text-sm font-normal text-neutral-800 leading-normal">{renderNotificationBody(n.body)}</div>
           </div>,
           {
-            icon: <IconComponent className="h-4 w-4 text-primary" />,
+            icon: toastIcon,
             duration: 4000,
           },
         );

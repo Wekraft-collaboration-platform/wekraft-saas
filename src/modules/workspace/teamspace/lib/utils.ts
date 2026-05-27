@@ -9,26 +9,15 @@ export function getUserColor(identifier: string) {
 
 export function formatNotificationContent(content: string | undefined, maxLength: number = 50): string {
   if (!content) return "";
-  
-  // Regex to match our S3 media upload markdown format: ![filename](url) or [filename](url)
-  const s3Regex = /^(!?)\[([^\]]+)\]\(((?:blob:)?https?:\/\/[^\s\)]+)\)(?:\s+([\s\S]*))?$/;
-  const match = content.match(s3Regex);
-  
-  let formatted = content;
-  if (match) {
-    const fileName = match[2];
-    const caption = match[4];
-    if (caption) {
-      formatted = `Shared a file "${fileName}": ${caption}`;
-    } else {
-      formatted = `Shared a file: ${fileName}`;
-    }
-  }
-  
+
+  // Replace S3 upload links with 'uploaded doc'
+  const uploadRegex = /!?\[[^\]]+\]\((https?:\/\/[^\s)]+(?:amazonaws\.com|wekraft-saas-upload-s3)[^\s)]*)\)/g;
+  const formatted = content.replace(uploadRegex, "uploaded doc");
+
   if (formatted.length > maxLength) {
     return formatted.substring(0, maxLength).trimEnd() + "...";
   }
-  
+
   return formatted;
 }
 export function getFileIconPath(fileName: string) {

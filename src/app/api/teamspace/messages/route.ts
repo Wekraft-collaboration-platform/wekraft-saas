@@ -338,9 +338,9 @@ export async function POST(req: NextRequest) {
       const mentionedMembers = isEveryoneMentioned
         ? projectMembers.filter((m: any) => m.clerkUserId !== userId)
         : projectMembers.filter((member: any) => {
-            if (member.clerkUserId === userId) return false;
-            return isMemberMentioned(member, content);
-          });
+          if (member.clerkUserId === userId) return false;
+          return isMemberMentioned(member, content);
+        });
 
       if (mentionedMembers.length > 0) {
         // Get the Clerk session token to authenticate the Convex mutation
@@ -377,7 +377,12 @@ export async function POST(req: NextRequest) {
                 channelId,
                 channelName,
                 messageId: id,
-                snippet: (content ?? "").trim().substring(0, 120),
+                snippet: (() => {
+                  let text = (content ?? "").trim();
+                  const uploadRegex = /!?\[[^\]]+\]\((https?:\/\/[^\s)]+(?:amazonaws\.com|wekraft-saas-upload-s3)[^\s)]*)\)/g;
+                  text = text.replace(uploadRegex, "uploaded doc");
+                  return text.substring(0, 120);
+                })(),
               },
             );
           }
