@@ -51,6 +51,7 @@ import { format, isToday, isYesterday } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
 import { toast } from "sonner";
+import { convertImageToPng } from "@/lib/upload-utils";
 import {
   Tooltip,
   TooltipContent,
@@ -165,14 +166,23 @@ export function MessageFeed({
   );
 
   const handleUploadMedia = async (file: File, caption: string) => {
+    let processedFile = file;
+    if (file.type.startsWith("image/")) {
+      try {
+        processedFile = await convertImageToPng(file);
+      } catch (err) {
+        console.error("Failed to convert image to PNG, uploading original:", err);
+      }
+    }
+
     const id = "optimistic-upload-" + crypto.randomUUID();
-    const previewUrl = URL.createObjectURL(file);
+    const previewUrl = URL.createObjectURL(processedFile);
     
-    setOptimisticUploads(prev => [...prev, { id, file, previewUrl, caption }]);
+    setOptimisticUploads(prev => [...prev, { id, file: processedFile, previewUrl, caption }]);
 
     try {
       const formData = new FormData();
-      formData.append("file", file);
+      formData.append("file", processedFile);
       formData.append("projectId", projectId);
 
       const res = await fetch("/api/teamspace/media", {
@@ -193,10 +203,10 @@ export function MessageFeed({
 
       const data = await res.json();
       if (data.url) {
-        const isImage = file.type.startsWith("image/");
+        const isImage = processedFile.type.startsWith("image/");
         const markdownLink = isImage
-          ? `![${file.name}](${data.url})`
-          : `[${file.name}](${data.url})`;
+          ? `![${processedFile.name}](${data.url})`
+          : `[${processedFile.name}](${data.url})`;
 
         let finalContent = markdownLink;
         if (caption.trim()) {
