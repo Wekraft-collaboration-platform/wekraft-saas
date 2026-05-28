@@ -13,6 +13,7 @@ const isPublicRoute = createRouteMatcher([
   "/projects(.*)",
   "/api/public/(.*)",
   "/api/payments/(.*)",
+  "/api/chatbot(.*)",  // temperory
   "/invite(.*)",
   "/",
 ]);

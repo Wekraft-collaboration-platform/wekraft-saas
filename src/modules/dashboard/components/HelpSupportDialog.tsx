@@ -129,14 +129,14 @@ export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDi
         </DialogHeader>
 
         <Tabs defaultValue="contact" className="w-full -mt-1.5">
-          <TabsList className="grid grid-cols-2 w-full h-10 rounded-lg p-[3px] bg-zinc-900 border border-zinc-800/80 mb-5">
+          <TabsList className="grid grid-cols-2 w-full h-10 rounded-lg p-[3px]  mb-4">
             <TabsTrigger value="contact" className="text-xs text-zinc-400 data-[state=active]:text-white transition-all">
               <MessageSquare className="h-3.5 w-3.5 mr-1.5" />
               Contact Support
             </TabsTrigger>
             <TabsTrigger value="ai" className="text-xs text-zinc-400 data-[state=active]:text-white transition-all">
               <Bot className="h-3.5 w-3.5 mr-1.5" />
-              Talk to AI
+              Talk to Assistant
             </TabsTrigger>
           </TabsList>
 
@@ -259,20 +259,9 @@ export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDi
           </TabsContent>
 
           <TabsContent value="ai" className="focus:outline-none">
-            <div className="relative border border-dashed border-zinc-800 rounded-xl p-6 flex flex-col items-center justify-center text-center bg-zinc-950/40 min-h-[300px] overflow-hidden">
+            <div className="relative overflow-hidden">
 
-              {/* Cover Banner */}
-              <div className="absolute inset-0 flex flex-col items-center justify-center bg-[#09090b]/80 backdrop-blur-[0.5px] p-6 rounded-xl">
 
-                <Bot className="h-7 w-7 " />
-                <span className="text-sm bg-blue-600/30  px-2.5 py-1 rounded-full my-3">
-                  Coming Soon
-                </span>
-                <h4 className="text-sm font-bold text-white mb-1.5">Talk to AI Assistant</h4>
-                <p className="text-[11px] text-zinc-400 max-w-[280px] leading-relaxed">
-                  This can maybe resolve your query. Get instant answers using Wekraft AI.
-                </p>
-              </div>
             </div>
           </TabsContent>
         </Tabs>
