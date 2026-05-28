@@ -245,7 +245,7 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
     } else {
       setContent(newContent);
     }
-    
+
     setShowMentions(false);
     setMentionStartIndex(-1);
 
@@ -298,10 +298,10 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
           <PopoverTrigger asChild>
             <div className="absolute top-0 left-4 w-0 h-0 pointer-events-none" />
           </PopoverTrigger>
-          <PopoverContent 
-            className="w-[340px] p-0 border-border/40 bg-background/95 backdrop-blur-xl shadow-2xl rounded-xl overflow-hidden" 
-            side="top" 
-            align="start" 
+          <PopoverContent
+            className="w-[340px] p-0 border-border/40 bg-background/95 backdrop-blur-xl shadow-2xl rounded-xl overflow-hidden"
+            side="top"
+            align="start"
             sideOffset={10}
             onOpenAutoFocus={(e) => e.preventDefault()}
           >

@@ -149,6 +149,7 @@ interface Props {
   highlightTerm?: string;
   projectMembers?: any[];
   channelReads?: Record<string, number>;
+  repoFullName?: string;
 }
 
 // ── Component ──────────────────────────────────────────────────────────────────
@@ -170,6 +171,7 @@ export function MessageItem({
   highlightTerm,
   projectMembers,
   channelReads,
+  repoFullName,
 }: Props) {
   const [hovered, setHovered] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -268,11 +270,11 @@ export function MessageItem({
   const handleDownload = (e: React.MouseEvent, url: string, filename: string) => {
     e.preventDefault();
     e.stopPropagation();
-    
+
     // Proxy the download through our Next.js API route to bypass CORS 
     // and force the Content-Disposition attachment header natively.
     const proxyUrl = `/api/teamspace/download?url=${encodeURIComponent(url)}&filename=${encodeURIComponent(filename)}`;
-    
+
     const link = document.createElement("a");
     link.href = proxyUrl;
     link.download = filename;
@@ -280,7 +282,7 @@ export function MessageItem({
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
-    
+
     toast.success(`Downloading ${filename}...`, { duration: 3000 });
   };
 
@@ -346,7 +348,7 @@ export function MessageItem({
           {/* Header (only for others, not grouped) */}
           {!isOwn && !isGrouped && (
             <div className="flex items-baseline gap-2 mb-1 px-1">
-              <span 
+              <span
                 className="font-semibold text-xs hover:underline cursor-pointer leading-tight"
                 style={{ color: getUserColor(message.user_name) }}
               >
@@ -361,13 +363,13 @@ export function MessageItem({
               "relative px-2.5 py-1 transition-all duration-200 border backdrop-blur-[2px] min-w-[60px] max-w-full shadow-sm",
               isOwn
                 ? cn(
-                    "bg-primary/[0.03] border-primary/[0.08]",
-                    isGrouped ? "rounded-lg" : "rounded-lg rounded-tr-none"
-                  )
+                  "bg-primary/[0.03] border-primary/[0.08]",
+                  isGrouped ? "rounded-lg" : "rounded-lg rounded-tr-none"
+                )
                 : cn(
-                    "bg-primary/[0.03] border-primary/[0.08]",
-                    isGrouped ? "rounded-lg" : "rounded-lg rounded-tl-none"
-                  )
+                  "bg-primary/[0.03] border-primary/[0.08]",
+                  isGrouped ? "rounded-lg" : "rounded-lg rounded-tl-none"
+                )
             )}
           >
             {/* WhatsApp-style tail for first message in group */}
@@ -424,7 +426,7 @@ export function MessageItem({
                   </div>
                   <div className="text-muted-foreground/80 line-clamp-2 leading-snug overflow-hidden text-ellipsis mt-0.5">
                     {message.parent_content === "$__DELETED__$" ? (
-                      <span className="italic flex items-center gap-1"><Ban className="h-2.5 w-2.5"/> This message was deleted</span>
+                      <span className="italic flex items-center gap-1"><Ban className="h-2.5 w-2.5" /> This message was deleted</span>
                     ) : (
                       message.parent_content ?? "Message not found"
                     )}
@@ -435,8 +437,8 @@ export function MessageItem({
             {/* Message content / edit box */}
             {isDeleted ? (
               <div className="flex items-center gap-1.5 text-muted-foreground/60 italic text-[13px] px-1 py-0.5 min-w-[140px]">
-                 <Ban className="h-3.5 w-3.5" />
-                 This message was deleted
+                <Ban className="h-3.5 w-3.5" />
+                This message was deleted
               </div>
             ) : editing ? (
               <div className="min-w-[200px]">
@@ -479,7 +481,7 @@ export function MessageItem({
                 {message.content && (() => {
                   const s3Regex = /^(!?)\[([^\]]+)\]\(((?:blob:)?https?:\/\/[^\s\)]+)\)(?:\s+([\s\S]*))?$/;
                   const match = message.content.match(s3Regex);
-                  
+
                   let isMedia = false;
                   let isImage = false;
                   let fileName = "";
@@ -487,45 +489,71 @@ export function MessageItem({
                   let captionText = message.content;
 
                   if (match) {
-                     isMedia = true;
-                     isImage = match[1] === "!";
-                     fileName = match[2];
-                     fileUrl = match[3];
-                     captionText = match[4] || "";
+                    isMedia = true;
+                    isImage = match[1] === "!";
+                    fileName = match[2];
+                    fileUrl = match[3];
+                    captionText = match[4] || "";
                   }
 
                   const renderText = (text: string) => {
-                      if (!text) return null;
-                      const mentionRegex = /(@[a-zA-Z0-9_]+)/g;
-                      const parts = text.split(mentionRegex);
-                      return parts.map((part, i) => {
-                        if (part.startsWith("@")) {
-                          const username = part.substring(1);
-                          const lowerName = username.toLowerCase();
-                          const isSpecial = ["admin", "owner", "member", "everyone"].includes(lowerName);
-                          const isMember = isSpecial || projectMembers?.some(m => m.userName?.toLowerCase() === lowerName);
+                    if (!text) return null;
+                    // Split on @mentions and backtick-wrapped paths
+                    const mentionOrCodeRegex = /(@[a-zA-Z0-9_]+|`[^`]+`)/g;
+                    const parts = text.split(mentionOrCodeRegex);
+                    return parts.map((part, i) => {
+                      if (part.startsWith("@")) {
+                        const username = part.substring(1);
+                        const lowerName = username.toLowerCase();
+                        const isSpecial = ["admin", "owner", "member", "everyone"].includes(lowerName);
+                        const isMember = isSpecial || projectMembers?.some(m => m.userName?.toLowerCase() === lowerName);
 
-                          if (isMember) {
+                        if (isMember) {
+                          return (
+                            <span
+                              key={`mention-${i}`}
+                              className="font-bold hover:underline cursor-pointer transition-all"
+                              style={{ color: getUserColor(username) }}
+                            >
+                              {part}
+                            </span>
+                          );
+                        }
+                      } else if (part.startsWith("`") && part.endsWith("`") && part.length > 2) {
+                        const filePath = part.slice(1, -1);
+                        const fileName = filePath.split("/").pop() || filePath;
+                        // Check if it looks like a file path (has extension or slash)
+                        if (filePath.includes(".") || filePath.includes("/")) {
+                          if (repoFullName) {
                             return (
-                              <span
-                                key={`mention-${i}`}
-                                className="font-bold hover:underline cursor-pointer transition-all"
-                                style={{ color: getUserColor(username) }}
+                              <a
+                                key={`code-link-${i}`}
+                                href={`https://github.com/${repoFullName}/blob/main/${filePath}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-500 hover:underline cursor-pointer font-medium transition-colors"
                               >
-                                {part}
-                              </span>
+                                {fileName}
+                              </a>
                             );
                           }
+                          // No repo linked — show as blue text without link
+                          return (
+                            <span key={`code-${i}`} className="text-blue-500 font-medium">
+                              {fileName}
+                            </span>
+                          );
                         }
-                        return (
-                          <Highlight
-                            key={`text-${i}`}
-                            text={part}
-                            term={highlightTerm}
-                            messageId={message.id}
-                          />
-                        );
-                      });
+                      }
+                      return (
+                        <Highlight
+                          key={`text-${i}`}
+                          text={part}
+                          term={highlightTerm}
+                          messageId={message.id}
+                        />
+                      );
+                    });
                   };
 
                   const editedTag = message.edited_at && (
@@ -536,90 +564,90 @@ export function MessageItem({
                   const timestampSpacer = !(message.poll && !message.content) && <span className={cn("inline-block h-0", message.id.startsWith("optimistic-") ? "w-14" : "w-11")} />;
 
                   if (isMedia) {
-                     return (
-                        <div className="flex flex-col">
-                           {isImage ? (
-                              <div 
-                                className={cn("mt-0.5 cursor-pointer relative group inline-block", captionText ? "mb-1.5" : "mb-0.5")}
-                                onClick={() => {
-                                  setPreviewMediaUrl(fileUrl);
-                                  setPreviewMediaType("image");
-                                  setPreviewMediaName(fileName);
-                                }}
-                              >
-                                 <img 
-                                    src={fileUrl} 
-                                    alt={fileName} 
-                                    className="max-h-[140px] max-w-[160px] sm:max-h-[180px] sm:max-w-[220px] w-auto rounded-md object-contain transition-opacity group-hover:opacity-90"
-                                 />
-                                 <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center pointer-events-none">
-                                    <Eye className="text-white h-6 w-6 drop-shadow-md" />
-                                 </div>
-                              </div>
-                           ) : (
-                              <div 
-                                 onClick={(e) => {
-                                   const isPdf = fileName.toLowerCase().endsWith('.pdf');
-                                   const isOffice = fileName.toLowerCase().match(/\.(doc|docx|ppt|pptx|xls|xlsx)$/);
-                                   if (isPdf || isOffice) {
-                                     e.preventDefault();
-                                     setPreviewMediaUrl(fileUrl);
-                                     setPreviewMediaType(isPdf ? "pdf" : "office");
-                                     setPreviewMediaName(fileName);
-                                   } else {
-                                     handleDownload(e, fileUrl, fileName);
-                                   }
-                                 }}
-                                 className="flex items-center gap-3 p-2.5 mt-0.5 mb-1 bg-black/5 dark:bg-white/5 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer max-w-[280px]"
-                              >
-                                 <div className="p-1 shrink-0">
-                                    <img src={getFileIconPath(fileName)} alt="icon" className="h-8 w-8 object-contain" />
-                                 </div>
-                                 <div className="flex flex-col overflow-hidden min-w-[120px] flex-1">
-                                    <span className="text-sm font-medium truncate" title={fileName}>{fileName}</span>
-                                    <span className="text-[10px] text-muted-foreground uppercase mt-0.5">Document</span>
-                                 </div>
-                                 <div 
-                                    className="ml-2 p-1.5 rounded-full bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 shrink-0"
-                                    onClick={(e) => {
-                                      e.stopPropagation();
-                                      handleDownload(e, fileUrl, fileName);
-                                    }}
-                                 >
-                                    <Download className="h-3.5 w-3.5 text-muted-foreground" />
-                                 </div>
-                              </div>
-                           )}
-                           
-                           {(captionText || message.edited_at) && (
-                              <div className={cn("text-[14px] leading-snug break-all md:break-words whitespace-pre-wrap text-foreground/80 font-normal", !captionText && "min-h-4")}>
-                                 {renderText(captionText)}
-                                 {editedTag}
-                                 {timestampSpacer}
-                              </div>
-                           )}
-                           
-                           {/* Space for timestamp if no caption */}
-                           {!captionText && !message.edited_at && (
-                             <div className={cn("h-3 mt-1", message.id.startsWith("optimistic-") ? "w-14" : "w-11")} />
-                           )}
-                        </div>
-                     );
+                    return (
+                      <div className="flex flex-col">
+                        {isImage ? (
+                          <div
+                            className={cn("mt-0.5 cursor-pointer relative group inline-block", captionText ? "mb-1.5" : "mb-0.5")}
+                            onClick={() => {
+                              setPreviewMediaUrl(fileUrl);
+                              setPreviewMediaType("image");
+                              setPreviewMediaName(fileName);
+                            }}
+                          >
+                            <img
+                              src={fileUrl}
+                              alt={fileName}
+                              className="max-h-[140px] max-w-[160px] sm:max-h-[180px] sm:max-w-[220px] w-auto rounded-md object-contain transition-opacity group-hover:opacity-90"
+                            />
+                            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center pointer-events-none">
+                              <Eye className="text-white h-6 w-6 drop-shadow-md" />
+                            </div>
+                          </div>
+                        ) : (
+                          <div
+                            onClick={(e) => {
+                              const isPdf = fileName.toLowerCase().endsWith('.pdf');
+                              const isOffice = fileName.toLowerCase().match(/\.(doc|docx|ppt|pptx|xls|xlsx)$/);
+                              if (isPdf || isOffice) {
+                                e.preventDefault();
+                                setPreviewMediaUrl(fileUrl);
+                                setPreviewMediaType(isPdf ? "pdf" : "office");
+                                setPreviewMediaName(fileName);
+                              } else {
+                                handleDownload(e, fileUrl, fileName);
+                              }
+                            }}
+                            className="flex items-center gap-3 p-2.5 mt-0.5 mb-1 bg-black/5 dark:bg-white/5 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer max-w-[280px]"
+                          >
+                            <div className="p-1 shrink-0">
+                              <img src={getFileIconPath(fileName)} alt="icon" className="h-8 w-8 object-contain" />
+                            </div>
+                            <div className="flex flex-col overflow-hidden min-w-[120px] flex-1">
+                              <span className="text-sm font-medium truncate" title={fileName}>{fileName}</span>
+                              <span className="text-[10px] text-muted-foreground uppercase mt-0.5">Document</span>
+                            </div>
+                            <div
+                              className="ml-2 p-1.5 rounded-full bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 shrink-0"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDownload(e, fileUrl, fileName);
+                              }}
+                            >
+                              <Download className="h-3.5 w-3.5 text-muted-foreground" />
+                            </div>
+                          </div>
+                        )}
+
+                        {(captionText || message.edited_at) && (
+                          <div className={cn("text-[14px] leading-snug break-all md:break-words whitespace-pre-wrap text-foreground/80 font-normal", !captionText && "min-h-4")}>
+                            {renderText(captionText)}
+                            {editedTag}
+                            {timestampSpacer}
+                          </div>
+                        )}
+
+                        {/* Space for timestamp if no caption */}
+                        {!captionText && !message.edited_at && (
+                          <div className={cn("h-3 mt-1", message.id.startsWith("optimistic-") ? "w-14" : "w-11")} />
+                        )}
+                      </div>
+                    );
                   }
 
                   // Default text render
                   return (
-                     <div className="text-[14px] leading-snug break-all md:break-words whitespace-pre-wrap text-foreground/80 font-normal">
-                        {renderText(message.content)}
-                        {editedTag}
-                        {timestampSpacer}
-                     </div>
+                    <div className="text-[14px] leading-snug break-all md:break-words whitespace-pre-wrap text-foreground/80 font-normal">
+                      {renderText(message.content)}
+                      {editedTag}
+                      {timestampSpacer}
+                    </div>
                   );
                 })()}
-                
+
                 {message.poll && !isDeleted && (
                   <div className="mt-1 mb-2">
-                    <PollBlock 
+                    <PollBlock
                       poll={message.poll}
                       messageId={message.id}
                       currentUserId={currentUserId}
@@ -708,8 +736,8 @@ export function MessageItem({
                       <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent 
-                    align={isOwn ? "end" : "start"} 
+                  <DropdownMenuContent
+                    align={isOwn ? "end" : "start"}
                     className="w-40 rounded-xl shadow-xl"
                     onCloseAutoFocus={(e) => e.preventDefault()}
                   >
@@ -887,78 +915,78 @@ export function MessageItem({
                 const seenBy = [];
                 const notSeenBy = [];
 
-              for (const member of members) {
-                // Skip the sender themselves
-                if (member.clerkUserId === message.user_id) continue;
-                
-                // Also skip members without clerkUserId
-                if (!member.clerkUserId) continue;
+                for (const member of members) {
+                  // Skip the sender themselves
+                  if (member.clerkUserId === message.user_id) continue;
 
-                const lastRead = reads[member.clerkUserId] || 0;
-                if (lastRead >= message.created_at) {
-                  seenBy.push(member);
-                } else {
-                  notSeenBy.push(member);
+                  // Also skip members without clerkUserId
+                  if (!member.clerkUserId) continue;
+
+                  const lastRead = reads[member.clerkUserId] || 0;
+                  if (lastRead >= message.created_at) {
+                    seenBy.push(member);
+                  } else {
+                    notSeenBy.push(member);
+                  }
                 }
-              }
 
-              return (
-                <div className="flex flex-col gap-4">
-                  <div>
-                    <h4 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-2">
-                      Seen By ({seenBy.length})
-                    </h4>
-                    {seenBy.length > 0 ? (
-                      <ScrollArea className="max-h-[150px]">
-                        <div className="flex flex-col gap-2 pr-4">
-                          {seenBy.map((m) => (
-                            <div key={m.userId} className="flex items-center gap-2">
-                              <Avatar className="h-6 w-6">
-                                <AvatarImage src={m.userImage} />
-                                <AvatarFallback className="text-[9px]">
-                                  {m.userName.substring(0, 2).toUpperCase()}
-                                </AvatarFallback>
-                              </Avatar>
-                              <span className="text-sm font-medium">{m.userName}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </ScrollArea>
-                    ) : (
-                      <div className="text-xs text-muted-foreground/60 italic">No one has seen this yet.</div>
-                    )}
-                  </div>
+                return (
+                  <div className="flex flex-col gap-4">
+                    <div>
+                      <h4 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-2">
+                        Seen By ({seenBy.length})
+                      </h4>
+                      {seenBy.length > 0 ? (
+                        <ScrollArea className="max-h-[150px]">
+                          <div className="flex flex-col gap-2 pr-4">
+                            {seenBy.map((m) => (
+                              <div key={m.userId} className="flex items-center gap-2">
+                                <Avatar className="h-6 w-6">
+                                  <AvatarImage src={m.userImage} />
+                                  <AvatarFallback className="text-[9px]">
+                                    {m.userName.substring(0, 2).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="text-sm font-medium">{m.userName}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      ) : (
+                        <div className="text-xs text-muted-foreground/60 italic">No one has seen this yet.</div>
+                      )}
+                    </div>
 
-                  <div>
-                    <h4 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-2">
-                      Not Seen By ({notSeenBy.length})
-                    </h4>
-                    {notSeenBy.length > 0 ? (
-                      <ScrollArea className="max-h-[150px]">
-                        <div className="flex flex-col gap-2 pr-4 opacity-60">
-                          {notSeenBy.map((m) => (
-                            <div key={m.userId} className="flex items-center gap-2">
-                              <Avatar className="h-6 w-6">
-                                <AvatarImage src={m.userImage} />
-                                <AvatarFallback className="text-[9px]">
-                                  {m.userName.substring(0, 2).toUpperCase()}
-                                </AvatarFallback>
-                              </Avatar>
-                              <span className="text-sm">{m.userName}</span>
-                            </div>
-                          ))}
-                        </div>
-                      </ScrollArea>
-                    ) : (
-                      <div className="text-xs text-muted-foreground/60 italic">Everyone has seen this!</div>
-                    )}
+                    <div>
+                      <h4 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-2">
+                        Not Seen By ({notSeenBy.length})
+                      </h4>
+                      {notSeenBy.length > 0 ? (
+                        <ScrollArea className="max-h-[150px]">
+                          <div className="flex flex-col gap-2 pr-4 opacity-60">
+                            {notSeenBy.map((m) => (
+                              <div key={m.userId} className="flex items-center gap-2">
+                                <Avatar className="h-6 w-6">
+                                  <AvatarImage src={m.userImage} />
+                                  <AvatarFallback className="text-[9px]">
+                                    {m.userName.substring(0, 2).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="text-sm">{m.userName}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      ) : (
+                        <div className="text-xs text-muted-foreground/60 italic">Everyone has seen this!</div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })()}
-          </div>
-        </DialogContent>
-      </Dialog>
+                );
+              })()}
+            </div>
+          </DialogContent>
+        </Dialog>
       )}
 
       {/* Media Preview Overlay (WhatsApp Web style) */}
@@ -973,15 +1001,15 @@ export function MessageItem({
               </div>
             </div>
             <div className="flex items-center gap-2">
-              <button 
+              <button
                 onClick={(e) => handleDownload(e, previewMediaUrl!, previewMediaName)}
                 className="p-2 hover:bg-white/10 rounded-full transition-colors cursor-pointer"
                 title="Download"
               >
                 <Download className="h-5 w-5 text-white" />
               </button>
-              <button 
-                onClick={() => setPreviewMediaUrl(null)} 
+              <button
+                onClick={() => setPreviewMediaUrl(null)}
                 className="p-2 hover:bg-white/10 rounded-full transition-colors cursor-pointer"
                 title="Close"
               >
@@ -989,28 +1017,28 @@ export function MessageItem({
               </button>
             </div>
           </div>
-          
+
           {/* Content area */}
           <div className="flex-1 flex items-center justify-center overflow-hidden p-4 relative">
             {previewMediaType === "image" && (
-              <img 
-                src={previewMediaUrl!} 
-                alt={previewMediaName} 
-                className="max-w-full max-h-full object-contain drop-shadow-2xl" 
+              <img
+                src={previewMediaUrl!}
+                alt={previewMediaName}
+                className="max-w-full max-h-full object-contain drop-shadow-2xl"
               />
             )}
             {previewMediaType === "pdf" && (
-              <iframe 
-                src={previewMediaUrl!} 
-                title={previewMediaName} 
-                className="w-full h-full max-w-5xl rounded-lg bg-white shadow-2xl" 
+              <iframe
+                src={previewMediaUrl!}
+                title={previewMediaName}
+                className="w-full h-full max-w-5xl rounded-lg bg-white shadow-2xl"
               />
             )}
             {previewMediaType === "office" && (
-              <iframe 
+              <iframe
                 src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(previewMediaUrl!)}`}
-                title={previewMediaName} 
-                className="w-full h-full max-w-5xl rounded-lg bg-white shadow-2xl" 
+                title={previewMediaName}
+                className="w-full h-full max-w-5xl rounded-lg bg-white shadow-2xl"
               />
             )}
           </div>

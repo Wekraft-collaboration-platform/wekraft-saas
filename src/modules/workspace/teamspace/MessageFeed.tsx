@@ -953,6 +953,7 @@ export function MessageFeed({
                   highlightTerm={searchQuery}
                   projectMembers={projectMembers}
                   channelReads={channelReads}
+                  repoFullName={project?.repoFullName}
                 />
               );
             })}
@@ -994,6 +995,7 @@ export function MessageFeed({
                   onEditPoll={async () => {}}
                   projectMembers={projectMembers}
                   channelReads={channelReads}
+                  repoFullName={project?.repoFullName}
                 />
               );
             })}

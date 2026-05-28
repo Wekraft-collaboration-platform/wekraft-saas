@@ -12,7 +12,7 @@ import {
   DialogTitle,
   DialogTrigger
 } from "@/components/ui/dialog";
-import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
+import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
@@ -66,6 +66,7 @@ export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDi
   }, [messages, toolStatus, isStreaming]);
 
   // Form State
+  const [activeTab, setActiveTab] = useState<"contact" | "ai">("contact");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [selectedTag, setSelectedTag] = useState<"found bug" | "help needed" | "query" | "payment issue" | "others">("found bug");
@@ -141,27 +142,34 @@ export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDi
             <HelpCircleIcon className="h-5 w-5 shrink-0" />
             Help & Support
           </DialogTitle>
-          <DialogDescription className="text-zinc-200 text-sm ">
-            Submit a ticket to our team or consult the AI assistant.
-          </DialogDescription>
+          <div className="flex items-center text-xs  justify-between ">
+            <p>Submit a ticket to our team or consult the AI assistant.</p>
+
+            <div className="flex items-center gap-2 bg-zinc-900">
+              <Button
+                variant={activeTab === "contact" ? "default" : "outline"}
+                className="text-[10px] h-7!"
+                onClick={() => setActiveTab("contact")}
+              >
+                Contact support
+              </Button>
+              <Button
+                variant={activeTab === "ai" ? "default" : "outline"}
+                className="text-[10px] h-7!"
+                onClick={() => setActiveTab("ai")}
+              >
+                Talk to AI
+              </Button>
+            </div>
+          </div>
         </DialogHeader>
 
-        <Tabs defaultValue="contact" className="w-full -mt-1.5 flex-1 flex flex-col min-h-0">
-          <TabsList className="grid grid-cols-2 w-full h-10 rounded-lg p-[3px] mb-4">
-            <TabsTrigger value="contact" className="text-xs text-zinc-400 data-[state=active]:text-white transition-all">
-              <MessageSquare className="h-3.5 w-3.5 mr-1.5" />
-              Contact Support
-            </TabsTrigger>
-            <TabsTrigger value="ai" className="text-xs text-zinc-400 data-[state=active]:text-white transition-all">
-              <Bot className="h-3.5 w-3.5 mr-1.5" />
-              Talk to Assistant
-            </TabsTrigger>
-          </TabsList>
+        <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as "contact" | "ai")} className="w-full -mt-1.5 flex-1 flex flex-col min-h-0">
 
           <TabsContent value="contact" className="flex-1 min-h-0 overflow-y-auto focus:outline-none space-y-4 pr-1 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
             <form onSubmit={handleSubmit} className="space-y-4 text-left">
               {/* Support Tag select row */}
-              <div className="space-y-2">
+              <div className="space-y-4">
                 <Label className="text-sm font-medium text-zinc-300">Category Tag</Label>
                 <div className="flex flex-wrap gap-1.5">
                   {supportTags.map((tag) => {
@@ -284,14 +292,10 @@ export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDi
             >
               {messages.length === 0 ? (
                 <div className="flex flex-col items-center justify-center h-full text-center p-4 space-y-3 select-none">
-                  <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/20 animate-pulse">
-                    <Bot className="h-5 w-5 text-blue-400" />
-                  </div>
+                  <Bot className="h-7 w-7" />
                   <div className="space-y-1">
-                    <h4 className="text-sm font-medium text-white">Wekraft AI Assistant</h4>
-                    <p className="text-xs text-zinc-400 max-w-[280px]">
-                      Ask me questions about Wekraft, check your support queries, or report issues in real-time.
-                    </p>
+                    <h4 className="text-base font-medium text-white">Wekraft AI Assistant</h4>
+
                   </div>
                   <div className="grid grid-cols-2 gap-2 w-full max-w-[440px] pt-1">
                     <button
@@ -350,8 +354,8 @@ export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDi
                               {msg.toolName === "createSupportQuery"
                                 ? (isRunning ? "Creating support ticket..." : "Created support ticket successfully")
                                 : msg.toolName === "getSupportQueries"
-                                ? (isRunning ? "Fetching support queries..." : "Fetched support queries")
-                                : (isRunning ? `Running: ${msg.toolName}...` : `Executed: ${msg.toolName}`)
+                                  ? (isRunning ? "Fetching support queries..." : "Fetched support queries")
+                                  : (isRunning ? `Running: ${msg.toolName}...` : `Executed: ${msg.toolName}`)
                               }
                             </span>
                           </div>
