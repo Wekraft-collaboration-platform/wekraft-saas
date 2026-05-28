@@ -516,7 +516,12 @@ export const HeatmapPanel = memo(
               {/* REPOSITORY INFO */}
               <div className="space-y-4">
                 {project?.repoFullName ? (
-                  <div className="p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-border dark:border-white/5 group hover:border-primary/30 transition-all duration-300">
+                  <a
+                    href={`https://github.com/${project.repoFullName}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="block p-4 rounded-xl bg-neutral-50 dark:bg-neutral-900 border border-border dark:border-white/5 group hover:border-primary/30 hover:bg-neutral-100 dark:hover:bg-neutral-800/50 transition-all duration-300 cursor-pointer"
+                  >
                     <div className="flex items-center gap-3">
                       <div className="p-2 bg-primary/10 rounded-lg text-primary">
                         <Github size={18} />
@@ -531,7 +536,7 @@ export const HeatmapPanel = memo(
                         </p>
                       </div>
                     </div>
-                  </div>
+                  </a>
                 ) : (
                   <div className="p-6 rounded-xl border border-dashed border-border dark:border-white/10 bg-zinc-50 dark:bg-zinc-900 text-center space-y-4">
                     <div className="flex flex-col items-center gap-2">
