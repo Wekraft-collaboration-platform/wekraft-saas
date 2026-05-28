@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Loader2, Trash } from "lucide-react";
+import { toast } from "sonner";
 
 interface EventDialogProps {
   open: boolean;
@@ -72,12 +73,32 @@ export default function EventDialog({ open, onOpenChange, projectId, initialData
     }
   }, [open, initialData]);
 
+  const handleStartDateChange = (val: string) => {
+    setStartDate(val);
+    if (endDate && val > endDate) {
+      setEndDate(val);
+    }
+  };
+
+  const handleStartTimeChange = (val: string) => {
+    setStartTime(val);
+    if (startDate === endDate && val > endTime) {
+      setEndTime(val);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     try {
       const startDateTime = new Date(`${startDate}T${startTime}`).getTime();
       const endDateTime = new Date(`${endDate}T${endTime}`).getTime();
+
+      if (endDateTime < startDateTime) {
+        toast.error("End date and time cannot be before start date and time");
+        setIsLoading(false);
+        return;
+      }
 
       if (initialData?.id) {
         await updateEvent({
@@ -168,12 +189,12 @@ export default function EventDialog({ open, onOpenChange, projectId, initialData
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label className="text-zinc-400">Start</Label>
-                  <Input type="date" value={startDate} onChange={(e: any) => setStartDate(e.target.value)} required className="bg-zinc-900 border-zinc-700 text-zinc-300" />
-                  <Input type="time" value={startTime} onChange={(e: any) => setStartTime(e.target.value)} required className="bg-zinc-900 border-zinc-700 text-zinc-300" />
+                  <Input type="date" value={startDate} onChange={(e: any) => handleStartDateChange(e.target.value)} required className="bg-zinc-900 border-zinc-700 text-zinc-300" />
+                  <Input type="time" value={startTime} onChange={(e: any) => handleStartTimeChange(e.target.value)} required className="bg-zinc-900 border-zinc-700 text-zinc-300" />
                 </div>
                 <div className="space-y-2">
                   <Label className="text-zinc-400">End</Label>
-                  <Input type="date" value={endDate} onChange={(e: any) => setEndDate(e.target.value)} required className="bg-zinc-900 border-zinc-700 text-zinc-300" />
+                  <Input type="date" value={endDate} onChange={(e: any) => setEndDate(e.target.value)} min={startDate} required className="bg-zinc-900 border-zinc-700 text-zinc-300" />
                   <Input type="time" value={endTime} onChange={(e: any) => setEndTime(e.target.value)} required className="bg-zinc-900 border-zinc-700 text-zinc-300" />
                 </div>
               </div>
