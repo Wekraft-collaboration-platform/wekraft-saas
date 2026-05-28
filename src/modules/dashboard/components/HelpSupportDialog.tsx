@@ -30,9 +30,11 @@ import {
   Zap,
   Loader2,
   HelpCircleIcon,
-  Send
+  Send,
+  User
 } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 
 interface HelpSupportDialogProps {
   trigger?: React.ReactNode;
@@ -133,7 +135,7 @@ export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDi
   return (
     <Dialog open={isOpen} onOpenChange={setIsOpen}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
-      <DialogContent className="sm:max-w-[580px] p-4 rounded-xl h-[560px] overflow-hidden  bg-sidebar border border-accent shadow-2xl animate-in fade-in-50 zoom-in-95 duration-200">
+      <DialogContent className="sm:max-w-[580px] p-4 rounded-xl h-[560px] flex flex-col overflow-hidden bg-sidebar border border-accent shadow-2xl animate-in fade-in-50 zoom-in-95 duration-200">
         <DialogHeader className="mb-4">
           <DialogTitle className="text-base font-semibold text-white flex items-center gap-2">
             <HelpCircleIcon className="h-5 w-5 shrink-0" />
@@ -144,8 +146,8 @@ export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDi
           </DialogDescription>
         </DialogHeader>
 
-        <Tabs defaultValue="contact" className="w-full -mt-1.5">
-          <TabsList className="grid grid-cols-2 w-full h-10 rounded-lg p-[3px]  mb-4">
+        <Tabs defaultValue="contact" className="w-full -mt-1.5 flex-1 flex flex-col min-h-0">
+          <TabsList className="grid grid-cols-2 w-full h-10 rounded-lg p-[3px] mb-4">
             <TabsTrigger value="contact" className="text-xs text-zinc-400 data-[state=active]:text-white transition-all">
               <MessageSquare className="h-3.5 w-3.5 mr-1.5" />
               Contact Support
@@ -156,7 +158,7 @@ export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDi
             </TabsTrigger>
           </TabsList>
 
-          <TabsContent value="contact" className="space-y-4 focus:outline-none ">
+          <TabsContent value="contact" className="flex-1 min-h-0 overflow-y-auto focus:outline-none space-y-4 pr-1 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
             <form onSubmit={handleSubmit} className="space-y-4 text-left">
               {/* Support Tag select row */}
               <div className="space-y-2">
@@ -274,16 +276,16 @@ export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDi
             </form>
           </TabsContent>
 
-          <TabsContent value="ai" className="focus:outline-none h-[390px] flex flex-col justify-between">
+          <TabsContent value="ai" className="flex-1 flex flex-col min-h-0 focus:outline-none justify-between">
             {/* Messages Container */}
-            <div 
+            <div
               ref={scrollContainerRef}
               className="flex-1 overflow-y-auto pr-1 mb-3 space-y-3 min-h-0 select-none scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent"
             >
               {messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-center p-4 space-y-4">
-                  <div className="h-12 w-12 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/20 animate-pulse">
-                    <Bot className="h-6 w-6 text-blue-400" />
+                <div className="flex flex-col items-center justify-center h-full text-center p-4 space-y-3 select-none">
+                  <div className="h-10 w-10 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/20 animate-pulse">
+                    <Bot className="h-5 w-5 text-blue-400" />
                   </div>
                   <div className="space-y-1">
                     <h4 className="text-sm font-medium text-white">Wekraft AI Assistant</h4>
@@ -291,26 +293,72 @@ export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDi
                       Ask me questions about Wekraft, check your support queries, or report issues in real-time.
                     </p>
                   </div>
-                  <div className="grid grid-cols-2 gap-2 w-full max-w-[360px] pt-2">
+                  <div className="grid grid-cols-2 gap-2 w-full max-w-[440px] pt-1">
                     <button
                       type="button"
-                      onClick={() => sendMessage("Show me my support queries.")}
-                      className="px-3 py-2 text-left text-[11px] bg-zinc-900/50 hover:bg-zinc-800 text-zinc-300 border border-zinc-800/80 rounded-lg transition-colors cursor-pointer"
+                      onClick={() => sendMessage("Help me get started with Wekraft and explain what I can do here.")}
+                      className="flex flex-col items-start gap-1 p-2 text-left bg-zinc-900/40 hover:bg-zinc-800/60 border border-zinc-800/80 rounded-xl transition-all duration-200 cursor-pointer group hover:border-zinc-700"
                     >
-                      🔍 Show my queries
+                      <HelpCircle className="h-3.5 w-3.5 text-blue-400 group-hover:text-blue-300 transition-colors" />
+                      <span className="text-[10px] font-medium text-zinc-200 mt-0.5">Get help about anything</span>
+                      <span className="text-[8px] text-zinc-500 leading-tight">Ask questions or find features in Wekraft.</span>
                     </button>
                     <button
                       type="button"
-                      onClick={() => sendMessage("I want to submit a support ticket.")}
-                      className="px-3 py-2 text-left text-[11px] bg-zinc-900/50 hover:bg-zinc-800 text-zinc-300 border border-zinc-800/80 rounded-lg transition-colors cursor-pointer"
+                      onClick={() => sendMessage("I have a query regarding my account or project settings.")}
+                      className="flex flex-col items-start gap-1 p-2 text-left bg-zinc-900/40 hover:bg-zinc-800/60 border border-zinc-800/80 rounded-xl transition-all duration-200 cursor-pointer group hover:border-zinc-700"
                     >
-                      📝 Report an issue
+                      <MessageSquare className="h-3.5 w-3.5 text-indigo-400 group-hover:text-indigo-300 transition-colors" />
+                      <span className="text-[10px] font-medium text-zinc-200 mt-0.5">Raise queries</span>
+                      <span className="text-[8px] text-zinc-500 leading-tight">Ask about pricing, plans, or configurations.</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => sendMessage("I found a bug in the app. Can you help me report it?")}
+                      className="flex flex-col items-start gap-1 p-2 text-left bg-zinc-900/40 hover:bg-zinc-800/60 border border-zinc-800/80 rounded-xl transition-all duration-200 cursor-pointer group hover:border-zinc-700"
+                    >
+                      <Bug className="h-3.5 w-3.5 text-rose-400 group-hover:text-rose-300 transition-colors" />
+                      <span className="text-[10px] font-medium text-zinc-200 mt-0.5">Report bugs</span>
+                      <span className="text-[8px] text-zinc-500 leading-tight">Identify UI issues, performance bugs, or errors.</span>
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => sendMessage("Tell me more about Wekraft and what makes it unique.")}
+                      className="flex flex-col items-start gap-1 p-2 text-left bg-zinc-900/40 hover:bg-zinc-800/60 border border-zinc-800/80 rounded-xl transition-all duration-200 cursor-pointer group hover:border-zinc-700"
+                    >
+                      <Bot className="h-3.5 w-3.5 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
+                      <span className="text-[10px] font-medium text-zinc-200 mt-0.5">Understand Wekraft more</span>
+                      <span className="text-[8px] text-zinc-500 leading-tight">Explore the platform's vision, tools, and integrations.</span>
                     </button>
                   </div>
                 </div>
               ) : (
                 <div className="space-y-3 text-left animate-in fade-in-50 duration-200">
                   {messages.map((msg) => {
+                    if (msg.role === "tool") {
+                      const Icon = msg.toolName === "createSupportQuery" ? MessageSquare : HelpCircle;
+                      const isRunning = msg.toolStatus === "running";
+                      return (
+                        <div key={msg.id} className="flex justify-start pl-8 my-2 animate-in fade-in duration-200">
+                          <div className="flex items-center gap-2 px-3 py-2 bg-zinc-900/60 border border-zinc-800 rounded-xl text-xs text-zinc-300 shadow-sm">
+                            {isRunning ? (
+                              <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-400 shrink-0" />
+                            ) : (
+                              <Icon className="h-3.5 w-3.5 text-blue-400 shrink-0" />
+                            )}
+                            <span className="text-sm font-medium text-zinc-200">
+                              {msg.toolName === "createSupportQuery"
+                                ? (isRunning ? "Creating support ticket..." : "Created support ticket successfully")
+                                : msg.toolName === "getSupportQueries"
+                                ? (isRunning ? "Fetching support queries..." : "Fetched support queries")
+                                : (isRunning ? `Running: ${msg.toolName}...` : `Executed: ${msg.toolName}`)
+                              }
+                            </span>
+                          </div>
+                        </div>
+                      );
+                    }
+
                     const isUser = msg.role === "user";
                     return (
                       <div
@@ -339,21 +387,17 @@ export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDi
                             </span>
                           )}
                         </div>
+                        {isUser && (
+                          <Avatar className="h-6 w-6 border border-zinc-800 shrink-0 mt-0.5">
+                            <AvatarImage src={currentUser?.avatarUrl} alt={currentUser?.name || "User"} />
+                            <AvatarFallback className="text-[9px] font-semibold bg-zinc-800 text-zinc-300 flex items-center justify-center">
+                              {currentUser?.name ? currentUser.name.slice(0, 2).toUpperCase() : <User className="h-3 w-3 text-zinc-400" />}
+                            </AvatarFallback>
+                          </Avatar>
+                        )}
                       </div>
                     );
                   })}
-                  
-                  {/* Tool Running Indicator */}
-                  {toolStatus && toolStatus.status === "running" && (
-                    <div className="flex items-center gap-2 pl-8 text-zinc-400">
-                      <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-zinc-900/60 border border-zinc-800 rounded-lg text-[10px]">
-                        <Loader2 className="h-3 w-3 animate-spin text-blue-400" />
-                        <span>
-                          Running tool: <strong className="text-zinc-300 font-semibold">{toolStatus.toolName}</strong>
-                        </span>
-                      </div>
-                    </div>
-                  )}
                 </div>
               )}
             </div>

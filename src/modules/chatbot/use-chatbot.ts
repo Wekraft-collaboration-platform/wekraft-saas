@@ -5,8 +5,10 @@ import { streamChatbot } from "./chatbot-stream";
 
 export interface Message {
     id: string;
-    role: "user" | "assistant";
+    role: "user" | "assistant" | "tool";
     text: string;
+    toolName?: string;
+    toolStatus?: "running" | "done";
 }
 
 export interface ToolStatus {
@@ -40,12 +42,14 @@ export function useChatbot(userId: string) {
             setIsStreaming(true);
             setToolStatus(null);
 
-            // 3. build messages array in UIMessage parts format
-            const allMessages = [...messages, userMsg].map((m) => ({
-                id: m.id,
-                role: m.role,
-                parts: [{ type: "text", text: m.text }],
-            }));
+            // 3. build messages array in UIMessage parts format, excluding UI-only tool messages
+            const allMessages = [...messages, userMsg]
+                .filter((m) => m.role === "user" || m.role === "assistant")
+                .map((m) => ({
+                    id: m.id,
+                    role: m.role,
+                    parts: [{ type: "text", text: m.text }],
+                }));
 
             await streamChatbot(
                 { userId, messages: allMessages },
@@ -60,9 +64,26 @@ export function useChatbot(userId: string) {
                     },
                     onToolStart: (toolName: string) => {
                         setToolStatus({ toolName, status: "running" });
+                        setMessages((prev) => [
+                            ...prev,
+                            {
+                                id: `tool-${toolName}-${Date.now()}`,
+                                role: "tool",
+                                text: "",
+                                toolName,
+                                toolStatus: "running",
+                            },
+                        ]);
                     },
                     onToolDone: (toolName: string, output: any) => {
                         setToolStatus({ toolName, status: "done", output });
+                        setMessages((prev) =>
+                            prev.map((m) =>
+                                m.role === "tool" && m.toolName === toolName && m.toolStatus === "running"
+                                    ? { ...m, toolStatus: "done" }
+                                    : m
+                            )
+                        );
                     },
                     onFinish: () => {
                         setIsStreaming(false);

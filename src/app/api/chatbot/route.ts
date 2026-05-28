@@ -24,6 +24,7 @@ import { z } from "zod";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { wekraftGuardrailMiddleware } from "@/lib/middleware/wekraft-guardrail";
+import { ratelimit } from "@/lib/rate-limit";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -126,7 +127,7 @@ export type ChatbotMessage = UIMessage<never, UIDataTypes, ChatbotTools>;
 const SYSTEM_PROMPT = (userId: string) =>
     `
 You are the official AI support assistant for Wekraft (wekraft.xyz).
-You ONLY answer questions related to Wekraft. Politely decline anything unrelated.
+You help user understand this platform or solve their any related query and can createQuiery if user wants to contact with wekraft support team.
 
 ## About Wekraft
 Wekraft is an AI-powered project management platform for modern software teams.
@@ -171,16 +172,14 @@ Link a repo to sync GitHub Issues as Wekraft Issues. Commits/PRs visible in task
 - Docs: https://www.wekraft.xyz/web/docs
 - Support email: support@wekraft.xyz
 - Discord: https://discord.gg/zUXum4Z8
-- Beta access: https://www.wekraft.xyz/web
+- Beta access: https://www.wekraft.xyz/we
 
 ## Your Behaviour
 - Be concise, professional, and helpful.
-- When the user reports a bug or issue, gather: title, category, and a clear description —
-  then call the createSupportQuery tool. Always confirm before submitting.
-- When the user asks about their past tickets, call getSupportQueries.
+- When the user reports a bug or issue, gather: category, and a clear description and form title by own.
+- When the user asks about their past raised quiries or support tickets, call getSupportQueries.
 - The current user's ID is: ${userId}
 - If you are unsure about something, direct the user to the docs or support@wekraft.xyz.
-- Never invent features, pricing, or policies not listed above.
 `.trim();
 
 // -----------------------------------
@@ -188,10 +187,32 @@ Link a repo to sync GitHub Issues as Wekraft Issues. Commits/PRs visible in task
 // -----------------------------------
 export async function POST(req: Request) {
     try {
-        const { messages, userId }: { messages: ChatbotMessage[]; userId: string } =
-            await req.json();
+        let body;
+        try {
+            body = await req.json();
+        } catch {
+            return new Response("Invalid JSON payload", { status: 400 });
+        }
+
+        const { messages, userId }: { messages: ChatbotMessage[]; userId: string } = body;
 
         console.log("Chatbot route hit — userId:", userId);
+
+        // Strict rate limiting
+        const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";
+        const limitKey = userId ? `chatbot_rl_${userId}` : `chatbot_rl_ip_${ip}`;
+
+        const { success, limit, reset, remaining } = await ratelimit.limit(limitKey);
+        if (!success) {
+            return new Response("Too many requests. Please try again later.", {
+                status: 429,
+                headers: {
+                    "X-RateLimit-Limit": limit.toString(),
+                    "X-RateLimit-Remaining": remaining.toString(),
+                    "X-RateLimit-Reset": reset.toString(),
+                },
+            });
+        }
 
         const apiKey = process.env.OPENAI_API_KEY;
         if (apiKey) {
@@ -211,13 +232,13 @@ export async function POST(req: Request) {
             return new Response("messages must be an array", { status: 400 });
         }
 
-        const guardedModel = wrapLanguageModel({
-            model: customOpenai("gpt-4.1-nano"),
-            middleware: wekraftGuardrailMiddleware,
-        });
+        // const guardedModel = wrapLanguageModel({
+        //     model: customOpenai("gpt-4.1-nano"),
+        //     middleware: wekraftGuardrailMiddleware,
+        // });
 
         const result = streamText({
-            model: guardedModel,
+            model: customOpenai("gpt-4.1-nano"),
             system: SYSTEM_PROMPT(userId),
             messages: await convertToModelMessages(messages),
             tools: allTools,
