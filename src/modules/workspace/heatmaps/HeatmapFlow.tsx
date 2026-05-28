@@ -3,8 +3,10 @@
 import {
   Background,
   BackgroundVariant,
+  BaseEdge,
   Controls,
   type Edge,
+  type EdgeProps,
   Handle,
   type Node,
   type NodeProps,
@@ -140,7 +142,7 @@ const FolderNodeComponent = (props: NodeProps) => {
   return (
     <div
       className={cn(
-        "px-6 py-4 rounded-xl border transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] min-w-[220px] flex items-center gap-4 cursor-pointer select-none relative group",
+        "px-6 py-4 rounded-xl border transition-all duration-500 ease-[cubic-bezier(0.23,1,0.32,1)] w-[260px] flex items-center gap-4 cursor-pointer select-none relative group",
         isRoot
           ? "bg-[#0D0D0D] text-white shadow-[0_20px_50px_rgba(0,0,0,0.4)] hover:scale-[1.02] hover:-translate-y-1 hover:border-primary/30"
           : "bg-[#0D0D0D]/90 backdrop-blur-md border-white/10 hover:border-white/25 text-zinc-100 shadow-[0_10px_30px_rgba(0,0,0,0.3)] hover:bg-[#111111] hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.98]",
@@ -429,6 +431,25 @@ const nodeTypes = {
   folderNode: FolderNodeComponent,
 };
 
+const TreeEdge = ({
+  id,
+  sourceX,
+  sourceY,
+  targetX,
+  targetY,
+  style,
+  markerEnd,
+}: EdgeProps) => {
+  const midX = sourceX + (targetX - sourceX) / 2;
+  const path = `M ${sourceX} ${sourceY} H ${midX} V ${targetY} H ${targetX}`;
+
+  return <BaseEdge id={id} path={path} style={style} markerEnd={markerEnd} />;
+};
+
+const edgeTypes = {
+  treeEdge: TreeEdge,
+};
+
 interface HeatmapFlowProps {
   structure: FolderNode | null;
   issuePaths?: string[];
@@ -583,7 +604,7 @@ const HeatmapFlowInner = ({
           id: `e-${parentId}-${id}`,
           source: parentId,
           target: id,
-          type: "smoothstep",
+          type: "treeEdge",
           animated: true,
           style: {
             stroke:
@@ -595,10 +616,6 @@ const HeatmapFlowInner = ({
                   ? "rgba(234, 179, 8, 0.5)"
                   : "rgba(59, 130, 246, 0.5)",
             strokeWidth: 2,
-          },
-          pathOptions: {
-            borderRadius: 20,
-            offset: 30,
           },
         } as any);
       }
@@ -646,6 +663,7 @@ const HeatmapFlowInner = ({
         onEdgesChange={onEdgesChange}
         onNodeClick={onNodeClick}
         nodeTypes={nodeTypes}
+        edgeTypes={edgeTypes}
         fitView
         fitViewOptions={{ padding: 0.2, maxZoom: 0.85 }}
         colorMode="dark"
