@@ -1,7 +1,8 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useQuery, useMutation } from "convex/react";
+import { useChatbot } from "@/modules/chatbot/use-chatbot";
 import { api } from "../../../../convex/_generated/api";
 import {
   Dialog,
@@ -28,7 +29,8 @@ import {
   Clock,
   Zap,
   Loader2,
-  HelpCircleIcon
+  HelpCircleIcon,
+  Send
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
@@ -46,6 +48,20 @@ export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDi
   const currentUser = useQuery(api.user.getCurrentUser);
   const accountType = currentUser?.accountType || "free";
   const isPro = accountType === "pro";
+
+  // Chatbot State
+  const { messages, toolStatus, isStreaming, sendMessage } = useChatbot(currentUser?._id ?? "");
+  const [chatInput, setChatInput] = useState("");
+  const scrollContainerRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (scrollContainerRef.current) {
+      scrollContainerRef.current.scrollTo({
+        top: scrollContainerRef.current.scrollHeight,
+        behavior: "smooth",
+      });
+    }
+  }, [messages, toolStatus, isStreaming]);
 
   // Form State
   const [title, setTitle] = useState("");
@@ -258,11 +274,121 @@ export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDi
             </form>
           </TabsContent>
 
-          <TabsContent value="ai" className="focus:outline-none">
-            <div className="relative overflow-hidden">
-
-
+          <TabsContent value="ai" className="focus:outline-none h-[390px] flex flex-col justify-between">
+            {/* Messages Container */}
+            <div 
+              ref={scrollContainerRef}
+              className="flex-1 overflow-y-auto pr-1 mb-3 space-y-3 min-h-0 select-none scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent"
+            >
+              {messages.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-full text-center p-4 space-y-4">
+                  <div className="h-12 w-12 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/20 animate-pulse">
+                    <Bot className="h-6 w-6 text-blue-400" />
+                  </div>
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-medium text-white">Wekraft AI Assistant</h4>
+                    <p className="text-xs text-zinc-400 max-w-[280px]">
+                      Ask me questions about Wekraft, check your support queries, or report issues in real-time.
+                    </p>
+                  </div>
+                  <div className="grid grid-cols-2 gap-2 w-full max-w-[360px] pt-2">
+                    <button
+                      type="button"
+                      onClick={() => sendMessage("Show me my support queries.")}
+                      className="px-3 py-2 text-left text-[11px] bg-zinc-900/50 hover:bg-zinc-800 text-zinc-300 border border-zinc-800/80 rounded-lg transition-colors cursor-pointer"
+                    >
+                      🔍 Show my queries
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => sendMessage("I want to submit a support ticket.")}
+                      className="px-3 py-2 text-left text-[11px] bg-zinc-900/50 hover:bg-zinc-800 text-zinc-300 border border-zinc-800/80 rounded-lg transition-colors cursor-pointer"
+                    >
+                      📝 Report an issue
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <div className="space-y-3 text-left animate-in fade-in-50 duration-200">
+                  {messages.map((msg) => {
+                    const isUser = msg.role === "user";
+                    return (
+                      <div
+                        key={msg.id}
+                        className={cn(
+                          "flex w-full gap-2",
+                          isUser ? "justify-end" : "justify-start"
+                        )}
+                      >
+                        {!isUser && (
+                          <div className="h-6 w-6 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/20 shrink-0 mt-0.5">
+                            <Bot className="h-3 w-3 text-blue-400" />
+                          </div>
+                        )}
+                        <div
+                          className={cn(
+                            "max-w-[75%] rounded-2xl p-2.5 text-[11px] leading-relaxed break-words",
+                            isUser
+                              ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-tr-none shadow-md"
+                              : "bg-zinc-900/40 border border-zinc-800/80 text-zinc-100 rounded-tl-none"
+                          )}
+                        >
+                          {msg.text || (
+                            <span className="flex items-center gap-1 text-zinc-500">
+                              Thinking<span className="animate-pulse">...</span>
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
+                  
+                  {/* Tool Running Indicator */}
+                  {toolStatus && toolStatus.status === "running" && (
+                    <div className="flex items-center gap-2 pl-8 text-zinc-400">
+                      <div className="flex items-center gap-1.5 px-2.5 py-1.5 bg-zinc-900/60 border border-zinc-800 rounded-lg text-[10px]">
+                        <Loader2 className="h-3 w-3 animate-spin text-blue-400" />
+                        <span>
+                          Running tool: <strong className="text-zinc-300 font-semibold">{toolStatus.toolName}</strong>
+                        </span>
+                      </div>
+                    </div>
+                  )}
+                </div>
+              )}
             </div>
+
+            {/* Input Form */}
+            <form
+              onSubmit={(e) => {
+                e.preventDefault();
+                if (!chatInput.trim() || isStreaming) return;
+                sendMessage(chatInput.trim());
+                setChatInput("");
+              }}
+              className="relative flex items-center gap-2 bg-[#0f0f12] border border-zinc-800 rounded-md p-1 focus-within:border-neutral-700"
+            >
+              <Input
+                type="text"
+                placeholder="Ask assistant anything..."
+                value={chatInput}
+                onChange={(e) => chatInput !== e.target.value && setChatInput(e.target.value)}
+                disabled={isStreaming}
+                className="bg-transparent! border-none! text-white placeholder:text-zinc-600 h-8 text-xs focus-visible:ring-0! flex-1 outline-none pr-10"
+              />
+              <Button
+                type="submit"
+                size="icon"
+                disabled={!chatInput.trim() || isStreaming}
+                className="h-7 w-7 bg-blue-600 hover:bg-blue-500 text-white rounded-md shrink-0 flex items-center justify-center cursor-pointer disabled:bg-zinc-800 disabled:text-zinc-500 disabled:cursor-not-allowed transition-colors"
+              >
+                {isStreaming ? (
+                  <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                ) : (
+                  <Send className="h-3.5 w-3.5" />
+                )}
+              </Button>
+            </form>
           </TabsContent>
         </Tabs>
       </DialogContent>
