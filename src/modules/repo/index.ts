@@ -1,9 +1,13 @@
-
 import { useQuery } from "@tanstack/react-query";
 import { getRepositories, searchRepositories } from "../github/actions/action";
 import { Repository } from "@/types/types";
 
-export function useRepositories(page: number = 1, perPage: number = 10, enabled: boolean = true, searchQuery: string = "") {
+export function useRepositories(
+  page: number = 1,
+  perPage: number = 10,
+  enabled: boolean = true,
+  searchQuery: string = "",
+) {
   return useQuery<Repository[]>({
     queryKey: ["repositories", page, perPage, searchQuery],
     queryFn: async () => {
@@ -23,4 +27,3 @@ export function useRepositories(page: number = 1, perPage: number = 10, enabled:
     retryDelay: 1000,
   });
 }
-

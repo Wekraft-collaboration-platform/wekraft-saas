@@ -31,7 +31,10 @@ export async function POST(req: Request) {
     }
 
     if (!projectId) {
-      return NextResponse.json({ error: "projectId is required" }, { status: 400 });
+      return NextResponse.json(
+        { error: "projectId is required" },
+        { status: 400 },
+      );
     }
 
     console.log(
@@ -56,11 +59,14 @@ export async function POST(req: Request) {
     } catch (quotaError: any) {
       console.warn("Storage quota check failed:", quotaError);
       return NextResponse.json(
-        { error: quotaError.message || "Storage limit reached. Please upgrade your plan." },
-        { status: 400 }
+        {
+          error:
+            quotaError.message ||
+            "Storage limit reached. Please upgrade your plan.",
+        },
+        { status: 400 },
       );
     }
-
 
     const buffer = Buffer.from(await file.arrayBuffer());
     // Sanitize filename and add timestamp

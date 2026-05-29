@@ -419,10 +419,7 @@ export default async function DocPage({
   )?.[0];
 
   // Inject reading time into content rendering by replacing the placeholder
-  const contentWithMeta = content.replace(
-    /^# .+$/m,
-    (match) => match,
-  );
+  const contentWithMeta = content.replace(/^# .+$/m, (match) => match);
 
   return (
     <div className="flex gap-12 xl:gap-16 w-full">
@@ -490,7 +487,11 @@ export default async function DocPage({
         {/* Prev / Next Nav */}
         <div className="mt-12 pt-6 border-t border-white/8 flex items-center justify-between">
           {prevDoc ? (
-            <Button variant="ghost" asChild className="h-auto py-3 px-4 flex-col items-start text-left gap-1">
+            <Button
+              variant="ghost"
+              asChild
+              className="h-auto py-3 px-4 flex-col items-start text-left gap-1"
+            >
               <Link href={`/web/docs/${prevDoc.slug}`}>
                 <span className="text-[10px] text-white/30 uppercase tracking-widest font-semibold">
                   Previous
@@ -506,7 +507,11 @@ export default async function DocPage({
           )}
 
           {nextDoc ? (
-            <Button variant="ghost" asChild className="h-auto py-3 px-4 flex-col items-end text-right gap-1">
+            <Button
+              variant="ghost"
+              asChild
+              className="h-auto py-3 px-4 flex-col items-end text-right gap-1"
+            >
               <Link href={`/web/docs/${nextDoc.slug}`}>
                 <span className="text-[10px] text-white/30 uppercase tracking-widest font-semibold">
                   Next

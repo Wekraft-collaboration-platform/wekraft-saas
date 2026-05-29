@@ -114,7 +114,9 @@ const Features = () => {
                   <h3
                     className={cn(
                       "text-[17px] font-semibold mb-2 transition-colors duration-300",
-                      isActive ? "text-white" : "text-neutral-500 group-hover:text-neutral-300",
+                      isActive
+                        ? "text-white"
+                        : "text-neutral-500 group-hover:text-neutral-300",
                     )}
                   >
                     {step.title}
@@ -149,7 +151,6 @@ const Features = () => {
 
           {/* Right Side: Image/Preview Area */}
           <div className="relative aspect-video lg:aspect-auto lg:h-[500px] w-full mt-8 lg:mt-0">
-         
             <div className="relative h-full w-full rounded-xl border border-white/10 overflow-hidden bg-neutral-950 shadow-[0_0_50px_rgba(0,0,0,0.4)] group">
               <AnimatePresence mode="wait">
                 <motion.div

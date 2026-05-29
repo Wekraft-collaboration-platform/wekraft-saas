@@ -1,8 +1,6 @@
-"use server"
+"use server";
 import { redis } from "@/lib/redis";
-import {
-  fetchUserContributions,
-} from "@/modules/github/actions/action";
+import { fetchUserContributions } from "@/modules/github/actions/action";
 import { getGithubAccessToken } from "@/lib/github-auth";
 import { auth } from "@clerk/nextjs/server";
 import { Octokit } from "octokit";
@@ -79,7 +77,6 @@ async function fetchDashboardStats(
   };
 }
 
-
 export async function getDashboardStats(
   githubName: string,
 ): Promise<DashboardStats> {
@@ -103,7 +100,6 @@ export async function getDashboardStats(
   return data;
 }
 
-
 export async function getContributionStats(githubName: string) {
   const { userId } = await auth();
   if (!userId) {
@@ -112,7 +108,10 @@ export async function getContributionStats(githubName: string) {
 
   const cacheKey = `wekraft:contributionStats:${githubName}`;
 
-  const cached = await redis.get<{ contributions: any[]; totalContributions: number }>(cacheKey);
+  const cached = await redis.get<{
+    contributions: any[];
+    totalContributions: number;
+  }>(cacheKey);
   if (cached) {
     console.log("----Contribution stats cache HIT----");
     return cached;
@@ -136,12 +135,15 @@ export async function getContributionStats(githubName: string) {
           count: count,
           level: count === 0 ? 0 : Math.min(4, Math.floor((count - 1) / 3) + 1),
         };
-      })
+      }),
     );
 
-    const data = { contributions, totalContributions: calendar.totalContributions };
+    const data = {
+      contributions,
+      totalContributions: calendar.totalContributions,
+    };
 
-    await redis.set(cacheKey, data, { ex: 60 * 60 * 6 }); 
+    await redis.set(cacheKey, data, { ex: 60 * 60 * 6 });
 
     return data;
   } catch (error) {

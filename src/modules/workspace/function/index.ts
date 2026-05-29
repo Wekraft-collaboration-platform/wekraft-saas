@@ -6,51 +6,104 @@ import { getGithubAccessToken } from "@/lib/github-auth";
 
 const SKIP_FOLDERS = new Set([
   // Node / JS
-  "node_modules", ".next", ".nuxt", ".output", "dist", "build", "out", ".cache", ".turbo", ".vercel", ".parcel-cache", ".vite", ".expo",
+  "node_modules",
+  ".next",
+  ".nuxt",
+  ".output",
+  "dist",
+  "build",
+  "out",
+  ".cache",
+  ".turbo",
+  ".vercel",
+  ".parcel-cache",
+  ".vite",
+  ".expo",
   // Git
-  ".git", ".github",
+  ".git",
+  ".github",
   // Logs & coverage
-  "coverage", "logs",
+  "coverage",
+  "logs",
   // Public static heavy assets
-  "public", "assets", "static", "images", "fonts",
+  "public",
+  "assets",
+  "static",
+  "images",
+  "fonts",
   // IDE / Editor
-  ".vscode", ".idea",
+  ".vscode",
+  ".idea",
   // Python
-  "__pycache__", ".pytest_cache", ".mypy_cache", ".venv", "venv", "env",
+  "__pycache__",
+  ".pytest_cache",
+  ".mypy_cache",
+  ".venv",
+  "venv",
+  "env",
   // Java / Kotlin / Rust
-  ".gradle", "target", "build", "vendor",
+  ".gradle",
+  "target",
+  "build",
+  "vendor",
   // Ruby / Go / Swift / Docker / Terraform
-  ".bundle", "bin", "pkg", "DerivedData", ".build", ".docker", ".terraform",
+  ".bundle",
+  "bin",
+  "pkg",
+  "DerivedData",
+  ".build",
+  ".docker",
+  ".terraform",
   // Misc
-  "tmp", "temp", "doc", "docs"
+  "tmp",
+  "temp",
+  "doc",
+  "docs",
 ]);
 
 const SKIP_FILES = new Set([
-  "package-lock.json", "pnpm-lock.yaml", "yarn.lock", "bun.lockb",
-  "LICENSE", "LICENSE.txt", "CODE_OF_CONDUCT.md", "CONTRIBUTING.md", "README.md",
-  "tsconfig.json", "tailwind.config.ts", "next.config.ts", "next.config.js", "biome.json",
-  "components.json", ".gitignore", ".env", ".env.local", ".env.example",
-  "postcss.config.js", "postcss.config.ts", "tailwind.config.js"
+  "package-lock.json",
+  "pnpm-lock.yaml",
+  "yarn.lock",
+  "bun.lockb",
+  "LICENSE",
+  "LICENSE.txt",
+  "CODE_OF_CONDUCT.md",
+  "CONTRIBUTING.md",
+  "README.md",
+  "tsconfig.json",
+  "tailwind.config.ts",
+  "next.config.ts",
+  "next.config.js",
+  "biome.json",
+  "components.json",
+  ".gitignore",
+  ".env",
+  ".env.local",
+  ".env.example",
+  "postcss.config.js",
+  "postcss.config.ts",
+  "tailwind.config.js",
 ]);
 
 function shouldSkip(itemPath: string, type: "blob" | "tree"): boolean {
   const parts = itemPath.split("/");
   const fileName = parts[parts.length - 1];
-  
+
   // Check folder skip
   if (parts.some((part) => SKIP_FOLDERS.has(part))) return true;
 
   if (type === "blob") {
     // Check specific file skip
     if (SKIP_FILES.has(fileName)) return true;
-    
+
     // Skip markdown files if in root (usually documentation)
     if (fileName.toLowerCase().endsWith(".md")) return true;
-    
+
     // Skip hidden files
     if (fileName.startsWith(".")) return true;
   }
-  
+
   return false;
 }
 
@@ -69,7 +122,7 @@ export const getRepoTree = async (
   owner: string,
   repo: string,
   dirPath: string = "",
-  ownerClerkId?: string
+  ownerClerkId?: string,
 ): Promise<GetRepoTreeResult> => {
   const cacheKey = `wekraft:repo-tree:v2:${owner}:${repo}:${dirPath || "root"}`;
 

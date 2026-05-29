@@ -53,7 +53,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useKayaStore } from "@/store/useKayaStore";
 import { useHarryStore } from "@/store/useHarryStore";
 
-interface AiAssistantSheetProps { }
+interface AiAssistantSheetProps {}
 
 const KayaLoader = () => (
   <svg
@@ -102,7 +102,7 @@ const KayaLoader = () => (
   </svg>
 );
 
-export function AiAssistantSheet({ }: AiAssistantSheetProps) {
+export function AiAssistantSheet({}: AiAssistantSheetProps) {
   const { isOpen, setIsOpen, threadId, createNewSession } = useKayaStore();
   const currentUser = useQuery(api.user.getCurrentUser);
   const userId = currentUser?._id;
@@ -189,7 +189,10 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
-        if (typeof window !== "undefined" && window.location.pathname.includes("/workspace/ai")) {
+        if (
+          typeof window !== "undefined" &&
+          window.location.pathname.includes("/workspace/ai")
+        ) {
           return;
         }
         if (isHarryActive) return; // Let Harry's sheet handle it
@@ -435,8 +438,13 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
                   onClick={() => {
                     setIsOpen(false);
                     useHarryStore.getState().setIsOpen(true);
-                    if (typeof window !== "undefined" && window.location.pathname.includes("/workspace/ai")) {
-                      router.replace(`/dashboard/my-projects/${slug}/workspace/ai?harry=true`);
+                    if (
+                      typeof window !== "undefined" &&
+                      window.location.pathname.includes("/workspace/ai")
+                    ) {
+                      router.replace(
+                        `/dashboard/my-projects/${slug}/workspace/ai?harry=true`,
+                      );
                     }
                   }}
                 >
@@ -497,7 +505,11 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
                   className="text-red-500 py-2 text-xs px-4"
                 >
                   {checkpoint.error && checkpoint.errorMessage && (
-                    <script dangerouslySetInnerHTML={{ __html: `console.error("🤖 [Kaya AI Error]:", ${JSON.stringify(checkpoint.errorMessage)})` }} />
+                    <script
+                      dangerouslySetInnerHTML={{
+                        __html: `console.error("🤖 [Kaya AI Error]:", ${JSON.stringify(checkpoint.errorMessage)})`,
+                      }}
+                    />
                   )}
                   Mistake made by LLM. Try again.
                 </div>
@@ -604,10 +616,14 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
                 </h4>
               </div>
               <p className="text-[11px] text-muted-foreground text-center mb-3 px-6">
-                Kaya is available for Pro Plan Owner projects. Get advanced project analysis,
-                automated reporting, and more.
+                Kaya is available for Pro Plan Owner projects. Get advanced
+                project analysis, automated reporting, and more.
               </p>
-              <Button size="sm" className="w-full text-sm" onClick={() => router.push("/web/pricing")}>
+              <Button
+                size="sm"
+                className="w-full text-sm"
+                onClick={() => router.push("/web/pricing")}
+              >
                 Upgrade to Pro <LayersPlus />
               </Button>
             </div>

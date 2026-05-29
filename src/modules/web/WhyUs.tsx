@@ -98,9 +98,7 @@ const WhyUs = () => {
                 </div>
 
                 {/* Title */}
-                <h3 className="text-xl font-semibold text-white">
-                  {title}
-                </h3>
+                <h3 className="text-xl font-semibold text-white">{title}</h3>
 
                 {/* Description */}
                 <p className="text-sm text-neutral-400 leading-relaxed flex-1">

@@ -20,6 +20,7 @@ import {
   Github,
   Info,
   Loader2,
+  LucideFolder,
   Network,
   Package,
   RefreshCw,
@@ -134,11 +135,11 @@ const FolderTree = ({
         className={cn(
           "flex items-center gap-2 py-1.5 px-2 mb-0.5 rounded-md hover:bg-accent/40 cursor-pointer transition-all text-[13px] group relative border border-transparent",
           level === 0 &&
-            !isIssueView &&
-            "font-bold bg-accent/20 mb-2 border border-border/10",
+          !isIssueView &&
+          "font-bold bg-accent/20 mb-2 border border-border/10",
           level === 0 &&
-            isIssueView &&
-            "font-bold bg-accent/20 mb-2 border border-border/10",
+          isIssueView &&
+          "font-bold bg-accent/20 mb-2 border border-border/10",
           isActiveFolder && "border-red-500/40 bg-red-500/5",
           isExpanded && level !== 0 && "bg-accent/5",
         )}
@@ -301,16 +302,19 @@ export const HeatmapPanel = memo(
 
     const [isIssuesOpen, setIsIssuesOpen] = useState(false);
     const [isStructureOpen, setIsStructureOpen] = useState(false);
-    const [structureExpandedPaths, setStructureExpandedPaths] = useState<Set<string>>(
-      new Set(),
-    );
+    const [structureExpandedPaths, setStructureExpandedPaths] = useState<
+      Set<string>
+    >(new Set());
     const [isCommitsOpen, setIsCommitsOpen] = useState(true);
     const [commits, setCommits] = useState<CommitInfo[]>([]);
     const [isCommitsLoading, setIsCommitsLoading] = useState(false);
 
     const [lastUpdated, setLastUpdated] = useState<number | null>(null);
 
-    const repository = useQuery(api.repo.getRepositoryById, repoId ? { repoId } : "skip");
+    const repository = useQuery(
+      api.repo.getRepositoryById,
+      repoId ? { repoId } : "skip",
+    );
 
     const issueTree = useMemo(() => {
       if (!structure || issuePaths.length === 0) return null;
@@ -514,7 +518,7 @@ export const HeatmapPanel = memo(
                     </h2>
                   </div>
                 </div>
- 
+
                 <Button
                   variant="outline"
                   size="icon-sm"
@@ -532,7 +536,7 @@ export const HeatmapPanel = memo(
                   )}
                 </Button>
               </div>
- 
+
               {lastUpdated && (
                 <p className="text-xs font-inter text-primary/70 tracking-tight mt-2 flex items-center gap-1">
                   <Info size={12} />
@@ -543,7 +547,7 @@ export const HeatmapPanel = memo(
                 </p>
               )}
             </div>
- 
+
             {/* BODY */}
             <div className="flex-1 overflow-y-auto custom-scrollbar px-4 py-4 space-y-4">
               {/* REPOSITORY INFO */}
@@ -600,7 +604,11 @@ export const HeatmapPanel = memo(
                     insights / errors and more.
                   </p>
 
-                  <Button className="text-xs cursor-pointer mt-4" size="sm" onClick={() => router.push("/web/pricing")}>
+                  <Button
+                    className="text-xs cursor-pointer mt-4"
+                    size="sm"
+                    onClick={() => router.push("/web/pricing")}
+                  >
                     Upgrade Now <Clover />
                   </Button>
                 </div>
@@ -662,7 +670,7 @@ export const HeatmapPanel = memo(
                                         </span>
                                       </p>
                                     </div>
- 
+
                                     <div className="flex -space-x-2 shrink-0">
                                       {issue.assignedTo?.map((assignee) => (
                                         <div
@@ -706,7 +714,7 @@ export const HeatmapPanel = memo(
                       onClick={() => setIsStructureOpen(!isStructureOpen)}
                     >
                       <span className="flex items-center gap-2">
-                        <FolderSymbol folderName="project" width={18} height={18} />
+                        <LucideFolder size={20} className="text-white" />
                         Project Structure
                       </span>
 
@@ -737,7 +745,11 @@ export const HeatmapPanel = memo(
                                 isIssueView={false}
                                 onFileClick={(filePath) => {
                                   if (repository?.repoUrl) {
-                                    window.open(`${repository.repoUrl}/blob/main/${filePath}`, "_blank", "noopener,noreferrer");
+                                    window.open(
+                                      `${repository.repoUrl}/blob/main/${filePath}`,
+                                      "_blank",
+                                      "noopener,noreferrer",
+                                    );
                                   } else {
                                     toast.error("Repository URL not found");
                                   }
@@ -745,8 +757,13 @@ export const HeatmapPanel = memo(
                               />
                             ) : isLoading ? (
                               <div className="flex flex-col items-center justify-center py-8 space-y-3">
-                                <Loader2 size={20} className="animate-spin text-primary" />
-                                <p className="text-xs text-muted-foreground">Loading file structure...</p>
+                                <Loader2
+                                  size={20}
+                                  className="animate-spin text-primary"
+                                />
+                                <p className="text-xs text-muted-foreground">
+                                  Loading file structure...
+                                </p>
                               </div>
                             ) : (
                               <div className="text-center py-8 text-zinc-500 text-xs italic">
@@ -758,7 +775,7 @@ export const HeatmapPanel = memo(
                       )}
                     </AnimatePresence>
                   </div>
- 
+
                   {/* COMMITS BOX */}
                   <div className="w-full space-y-4 pt-2">
                     <div className="flex items-center gap-2">
@@ -771,7 +788,7 @@ export const HeatmapPanel = memo(
                           <GitCommit size={18} />
                           Latest Commits
                         </span>
- 
+
                         <ChevronDown
                           className={cn(
                             "absolute right-4 transition-transform duration-200",
@@ -793,11 +810,11 @@ export const HeatmapPanel = memo(
                         />
                       </Button>
                     </div>
- 
+
                     <AnimatePresence>
                       {isCommitsOpen && (
                         <motion.div
-                           initial={{ height: 0, opacity: 0 }}
+                          initial={{ height: 0, opacity: 0 }}
                           animate={{ height: "auto", opacity: 1 }}
                           exit={{ height: 0, opacity: 0 }}
                           className="overflow-hidden"

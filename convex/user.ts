@@ -86,11 +86,11 @@ export const checkUsernameAvailability = query({
     const identity = await ctx.auth.getUserIdentity();
     const currentUser = identity
       ? await ctx.db
-        .query("users")
-        .withIndex("by_token", (q) =>
-          q.eq("clerkToken", identity.tokenIdentifier),
-        )
-        .unique()
+          .query("users")
+          .withIndex("by_token", (q) =>
+            q.eq("clerkToken", identity.tokenIdentifier),
+          )
+          .unique()
       : null;
 
     const existingUser = await ctx.db
@@ -400,7 +400,9 @@ export const updateUserSubscriptionInternal = internalMutation({
   args: {
     userId: v.id("users"),
     // plan is optional here — if omitted, we only update status fields (e.g. past_due)
-    plan: v.optional(v.union(v.literal("free"), v.literal("plus"), v.literal("pro"))),
+    plan: v.optional(
+      v.union(v.literal("free"), v.literal("plus"), v.literal("pro")),
+    ),
     subscriptionId: v.optional(v.string()),
     customerId: v.optional(v.string()),
     status: v.optional(v.string()),
@@ -425,7 +427,7 @@ export const updateUserSubscriptionInternal = internalMutation({
 
     await ctx.db.patch(args.userId, patch);
     console.log(
-      `[Payments] Subscription updated: user=${args.userId}, plan=${args.plan ?? "unchanged"}, status=${args.status}, provider=${args.provider}`
+      `[Payments] Subscription updated: user=${args.userId}, plan=${args.plan ?? "unchanged"}, status=${args.status}, provider=${args.provider}`,
     );
   },
 });
@@ -652,7 +654,9 @@ export const checkAndIncrementStorage = mutation({
     // Check 1: Free plan owner cannot upload task/issue attachments
     const plan = owner.accountType || "free";
     if (!args.isTeamspace && plan === "free") {
-      throw new Error("Attachments are disabled for Free projects. Upgrade to Plus/Pro to unlock.");
+      throw new Error(
+        "Attachments are disabled for Free projects. Upgrade to Plus/Pro to unlock.",
+      );
     }
 
     const limits = getPlanLimits(owner);
@@ -696,5 +700,3 @@ export const decrementStorage = mutation({
     return { success: true, currentUsage: newUsage };
   },
 });
-
-

@@ -1,8 +1,8 @@
 /**
  * EditChannelDialog.tsx
- * 
+ *
  * Dialog component for editing an existing channel's properties (name, description).
- * 
+ *
  * Integration:
  * - Calls the `onUpdate` callback passed from `ChannelsSidebar`.
  * - Populates the form with existing channel data.
@@ -39,7 +39,10 @@ const schema = z.object({
     .string()
     .min(1, "Name required")
     .max(32, "Max 32 chars")
-    .regex(/^[a-z0-9\s-]+$/, "Only lowercase letters, numbers, spaces and hyphens"),
+    .regex(
+      /^[a-z0-9\s-]+$/,
+      "Only lowercase letters, numbers, spaces and hyphens",
+    ),
   description: z.string().max(120).optional(),
 });
 
@@ -48,11 +51,20 @@ type FormValues = z.infer<typeof schema>;
 interface Props {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  onUpdate: (channelId: string, name: string, description: string) => Promise<boolean>;
+  onUpdate: (
+    channelId: string,
+    name: string,
+    description: string,
+  ) => Promise<boolean>;
   channel: Channel | null;
 }
 
-export function EditChannelDialog({ open, onOpenChange, onUpdate, channel }: Props) {
+export function EditChannelDialog({
+  open,
+  onOpenChange,
+  onUpdate,
+  channel,
+}: Props) {
   const [loading, setLoading] = useState(false);
 
   const form = useForm<FormValues>({
@@ -74,7 +86,11 @@ export function EditChannelDialog({ open, onOpenChange, onUpdate, channel }: Pro
     if (!channel) return;
     setLoading(true);
     try {
-      const success = await onUpdate(channel.id, values.name, values.description ?? "");
+      const success = await onUpdate(
+        channel.id,
+        values.name,
+        values.description ?? "",
+      );
       if (success) {
         onOpenChange(false);
       }
@@ -110,7 +126,9 @@ export function EditChannelDialog({ open, onOpenChange, onUpdate, channel }: Pro
                         placeholder="e.g. dev-chat"
                         className="border-0 p-0 h-9 shadow-none focus-visible:ring-0 bg-transparent"
                         onChange={(e) =>
-                          field.onChange(e.target.value.toLowerCase().replace(/\s+/g, "-"))
+                          field.onChange(
+                            e.target.value.toLowerCase().replace(/\s+/g, "-"),
+                          )
                         }
                       />
                     </div>
@@ -126,7 +144,10 @@ export function EditChannelDialog({ open, onOpenChange, onUpdate, channel }: Pro
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description <span className="text-muted-foreground">(optional)</span></FormLabel>
+                  <FormLabel>
+                    Description{" "}
+                    <span className="text-muted-foreground">(optional)</span>
+                  </FormLabel>
                   <FormControl>
                     <Textarea
                       {...field}
@@ -140,7 +161,11 @@ export function EditChannelDialog({ open, onOpenChange, onUpdate, channel }: Pro
             />
 
             <DialogFooter>
-              <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => onOpenChange(false)}
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={loading}>

@@ -43,7 +43,9 @@ export const downgradeExpiredPlans = internalMutation({
       }
     }
 
-    console.log(`[Cron] downgradeExpiredPlans: checked ${paidUsers.length} paid users, downgraded ${downgraded}`);
+    console.log(
+      `[Cron] downgradeExpiredPlans: checked ${paidUsers.length} paid users, downgraded ${downgraded}`,
+    );
     return { checked: paidUsers.length, downgraded };
   },
 });

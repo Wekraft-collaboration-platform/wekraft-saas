@@ -5,7 +5,9 @@ if (
   !process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ||
   !process.env.RAZORPAY_KEY_SECRET
 ) {
-  console.warn("[Razorpay] Missing NEXT_PUBLIC_RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET in env");
+  console.warn(
+    "[Razorpay] Missing NEXT_PUBLIC_RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET in env",
+  );
 }
 
 type RazorpayPlan = {
@@ -24,7 +26,7 @@ export async function POST(req: NextRequest) {
     if (!razorpayKeyId || !razorpayKeySecret) {
       return NextResponse.json(
         { error: "Razorpay keys are not configured" },
-        { status: 500 }
+        { status: 500 },
       );
     }
 
@@ -35,10 +37,7 @@ export async function POST(req: NextRequest) {
     const { amount, planName, planType, currency = "INR" } = await req.json();
 
     if (!planType || (planType !== "plus" && planType !== "pro")) {
-      return NextResponse.json(
-        { error: "Invalid planType" },
-        { status: 400 },
-      );
+      return NextResponse.json({ error: "Invalid planType" }, { status: 400 });
     }
 
     let targetPlanId = "";
@@ -70,7 +69,7 @@ export async function POST(req: NextRequest) {
   } catch (error: any) {
     console.error("[Razorpay Subscription Error]:", error);
     let message = "Failed to create subscription";
-    
+
     if (error instanceof Error) {
       message = error.message;
     } else if (error?.error?.description) {
@@ -84,10 +83,7 @@ export async function POST(req: NextRequest) {
         message = String(error);
       }
     }
-    
-    return NextResponse.json(
-      { error: message },
-      { status: 500 },
-    );
+
+    return NextResponse.json({ error: message }, { status: 500 });
   }
 }

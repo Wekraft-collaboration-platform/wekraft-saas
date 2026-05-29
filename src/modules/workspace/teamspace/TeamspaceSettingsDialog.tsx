@@ -1,10 +1,19 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { useTeamspaceSettings, TeamspaceSettings } from "./hooks/useTeamspaceSettings";
+import {
+  useTeamspaceSettings,
+  TeamspaceSettings,
+} from "./hooks/useTeamspaceSettings";
 import { Loader2 } from "lucide-react";
 
 interface Props {
@@ -14,12 +23,17 @@ interface Props {
   isPower: boolean; // true if user is Owner or Admin
 }
 
-export function TeamspaceSettingsDialog({ projectId, open, onOpenChange, isPower }: Props) {
+export function TeamspaceSettingsDialog({
+  projectId,
+  open,
+  onOpenChange,
+  isPower,
+}: Props) {
   const { settings, loading, updateSettings } = useTeamspaceSettings(projectId);
 
   const handleToggle = (key: keyof TeamspaceSettings, checked: boolean) => {
     if (!isPower || !settings) return;
-    
+
     updateSettings({ [key]: checked ? 1 : 0 });
   };
 
@@ -51,7 +65,9 @@ export function TeamspaceSettingsDialog({ projectId, open, onOpenChange, isPower
                   id="create-channels"
                   checked={settings?.members_can_create_channels === 1}
                   disabled={!isPower}
-                  onCheckedChange={(checked) => handleToggle("members_can_create_channels", checked)}
+                  onCheckedChange={(checked) =>
+                    handleToggle("members_can_create_channels", checked)
+                  }
                 />
               </div>
 
@@ -66,7 +82,9 @@ export function TeamspaceSettingsDialog({ projectId, open, onOpenChange, isPower
                   id="edit-channels"
                   checked={settings?.members_can_edit_channels === 1}
                   disabled={!isPower}
-                  onCheckedChange={(checked) => handleToggle("members_can_edit_channels", checked)}
+                  onCheckedChange={(checked) =>
+                    handleToggle("members_can_edit_channels", checked)
+                  }
                 />
               </div>
 
@@ -81,7 +99,9 @@ export function TeamspaceSettingsDialog({ projectId, open, onOpenChange, isPower
                   id="delete-channels"
                   checked={settings?.members_can_delete_channels === 1}
                   disabled={!isPower}
-                  onCheckedChange={(checked) => handleToggle("members_can_delete_channels", checked)}
+                  onCheckedChange={(checked) =>
+                    handleToggle("members_can_delete_channels", checked)
+                  }
                 />
               </div>
 

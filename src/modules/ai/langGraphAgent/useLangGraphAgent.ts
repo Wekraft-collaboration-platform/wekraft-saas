@@ -482,7 +482,7 @@ export function useLangGraphAgent<
 
     // Update the last checkpoint state. Update only the properties that are in the custom event.
     const lastCheckpoint = appCheckpoints[appCheckpoints.length - 1];
-    
+
     // Check if the custom event contains an agent_status update
     if ((state as any).agent_status) {
       setAgentStatus((state as any).agent_status);

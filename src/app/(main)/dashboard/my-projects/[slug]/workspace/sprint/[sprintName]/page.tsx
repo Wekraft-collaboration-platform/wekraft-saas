@@ -750,31 +750,49 @@ const SprintDetailPage = () => {
                                     )}
                                   </div>
                                   <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-medium">
-                                    <span className="capitalize">{task.status}</span>
+                                    <span className="capitalize">
+                                      {task.status}
+                                    </span>
                                     <span>•</span>
                                     <div className="flex items-center gap-1">
                                       <Calendar className="w-3 h-3" />
                                       <span>
-                                        {format(task.estimation.startDate, "MMM d")} → {format(task.estimation.endDate, "MMM d")}
+                                        {format(
+                                          task.estimation.startDate,
+                                          "MMM d",
+                                        )}{" "}
+                                        →{" "}
+                                        {format(
+                                          task.estimation.endDate,
+                                          "MMM d",
+                                        )}
                                       </span>
                                     </div>
                                   </div>
                                 </div>
                               </div>
                               <div className="flex items-center gap-3 shrink-0">
-                                <div className="flex items-center gap-1" title={`Priority: ${task.priority || "none"}`}>
+                                <div
+                                  className="flex items-center gap-1"
+                                  title={`Priority: ${task.priority || "none"}`}
+                                >
                                   {priorityIcons2[task.priority || "none"]}
                                 </div>
                                 {task.assignees && task.assignees.length > 0 ? (
                                   <div className="flex items-center -space-x-1.5">
-                                    {task.assignees.slice(0, 3).map((person: any, i: number) => (
-                                      <Avatar key={i} className="w-5.5 h-5.5 border border-background shadow-xs">
-                                        <AvatarImage src={person.avatar} />
-                                        <AvatarFallback className="text-[8px] bg-muted text-muted-foreground font-bold uppercase">
-                                          {person.name[0]}
-                                        </AvatarFallback>
-                                      </Avatar>
-                                    ))}
+                                    {task.assignees
+                                      .slice(0, 3)
+                                      .map((person: any, i: number) => (
+                                        <Avatar
+                                          key={i}
+                                          className="w-5.5 h-5.5 border border-background shadow-xs"
+                                        >
+                                          <AvatarImage src={person.avatar} />
+                                          <AvatarFallback className="text-[8px] bg-muted text-muted-foreground font-bold uppercase">
+                                            {person.name[0]}
+                                          </AvatarFallback>
+                                        </Avatar>
+                                      ))}
                                     {task.assignees.length > 3 && (
                                       <div className="w-5.5 h-5.5 rounded-full bg-muted border border-background flex items-center justify-center text-[8px] font-bold text-muted-foreground">
                                         +{task.assignees.length - 3}
@@ -782,7 +800,9 @@ const SprintDetailPage = () => {
                                     )}
                                   </div>
                                 ) : (
-                                  <span className="text-[10px] text-muted-foreground/60">Unassigned</span>
+                                  <span className="text-[10px] text-muted-foreground/60">
+                                    Unassigned
+                                  </span>
                                 )}
                                 <Button
                                   size="sm"
@@ -825,31 +845,44 @@ const SprintDetailPage = () => {
                                     )}
                                   </div>
                                   <div className="flex items-center gap-2 text-[10px] text-muted-foreground font-medium">
-                                    <span className="capitalize">{issue.status}</span>
+                                    <span className="capitalize">
+                                      {issue.status}
+                                    </span>
                                     <span>•</span>
                                     <div className="flex items-center gap-1">
                                       <Calendar className="w-3 h-3" />
                                       <span>
-                                        {issue.due_date ? `Due: ${format(issue.due_date, "MMM d")}` : "No due date"}
+                                        {issue.due_date
+                                          ? `Due: ${format(issue.due_date, "MMM d")}`
+                                          : "No due date"}
                                       </span>
                                     </div>
                                   </div>
                                 </div>
                               </div>
                               <div className="flex items-center gap-3 shrink-0">
-                                <div className="flex items-center gap-1" title={`Severity: ${issue.severity || "none"}`}>
+                                <div
+                                  className="flex items-center gap-1"
+                                  title={`Severity: ${issue.severity || "none"}`}
+                                >
                                   {priorityIcons2[issue.severity || "none"]}
                                 </div>
-                                {issue.IssueAssignee && issue.IssueAssignee.length > 0 ? (
+                                {issue.IssueAssignee &&
+                                issue.IssueAssignee.length > 0 ? (
                                   <div className="flex items-center -space-x-1.5">
-                                    {issue.IssueAssignee.slice(0, 3).map((person: any, i: number) => (
-                                      <Avatar key={i} className="w-5.5 h-5.5 border border-background shadow-xs">
-                                        <AvatarImage src={person.avatar} />
-                                        <AvatarFallback className="text-[8px] bg-muted text-muted-foreground font-bold uppercase">
-                                          {person.name[0]}
-                                        </AvatarFallback>
-                                      </Avatar>
-                                    ))}
+                                    {issue.IssueAssignee.slice(0, 3).map(
+                                      (person: any, i: number) => (
+                                        <Avatar
+                                          key={i}
+                                          className="w-5.5 h-5.5 border border-background shadow-xs"
+                                        >
+                                          <AvatarImage src={person.avatar} />
+                                          <AvatarFallback className="text-[8px] bg-muted text-muted-foreground font-bold uppercase">
+                                            {person.name[0]}
+                                          </AvatarFallback>
+                                        </Avatar>
+                                      ),
+                                    )}
                                     {issue.IssueAssignee.length > 3 && (
                                       <div className="w-5.5 h-5.5 rounded-full bg-muted border border-background flex items-center justify-center text-[8px] font-bold text-muted-foreground">
                                         +{issue.IssueAssignee.length - 3}
@@ -857,7 +890,9 @@ const SprintDetailPage = () => {
                                     )}
                                   </div>
                                 ) : (
-                                  <span className="text-[10px] text-muted-foreground/60">Unassigned</span>
+                                  <span className="text-[10px] text-muted-foreground/60">
+                                    Unassigned
+                                  </span>
                                 )}
                                 <Button
                                   size="sm"
@@ -894,7 +929,6 @@ const SprintDetailPage = () => {
             </DialogContent>
           </Dialog>
         </div>
-
       </div>
     </div>
   );

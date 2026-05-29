@@ -2,7 +2,15 @@
 
 import { RedirectToSignIn } from "@clerk/nextjs";
 import { Authenticated, Unauthenticated, useQuery } from "convex/react";
-import { BugPlay, Home, Moon, Share2, SunMedium, Video, HelpCircle } from "lucide-react";
+import {
+  BugPlay,
+  Home,
+  Moon,
+  Share2,
+  SunMedium,
+  Video,
+  HelpCircle,
+} from "lucide-react";
 import Link from "next/link";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -124,7 +132,9 @@ export default function Layout({
                           </TooltipTrigger>
                           <TooltipContent>Share Project</TooltipContent>
                         </Tooltip>
-                        <Link href={`/dashboard/my-projects/${slug}/workspace/meet`}>
+                        <Link
+                          href={`/dashboard/my-projects/${slug}/workspace/meet`}
+                        >
                           <Tooltip>
                             <TooltipTrigger asChild>
                               <Button

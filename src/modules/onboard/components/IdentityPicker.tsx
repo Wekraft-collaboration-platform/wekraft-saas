@@ -74,7 +74,10 @@ export function IdentityPicker({
   return (
     <div className="space-y-1.5 font-sans">
       <div className="flex items-center justify-between">
-        <Label htmlFor="username" className="text-base text-zinc-300 font-medium">
+        <Label
+          htmlFor="username"
+          className="text-base text-zinc-300 font-medium"
+        >
           Username
         </Label>
       </div>

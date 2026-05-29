@@ -217,7 +217,10 @@ export const CreateTaskDialog = ({
       const data = await response.json();
       if (data.error) throw new Error(data.error);
 
-      setAttachments((prev) => [...prev, { name: data.name, url: data.url, size: file.size }]);
+      setAttachments((prev) => [
+        ...prev,
+        { name: data.name, url: data.url, size: file.size },
+      ]);
       toast.success("File uploaded successfully", { id: toastId });
     } catch (error: any) {
       const msg = error.message || "";
@@ -349,7 +352,7 @@ export const CreateTaskDialog = ({
                   className={cn(
                     "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-3 gap-1.5 rounded-full text-[11px]",
                     assignedMembers.length > 0 &&
-                    "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
+                      "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
                   )}
                 >
                   <User className="w-3.5 h-3.5" />
@@ -436,7 +439,7 @@ export const CreateTaskDialog = ({
                   className={cn(
                     "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
                     date?.from &&
-                    "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
+                      "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
                   )}
                 >
                   <Clock className="w-3.5 h-3.5" />
@@ -492,10 +495,14 @@ export const CreateTaskDialog = ({
                         className={cn(
                           "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
                           attachments.length > 0 &&
-                          "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
+                            "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
                         )}
-                        disabled={isUploading || project?.ownerAccountType === "free"}
-                        onClick={() => document.getElementById("file-upload")?.click()}
+                        disabled={
+                          isUploading || project?.ownerAccountType === "free"
+                        }
+                        onClick={() =>
+                          document.getElementById("file-upload")?.click()
+                        }
                       >
                         {isUploading ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -531,7 +538,8 @@ export const CreateTaskDialog = ({
                   size="sm"
                   className={cn(
                     "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
-                    tag && "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
+                    tag &&
+                      "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
                   )}
                 >
                   <Tag className="w-3.5 h-3.5" />
@@ -557,14 +565,14 @@ export const CreateTaskDialog = ({
                             ? "ring-1 ring-white/50"
                             : "opacity-70 hover:opacity-100",
                           t.color === "green" &&
-                          "bg-emerald-500/20 text-emerald-400",
+                            "bg-emerald-500/20 text-emerald-400",
                           t.color === "yellow" &&
-                          "bg-yellow-500/20 text-yellow-400",
+                            "bg-yellow-500/20 text-yellow-400",
                           t.color === "purple" &&
-                          "bg-purple-500/20 text-purple-400",
+                            "bg-purple-500/20 text-purple-400",
                           t.color === "blue" && "bg-blue-500/20 text-blue-400",
                           t.color === "grey" &&
-                          "bg-neutral-500/20 text-neutral-400",
+                            "bg-neutral-500/20 text-neutral-400",
                         )}
                       >
                         {t.label}
@@ -586,15 +594,15 @@ export const CreateTaskDialog = ({
                         className={cn(
                           "text-[10px] py-0 px-2 h-5 gap-1 border-none font-medium capitalize",
                           tag.color === "green" &&
-                          "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30",
+                            "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30",
                           tag.color === "yellow" &&
-                          "bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30",
+                            "bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30",
                           tag.color === "purple" &&
-                          "bg-purple-500/20 text-purple-400 hover:bg-purple-500/30",
+                            "bg-purple-500/20 text-purple-400 hover:bg-purple-500/30",
                           tag.color === "blue" &&
-                          "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30",
+                            "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30",
                           tag.color === "grey" &&
-                          "bg-neutral-500/20 text-neutral-400 hover:bg-neutral-500/30",
+                            "bg-neutral-500/20 text-neutral-400 hover:bg-neutral-500/30",
                         )}
                       >
                         {tag.label}
@@ -707,7 +715,7 @@ export const CreateTaskDialog = ({
                   className={cn(
                     "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
                     selectedPath &&
-                    "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/50 dark:bg-blue-900/10",
+                      "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/50 dark:bg-blue-900/10",
                   )}
                 >
                   <Link2 className="w-3.5 h-3.5" />

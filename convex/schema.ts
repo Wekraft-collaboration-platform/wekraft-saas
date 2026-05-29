@@ -40,7 +40,7 @@ export default defineSchema({
     socialLinks: v.optional(v.array(v.string())), // max 3 links (excluding github)
 
     // usage tracking (Global)
-    cloudStorageUsage: v.optional(v.number()), // How much used 
+    cloudStorageUsage: v.optional(v.number()), // How much used
     kayaUsage: v.optional(v.number()), // Current usage count for this month
   })
     .index("by_token", ["clerkToken"])
@@ -310,8 +310,8 @@ export default defineSchema({
         v.object({
           percent: v.number(),
           jobId: v.string(),
-        })
-      )
+        }),
+      ),
     ),
   })
     .index("by_project", ["projectId"])
@@ -454,8 +454,6 @@ export default defineSchema({
     .index("by_user", ["userId"])
     .index("by_project_user", ["projectId", "userId"]),
 
-
-
   // ─── Real-time Notifications (Convex-native) ────────────────────────────
   notifications: defineTable({
     // Who receives this notification
@@ -490,7 +488,6 @@ export default defineSchema({
   })
     .index("by_recipient", ["recipientId", "createdAt"])
     .index("by_recipient_unread", ["recipientId", "isRead"]),
-
 
   // -------------------Support----------------
   supportQueries: defineTable({

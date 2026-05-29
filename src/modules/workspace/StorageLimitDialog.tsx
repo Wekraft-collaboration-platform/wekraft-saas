@@ -52,7 +52,8 @@ export function StorageLimitDialog({
               Storage Limit Reached
             </DialogTitle>
             <DialogDescription className="text-sm text-muted-foreground leading-relaxed">
-              This project has run out of cloud storage space. To upload more files, the project owner needs to upgrade their plan.
+              This project has run out of cloud storage space. To upload more
+              files, the project owner needs to upgrade their plan.
             </DialogDescription>
           </DialogHeader>
 
@@ -72,8 +73,6 @@ export function StorageLimitDialog({
                   </span>
                 )}
               </div>
-
-
             </div>
           </div>
 

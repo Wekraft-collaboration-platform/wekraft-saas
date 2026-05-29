@@ -3,12 +3,28 @@
 import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { ChartConfig, ChartContainer, ChartTooltip, ChartTooltipContent } from "@/components/ui/chart";
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from "@/components/ui/card";
+import {
+  ChartConfig,
+  ChartContainer,
+  ChartTooltip,
+  ChartTooltipContent,
+} from "@/components/ui/chart";
 import { Pie, PieChart, Cell, ResponsiveContainer } from "recharts";
 import { LayoutDashboard, Activity, HelpCircle } from "lucide-react";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface EnvironmentalSeverityHeatmapProps {
   projectId: Id<"projects">;
@@ -36,9 +52,23 @@ const chartConfig = {
   },
 } satisfies ChartConfig;
 
-export const EnvironmentalSeverityHeatmap = ({ projectId, data: providedData }: EnvironmentalSeverityHeatmapProps) => {
-  const queryData = useQuery(api.workspace.getEnvironmentalSeverityHeatmap, { projectId });
-  const data = (providedData ?? queryData) as { environment: string; total: number; critical: number; medium: number; low: number; }[] | null | undefined;
+export const EnvironmentalSeverityHeatmap = ({
+  projectId,
+  data: providedData,
+}: EnvironmentalSeverityHeatmapProps) => {
+  const queryData = useQuery(api.workspace.getEnvironmentalSeverityHeatmap, {
+    projectId,
+  });
+  const data = (providedData ?? queryData) as
+    | {
+        environment: string;
+        total: number;
+        critical: number;
+        medium: number;
+        low: number;
+      }[]
+    | null
+    | undefined;
 
   // Still loading
   if (data === undefined) {
@@ -55,7 +85,8 @@ export const EnvironmentalSeverityHeatmap = ({ projectId, data: providedData }: 
     );
   }
 
-  const totalIssues = data?.reduce((acc, curr) => acc + (curr.total ?? 0), 0) ?? 0;
+  const totalIssues =
+    data?.reduce((acc, curr) => acc + (curr.total ?? 0), 0) ?? 0;
 
   // Loaded but no data
   if (!data || data.length === 0 || totalIssues === 0) {
@@ -64,7 +95,8 @@ export const EnvironmentalSeverityHeatmap = ({ projectId, data: providedData }: 
         <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-8">
           <div className="space-y-1">
             <CardTitle className="text-sm font-semibold text-primary flex items-center gap-2">
-              <LayoutDashboard className="w-4 h-4 text-muted-foreground" /> Environment Distribution
+              <LayoutDashboard className="w-4 h-4 text-muted-foreground" />{" "}
+              Environment Distribution
             </CardTitle>
             <CardDescription className="text-xs font-medium text-muted-foreground">
               Active issue counts across infrastructure layers
@@ -83,12 +115,17 @@ export const EnvironmentalSeverityHeatmap = ({ projectId, data: providedData }: 
                     </div>
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="bg-popover text-popover-foreground border border-border p-2.5 max-w-[260px] rounded-md shadow-md text-[10px] z-50">
+                <TooltipContent
+                  side="bottom"
+                  className="bg-popover text-popover-foreground border border-border p-2.5 max-w-[260px] rounded-md shadow-md text-[10px] z-50"
+                >
                   <p className="font-semibold text-muted-foreground border-b border-border pb-1 mb-1">
                     Environment Distribution
                   </p>
                   <p className="leading-relaxed text-muted-foreground">
-                    Displays the share of active issues assigned to different infrastructure layers and environments (e.g. dev, beta, prod) to spot system vulnerability spots.
+                    Displays the share of active issues assigned to different
+                    infrastructure layers and environments (e.g. dev, beta,
+                    prod) to spot system vulnerability spots.
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -97,7 +134,9 @@ export const EnvironmentalSeverityHeatmap = ({ projectId, data: providedData }: 
         </CardHeader>
         <CardContent className="flex flex-col items-center justify-center h-[220px] text-center p-6">
           <Activity className="w-8 h-8 mb-2 text-muted-foreground/40" />
-          <p className="text-base font-medium text-muted-foreground">No environment data yet</p>
+          <p className="text-base font-medium text-muted-foreground">
+            No environment data yet
+          </p>
           <p className="text-[10px] text-muted-foreground max-w-[200px] mt-1">
             Create and track issues across environments to see distribution.
           </p>
@@ -120,7 +159,8 @@ export const EnvironmentalSeverityHeatmap = ({ projectId, data: providedData }: 
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-4">
         <div className="space-y-1">
           <CardTitle className="text-sm font-semibold text-primary flex items-center gap-2">
-            <LayoutDashboard className="w-4 h-4 text-muted-foreground" /> Environment Distribution
+            <LayoutDashboard className="w-4 h-4 text-muted-foreground" />{" "}
+            Environment Distribution
           </CardTitle>
           <CardDescription className="text-xs font-medium text-muted-foreground">
             Active issue counts across infrastructure layers
@@ -139,12 +179,17 @@ export const EnvironmentalSeverityHeatmap = ({ projectId, data: providedData }: 
                   </div>
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="bottom" className="bg-popover text-popover-foreground border border-border p-2.5 max-w-[260px] rounded-md shadow-md text-[10px] z-50">
+              <TooltipContent
+                side="bottom"
+                className="bg-popover text-popover-foreground border border-border p-2.5 max-w-[260px] rounded-md shadow-md text-[10px] z-50"
+              >
                 <p className="font-semibold text-muted-foreground border-b border-border pb-1 mb-1">
                   Environment Distribution
                 </p>
                 <p className="leading-relaxed text-muted-foreground">
-                  Displays the share of active issues assigned to different infrastructure layers and environments (e.g. dev, beta, prod) to spot system vulnerability spots.
+                  Displays the share of active issues assigned to different
+                  infrastructure layers and environments (e.g. dev, beta, prod)
+                  to spot system vulnerability spots.
                 </p>
               </TooltipContent>
             </Tooltip>
@@ -167,13 +212,17 @@ export const EnvironmentalSeverityHeatmap = ({ projectId, data: providedData }: 
                 cy="50%"
                 outerRadius={75}
                 label={({ value }) => `${value}`}
-                labelLine={{ stroke: "hsl(var(--muted-foreground))", strokeWidth: 1, opacity: 0.5 }}
+                labelLine={{
+                  stroke: "hsl(var(--muted-foreground))",
+                  strokeWidth: 1,
+                  opacity: 0.5,
+                }}
                 animationDuration={1000}
                 stroke="none"
               >
                 {processedData.map((entry, index) => (
-                  <Cell 
-                    key={`cell-${index}`} 
+                  <Cell
+                    key={`cell-${index}`}
                     fill={entry.fill}
                     className="hover:opacity-80 transition-opacity cursor-pointer"
                   />
@@ -186,4 +235,3 @@ export const EnvironmentalSeverityHeatmap = ({ projectId, data: providedData }: 
     </Card>
   );
 };
-

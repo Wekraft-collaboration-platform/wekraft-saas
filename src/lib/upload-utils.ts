@@ -3,7 +3,10 @@
  * To avoid 413 Payload Too Large errors, it resizes the image if its dimensions
  * exceed a max dimension (e.g. 1600px) while maintaining the original aspect ratio.
  */
-export function convertImageToPng(file: File, maxDimension: number = 1600): Promise<File> {
+export function convertImageToPng(
+  file: File,
+  maxDimension: number = 1600,
+): Promise<File> {
   return new Promise((resolve, reject) => {
     // If the file is not an image, return it unchanged.
     if (!file.type.startsWith("image/")) {
@@ -41,33 +44,32 @@ export function convertImageToPng(file: File, maxDimension: number = 1600): Prom
         ctx.drawImage(img, 0, 0, width, height);
 
         // Convert the canvas drawing to a PNG Blob
-        canvas.toBlob(
-          (blob) => {
-            if (!blob) {
-              return reject(new Error("Failed to convert canvas to Blob"));
-            }
+        canvas.toBlob((blob) => {
+          if (!blob) {
+            return reject(new Error("Failed to convert canvas to Blob"));
+          }
 
-            // Generate a new file name with a .png extension
-            const originalName = file.name;
-            const lastDotIndex = originalName.lastIndexOf(".");
-            const baseName =
-              lastDotIndex !== -1
-                ? originalName.substring(0, lastDotIndex)
-                : originalName;
-            const newName = `${baseName}.png`;
+          // Generate a new file name with a .png extension
+          const originalName = file.name;
+          const lastDotIndex = originalName.lastIndexOf(".");
+          const baseName =
+            lastDotIndex !== -1
+              ? originalName.substring(0, lastDotIndex)
+              : originalName;
+          const newName = `${baseName}.png`;
 
-            // Create a new File object with type 'image/png'
-            const pngFile = new File([blob], newName, {
-              type: "image/png",
-              lastModified: Date.now(),
-            });
-            resolve(pngFile);
-          },
-          "image/png"
-        );
+          // Create a new File object with type 'image/png'
+          const pngFile = new File([blob], newName, {
+            type: "image/png",
+            lastModified: Date.now(),
+          });
+          resolve(pngFile);
+        }, "image/png");
       };
       img.onerror = () => {
-        reject(new Error("Failed to load image into element for PNG conversion"));
+        reject(
+          new Error("Failed to load image into element for PNG conversion"),
+        );
       };
       img.src = e.target?.result as string;
     };

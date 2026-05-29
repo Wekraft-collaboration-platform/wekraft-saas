@@ -46,9 +46,16 @@ import {
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { priorityIcons } from "@/lib/static-store";
 import { cn } from "@/lib/utils";
 import type { FolderNode } from "./action";
-import { Separator } from "@/components/ui/separator";
 
 // --- Custom Node Component ---
 const FolderNodeComponent = (props: NodeProps) => {
@@ -83,9 +90,12 @@ const FolderNodeComponent = (props: NodeProps) => {
       if (!task.linkWithCodebase) return false;
       const link = task.linkWithCodebase;
       const lastSlashIdx = link.lastIndexOf("/");
-      const lastSegment = lastSlashIdx !== -1 ? link.substring(lastSlashIdx + 1) : link;
+      const lastSegment =
+        lastSlashIdx !== -1 ? link.substring(lastSlashIdx + 1) : link;
       const containingFolder = lastSegment.includes(".")
-        ? (lastSlashIdx !== -1 ? link.substring(0, lastSlashIdx) : "")
+        ? lastSlashIdx !== -1
+          ? link.substring(0, lastSlashIdx)
+          : ""
         : link;
       return containingFolder === path;
     });
@@ -105,38 +115,22 @@ const FolderNodeComponent = (props: NodeProps) => {
     return { completedTasks: completed, activeTasks: active };
   }, [linkedTasks]);
 
-  const [activeTab, setActiveTab] = useState<"assigned" | "completed">("assigned");
+  const [activeTab, setActiveTab] = useState<"assigned" | "completed">(
+    "assigned",
+  );
 
-  // Extract assigned members and their active tasks flattened as rows
-  const assignedRows = useMemo(() => {
-    const rows: { userId: string; name: string; avatar?: string; task: any }[] = [];
-    activeTasks.forEach((task) => {
-      task.assignees?.forEach((a: any) => {
-        rows.push({
-          userId: a.userId,
-          name: a.name,
-          avatar: a.avatar,
-          task,
-        });
-      });
-    });
-    return rows;
+  // Filter active tasks that have at least one assignee
+  const activeTasksWithAssignees = useMemo(() => {
+    return activeTasks.filter(
+      (task) => task.assignees && task.assignees.length > 0,
+    );
   }, [activeTasks]);
 
-  // Extract members who completed tasks flattened as rows
-  const completedRows = useMemo(() => {
-    const rows: { userId: string; name: string; avatar?: string; task: any }[] = [];
-    completedTasks.forEach((task) => {
-      task.assignees?.forEach((a: any) => {
-        rows.push({
-          userId: a.userId,
-          name: a.name,
-          avatar: a.avatar,
-          task,
-        });
-      });
-    });
-    return rows;
+  // Filter completed tasks that have at least one assignee
+  const completedTasksWithAssignees = useMemo(() => {
+    return completedTasks.filter(
+      (task) => task.assignees && task.assignees.length > 0,
+    );
   }, [completedTasks]);
 
   return (
@@ -147,13 +141,13 @@ const FolderNodeComponent = (props: NodeProps) => {
           ? "bg-[#0D0D0D] text-white shadow-[0_20px_50px_rgba(0,0,0,0.4)] hover:scale-[1.02] hover:-translate-y-1 hover:border-primary/30"
           : "bg-[#0D0D0D]/90 backdrop-blur-md border-white/10 hover:border-white/25 text-zinc-100 shadow-[0_10px_30px_rgba(0,0,0,0.3)] hover:bg-[#111111] hover:-translate-y-0.5 hover:scale-[1.01] active:scale-[0.98]",
         isExpanded &&
-        !isRoot &&
-        "ring-1 ring-white/10 border-white/50 bg-[#121212]",
+          !isRoot &&
+          "ring-1 ring-white/10 border-white/50 bg-[#121212]",
         hasIssue &&
-        "border-red-500/60 shadow-[0_0_20px_rgba(239,68,68,0.3)] ring-1 ring-red-500/40",
+          "border-red-500/60 shadow-[0_0_20px_rgba(239,68,68,0.3)] ring-1 ring-red-500/40",
         isChangedRecently &&
-        !hasIssue &&
-        "border-yellow-500/20 shadow-[0_0_20px_rgba(234,179,1,0.1)] ring-1 ring-yellow-500/20",
+          !hasIssue &&
+          "border-yellow-500/20 shadow-[0_0_20px_rgba(234,179,1,0.1)] ring-1 ring-yellow-500/20",
       )}
     >
       {/* Connection Points */}
@@ -186,8 +180,8 @@ const FolderNodeComponent = (props: NodeProps) => {
               "p-2.5 bg-zinc-900/80 rounded-lg border border-white/5 shrink-0 group-hover:bg-zinc-800/80 transition-colors shadow-inner",
               hasIssue && "border-red-500/30 bg-red-500/5",
               isChangedRecently &&
-              !hasIssue &&
-              "border-yellow-500/30 bg-yellow-500/5",
+                !hasIssue &&
+                "border-yellow-500/30 bg-yellow-500/5",
             )}
           >
             <div className="w-5 h-5 flex items-center justify-center">
@@ -234,154 +228,189 @@ const FolderNodeComponent = (props: NodeProps) => {
                   side="top"
                   align="end"
                 >
-                  <div className="flex flex-col h-full overflow-hidden">
-                    <div className="border-b border-white/10 bg-muted py-3 px-3 flex items-center justify-between shrink-0 ">
-                      <h4 className="text-xs text-zinc-100 flex items-center gap-1.5">
-                        <span>Code Ownership</span>
-                      </h4>
-                      <p
-                        className="text-[11px] text-zinc-200 truncate max-w-[110px]"
-                        title={path}
-                      >
-                        /{path}
-                      </p>
-                    </div>
+                  <TooltipProvider>
+                    <div className="flex flex-col h-full overflow-hidden">
+                      <div className="border-b border-white/10 bg-muted py-3 px-3 flex items-center justify-between shrink-0 ">
+                        <h4 className="text-xs text-zinc-100 flex items-center gap-1.5">
+                          <span>Code Ownership</span>
+                        </h4>
+                        <p
+                          className="text-[11px] text-zinc-200 truncate max-w-[110px]"
+                          title={path}
+                        >
+                          /{path}
+                        </p>
+                      </div>
 
-                    {assignedRows.length === 0 && completedRows.length === 0 ? (
-                      <p className="text-xs text-zinc-500 italic py-8 text-center flex-1 flex items-center justify-center">
-                        No tasks linked to this folder yet.
-                      </p>
-                    ) : (
-                      <>
-                        {/* Tabs Bar */}
-                        <div className="flex border-b border-white/15 mb-3 p-2 shrink-0">
-                          <button
-                            type="button"
-                            className={cn(
-                              "flex-1 pb-2 text-xs text-center transition-colors cursor-pointer",
-                              activeTab === "assigned"
-                                ? "text-white"
-                                : "text-zinc-500 border-transparent hover:text-zinc-300"
-                            )}
-                            onClick={() => setActiveTab("assigned")}
-                          >
-                            Assigned ({assignedRows.length})
-                          </button>
-                          <Separator orientation="vertical" className="h-3 bg-white/30" />
-                          <button
-                            type="button"
-                            className={cn(
-                              "flex-1 pb-2 text-xs text-center border-b transition-colors cursor-pointer",
-                              activeTab === "completed"
-                                ? "text-white"
-                                : "text-zinc-500 border-transparent hover:text-zinc-300"
-                            )}
-                            onClick={() => setActiveTab("completed")}
-                          >
-                            Completed ({completedRows.length})
-                          </button>
-                        </div>
+                      {activeTasksWithAssignees.length === 0 &&
+                      completedTasksWithAssignees.length === 0 ? (
+                        <p className="text-xs text-zinc-500 italic py-8 text-center flex-1 flex items-center justify-center">
+                          No tasks linked to this folder yet.
+                        </p>
+                      ) : (
+                        <>
+                          {/* Tabs Bar */}
+                          <div className="flex border-b border-white/15 mb-3 p-2 shrink-0">
+                            <button
+                              type="button"
+                              className={cn(
+                                "flex-1 pb-2 text-xs text-center transition-colors cursor-pointer",
+                                activeTab === "assigned"
+                                  ? "text-white"
+                                  : "text-zinc-500 border-transparent hover:text-zinc-300",
+                              )}
+                              onClick={() => setActiveTab("assigned")}
+                            >
+                              Assigned ({activeTasksWithAssignees.length})
+                            </button>
+                            <Separator
+                              orientation="vertical"
+                              className="h-3 bg-white/30"
+                            />
+                            <button
+                              type="button"
+                              className={cn(
+                                "flex-1 pb-2 text-xs text-center border-b transition-colors cursor-pointer",
+                                activeTab === "completed"
+                                  ? "text-white"
+                                  : "text-zinc-500 border-transparent hover:text-zinc-300",
+                              )}
+                              onClick={() => setActiveTab("completed")}
+                            >
+                              Completed ({completedTasksWithAssignees.length})
+                            </button>
+                          </div>
 
-                        {/* List Content */}
-                        <div className="flex-1 overflow-y-auto pr-1 scrollbar-thin space-y-2 px-3">
-                          {activeTab === "assigned" ? (
-                            assignedRows.length === 0 ? (
-                              <p className="text-xs text-zinc-500 italic py-8 text-center">
-                                No active tasks.
-                              </p>
-                            ) : (
-                              assignedRows.map((row) => (
-                                <div
-                                  key={`${row.userId}-${row.task._id}`}
-                                  className="flex items-center justify-between gap-3 py-1 last:border-0"
-                                >
-                                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                                    <Avatar className="w-5 h-5 border border-white/10 shrink-0">
-                                      <AvatarImage
-                                        src={row.avatar}
-                                        alt={row.name}
-                                      />
-                                      <AvatarFallback className="text-[9px] bg-zinc-800 text-zinc-300">
-                                        {row.name.charAt(0).toUpperCase()}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                    <span
-                                      className="text-xs font-medium text-zinc-100 truncate max-w-[100px]"
-                                      title={row.name}
+                          {/* List Content */}
+                          <div className="flex-1 overflow-y-auto pr-1 scrollbar-thin space-y-2 px-3">
+                            {activeTab === "assigned" ? (
+                              activeTasksWithAssignees.length === 0 ? (
+                                <p className="text-xs text-zinc-500 italic py-8 text-center">
+                                  No active tasks.
+                                </p>
+                              ) : (
+                                activeTasksWithAssignees.map((task) => {
+                                  const namesString =
+                                    task.assignees
+                                      ?.map((a: any) => a.name)
+                                      .join(", ") || "";
+                                  return (
+                                    <div
+                                      key={task._id}
+                                      className="flex items-center justify-between gap-3 py-1 last:border-0"
                                     >
-                                      {row.name}
-                                    </span>
-                                  </div>
-                                  <div className="flex items-center gap-1.5 shrink-0 max-w-[140px]">
-                                    <span
-                                      className="text-[11px] text-zinc-200 truncate"
-                                      title={row.task.title}
-                                    >
-                                      {row.task.title}
-                                    </span>
-                                    {row.task.priority && (
-                                      <span
-                                        className={cn(
-                                          "text-[8px] px-1 py-0.2 rounded-sm border capitalize shrink-0 font-mono",
-                                          row.task.priority === "high" &&
-                                          "text-red-400 border-red-500/20 bg-red-500/5",
-                                          row.task.priority === "medium" &&
-                                          "text-yellow-400 border-yellow-500/20 bg-yellow-500/5",
-                                          row.task.priority === "low" &&
-                                          "text-zinc-400 border-zinc-500/20 bg-zinc-500/5",
+                                      <div className="flex items-center gap-2 min-w-0 flex-1">
+                                        <div className="flex -space-x-1.5 shrink-0">
+                                          {task.assignees?.map((a: any) => (
+                                            <Tooltip key={a.userId}>
+                                              <TooltipTrigger asChild>
+                                                <Avatar className="w-5 h-5 border border-white/10 ring-2 ring-zinc-900 shrink-0 cursor-pointer">
+                                                  <AvatarImage
+                                                    src={a.avatar}
+                                                    alt={a.name}
+                                                  />
+                                                  <AvatarFallback className="text-[9px] bg-zinc-800 text-zinc-300">
+                                                    {a.name
+                                                      .charAt(0)
+                                                      .toUpperCase()}
+                                                  </AvatarFallback>
+                                                </Avatar>
+                                              </TooltipTrigger>
+                                              <TooltipContent className="z-[10000] bg-zinc-900 text-zinc-100 border border-zinc-800 px-2 py-1 text-[10px] rounded-md shadow-md">
+                                                {a.name}
+                                              </TooltipContent>
+                                            </Tooltip>
+                                          ))}
+                                        </div>
+                                        <span
+                                          className="text-xs font-medium text-zinc-100 truncate max-w-[80px]"
+                                          title={namesString}
+                                        >
+                                          {namesString}
+                                        </span>
+                                      </div>
+                                      <div className="flex items-center gap-2 shrink-0 max-w-[140px]">
+                                        <span
+                                          className="text-[11px] text-zinc-200 truncate"
+                                          title={task.title}
+                                        >
+                                          {task.title}
+                                        </span>
+                                        {task.priority && (
+                                          <div className="shrink-0 flex items-center h-3">
+                                            {priorityIcons[task.priority] ||
+                                              priorityIcons[
+                                                task.priority.toLowerCase()
+                                              ]}
+                                          </div>
                                         )}
-                                      >
-                                        {row.task.priority.charAt(0)}
-                                      </span>
-                                    )}
-                                  </div>
-                                </div>
-                              ))
-                            )
-                          ) : (
-                            completedRows.length === 0 ? (
+                                      </div>
+                                    </div>
+                                  );
+                                })
+                              )
+                            ) : completedTasksWithAssignees.length === 0 ? (
                               <p className="text-xs text-zinc-500 italic py-8 text-center">
                                 No completed tasks.
                               </p>
                             ) : (
-                              completedRows.map((row) => (
-                                <div
-                                  key={`${row.userId}-${row.task._id}`}
-                                  className="flex items-center justify-between gap-3 py-1 border-b border-white/5 last:border-0"
-                                >
-                                  <div className="flex items-center gap-2 min-w-0 flex-1">
-                                    <Avatar className="w-5 h-5 border border-white/10 shrink-0">
-                                      <AvatarImage
-                                        src={row.avatar}
-                                        alt={row.name}
-                                      />
-                                      <AvatarFallback className="text-[9px] bg-zinc-800 text-zinc-300">
-                                        {row.name.charAt(0).toUpperCase()}
-                                      </AvatarFallback>
-                                    </Avatar>
-                                    <span
-                                      className="text-xs font-medium text-zinc-200 truncate max-w-[100px]"
-                                      title={row.name}
-                                    >
-                                      {row.name}
-                                    </span>
+                              completedTasksWithAssignees.map((task) => {
+                                const namesString =
+                                  task.assignees
+                                    ?.map((a: any) => a.name)
+                                    .join(", ") || "";
+                                return (
+                                  <div
+                                    key={task._id}
+                                    className="flex items-center justify-between gap-3 py-1 border-b border-white/5 last:border-0"
+                                  >
+                                    <div className="flex items-center gap-2 min-w-0 flex-1">
+                                      <div className="flex -space-x-1.5 shrink-0">
+                                        {task.assignees?.map((a: any) => (
+                                          <Tooltip key={a.userId}>
+                                            <TooltipTrigger asChild>
+                                              <Avatar className="w-5 h-5 border border-white/10 ring-2 ring-zinc-900 shrink-0 cursor-pointer">
+                                                <AvatarImage
+                                                  src={a.avatar}
+                                                  alt={a.name}
+                                                />
+                                                <AvatarFallback className="text-[9px] bg-zinc-800 text-zinc-300">
+                                                  {a.name
+                                                    .charAt(0)
+                                                    .toUpperCase()}
+                                                </AvatarFallback>
+                                              </Avatar>
+                                            </TooltipTrigger>
+                                            <TooltipContent className="z-[10000] bg-zinc-900 text-zinc-100 border border-zinc-800 px-2 py-1 text-[10px] rounded-md shadow-md">
+                                              {a.name}
+                                            </TooltipContent>
+                                          </Tooltip>
+                                        ))}
+                                      </div>
+                                      <span
+                                        className="text-xs font-medium text-zinc-200 truncate max-w-[80px]"
+                                        title={namesString}
+                                      >
+                                        {namesString}
+                                      </span>
+                                    </div>
+                                    <div className="flex items-center gap-1.5 shrink-0 max-w-[140px]">
+                                      <span
+                                        className="text-[11px] text-zinc-400 line-through truncate"
+                                        title={task.title}
+                                      >
+                                        {task.title}
+                                      </span>
+                                    </div>
                                   </div>
-                                  <div className="flex items-center gap-1.5 shrink-0 max-w-[140px]">
-                                    <span
-                                      className="text-[11px] text-zinc-400 line-through truncate"
-                                      title={row.task.title}
-                                    >
-                                      {row.task.title}
-                                    </span>
-                                  </div>
-                                </div>
-                              ))
-                            )
-                          )}
-                        </div>
-                      </>
-                    )}
-                  </div>
+                                );
+                              })
+                            )}
+                          </div>
+                        </>
+                      )}
+                    </div>
+                  </TooltipProvider>
                 </PopoverContent>
               </Popover>
             )}
@@ -611,8 +640,8 @@ const HeatmapFlowInner = ({
               !isFreeTier && nodeHasIssue && !expandedPaths.has(id)
                 ? "rgba(239, 68, 68, 0.5)"
                 : !isFreeTier &&
-                  recentlyChangedPaths.includes(node.path || "") &&
-                  !expandedPaths.has(id)
+                    recentlyChangedPaths.includes(node.path || "") &&
+                    !expandedPaths.has(id)
                   ? "rgba(234, 179, 8, 0.5)"
                   : "rgba(59, 130, 246, 0.5)",
             strokeWidth: 2,

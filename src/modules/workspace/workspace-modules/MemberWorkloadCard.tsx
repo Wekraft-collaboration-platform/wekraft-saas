@@ -15,13 +15,25 @@ import {
   ChartLegend,
   ChartLegendContent,
 } from "@/components/ui/chart";
-import { Bar, BarChart, XAxis, YAxis, CartesianGrid, ResponsiveContainer } from "recharts";
+import {
+  Bar,
+  BarChart,
+  XAxis,
+  YAxis,
+  CartesianGrid,
+  ResponsiveContainer,
+} from "recharts";
 import { Users, LayoutPanelLeft, Users2, HelpCircle } from "lucide-react";
 import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
 import { Skeleton } from "@/components/ui/skeleton";
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 interface MemberWorkloadCardProps {
   projectId: Id<"projects">;
@@ -72,7 +84,7 @@ export const MemberWorkloadCard = ({
     );
   }
 
-  const hasData = workload.length > 0 && workload.some(w => w.total > 0);
+  const hasData = workload.length > 0 && workload.some((w) => w.total > 0);
 
   if (!hasData) {
     return (
@@ -99,12 +111,17 @@ export const MemberWorkloadCard = ({
                     </div>
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="bottom" className="bg-popover text-popover-foreground border border-border p-2.5 max-w-[260px] rounded-md shadow-md text-[10px] z-50">
+                <TooltipContent
+                  side="bottom"
+                  className="bg-popover text-popover-foreground border border-border p-2.5 max-w-[260px] rounded-md shadow-md text-[10px] z-50"
+                >
                   <p className="font-semibold text-muted-foreground border-b border-border pb-1 mb-1">
                     Member Workload Balance
                   </p>
                   <p className="leading-relaxed text-muted-foreground">
-                    Displays active tasks (High, Medium, Low priority) assigned per member. Helps balance work distribution and optimize resource allocation.
+                    Displays active tasks (High, Medium, Low priority) assigned
+                    per member. Helps balance work distribution and optimize
+                    resource allocation.
                   </p>
                 </TooltipContent>
               </Tooltip>
@@ -113,9 +130,12 @@ export const MemberWorkloadCard = ({
         </CardHeader>
         <CardContent className="flex flex-col items-center justify-center h-[220px] text-center p-6">
           <Users className="w-8 h-8 mb-2 text-muted-foreground/40" />
-          <p className="text-base font-medium text-muted-foreground">No active workload</p>
+          <p className="text-base font-medium text-muted-foreground">
+            No active workload
+          </p>
           <p className="text-[10px] text-muted-foreground max-w-[200px] mt-1">
-            Assign tasks to team members to see the distribution of work and priority levels.
+            Assign tasks to team members to see the distribution of work and
+            priority levels.
           </p>
         </CardContent>
       </Card>
@@ -123,11 +143,10 @@ export const MemberWorkloadCard = ({
   }
 
   // Formatting name for Y-Axis
-  const chartData = workload.map(w => ({
+  const chartData = workload.map((w) => ({
     ...w,
-    shortName: w.name.split(' ')[0]
+    shortName: w.name.split(" ")[0],
   }));
-
 
   const dynamicHeight = Math.max(180, chartData.length * 48);
 
@@ -139,7 +158,7 @@ export const MemberWorkloadCard = ({
             <Users2 className="w-4 h-4" /> Member Workload Balance
           </CardTitle>
           <CardDescription className="text-xs font-medium text-muted-foreground">
-            Current active tasks by priority levels.  Resource Leveling.
+            Current active tasks by priority levels. Resource Leveling.
           </CardDescription>
         </div>
         <div className="flex-none">
@@ -155,12 +174,17 @@ export const MemberWorkloadCard = ({
                   </div>
                 </button>
               </TooltipTrigger>
-              <TooltipContent side="bottom" className="bg-popover text-popover-foreground border border-border p-2.5 max-w-[260px] rounded-md shadow-md text-[10px] z-50">
+              <TooltipContent
+                side="bottom"
+                className="bg-popover text-popover-foreground border border-border p-2.5 max-w-[260px] rounded-md shadow-md text-[10px] z-50"
+              >
                 <p className="font-semibold text-muted-foreground border-b border-border pb-1 mb-1">
                   Member Workload Balance
                 </p>
                 <p className="leading-relaxed text-muted-foreground">
-                  Displays active tasks (High, Medium, Low priority) assigned per member. Helps balance work distribution and optimize resource allocation.
+                  Displays active tasks (High, Medium, Low priority) assigned
+                  per member. Helps balance work distribution and optimize
+                  resource allocation.
                 </p>
               </TooltipContent>
             </Tooltip>
@@ -170,14 +194,22 @@ export const MemberWorkloadCard = ({
       <CardContent className="pt-0 -mt-6 h-[240px] flex flex-col justify-between">
         {/* Scrollable Chart Area */}
         <div className="overflow-y-auto custom-scrollbar pr-1 max-h-[180px] flex-1">
-          <ChartContainer config={chartConfig} style={{ height: `${dynamicHeight}px` }} className="w-full">
+          <ChartContainer
+            config={chartConfig}
+            style={{ height: `${dynamicHeight}px` }}
+            className="w-full"
+          >
             <BarChart
               data={chartData}
               layout="vertical"
               margin={{ top: 5, right: 30, left: 10, bottom: 5 }}
               barSize={16}
             >
-              <CartesianGrid horizontal={false} strokeDasharray="3 3" className="dark:stroke-neutral-800! stroke-neutral-400!" />
+              <CartesianGrid
+                horizontal={false}
+                strokeDasharray="3 3"
+                className="dark:stroke-neutral-800! stroke-neutral-400!"
+              />
               <XAxis type="number" hide />
               <YAxis
                 dataKey="shortName"

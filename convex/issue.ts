@@ -52,8 +52,8 @@ export const createIssue = mutation({
           name: v.string(),
           url: v.string(),
           size: v.optional(v.number()),
-        })
-      )
+        }),
+      ),
     ),
   },
   handler: async (ctx, args) => {
@@ -91,9 +91,7 @@ export const createIssue = mutation({
           }),
         ),
       );
-
     }
-
 
     return issueId;
   },
@@ -335,8 +333,8 @@ export const updateIssue = mutation({
           name: v.string(),
           url: v.string(),
           size: v.optional(v.number()),
-        })
-      )
+        }),
+      ),
     ),
   },
   handler: async (ctx, args) => {
@@ -599,7 +597,10 @@ export const addIssueAttachment = mutation({
     const currentAttachments = issue.attachments ?? [];
 
     await ctx.db.patch(args.issueId, {
-      attachments: [...currentAttachments, { name: args.name, url: args.url, size: args.size }],
+      attachments: [
+        ...currentAttachments,
+        { name: args.name, url: args.url, size: args.size },
+      ],
       updatedAt: Date.now(),
     });
   },
@@ -621,7 +622,9 @@ export const removeIssueAttachment = mutation({
     const newAttachments = currentAttachments.filter((a) => a.url !== args.url);
 
     // Decrement owner storage
-    const removedAttachment = currentAttachments.find((a) => a.url === args.url);
+    const removedAttachment = currentAttachments.find(
+      (a) => a.url === args.url,
+    );
     if (removedAttachment && removedAttachment.size) {
       const project = await ctx.db.get(issue.projectId);
       if (project) {
@@ -629,7 +632,10 @@ export const removeIssueAttachment = mutation({
         if (owner) {
           const currentUsage = owner.cloudStorageUsage ?? 0;
           await ctx.db.patch(owner._id, {
-            cloudStorageUsage: Math.max(0, currentUsage - removedAttachment.size),
+            cloudStorageUsage: Math.max(
+              0,
+              currentUsage - removedAttachment.size,
+            ),
             updatedAt: Date.now(),
           });
         }

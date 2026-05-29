@@ -7,11 +7,15 @@ export function getUserColor(identifier: string) {
   return `hsl(${h}, 80%, 60%)`;
 }
 
-export function formatNotificationContent(content: string | undefined, maxLength: number = 50): string {
+export function formatNotificationContent(
+  content: string | undefined,
+  maxLength: number = 50,
+): string {
   if (!content) return "";
 
   // Replace S3 upload links with 'uploaded doc'
-  const uploadRegex = /!?\[[^\]]+\]\((https?:\/\/[^\s)]+(?:amazonaws\.com|wekraft-saas-upload-s3)[^\s)]*)\)/g;
+  const uploadRegex =
+    /!?\[[^\]]+\]\((https?:\/\/[^\s)]+(?:amazonaws\.com|wekraft-saas-upload-s3)[^\s)]*)\)/g;
   const formatted = content.replace(uploadRegex, "uploaded doc");
 
   if (formatted.length > maxLength) {
@@ -21,20 +25,28 @@ export function formatNotificationContent(content: string | undefined, maxLength
   return formatted;
 }
 export function getFileIconPath(fileName: string) {
-  const ext = fileName.split('.').pop()?.toLowerCase();
+  const ext = fileName.split(".").pop()?.toLowerCase();
   switch (ext) {
-    case 'pdf': return '/pdf.svg';
-    case 'ppt':
-    case 'pptx': return '/ppt.svg';
-    case 'doc':
-    case 'docx': return '/doc.svg';
-    case 'xls':
-    case 'xlsx':
-    case 'csv': return '/xls.svg';
-    case 'png': return '/png.svg';
-    case 'jpg':
-    case 'jpeg': return '/jpg.svg';
-    case 'svg': return '/svg.svg';
-    default: return '/file.svg';
+    case "pdf":
+      return "/pdf.svg";
+    case "ppt":
+    case "pptx":
+      return "/ppt.svg";
+    case "doc":
+    case "docx":
+      return "/doc.svg";
+    case "xls":
+    case "xlsx":
+    case "csv":
+      return "/xls.svg";
+    case "png":
+      return "/png.svg";
+    case "jpg":
+    case "jpeg":
+      return "/jpg.svg";
+    case "svg":
+      return "/svg.svg";
+    default:
+      return "/file.svg";
   }
 }

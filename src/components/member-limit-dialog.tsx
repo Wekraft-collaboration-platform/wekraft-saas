@@ -39,18 +39,19 @@ export const MemberLimitDialog = ({
     onOpenChange(false);
   };
 
-
-
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-md px-4 overflow-hidden border border-accent bg-sidebar rounded-xl">
-        <h2 className="px-3 py-1 text-sm border border-accent rounded-full w-fit bg-muted mt-4 ">Member Limit Reached  <Infinity className="inline w-4 h-4" /></h2>
+        <h2 className="px-3 py-1 text-sm border border-accent rounded-full w-fit bg-muted mt-4 ">
+          Member Limit Reached <Infinity className="inline w-4 h-4" />
+        </h2>
 
         <div className="h-40 border border-accent bg-linear-to-br from-muted via-muted to-blue-600/40 rounded-lg relative overflow-hidden flex items-center">
           {/* Left text */}
           <div className="pl-6 z-10">
             <p className="text-2xl font-semibold leading-tight tracking-tight text-foreground">
-              Looks Like, Limit<br /> is reached ??
+              Looks Like, Limit
+              <br /> is reached ??
             </p>
           </div>
 
@@ -69,7 +70,6 @@ export const MemberLimitDialog = ({
         {/* Body */}
         <div className="px-6 pt-5 pb-6 space-y-4">
           <DialogHeader className="space-y-1.5">
-
             <DialogDescription className="text-sm text-muted-foreground leading-relaxed">
               {currentMemberCount !== undefined && memberLimit !== undefined ? (
                 <>
@@ -102,10 +102,7 @@ export const MemberLimitDialog = ({
 
           {/* Actions */}
           <div className="flex items-center gap-3 pt-1">
-            <Button
-              className="flex-1 gap-2 text-sm"
-              onClick={handleUpgrade}
-            >
+            <Button className="flex-1 gap-2 text-sm" onClick={handleUpgrade}>
               Upgrade Now
               <Clover className="ml-2 h-4 w-4" />
             </Button>

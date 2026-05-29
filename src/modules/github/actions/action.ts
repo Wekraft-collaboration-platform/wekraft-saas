@@ -6,8 +6,6 @@ import { Octokit } from "octokit";
 import pLimit from "p-limit";
 import { getGithubAccessToken } from "@/lib/github-auth";
 
-
-
 // ============================================
 // GETTING GITHUB REPOSITORIES
 // ============================================
@@ -34,7 +32,7 @@ export const getRepositories = async (
 export const searchRepositories = async (query: string) => {
   const token = await getGithubAccessToken();
   const octokit = new Octokit({ auth: token });
-  
+
   const { data } = await octokit.rest.repos.listForAuthenticatedUser({
     sort: "updated",
     direction: "desc",
@@ -44,8 +42,8 @@ export const searchRepositories = async (query: string) => {
   });
 
   const lowerQuery = query.toLowerCase();
-  const filtered = data.filter((repo: any) => 
-    repo.name.toLowerCase().includes(lowerQuery)
+  const filtered = data.filter((repo: any) =>
+    repo.name.toLowerCase().includes(lowerQuery),
   );
 
   return filtered.slice(0, 10); // Return top 10 matches

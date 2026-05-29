@@ -39,17 +39,21 @@ export async function initTeamspaceDB() {
         created_at  INTEGER NOT NULL
       );
     `);
-    await turso.execute("CREATE INDEX IF NOT EXISTS idx_notifications_user ON ts_notifications(user_id, created_at);");
+    await turso.execute(
+      "CREATE INDEX IF NOT EXISTS idx_notifications_user ON ts_notifications(user_id, created_at);",
+    );
   } catch (e) {
     // Table/Index likely already exists
   }
 
   // Migration: add expires_at for Turso native row expiry (30-day TTL)
   try {
-    await turso.execute("ALTER TABLE ts_messages ADD COLUMN expires_at INTEGER;");
+    await turso.execute(
+      "ALTER TABLE ts_messages ADD COLUMN expires_at INTEGER;",
+    );
     // Backfill existing rows: expire 30 days from their created_at
     await turso.execute(
-      "UPDATE ts_messages SET expires_at = created_at + (30 * 24 * 60 * 60 * 1000) WHERE expires_at IS NULL;"
+      "UPDATE ts_messages SET expires_at = created_at + (30 * 24 * 60 * 60 * 1000) WHERE expires_at IS NULL;",
     );
   } catch (e) {
     // Column already exists — safe to ignore
@@ -60,7 +64,7 @@ export async function initTeamspaceDB() {
     await turso.execute("ALTER TABLE ts_notifications ADD COLUMN type TEXT;");
     // Backfill existing rows to default type 'mention'
     await turso.execute(
-      "UPDATE ts_notifications SET type = 'mention' WHERE type IS NULL;"
+      "UPDATE ts_notifications SET type = 'mention' WHERE type IS NULL;",
     );
   } catch (e) {
     // Column already exists — safe to ignore
@@ -79,7 +83,9 @@ export async function initTeamspaceDB() {
   try {
     // Fast path: Check if main table exists. If it does, we assume DB is initialized.
     // This saves executing 15+ DDL statements on every serverless cold start.
-    const check = await turso.execute("SELECT name FROM sqlite_master WHERE type='table' AND name='ts_messages';");
+    const check = await turso.execute(
+      "SELECT name FROM sqlite_master WHERE type='table' AND name='ts_messages';",
+    );
     if (check.rows.length > 0) {
       isDbInitialized = true;
       return;

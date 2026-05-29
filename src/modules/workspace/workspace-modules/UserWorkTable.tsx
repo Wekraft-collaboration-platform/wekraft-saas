@@ -30,7 +30,11 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
-import { priorityIcons, statusColors, statusIconsNoColors } from "@/lib/static-store";
+import {
+  priorityIcons,
+  statusColors,
+  statusIconsNoColors,
+} from "@/lib/static-store";
 import { cn } from "@/lib/utils";
 import { useKayaStore } from "@/store/useKayaStore";
 import type { MyIssueItem, MyTaskItem } from "@/types/types";
@@ -173,9 +177,7 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
           height={220}
           className="-mb-3 opacity-90"
         />
-        <h3 className="text-lg tracking-tight text-primary">
-          {state.title}
-        </h3>
+        <h3 className="text-lg tracking-tight text-primary">{state.title}</h3>
         <p className="text-sm text-muted-foreground max-w-[240px] mt-2 font-medium leading-relaxed">
           {state.desc}
         </p>
@@ -261,10 +263,10 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
                     </span>
                   </div>
 
-                  <span
-                    className="text-[10px] font-medium capitalize px-2.5 py-1 rounded-full border bg-neutral-900/90 border-neutral-800/80 text-primary/90 flex items-center gap-1.5 shrink-0"
-                  >
-                    {statusIconsNoColors[task.status] || <Ellipsis className="w-3.5 h-3.5" />}
+                  <span className="text-[10px] font-medium capitalize px-2.5 py-1 rounded-full border bg-neutral-900/90 border-neutral-800/80 text-primary/90 flex items-center gap-1.5 shrink-0">
+                    {statusIconsNoColors[task.status] || (
+                      <Ellipsis className="w-3.5 h-3.5" />
+                    )}
                     {task.status}
                   </span>
 
@@ -376,11 +378,11 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
             const s = issue.severity ? severityConfig[issue.severity] : null;
             const dueLabel = issue.due_date
               ? (() => {
-                const d = Math.ceil(
-                  (issue.due_date - Date.now()) / (1000 * 60 * 60 * 24),
-                );
-                return d > 0 ? `${d}d left` : `${Math.abs(d)}d overdue`;
-              })()
+                  const d = Math.ceil(
+                    (issue.due_date - Date.now()) / (1000 * 60 * 60 * 24),
+                  );
+                  return d > 0 ? `${d}d left` : `${Math.abs(d)}d overdue`;
+                })()
               : null;
             const isOverdue = issue.due_date && issue.due_date < Date.now();
 
@@ -438,10 +440,10 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
                     </span>
                   )} */}
 
-                  <span
-                    className="text-[10px] font-medium capitalize px-2.5 py-1 rounded-full border bg-neutral-900/90 border-neutral-800/80 text-primary/90 flex items-center gap-1.5 shrink-0"
-                  >
-                    {issueStatusIconsNoColors[issue.status] || <AlertCircle className="w-3.5 h-3.5" />}
+                  <span className="text-[10px] font-medium capitalize px-2.5 py-1 rounded-full border bg-neutral-900/90 border-neutral-800/80 text-primary/90 flex items-center gap-1.5 shrink-0">
+                    {issueStatusIconsNoColors[issue.status] || (
+                      <AlertCircle className="w-3.5 h-3.5" />
+                    )}
                     {issue.status}
                   </span>
 
@@ -454,7 +456,6 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Avatar className="w-6 h-6 border border-border shrink-0">
-
                               <AvatarImage
                                 // @ts-ignore
                                 src={issue.creator.avatar}
@@ -562,10 +563,14 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
               >
                 {/* Row 1 — Status + Creation date */}
                 <div className="flex items-center justify-between gap-4">
-                  <span className={cn(
-                    "text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider",
-                    ticket.status === "open" ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20" : "bg-muted-foreground/15 text-muted-foreground border border-muted-foreground/20"
-                  )}>
+                  <span
+                    className={cn(
+                      "text-[9px] font-bold px-2 py-0.5 rounded uppercase tracking-wider",
+                      ticket.status === "open"
+                        ? "bg-emerald-500/10 text-emerald-500 border border-emerald-500/20"
+                        : "bg-muted-foreground/15 text-muted-foreground border border-muted-foreground/20",
+                    )}
+                  >
                     {ticket.status}
                   </span>
                   <span className="text-[11px] text-muted-foreground font-medium">
@@ -581,28 +586,46 @@ export const UserWorkTable = ({ userName, projectId }: UserWorkTableProps) => {
                 {/* Row 3 — Avatars (assignee and creator) */}
                 <div className="flex items-center justify-between pt-2.5 mt-2 border-t border-border/20 text-[10px]">
                   <div className="flex items-center gap-1.5">
-                    <span className="text-muted-foreground font-medium">Assignee:</span>
+                    <span className="text-muted-foreground font-medium">
+                      Assignee:
+                    </span>
                     <div className="flex items-center gap-1">
                       <Avatar className="w-5 h-5 border border-border">
-                        <AvatarImage src={ticket.assignee?.avatar} alt={ticket.assignee?.name} />
+                        <AvatarImage
+                          src={ticket.assignee?.avatar}
+                          alt={ticket.assignee?.name}
+                        />
                         <AvatarFallback className="text-[9px] font-semibold">
-                          {(ticket.assignee?.name || "?").charAt(0).toUpperCase()}
+                          {(ticket.assignee?.name || "?")
+                            .charAt(0)
+                            .toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="font-semibold text-foreground/90">{ticket.assignee?.name || "Unassigned"}</span>
+                      <span className="font-semibold text-foreground/90">
+                        {ticket.assignee?.name || "Unassigned"}
+                      </span>
                     </div>
                   </div>
 
                   <div className="flex items-center gap-1.5">
-                    <span className="text-muted-foreground font-medium">Created by:</span>
+                    <span className="text-muted-foreground font-medium">
+                      Created by:
+                    </span>
                     <div className="flex items-center gap-1">
                       <Avatar className="w-5 h-5 border border-border">
-                        <AvatarImage src={ticket.creator?.avatar} alt={ticket.creator?.name} />
+                        <AvatarImage
+                          src={ticket.creator?.avatar}
+                          alt={ticket.creator?.name}
+                        />
                         <AvatarFallback className="text-[9px] font-semibold">
-                          {(ticket.creator?.name || "?").charAt(0).toUpperCase()}
+                          {(ticket.creator?.name || "?")
+                            .charAt(0)
+                            .toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
-                      <span className="font-semibold text-foreground/90">{ticket.creator?.name || "Unknown"}</span>
+                      <span className="font-semibold text-foreground/90">
+                        {ticket.creator?.name || "Unknown"}
+                      </span>
                     </div>
                   </div>
                 </div>

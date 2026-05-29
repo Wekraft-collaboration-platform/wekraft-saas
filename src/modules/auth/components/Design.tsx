@@ -87,7 +87,7 @@ const ActivitySlide = () => (
             key={i}
             className="size-5 rounded-full border border-neutral-700 overflow-hidden"
           >
-            <img alt='image' src={src} className="w-full h-full object-cover" />
+            <img alt="image" src={src} className="w-full h-full object-cover" />
           </div>
         ))}
       </div>
@@ -151,7 +151,7 @@ const slideVariants = {
     opacity: 1,
   },
   exit: {
-    x: -40, 
+    x: -40,
     opacity: 0,
   },
 };
@@ -168,7 +168,7 @@ export default function DesignCarousel() {
   useEffect(() => {
     const interval = setInterval(() => {
       setIndex((prev) => (prev + 1) % slides.length);
-    }, 5000); 
+    }, 5000);
 
     return () => clearInterval(interval);
   }, []);
@@ -193,4 +193,3 @@ export default function DesignCarousel() {
     </div>
   );
 }
-

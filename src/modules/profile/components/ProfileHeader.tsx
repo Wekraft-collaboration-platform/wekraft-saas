@@ -47,7 +47,11 @@ function getPlatformInfo(url: string): PlatformInfo | null {
       colorClass: "text-[#1da1f2] dark:text-white hover:text-sky-400",
     };
   }
-  if (lower.includes("discord.com") || lower.includes("discord.gg") || lower.includes("discordapp.com")) {
+  if (
+    lower.includes("discord.com") ||
+    lower.includes("discord.gg") ||
+    lower.includes("discordapp.com")
+  ) {
     return {
       label: "Discord",
       icon: FaDiscord,
@@ -71,11 +75,11 @@ interface ProfileHeaderProps {
   onToggleSettings?: () => void;
 }
 
-export const ProfileHeader = ({ 
-  user, 
+export const ProfileHeader = ({
+  user,
   isUpgraded,
   showSettings = false,
-  onToggleSettings
+  onToggleSettings,
 }: ProfileHeaderProps) => {
   const handle =
     user.githubUsername ||
@@ -99,11 +103,21 @@ export const ProfileHeader = ({
       if (tz) {
         if (tz.includes("Kolkata") || tz.includes("Calcutta")) {
           setCountry("India");
-        } else if (tz.includes("New_York") || tz.includes("Chicago") || tz.includes("Los_Angeles") || tz.includes("Denver")) {
+        } else if (
+          tz.includes("New_York") ||
+          tz.includes("Chicago") ||
+          tz.includes("Los_Angeles") ||
+          tz.includes("Denver")
+        ) {
           setCountry("United States");
         } else if (tz.includes("London")) {
           setCountry("United Kingdom");
-        } else if (tz.includes("Paris") || tz.includes("Berlin") || tz.includes("Rome") || tz.includes("Madrid")) {
+        } else if (
+          tz.includes("Paris") ||
+          tz.includes("Berlin") ||
+          tz.includes("Rome") ||
+          tz.includes("Madrid")
+        ) {
           setCountry("Europe");
         }
       }
@@ -188,9 +202,7 @@ export const ProfileHeader = ({
               </div>
             )}
           </div>
-          <p className="text-sm text-zinc-400 font-mono">
-            @{handle}
-          </p>
+          <p className="text-sm text-zinc-400 font-mono">@{handle}</p>
         </div>
 
         {/* Row 3: Meta details & Social brand icons */}
@@ -219,7 +231,9 @@ export const ProfileHeader = ({
 
           <div className="flex items-center gap-1.5">
             <CreditCard className="h-3.5 w-3.5 text-zinc-500" />
-            <span className="capitalize">{user.accountType || "free"} User</span>
+            <span className="capitalize">
+              {user.accountType || "free"} User
+            </span>
           </div>
 
           {user.socialLinks && user.socialLinks.filter(Boolean).length > 0 && (

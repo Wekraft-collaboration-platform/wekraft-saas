@@ -3,21 +3,21 @@ import dotenv from "dotenv";
 
 // Force load env variables from .env.local to override any system/shell variables
 dotenv.config({
-    path: path.resolve(process.cwd(), ".env.local"),
-    override: true,
+  path: path.resolve(process.cwd(), ".env.local"),
+  override: true,
 });
 
 import { createOpenAI } from "@ai-sdk/openai";
 import {
-    convertToModelMessages,
-    type InferUITools,
-    stepCountIs,
-    streamText,
-    type ToolSet,
-    tool,
-    type UIDataTypes,
-    type UIMessage,
-    wrapLanguageModel,
+  convertToModelMessages,
+  type InferUITools,
+  stepCountIs,
+  streamText,
+  type ToolSet,
+  tool,
+  type UIDataTypes,
+  type UIMessage,
+  wrapLanguageModel,
 } from "ai";
 import { ConvexHttpClient } from "convex/browser";
 import { z } from "zod";
@@ -32,87 +32,87 @@ const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 // Tools
 // -----------------------------------
 const allTools = {
-    getSupportQueries: tool({
-        description:
-            "Fetch all previously submitted support queries for the current user. Use this when the user asks to see their tickets, past issues, or query history.",
-        // @ts-expect-error
-        inputSchema: z.object({
-            userId: z.string(),
-        }),
-        // @ts-expect-error
-        execute: async ({ userId }: { userId: Id<"users"> }) => {
-            console.log("-------- getSupportQueries called --------", userId);
-            const queries = await convex.query(api.support.getSupportQueriesForUser, {
-                userId,
-            });
-            if (!queries || queries.length === 0) {
-                return {
-                    queries: [],
-                    message: "No support queries found for this user.",
-                };
-            }
-            return { queries };
-        },
+  getSupportQueries: tool({
+    description:
+      "Fetch all previously submitted support queries for the current user. Use this when the user asks to see their tickets, past issues, or query history.",
+    // @ts-expect-error
+    inputSchema: z.object({
+      userId: z.string(),
     }),
+    // @ts-expect-error
+    execute: async ({ userId }: { userId: Id<"users"> }) => {
+      console.log("-------- getSupportQueries called --------", userId);
+      const queries = await convex.query(api.support.getSupportQueriesForUser, {
+        userId,
+      });
+      if (!queries || queries.length === 0) {
+        return {
+          queries: [],
+          message: "No support queries found for this user.",
+        };
+      }
+      return { queries };
+    },
+  }),
 
-    createSupportQuery: tool({
-        description:
-            "Create a new support query / ticket on behalf of the user. Call this when the user reports a bug, asks for help, or wants to raise an issue with Wekraft",
-        // @ts-ignore
-        inputSchema: z.object({
-            userId: z.string().describe("The Convex user ID raising the query"),
-            title: z
-                .string()
-                .describe("Short, clear title summarising the issue (max ~80 chars)"),
-            category: z
-                .string()
-                .describe(
-                    "Category of the issue. One of: bug, billing, feature-request, account, integration, other",
-                ),
-            description: z
-                .string()
-                .describe(
-                    "Detailed description of the issue — what happened, steps to reproduce, expected vs actual behaviour",
-                ),
-        }),
-        // @ts-expect-error
-        execute: async ({
-            userId,
-            title,
-            category,
-            description,
-        }: {
-            userId: Id<"users">;
-            title: string;
-            category: string;
-            description: string;
-        }) => {
-            console.log("-------- createSupportQuery called --------", {
-                userId,
-                title,
-                category,
-            });
-            const result = await convex.mutation(api.support.createQueryByAi, {
-                userId,
-                title,
-                category,
-                description,
-            });
-
-            if (!result.success) {
-                return {
-                    success: false,
-                    message: `Failed to create query: ${result.error}`,
-                };
-            }
-
-            return {
-                success: true,
-                message:
-                    "Your support query has been logged successfully. The Wekraft team will review it and get back to you.",
-            };
-        },
+  createSupportQuery: tool({
+    description:
+      "Create a new support query / ticket on behalf of the user. Call this when the user reports a bug, asks for help, or wants to raise an issue with Wekraft",
+    // @ts-ignore
+    inputSchema: z.object({
+      userId: z.string().describe("The Convex user ID raising the query"),
+      title: z
+        .string()
+        .describe("Short, clear title summarising the issue (max ~80 chars)"),
+      category: z
+        .string()
+        .describe(
+          "Category of the issue. One of: bug, billing, feature-request, account, integration, other",
+        ),
+      description: z
+        .string()
+        .describe(
+          "Detailed description of the issue — what happened, steps to reproduce, expected vs actual behaviour",
+        ),
     }),
+    // @ts-expect-error
+    execute: async ({
+      userId,
+      title,
+      category,
+      description,
+    }: {
+      userId: Id<"users">;
+      title: string;
+      category: string;
+      description: string;
+    }) => {
+      console.log("-------- createSupportQuery called --------", {
+        userId,
+        title,
+        category,
+      });
+      const result = await convex.mutation(api.support.createQueryByAi, {
+        userId,
+        title,
+        category,
+        description,
+      });
+
+      if (!result.success) {
+        return {
+          success: false,
+          message: `Failed to create query: ${result.error}`,
+        };
+      }
+
+      return {
+        success: true,
+        message:
+          "Your support query has been logged successfully. The Wekraft team will review it and get back to you.",
+      };
+    },
+  }),
 } satisfies ToolSet;
 
 // -----------------------------------
@@ -125,7 +125,7 @@ export type ChatbotMessage = UIMessage<never, UIDataTypes, ChatbotTools>;
 // System Prompt — Wekraft knowledge
 // -----------------------------------
 const SYSTEM_PROMPT = (userId: string) =>
-    `
+  `
 You are the official AI support assistant for Wekraft (wekraft.xyz).
 You help user understand this platform or solve their any related query and can createQuiery if user wants to contact with wekraft support team.
 
@@ -186,75 +186,77 @@ Link a repo to sync GitHub Issues as Wekraft Issues. Commits/PRs visible in task
 // Route Handler
 // -----------------------------------
 export async function POST(req: Request) {
+  try {
+    let body;
     try {
-        let body;
-        try {
-            body = await req.json();
-        } catch {
-            return new Response("Invalid JSON payload", { status: 400 });
-        }
-
-        const { messages, userId }: { messages: ChatbotMessage[]; userId: string } = body;
-
-        console.log("Chatbot route hit — userId:", userId);
-
-        // Strict rate limiting
-        const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";
-        const limitKey = userId ? `chatbot_rl_${userId}` : `chatbot_rl_ip_${ip}`;
-
-        const { success, limit, reset, remaining } = await ratelimit.limit(limitKey);
-        if (!success) {
-            return new Response("Too many requests. Please try again later.", {
-                status: 429,
-                headers: {
-                    "X-RateLimit-Limit": limit.toString(),
-                    "X-RateLimit-Remaining": remaining.toString(),
-                    "X-RateLimit-Reset": reset.toString(),
-                },
-            });
-        }
-
-        const apiKey = process.env.OPENAI_API_KEY;
-        if (apiKey) {
-            console.log(
-                "Chatbot OpenAI Key used (first 10 + last 4):",
-                `${apiKey.slice(0, 10)}...${apiKey.slice(-4)}`,
-            );
-        } else {
-            console.log("No API Key found in process.env.OPENAI_API_KEY!");
-        }
-
-        const customOpenai = createOpenAI({
-            apiKey: apiKey,
-        });
-
-        if (!Array.isArray(messages)) {
-            return new Response("messages must be an array", { status: 400 });
-        }
-
-        // const guardedModel = wrapLanguageModel({
-        //     model: customOpenai("gpt-4.1-nano"),
-        //     middleware: wekraftGuardrailMiddleware,
-        // });
-
-        const result = streamText({
-            model: customOpenai("gpt-4.1-nano"),
-            system: SYSTEM_PROMPT(userId),
-            messages: await convertToModelMessages(messages),
-            tools: allTools,
-            toolChoice: "auto",
-            stopWhen: stepCountIs(3),
-            onFinish: async ({ text }) => {
-                console.log("Chatbot response streamed:", text.slice(0, 20));
-            },
-        });
-
-        return result.toUIMessageStreamResponse({
-            sendReasoning: false,
-            sendSources: false,
-        });
-    } catch (error) {
-        console.error("Error in chatbot route:", error);
-        return new Response("Internal Server Error", { status: 500 });
+      body = await req.json();
+    } catch {
+      return new Response("Invalid JSON payload", { status: 400 });
     }
+
+    const { messages, userId }: { messages: ChatbotMessage[]; userId: string } =
+      body;
+
+    console.log("Chatbot route hit — userId:", userId);
+
+    // Strict rate limiting
+    const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";
+    const limitKey = userId ? `chatbot_rl_${userId}` : `chatbot_rl_ip_${ip}`;
+
+    const { success, limit, reset, remaining } =
+      await ratelimit.limit(limitKey);
+    if (!success) {
+      return new Response("Too many requests. Please try again later.", {
+        status: 429,
+        headers: {
+          "X-RateLimit-Limit": limit.toString(),
+          "X-RateLimit-Remaining": remaining.toString(),
+          "X-RateLimit-Reset": reset.toString(),
+        },
+      });
+    }
+
+    const apiKey = process.env.OPENAI_API_KEY;
+    if (apiKey) {
+      console.log(
+        "Chatbot OpenAI Key used (first 10 + last 4):",
+        `${apiKey.slice(0, 10)}...${apiKey.slice(-4)}`,
+      );
+    } else {
+      console.log("No API Key found in process.env.OPENAI_API_KEY!");
+    }
+
+    const customOpenai = createOpenAI({
+      apiKey: apiKey,
+    });
+
+    if (!Array.isArray(messages)) {
+      return new Response("messages must be an array", { status: 400 });
+    }
+
+    // const guardedModel = wrapLanguageModel({
+    //     model: customOpenai("gpt-4.1-nano"),
+    //     middleware: wekraftGuardrailMiddleware,
+    // });
+
+    const result = streamText({
+      model: customOpenai("gpt-4.1-nano"),
+      system: SYSTEM_PROMPT(userId),
+      messages: await convertToModelMessages(messages),
+      tools: allTools,
+      toolChoice: "auto",
+      stopWhen: stepCountIs(3),
+      onFinish: async ({ text }) => {
+        console.log("Chatbot response streamed:", text.slice(0, 20));
+      },
+    });
+
+    return result.toUIMessageStreamResponse({
+      sendReasoning: false,
+      sendSources: false,
+    });
+  } catch (error) {
+    console.error("Error in chatbot route:", error);
+    return new Response("Internal Server Error", { status: 500 });
+  }
 }

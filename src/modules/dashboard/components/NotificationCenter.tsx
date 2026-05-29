@@ -82,8 +82,6 @@ function NotificationItem({
         !notif.isRead && "bg-primary/[0.02]",
       )}
     >
-
-
       {/* Avatar / Icon */}
       <div className="relative shrink-0 mt-0.5">
         {notif.senderAvatar ? (
@@ -97,7 +95,9 @@ function NotificationItem({
           <div className="h-7 w-7 rounded-full bg-accent/30 border border-border/40 flex items-center justify-center text-xs shadow-sm">
             {(() => {
               const IconComponent = NOTIFICATION_ICONS[notif.type] ?? Bell;
-              return <IconComponent className="h-3.5 w-3.5 text-muted-foreground/80" />;
+              return (
+                <IconComponent className="h-3.5 w-3.5 text-muted-foreground/80" />
+              );
             })()}
           </div>
         )}
@@ -109,16 +109,13 @@ function NotificationItem({
           <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
             <span className="inline-flex items-center gap-1 text-[10px] text-primary bg-primary/5 px-2 py-0.5 rounded-md border border-primary/10 tracking-wide shadow-sm">
               <FolderKanban className="h-3 w-3 text-primary/80 shrink-0" />
-              <span className="truncate max-w-50">
-                {notif.projectName}
-              </span>
+              <span className="truncate max-w-50">{notif.projectName}</span>
             </span>
           </div>
         )}
         <p className="text-[11px] leading-relaxed text-foreground font-normal">
           {renderNotificationBody(notif.body)}
         </p>
-
       </div>
 
       {/* Action panel (Floating on hover - Linear Style) */}
@@ -204,7 +201,9 @@ export function NotificationCenter() {
             </div>
           );
         } else {
-          toastIcon = <IconComponent className="h-4 w-4 text-neutral-600 shrink-0" />;
+          toastIcon = (
+            <IconComponent className="h-4 w-4 text-neutral-600 shrink-0" />
+          );
         }
 
         toast(
@@ -222,7 +221,9 @@ export function NotificationCenter() {
                 <span className="truncate max-w-[180px]">{n.projectName}</span>
               </span>
             )}
-            <div className="text-sm font-normal text-neutral-800 leading-normal">{renderNotificationBody(n.body)}</div>
+            <div className="text-sm font-normal text-neutral-800 leading-normal">
+              {renderNotificationBody(n.body)}
+            </div>
           </div>,
           {
             icon: toastIcon,
@@ -279,9 +280,7 @@ export function NotificationCenter() {
         {/* Header */}
         <div className="flex items-center justify-between px-4 py-3 border-b border-border bg-muted">
           <div className="flex items-center gap-2">
-            <span className="text-sm">
-              Notifications
-            </span>
+            <span className="text-sm">Notifications</span>
             {unreadCount > 0 && (
               <span className="text-[9px] font-semibold bg-primary/10 text-primary px-1.5 py-0.5 rounded-full border border-primary/10">
                 {unreadCount} new

@@ -11,10 +11,13 @@ import { QueryProvider } from "@/providers/QueryProvider";
 import { ThemeProvider } from "@/providers/ThemeProvider";
 
 export const metadata: Metadata = {
-  metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://wekraft.xyz"),
+  metadataBase: new URL(
+    process.env.NEXT_PUBLIC_APP_URL || "https://wekraft.xyz",
+  ),
   title: {
     template: "%s | Wekraft",
-    default: "Wekraft | AI-Powered Project Management & Workspace for Modern Software Teams",
+    default:
+      "Wekraft | AI-Powered Project Management & Workspace for Modern Software Teams",
   },
   description:
     "Wekraft is the ultimate AI-powered project management platform and collaborative workspace built for modern software teams. Plan sprints, track to-do lists, manage developer capacity, and coordinate complex projects with ease.",
@@ -58,8 +61,10 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Wekraft | AI-Powered Project Management & Workspace for Modern Software Teams",
-    description: "The ultimate AI-powered project management platform and collaborative workspace built for modern software teams. Plan sprints, track to-dos, and manage developer capacity.",
+    title:
+      "Wekraft | AI-Powered Project Management & Workspace for Modern Software Teams",
+    description:
+      "The ultimate AI-powered project management platform and collaborative workspace built for modern software teams. Plan sprints, track to-dos, and manage developer capacity.",
     url: "https://wekraft.xyz",
     siteName: "Wekraft",
     images: [
@@ -75,15 +80,16 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Wekraft | AI-Powered Project Management & Workspace for Modern Software Teams",
-    description: "The ultimate AI-powered project management platform and collaborative workspace built for modern software teams. Plan sprints, track to-dos, and manage developer capacity.",
+    title:
+      "Wekraft | AI-Powered Project Management & Workspace for Modern Software Teams",
+    description:
+      "The ultimate AI-powered project management platform and collaborative workspace built for modern software teams. Plan sprints, track to-dos, and manage developer capacity.",
     images: ["/og-image.png"],
   },
   icons: {
     icon: "/logo.svg",
   },
 };
-
 
 export default function RootLayout({
   children,

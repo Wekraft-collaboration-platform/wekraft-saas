@@ -100,7 +100,9 @@ export const SocialLinksDialog = ({
 
       PLATFORMS.forEach((platform) => {
         const matchingIndex = remainingLinks.findIndex((link) =>
-          platform.domains.some((domain) => link.toLowerCase().includes(domain))
+          platform.domains.some((domain) =>
+            link.toLowerCase().includes(domain),
+          ),
         );
 
         if (matchingIndex !== -1) {
@@ -154,9 +156,12 @@ export const SocialLinksDialog = ({
       <DialogContent className="sm:max-w-[480px] max-h-[90vh] flex flex-col bg-card border border-border/40 text-foreground shadow-2xl p-0 overflow-hidden">
         <div className="p-6 pb-4 border-b border-border/30">
           <DialogHeader>
-            <DialogTitle className="text-xl font-bold tracking-tight">Link Social Accounts</DialogTitle>
+            <DialogTitle className="text-xl font-bold tracking-tight">
+              Link Social Accounts
+            </DialogTitle>
             <DialogDescription className="text-muted-foreground text-sm mt-1">
-              Add your social media and developer profile links. Empty fields will not be shown on your profile.
+              Add your social media and developer profile links. Empty fields
+              will not be shown on your profile.
             </DialogDescription>
           </DialogHeader>
         </div>
@@ -171,7 +176,9 @@ export const SocialLinksDialog = ({
                   htmlFor={`social-${platform.key}`}
                   className="text-xs font-semibold text-muted-foreground flex items-center gap-2"
                 >
-                  <IconComponent className={`h-4 w-4 shrink-0 ${platform.colorClass}`} />
+                  <IconComponent
+                    className={`h-4 w-4 shrink-0 ${platform.colorClass}`}
+                  />
                   {platform.label}
                 </Label>
                 <Input

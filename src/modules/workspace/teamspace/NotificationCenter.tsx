@@ -1,6 +1,16 @@
 "use client";
 
-import { Bell, Check, MessageSquare, AtSign, Clock, UserPlus, UserMinus, ShieldAlert, ArrowRight } from "lucide-react";
+import {
+  Bell,
+  Check,
+  MessageSquare,
+  AtSign,
+  Clock,
+  UserPlus,
+  UserMinus,
+  ShieldAlert,
+  ArrowRight,
+} from "lucide-react";
 import { useNotifications } from "./hooks/useNotifications";
 import {
   Popover,
@@ -22,16 +32,19 @@ interface NotificationCenterProps {
   onSelectChannel?: (channelId: string, messageId?: string) => void;
 }
 
-export function NotificationCenter({ userId, onSelectChannel }: NotificationCenterProps) {
+export function NotificationCenter({
+  userId,
+  onSelectChannel,
+}: NotificationCenterProps) {
   const { notifications, unreadCount, markAsRead } = useNotifications(userId);
   const router = useRouter();
   const convex = useConvex();
 
   const handleNotificationClick = async (n: any) => {
     markAsRead(n.id);
-    
+
     const isMention = !n.type || n.type === "mention";
-    
+
     if (isMention) {
       if (onSelectChannel && n.channel_id) {
         onSelectChannel(n.channel_id, n.message_id);
@@ -67,7 +80,11 @@ export function NotificationCenter({ userId, onSelectChannel }: NotificationCent
   return (
     <Popover>
       <PopoverTrigger asChild>
-        <Button variant="outline" size="icon-sm" className="relative group hover:bg-accent/50 transition-colors">
+        <Button
+          variant="outline"
+          size="icon-sm"
+          className="relative group hover:bg-accent/50 transition-colors"
+        >
           <Bell className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors" />
           {unreadCount > 0 && (
             <span className="absolute top-1.5 right-1.5 flex h-2 w-2">
@@ -128,10 +145,10 @@ export function NotificationCenter({ userId, onSelectChannel }: NotificationCent
                     key={n.id}
                     className={cn(
                       "p-4 border-b border-border/20 cursor-pointer transition-all duration-200 group relative",
-                      n.is_read === 0 
-                        ? "bg-gradient-to-r from-blue-500/[0.04] to-transparent hover:from-blue-500/[0.08]" 
+                      n.is_read === 0
+                        ? "bg-gradient-to-r from-blue-500/[0.04] to-transparent hover:from-blue-500/[0.08]"
                         : "hover:bg-accent/30 hover:shadow-[0_2px_8px_rgba(0,0,0,0.02)]",
-                      "hover:-translate-y-[1px] select-none"
+                      "hover:-translate-y-[1px] select-none",
                     )}
                     onClick={() => handleNotificationClick(n)}
                   >
@@ -139,13 +156,17 @@ export function NotificationCenter({ userId, onSelectChannel }: NotificationCent
                     {n.is_read === 0 && (
                       <div className="absolute left-0 top-[15%] h-[70%] w-[3px] rounded-r-md bg-blue-500 shadow-[0_0_8px_#3b82f6]" />
                     )}
-                    
+
                     <div className="flex gap-3">
                       <div className="relative shrink-0">
-                        <Avatar className={cn(
-                          "h-9 w-9 border shrink-0 transition-transform duration-200 group-hover:scale-105",
-                          n.is_read === 0 ? "border-blue-500/40 shadow-[0_0_8px_rgba(59,130,246,0.15)]" : "border-border/60"
-                        )}>
+                        <Avatar
+                          className={cn(
+                            "h-9 w-9 border shrink-0 transition-transform duration-200 group-hover:scale-105",
+                            n.is_read === 0
+                              ? "border-blue-500/40 shadow-[0_0_8px_rgba(59,130,246,0.15)]"
+                              : "border-border/60",
+                          )}
+                        >
                           <AvatarImage src={n.sender_image || undefined} />
                           <AvatarFallback className="bg-gradient-to-br from-blue-500/10 to-blue-500/20 text-blue-600 text-xs font-bold dark:text-blue-400">
                             {n.sender_name.substring(0, 2).toUpperCase()}
@@ -158,7 +179,7 @@ export function NotificationCenter({ userId, onSelectChannel }: NotificationCent
                           {getNotificationIcon(n.type)}
                         </span>
                       </div>
-                      
+
                       <div className="flex flex-col gap-1 min-w-0 flex-1">
                         <div className="flex items-center gap-1.5 flex-wrap">
                           <span className="font-semibold text-xs text-foreground tracking-tight max-w-[130px] truncate">
@@ -179,19 +200,28 @@ export function NotificationCenter({ userId, onSelectChannel }: NotificationCent
                             </span>
                           )}
                         </div>
-                        
-                        {n.content && (() => {
-                          const formattedContent = formatNotificationContent(n.content);
-                          return (
-                            <p className={cn(
-                              "text-xs text-muted-foreground/90 line-clamp-2 leading-relaxed bg-accent/25 dark:bg-accent/15 border-l-2 pl-2.5 py-1.5 rounded-r-md mt-1 shadow-[inset_1px_1px_3px_rgba(0,0,0,0.02)]",
-                              isMention ? "border-primary/20 italic" : "border-emerald-500/20"
-                            )}>
-                              {isMention ? `"${formattedContent}"` : formattedContent}
-                            </p>
-                          );
-                        })()}
-                        
+
+                        {n.content &&
+                          (() => {
+                            const formattedContent = formatNotificationContent(
+                              n.content,
+                            );
+                            return (
+                              <p
+                                className={cn(
+                                  "text-xs text-muted-foreground/90 line-clamp-2 leading-relaxed bg-accent/25 dark:bg-accent/15 border-l-2 pl-2.5 py-1.5 rounded-r-md mt-1 shadow-[inset_1px_1px_3px_rgba(0,0,0,0.02)]",
+                                  isMention
+                                    ? "border-primary/20 italic"
+                                    : "border-emerald-500/20",
+                                )}
+                              >
+                                {isMention
+                                  ? `"${formattedContent}"`
+                                  : formattedContent}
+                              </p>
+                            );
+                          })()}
+
                         <div className="flex items-center justify-between mt-2">
                           <div className="flex items-center gap-2">
                             <span className="text-[10px] text-muted-foreground/60 flex items-center gap-1">
@@ -213,12 +243,14 @@ export function NotificationCenter({ userId, onSelectChannel }: NotificationCent
                                 <span>Manage Team</span>
                               </>
                             )}
-                            <span className="transform translate-x-0 group-hover:translate-x-0.5 transition-transform duration-200">→</span>
+                            <span className="transform translate-x-0 group-hover:translate-x-0.5 transition-transform duration-200">
+                              →
+                            </span>
                           </span>
                         </div>
                       </div>
                     </div>
-                    
+
                     {n.is_read === 0 && (
                       <div className="absolute top-4 right-4 flex items-center justify-center h-6 w-6 z-10">
                         {/* Check button appearing on hover */}

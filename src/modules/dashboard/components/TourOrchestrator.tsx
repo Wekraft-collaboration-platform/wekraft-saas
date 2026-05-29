@@ -21,8 +21,10 @@ export function TourOrchestrator() {
 
     if (prevCompletedRef.current !== null) {
       // Find newly completed steps since last render
-      const newSteps = currentCompleted.filter(id => !prevCompletedRef.current!.includes(id));
-      
+      const newSteps = currentCompleted.filter(
+        (id) => !prevCompletedRef.current!.includes(id),
+      );
+
       if (newSteps.length > 0) {
         // If there's an active tour session
         if (sessionStorage.getItem("wekraft_tour_active") === "true") {
@@ -31,13 +33,16 @@ export function TourOrchestrator() {
         }
       }
     }
-    
+
     prevCompletedRef.current = currentCompleted;
   }, [progressData]);
 
   if (completedTask !== null) {
     if (completedTask === 2) {
-      const projectName = (userProjects && userProjects.length > 0) ? userProjects[0].projectName : "Wekraft Platform";
+      const projectName =
+        userProjects && userProjects.length > 0
+          ? userProjects[0].projectName
+          : "Wekraft Platform";
 
       return (
         <LinkedRepoDialog
@@ -55,7 +60,10 @@ export function TourOrchestrator() {
 
     return (
       <div className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-auto">
-        <div className="absolute inset-0 bg-background/60 backdrop-blur-xs" onClick={() => setCompletedTask(null)} />
+        <div
+          className="absolute inset-0 bg-background/60 backdrop-blur-xs"
+          onClick={() => setCompletedTask(null)}
+        />
         <div className="flex flex-col w-[380px] relative pointer-events-auto animate-in zoom-in-95 duration-200">
           <div className="bg-linear-to-br from-neutral-800 to-neutral-950 text-card-foreground border border-border shadow-2xl rounded-lg p-5">
             <div className="flex items-center gap-3 mb-1">
@@ -70,7 +78,8 @@ export function TourOrchestrator() {
             <div className="h-px w-full bg-accent my-3" />
 
             <p className="text-xs text-muted-foreground leading-relaxed pr-2">
-              Awesome work! You've successfully completed this step. Are you ready to continue the tour?
+              Awesome work! You've successfully completed this step. Are you
+              ready to continue the tour?
             </p>
           </div>
 

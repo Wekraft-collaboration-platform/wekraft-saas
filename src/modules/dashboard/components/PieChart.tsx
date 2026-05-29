@@ -81,9 +81,12 @@ export function PieChartVariant1({ stats }: ImpactScoreDisplayProps) {
   return (
     <>
       <h1 className="text-center text-sm capitalize text-primary mb-2.5">
-       {/* Impact Score */}
+        {/* Impact Score */}
       </h1>
-      <ChartContainer config={chartConfig} className="h-[150px] w-full max-w-[280px] mx-auto">
+      <ChartContainer
+        config={chartConfig}
+        className="h-[150px] w-full max-w-[280px] mx-auto"
+      >
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <ChartTooltip

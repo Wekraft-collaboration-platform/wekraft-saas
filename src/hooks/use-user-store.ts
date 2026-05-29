@@ -14,7 +14,7 @@ export function useStoreUser() {
 
   useEffect(() => {
     if (!isAuthenticated || !isClerkLoaded) return;
-    if (userId) return; 
+    if (userId) return;
 
     let cancelled = false;
 

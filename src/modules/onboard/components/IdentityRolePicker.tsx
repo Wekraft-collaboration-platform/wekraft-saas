@@ -59,7 +59,10 @@ export function IdentityRolePicker({
       />
 
       <div className="space-y-1.5 font-sans">
-        <Label htmlFor="role-search" className="text-base text-zinc-300 font-medium">
+        <Label
+          htmlFor="role-search"
+          className="text-base text-zinc-300 font-medium"
+        >
           Occupation
         </Label>
 

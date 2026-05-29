@@ -1,15 +1,15 @@
 /**
  * MessageComposer.tsx
- * 
+ *
  * Rich text input component for sending messages in a channel or thread.
- * 
+ *
  * Features:
  * - Auto-expanding textarea for multi-line messages.
  * - Supports keyboard shortcuts (Enter to send, Shift+Enter for new line).
  * - Displays reply context when replying to a specific message.
  * - Integrated emoji picker and quick attachment placeholders.
  * - Permission-aware (disables input for announcement channels if not owner).
- * 
+ *
  * Integration:
  * - Triggers `onSend` callback with the message content.
  */
@@ -18,11 +18,35 @@
 import { useState, useRef, useCallback, KeyboardEvent, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
-import { SmilePlus, Plus, X, SendHorizontal, BarChart2, Code, AtSign, Paperclip, Loader2, FileIcon, TicketSlash, Save } from "lucide-react";
+import {
+  SmilePlus,
+  Plus,
+  X,
+  SendHorizontal,
+  BarChart2,
+  Code,
+  AtSign,
+  Paperclip,
+  Loader2,
+  FileIcon,
+  TicketSlash,
+  Save,
+} from "lucide-react";
 import { toast } from "sonner";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter, DialogDescription } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+  DialogDescription,
+} from "@/components/ui/dialog";
 import { motion, AnimatePresence } from "framer-motion";
-import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
 import { cn } from "@/lib/utils";
 import { getUserColor, getFileIconPath } from "./lib/utils";
 import { Message } from "./hooks/useMessages";
@@ -36,7 +60,10 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 const EMOJI_GROUPS = [
   { label: "React", emojis: ["👍", "❤️", "😂", "😮", "😢", "🙏", "🎉", "🔥"] },
   { label: "Work", emojis: ["✅", "❌", "⚠️", "💡", "🚀", "🐛", "📌", "💪"] },
-  { label: "Symbols", emojis: ["👀", "🤔", "💯", "🔗", "📝", "🎯", "⚡", "🌟"] },
+  {
+    label: "Symbols",
+    emojis: ["👀", "🤔", "💯", "🔗", "📝", "🎯", "⚡", "🌟"],
+  },
 ];
 
 interface Props {
@@ -53,7 +80,19 @@ interface Props {
   projectSlug?: string;
 }
 
-export function MessageComposer({ channelName, projectId, replyingTo, onClearReply, onSend, onUploadMedia, onTyping, disabled, isAnnouncement, currentUserId, projectSlug }: Props) {
+export function MessageComposer({
+  channelName,
+  projectId,
+  replyingTo,
+  onClearReply,
+  onSend,
+  onUploadMedia,
+  onTyping,
+  disabled,
+  isAnnouncement,
+  currentUserId,
+  projectSlug,
+}: Props) {
   const [content, setContent] = useState("");
   const [isPollDialogOpen, setIsPollDialogOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -130,25 +169,39 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
   const [showCodeLinker, setShowCodeLinker] = useState(false);
   const [selectedPath, setSelectedPath] = useState<string | null>(null);
 
-  const project = useQuery(api.project.getProjectBySlug, projectSlug ? { slug: projectSlug } : "skip");
+  const project = useQuery(
+    api.project.getProjectBySlug,
+    projectSlug ? { slug: projectSlug } : "skip",
+  );
   const [mentionStartIndex, setMentionStartIndex] = useState(-1);
 
   // Fetch project members for mentions
   const members = useQuery(
     api.project.getProjectMembers,
-    projectId ? { projectId: projectId as Id<"projects"> } : "skip"
+    projectId ? { projectId: projectId as Id<"projects"> } : "skip",
   );
 
   const selectedMember = members?.find((m) => m.userId === ticketAssigneeId);
 
   const filteredMembers = [
-    ...(mentionQuery.toLowerCase() === "e" || mentionQuery.toLowerCase() === "ev" || "everyone".includes(mentionQuery.toLowerCase())
-      ? [{ _id: "everyone", userName: "everyone", AccessRole: "Notify everyone in project", userImage: undefined, role: "system" }]
+    ...(mentionQuery.toLowerCase() === "e" ||
+    mentionQuery.toLowerCase() === "ev" ||
+    "everyone".includes(mentionQuery.toLowerCase())
+      ? [
+          {
+            _id: "everyone",
+            userName: "everyone",
+            AccessRole: "Notify everyone in project",
+            userImage: undefined,
+            role: "system",
+          },
+        ]
       : []),
-    ...(members?.filter((m) =>
-      m.userName?.toLowerCase().includes(mentionQuery.toLowerCase()) &&
-      m.clerkUserId !== currentUserId // Filter out current user
-    ) || [])
+    ...(members?.filter(
+      (m) =>
+        m.userName?.toLowerCase().includes(mentionQuery.toLowerCase()) &&
+        m.clerkUserId !== currentUserId, // Filter out current user
+    ) || []),
   ];
 
   // Auto-resize logic
@@ -209,13 +262,17 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
       if (e.key === "ArrowUp") {
         e.preventDefault();
         setMentionIndex(
-          (prev) => (prev - 1 + filteredMembers.length) % filteredMembers.length,
+          (prev) =>
+            (prev - 1 + filteredMembers.length) % filteredMembers.length,
         );
         return;
       }
       if (e.key === "Enter" || e.key === "Tab") {
         e.preventDefault();
-        insertMention(filteredMembers[mentionIndex].userName || "unknown", false);
+        insertMention(
+          filteredMembers[mentionIndex].userName || "unknown",
+          false,
+        );
         return;
       }
       if (e.key === "Escape") {
@@ -237,7 +294,9 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
     const ref = isCaption ? captionTextareaRef : textareaRef;
 
     const before = currentText.substring(0, mentionStartIndex);
-    const after = currentText.substring(ref.current?.selectionStart || currentText.length);
+    const after = currentText.substring(
+      ref.current?.selectionStart || currentText.length,
+    );
     const newContent = `${before}@${name} ${after}`;
 
     if (isCaption) {
@@ -263,9 +322,10 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
     textareaRef.current?.focus();
   };
 
-  const placeholder = disabled && isAnnouncement
-    ? "Only project owners and admins can send messages in this channel"
-    : `Message #${channelName}`;
+  const placeholder =
+    disabled && isAnnouncement
+      ? "Only project owners and admins can send messages in this channel"
+      : `Message #${channelName}`;
 
   return (
     <div className="px-4 pb-6 pt-0 shrink-0">
@@ -273,10 +333,20 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
       {replyingTo && (
         <div className="flex items-center gap-2 mb-2 px-3 py-1.5 rounded-md bg-accent/50 border text-xs text-muted-foreground">
           <span className="truncate flex-1">
-            Replying to <strong style={{ color: getUserColor(replyingTo.user_name) }}>{replyingTo.user_name}</strong>:{" "}
-            <span className="opacity-70">{replyingTo.content.slice(0, 60)}{replyingTo.content.length > 60 ? "…" : ""}</span>
+            Replying to{" "}
+            <strong style={{ color: getUserColor(replyingTo.user_name) }}>
+              {replyingTo.user_name}
+            </strong>
+            :{" "}
+            <span className="opacity-70">
+              {replyingTo.content.slice(0, 60)}
+              {replyingTo.content.length > 60 ? "…" : ""}
+            </span>
           </span>
-          <button onClick={onClearReply} className="hover:text-foreground transition-colors shrink-0 cursor-pointer p-0.5 rounded-sm hover:bg-foreground/10">
+          <button
+            onClick={onClearReply}
+            className="hover:text-foreground transition-colors shrink-0 cursor-pointer p-0.5 rounded-sm hover:bg-foreground/10"
+          >
             <X className="h-3.5 w-3.5" />
           </button>
         </div>
@@ -286,11 +356,11 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
       <motion.div
         layout
         transition={{
-          layout: { duration: 0.2, ease: "easeOut" }
+          layout: { duration: 0.2, ease: "easeOut" },
         }}
         className={cn(
           "flex items-center gap-2 rounded-lg bg-accent/40 px-4 py-2 transition-all duration-200 relative",
-          disabled && "opacity-70 bg-secondary/30"
+          disabled && "opacity-70 bg-secondary/30",
         )}
       >
         {/* Code Linker Popover */}
@@ -312,8 +382,13 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
               onClose={() => setShowCodeLinker(false)}
               onSelect={(path) => {
                 if (path) {
-                  const before = content.substring(0, content.lastIndexOf("\\"));
-                  const after = content.substring(content.lastIndexOf("\\") + 1);
+                  const before = content.substring(
+                    0,
+                    content.lastIndexOf("\\"),
+                  );
+                  const after = content.substring(
+                    content.lastIndexOf("\\") + 1,
+                  );
                   const fileLink = `\`${path}\``;
                   setContent(before + fileLink + " " + after);
                   setShowCodeLinker(false);
@@ -329,7 +404,12 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
           <PopoverTrigger asChild>
             <div className="absolute top-0 left-4 w-0 h-0 pointer-events-none" />
           </PopoverTrigger>
-          <PopoverContent className="w-[340px] p-4 border-border bg-background backdrop-blur-xl shadow-2xl rounded-xl space-y-4" side="top" align="start" sideOffset={10}>
+          <PopoverContent
+            className="w-[340px] p-4 border-border bg-background backdrop-blur-xl shadow-2xl rounded-xl space-y-4"
+            side="top"
+            align="start"
+            sideOffset={10}
+          >
             <div className="flex items-center justify-between">
               <h3 className="text-sm font-semibold flex items-center gap-1.5 text-foreground">
                 <TicketSlash className="h-4 w-4 text-primary" /> Create Ticket
@@ -347,7 +427,9 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
             </div>
             <div className="space-y-3">
               <div className="space-y-2">
-                <label className="text-xs text-muted-foreground">Ticket Description</label>
+                <label className="text-xs text-muted-foreground">
+                  Ticket Description
+                </label>
                 <Textarea
                   placeholder="What needs to be done?"
                   value={ticketBody}
@@ -357,7 +439,9 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
                 />
               </div>
               <div className="space-y-1">
-                <label className="text-xs text-muted-foreground">Assignee</label>
+                <label className="text-xs text-muted-foreground">
+                  Assignee
+                </label>
                 <Popover>
                   <PopoverTrigger asChild>
                     <button
@@ -369,15 +453,21 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
                           <Avatar className="h-5 w-5">
                             <AvatarImage src={selectedMember.userImage} />
                             <AvatarFallback className="text-[10px] bg-primary/10 text-primary font-bold">
-                              {selectedMember.userName.substring(0, 2).toUpperCase()}
+                              {selectedMember.userName
+                                .substring(0, 2)
+                                .toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
                           <span>{selectedMember.userName}</span>
                         </div>
                       ) : (
-                        <span className="text-muted-foreground">Select an assignee</span>
+                        <span className="text-muted-foreground">
+                          Select an assignee
+                        </span>
                       )}
-                      <span className="text-[10px] text-muted-foreground">▼</span>
+                      <span className="text-[10px] text-muted-foreground">
+                        ▼
+                      </span>
                     </button>
                   </PopoverTrigger>
                   <PopoverContent
@@ -386,7 +476,9 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
                     sideOffset={20}
                     className="w-[320px] p-3 border border-border bg-background shadow-2xl rounded-xl z-[250]"
                   >
-                    <h4 className="text-xs text-primary border-b pb-2 border-accent tracking-wider mb-2">Assign Member</h4>
+                    <h4 className="text-xs text-primary border-b pb-2 border-accent tracking-wider mb-2">
+                      Assign Member
+                    </h4>
                     <div className="grid grid-cols-4 gap-2 max-h-[280px] overflow-y-auto pr-1">
                       {members?.map((member) => (
                         <button
@@ -399,13 +491,15 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
                             "flex flex-col items-center gap-1.5 p-2 rounded-lg border text-center transition-all duration-200 hover:bg-accent/40 hover:border-border/60 group cursor-pointer",
                             ticketAssigneeId === member.userId
                               ? "bg-primary/10 border-primary/15 text-primary"
-                              : "border-transparent bg-muted/10 text-muted-foreground"
+                              : "border-transparent bg-muted/10 text-muted-foreground",
                           )}
                         >
                           <Avatar className="h-9 w-9 border border-border/30 group-hover:scale-105 transition-transform duration-200">
                             <AvatarImage src={member.userImage ?? undefined} />
                             <AvatarFallback className="text-[11px] bg-primary/10 text-primary font-black">
-                              {(member.userName || "??").substring(0, 2).toUpperCase()}
+                              {(member.userName || "??")
+                                .substring(0, 2)
+                                .toUpperCase()}
                             </AvatarFallback>
                           </Avatar>
                           <div className="flex flex-col min-w-0 w-full">
@@ -484,9 +578,21 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
             >
               <div className="flex gap-6">
                 {[
-                  { label: "Codebase", icon: Code, color: "bg-foreground text-background" },
-                  { label: "Poll", icon: BarChart2, color: "bg-foreground text-background" },
-                  { label: "Media (Max 10MB)", icon: uploadingMedia ? Loader2 : Paperclip, color: "bg-foreground text-background" },
+                  {
+                    label: "Codebase",
+                    icon: Code,
+                    color: "bg-foreground text-background",
+                  },
+                  {
+                    label: "Poll",
+                    icon: BarChart2,
+                    color: "bg-foreground text-background",
+                  },
+                  {
+                    label: "Media (Max 10MB)",
+                    icon: uploadingMedia ? Loader2 : Paperclip,
+                    color: "bg-foreground text-background",
+                  },
                 ].map((item) => (
                   <button
                     key={item.label}
@@ -502,14 +608,27 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
                         console.log("Clicked", item.label);
                       }
                     }}
-                    disabled={uploadingMedia && item.label === "Media (Max 10MB)"}
+                    disabled={
+                      uploadingMedia && item.label === "Media (Max 10MB)"
+                    }
                   >
-                    <div className={cn(
-                      "h-10 w-10 rounded-full flex items-center justify-center shadow-sm transition-transform duration-200 group-hover:scale-110 group-active:scale-95",
-                      item.color,
-                      uploadingMedia && item.label === "Media (Max 10MB)" && "opacity-70 cursor-not-allowed"
-                    )}>
-                      <item.icon className={cn("h-[18px] w-[18px]", uploadingMedia && item.label === "Media (Max 10MB)" && "animate-spin")} />
+                    <div
+                      className={cn(
+                        "h-10 w-10 rounded-full flex items-center justify-center shadow-sm transition-transform duration-200 group-hover:scale-110 group-active:scale-95",
+                        item.color,
+                        uploadingMedia &&
+                          item.label === "Media (Max 10MB)" &&
+                          "opacity-70 cursor-not-allowed",
+                      )}
+                    >
+                      <item.icon
+                        className={cn(
+                          "h-[18px] w-[18px]",
+                          uploadingMedia &&
+                            item.label === "Media (Max 10MB)" &&
+                            "animate-spin",
+                        )}
+                      />
                     </div>
                     <span className="text-[11px] font-medium text-muted-foreground group-hover:text-foreground transition-colors">
                       {item.label}
@@ -532,7 +651,11 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
                 <SmilePlus className="h-5 w-5" />
               </motion.button>
             </PopoverTrigger>
-            <PopoverContent side="top" align="start" className="w-64 p-3 mb-2 bg-background/95 backdrop-blur-xl border-border/40 shadow-2xl rounded-xl">
+            <PopoverContent
+              side="top"
+              align="start"
+              className="w-64 p-3 mb-2 bg-background/95 backdrop-blur-xl border-border/40 shadow-2xl rounded-xl"
+            >
               {EMOJI_GROUPS.map((group) => (
                 <div key={group.label} className="mb-2">
                   <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground mb-1.5">
@@ -594,8 +717,14 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
 
               if (lastAtIndex !== -1 && lastAtIndex >= lastBackslashIndex) {
                 const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
-                const charBeforeAt = lastAtIndex > 0 ? textBeforeCursor[lastAtIndex - 1] : undefined;
-                const validStart = charBeforeAt === undefined || charBeforeAt === " " || charBeforeAt === "\n";
+                const charBeforeAt =
+                  lastAtIndex > 0
+                    ? textBeforeCursor[lastAtIndex - 1]
+                    : undefined;
+                const validStart =
+                  charBeforeAt === undefined ||
+                  charBeforeAt === " " ||
+                  charBeforeAt === "\n";
 
                 if (validStart && !textAfterAt.includes(" ")) {
                   setMentionQuery(textAfterAt);
@@ -608,9 +737,17 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
                   setMentionStartIndex(-1);
                 }
               } else if (lastBackslashIndex !== -1) {
-                const charBeforeBackslash = lastBackslashIndex > 0 ? textBeforeCursor[lastBackslashIndex - 1] : undefined;
-                const validStart = charBeforeBackslash === undefined || charBeforeBackslash === " " || charBeforeBackslash === "\n";
-                const textAfterBackslash = textBeforeCursor.substring(lastBackslashIndex + 1);
+                const charBeforeBackslash =
+                  lastBackslashIndex > 0
+                    ? textBeforeCursor[lastBackslashIndex - 1]
+                    : undefined;
+                const validStart =
+                  charBeforeBackslash === undefined ||
+                  charBeforeBackslash === " " ||
+                  charBeforeBackslash === "\n";
+                const textAfterBackslash = textBeforeCursor.substring(
+                  lastBackslashIndex + 1,
+                );
 
                 if (validStart && !textAfterBackslash.includes(" ")) {
                   setShowCodeLinker(true);
@@ -634,67 +771,73 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
 
           {/* Mentions Dropdown — anchored relative to the textarea wrapper */}
           <AnimatePresence>
-            {showMentions && filteredMembers.length > 0 && !selectedMediaFile && (
-              <motion.div
-                initial={{ opacity: 0, y: 6, scale: 0.97 }}
-                animate={{ opacity: 1, y: 0, scale: 1 }}
-                exit={{ opacity: 0, y: 6, scale: 0.97 }}
-                transition={{ duration: 0.15, ease: "easeOut" }}
-                className="absolute bottom-[calc(100%+8px)] left-0 w-64 bg-popover border border-border/50 shadow-2xl rounded-xl overflow-hidden z-[200]"
-              >
-                <div className="px-3 py-2 border-b border-border/40 bg-muted/50 flex items-center gap-2">
-                  <AtSign className="h-3.5 w-3.5 text-primary" />
-                  <span className="text-sm text-muted-foreground">
-                    Mention someone
-                  </span>
-                </div>
-                <div className="max-h-[220px] overflow-y-auto scrollbar-thin">
-                  <div className="py-1">
-                    {filteredMembers.map((member, i) => (
-                      <button
-                        key={member._id}
-                        id={`mention-item-${i}`}
-                        onClick={() => insertMention(member.userName || "", false)}
-                        onMouseEnter={() => setMentionIndex(i)}
-                        className={cn(
-                          "w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-colors",
-                          i === mentionIndex
-                            ? "bg-primary/15"
-                            : "hover:bg-accent/40"
-                        )}
-                      >
-                        <Avatar className="h-8 w-8 border border-border/40 shrink-0">
-                          <AvatarImage src={member.userImage ?? undefined} />
-                          <AvatarFallback className="text-[11px] bg-primary/10 text-primary font-bold">
-                            {(member.userName || "??").substring(0, 2).toUpperCase()}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex flex-col min-w-0">
-                          <span
-                            className="text-[13px] font-semibold truncate leading-tight"
-                            style={{ color: getUserColor(member.userName || "") }}
-                          >
-                            {member.userName}
-                          </span>
-                          <span className="text-[11px] text-muted-foreground truncate">
-                            {member.AccessRole || "Member"}
-                          </span>
-                        </div>
-                        {i === mentionIndex && (
-                          <span className="ml-auto text-[9px] text-muted-foreground/60 shrink-0">
-                            ↵
-                          </span>
-                        )}
-                      </button>
-                    ))}
+            {showMentions &&
+              filteredMembers.length > 0 &&
+              !selectedMediaFile && (
+                <motion.div
+                  initial={{ opacity: 0, y: 6, scale: 0.97 }}
+                  animate={{ opacity: 1, y: 0, scale: 1 }}
+                  exit={{ opacity: 0, y: 6, scale: 0.97 }}
+                  transition={{ duration: 0.15, ease: "easeOut" }}
+                  className="absolute bottom-[calc(100%+8px)] left-0 w-64 bg-popover border border-border/50 shadow-2xl rounded-xl overflow-hidden z-[200]"
+                >
+                  <div className="px-3 py-2 border-b border-border/40 bg-muted/50 flex items-center gap-2">
+                    <AtSign className="h-3.5 w-3.5 text-primary" />
+                    <span className="text-sm text-muted-foreground">
+                      Mention someone
+                    </span>
                   </div>
-                </div>
-              </motion.div>
-            )}
+                  <div className="max-h-[220px] overflow-y-auto scrollbar-thin">
+                    <div className="py-1">
+                      {filteredMembers.map((member, i) => (
+                        <button
+                          key={member._id}
+                          id={`mention-item-${i}`}
+                          onClick={() =>
+                            insertMention(member.userName || "", false)
+                          }
+                          onMouseEnter={() => setMentionIndex(i)}
+                          className={cn(
+                            "w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-colors",
+                            i === mentionIndex
+                              ? "bg-primary/15"
+                              : "hover:bg-accent/40",
+                          )}
+                        >
+                          <Avatar className="h-8 w-8 border border-border/40 shrink-0">
+                            <AvatarImage src={member.userImage ?? undefined} />
+                            <AvatarFallback className="text-[11px] bg-primary/10 text-primary font-bold">
+                              {(member.userName || "??")
+                                .substring(0, 2)
+                                .toUpperCase()}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex flex-col min-w-0">
+                            <span
+                              className="text-[13px] font-semibold truncate leading-tight"
+                              style={{
+                                color: getUserColor(member.userName || ""),
+                              }}
+                            >
+                              {member.userName}
+                            </span>
+                            <span className="text-[11px] text-muted-foreground truncate">
+                              {member.AccessRole || "Member"}
+                            </span>
+                          </div>
+                          {i === mentionIndex && (
+                            <span className="ml-auto text-[9px] text-muted-foreground/60 shrink-0">
+                              ↵
+                            </span>
+                          )}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                </motion.div>
+              )}
           </AnimatePresence>
         </div>
-
-
 
         {/* Send button */}
         <div className="flex items-center shrink-0 pr-1">
@@ -707,7 +850,7 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
               "p-1.5 rounded-md transition-all duration-200",
               content.trim()
                 ? "text-primary hover:bg-primary/10"
-                : "text-muted-foreground/40 cursor-not-allowed"
+                : "text-muted-foreground/40 cursor-not-allowed",
             )}
           >
             <SendHorizontal className="h-5 w-5" />
@@ -731,8 +874,16 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
       />
 
       {/* File Preview Dialog */}
-      <Dialog open={!!selectedMediaFile} onOpenChange={(open) => { if (!open) handleCancelMedia() }}>
-        <DialogContent className="sm:max-w-md" showCloseButton={!uploadingMedia}>
+      <Dialog
+        open={!!selectedMediaFile}
+        onOpenChange={(open) => {
+          if (!open) handleCancelMedia();
+        }}
+      >
+        <DialogContent
+          className="sm:max-w-md"
+          showCloseButton={!uploadingMedia}
+        >
           <DialogHeader>
             <DialogTitle>Send File</DialogTitle>
             <DialogDescription>
@@ -744,13 +895,25 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
             {mediaPreviewUrl ? (
               <div className="relative w-full max-h-[40vh] rounded-md overflow-hidden flex items-center justify-center bg-muted/50 border border-border/40">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
-                <img src={mediaPreviewUrl} alt="Preview" className="max-h-[40vh] object-contain" />
+                <img
+                  src={mediaPreviewUrl}
+                  alt="Preview"
+                  className="max-h-[40vh] object-contain"
+                />
               </div>
             ) : selectedMediaFile ? (
               <div className="flex flex-col items-center justify-center p-8 bg-muted/30 w-full rounded-md border border-border/50">
-                <img src={getFileIconPath(selectedMediaFile.name)} alt="File icon" className="h-16 w-16 mb-4 object-contain" />
-                <span className="text-sm font-medium text-center break-all">{selectedMediaFile.name}</span>
-                <span className="text-xs text-muted-foreground mt-1">{(selectedMediaFile.size / 1024 / 1024).toFixed(2)} MB</span>
+                <img
+                  src={getFileIconPath(selectedMediaFile.name)}
+                  alt="File icon"
+                  className="h-16 w-16 mb-4 object-contain"
+                />
+                <span className="text-sm font-medium text-center break-all">
+                  {selectedMediaFile.name}
+                </span>
+                <span className="text-xs text-muted-foreground mt-1">
+                  {(selectedMediaFile.size / 1024 / 1024).toFixed(2)} MB
+                </span>
               </div>
             ) : null}
 
@@ -767,9 +930,17 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
                   const lastAtIndex = textBeforeCursor.lastIndexOf("@");
 
                   if (lastAtIndex !== -1) {
-                    const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
-                    const charBeforeAt = lastAtIndex > 0 ? textBeforeCursor[lastAtIndex - 1] : undefined;
-                    const validStart = charBeforeAt === undefined || charBeforeAt === " " || charBeforeAt === "\n";
+                    const textAfterAt = textBeforeCursor.substring(
+                      lastAtIndex + 1,
+                    );
+                    const charBeforeAt =
+                      lastAtIndex > 0
+                        ? textBeforeCursor[lastAtIndex - 1]
+                        : undefined;
+                    const validStart =
+                      charBeforeAt === undefined ||
+                      charBeforeAt === " " ||
+                      charBeforeAt === "\n";
 
                     if (validStart && !textAfterAt.includes(" ")) {
                       setMentionQuery(textAfterAt);
@@ -793,17 +964,26 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
                   if (showMentions && filteredMembers.length > 0) {
                     if (e.key === "ArrowDown") {
                       e.preventDefault();
-                      setMentionIndex((prev) => (prev + 1) % filteredMembers.length);
+                      setMentionIndex(
+                        (prev) => (prev + 1) % filteredMembers.length,
+                      );
                       return;
                     }
                     if (e.key === "ArrowUp") {
                       e.preventDefault();
-                      setMentionIndex((prev) => (prev - 1 + filteredMembers.length) % filteredMembers.length);
+                      setMentionIndex(
+                        (prev) =>
+                          (prev - 1 + filteredMembers.length) %
+                          filteredMembers.length,
+                      );
                       return;
                     }
                     if (e.key === "Enter" || e.key === "Tab") {
                       e.preventDefault();
-                      insertMention(filteredMembers[mentionIndex].userName || "unknown", true);
+                      insertMention(
+                        filteredMembers[mentionIndex].userName || "unknown",
+                        true,
+                      );
                       return;
                     }
                     if (e.key === "Escape") {
@@ -819,63 +999,83 @@ export function MessageComposer({ channelName, projectId, replyingTo, onClearRep
                 }}
               />
               <AnimatePresence>
-                {showMentions && filteredMembers.length > 0 && !!selectedMediaFile && (
-                  <motion.div
-                    initial={{ opacity: 0, y: -6, scale: 0.97 }}
-                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                    exit={{ opacity: 0, y: -6, scale: 0.97 }}
-                    transition={{ duration: 0.15, ease: "easeOut" }}
-                    className="absolute top-[calc(100%+8px)] left-0 w-64 bg-popover border border-border/50 shadow-2xl rounded-xl overflow-hidden z-[200]"
-                  >
-                    <div className="px-3 py-2 border-b border-border/40 bg-muted/50 flex items-center gap-2">
-                      <AtSign className="h-3.5 w-3.5 text-primary" />
-                      <span className="text-sm text-muted-foreground">Mention someone</span>
-                    </div>
-                    <div className="max-h-[220px] overflow-y-auto scrollbar-thin">
-                      <div className="py-1">
-                        {filteredMembers.map((member, i) => (
-                          <button
-                            key={member._id}
-                            id={`caption-mention-item-${i}`}
-                            onClick={() => insertMention(member.userName || "", true)}
-                            onMouseEnter={() => setMentionIndex(i)}
-                            className={cn(
-                              "w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-colors",
-                              i === mentionIndex ? "bg-primary/15" : "hover:bg-accent/40"
-                            )}
-                          >
-                            <Avatar className="h-8 w-8 border border-border/40 shrink-0">
-                              <AvatarImage src={member.userImage ?? undefined} />
-                              <AvatarFallback className="text-[11px] bg-primary/10 text-primary font-bold">
-                                {(member.userName || "??").substring(0, 2).toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="flex flex-col min-w-0">
-                              <span
-                                className="text-[13px] font-semibold truncate leading-tight"
-                                style={{ color: getUserColor(member.userName || "") }}
-                              >
-                                {member.userName}
-                              </span>
-                              <span className="text-[11px] text-muted-foreground truncate">
-                                {member.AccessRole || "Member"}
-                              </span>
-                            </div>
-                            {i === mentionIndex && (
-                              <span className="ml-auto text-[9px] text-muted-foreground/60 shrink-0">↵</span>
-                            )}
-                          </button>
-                        ))}
+                {showMentions &&
+                  filteredMembers.length > 0 &&
+                  !!selectedMediaFile && (
+                    <motion.div
+                      initial={{ opacity: 0, y: -6, scale: 0.97 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: -6, scale: 0.97 }}
+                      transition={{ duration: 0.15, ease: "easeOut" }}
+                      className="absolute top-[calc(100%+8px)] left-0 w-64 bg-popover border border-border/50 shadow-2xl rounded-xl overflow-hidden z-[200]"
+                    >
+                      <div className="px-3 py-2 border-b border-border/40 bg-muted/50 flex items-center gap-2">
+                        <AtSign className="h-3.5 w-3.5 text-primary" />
+                        <span className="text-sm text-muted-foreground">
+                          Mention someone
+                        </span>
                       </div>
-                    </div>
-                  </motion.div>
-                )}
+                      <div className="max-h-[220px] overflow-y-auto scrollbar-thin">
+                        <div className="py-1">
+                          {filteredMembers.map((member, i) => (
+                            <button
+                              key={member._id}
+                              id={`caption-mention-item-${i}`}
+                              onClick={() =>
+                                insertMention(member.userName || "", true)
+                              }
+                              onMouseEnter={() => setMentionIndex(i)}
+                              className={cn(
+                                "w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-colors",
+                                i === mentionIndex
+                                  ? "bg-primary/15"
+                                  : "hover:bg-accent/40",
+                              )}
+                            >
+                              <Avatar className="h-8 w-8 border border-border/40 shrink-0">
+                                <AvatarImage
+                                  src={member.userImage ?? undefined}
+                                />
+                                <AvatarFallback className="text-[11px] bg-primary/10 text-primary font-bold">
+                                  {(member.userName || "??")
+                                    .substring(0, 2)
+                                    .toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex flex-col min-w-0">
+                                <span
+                                  className="text-[13px] font-semibold truncate leading-tight"
+                                  style={{
+                                    color: getUserColor(member.userName || ""),
+                                  }}
+                                >
+                                  {member.userName}
+                                </span>
+                                <span className="text-[11px] text-muted-foreground truncate">
+                                  {member.AccessRole || "Member"}
+                                </span>
+                              </div>
+                              {i === mentionIndex && (
+                                <span className="ml-auto text-[9px] text-muted-foreground/60 shrink-0">
+                                  ↵
+                                </span>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
               </AnimatePresence>
             </div>
           </div>
 
           <DialogFooter className="sm:justify-end gap-2">
-            <Button variant="ghost" onClick={handleCancelMedia} disabled={uploadingMedia}>
+            <Button
+              variant="ghost"
+              onClick={handleCancelMedia}
+              disabled={uploadingMedia}
+            >
               Cancel
             </Button>
             <Button onClick={uploadAndSendMedia} disabled={uploadingMedia}>

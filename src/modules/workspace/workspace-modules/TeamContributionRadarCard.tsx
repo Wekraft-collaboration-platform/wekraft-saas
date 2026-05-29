@@ -53,14 +53,14 @@ export const TeamContributionRadarCard = ({
   });
   const contributions = (providedData || queryData) as
     | {
-      userId: string;
-      name: string;
-      avatar: string;
-      tasks: number;
-      issues: number;
-      speed: number;
-      reliability: number;
-    }[]
+        userId: string;
+        name: string;
+        avatar: string;
+        tasks: number;
+        issues: number;
+        speed: number;
+        reliability: number;
+      }[]
     | undefined;
 
   const radarData = useMemo(() => {
@@ -109,7 +109,9 @@ export const TeamContributionRadarCard = ({
         </CardHeader>
         <CardContent className="flex flex-col items-center justify-center h-[260px] text-center p-6">
           <Crown className="w-8 h-8 mb-2 text-muted-foreground/40" />
-          <p className="text-base font-medium text-muted-foreground">No contribution data yet</p>
+          <p className="text-base font-medium text-muted-foreground">
+            No contribution data yet
+          </p>
           <p className="text-[10px] text-muted-foreground max-w-[200px] mt-1">
             Assign tasks and issues to team members to see performance radar.
           </p>
@@ -133,7 +135,9 @@ export const TeamContributionRadarCard = ({
         </CardHeader>
         <CardContent className="flex flex-col items-center justify-center h-[260px] text-center p-6">
           <Crown className="w-8 h-8 mb-2 text-muted-foreground/40" />
-          <p className="text-base font-medium text-muted-foreground">No contribution data yet</p>
+          <p className="text-base font-medium text-muted-foreground">
+            No contribution data yet
+          </p>
           <p className="text-[10px] text-muted-foreground max-w-[200px] mt-1">
             Assign tasks and issues to team members to see performance radar.
           </p>

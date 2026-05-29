@@ -1,7 +1,13 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -22,14 +28,25 @@ interface CreatePollDialogProps {
   isEditing?: boolean;
 }
 
-export function CreatePollDialog({ open, onOpenChange, onSendPoll, initialPoll, isEditing }: CreatePollDialogProps) {
+export function CreatePollDialog({
+  open,
+  onOpenChange,
+  onSendPoll,
+  initialPoll,
+  isEditing,
+}: CreatePollDialogProps) {
   const [question, setQuestion] = useState(initialPoll?.question ?? "");
   const [options, setOptions] = useState(
     initialPoll?.options?.length
       ? initialPoll.options
-      : [{ id: "1", text: "" }, { id: "2", text: "" }]
+      : [
+          { id: "1", text: "" },
+          { id: "2", text: "" },
+        ],
   );
-  const [allowMultiple, setAllowMultiple] = useState(initialPoll?.allowMultiple ?? false);
+  const [allowMultiple, setAllowMultiple] = useState(
+    initialPoll?.allowMultiple ?? false,
+  );
 
   // Sync state when the dialog opens (e.g. editing a different poll)
   useEffect(() => {
@@ -38,12 +55,14 @@ export function CreatePollDialog({ open, onOpenChange, onSendPoll, initialPoll, 
       setOptions(
         initialPoll?.options?.length
           ? initialPoll.options
-          : [{ id: "1", text: "" }, { id: "2", text: "" }]
+          : [
+              { id: "1", text: "" },
+              { id: "2", text: "" },
+            ],
       );
       setAllowMultiple(initialPoll?.allowMultiple ?? false);
     }
   }, [open]); // eslint-disable-line react-hooks/exhaustive-deps
-
 
   const handleAddOption = () => {
     if (options.length >= 12) return; // limit to 12 options
@@ -60,23 +79,27 @@ export function CreatePollDialog({ open, onOpenChange, onSendPoll, initialPoll, 
   };
 
   const handleCreate = () => {
-    const validOptions = options.filter(o => o.text.trim());
+    const validOptions = options.filter((o) => o.text.trim());
     if (!question.trim() || validOptions.length < 2) return;
 
     onSendPoll({
       question: question.trim(),
-      options: validOptions.map(o => ({ id: o.id, text: o.text.trim() })),
-      allowMultiple
+      options: validOptions.map((o) => ({ id: o.id, text: o.text.trim() })),
+      allowMultiple,
     });
 
     // Reset
     setQuestion("");
-    setOptions([{ id: "1", text: "" }, { id: "2", text: "" }]);
+    setOptions([
+      { id: "1", text: "" },
+      { id: "2", text: "" },
+    ]);
     setAllowMultiple(false);
     onOpenChange(false);
   };
 
-  const isValid = question.trim() && options.filter(o => o.text.trim()).length >= 2;
+  const isValid =
+    question.trim() && options.filter((o) => o.text.trim()).length >= 2;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -101,7 +124,9 @@ export function CreatePollDialog({ open, onOpenChange, onSendPoll, initialPoll, 
                 <Input
                   placeholder={`Option ${index + 1}`}
                   value={option.text}
-                  onChange={(e) => handleOptionChange(option.id, e.target.value)}
+                  onChange={(e) =>
+                    handleOptionChange(option.id, e.target.value)
+                  }
                 />
                 {options.length > 2 && (
                   <Button
@@ -135,8 +160,12 @@ export function CreatePollDialog({ open, onOpenChange, onSendPoll, initialPoll, 
           </div>
         </div>
         <DialogFooter>
-          <Button variant="ghost" onClick={() => onOpenChange(false)}>Cancel</Button>
-          <Button disabled={!isValid} onClick={handleCreate}>{isEditing ? "Update Poll" : "Create Poll"}</Button>
+          <Button variant="ghost" onClick={() => onOpenChange(false)}>
+            Cancel
+          </Button>
+          <Button disabled={!isValid} onClick={handleCreate}>
+            {isEditing ? "Update Poll" : "Create Poll"}
+          </Button>
         </DialogFooter>
       </DialogContent>
     </Dialog>

@@ -27,9 +27,7 @@ const Section1 = () => {
 
             <h2 className="text-5xl font-semibold tracking-tight mb-6 leading-tight max-w-4xl mx-auto">
               <span className="text-white">Built for speed.</span> <br />
-              <span className="text-neutral-400">
-                Designed for simplicity.
-              </span>
+              <span className="text-neutral-400">Designed for simplicity.</span>
             </h2>
 
             <p className="text-neutral-400 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">

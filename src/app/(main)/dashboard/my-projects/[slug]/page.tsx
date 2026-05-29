@@ -231,9 +231,14 @@ const ProjectPage = () => {
             ref={visitBtnRef}
             id="visit-workspace-btn"
           >
-            <Button size="sm" className="px-6! text-xs" variant={"default"}
+            <Button
+              size="sm"
+              className="px-6! text-xs"
+              variant={"default"}
               onClick={async () => {
-                try { await markWorkspaceVisited(); } catch {}
+                try {
+                  await markWorkspaceVisited();
+                } catch {}
               }}
             >
               Visit workspace{" "}
@@ -245,7 +250,9 @@ const ProjectPage = () => {
 
       {/* ----------------------------------------------- */}
       {/* -------------------AWS SETUP HERE ------------- */}
-      <div className={`${isSidebarOpen ? "w-[1080px]" : "w-[1240px]"} h-[300px] mx-auto bg-primary/10 rounded-lg overflow-hidden my-8 relative group border border-border`}>
+      <div
+        className={`${isSidebarOpen ? "w-[1080px]" : "w-[1240px]"} h-[300px] mx-auto bg-primary/10 rounded-lg overflow-hidden my-8 relative group border border-border`}
+      >
         {project.thumbnailUrl ? (
           <Image
             src={project.thumbnailUrl}
@@ -264,8 +271,9 @@ const ProjectPage = () => {
         {/* Overlay for upload */}
         {isOwner && (
           <div
-            className={`absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${isUploading ? "opacity-100" : ""
-              }`}
+            className={`absolute inset-0 bg-black/60 flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 ${
+              isUploading ? "opacity-100" : ""
+            }`}
           >
             {isUploading ? (
               <div className="flex flex-col items-center text-white">
@@ -297,16 +305,23 @@ const ProjectPage = () => {
           className="fixed inset-0 z-50 pointer-events-none"
           onClick={() => setShowWorkspaceTour(false)}
         >
-          <div className="absolute inset-0 bg-background/40 backdrop-blur-[1px] pointer-events-auto" onClick={() => setShowWorkspaceTour(false)} />
+          <div
+            className="absolute inset-0 bg-background/40 backdrop-blur-[1px] pointer-events-auto"
+            onClick={() => setShowWorkspaceTour(false)}
+          />
           <WorkspaceTourTooltip
             targetId="visit-workspace-btn"
             onDismiss={() => setShowWorkspaceTour(false)}
             onNext={() => {
               setShowWorkspaceTour(false);
-              router.push(`/dashboard/my-projects/${project?.slug}/workspace/tasks?tour=create-task`);
+              router.push(
+                `/dashboard/my-projects/${project?.slug}/workspace/tasks?tour=create-task`,
+              );
             }}
             onVisit={async () => {
-              try { await markWorkspaceVisited(); } catch {}
+              try {
+                await markWorkspaceVisited();
+              } catch {}
               setShowWorkspaceTour(false);
               router.push(`/dashboard/my-projects/${project?.slug}/workspace`);
             }}
@@ -392,10 +407,11 @@ const ProjectPage = () => {
               <UserPlus className="w-3.5 h-3.5" />
               {pendingRequestsCount > 0 && (
                 <span
-                  className={`px-1.5 py-0.5 rounded-full text-[9px] font-semibold transition-colors ${homeTab === "requests"
-                    ? "bg-background text-foreground"
-                    : "bg-primary text-primary-foreground"
-                    }`}
+                  className={`px-1.5 py-0.5 rounded-full text-[9px] font-semibold transition-colors ${
+                    homeTab === "requests"
+                      ? "bg-background text-foreground"
+                      : "bg-primary text-primary-foreground"
+                  }`}
                 >
                   {pendingRequestsCount}
                 </span>
@@ -506,7 +522,11 @@ function WorkspaceTourTooltip({
   onNext: () => void;
   onVisit: () => void;
 }) {
-  const [pos, setPos] = useState<{ top: number; left: number; arrowOffset?: number } | null>(null);
+  const [pos, setPos] = useState<{
+    top: number;
+    left: number;
+    arrowOffset?: number;
+  } | null>(null);
   const router = useRouter();
 
   useEffect(() => {
@@ -520,7 +540,7 @@ function WorkspaceTourTooltip({
       const rawLeft = targetCenter - tooltipWidth / 2;
       const clampedLeft = Math.min(
         Math.max(margin, rawLeft),
-        window.innerWidth - tooltipWidth - margin
+        window.innerWidth - tooltipWidth - margin,
       );
       setPos({
         top: rect.bottom + 20,
@@ -546,14 +566,25 @@ function WorkspaceTourTooltip({
       onClick={(e) => e.stopPropagation()}
     >
       {/* Curvy arrow pointing up */}
-      <div 
+      <div
         className="mb-1 -mt-5"
-        style={{ transform: `translateX(${pos.arrowOffset ? pos.arrowOffset - 160 : 0}px)` }}
+        style={{
+          transform: `translateX(${pos.arrowOffset ? pos.arrowOffset - 160 : 0}px)`,
+        }}
       >
-        <svg width="60" height="80" viewBox="0 0 60 80" fill="none" className="text-white drop-shadow-md rotate-180">
+        <svg
+          width="60"
+          height="80"
+          viewBox="0 0 60 80"
+          fill="none"
+          className="text-white drop-shadow-md rotate-180"
+        >
           <path
             d="M 30 5 C 45 30, 15 50, 30 75 M 30 75 L 22 65 M 30 75 L 38 65"
-            stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           />
         </svg>
       </div>
@@ -565,13 +596,16 @@ function WorkspaceTourTooltip({
             <span className="flex items-center justify-center bg-primary text-primary-foreground text-[10px] font-bold w-5 h-5 rounded-full shrink-0">
               3
             </span>
-            <h3 className="text-sm font-semibold text-foreground">Visit your workspace</h3>
+            <h3 className="text-sm font-semibold text-foreground">
+              Visit your workspace
+            </h3>
           </div>
 
           <div className="h-px w-full bg-accent my-3" />
 
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Click the &quot;Visit workspace&quot; button above to enter your workspace and explore tasks, sprints, issues, and your team.
+            Click the &quot;Visit workspace&quot; button above to enter your
+            workspace and explore tasks, sprints, issues, and your team.
           </p>
         </div>
 
@@ -595,10 +629,7 @@ function WorkspaceTourTooltip({
             >
               Next
             </Button>
-            <Button
-              onClick={onVisit}
-              className="h-8 px-4 text-xs"
-            >
+            <Button onClick={onVisit} className="h-8 px-4 text-xs">
               Visit Workspace
             </Button>
           </div>
@@ -618,7 +649,11 @@ function InviteTourTooltip({
   onDismiss: () => void;
   onNext: () => void;
 }) {
-  const [pos, setPos] = useState<{ top: number; left: number; arrowOffset?: number } | null>(null);
+  const [pos, setPos] = useState<{
+    top: number;
+    left: number;
+    arrowOffset?: number;
+  } | null>(null);
 
   useEffect(() => {
     const calculate = () => {
@@ -631,7 +666,7 @@ function InviteTourTooltip({
       const rawLeft = targetCenter - tooltipWidth / 2;
       const clampedLeft = Math.min(
         Math.max(margin, rawLeft),
-        window.innerWidth - tooltipWidth - margin
+        window.innerWidth - tooltipWidth - margin,
       );
       setPos({
         top: rect.bottom + 20,
@@ -646,7 +681,7 @@ function InviteTourTooltip({
     return () => {
       clearTimeout(timer);
       window.removeEventListener("resize", calculate);
-    }
+    };
   }, [targetId]);
 
   if (!pos) return null;
@@ -658,14 +693,25 @@ function InviteTourTooltip({
       onClick={(e) => e.stopPropagation()}
       onPointerDown={(e) => e.stopPropagation()}
     >
-      <div 
+      <div
         className="mb-1 -mt-5"
-        style={{ transform: `translateX(${pos.arrowOffset ? pos.arrowOffset - 160 : 0}px)` }}
+        style={{
+          transform: `translateX(${pos.arrowOffset ? pos.arrowOffset - 160 : 0}px)`,
+        }}
       >
-        <svg width="60" height="80" viewBox="0 0 60 80" fill="none" className="text-white drop-shadow-md rotate-180">
+        <svg
+          width="60"
+          height="80"
+          viewBox="0 0 60 80"
+          fill="none"
+          className="text-white drop-shadow-md rotate-180"
+        >
           <path
             d="M 30 5 C 45 30, 15 50, 30 75 M 30 75 L 22 65 M 30 75 L 38 65"
-            stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
           />
         </svg>
       </div>
@@ -677,13 +723,16 @@ function InviteTourTooltip({
             <span className="flex items-center justify-center bg-primary text-primary-foreground text-[10px] font-bold w-5 h-5 rounded-full shrink-0">
               6
             </span>
-            <h3 className="text-sm font-semibold text-foreground">Invite your teammates</h3>
+            <h3 className="text-sm font-semibold text-foreground">
+              Invite your teammates
+            </h3>
           </div>
 
           <div className="h-px w-full bg-accent my-3" />
 
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Bring your whole team in. Assign roles, control permissions, and collaborate in real time
+            Bring your whole team in. Assign roles, control permissions, and
+            collaborate in real time
           </p>
         </div>
 

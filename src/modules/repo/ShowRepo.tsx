@@ -88,7 +88,12 @@ const ShowRepo = ({
     isLoading,
     isFetching,
     error,
-  } = useRepositories(currentPage, ITEMS_PER_PAGE, !!user?.githubUsername, debouncedSearchQuery);
+  } = useRepositories(
+    currentPage,
+    ITEMS_PER_PAGE,
+    !!user?.githubUsername,
+    debouncedSearchQuery,
+  );
   const updateGithubUsername = useMutation(api.user.updateGithubUsername);
   const hasCheckedGithub = useRef(false);
 
@@ -109,7 +114,7 @@ const ShowRepo = ({
       if (githubAccount?.verification?.status === "failed") {
         toast.error(
           (githubAccount.verification as any)?.error?.longMessage ||
-          "This GitHub account is already linked to another user.",
+            "This GitHub account is already linked to another user.",
         );
         return;
       }
@@ -157,7 +162,7 @@ const ShowRepo = ({
       console.error("❌ Failed to connect GitHub:", error);
       toast.error(
         error?.errors?.[0]?.message ||
-        "Something went wrong while connecting GitHub",
+          "Something went wrong while connecting GitHub",
       );
     }
   };
@@ -241,11 +246,7 @@ const ShowRepo = ({
               : "Failed to load repositories. Your GitHub token might be expired or invalid."}
           </p>
         </div>
-        <Button
-          onClick={handleConnectGithub}
-          className="gap-2 px-8"
-          size="sm"
-        >
+        <Button onClick={handleConnectGithub} className="gap-2 px-8" size="sm">
           <Github className="size-4" />
           Connect GitHub
         </Button>
@@ -441,7 +442,7 @@ const ShowRepo = ({
                   className={cn(
                     "bg-accent/5 border-accent/20 hover:bg-accent/10 cursor-pointer transition-all",
                     filteredRepos.length < ITEMS_PER_PAGE &&
-                    "pointer-events-none opacity-30",
+                      "pointer-events-none opacity-30",
                   )}
                 />
               </PaginationItem>
@@ -490,7 +491,10 @@ const ShowRepo = ({
           ) : (
             <ScrollArea className="max-h-[min(320px,50vh)] pr-3 my-2">
               <div className="flex flex-col gap-2">
-                <h3 className="text-sm mb-2 text-primary text-center">Select your below created Projects to connect <LuLayers2 className="inline w-3.5 h-3.5" /></h3>
+                <h3 className="text-sm mb-2 text-primary text-center">
+                  Select your below created Projects to connect{" "}
+                  <LuLayers2 className="inline w-3.5 h-3.5" />
+                </h3>
                 {unlinkedProjects.map((project) => {
                   const isSelected = selectedProjectId === project._id;
                   return (
@@ -502,14 +506,18 @@ const ShowRepo = ({
                         "w-full text-left flex items-center justify-between rounded-md border p-1.5 px-3",
                         isSelected
                           ? "border-primary/20 bg-primary/5"
-                          : " bg-muted/80 text-primary border-accent"
+                          : " bg-muted/80 text-primary border-accent",
                       )}
                     >
                       <div className="flex items-center gap-3 min-w-0">
-                        <div className={cn(
-                          "size-8 rounded-md flex items-center justify-center shrink-0 transition-colors",
-                          isSelected ? "bg-primary/20 text-primary" : "bg-muted text-muted-foreground"
-                        )}>
+                        <div
+                          className={cn(
+                            "size-8 rounded-md flex items-center justify-center shrink-0 transition-colors",
+                            isSelected
+                              ? "bg-primary/20 text-primary"
+                              : "bg-muted text-muted-foreground",
+                          )}
+                        >
                           <FolderGit2 className="size-4" />
                         </div>
                         <span className="text-sm font-semibold truncate capitalize">
@@ -549,7 +557,7 @@ const ShowRepo = ({
             </Button>
             <Button
               type="button"
-              size='sm'
+              size="sm"
               className="cursor-pointer text-xs"
               disabled={
                 !selectedProjectId ||

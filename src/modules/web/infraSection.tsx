@@ -53,7 +53,6 @@ const GlassPlatform = ({
               transform: "rotateX(58deg) rotateZ(-45deg)",
             }}
           >
-
             <div
               style={{
                 position: "absolute",
@@ -89,7 +88,7 @@ const GlassPlatform = ({
                 display: "flex",
                 alignItems: "center",
                 justifyContent: "center",
-              transform: "translateY(-0px)",
+                transform: "translateY(-0px)",
                 zIndex: 1,
               }}
             >
@@ -108,40 +107,39 @@ const FloatingCards = () => {
     <div className="relative flex flex-col items-center" style={{ gap: "0px" }}>
       {/* Top platform — Wekraft icon */}
       <GlassPlatform index={0} delay={0}>
-      <Image
-      src="/logo.svg"
-      alt="Wekraft Logo"
-      width={72}
-      height={72}
-      className="w-14 h-14 md:w-[80px] md:h-[80px] drop-shadow-[0_0_20px_rgba(59,130,246,0.3)] opacity-90"
-      />
+        <Image
+          src="/logo.svg"
+          alt="Wekraft Logo"
+          width={72}
+          height={72}
+          className="w-14 h-14 md:w-[80px] md:h-[80px] drop-shadow-[0_0_20px_rgba(59,130,246,0.3)] opacity-90"
+        />
       </GlassPlatform>
 
       {/* Middle platform — GitHub / sync icon */}
       <GlassPlatform index={1} delay={0.15}>
-      <Image
-      src="/github.png"
-      alt="GitHub Integration"
-      width={72}
-      height={72}
-      className="w-14 h-14 md:w-[80px] md:h-[80px] drop-shadow-[0_0_20px_rgba(59,130,246,0.3)] opacity-90"
-      />
+        <Image
+          src="/github.png"
+          alt="GitHub Integration"
+          width={72}
+          height={72}
+          className="w-14 h-14 md:w-[80px] md:h-[80px] drop-shadow-[0_0_20px_rgba(59,130,246,0.3)] opacity-90"
+        />
       </GlassPlatform>
 
       {/* Bottom platform — Git icon */}
       <GlassPlatform index={2} delay={0.3}>
-          <Image
-      src="/social.png"
-      alt="Developer Social Network"
-      width={72}
-      height={72}
-      className="w-14 h-14 rotate-45 md:w-[80px] md:h-[80px] drop-shadow-[0_0_20px_rgba(59,130,246,0.3)] opacity-90"
-      />
+        <Image
+          src="/social.png"
+          alt="Developer Social Network"
+          width={72}
+          height={72}
+          className="w-14 h-14 rotate-45 md:w-[80px] md:h-[80px] drop-shadow-[0_0_20px_rgba(59,130,246,0.3)] opacity-90"
+        />
       </GlassPlatform>
     </div>
   );
 };
-
 
 /* ─── Feature text items (right side) ─── */
 const features = [
@@ -168,12 +166,10 @@ const InfraSection = () => {
     <section className="relative w-full bg-black overflow-hidden pb-20">
       {/* ── Header ── */}
       <div className="relative z-10 text-center mb-24 px-6">
-         <motion.div
-            className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/5 backdrop-blur-md shadow-[0_0_20px_rgba(59,130,246,0.1)] px-4 py-1.5 text-sm font-semibold tracking-wide text-blue-300"
-          >
-            <span className="size-1.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.8)] animate-pulse" />
-            Seamless integrations
-          </motion.div>
+        <motion.div className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/5 backdrop-blur-md shadow-[0_0_20px_rgba(59,130,246,0.1)] px-4 py-1.5 text-sm font-semibold tracking-wide text-blue-300">
+          <span className="size-1.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.8)] animate-pulse" />
+          Seamless integrations
+        </motion.div>
         <motion.h2
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -193,7 +189,8 @@ const InfraSection = () => {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mt-5 text-lg md:text-xl leading-relaxed text-neutral-400 max-w-2xl mx-auto"
         >
-          Wekraft works seamlessly with the technologies you already use, keeping your workflows intact and your tools synced.
+          Wekraft works seamlessly with the technologies you already use,
+          keeping your workflows intact and your tools synced.
         </motion.p>
       </div>
 

@@ -219,7 +219,9 @@ export const ImportGithubIssueDialog = ({
                               <Clock className="w-3.5 h-3.5" />
                               <span>
                                 Opened{" "}
-                                {formatDistanceToNow(new Date(issue.created_at))}{" "}
+                                {formatDistanceToNow(
+                                  new Date(issue.created_at),
+                                )}{" "}
                                 ago
                               </span>
                             </div>
@@ -290,4 +292,3 @@ export const ImportGithubIssueDialog = ({
     </Dialog>
   );
 };
-

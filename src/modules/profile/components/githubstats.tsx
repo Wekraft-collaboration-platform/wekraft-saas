@@ -36,7 +36,13 @@ interface KpiCardProps {
   children: React.ReactNode;
 }
 
-function KpiCard({ title, icon: Icon, isConnected, isLoading, children }: KpiCardProps) {
+function KpiCard({
+  title,
+  icon: Icon,
+  isConnected,
+  isLoading,
+  children,
+}: KpiCardProps) {
   return (
     <Card className="bg-card border border-border shadow-sm hover:shadow-md transition-all duration-200 group flex flex-col">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 px-3 pt-3 pb-1">
@@ -71,7 +77,9 @@ function StatValue({ value, label }: { value: number; label: string }) {
       <span className="text-xl font-bold font-mono tracking-tight text-foreground leading-none">
         {value.toLocaleString()}
       </span>
-      <span className="text-[11px] text-muted-foreground mt-1 font-medium whitespace-nowrap">{label}</span>
+      <span className="text-[11px] text-muted-foreground mt-1 font-medium whitespace-nowrap">
+        {label}
+      </span>
     </div>
   );
 }
@@ -165,7 +173,6 @@ export function GithubStats() {
 
   return (
     <div className="w-full flex flex-col gap-4">
-
       {/* ── Connection Banner ── */}
       {user && !user.githubUsername && (
         <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 rounded-xl border border-dashed border-border bg-muted/30 px-5 py-4">
@@ -195,12 +202,16 @@ export function GithubStats() {
 
       {/* ── Main grid: Impact Profile (left) + KPIs (right, 2×2) ── */}
       <div className="grid grid-cols-1 lg:grid-cols-[300px_1fr] xl:grid-cols-[340px_1fr] gap-6 items-stretch">
-
         {/* Left — Impact Profile */}
         <Card className="bg-card border border-border shadow-sm flex flex-col">
           <CardHeader className="px-3 pt-3 pb-1">
             <CardTitle className="text-sm font-semibold tracking-tight text-foreground flex items-center gap-2">
-              <span className={cn("h-2 w-2 rounded-full shrink-0", isConnected ? "bg-primary animate-pulse" : "bg-foreground/20")} />
+              <span
+                className={cn(
+                  "h-2 w-2 rounded-full shrink-0",
+                  isConnected ? "bg-primary animate-pulse" : "bg-foreground/20",
+                )}
+              />
               Impact Profile
             </CardTitle>
           </CardHeader>
@@ -212,8 +223,12 @@ export function GithubStats() {
                   <Github className="h-7 w-7 text-foreground/20" />
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-foreground">GitHub not connected</p>
-                  <p className="text-xs text-foreground/40 mt-1">Connect to see your impact score</p>
+                  <p className="text-sm font-semibold text-foreground">
+                    GitHub not connected
+                  </p>
+                  <p className="text-xs text-foreground/40 mt-1">
+                    Connect to see your impact score
+                  </p>
                 </div>
               </div>
             ) : isLoading ? (
@@ -237,7 +252,9 @@ export function GithubStats() {
             ) : (
               <div className="flex flex-col items-center justify-center gap-2">
                 <AlertCircle className="h-6 w-6 text-foreground/20" />
-                <p className="text-xs text-foreground/40 text-center">Unable to fetch score</p>
+                <p className="text-xs text-foreground/40 text-center">
+                  Unable to fetch score
+                </p>
               </div>
             )}
           </CardContent>
@@ -245,31 +262,67 @@ export function GithubStats() {
 
         {/* Right — KPI 2×2 grid, same height as left */}
         <div className="grid grid-cols-2 grid-rows-2 gap-6 h-full">
-
-          <KpiCard title="Commits" icon={LucideGitCommit} isConnected={isConnected} isLoading={isLoading}>
-            <StatValue value={dashboardStats?.totalCommits ?? 0} label="Last year" />
+          <KpiCard
+            title="Commits"
+            icon={LucideGitCommit}
+            isConnected={isConnected}
+            isLoading={isLoading}
+          >
+            <StatValue
+              value={dashboardStats?.totalCommits ?? 0}
+              label="Last year"
+            />
           </KpiCard>
 
-          <KpiCard title="Pull Requests" icon={LucideGitPullRequest} isConnected={isConnected} isLoading={isLoading}>
+          <KpiCard
+            title="Pull Requests"
+            icon={LucideGitPullRequest}
+            isConnected={isConnected}
+            isLoading={isLoading}
+          >
             <div className="flex items-center">
-              <StatValue value={dashboardStats?.totalPRs ?? 0} label="Total PRs" />
+              <StatValue
+                value={dashboardStats?.totalPRs ?? 0}
+                label="Total PRs"
+              />
               <StatDivider />
-              <StatValue value={dashboardStats?.totalMergedPRs ?? 0} label="Merged" />
+              <StatValue
+                value={dashboardStats?.totalMergedPRs ?? 0}
+                label="Merged"
+              />
             </div>
           </KpiCard>
 
-          <KpiCard title="Issues" icon={Waypoints} isConnected={isConnected} isLoading={isLoading}>
+          <KpiCard
+            title="Issues"
+            icon={Waypoints}
+            isConnected={isConnected}
+            isLoading={isLoading}
+          >
             <div className="flex items-center">
-              <StatValue value={dashboardStats?.totalOpenIssues ?? 0} label="Open" />
+              <StatValue
+                value={dashboardStats?.totalOpenIssues ?? 0}
+                label="Open"
+              />
               <StatDivider />
-              <StatValue value={dashboardStats?.totalIssuesClosed ?? 0} label="Closed" />
+              <StatValue
+                value={dashboardStats?.totalIssuesClosed ?? 0}
+                label="Closed"
+              />
             </div>
           </KpiCard>
 
-          <KpiCard title="Reviews" icon={Layers2} isConnected={isConnected} isLoading={isLoading}>
-            <StatValue value={dashboardStats?.totalReviews ?? 0} label="Total reviews" />
+          <KpiCard
+            title="Reviews"
+            icon={Layers2}
+            isConnected={isConnected}
+            isLoading={isLoading}
+          >
+            <StatValue
+              value={dashboardStats?.totalReviews ?? 0}
+              label="Total reviews"
+            />
           </KpiCard>
-
         </div>
       </div>
 
@@ -302,7 +355,6 @@ export function GithubStats() {
           )}
         </CardContent>
       </Card>
-
     </div>
   );
 }

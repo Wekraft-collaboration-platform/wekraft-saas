@@ -8,21 +8,21 @@ import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Label } from "@/components/ui/label";
 import { toast } from "sonner";
-import { 
-  ChevronLeft, 
-  Loader2, 
-  Github, 
-  User, 
-  Mail, 
-  Briefcase, 
-  Sparkles, 
-  Globe, 
+import {
+  ChevronLeft,
+  Loader2,
+  Github,
+  User,
+  Mail,
+  Briefcase,
+  Sparkles,
+  Globe,
   Lock,
   X,
   Plus,
   Compass,
   FileText,
-  CheckCircle2
+  CheckCircle2,
 } from "lucide-react";
 import { useUser, useClerk } from "@clerk/nextjs";
 import { useRouter } from "next/navigation";
@@ -35,7 +35,11 @@ interface ProfileSettingsProps {
   onBack: () => void;
 }
 
-export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsProps) {
+export function ProfileSettings({
+  user,
+  isUpgraded,
+  onBack,
+}: ProfileSettingsProps) {
   const router = useRouter();
   const { user: clerkUser } = useUser();
   const { openUserProfile } = useClerk();
@@ -69,12 +73,15 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
 
   const isNameAvailable = useQuery(
     api.user.checkUsernameAvailability,
-    debouncedName.length >= 3 ? { name: debouncedName } : "skip"
+    debouncedName.length >= 3 ? { name: debouncedName } : "skip",
   );
 
-  const isNameLengthValid = editName.trim().length >= 3 && editName.trim().length <= 20;
-  const isNameTaken = debouncedName.length >= 3 && isNameAvailable === false && !isTypingName;
-  const isNameSaveDisabled = !isNameLengthValid || isNameTaken || isTypingName || isSaving;
+  const isNameLengthValid =
+    editName.trim().length >= 3 && editName.trim().length <= 20;
+  const isNameTaken =
+    debouncedName.length >= 3 && isNameAvailable === false && !isTypingName;
+  const isNameSaveDisabled =
+    !isNameLengthValid || isNameTaken || isTypingName || isSaving;
   const [editOccupation, setEditOccupation] = useState(user?.occupation || "");
   const [editBio, setEditBio] = useState(user?.bio || "");
   const [editSkills, setEditSkills] = useState<string[]>(user?.skills || []);
@@ -143,16 +150,15 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
     }
   };
 
-
   const handleAddSkill = () => {
     const trimmed = newSkill.trim();
     if (!trimmed) return;
-    
+
     const normalizedNew = trimmed.toLowerCase().replace(/[\.\s-]/g, "");
-    const alreadyExists = editSkills.some((s) => 
-      s.toLowerCase().replace(/[\.\s-]/g, "") === normalizedNew
+    const alreadyExists = editSkills.some(
+      (s) => s.toLowerCase().replace(/[\.\s-]/g, "") === normalizedNew,
     );
-    
+
     if (alreadyExists) {
       toast.error("Skill already exists in the list");
       return;
@@ -162,7 +168,7 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
   };
 
   const handleRemoveSkill = (skillToRemove: string) => {
-    setEditSkills(editSkills.filter(s => s !== skillToRemove));
+    setEditSkills(editSkills.filter((s) => s !== skillToRemove));
   };
 
   const handleConnectGithub = async () => {
@@ -172,30 +178,40 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
         redirectUrl: window.location.href,
       });
       if (res?.verification?.externalVerificationRedirectURL) {
-        window.location.href = res.verification.externalVerificationRedirectURL.toString();
+        window.location.href =
+          res.verification.externalVerificationRedirectURL.toString();
       }
     } catch (error: any) {
-      toast.error(error?.errors?.[0]?.message || "Failed to initiate GitHub OAuth");
+      toast.error(
+        error?.errors?.[0]?.message || "Failed to initiate GitHub OAuth",
+      );
     }
   };
 
   return (
     <div className="w-full flex flex-col gap-6 animate-in fade-in duration-300">
-      
       {/* Header Row */}
       <div className="flex items-center gap-3">
-        <Button variant="ghost" size="icon" onClick={onBack} className="h-8 w-8 rounded-md shrink-0">
+        <Button
+          variant="ghost"
+          size="icon"
+          onClick={onBack}
+          className="h-8 w-8 rounded-md shrink-0"
+        >
           <ChevronLeft className="h-4 w-4" />
         </Button>
         <div>
-          <h2 className="text-xl font-bold font-pop tracking-tight">Edit Profile</h2>
-          <p className="text-xs text-muted-foreground mt-0.5">Manage your public information, security options and subscriptions</p>
+          <h2 className="text-xl font-bold font-pop tracking-tight">
+            Edit Profile
+          </h2>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Manage your public information, security options and subscriptions
+          </p>
         </div>
       </div>
 
       {/* Settings Rows Container */}
       <div className="w-full bg-card border border-border rounded-xl shadow-sm overflow-hidden divide-y divide-border/60">
-        
         {/* ROW 1: Username / Name */}
         <div className="p-5 flex flex-col md:flex-row md:items-center justify-between gap-4 transition-colors hover:bg-muted/5">
           <div className="w-full md:w-1/4 shrink-0">
@@ -207,23 +223,26 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
           {activeEditRow === "name" ? (
             <div className="flex-1 flex flex-col gap-2.5">
               <div className="relative max-w-md">
-                <Input 
+                <Input
                   value={editName}
-                  onChange={(e) => setEditName(e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""))}
+                  onChange={(e) =>
+                    setEditName(
+                      e.target.value.toLowerCase().replace(/[^a-z0-9_]/g, ""),
+                    )
+                  }
                   placeholder="Username"
                   className="bg-background pr-10"
                   required
                 />
                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                  {editName.trim().length >= 3 && (
-                    isTypingName || isNameAvailable === undefined ? (
+                  {editName.trim().length >= 3 &&
+                    (isTypingName || isNameAvailable === undefined ? (
                       <Loader2 className="h-4 w-4 animate-spin text-muted-foreground" />
                     ) : isNameAvailable === false ? (
                       <X className="h-4 w-4 text-destructive" />
                     ) : (
                       <CheckCircle2 className="h-4 w-4 text-emerald-500" />
-                    )
-                  )}
+                    ))}
                 </div>
               </div>
 
@@ -235,28 +254,45 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
                   </p>
                 )}
                 {editName.trim().length > 20 && (
-                  <p className="text-[11px] text-destructive">Too long (max 20)</p>
-                )}
-                {editName.trim().length >= 3 && isNameAvailable === false && !isTypingName && (
-                  <p className="text-[11px] text-destructive animate-in fade-in slide-in-from-top-1">
-                    Username is already taken
+                  <p className="text-[11px] text-destructive">
+                    Too long (max 20)
                   </p>
                 )}
-                {editName.trim().length >= 3 && isNameAvailable === true && !isTypingName && (
-                  <p className="text-[11px] text-emerald-500">Username is available</p>
-                )}
+                {editName.trim().length >= 3 &&
+                  isNameAvailable === false &&
+                  !isTypingName && (
+                    <p className="text-[11px] text-destructive animate-in fade-in slide-in-from-top-1">
+                      Username is already taken
+                    </p>
+                  )}
+                {editName.trim().length >= 3 &&
+                  isNameAvailable === true &&
+                  !isTypingName && (
+                    <p className="text-[11px] text-emerald-500">
+                      Username is available
+                    </p>
+                  )}
               </div>
 
               <div className="flex gap-2">
-                <Button 
-                  size="sm" 
-                  onClick={handleSaveIdentity} 
-                  disabled={isNameSaveDisabled} 
+                <Button
+                  size="sm"
+                  onClick={handleSaveIdentity}
+                  disabled={isNameSaveDisabled}
                   className="h-8 text-xs"
                 >
-                  {isSaving && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />} Save
+                  {isSaving && (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
+                  )}{" "}
+                  Save
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => setActiveEditRow(null)} disabled={isSaving} className="h-8 text-xs">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setActiveEditRow(null)}
+                  disabled={isSaving}
+                  className="h-8 text-xs"
+                >
                   Cancel
                 </Button>
               </div>
@@ -264,10 +300,16 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
           ) : (
             <>
               <div className="flex-1 min-w-0">
-                <span className="text-sm font-semibold text-foreground">{user?.name || "No name set"}</span>
+                <span className="text-sm font-semibold text-foreground">
+                  {user?.name || "No name set"}
+                </span>
               </div>
               <div className="shrink-0">
-                <Button variant="link" onClick={() => setActiveEditRow("name")} className="text-xs text-primary font-semibold h-auto p-0">
+                <Button
+                  variant="link"
+                  onClick={() => setActiveEditRow("name")}
+                  className="text-xs text-primary font-semibold h-auto p-0"
+                >
                   Edit
                 </Button>
               </div>
@@ -283,10 +325,14 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
             </span>
           </div>
           <div className="flex-1 min-w-0">
-            <span className="text-sm font-semibold text-foreground/80 font-mono">{user?.email}</span>
+            <span className="text-sm font-semibold text-foreground/80 font-mono">
+              {user?.email}
+            </span>
           </div>
           <div className="shrink-0">
-            <span className="text-xs text-muted-foreground italic select-none">Linked to Auth</span>
+            <span className="text-xs text-muted-foreground italic select-none">
+              Linked to Auth
+            </span>
           </div>
         </div>
 
@@ -300,7 +346,7 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
 
           {activeEditRow === "occupation" ? (
             <div className="flex-1 flex flex-col gap-3">
-              <Input 
+              <Input
                 value={editOccupation}
                 onChange={(e) => setEditOccupation(e.target.value)}
                 placeholder="e.g. Frontend Engineer"
@@ -308,10 +354,24 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
                 required
               />
               <div className="flex gap-2">
-                <Button size="sm" onClick={handleSaveIdentity} disabled={isSaving} className="h-8 text-xs">
-                  {isSaving && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />} Save
+                <Button
+                  size="sm"
+                  onClick={handleSaveIdentity}
+                  disabled={isSaving}
+                  className="h-8 text-xs"
+                >
+                  {isSaving && (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
+                  )}{" "}
+                  Save
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => setActiveEditRow(null)} disabled={isSaving} className="h-8 text-xs">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setActiveEditRow(null)}
+                  disabled={isSaving}
+                  className="h-8 text-xs"
+                >
                   Cancel
                 </Button>
               </div>
@@ -319,10 +379,16 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
           ) : (
             <>
               <div className="flex-1 min-w-0">
-                <span className="text-sm font-semibold text-foreground">{user?.occupation || "No occupation set"}</span>
+                <span className="text-sm font-semibold text-foreground">
+                  {user?.occupation || "No occupation set"}
+                </span>
               </div>
               <div className="shrink-0">
-                <Button variant="link" onClick={() => setActiveEditRow("occupation")} className="text-xs text-primary font-semibold h-auto p-0">
+                <Button
+                  variant="link"
+                  onClick={() => setActiveEditRow("occupation")}
+                  className="text-xs text-primary font-semibold h-auto p-0"
+                >
                   Edit
                 </Button>
               </div>
@@ -341,8 +407,8 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
           <div className="flex-1 min-w-0 flex items-center gap-2">
             {user?.githubUsername ? (
               <span className="text-sm font-semibold text-foreground flex items-center gap-1.5">
-                <span className="h-2 w-2 rounded-full bg-emerald-500" />
-                @{user.githubUsername}
+                <span className="h-2 w-2 rounded-full bg-emerald-500" />@
+                {user.githubUsername}
               </span>
             ) : (
               <span className="text-sm font-semibold text-muted-foreground/60 italic flex items-center gap-1.5">
@@ -368,17 +434,31 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
 
           {activeEditRow === "bio" ? (
             <div className="flex-1 flex flex-col gap-3">
-              <Textarea 
+              <Textarea
                 value={editBio}
                 onChange={(e) => setEditBio(e.target.value)}
                 placeholder="Tell the world about yourself..."
                 className="max-w-xl min-h-[100px] bg-background resize-none"
               />
               <div className="flex gap-2">
-                <Button size="sm" onClick={handleSaveBio} disabled={isSaving} className="h-8 text-xs">
-                  {isSaving && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />} Save
+                <Button
+                  size="sm"
+                  onClick={handleSaveBio}
+                  disabled={isSaving}
+                  className="h-8 text-xs"
+                >
+                  {isSaving && (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
+                  )}{" "}
+                  Save
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => setActiveEditRow(null)} disabled={isSaving} className="h-8 text-xs">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setActiveEditRow(null)}
+                  disabled={isSaving}
+                  className="h-8 text-xs"
+                >
                   Cancel
                 </Button>
               </div>
@@ -387,11 +467,19 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
             <>
               <div className="flex-1 min-w-0">
                 <p className="text-sm font-medium text-foreground/80 leading-relaxed whitespace-pre-wrap max-w-xl">
-                  {user?.bio || <span className="text-muted-foreground/60 italic text-xs">No bio added yet.</span>}
+                  {user?.bio || (
+                    <span className="text-muted-foreground/60 italic text-xs">
+                      No bio added yet.
+                    </span>
+                  )}
                 </p>
               </div>
               <div className="shrink-0">
-                <Button variant="link" onClick={() => setActiveEditRow("bio")} className="text-xs text-primary font-semibold h-auto p-0">
+                <Button
+                  variant="link"
+                  onClick={() => setActiveEditRow("bio")}
+                  className="text-xs text-primary font-semibold h-auto p-0"
+                >
                   Edit
                 </Button>
               </div>
@@ -407,7 +495,9 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
             </span>
           </div>
           <div className="flex-1 min-w-0 flex items-center gap-3">
-            <span className="text-sm font-bold text-foreground capitalize">{user?.accountType || "Free"} User</span>
+            <span className="text-sm font-bold text-foreground capitalize">
+              {user?.accountType || "Free"} User
+            </span>
             {isUpgraded ? (
               <Badge className="bg-yellow-500/90 text-black border-none text-[10px] font-bold shadow-sm">
                 Plus Plan
@@ -419,7 +509,11 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
             )}
           </div>
           <div className="shrink-0">
-            <Button variant="link" onClick={() => router.push("/web/pricing")} className="text-xs text-primary font-semibold h-auto p-0">
+            <Button
+              variant="link"
+              onClick={() => router.push("/web/pricing")}
+              className="text-xs text-primary font-semibold h-auto p-0"
+            >
               Upgrade
             </Button>
           </div>
@@ -453,11 +547,13 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
                   </span>
                 ))}
                 {editSkills.length === 0 && (
-                  <span className="text-xs text-muted-foreground/60 italic p-1">No skills added.</span>
+                  <span className="text-xs text-muted-foreground/60 italic p-1">
+                    No skills added.
+                  </span>
                 )}
               </div>
               <div className="flex gap-2 max-w-md">
-                <Input 
+                <Input
                   value={newSkill}
                   onChange={(e) => setNewSkill(e.target.value)}
                   onKeyDown={(e) => {
@@ -469,15 +565,34 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
                   placeholder="Type a skill and press Enter"
                   className="bg-background"
                 />
-                <Button type="button" onClick={handleAddSkill} variant="secondary" className="h-9">
+                <Button
+                  type="button"
+                  onClick={handleAddSkill}
+                  variant="secondary"
+                  className="h-9"
+                >
                   Add
                 </Button>
               </div>
               <div className="flex gap-2">
-                <Button size="sm" onClick={handleSaveSkills} disabled={isSaving} className="h-8 text-xs">
-                  {isSaving && <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />} Save
+                <Button
+                  size="sm"
+                  onClick={handleSaveSkills}
+                  disabled={isSaving}
+                  className="h-8 text-xs"
+                >
+                  {isSaving && (
+                    <Loader2 className="h-3.5 w-3.5 animate-spin mr-1" />
+                  )}{" "}
+                  Save
                 </Button>
-                <Button size="sm" variant="outline" onClick={() => setActiveEditRow(null)} disabled={isSaving} className="h-8 text-xs">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => setActiveEditRow(null)}
+                  disabled={isSaving}
+                  className="h-8 text-xs"
+                >
                   Cancel
                 </Button>
               </div>
@@ -488,17 +603,26 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
                 <div className="flex flex-wrap gap-1">
                   {user?.skills && user.skills.length > 0 ? (
                     user.skills.map((skill: string) => (
-                      <span key={skill} className="px-2.5 py-1 rounded bg-white text-xs font-bold text-black border-none shadow-sm">
+                      <span
+                        key={skill}
+                        className="px-2.5 py-1 rounded bg-white text-xs font-bold text-black border-none shadow-sm"
+                      >
                         {skill}
                       </span>
                     ))
                   ) : (
-                    <span className="text-muted-foreground/60 italic text-xs">No skills set</span>
+                    <span className="text-muted-foreground/60 italic text-xs">
+                      No skills set
+                    </span>
                   )}
                 </div>
               </div>
               <div className="shrink-0">
-                <Button variant="link" onClick={() => setActiveEditRow("skills")} className="text-xs text-primary font-semibold h-auto p-0">
+                <Button
+                  variant="link"
+                  onClick={() => setActiveEditRow("skills")}
+                  className="text-xs text-primary font-semibold h-auto p-0"
+                >
                   Edit
                 </Button>
               </div>
@@ -516,26 +640,38 @@ export function ProfileSettings({ user, isUpgraded, onBack }: ProfileSettingsPro
 
           <div className="flex-1 min-w-0">
             <div className="flex flex-col gap-1.5">
-              {user?.socialLinks && user.socialLinks.filter(Boolean).length > 0 ? (
-                user.socialLinks.filter(Boolean).map((link: string, idx: number) => (
-                  <a key={idx} href={link} target="_blank" rel="noopener noreferrer" className="text-xs text-primary font-mono truncate hover:underline block max-w-md">
-                    {link}
-                  </a>
-                ))
+              {user?.socialLinks &&
+              user.socialLinks.filter(Boolean).length > 0 ? (
+                user.socialLinks
+                  .filter(Boolean)
+                  .map((link: string, idx: number) => (
+                    <a
+                      key={idx}
+                      href={link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-primary font-mono truncate hover:underline block max-w-md"
+                    >
+                      {link}
+                    </a>
+                  ))
               ) : (
-                <span className="text-muted-foreground/60 italic text-xs">No social links set</span>
+                <span className="text-muted-foreground/60 italic text-xs">
+                  No social links set
+                </span>
               )}
             </div>
           </div>
           <div className="shrink-0">
-            <Button variant="link" onClick={() => setShowSocialLinksDialog(true)} className="text-xs text-primary font-semibold h-auto p-0">
+            <Button
+              variant="link"
+              onClick={() => setShowSocialLinksDialog(true)}
+              className="text-xs text-primary font-semibold h-auto p-0"
+            >
               Edit
             </Button>
           </div>
         </div>
-
-
-
       </div>
       <SocialLinksDialog
         open={showSocialLinksDialog}

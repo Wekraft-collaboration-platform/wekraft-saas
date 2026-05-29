@@ -142,7 +142,11 @@ interface Props {
   onReply: (message: Message) => void;
   onEdit: (messageId: string, content: string) => Promise<void>;
   onDelete: (messageId: string) => Promise<void>;
-  onReact: (messageId: string, emoji: string, hasReacted: boolean) => Promise<void>;
+  onReact: (
+    messageId: string,
+    emoji: string,
+    hasReacted: boolean,
+  ) => Promise<void>;
   onPin: (messageId: string, pinned: boolean) => void;
   onPollVote: (messageId: string, optionId: string) => Promise<void>;
   onEditPoll?: (messageId: string, poll: any) => Promise<void>;
@@ -185,7 +189,9 @@ export function MessageItem({
   const [readReceiptsOpen, setReadReceiptsOpen] = useState(false);
 
   const [previewMediaUrl, setPreviewMediaUrl] = useState<string | null>(null);
-  const [previewMediaType, setPreviewMediaType] = useState<"image" | "pdf" | "office" | null>(null);
+  const [previewMediaType, setPreviewMediaType] = useState<
+    "image" | "pdf" | "office" | null
+  >(null);
   const [previewMediaName, setPreviewMediaName] = useState<string>("");
 
   // FIX: Sync edit buffer when the message is updated externally (e.g. real-time
@@ -198,7 +204,8 @@ export function MessageItem({
 
   // Keep toolbar visible while any floating menu is open
   const isDeleted = message.content === "$__DELETED__$";
-  const showToolbar = (hovered || dropdownOpen || emojiOpen) && !editing && !isDeleted;
+  const showToolbar =
+    (hovered || dropdownOpen || emojiOpen) && !editing && !isDeleted;
 
   const isOwn = message.user_id === currentUserId;
   // FIX: Separate canPin from canDelete — moderators may delete without
@@ -267,11 +274,15 @@ export function MessageItem({
     }
   };
 
-  const handleDownload = (e: React.MouseEvent, url: string, filename: string) => {
+  const handleDownload = (
+    e: React.MouseEvent,
+    url: string,
+    filename: string,
+  ) => {
     e.preventDefault();
     e.stopPropagation();
 
-    // Proxy the download through our Next.js API route to bypass CORS 
+    // Proxy the download through our Next.js API route to bypass CORS
     // and force the Content-Disposition attachment header natively.
     const proxyUrl = `/api/teamspace/download?url=${encodeURIComponent(url)}&filename=${encodeURIComponent(filename)}`;
 
@@ -317,7 +328,7 @@ export function MessageItem({
             ? "flex-row-reverse justify-start pl-16 pr-4"
             : "flex-row justify-start pr-16",
           isGrouped ? "mt-0" : "mt-4",
-          isPinned && "border-l-2 border-l-blue-500 rounded-l-none"
+          isPinned && "border-l-2 border-l-blue-500 rounded-l-none",
         )}
         onMouseEnter={() => setHovered(true)}
         onMouseLeave={() => setHovered(false)}
@@ -342,7 +353,7 @@ export function MessageItem({
         <div
           className={cn(
             "flex flex-col max-w-[85%] md:max-w-[65%] relative",
-            isOwn ? "items-end" : "items-start"
+            isOwn ? "items-end" : "items-start",
           )}
         >
           {/* Header (only for others, not grouped) */}
@@ -363,13 +374,13 @@ export function MessageItem({
               "relative px-2.5 py-1 transition-all duration-200 border backdrop-blur-[2px] min-w-[60px] max-w-full shadow-sm",
               isOwn
                 ? cn(
-                  "bg-primary/[0.03] border-primary/[0.08]",
-                  isGrouped ? "rounded-lg" : "rounded-lg rounded-tr-none"
-                )
+                    "bg-primary/[0.03] border-primary/[0.08]",
+                    isGrouped ? "rounded-lg" : "rounded-lg rounded-tr-none",
+                  )
                 : cn(
-                  "bg-primary/[0.03] border-primary/[0.08]",
-                  isGrouped ? "rounded-lg" : "rounded-lg rounded-tl-none"
-                )
+                    "bg-primary/[0.03] border-primary/[0.08]",
+                    isGrouped ? "rounded-lg" : "rounded-lg rounded-tl-none",
+                  ),
             )}
           >
             {/* WhatsApp-style tail for first message in group */}
@@ -380,11 +391,20 @@ export function MessageItem({
                   aria-hidden="true"
                   style={{
                     color: "rgba(var(--primary-rgb,99,102,241),0.06)",
-                    filter: "drop-shadow(1px 0px 0px rgba(var(--primary-rgb,99,102,241),0.08))",
+                    filter:
+                      "drop-shadow(1px 0px 0px rgba(var(--primary-rgb,99,102,241),0.08))",
                   }}
                 >
-                  <svg viewBox="0 0 8 13" width="8" height="13" className="overflow-visible">
-                    <path fill="currentColor" d="M5.188 0H0v11.193l6.467-8.625C7.526 1.026 6.958 0 5.188 0z" />
+                  <svg
+                    viewBox="0 0 8 13"
+                    width="8"
+                    height="13"
+                    className="overflow-visible"
+                  >
+                    <path
+                      fill="currentColor"
+                      d="M5.188 0H0v11.193l6.467-8.625C7.526 1.026 6.958 0 5.188 0z"
+                    />
                   </svg>
                 </span>
               ) : (
@@ -393,19 +413,27 @@ export function MessageItem({
                   aria-hidden="true"
                   style={{
                     color: "rgba(var(--primary-rgb,99,102,241),0.06)",
-                    filter: "drop-shadow(-1px 0px 0px rgba(var(--primary-rgb,99,102,241),0.08))",
+                    filter:
+                      "drop-shadow(-1px 0px 0px rgba(var(--primary-rgb,99,102,241),0.08))",
                   }}
                 >
-                  <svg viewBox="0 0 8 13" width="8" height="13" className="overflow-visible">
-                    <path fill="currentColor" d="M2.812 0H8v11.193L1.533 2.568C.474 1.026 1.042 0 2.812 0z" />
+                  <svg
+                    viewBox="0 0 8 13"
+                    width="8"
+                    height="13"
+                    className="overflow-visible"
+                  >
+                    <path
+                      fill="currentColor"
+                      d="M2.812 0H8v11.193L1.533 2.568C.474 1.026 1.042 0 2.812 0z"
+                    />
                   </svg>
                 </span>
               ))}
 
-
-
             {/* Quoted reply block */}
-            {!isDeleted && message.thread_parent_id &&
+            {!isDeleted &&
+              message.thread_parent_id &&
               (message.parent_content || message.parent_user_name) && (
                 // FIX: `div` was interactive but had no role/tabIndex/keyboard handler.
                 <div
@@ -414,21 +442,27 @@ export function MessageItem({
                   onKeyDown={handleQuoteKeyDown}
                   className={cn(
                     "mb-1 rounded p-1.5 text-[12px] flex flex-col gap-0 shadow-sm select-none cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors",
-                    "bg-black/10"
+                    "bg-black/10",
                   )}
                   aria-label={`Quoted reply from ${message.parent_user_name ?? "Unknown"}`}
                 >
                   <div
                     className="font-semibold text-[10px] leading-tight"
-                    style={{ color: message.parent_user_name ? getUserColor(message.parent_user_name) : undefined }}
+                    style={{
+                      color: message.parent_user_name
+                        ? getUserColor(message.parent_user_name)
+                        : undefined,
+                    }}
                   >
                     {message.parent_user_name ?? "Unknown"}
                   </div>
                   <div className="text-muted-foreground/80 line-clamp-2 leading-snug overflow-hidden text-ellipsis mt-0.5">
                     {message.parent_content === "$__DELETED__$" ? (
-                      <span className="italic flex items-center gap-1"><Ban className="h-2.5 w-2.5" /> This message was deleted</span>
+                      <span className="italic flex items-center gap-1">
+                        <Ban className="h-2.5 w-2.5" /> This message was deleted
+                      </span>
                     ) : (
-                      message.parent_content ?? "Message not found"
+                      (message.parent_content ?? "Message not found")
                     )}
                   </div>
                 </div>
@@ -478,172 +512,235 @@ export function MessageItem({
               </div>
             ) : (
               <div className="relative flex flex-col">
-                {message.content && (() => {
-                  const s3Regex = /^(!?)\[([^\]]+)\]\(((?:blob:)?https?:\/\/[^\s\)]+)\)(?:\s+([\s\S]*))?$/;
-                  const match = message.content.match(s3Regex);
+                {message.content &&
+                  (() => {
+                    const s3Regex =
+                      /^(!?)\[([^\]]+)\]\(((?:blob:)?https?:\/\/[^\s\)]+)\)(?:\s+([\s\S]*))?$/;
+                    const match = message.content.match(s3Regex);
 
-                  let isMedia = false;
-                  let isImage = false;
-                  let fileName = "";
-                  let fileUrl = "";
-                  let captionText = message.content;
+                    let isMedia = false;
+                    let isImage = false;
+                    let fileName = "";
+                    let fileUrl = "";
+                    let captionText = message.content;
 
-                  if (match) {
-                    isMedia = true;
-                    isImage = match[1] === "!";
-                    fileName = match[2];
-                    fileUrl = match[3];
-                    captionText = match[4] || "";
-                  }
+                    if (match) {
+                      isMedia = true;
+                      isImage = match[1] === "!";
+                      fileName = match[2];
+                      fileUrl = match[3];
+                      captionText = match[4] || "";
+                    }
 
-                  const renderText = (text: string) => {
-                    if (!text) return null;
-                    // Split on @mentions and backtick-wrapped paths
-                    const mentionOrCodeRegex = /(@[a-zA-Z0-9_]+|`[^`]+`)/g;
-                    const parts = text.split(mentionOrCodeRegex);
-                    return parts.map((part, i) => {
-                      if (part.startsWith("@")) {
-                        const username = part.substring(1);
-                        const lowerName = username.toLowerCase();
-                        const isSpecial = ["admin", "owner", "member", "everyone"].includes(lowerName);
-                        const isMember = isSpecial || projectMembers?.some(m => m.userName?.toLowerCase() === lowerName);
+                    const renderText = (text: string) => {
+                      if (!text) return null;
+                      // Split on @mentions and backtick-wrapped paths
+                      const mentionOrCodeRegex = /(@[a-zA-Z0-9_]+|`[^`]+`)/g;
+                      const parts = text.split(mentionOrCodeRegex);
+                      return parts.map((part, i) => {
+                        if (part.startsWith("@")) {
+                          const username = part.substring(1);
+                          const lowerName = username.toLowerCase();
+                          const isSpecial = [
+                            "admin",
+                            "owner",
+                            "member",
+                            "everyone",
+                          ].includes(lowerName);
+                          const isMember =
+                            isSpecial ||
+                            projectMembers?.some(
+                              (m) => m.userName?.toLowerCase() === lowerName,
+                            );
 
-                        if (isMember) {
-                          return (
-                            <span
-                              key={`mention-${i}`}
-                              className="font-bold hover:underline cursor-pointer transition-all"
-                              style={{ color: getUserColor(username) }}
-                            >
-                              {part}
-                            </span>
-                          );
-                        }
-                      } else if (part.startsWith("`") && part.endsWith("`") && part.length > 2) {
-                        const filePath = part.slice(1, -1);
-                        const fileName = filePath.split("/").pop() || filePath;
-                        // Check if it looks like a file path (has extension or slash)
-                        if (filePath.includes(".") || filePath.includes("/")) {
-                          if (repoFullName) {
+                          if (isMember) {
                             return (
-                              <a
-                                key={`code-link-${i}`}
-                                href={`https://github.com/${repoFullName}/blob/main/${filePath}`}
-                                target="_blank"
-                                rel="noopener noreferrer"
-                                className="text-blue-500 hover:underline cursor-pointer font-medium transition-colors"
+                              <span
+                                key={`mention-${i}`}
+                                className="font-bold hover:underline cursor-pointer transition-all"
+                                style={{ color: getUserColor(username) }}
                               >
-                                {fileName}
-                              </a>
+                                {part}
+                              </span>
                             );
                           }
-                          // No repo linked — show as blue text without link
-                          return (
-                            <span key={`code-${i}`} className="text-blue-500 font-medium">
-                              {fileName}
-                            </span>
-                          );
+                        } else if (
+                          part.startsWith("`") &&
+                          part.endsWith("`") &&
+                          part.length > 2
+                        ) {
+                          const filePath = part.slice(1, -1);
+                          const fileName =
+                            filePath.split("/").pop() || filePath;
+                          // Check if it looks like a file path (has extension or slash)
+                          if (
+                            filePath.includes(".") ||
+                            filePath.includes("/")
+                          ) {
+                            if (repoFullName) {
+                              return (
+                                <a
+                                  key={`code-link-${i}`}
+                                  href={`https://github.com/${repoFullName}/blob/main/${filePath}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="text-blue-500 hover:underline cursor-pointer font-medium transition-colors"
+                                >
+                                  {fileName}
+                                </a>
+                              );
+                            }
+                            // No repo linked — show as blue text without link
+                            return (
+                              <span
+                                key={`code-${i}`}
+                                className="text-blue-500 font-medium"
+                              >
+                                {fileName}
+                              </span>
+                            );
+                          }
                         }
-                      }
+                        return (
+                          <Highlight
+                            key={`text-${i}`}
+                            text={part}
+                            term={highlightTerm}
+                            messageId={message.id}
+                          />
+                        );
+                      });
+                    };
+
+                    const editedTag = message.edited_at && (
+                      <span className="text-[8px] ml-1.5 select-none opacity-40 italic">
+                        (edited)
+                      </span>
+                    );
+                    const timestampSpacer = !(
+                      message.poll && !message.content
+                    ) && (
+                      <span
+                        className={cn(
+                          "inline-block h-0",
+                          message.id.startsWith("optimistic-")
+                            ? "w-14"
+                            : "w-11",
+                        )}
+                      />
+                    );
+
+                    if (isMedia) {
                       return (
-                        <Highlight
-                          key={`text-${i}`}
-                          text={part}
-                          term={highlightTerm}
-                          messageId={message.id}
-                        />
-                      );
-                    });
-                  };
-
-                  const editedTag = message.edited_at && (
-                    <span className="text-[8px] ml-1.5 select-none opacity-40 italic">
-                      (edited)
-                    </span>
-                  );
-                  const timestampSpacer = !(message.poll && !message.content) && <span className={cn("inline-block h-0", message.id.startsWith("optimistic-") ? "w-14" : "w-11")} />;
-
-                  if (isMedia) {
-                    return (
-                      <div className="flex flex-col">
-                        {isImage ? (
-                          <div
-                            className={cn("mt-0.5 cursor-pointer relative group inline-block", captionText ? "mb-1.5" : "mb-0.5")}
-                            onClick={() => {
-                              setPreviewMediaUrl(fileUrl);
-                              setPreviewMediaType("image");
-                              setPreviewMediaName(fileName);
-                            }}
-                          >
-                            <img
-                              src={fileUrl}
-                              alt={fileName}
-                              className="max-h-[140px] max-w-[160px] sm:max-h-[180px] sm:max-w-[220px] w-auto rounded-md object-contain transition-opacity group-hover:opacity-90"
-                            />
-                            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center pointer-events-none">
-                              <Eye className="text-white h-6 w-6 drop-shadow-md" />
-                            </div>
-                          </div>
-                        ) : (
-                          <div
-                            onClick={(e) => {
-                              const isPdf = fileName.toLowerCase().endsWith('.pdf');
-                              const isOffice = fileName.toLowerCase().match(/\.(doc|docx|ppt|pptx|xls|xlsx)$/);
-                              if (isPdf || isOffice) {
-                                e.preventDefault();
-                                setPreviewMediaUrl(fileUrl);
-                                setPreviewMediaType(isPdf ? "pdf" : "office");
-                                setPreviewMediaName(fileName);
-                              } else {
-                                handleDownload(e, fileUrl, fileName);
-                              }
-                            }}
-                            className="flex items-center gap-3 p-2.5 mt-0.5 mb-1 bg-black/5 dark:bg-white/5 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer max-w-[280px]"
-                          >
-                            <div className="p-1 shrink-0">
-                              <img src={getFileIconPath(fileName)} alt="icon" className="h-8 w-8 object-contain" />
-                            </div>
-                            <div className="flex flex-col overflow-hidden min-w-[120px] flex-1">
-                              <span className="text-sm font-medium truncate" title={fileName}>{fileName}</span>
-                              <span className="text-[10px] text-muted-foreground uppercase mt-0.5">Document</span>
-                            </div>
+                        <div className="flex flex-col">
+                          {isImage ? (
                             <div
-                              className="ml-2 p-1.5 rounded-full bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 shrink-0"
-                              onClick={(e) => {
-                                e.stopPropagation();
-                                handleDownload(e, fileUrl, fileName);
+                              className={cn(
+                                "mt-0.5 cursor-pointer relative group inline-block",
+                                captionText ? "mb-1.5" : "mb-0.5",
+                              )}
+                              onClick={() => {
+                                setPreviewMediaUrl(fileUrl);
+                                setPreviewMediaType("image");
+                                setPreviewMediaName(fileName);
                               }}
                             >
-                              <Download className="h-3.5 w-3.5 text-muted-foreground" />
+                              <img
+                                src={fileUrl}
+                                alt={fileName}
+                                className="max-h-[140px] max-w-[160px] sm:max-h-[180px] sm:max-w-[220px] w-auto rounded-md object-contain transition-opacity group-hover:opacity-90"
+                              />
+                              <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center pointer-events-none">
+                                <Eye className="text-white h-6 w-6 drop-shadow-md" />
+                              </div>
                             </div>
-                          </div>
-                        )}
+                          ) : (
+                            <div
+                              onClick={(e) => {
+                                const isPdf = fileName
+                                  .toLowerCase()
+                                  .endsWith(".pdf");
+                                const isOffice = fileName
+                                  .toLowerCase()
+                                  .match(/\.(doc|docx|ppt|pptx|xls|xlsx)$/);
+                                if (isPdf || isOffice) {
+                                  e.preventDefault();
+                                  setPreviewMediaUrl(fileUrl);
+                                  setPreviewMediaType(isPdf ? "pdf" : "office");
+                                  setPreviewMediaName(fileName);
+                                } else {
+                                  handleDownload(e, fileUrl, fileName);
+                                }
+                              }}
+                              className="flex items-center gap-3 p-2.5 mt-0.5 mb-1 bg-black/5 dark:bg-white/5 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer max-w-[280px]"
+                            >
+                              <div className="p-1 shrink-0">
+                                <img
+                                  src={getFileIconPath(fileName)}
+                                  alt="icon"
+                                  className="h-8 w-8 object-contain"
+                                />
+                              </div>
+                              <div className="flex flex-col overflow-hidden min-w-[120px] flex-1">
+                                <span
+                                  className="text-sm font-medium truncate"
+                                  title={fileName}
+                                >
+                                  {fileName}
+                                </span>
+                                <span className="text-[10px] text-muted-foreground uppercase mt-0.5">
+                                  Document
+                                </span>
+                              </div>
+                              <div
+                                className="ml-2 p-1.5 rounded-full bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 shrink-0"
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  handleDownload(e, fileUrl, fileName);
+                                }}
+                              >
+                                <Download className="h-3.5 w-3.5 text-muted-foreground" />
+                              </div>
+                            </div>
+                          )}
 
-                        {(captionText || message.edited_at) && (
-                          <div className={cn("text-[14px] leading-snug break-all md:break-words whitespace-pre-wrap text-foreground/80 font-normal", !captionText && "min-h-4")}>
-                            {renderText(captionText)}
-                            {editedTag}
-                            {timestampSpacer}
-                          </div>
-                        )}
+                          {(captionText || message.edited_at) && (
+                            <div
+                              className={cn(
+                                "text-[14px] leading-snug break-all md:break-words whitespace-pre-wrap text-foreground/80 font-normal",
+                                !captionText && "min-h-4",
+                              )}
+                            >
+                              {renderText(captionText)}
+                              {editedTag}
+                              {timestampSpacer}
+                            </div>
+                          )}
 
-                        {/* Space for timestamp if no caption */}
-                        {!captionText && !message.edited_at && (
-                          <div className={cn("h-3 mt-1", message.id.startsWith("optimistic-") ? "w-14" : "w-11")} />
-                        )}
+                          {/* Space for timestamp if no caption */}
+                          {!captionText && !message.edited_at && (
+                            <div
+                              className={cn(
+                                "h-3 mt-1",
+                                message.id.startsWith("optimistic-")
+                                  ? "w-14"
+                                  : "w-11",
+                              )}
+                            />
+                          )}
+                        </div>
+                      );
+                    }
+
+                    // Default text render
+                    return (
+                      <div className="text-[14px] leading-snug break-all md:break-words whitespace-pre-wrap text-foreground/80 font-normal">
+                        {renderText(message.content)}
+                        {editedTag}
+                        {timestampSpacer}
                       </div>
                     );
-                  }
-
-                  // Default text render
-                  return (
-                    <div className="text-[14px] leading-snug break-all md:break-words whitespace-pre-wrap text-foreground/80 font-normal">
-                      {renderText(message.content)}
-                      {editedTag}
-                      {timestampSpacer}
-                    </div>
-                  );
-                })()}
+                  })()}
 
                 {message.poll && !isDeleted && (
                   <div className="mt-1 mb-2">
@@ -654,7 +751,16 @@ export function MessageItem({
                       onVote={(msgId, optId) => onPollVote(msgId, optId)}
                     />
                     {/* Invisible spacer for timestamp when there's only a poll */}
-                    {!message.content && <div className={cn("h-2", message.id.startsWith("optimistic-") ? "w-14" : "w-11")} />}
+                    {!message.content && (
+                      <div
+                        className={cn(
+                          "h-2",
+                          message.id.startsWith("optimistic-")
+                            ? "w-14"
+                            : "w-11",
+                        )}
+                      />
+                    )}
                   </div>
                 )}
 
@@ -662,9 +768,10 @@ export function MessageItem({
                   <span className="text-[9px] select-none text-muted-foreground/60 font-medium uppercase leading-none">
                     {format(new Date(message.created_at), "h:mm a")}
                   </span>
-                  {message.user_id === currentUserId && message.id.startsWith("optimistic-") && (
-                    <Clock className="h-2.5 w-2.5 text-muted-foreground/60" />
-                  )}
+                  {message.user_id === currentUserId &&
+                    message.id.startsWith("optimistic-") && (
+                      <Clock className="h-2.5 w-2.5 text-muted-foreground/60" />
+                    )}
                 </div>
               </div>
             )}
@@ -679,7 +786,7 @@ export function MessageItem({
               <div
                 className={cn(
                   "absolute top-1/2 -translate-y-1/2 flex items-center gap-1 z-30",
-                  isOwn ? "right-full mr-2" : "left-full ml-2"
+                  isOwn ? "right-full mr-2" : "left-full ml-2",
                 )}
               >
                 <Popover open={emojiOpen} onOpenChange={setEmojiOpen}>
@@ -698,7 +805,11 @@ export function MessageItem({
                     side="top"
                     align="center"
                   >
-                    <div className="flex gap-1" role="toolbar" aria-label="Quick reactions">
+                    <div
+                      className="flex gap-1"
+                      role="toolbar"
+                      aria-label="Quick reactions"
+                    >
                       {QUICK_EMOJIS.map((emoji) => {
                         const hasReacted =
                           message.reactions
@@ -707,14 +818,16 @@ export function MessageItem({
                         return (
                           <button
                             key={emoji}
-                            onClick={() => onReact(message.id, emoji, hasReacted)}
+                            onClick={() =>
+                              onReact(message.id, emoji, hasReacted)
+                            }
                             aria-label={`React with ${emoji}`}
                             aria-pressed={hasReacted}
                             className={cn(
                               "text-xl p-1.5 rounded-xl transition-all hover:scale-125 active:scale-90",
                               hasReacted
                                 ? "bg-blue-500/20 ring-1 ring-blue-500/30"
-                                : "hover:bg-accent"
+                                : "hover:bg-accent",
                             )}
                           >
                             {emoji}
@@ -725,7 +838,10 @@ export function MessageItem({
                   </PopoverContent>
                 </Popover>
 
-                <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+                <DropdownMenu
+                  open={dropdownOpen}
+                  onOpenChange={setDropdownOpen}
+                >
                   <DropdownMenuTrigger asChild>
                     <Button
                       size="icon"
@@ -745,19 +861,28 @@ export function MessageItem({
                       onClick={() => onReply(message)}
                       className="rounded-lg"
                     >
-                      <Reply className="h-4 w-4 mr-2 text-muted-foreground" aria-hidden="true" />
+                      <Reply
+                        className="h-4 w-4 mr-2 text-muted-foreground"
+                        aria-hidden="true"
+                      />
                       Reply
                     </DropdownMenuItem>
                     {(() => {
-                      const s3Regex = /^(!?)\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)(?:\s+([\s\S]*))?$/;
+                      const s3Regex =
+                        /^(!?)\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)(?:\s+([\s\S]*))?$/;
                       const match = message.content?.match(s3Regex);
                       if (match) {
                         return (
                           <DropdownMenuItem
-                            onClick={(e) => handleDownload(e, match[3], match[2])}
+                            onClick={(e) =>
+                              handleDownload(e, match[3], match[2])
+                            }
                             className="rounded-lg"
                           >
-                            <Download className="h-4 w-4 mr-2 text-muted-foreground" aria-hidden="true" />
+                            <Download
+                              className="h-4 w-4 mr-2 text-muted-foreground"
+                              aria-hidden="true"
+                            />
                             Download
                           </DropdownMenuItem>
                         );
@@ -765,8 +890,14 @@ export function MessageItem({
                       return null;
                     })()}
                     {message.content?.trim() ? (
-                      <DropdownMenuItem onClick={handleCopy} className="rounded-lg">
-                        <Copy className="h-4 w-4 mr-2 text-muted-foreground" aria-hidden="true" />
+                      <DropdownMenuItem
+                        onClick={handleCopy}
+                        className="rounded-lg"
+                      >
+                        <Copy
+                          className="h-4 w-4 mr-2 text-muted-foreground"
+                          aria-hidden="true"
+                        />
                         Copy Text
                       </DropdownMenuItem>
                     ) : null}
@@ -775,7 +906,10 @@ export function MessageItem({
                         onClick={() => onPin(message.id, !isPinned)}
                         className="rounded-lg"
                       >
-                        <Pin className="h-4 w-4 mr-2 text-muted-foreground" aria-hidden="true" />
+                        <Pin
+                          className="h-4 w-4 mr-2 text-muted-foreground"
+                          aria-hidden="true"
+                        />
                         {isPinned ? "Unpin" : "Pin"}
                       </DropdownMenuItem>
                     )}
@@ -790,7 +924,10 @@ export function MessageItem({
                         }}
                         className="rounded-lg"
                       >
-                        <Pencil className="h-4 w-4 mr-2 text-muted-foreground" aria-hidden="true" />
+                        <Pencil
+                          className="h-4 w-4 mr-2 text-muted-foreground"
+                          aria-hidden="true"
+                        />
                         Edit
                       </DropdownMenuItem>
                     )}
@@ -799,7 +936,10 @@ export function MessageItem({
                         onClick={() => setReadReceiptsOpen(true)}
                         className="rounded-lg"
                       >
-                        <Eye className="h-4 w-4 mr-2 text-muted-foreground" aria-hidden="true" />
+                        <Eye
+                          className="h-4 w-4 mr-2 text-muted-foreground"
+                          aria-hidden="true"
+                        />
                         Read Receipts
                       </DropdownMenuItem>
                     )}
@@ -823,7 +963,7 @@ export function MessageItem({
             <div
               className={cn(
                 "flex flex-wrap gap-1 mt-1",
-                isOwn ? "justify-end" : "justify-start"
+                isOwn ? "justify-end" : "justify-start",
               )}
             >
               {message.reactions.map((r) => {
@@ -839,7 +979,7 @@ export function MessageItem({
                       "flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] transition-all active:scale-95",
                       hasReacted
                         ? "text-blue-500 font-semibold"
-                        : "text-muted-foreground hover:bg-accent/50"
+                        : "text-muted-foreground hover:bg-accent/50",
                     )}
                   >
                     <span aria-hidden="true">{r.emoji}</span>
@@ -849,8 +989,6 @@ export function MessageItem({
               })}
             </div>
           )}
-
-
         </div>
       </div>
 
@@ -940,20 +1078,27 @@ export function MessageItem({
                         <ScrollArea className="max-h-[150px]">
                           <div className="flex flex-col gap-2 pr-4">
                             {seenBy.map((m) => (
-                              <div key={m.userId} className="flex items-center gap-2">
+                              <div
+                                key={m.userId}
+                                className="flex items-center gap-2"
+                              >
                                 <Avatar className="h-6 w-6">
                                   <AvatarImage src={m.userImage} />
                                   <AvatarFallback className="text-[9px]">
                                     {m.userName.substring(0, 2).toUpperCase()}
                                   </AvatarFallback>
                                 </Avatar>
-                                <span className="text-sm font-medium">{m.userName}</span>
+                                <span className="text-sm font-medium">
+                                  {m.userName}
+                                </span>
                               </div>
                             ))}
                           </div>
                         </ScrollArea>
                       ) : (
-                        <div className="text-xs text-muted-foreground/60 italic">No one has seen this yet.</div>
+                        <div className="text-xs text-muted-foreground/60 italic">
+                          No one has seen this yet.
+                        </div>
                       )}
                     </div>
 
@@ -965,7 +1110,10 @@ export function MessageItem({
                         <ScrollArea className="max-h-[150px]">
                           <div className="flex flex-col gap-2 pr-4 opacity-60">
                             {notSeenBy.map((m) => (
-                              <div key={m.userId} className="flex items-center gap-2">
+                              <div
+                                key={m.userId}
+                                className="flex items-center gap-2"
+                              >
                                 <Avatar className="h-6 w-6">
                                   <AvatarImage src={m.userImage} />
                                   <AvatarFallback className="text-[9px]">
@@ -978,7 +1126,9 @@ export function MessageItem({
                           </div>
                         </ScrollArea>
                       ) : (
-                        <div className="text-xs text-muted-foreground/60 italic">Everyone has seen this!</div>
+                        <div className="text-xs text-muted-foreground/60 italic">
+                          Everyone has seen this!
+                        </div>
                       )}
                     </div>
                   </div>
@@ -990,19 +1140,26 @@ export function MessageItem({
       )}
 
       {/* Media Preview Overlay (WhatsApp Web style) */}
-      <Dialog open={!!previewMediaUrl} onOpenChange={(open) => !open && setPreviewMediaUrl(null)}>
+      <Dialog
+        open={!!previewMediaUrl}
+        onOpenChange={(open) => !open && setPreviewMediaUrl(null)}
+      >
         <DialogContent className="max-w-[100vw] h-[100vh] max-h-[100vh] w-full p-0 m-0 border-none bg-black/95 shadow-none flex flex-col justify-between overflow-hidden [&>button]:hidden z-[500] rounded-none">
           {/* Top Bar */}
           <div className="flex items-center justify-between p-4 bg-gradient-to-b from-black/80 to-transparent text-white z-10 shrink-0">
             <div className="flex items-center gap-4">
               <div className="flex flex-col">
                 <span className="font-medium text-sm">{message.user_name}</span>
-                <span className="text-xs text-white/60">{format(new Date(message.created_at), "MMM d, h:mm a")}</span>
+                <span className="text-xs text-white/60">
+                  {format(new Date(message.created_at), "MMM d, h:mm a")}
+                </span>
               </div>
             </div>
             <div className="flex items-center gap-2">
               <button
-                onClick={(e) => handleDownload(e, previewMediaUrl!, previewMediaName)}
+                onClick={(e) =>
+                  handleDownload(e, previewMediaUrl!, previewMediaName)
+                }
                 className="p-2 hover:bg-white/10 rounded-full transition-colors cursor-pointer"
                 title="Download"
               >

@@ -1,14 +1,14 @@
 /**
  * MembersPanel.tsx
- * 
+ *
  * Side panel for displaying the list of project members and their real-time presence.
- * 
+ *
  * Features:
  * - Lists all project members with their roles.
  * - Categorizes members into "Online" and "Offline" based on real-time presence.
  * - Real-time presence tracking via Ably Presence.
  * - Smooth layout transitions in the Teamspace view.
- * 
+ *
  * Integration:
  * - Fetches member list from Convex via `api.project.getProjectMembers`.
  * - Uses Ably Presence to track and display online status.
@@ -33,23 +33,29 @@ interface Props {
   currentUserName: string;
 }
 
-export function MembersPanel({ projectId, onlineIds, currentUserId, currentUserName }: Props) {
+export function MembersPanel({
+  projectId,
+  onlineIds,
+  currentUserId,
+  currentUserName,
+}: Props) {
   const members = useQuery(
     api.project.getProjectMembers,
     projectId ? { projectId: projectId as Id<"projects"> } : "skip",
   );
 
-  const online = members?.filter((m) => m.clerkUserId && onlineIds.has(m.clerkUserId)) ?? [];
-  const offline = members?.filter((m) => !m.clerkUserId || !onlineIds.has(m.clerkUserId)) ?? [];
+  const online =
+    members?.filter((m) => m.clerkUserId && onlineIds.has(m.clerkUserId)) ?? [];
+  const offline =
+    members?.filter((m) => !m.clerkUserId || !onlineIds.has(m.clerkUserId)) ??
+    [];
 
   return (
     <div className="flex flex-col h-full w-full">
       {/* Header */}
       <div className="flex items-center gap-2 px-3 h-14 border-b border-border/80 shrink-0">
         <Users className="h-4 w-4" />
-        <h3 className="text-base ">
-          Members
-        </h3>
+        <h3 className="text-base ">Members</h3>
       </div>
 
       <ScrollArea className="flex-1 px-2 py-3">
@@ -113,7 +119,12 @@ function MemberRow({
   online,
   isCurrentUser,
 }: {
-  member: { userId: string; userName: string; userImage?: string; AccessRole?: string };
+  member: {
+    userId: string;
+    userName: string;
+    userImage?: string;
+    AccessRole?: string;
+  };
   online: boolean;
   isCurrentUser: boolean;
 }) {
@@ -129,12 +140,17 @@ function MemberRow({
         <span
           className={cn(
             "absolute -bottom-0.5 -right-0.5 h-2.5 w-2.5 rounded-full border-2 border-black",
-            online ? "bg-emerald-500" : "bg-muted-foreground/40"
+            online ? "bg-emerald-500" : "bg-muted-foreground/40",
           )}
         />
       </div>
       <div className="min-w-0 flex-1">
-        <p className={cn("text-xs truncate font-medium", online ? "text-foreground" : "text-muted-foreground")}>
+        <p
+          className={cn(
+            "text-xs truncate font-medium",
+            online ? "text-foreground" : "text-muted-foreground",
+          )}
+        >
           {isCurrentUser ? "You" : member.userName}
         </p>
         {member.AccessRole && (

@@ -1,7 +1,12 @@
 "use client";
 
 import { format } from "date-fns";
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { CalendarDays, Clock, FileText, Tag, Pencil } from "lucide-react";
 
@@ -13,11 +18,16 @@ interface EventDetailDialogProps {
 }
 
 const typeLabels: Record<string, { label: string; color: string }> = {
-  event:     { label: "Event",     color: "#c4b5fd" },
+  event: { label: "Event", color: "#c4b5fd" },
   milestone: { label: "Milestone", color: "#bae6fd" },
 };
 
-export default function EventDetailDialog({ open, onOpenChange, eventData, onEdit }: EventDetailDialogProps) {
+export default function EventDetailDialog({
+  open,
+  onOpenChange,
+  eventData,
+  onEdit,
+}: EventDetailDialogProps) {
   if (!eventData) return null;
 
   const typeInfo = typeLabels[eventData.type] || typeLabels.event;
@@ -25,8 +35,11 @@ export default function EventDetailDialog({ open, onOpenChange, eventData, onEdi
 
   const formatDate = (d: any) => {
     if (!d) return "—";
-    try { return format(new Date(d), "dd MMM yyyy, hh:mm a"); }
-    catch { return "—"; }
+    try {
+      return format(new Date(d), "dd MMM yyyy, hh:mm a");
+    } catch {
+      return "—";
+    }
   };
 
   return (
@@ -40,7 +53,11 @@ export default function EventDetailDialog({ open, onOpenChange, eventData, onEdi
             <div className="flex items-center gap-2 mb-2">
               <span
                 className="text-[10px] font-bold uppercase tracking-widest px-2 py-0.5 rounded-full border"
-                style={{ color, borderColor: `${color}40`, backgroundColor: `${color}15` }}
+                style={{
+                  color,
+                  borderColor: `${color}40`,
+                  backgroundColor: `${color}15`,
+                }}
               >
                 {typeInfo.label}
               </span>
@@ -66,7 +83,9 @@ export default function EventDetailDialog({ open, onOpenChange, eventData, onEdi
             {eventData.description && (
               <div className="flex items-start gap-3 text-sm text-zinc-400 pt-1">
                 <FileText className="w-4 h-4 flex-shrink-0 mt-0.5 text-zinc-600" />
-                <p className="leading-relaxed whitespace-pre-wrap">{eventData.description}</p>
+                <p className="leading-relaxed whitespace-pre-wrap">
+                  {eventData.description}
+                </p>
               </div>
             )}
           </div>
@@ -82,9 +101,16 @@ export default function EventDetailDialog({ open, onOpenChange, eventData, onEdi
             </Button>
             <Button
               size="sm"
-              onClick={() => { onOpenChange(false); onEdit(); }}
+              onClick={() => {
+                onOpenChange(false);
+                onEdit();
+              }}
               className="gap-1.5"
-              style={{ backgroundColor: `${color}22`, borderColor: `${color}40`, color }}
+              style={{
+                backgroundColor: `${color}22`,
+                borderColor: `${color}40`,
+                color,
+              }}
             >
               <Pencil className="w-3.5 h-3.5" />
               Edit

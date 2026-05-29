@@ -35,7 +35,6 @@ import { useSidebar } from "@/components/ui/sidebar";
 import { LuGitBranch } from "react-icons/lu";
 import Image from "next/image";
 
-
 interface DashboardProject {
   _id: string;
   projectName: string;
@@ -281,8 +280,8 @@ export const DashboardProjects = ({
   const [filter, setFilter] = React.useState<"all" | "owned" | "joined">("all");
 
   // Use 3 columns when both sidebars are open to prevent cards from being too small
-  const gridCols = isLeftSidebarOpen && isRightSidebarExpanded ? "grid-cols-3" : "grid-cols-4";
-
+  const gridCols =
+    isLeftSidebarOpen && isRightSidebarExpanded ? "grid-cols-3" : "grid-cols-4";
 
   const filteredProjects = React.useMemo(() => {
     if (!projects) return [];
@@ -436,7 +435,6 @@ export const DashboardProjects = ({
         </div>
       ) : filteredProjects.length === 0 ? (
         <div className="flex flex-col items-center justify-center p-12 border border-border border-dashed rounded-xl bg-muted/80 text-center h-[260px] transition-all">
-
           <Image
             src="/project.svg"
             alt="Empty"
@@ -471,8 +469,6 @@ export const DashboardProjects = ({
         </div>
       ) : (
         <div className={cn("grid gap-3", gridCols)}>
-
-
           {filteredProjects.map((project) => (
             <div
               key={project._id}
@@ -518,10 +514,15 @@ export const DashboardProjects = ({
                       <MoreVertical className="size-3.5" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent align="end" className="w-56 p-3 bg-popover border border-border rounded-xl shadow-xl z-50">
+                  <PopoverContent
+                    align="end"
+                    className="w-56 p-3 bg-popover border border-border rounded-xl shadow-xl z-50"
+                  >
                     <div className="space-y-3.5 text-left">
                       <div className="space-y-1">
-                        <h4 className="text-xs font-bold text-foreground">Project Details</h4>
+                        <h4 className="text-xs font-bold text-foreground">
+                          Project Details
+                        </h4>
                         <p className="text-[10px] text-muted-foreground leading-normal">
                           Quick access to repository and workspace.
                         </p>
@@ -535,7 +536,9 @@ export const DashboardProjects = ({
                           </span>
                           <div className="flex items-center gap-2 text-xs text-foreground bg-accent/30 border border-accent/20 rounded-md p-2">
                             <LuGitBranch className="size-3.5 text-zinc-400 shrink-0" />
-                            <span className="truncate font-mono">{project.repoName}</span>
+                            <span className="truncate font-mono">
+                              {project.repoName}
+                            </span>
                           </div>
                         </div>
                       )}
@@ -562,15 +565,24 @@ export const DashboardProjects = ({
                       <div className="pt-1.5 border-t border-border/50 flex flex-col gap-1.5">
                         <Button
                           size="sm"
-                          onClick={() => router.push(`/dashboard/my-projects/${project.slug}/workspace`)}
+                          onClick={() =>
+                            router.push(
+                              `/dashboard/my-projects/${project.slug}/workspace`,
+                            )
+                          }
                           className="w-full text-xs h-7.5 cursor-pointer"
                         >
-                          <ExternalLink className="size-3 mr-1.5" /> Go to Workspace
+                          <ExternalLink className="size-3 mr-1.5" /> Go to
+                          Workspace
                         </Button>
                         <Button
                           variant="outline"
                           size="sm"
-                          onClick={() => router.push(`/dashboard/my-projects/${project.slug}`)}
+                          onClick={() =>
+                            router.push(
+                              `/dashboard/my-projects/${project.slug}`,
+                            )
+                          }
                           className="w-full text-xs h-7.5 cursor-pointer"
                         >
                           <Settings2 className="size-3 mr-1.5" /> Edit Settings
@@ -633,7 +645,9 @@ export const DashboardProjects = ({
                                 : "Shortcut cleared",
                             );
                           } catch (err: any) {
-                            toast.error(err.message || "Failed to update shortcut");
+                            toast.error(
+                              err.message || "Failed to update shortcut",
+                            );
                             throw err;
                           }
                         }}

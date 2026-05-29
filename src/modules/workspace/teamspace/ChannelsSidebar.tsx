@@ -1,14 +1,14 @@
 /**
  * ChannelsSidebar.tsx
- * 
+ *
  * Component for displaying and managing the list of channels in a project.
- * 
+ *
  * Functions:
  * - Lists channels categorized by type (Announcements, Community Chat).
  * - Handles channel selection with prefetching of messages for performance.
  * - Provides administrative actions (Create, Edit, Delete) based on project permissions.
  * - Shows visual indicators for the active channel and permissions.
- * 
+ *
  * Integration:
  * - Uses `useChannels` hook for data and mutations.
  * - Uses `useProjectPermissions` to determine user roles.
@@ -161,13 +161,19 @@ export function ChannelsSidebar({
           <Icon
             className={cn(
               "h-[18px] w-[18px] shrink-0 transition-colors duration-300",
-              isActive ? color : "text-muted-foreground group-hover:text-foreground",
+              isActive
+                ? color
+                : "text-muted-foreground group-hover:text-foreground",
             )}
           />
-          <span className={cn(
-            "truncate leading-tight flex-1 min-w-0 max-w-[120px] capitalize transition-all",
-            (unreadCount > 0 || mentionCount > 0) && !isActive && " text-foreground"
-          )}>
+          <span
+            className={cn(
+              "truncate leading-tight flex-1 min-w-0 max-w-[120px] capitalize transition-all",
+              (unreadCount > 0 || mentionCount > 0) &&
+                !isActive &&
+                " text-foreground",
+            )}
+          >
             {channel.name}
           </span>
 
@@ -184,10 +190,12 @@ export function ChannelsSidebar({
 
           {/* Hover actions - 3 dot menu */}
           {(canEdit || (canDelete && !channel.is_default)) && (
-            <div className={cn(
-              "transition-opacity z-20 shrink-0",
-              isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-            )}>
+            <div
+              className={cn(
+                "transition-opacity z-20 shrink-0",
+                isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100",
+              )}
+            >
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
@@ -210,7 +218,7 @@ export function ChannelsSidebar({
                       Edit Channel
                     </DropdownMenuItem>
                   )}
-                  {(canDelete && !channel.is_default) && (
+                  {canDelete && !channel.is_default && (
                     <DropdownMenuItem
                       className="text-destructive focus:text-destructive"
                       onClick={(e) => {
@@ -279,13 +287,17 @@ export function ChannelsSidebar({
                 <div>
                   <div
                     className="flex items-center justify-between px-2 pt-2 pb-1 group cursor-pointer hover:text-foreground transition-colors"
-                    onClick={() => setAnnouncementsExpanded(!announcementsExpanded)}
+                    onClick={() =>
+                      setAnnouncementsExpanded(!announcementsExpanded)
+                    }
                   >
                     <div className="flex items-center gap-1 select-none">
-                      <ChevronDown className={cn(
-                        "h-4 w-4 shrink-0 transition-transform duration-300 text-muted-foreground group-hover:text-foreground",
-                        !announcementsExpanded && "-rotate-90"
-                      )} />
+                      <ChevronDown
+                        className={cn(
+                          "h-4 w-4 shrink-0 transition-transform duration-300 text-muted-foreground group-hover:text-foreground",
+                          !announcementsExpanded && "-rotate-90",
+                        )}
+                      />
                       <h3 className="text-sm text-muted-foreground tracking-wide group-hover:text-foreground">
                         Announcements
                       </h3>
@@ -314,10 +326,12 @@ export function ChannelsSidebar({
                   onClick={() => setChatExpanded(!chatExpanded)}
                 >
                   <div className="flex items-center gap-1 select-none">
-                    <ChevronDown className={cn(
-                      "h-4 w-4 shrink-0 transition-transform duration-200 text-muted-foreground group-hover:text-foreground",
-                      !chatExpanded && "-rotate-90"
-                    )} />
+                    <ChevronDown
+                      className={cn(
+                        "h-4 w-4 shrink-0 transition-transform duration-200 text-muted-foreground group-hover:text-foreground",
+                        !chatExpanded && "-rotate-90",
+                      )}
+                    />
                     <h3 className="text-sm text-muted-foreground group-hover:text-foreground">
                       Community Chat
                     </h3>
@@ -346,8 +360,10 @@ export function ChannelsSidebar({
         <div className="px-3 pb-3 shrink-0">
           <div className="bg-muted/40 border border-accent rounded-lg relative group animate-in fade-in slide-in-from-bottom-2 duration-300">
             <div className="px-3 py-2 border-b border-border/50 flex items-center justify-between">
-              <span className="text-[13px] font-semibold text-foreground">Quick tip:</span>
-              <button 
+              <span className="text-[13px] font-semibold text-foreground">
+                Quick tip:
+              </span>
+              <button
                 onClick={() => setShowHint(false)}
                 className="p-0.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors cursor-pointer"
               >
@@ -356,10 +372,19 @@ export function ChannelsSidebar({
             </div>
             <div className="p-3 text-[13px] text-muted-foreground leading-tight">
               <ol className="list-decimal list-inside space-y-1 ml-0.5">
-                <li><strong className="text-foreground">@</strong> for mentions</li>
-                <li><strong className="text-foreground">/</strong> for ticket creation</li>
-                <li><strong className="text-foreground">\</strong> for code link</li>
-                <li><strong className="text-foreground">#</strong> for file upload</li>
+                <li>
+                  <strong className="text-foreground">@</strong> for mentions
+                </li>
+                <li>
+                  <strong className="text-foreground">/</strong> for ticket
+                  creation
+                </li>
+                <li>
+                  <strong className="text-foreground">\</strong> for code link
+                </li>
+                <li>
+                  <strong className="text-foreground">#</strong> for file upload
+                </li>
               </ol>
             </div>
           </div>

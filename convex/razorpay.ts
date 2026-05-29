@@ -1,7 +1,6 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
-
 export const updatePlanServerSide = mutation({
   args: {
     backendSecret: v.string(),
@@ -53,13 +52,17 @@ export const handleSubscriptionUpdate = mutation({
     // Find the user with this subscriptionId
     const user = await ctx.db
       .query("users")
-      .withIndex("by_subscriptionId", (q) => q.eq("subscriptionId", args.subscriptionId))
+      .withIndex("by_subscriptionId", (q) =>
+        q.eq("subscriptionId", args.subscriptionId),
+      )
       .first();
 
     if (!user) {
       // In Razorpay we don't always save the subscriptionId until verification.
       // If it's a renewal, it should already be there.
-      console.error(`[Razorpay Webhook] User not found for subscriptionId: ${args.subscriptionId}`);
+      console.error(
+        `[Razorpay Webhook] User not found for subscriptionId: ${args.subscriptionId}`,
+      );
       return { success: false, error: "User not found" };
     }
 
@@ -106,7 +109,9 @@ export const verifySubscriptionOwner = query({
 
     const user = await ctx.db
       .query("users")
-      .withIndex("by_subscriptionId", (q) => q.eq("subscriptionId", args.subscriptionId))
+      .withIndex("by_subscriptionId", (q) =>
+        q.eq("subscriptionId", args.subscriptionId),
+      )
       .first();
 
     if (!user) return false;

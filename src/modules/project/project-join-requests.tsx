@@ -3,7 +3,17 @@
 import { api } from "@/../convex/_generated/api";
 import { Id } from "@/../convex/_generated/dataModel";
 import { useMutation, useQuery } from "convex/react";
-import { Check, X, User, MessageSquare, Loader2, User2, AlertCircle, LucideHistory, LucideTimer } from "lucide-react";
+import {
+  Check,
+  X,
+  User,
+  MessageSquare,
+  Loader2,
+  User2,
+  AlertCircle,
+  LucideHistory,
+  LucideTimer,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useProjectPermissions } from "@/hooks/use-project-permissions";
@@ -38,10 +48,7 @@ export const ProjectJoinRequests = ({
   const { isPower, isLoading: isPermsLoading } =
     useProjectPermissions(projectId);
 
-  const onAction = async (
-    request: any,
-    action: "accepted" | "rejected",
-  ) => {
+  const onAction = async (request: any, action: "accepted" | "rejected") => {
     try {
       await handleRequest({ requestId: request._id, action });
       toast.success(
@@ -73,7 +80,9 @@ export const ProjectJoinRequests = ({
       <div className="flex flex-col items-center justify-center border-dashed border mt-8 rounded-md border-accent py-20 text-muted-foreground space-y-2">
         <User className="w-10 h-10 opacity-80" />
         <p className="text-sm">No join requests yet</p>
-        <p className="text-xs">Try to invite more members to see upcoming Requests</p>
+        <p className="text-xs">
+          Try to invite more members to see upcoming Requests
+        </p>
       </div>
     );
   }
@@ -99,7 +108,8 @@ export const ProjectJoinRequests = ({
         >
           <AlertCircle className="w-5 h-5 text-white shrink-0" />
           <p className="text-sm font-medium">
-            Member limit reached ({currentMemberCount}/{memberLimit}). You cannot accept new members until you upgrade.
+            Member limit reached ({currentMemberCount}/{memberLimit}). You
+            cannot accept new members until you upgrade.
             <span className="ml-1 underline text-white">Upgrade →</span>
           </p>
         </button>
@@ -107,7 +117,8 @@ export const ProjectJoinRequests = ({
       {pendingRequests.length > 0 && (
         <div className="space-y-4">
           <h3 className="text-base   px-1 flex items-center gap-2">
-            <LucideTimer className="h-4 w-4" />  Pending Requests ({pendingRequests.length})
+            <LucideTimer className="h-4 w-4" /> Pending Requests (
+            {pendingRequests.length})
           </h3>
           {pendingRequests.map((request) => (
             <RequestCard
@@ -150,7 +161,13 @@ interface RequestCardProps {
   onLimitReached?: () => void;
 }
 
-const RequestCard = ({ request, isPower, onAction, isLimitReached, onLimitReached }: RequestCardProps) => {
+const RequestCard = ({
+  request,
+  isPower,
+  onAction,
+  isLimitReached,
+  onLimitReached,
+}: RequestCardProps) => {
   const isPending = request.status === "pending";
 
   return (
@@ -173,7 +190,9 @@ const RequestCard = ({ request, isPower, onAction, isLimitReached, onLimitReache
 
           <div className="flex-1 space-y-1">
             <div className="flex items-center gap-2">
-              <span className="font-medium text-sm capitalize">{request.userName}</span>
+              <span className="font-medium text-sm capitalize">
+                {request.userName}
+              </span>
               <Badge
                 variant="secondary"
                 className="text-[11px] px-3 py-1 h-6! cursor-pointer hover:bg-accent transition-colors"
@@ -182,10 +201,13 @@ const RequestCard = ({ request, isPower, onAction, isLimitReached, onLimitReache
               </Badge>
               {!isPending && (
                 <Badge
-                  variant={request.status === "accepted" ? "default" : "destructive"}
+                  variant={
+                    request.status === "accepted" ? "default" : "destructive"
+                  }
                   className={`text-[10px] px-2 py-0.5 h-4 ml-auto ${request.status === "accepted" ? "bg-green-500/10 text-green-500 hover:bg-green-500/20" : ""}`}
                 >
-                  {request.status.charAt(0).toUpperCase() + request.status.slice(1)}
+                  {request.status.charAt(0).toUpperCase() +
+                    request.status.slice(1)}
                 </Badge>
               )}
             </div>

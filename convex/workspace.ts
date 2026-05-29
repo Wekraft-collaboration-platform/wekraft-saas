@@ -83,7 +83,6 @@ export const createTask = mutation({
           }),
         ),
       );
-
     }
 
     return taskId;
@@ -267,7 +266,6 @@ export const updateTaskStatus = mutation({
         finalCompletedBy: user._id,
         updatedAt: Date.now(),
       });
-
     } else {
       await ctx.db.patch(args.taskId, {
         status: args.status,
@@ -320,7 +318,6 @@ export const updateTaskAssignees = mutation({
         }),
       ),
     );
-
 
     await ctx.db.patch(args.taskId, {
       updatedAt: Date.now(),
@@ -764,7 +761,8 @@ export const getMyTickets = query({
       }),
     );
 
-    const nextCursor = skip + limit < allUserTickets.length ? skip + limit : null;
+    const nextCursor =
+      skip + limit < allUserTickets.length ? skip + limit : null;
 
     return { items, nextCursor };
   },
@@ -798,7 +796,7 @@ export const deleteTasks = mutation({
         await Promise.all(comments.map((c) => ctx.db.delete(c._id)));
 
         // 3. Delete the task itself
-                // 3. Free attachment storage
+        // 3. Free attachment storage
         const task = await ctx.db.get(taskId);
         if (task) {
           const currentAttachments = task.attachments ?? [];
@@ -815,7 +813,10 @@ export const deleteTasks = mutation({
               if (owner) {
                 const currentUsage = owner.cloudStorageUsage ?? 0;
                 await ctx.db.patch(owner._id, {
-                  cloudStorageUsage: Math.max(0, currentUsage - totalSizeToFree),
+                  cloudStorageUsage: Math.max(
+                    0,
+                    currentUsage - totalSizeToFree,
+                  ),
                   updatedAt: Date.now(),
                 });
               }
@@ -845,7 +846,10 @@ export const addTaskAttachment = mutation({
     const currentAttachments = task.attachments ?? [];
 
     await ctx.db.patch(args.taskId, {
-      attachments: [...currentAttachments, { name: args.name, url: args.url, size: args.size }],
+      attachments: [
+        ...currentAttachments,
+        { name: args.name, url: args.url, size: args.size },
+      ],
       updatedAt: Date.now(),
     });
   },
@@ -867,7 +871,9 @@ export const removeTaskAttachment = mutation({
     const newAttachments = currentAttachments.filter((a) => a.url !== args.url);
 
     // Decrement owner storage
-    const removedAttachment = currentAttachments.find((a) => a.url === args.url);
+    const removedAttachment = currentAttachments.find(
+      (a) => a.url === args.url,
+    );
     if (removedAttachment && removedAttachment.size) {
       const project = await ctx.db.get(task.projectId);
       if (project) {
@@ -875,7 +881,10 @@ export const removeTaskAttachment = mutation({
         if (owner) {
           const currentUsage = owner.cloudStorageUsage ?? 0;
           await ctx.db.patch(owner._id, {
-            cloudStorageUsage: Math.max(0, currentUsage - removedAttachment.size),
+            cloudStorageUsage: Math.max(
+              0,
+              currentUsage - removedAttachment.size,
+            ),
             updatedAt: Date.now(),
           });
         }
@@ -1156,7 +1165,7 @@ export const getWeeklyEngagement = query({
     const completedTasks = await ctx.db
       .query("tasks")
       .withIndex("by_project_status", (q) =>
-        q.eq("projectId", args.projectId).eq("status", "completed")
+        q.eq("projectId", args.projectId).eq("status", "completed"),
       )
       .filter((q) => q.gte(q.field("finalCompletedAt"), startTs))
       .collect();
@@ -1167,8 +1176,8 @@ export const getWeeklyEngagement = query({
       .filter((q) =>
         q.and(
           q.eq(q.field("status"), "closed"),
-          q.gte(q.field("finalCompletedAt"), startTs)
-        )
+          q.gte(q.field("finalCompletedAt"), startTs),
+        ),
       )
       .collect();
 
@@ -1204,14 +1213,14 @@ export const getWeeklyEngagement = query({
           (t) =>
             t.finalCompletedBy === m.userId &&
             t.finalCompletedAt! >= day.startTs &&
-            t.finalCompletedAt! <= day.endTs
+            t.finalCompletedAt! <= day.endTs,
         ).length;
 
         const issuesCount = closedIssues.filter(
           (i) =>
             i.finalCompletedBy === m.userId &&
             i.finalCompletedAt! >= day.startTs &&
-            i.finalCompletedAt! <= day.endTs
+            i.finalCompletedAt! <= day.endTs,
         ).length;
 
         return {
@@ -1293,8 +1302,12 @@ export const getTickets = query({
         const assignee = await ctx.db.get(ticket.assignedTo);
         return {
           ...ticket,
-          creator: creator ? { name: creator.name, avatar: creator.avatarUrl } : null,
-          assignee: assignee ? { name: assignee.name, avatar: assignee.avatarUrl } : null,
+          creator: creator
+            ? { name: creator.name, avatar: creator.avatarUrl }
+            : null,
+          assignee: assignee
+            ? { name: assignee.name, avatar: assignee.avatarUrl }
+            : null,
         };
       }),
     );

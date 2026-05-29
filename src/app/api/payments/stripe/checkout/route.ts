@@ -7,7 +7,8 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY as string, {
 
 export async function POST(req: NextRequest) {
   try {
-    const { planName, planType, priceUSD, userId, userEmail } = await req.json();
+    const { planName, planType, priceUSD, userId, userEmail } =
+      await req.json();
 
     if (!planName || !planType || priceUSD === undefined || !userId) {
       return NextResponse.json(
@@ -40,7 +41,10 @@ export async function POST(req: NextRequest) {
     }
 
     // Step 3: Create the Checkout Session
-    const origin = req.headers.get("origin") || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
+    const origin =
+      req.headers.get("origin") ||
+      process.env.NEXT_PUBLIC_APP_URL ||
+      "http://localhost:3000";
 
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ["card"],
@@ -56,18 +60,19 @@ export async function POST(req: NextRequest) {
           quantity: 1,
         },
       ],
-      success_url: process.env.STRIPE_SUCCESS_URL 
-        ? `${process.env.STRIPE_SUCCESS_URL}?session_id={CHECKOUT_SESSION_ID}&success=true` 
+      success_url: process.env.STRIPE_SUCCESS_URL
+        ? `${process.env.STRIPE_SUCCESS_URL}?session_id={CHECKOUT_SESSION_ID}&success=true`
         : `${origin}/dashboard?success=true&session_id={CHECKOUT_SESSION_ID}`,
-      cancel_url: process.env.STRIPE_CANCEL_URL 
-        ? `${process.env.STRIPE_CANCEL_URL}?canceled=true` 
+      cancel_url: process.env.STRIPE_CANCEL_URL
+        ? `${process.env.STRIPE_CANCEL_URL}?canceled=true`
         : `${origin}/web/pricing?canceled=true`,
     });
 
     return NextResponse.json({ url: session.url });
   } catch (error) {
     console.error("[Stripe Checkout Error]", error);
-    const message = error instanceof Error ? error.message : "Internal Server Error";
+    const message =
+      error instanceof Error ? error.message : "Internal Server Error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

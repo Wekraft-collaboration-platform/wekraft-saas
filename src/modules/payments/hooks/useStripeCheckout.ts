@@ -17,7 +17,7 @@ export const useStripeCheckout = () => {
 
   const initiatePayment = async (
     plan: Plan,
-    userDetails: { id: Id<"users">; name: string; email: string }
+    userDetails: { id: Id<"users">; name: string; email: string },
   ) => {
     if (!userDetails?.id) {
       toast.error("User data missing");

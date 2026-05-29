@@ -1,13 +1,13 @@
 /**
  * CreateChannelDialog.tsx
- * 
+ *
  * Dialog component for creating a new channel in the teamspace.
- * 
+ *
  * Features:
  * - Form validation using Zod and React Hook Form.
  * - Selection between "Text" and "Announcement" channel types.
  * - Automatic name formatting (lowercase and hyphenated).
- * 
+ *
  * Integration:
  * - Calls the `onCreate` callback passed from `ChannelsSidebar`.
  */
@@ -44,7 +44,10 @@ const schema = z.object({
     .string()
     .min(1, "Name required")
     .max(32, "Max 32 chars")
-    .regex(/^[a-z0-9\s-]+$/, "Only lowercase letters, numbers, spaces and hyphens"),
+    .regex(
+      /^[a-z0-9\s-]+$/,
+      "Only lowercase letters, numbers, spaces and hyphens",
+    ),
   description: z.string().max(120).optional(),
   type: z.enum(["text", "announcement"]),
 });
@@ -54,7 +57,11 @@ type FormValues = z.infer<typeof schema>;
 interface Props {
   open: boolean;
   onOpenChange: (v: boolean) => void;
-  onCreate: (name: string, description: string, type: "text" | "announcement") => Promise<Channel | undefined>;
+  onCreate: (
+    name: string,
+    description: string,
+    type: "text" | "announcement",
+  ) => Promise<Channel | undefined>;
 }
 
 export function CreateChannelDialog({ open, onOpenChange, onCreate }: Props) {
@@ -104,30 +111,44 @@ export function CreateChannelDialog({ open, onOpenChange, onCreate }: Props) {
                     >
                       <label
                         htmlFor="type-text"
-                        className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${field.value === "text"
-                          ? "border-primary/10 bg-accent/40"
-                          : "border-primary/20 hover:bg-accent/20"
-                          }`}
+                        className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${
+                          field.value === "text"
+                            ? "border-primary/10 bg-accent/40"
+                            : "border-primary/20 hover:bg-accent/20"
+                        }`}
                       >
-                        <RadioGroupItem value="text" id="type-text" className="sr-only" />
+                        <RadioGroupItem
+                          value="text"
+                          id="type-text"
+                          className="sr-only"
+                        />
                         <Hash className="h-4 w-4 shrink-0" />
                         <div>
                           <p className="text-sm font-medium">Text</p>
-                          <p className="text-xs text-muted-foreground">General chat</p>
+                          <p className="text-xs text-muted-foreground">
+                            General chat
+                          </p>
                         </div>
                       </label>
                       <label
                         htmlFor="type-announcement"
-                        className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${field.value === "announcement"
-                          ? "border-primary/10 bg-accent/40"
-                          : "border-primary/20 hover:bg-accent/20"
-                          }`}
+                        className={`flex items-center gap-2 p-3 rounded-lg border cursor-pointer transition-colors ${
+                          field.value === "announcement"
+                            ? "border-primary/10 bg-accent/40"
+                            : "border-primary/20 hover:bg-accent/20"
+                        }`}
                       >
-                        <RadioGroupItem value="announcement" id="type-announcement" className="sr-only" />
+                        <RadioGroupItem
+                          value="announcement"
+                          id="type-announcement"
+                          className="sr-only"
+                        />
                         <Megaphone className="h-4 w-4 shrink-0" />
                         <div>
                           <p className="text-sm font-medium">Announcement</p>
-                          <p className="text-xs text-muted-foreground">Read-only for members</p>
+                          <p className="text-xs text-muted-foreground">
+                            Read-only for members
+                          </p>
                         </div>
                       </label>
                     </RadioGroup>
@@ -152,7 +173,9 @@ export function CreateChannelDialog({ open, onOpenChange, onCreate }: Props) {
                         placeholder="e.g. dev-chat"
                         className="border-0 p-0 h-9 shadow-none focus-visible:ring-0 bg-transparent!"
                         onChange={(e) =>
-                          field.onChange(e.target.value.toLowerCase().replace(/\s+/g, "-"))
+                          field.onChange(
+                            e.target.value.toLowerCase().replace(/\s+/g, "-"),
+                          )
                         }
                       />
                     </div>
@@ -168,7 +191,10 @@ export function CreateChannelDialog({ open, onOpenChange, onCreate }: Props) {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Description <span className="text-muted-foreground">(optional)</span></FormLabel>
+                  <FormLabel>
+                    Description{" "}
+                    <span className="text-muted-foreground">(optional)</span>
+                  </FormLabel>
                   <FormControl>
                     <Textarea
                       {...field}
@@ -182,7 +208,11 @@ export function CreateChannelDialog({ open, onOpenChange, onCreate }: Props) {
             />
 
             <DialogFooter>
-              <Button type="button" variant="ghost" onClick={() => onOpenChange(false)}>
+              <Button
+                type="button"
+                variant="ghost"
+                onClick={() => onOpenChange(false)}
+              >
                 Cancel
               </Button>
               <Button type="submit" disabled={loading} className="text-xs">
