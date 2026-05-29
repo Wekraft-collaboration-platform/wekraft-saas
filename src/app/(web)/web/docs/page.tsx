@@ -30,6 +30,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { docsConfig, getDocBadge } from "@/lib/docs-config";
+import { TableOfContents } from "@/components/TableOfContents";
 
 const iconMap: { [key: string]: any } = {
   BookOpen,
@@ -84,12 +85,22 @@ export default function DocsIndexPage() {
     .map((s) => allItems.find((d) => d.slug === s)!)
     .filter(Boolean);
 
+  const headings = [
+    { level: 2, text: "Popular pages", id: "popular-pages" },
+    ...Object.keys(docsConfig).map((category) => ({
+      level: 2,
+      text: category,
+      id: category.toLowerCase().replace(/\s+/g, "-"),
+    })),
+  ];
+
   return (
-    <div className="w-full max-w-4xl">
+    <div className="flex gap-12 xl:gap-16 w-full">
+      <div className="min-w-0 flex-1 pb-16">
       {/* Hero */}
       <div className="mb-14">
         <div className="inline-flex items-center gap-2 text-[11px] font-mono text-white/25 border border-white/8 rounded-full px-3 py-1 mb-5">
-          <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+          <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
           Documentation
         </div>
         <h1 className="text-4xl sm:text-5xl font-bold text-white tracking-tight leading-tight mb-4">
@@ -104,17 +115,17 @@ export default function DocsIndexPage() {
       {/* Quickstart CTA */}
       <Link
         href="/web/docs/getting-started"
-        className="group relative flex items-center gap-4 p-5 mb-12 rounded-xl border border-emerald-500/20 bg-gradient-to-r from-emerald-950/30 via-emerald-950/10 to-transparent hover:border-emerald-500/30 hover:from-emerald-950/40 transition-all duration-300"
+        className="group relative flex items-center gap-4 p-5 mb-12 rounded-xl border border-blue-500/20 bg-gradient-to-r from-blue-950/30 via-blue-950/10 to-transparent hover:border-blue-500/30 hover:from-blue-950/40 transition-all duration-300"
       >
-        <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center shrink-0 group-hover:bg-emerald-500/20 transition-colors">
-          <Rocket className="h-5 w-5 text-emerald-400" />
+        <div className="w-10 h-10 rounded-xl bg-blue-500/15 border border-blue-500/20 flex items-center justify-center shrink-0 group-hover:bg-blue-500/20 transition-colors">
+          <Rocket className="h-5 w-5 text-blue-400" />
         </div>
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2 mb-1">
-            <span className="text-sm font-semibold text-emerald-300 group-hover:text-emerald-200 transition-colors">
+            <span className="text-sm font-semibold text-blue-300 group-hover:text-blue-200 transition-colors">
               New to Wekraft?
             </span>
-            <span className="text-[9px] font-semibold rounded px-1.5 py-0.5 leading-none bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
+            <span className="text-[9px] font-semibold rounded px-1.5 py-0.5 leading-none bg-blue-500/15 text-blue-400 border border-blue-500/20">
               5 min
             </span>
           </div>
@@ -123,12 +134,12 @@ export default function DocsIndexPage() {
             your team, and ship your first sprint.
           </p>
         </div>
-        <ArrowRight className="h-4 w-4 text-emerald-400/50 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all shrink-0" />
+        <ArrowRight className="h-4 w-4 text-blue-400/50 group-hover:text-blue-400 group-hover:translate-x-1 transition-all shrink-0" />
       </Link>
 
       {/* Quick start cards */}
       <div className="mb-12">
-        <h2 className="text-xs font-semibold uppercase tracking-widest text-white/25 mb-4">
+        <h2 id="popular-pages" className="text-xs font-semibold uppercase tracking-widest text-white/25 mb-4 scroll-mt-24">
           Popular pages
         </h2>
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
@@ -178,7 +189,7 @@ export default function DocsIndexPage() {
                 <div className="w-6 h-6 rounded-md bg-white/5 flex items-center justify-center">
                   <CatIcon className="h-3.5 w-3.5 text-white/40" />
                 </div>
-                <h2 className="text-sm font-semibold text-white/70">
+                <h2 id={category.toLowerCase().replace(/\s+/g, "-")} className="text-sm font-semibold text-white/70 scroll-mt-24">
                   {category}
                 </h2>
                 <span className="text-[10px] text-white/20 font-mono">
@@ -226,6 +237,8 @@ export default function DocsIndexPage() {
           Get started <ArrowRight className="h-3 w-3" />
         </Link>
       </div>
+      </div>
+      <TableOfContents headings={headings} />
     </div>
   );
 }

@@ -22,6 +22,7 @@ import remarkGfm from "remark-gfm";
 import { CopyButton } from "../../../../../components/CopyButton";
 import { FeedbackWidget } from "../../../../../components/FeedbackWidget";
 import { TableOfContents } from "../../../../../components/TableOfContents";
+import { Mermaid } from "../../../../../components/Mermaid";
 import { allDocs, docsConfig } from "@/lib/docs-config";
 
 export async function generateStaticParams() {
@@ -349,6 +350,28 @@ const markdownComponents: Components = {
       return "";
     };
 
+    const isMermaid = React.Children.toArray(children).some((child: any) => {
+      return (
+        child &&
+        typeof child === "object" &&
+        child.type === "code" &&
+        child.props?.className === "language-mermaid"
+      );
+    });
+
+    if (isMermaid) {
+      const codeNode: any = React.Children.toArray(children).find((child: any) => {
+        return (
+          child &&
+          typeof child === "object" &&
+          child.type === "code" &&
+          child.props?.className === "language-mermaid"
+        );
+      });
+      const codeText = extractText(codeNode);
+      return <Mermaid code={codeText} />;
+    }
+
     const codeText = extractText(children);
 
     return (
@@ -371,7 +394,7 @@ const markdownComponents: Components = {
     <thead className="bg-white/[0.04]">{children}</thead>
   ),
   th: ({ children }) => (
-    <th className="px-5 py-3 text-left text-[0.7rem] font-semibold text-white/35 uppercase tracking-widest border-b border-white/8 border-r border-white/8 last:border-r-0">
+    <th className="px-5 py-3 text-left text-[0.7rem] font-semibold text-white/35 uppercase tracking-widest border-b border-white/8 border-r border-white/8 last:border-r-0 first:whitespace-nowrap">
       {parseLineBreaks(children)}
     </th>
   ),
@@ -381,7 +404,7 @@ const markdownComponents: Components = {
     </tr>
   ),
   td: ({ children }) => (
-    <td className="px-5 py-3 text-white/55 text-[0.875rem] leading-relaxed align-top border-r border-white/5 last:border-r-0">
+    <td className="px-5 py-3 text-white/55 text-[0.875rem] leading-relaxed align-top border-r border-white/5 last:border-r-0 first:whitespace-nowrap first:font-medium">
       {parseLineBreaks(children)}
     </td>
   ),
