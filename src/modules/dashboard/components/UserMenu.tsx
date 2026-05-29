@@ -11,7 +11,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useClerk, useUser } from "@clerk/nextjs";
 import { useQuery } from "convex/react";
-import { ChevronDown, Github, LogOut, Settings, User } from "lucide-react";
+import { BookOpen, ChevronDown, Github, LogOut, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { api } from "../../../../convex/_generated/api";
 import { toast } from "sonner";
@@ -65,7 +65,7 @@ export function UserMenu() {
         <DropdownMenuSeparator className="my-2" />
         {/* Github account */}
         <DropdownMenuItem
-          onClick={() => router.push("/dashboard/profile")}
+          onClick={() => router.push("/dashboard/my-profile")}
           className="cursor-pointer rounded-md transition-colors"
         >
           <Github className="mr-2 h-4 w-4" />
@@ -73,18 +73,18 @@ export function UserMenu() {
         </DropdownMenuItem>
 
         <DropdownMenuItem
-          onClick={() => router.push("/dashboard/profile")}
+          onClick={() => router.push("/dashboard/my-profile")}
           className="cursor-pointer rounded-md transition-colors"
         >
           <User className="mr-2 h-4 w-4" />
           <span>Profile</span>
         </DropdownMenuItem>
         <DropdownMenuItem
-          onClick={() => router.push("/dashboard/settings")}
+          onClick={() => router.push("/web/docs")}
           className="cursor-pointer rounded-md transition-colors"
         >
-          <Settings className="mr-2 h-4 w-4" />
-          <span>Settings</span>
+          <BookOpen className="mr-2 h-4 w-4" />
+          <span>Documentation</span>
         </DropdownMenuItem>
         <DropdownMenuSeparator className="my-2" />
         <DropdownMenuItem
