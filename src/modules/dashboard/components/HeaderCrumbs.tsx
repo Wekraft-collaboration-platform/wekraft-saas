@@ -12,7 +12,7 @@ import {
 
 const navigationItems = [
   { title: "Dashboard", url: "/dashboard" },
-  { title: "Profile", url: "/dashboard/profile" },
+  { title: "Profile", url: "/dashboard/my-profile" },
   { title: "My Projects", url: "/dashboard/my-projects" },
 ];
 

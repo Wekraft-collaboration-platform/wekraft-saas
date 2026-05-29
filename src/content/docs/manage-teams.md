@@ -64,7 +64,7 @@ A read-only role. Viewers can browse the project — tasks, issues, sprints, tea
 ## Adding Members
 
 ### Invite Link
-Every project has a unique invite link (e.g. `https://wekraft.app/join/abc123xyz`). Share this link with your team.
+Every project has a unique invite link (e.g. `https://wekraft.xyz/join/abc123xyz`). Share this link with your team.
 
 When someone visits the link:
 - If the project is **private**, they submit a join request with an optional message
