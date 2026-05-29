@@ -80,6 +80,20 @@ export const docsConfig: { [key: string]: DocItem[] } = {
       created: "2026-01-01",
     },
     {
+      title: "Project Workspace",
+      slug: "project-workspace",
+      description: "Detailed guide to the project workspace dashboard, timeline checkpoints, and analytics charts.",
+      icon: "Layers",
+      created: "2026-05-29",
+    },
+    {
+      title: "Manage Repositories",
+      slug: "repositories",
+      description: "Learn how to connect and link GitHub repositories to your projects.",
+      icon: "Code",
+      created: "2026-05-29",
+    },
+    {
       title: "Tasks",
       slug: "tasks",
       description: "Create, assign, and track work items across List, Board, and Table views.",
@@ -131,6 +145,13 @@ export const docsConfig: { [key: string]: DocItem[] } = {
       created: "2026-01-01",
     },
     {
+      title: "Team Meet",
+      slug: "team-meet",
+      description: "Collaborate in real-time with your teammates via video call rooms.",
+      icon: "Terminal",
+      created: "2026-05-29",
+    },
+    {
       title: "Heatmaps",
       slug: "heatmaps",
       description: "AI-powered workload analysis, burnout risk detection, and activity trends.",
@@ -159,6 +180,13 @@ export const docsConfig: { [key: string]: DocItem[] } = {
       description: "Invite members, set roles, handle join requests, and configure permissions.",
       icon: "Settings",
       created: "2026-01-01",
+    },
+    {
+      title: "Community Hub",
+      slug: "community",
+      description: "Explore and discover public projects and collaboration opportunities.",
+      icon: "Users",
+      created: "2026-05-29",
     },
     {
       title: "Security",

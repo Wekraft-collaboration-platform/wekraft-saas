@@ -1,3 +1,4 @@
+import React from "react";
 import fs from "fs";
 import {
   AlertTriangle,
@@ -157,10 +158,10 @@ const calloutStyles: Record<
     label: "Tip",
   },
   IMPORTANT: {
-    bg: "bg-purple-950/30",
-    border: "border-purple-500/30",
+    bg: "bg-zinc-900/40",
+    border: "border-zinc-700/50",
     icon: Info,
-    text: "text-purple-300/80",
+    text: "text-zinc-300",
     label: "Important",
   },
   WARNING: {
@@ -178,6 +179,42 @@ const calloutStyles: Record<
     label: "Caution",
   },
 };
+
+function parseLineBreaks(node: React.ReactNode): React.ReactNode {
+  if (typeof node === "string") {
+    const parts = node.split(/<br\s*\/?>/i);
+    if (parts.length === 1) return node;
+
+    return parts.reduce((acc: React.ReactNode[], part, index) => {
+      if (index > 0) {
+        acc.push(<br key={`br-${index}`} />);
+      }
+      if (part) {
+        acc.push(part);
+      }
+      return acc;
+    }, []);
+  }
+
+  if (Array.isArray(node)) {
+    return node.map((child, idx) => (
+      <React.Fragment key={idx}>{parseLineBreaks(child)}</React.Fragment>
+    ));
+  }
+
+  if (node && typeof node === "object" && "props" in node) {
+    const element = node as React.ReactElement;
+    const props = element.props as any;
+    if (props && props.children) {
+      return React.cloneElement(element, {
+        ...props,
+        children: parseLineBreaks(props.children),
+      });
+    }
+  }
+
+  return node;
+}
 
 // Custom markdown components
 const markdownComponents: Components = {
@@ -334,8 +371,8 @@ const markdownComponents: Components = {
     <thead className="bg-white/[0.04]">{children}</thead>
   ),
   th: ({ children }) => (
-    <th className="px-5 py-3 text-left text-[0.7rem] font-semibold text-white/35 uppercase tracking-widest border-b border-white/8">
-      {children}
+    <th className="px-5 py-3 text-left text-[0.7rem] font-semibold text-white/35 uppercase tracking-widest border-b border-white/8 border-r border-white/8 last:border-r-0">
+      {parseLineBreaks(children)}
     </th>
   ),
   tr: ({ children }) => (
@@ -344,8 +381,8 @@ const markdownComponents: Components = {
     </tr>
   ),
   td: ({ children }) => (
-    <td className="px-5 py-3 text-white/55 text-[0.875rem] leading-relaxed align-top">
-      {children}
+    <td className="px-5 py-3 text-white/55 text-[0.875rem] leading-relaxed align-top border-r border-white/5 last:border-r-0">
+      {parseLineBreaks(children)}
     </td>
   ),
   hr: () => <hr className="my-10 border-white/8" />,

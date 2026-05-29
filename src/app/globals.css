@@ -711,6 +711,6 @@
 }
 
 .animate-marquee-text {
-  animation: marquee-scroll 4s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite alternate;
+  animation: marquee-scroll 5s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
 }
 

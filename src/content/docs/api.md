@@ -242,4 +242,4 @@ If you exceed these limits, the API returns a `429 Too Many Requests` response:
 ## Next Steps
 - [Generate an API Token →](/dashboard/my-profile)
 - [View GitHub Integration →](/web/docs/projects#github-integration)
-- [Need help? Contact Support →](mailto:support@wekraft.xyz)
+- [Need help? Contact Support →](https://mail.google.com/mail/?view=cm&fs=1&to=support@wekraft.xyz)

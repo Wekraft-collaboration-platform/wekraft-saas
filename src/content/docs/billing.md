@@ -13,7 +13,7 @@ Wekraft is designed to scale with your team. We offer three distinct plans tailo
 | **Kaya AI Assistant** | — | — | 50 calls/mo |
 | **VS Code Extension** | Read-only | Read-only | Full Two-Way Sync |
 | **Advanced Analytics** | — | ✓ | ✓ |
-| **Heatmap Insights** | Basic (top 3) | Basic (top 3) | AI-Powered (all members) |
+| **Heatmap Insights** | Basic | Basic | AI-Powered (all members) |
 | **Activity Flow** | — | — | ✓ |
 | **GitHub Activity Overlay** | — | — | ✓ |
 | **Project Deadline Alerts** | ✓ | ✓ | ✓ |
@@ -33,7 +33,7 @@ The Free plan is perfect for individuals and small teams getting started:
 - Up to **3 members** per project (including the owner)
 - Full access to tasks, issues, sprints, calendar, and team space
 - VS Code extension in **read-only mode** (view tasks, but can't update status from IDE)
-- Basic heatmap view (top 3 members only)
+- Basic heatmap view
 - File Explorer for connected GitHub repositories
 - All core features with no time limit
 

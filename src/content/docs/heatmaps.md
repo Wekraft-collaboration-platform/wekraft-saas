@@ -115,7 +115,7 @@ This creates a traceable connection: **task → file → code**.
 
 | Feature                   | Free                    | Plus                    | Pro                |
 | ------------------------- | ----------------------- | ----------------------- | ------------------ |
-| Member workload view      | Limited (top 3 members) | Limited (top 3 members) | Full (all members) |
+| Member workload view      | Limited | Limited | Full (all members) |
 | Activity flow             | —                       | —                       | ✓                  |
 | Kaya AI workload insights | —                       | —                       | ✓                  |
 | GitHub activity overlay   | —                       | —                       | ✓                  |

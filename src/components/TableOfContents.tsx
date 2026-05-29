@@ -16,23 +16,35 @@ export function TableOfContents({ headings }: { headings: Heading[] }) {
   const observer = useRef<IntersectionObserver | null>(null);
 
   useEffect(() => {
+    if (headings.length === 0) return;
+
     const handleScroll = () => {
+      const scrollY = window.scrollY || window.pageYOffset;
       const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+      
       if (totalHeight > 0) {
-        setScrollProgress((window.pageYOffset / totalHeight) * 100);
+        setScrollProgress((scrollY / totalHeight) * 100);
       } else {
         setScrollProgress(0);
+      }
+
+      // Automatically highlight the last heading when scrolled to the very bottom of the page
+      if (totalHeight > 0 && scrollY >= totalHeight - 15) {
+        setActiveId(headings[headings.length - 1].id);
       }
     };
 
     window.addEventListener("scroll", handleScroll, { passive: true });
     handleScroll();
 
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
-
-  useEffect(() => {
     const handleObserver = (entries: IntersectionObserverEntry[]) => {
+      // Avoid observer overriding when we are already at the bottom
+      const scrollY = window.scrollY || window.pageYOffset;
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (totalHeight > 0 && scrollY >= totalHeight - 15) {
+        return;
+      }
+
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           setActiveId(entry.target.id);
@@ -42,7 +54,7 @@ export function TableOfContents({ headings }: { headings: Heading[] }) {
 
     observer.current = new IntersectionObserver(handleObserver, {
       rootMargin: "-80px 0% -80% 0%",
-      threshold: 1.0,
+      threshold: 0.1, // More responsive trigger threshold
     });
 
     const elements = headings.map((h) => document.getElementById(h.id));
@@ -50,7 +62,10 @@ export function TableOfContents({ headings }: { headings: Heading[] }) {
       if (el) observer.current?.observe(el);
     });
 
-    return () => observer.current?.disconnect();
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      observer.current?.disconnect();
+    };
   }, [headings]);
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
