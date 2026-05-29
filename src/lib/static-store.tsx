@@ -292,8 +292,7 @@ export const SortPopover = ({
   </Popover>
 );
 
-export const INVITE_LINK = "http://localhost:3000/";
-// export const INVITE_LINK = "https://wekraft-saas.vercel.app/";
+export const INVITE_LINK = "https://wekraft.xyz/";
 
 export const NOTIFICATION_ICONS: Record<string, React.ComponentType<any>> = {
   member_joined: UserPlus,

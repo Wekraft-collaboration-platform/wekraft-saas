@@ -51,6 +51,7 @@ interface RepositoryListProps {
   setSelectedRepo: (data: { owner: string; repo: string }) => void;
   unlinkedProjects: Doc<"projects">[] | undefined;
   connectedRepos: any[] | undefined;
+  onLinkedSuccess?: (projectName: string) => void;
 }
 
 const ITEMS_PER_PAGE = 5;
@@ -61,6 +62,7 @@ const ShowRepo = ({
   setSelectedRepo,
   unlinkedProjects,
   connectedRepos,
+  onLinkedSuccess,
 }: RepositoryListProps) => {
   const [currentPage, setCurrentPage] = useState(1);
   const [isConnecting, setIsConnecting] = useState<number | null>(null);
@@ -201,6 +203,10 @@ const ShowRepo = ({
       toast.success(
         `Linked ${repoToConnect.name} → ${project?.projectName ?? "project"} successfully!`,
       );
+
+      if (onLinkedSuccess && project?.projectName) {
+        onLinkedSuccess(project.projectName);
+      }
     } catch (error) {
       toast.error("Failed to connect repository", {
         description:

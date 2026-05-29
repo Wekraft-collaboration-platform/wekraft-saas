@@ -4,11 +4,13 @@ import { useQuery } from "convex/react";
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "../../../../convex/_generated/api";
-import { PartyPopper, CheckCircle2 } from "lucide-react";
+import { CheckCircle2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { LinkedRepoDialog } from "@/modules/repo/LinkedRepoDialog";
 
 export function TourOrchestrator() {
   const progressData = useQuery(api.user.getOnboardingProgress);
+  const userProjects = useQuery(api.project.getUserProjects);
   const router = useRouter();
   const prevCompletedRef = useRef<number[] | null>(null);
   const [completedTask, setCompletedTask] = useState<number | null>(null);
@@ -34,6 +36,23 @@ export function TourOrchestrator() {
   }, [progressData]);
 
   if (completedTask !== null) {
+    if (completedTask === 2) {
+      const projectName = (userProjects && userProjects.length > 0) ? userProjects[0].projectName : "Wekraft Platform";
+
+      return (
+        <LinkedRepoDialog
+          open={true}
+          onOpenChange={(open) => {
+            if (!open) {
+              setCompletedTask(null);
+              router.push(`/dashboard?tour=resume&resumeAfter=2`);
+            }
+          }}
+          projectName={projectName}
+        />
+      );
+    }
+
     return (
       <div className="fixed inset-0 z-[200] flex items-center justify-center pointer-events-auto">
         <div className="absolute inset-0 bg-background/60 backdrop-blur-xs" onClick={() => setCompletedTask(null)} />

@@ -83,16 +83,16 @@ export const STEPS: StepConfig[] = [
   },
   {
     id: 4,
-    icon: Users,
-    label: "Invite teammates to collaborate",
-    hint: "Share the invite link or email",
+    icon: ListTodo,
+    label: "Create your first task",
+    hint: "Assign, prioritize & track work",
     description:
-      "Bring your whole team in. Assign roles, control permissions, and collaborate in real time.",
-    cta: "Invite teammates",
+      "Break your project into actionable tasks. Assign them to teammates, set priorities, link to code, and track completion.",
+    cta: "Go to Tasks",
     action: (router, context) => {
       const projects = context?.projects;
       if (projects && projects.length > 0) {
-        router.push(`/dashboard/my-projects/${projects[0].slug}?invite=true`);
+        router.push(`/dashboard/my-projects/${projects[0].slug}/workspace/tasks?tour=create-task`);
       } else {
         router.push("/dashboard");
       }
@@ -118,16 +118,16 @@ export const STEPS: StepConfig[] = [
   },
   {
     id: 6,
-    icon: ListTodo,
-    label: "Create your first task",
-    hint: "Assign, prioritize & track work",
+    icon: Users,
+    label: "Invite teammates to collaborate",
+    hint: "Share the invite link or email",
     description:
-      "Break your project into actionable tasks. Assign them to teammates, set priorities, link to code, and track completion.",
-    cta: "Go to Tasks",
+      "Bring your whole team in. Assign roles, control permissions, and collaborate in real time.",
+    cta: "Invite teammates",
     action: (router, context) => {
       const projects = context?.projects;
       if (projects && projects.length > 0) {
-        router.push(`/dashboard/my-projects/${projects[0].slug}/workspace/tasks?tour=create-task`);
+        router.push(`/dashboard/my-projects/${projects[0].slug}?invite=true`);
       } else {
         router.push("/dashboard");
       }

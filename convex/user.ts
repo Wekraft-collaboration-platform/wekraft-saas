@@ -512,9 +512,9 @@ export const getOnboardingProgress = query({
       }
     }
 
-    if (hasTeamMembers) steps.push(4);
+    if (hasTasks) steps.push(4);
     if (hasDeadline) steps.push(5);
-    if (hasTasks) steps.push(6);
+    if (hasTeamMembers) steps.push(6);
 
     // Step 3: Visit workspace
     if (user.hasVisitedWorkspace) steps.push(3);

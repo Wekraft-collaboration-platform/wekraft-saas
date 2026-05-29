@@ -338,9 +338,9 @@ export function WelcomeDialog() {
       case 1: return "Connect";
       case 2: return "Link Repo";
       case 3: return "Open Project";
-      case 4: return "Invite";
+      case 4: return "Create Task";
       case 5: return "Set Deadline";
-      case 6: return "Create Task";
+      case 6: return "Invite";
       case 7: return "Complete";
       default: return "Action";
     }

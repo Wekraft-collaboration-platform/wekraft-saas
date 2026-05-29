@@ -176,7 +176,7 @@ const TaskPage = () => {
             onDismiss={() => setShowTaskTour(false)}
             onNext={() => {
               setShowTaskTour(false);
-              router.push("/dashboard?tour=resume&resumeAfter=6");
+              router.push("/dashboard?tour=resume&resumeAfter=4");
             }}
             onCreate={() => {
               setShowTaskTour(false);
@@ -534,7 +534,7 @@ function CreateTaskTourTooltip({
         <div className="bg-linear-to-br from-neutral-800 to-neutral-950 text-card-foreground border border-border shadow-2xl rounded-lg p-5">
           <div className="flex items-center gap-2">
             <span className="flex items-center justify-center bg-primary text-primary-foreground text-[10px] font-bold w-5 h-5 rounded-full shrink-0">
-              6
+              4
             </span>
             <h3 className="text-sm font-semibold text-foreground">Create your first task</h3>
           </div>
