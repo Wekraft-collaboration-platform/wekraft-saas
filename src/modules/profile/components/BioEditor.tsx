@@ -97,7 +97,7 @@ export function BioEditor({ initialBio = "", isUpgraded }: BioEditorProps) {
               <CheckCircle2 className="h-4 w-4 text-blue-500 shrink-0" />
               <p>
                 As a <strong>Free</strong> user, you can use plain text here. 
-                <span className="text-blue-500 cursor-pointer ml-1 hover:underline font-semibold" onClick={() => (window.location.href = '#upgrade')}>
+                <span className="text-blue-500 cursor-pointer ml-1 hover:underline font-semibold" onClick={() => (window.location.href = '/web/pricing')}>
                   Upgrade to Plus
                 </span> to unlock Markdown icons, tables, and stylish formatting.
               </p>

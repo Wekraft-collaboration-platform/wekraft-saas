@@ -607,7 +607,7 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
                 Kaya is available for Pro Plan Owner projects. Get advanced project analysis,
                 automated reporting, and more.
               </p>
-              <Button size="sm" className="w-full text-sm">
+              <Button size="sm" className="w-full text-sm" onClick={() => router.push("/web/pricing")}>
                 Upgrade to Pro <LayersPlus />
               </Button>
             </div>

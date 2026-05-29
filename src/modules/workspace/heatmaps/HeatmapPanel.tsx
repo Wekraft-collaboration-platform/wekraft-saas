@@ -567,7 +567,7 @@ export const HeatmapPanel = memo(
                     insights / errors and more.
                   </p>
 
-                  <Button className="text-xs cursor-pointer mt-4" size="sm">
+                  <Button className="text-xs cursor-pointer mt-4" size="sm" onClick={() => router.push("/web/pricing")}>
                     Upgrade Now <Clover />
                   </Button>
                 </div>
