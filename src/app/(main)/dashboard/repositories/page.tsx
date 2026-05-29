@@ -28,6 +28,7 @@ import {
 import { ScrollArea } from "@/components/ui/scroll-area";
 import ShowRepo from "@/modules/repo/ShowRepo";
 import { api } from "../../../../../convex/_generated/api";
+import { LinkedRepoDialog } from "@/modules/repo/LinkedRepoDialog";
 
 const RepositoriesPage = () => {
   const [selectedRepo, setSelectedRepo] = useState<{
@@ -35,6 +36,7 @@ const RepositoriesPage = () => {
     repo: string;
   } | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
+  const [linkedDialogOpen, setLinkedDialogOpen] = useState(true);
 
   const unlinkedProjects = useQuery(api.project.getUnlinkedProjects);
   const connectedRepos = useQuery(api.repo.getConnectedRepos);
@@ -155,6 +157,12 @@ const RepositoriesPage = () => {
           connectedRepos={connectedRepos}
         />
       </div>
+
+      <LinkedRepoDialog
+        open={linkedDialogOpen}
+        onOpenChange={setLinkedDialogOpen}
+        projectName="Wekraft Platform"
+      />
     </div>
   );
 };
