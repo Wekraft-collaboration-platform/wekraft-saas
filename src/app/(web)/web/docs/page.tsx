@@ -27,6 +27,8 @@ import {
   Users,
   Wrench,
   Zap,
+  Video,
+  Bot,
 } from "lucide-react";
 import Link from "next/link";
 import { docsConfig, getDocBadge } from "@/lib/docs-config";
@@ -55,6 +57,8 @@ const iconMap: { [key: string]: any } = {
   UserCog,
   Bell,
   Code,
+  Video,
+  Bot,
 };
 
 const badgeColors: Record<string, string> = {
@@ -79,7 +83,8 @@ export default function DocsIndexPage() {
     "extension",
     "tasks",
     "sprints",
-    "kaya-ai",
+    "kaya-pm",
+    "harry-dev",
   ];
   const popularItems = popularSlugs
     .map((s) => allItems.find((d) => d.slug === s)!)

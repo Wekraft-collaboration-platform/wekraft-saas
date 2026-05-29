@@ -32,6 +32,8 @@ import {
   ExternalLink,
   MessageCircle,
   FileCode2,
+  Video,
+  Bot,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -64,6 +66,8 @@ const iconMap: { [key: string]: any } = {
   UserCog,
   Bell,
   Code,
+  Video,
+  Bot,
 };
 
 const badgeColors: Record<string, string> = {
@@ -200,22 +204,30 @@ function SidebarCategory({
                   href={`/web/docs/${item.slug}`}
                   onClick={onNavClick}
                   className={cn(
-                    "group flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all duration-150 min-w-0",
+                    "group relative overflow-hidden flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all duration-150 min-w-0",
                     isActive
-                      ? "bg-white/8 text-white font-medium border border-white/10"
+                      ? "text-white font-medium"
                       : "text-white/45 hover:bg-white/4 hover:text-white/80",
                   )}
                 >
+                  <span
+                    className={cn(
+                      "pointer-events-none absolute inset-0 -z-10 transition-opacity",
+                      isActive
+                        ? "opacity-100 bg-linear-to-l from-blue-600 dark:from-blue-600/70 via-blue-600/20 to-transparent!"
+                        : "opacity-0"
+                    )}
+                  />
                   <Icon
                     className={cn(
                       "h-3.5 w-3.5 shrink-0 transition-colors",
                       isActive
-                        ? "text-white/90"
+                        ? "text-white"
                         : "text-white/25 group-hover:text-white/50",
                     )}
                   />
                   <SidebarItemText title={item.title} isActive={isActive} />
-                  {badge && (
+                  {badge && !isActive && (
                     <span
                       className={cn(
                         "text-[9px] font-semibold rounded px-1.5 py-0.5 leading-none",

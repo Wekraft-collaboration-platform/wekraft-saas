@@ -22,7 +22,6 @@ import remarkGfm from "remark-gfm";
 import { CopyButton } from "../../../../../components/CopyButton";
 import { FeedbackWidget } from "../../../../../components/FeedbackWidget";
 import { TableOfContents } from "../../../../../components/TableOfContents";
-import { Mermaid } from "../../../../../components/Mermaid";
 import { allDocs, docsConfig } from "@/lib/docs-config";
 
 export async function generateStaticParams() {
@@ -349,28 +348,6 @@ const markdownComponents: Components = {
       if (node?.props?.children) return extractText(node.props.children);
       return "";
     };
-
-    const isMermaid = React.Children.toArray(children).some((child: any) => {
-      return (
-        child &&
-        typeof child === "object" &&
-        child.type === "code" &&
-        child.props?.className === "language-mermaid"
-      );
-    });
-
-    if (isMermaid) {
-      const codeNode: any = React.Children.toArray(children).find((child: any) => {
-        return (
-          child &&
-          typeof child === "object" &&
-          child.type === "code" &&
-          child.props?.className === "language-mermaid"
-        );
-      });
-      const codeText = extractText(codeNode);
-      return <Mermaid code={codeText} />;
-    }
 
     const codeText = extractText(children);
 
