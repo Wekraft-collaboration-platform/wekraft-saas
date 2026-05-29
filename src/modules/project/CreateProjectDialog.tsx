@@ -229,7 +229,7 @@ const CreateProjectDialog = ({
             <div className="flex items-center gap-3 pt-1">
               <Button
                 className="flex-1 text-sm"
-                onClick={() => window.location.href = "/dashboard/billing"}
+                onClick={() => window.location.href = "/web/pricing"}
               >
                 Upgrade Now <Clover className="ml-2 h-4 w-4" />
               </Button>
