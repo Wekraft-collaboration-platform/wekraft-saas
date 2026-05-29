@@ -1,86 +1,111 @@
-# Keyboard Shortcuts
+# Shortcuts & Quick Access
 
-Master Wekraft and speed up your workflow with these essential keyboard shortcuts. All shortcuts work across the web dashboard unless otherwise noted.
-
-> [!TIP]
-> On **Windows and Linux**, use `Ctrl` instead of `Cmd` for all global shortcuts.
-
-## General Navigation
-
-| Shortcut | Action | Where it works |
-|---|---|---|
-| `Cmd+B` / `Ctrl+B` | Toggle Sidebar visibility | Anywhere in the dashboard |
-| `Esc` | Close any open Dialog, Sheet, or Modal | Anywhere |
-
----
-
-## AI Assistant (Kaya)
-
-| Shortcut | Action | Where it works |
-|---|---|---|
-| `Cmd+K` / `Ctrl+K` | Toggle Kaya AI Assistant panel | Project workspace (Pro plan) |
-
-> [!NOTE]
-> The Kaya shortcut opens the AI chat panel from anywhere inside a project workspace. You can ask Kaya to generate reports, plan sprints, or analyze workloads. See [Kaya AI](/web/docs/kaya-ai) for full details.
-
----
-
-## Task & Issue Actions
-
-| Shortcut | Action | Where it works |
-|---|---|---|
-| Click **"New Task"** button | Create a new task | Tasks tab |
-| Click **"New Issue"** button | Create a new issue | Issues tab |
+Master Wekraft and dramatically speed up your workflow with these essential keyboard shortcuts. These shortcuts are built deeply into the Wekraft UI and work across the entire web application, including the Project Workspace and Team Space.
 
 > [!TIP]
-> Use the **Ask Kaya** button next to the "New Task" button to let the AI help you plan and organize tasks.
+> On **Windows and Linux**, use `Ctrl` instead of `Cmd` and `Alt` instead of `Option` for all global shortcuts.
 
 ---
 
-## Workspace Navigation
+## Global Navigation
+
+These shortcuts work unconditionally from anywhere inside the Wekraft platform:
 
 | Shortcut | Action |
 |---|---|
-| Click sidebar tabs | Switch between Dashboard, Tasks, Issues, Sprints, Calendar, Time Logs, Team Space, Heatmaps, AI, and Code |
-| Breadcrumb links | Navigate back through the hierarchy (Dashboard → Project → Tab) |
+| `Cmd+B` / `Ctrl+B` | Toggle the global sidebar visibility to maximize your workspace. |
+| `Cmd+K` / `Ctrl+K` | Toggle the AI Assistant panel (Kaya / Harry) to quickly ask a question or delegate a task. |
+| `/` (Forward Slash) | Focus the global search input in the sidebar. |
+| `Esc` | Instantly close any open dialog, detail sheet, search overlay, or AI panel. |
 
 ---
 
-## VS Code Extension Shortcuts
+## Team Space & Chat
 
-These shortcuts work while you are focused inside the VS Code editor with the Wekraft extension installed:
+When communicating with your team or interacting with AI agents in the Team Space, these shortcuts make messaging fluid:
+
+### Composer Quick Actions
+
+Use these symbols at the start of a word inside the message composer to trigger quick actions:
 
 | Shortcut | Action |
 |---|---|
-| `Alt+W, O` | Open current task in Wekraft Web |
-| `Alt+W, C` | Mark current task as **Completed** |
-| `Alt+W, T` | Start/Stop **Time Tracker** |
+| `@` | **Mentions**: Tag a team member or summon an AI agent like `@Kaya` or `@Harry`. |
+| `/` | **Ticket Creation**: Instantly draft and create a new task or issue directly from the chat. |
+| `\` | **Code Link**: Attach a direct link to a file or line of code from your connected repository. |
+| `#` | **File Upload**: Quickly open the file picker to upload documents and images. |
+
+### Chat Navigation
+
+| Shortcut | Action |
+|---|---|
+| `Enter` | Send the current message. |
+| `Shift+Enter` | Add a new line to your message without sending it. |
+| `ArrowUp` / `ArrowDown` | Navigate through search results, autocomplete suggestions, or scroll through message history. |
+| `Tab` | Auto-complete the currently highlighted suggestion or mention. |
+| `Esc` | Cancel an active reply, exit edit mode, or close the message search overlay. |
+
+---
+
+## Tasks, Issues & Forms
+
+When managing your backlog or submitting forms, use these shortcuts to speed up data entry:
+
+| Shortcut | Action |
+|---|---|
+| `Enter` | Submit a form, save an inline edit, or quickly add a new tag when typing in a tag input field. |
+| `Esc` | Close the Task Detail Sheet, Issue Detail Sheet, or any active Edit Dialog without saving. |
+
+---
+
+## Calendar & Views
+
+When interacting with the Project Calendar or any horizontal carousel elements:
+
+| Shortcut | Action |
+|---|---|
+| `ArrowLeft` | Navigate to the previous month in the calendar, or scroll left in a carousel. |
+| `ArrowRight` | Navigate to the next month in the calendar, or scroll right in a carousel. |
+
+---
+
+## VS Code Extension (Developers)
+
+These shortcuts work while you are focused inside the VS Code editor with the Wekraft extension installed, allowing you to manage your agile workflow without leaving your code:
+
+| Shortcut | Action |
+|---|---|
+| `Alt+W, O` | Open the currently active task in Wekraft Web. |
+| `Alt+W, C` | Mark the current task as **Completed**. |
+| `Alt+W, T` | Start or Stop the **Time Tracker** for the current task. |
 
 > [!NOTE]
-> VS Code extension shortcuts require the **Pro plan** for full two-way sync. Free and Plus users can view tasks but cannot update status or track time from the IDE.
+> VS Code extension shortcuts require the **Pro plan** for full two-way sync. Free and Plus users can view tasks but cannot update status or track time directly from the IDE.
 
 ---
 
-## Dialog & Sheet Interactions
+## Pro-Tips for Power Users
 
-| Action | How |
-|---|---|
-| Close any open dialog | Press `Esc` or click outside the dialog |
-| Submit a form | Press `Enter` when focused on the submit button |
-| Navigate dropdowns | Use `↑` / `↓` arrow keys, then `Enter` to select |
+- **The `Cmd+K` Habit**: Make a habit of hitting `Cmd+K` whenever you're stuck. Whether you need Kaya to plan a sprint or Harry to review a code snippet, they are always just one keystroke away.
+- **The `/` Search**: Never click the search bar manually. Hitting `/` instantly snaps your cursor to search, allowing you to jump between projects and repositories in seconds.
 
 ---
 
-## Best Practices
+## Project Shortcuts (Custom Hotkeys)
 
-- **Learn `Cmd+B`** — toggling the sidebar is the fastest way to reclaim screen space during focused work
-- **Use `Cmd+K` often** — Kaya AI can answer questions about your project, generate reports, and plan sprints without navigating away from your current view
-- **Combine with VS Code** — for developers, the VS Code shortcuts (`Alt+W+C` to complete, `Alt+W+T` to track time) eliminate the need to switch to the browser entirely
+Wekraft allows you to assign a **Dedicated Custom Shortcut Key** to any of your projects for lightning-fast access, letting you jump between your most active projects without touching the mouse:
+
+- **Assigning a Shortcut Key**: Go to your main Dashboard and find the Project Card. Click the dedicated **"Shortcut"** button (next to the 3-dot menu) to instantly bind a custom keyboard hotkey (e.g., `Alt+1` or `Cmd+Shift+P`) to that project.
+- **Global Quick Access**: Once assigned, pressing your custom hotkey from *anywhere* in the Wekraft platform will instantly teleport you to that specific project workspace.
+- **Pinned Sidebar Access**: In addition to keyboard shortcuts, assigning a shortcut to a project will also pin it to a special "Shortcuts" section in your global sidebar.
+- **Why use this?** If you are managing dozens of projects but constantly jumping between one or two active ones, custom hotkeys let you bypass the dashboard entirely and switch contexts instantly.
 
 ---
 
-## Next Steps
-- [Learn about Tasks →](/web/docs/tasks)
-- [Set up the VS Code Extension →](/web/docs/extension)
-- [Interact with Kaya AI →](/web/docs/kaya-ai)
-- [Navigate the Dashboard →](/web/docs/dashboard)
+## Custom Team Space Shortcuts
+
+Your Team Space is highly customizable. You aren't just limited to standard messaging; you can create custom shortcuts and quick actions:
+
+- **Custom Slash Commands**: You can configure custom `/` commands in your Team Space settings to trigger specific webhooks, notify external services, or trigger automated workflows.
+- **Read Codebase Quick Action**: Trigger Harry or Kaya to instantly **"Read Codebase"** via custom integration shortcuts. By creating a custom Team Space shortcut, you can command your AI agents to ingest and analyze the latest commits without leaving the chat.
+- **Agent Triggers**: Use `@Kaya` or `@Harry` combined with your custom shortcuts to automate repetitive PM and DevOps tasks instantly.

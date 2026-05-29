@@ -69,10 +69,11 @@ const badgeColors: Record<string, string> = {
 
 const categoryIcons: Record<string, any> = {
   "Getting Started": Compass,
-  "Core Features": Cpu,
-  "Advanced Tools": Wrench,
-  Platform: LayoutGrid,
-  Developers: FileCode2,
+  "Workspace": LayoutGrid,
+  "Agile & Tasks": Zap,
+  "Team & Collaboration": Users,
+  "AI Agents": Bot,
+  "Settings & Platform": Wrench,
 };
 
 export default function DocsIndexPage() {

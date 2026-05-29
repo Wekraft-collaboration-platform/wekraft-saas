@@ -132,19 +132,35 @@ export const docsConfig: { [key: string]: DocItem[] } = {
       created: "2026-01-01",
     },
     {
-      title: "Manage Teams & Roles",
-      slug: "manage-teams",
-      description: "Invite members, set roles, handle join requests, and configure permissions.",
-      icon: "Settings",
-      created: "2026-01-01",
-    },
-    {
       title: "Team Meet",
       slug: "team-meet",
       description: "Collaborate in real-time with your teammates via video call rooms.",
       icon: "Video",
       created: "2026-01-01",
     },
+    {
+      title: "Time Logs",
+      slug: "time-logs",
+      description: "Auto-track time from the IDE or log manually. Export for reporting.",
+      icon: "Clock",
+      created: "2026-01-01",
+    },
+    {
+      title: "Repository Heatmaps",
+      slug: "heatmaps",
+      description: "AI-powered workload analysis, burnout risk detection, and activity trends.",
+      icon: "BarChart3",
+      created: "2026-01-01",
+    },
+    {
+      title: "Manage Teams & Roles",
+      slug: "manage-teams",
+      description: "Invite members, set roles, handle join requests, and configure permissions.",
+      icon: "Settings",
+      created: "2026-01-01",
+    },
+  ],
+  "AI Agents": [
     {
       title: "Kaya PM Agent",
       slug: "kaya-pm",
@@ -158,20 +174,6 @@ export const docsConfig: { [key: string]: DocItem[] } = {
       description: "Meet your AI senior developer for code reviews, automation, and issue resolution.",
       icon: "Bot",
       created: "2026-05-29",
-    },
-    {
-      title: "Repository Heatmaps",
-      slug: "heatmaps",
-      description: "AI-powered workload analysis, burnout risk detection, and activity trends.",
-      icon: "BarChart3",
-      created: "2026-01-01",
-    },
-    {
-      title: "Time Logs",
-      slug: "time-logs",
-      description: "Auto-track time from the IDE or log manually. Export for reporting.",
-      icon: "Clock",
-      created: "2026-01-01",
     },
   ],
   "Settings & Platform": [

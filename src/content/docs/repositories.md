@@ -97,14 +97,12 @@ Click the **View Connected Repo** button to open a detailed status popover showc
 
 Follow this straightforward flow to connect your repository:
 
-```mermaid
-graph TD
-    A["Connect GitHub Account<br>(User Profile Settings)"] --> B["Open Repositories Manager<br>(Global App Sidebar)"]
-    B --> C["Browse Active GitHub Repositories"]
-    C --> D["Select Unlinked Repo & Choose Project"]
-    D --> E["Confirm Linkage"]
-    E --> F["Enjoy Automated Metrics & Code Links!"]
-```
+- **Step 1:** Connect GitHub Account *(via User Profile Settings)*
+- **Step 2:** Open Repositories Manager *(via Global App Sidebar)*
+- **Step 3:** Browse Active GitHub Repositories
+- **Step 4:** Select Unlinked Repo & Choose Project
+- **Step 5:** Confirm Linkage
+- **Step 6:** Enjoy Automated Metrics & Code Links!
 
 ### Setup Steps:
 
