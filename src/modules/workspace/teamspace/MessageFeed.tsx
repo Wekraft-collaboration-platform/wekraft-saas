@@ -46,6 +46,9 @@ import {
   PinOff,
   TicketPlus,
   TicketSlash,
+  Check,
+  RotateCcw,
+  Timer,
 } from "lucide-react";
 import { format, isToday, isYesterday } from "date-fns";
 import { motion, AnimatePresence } from "framer-motion";
@@ -155,6 +158,7 @@ export function MessageFeed({
     caption: string;
   }>>([]);
   const [showStorageLimitDialog, setShowStorageLimitDialog] = useState(false);
+  const [ticketsOpen, setTicketsOpen] = useState(false);
 
   const project = useQuery(api.project.getProjectById, {
     projectId: projectId as Id<"projects">,
@@ -177,7 +181,7 @@ export function MessageFeed({
 
     const id = "optimistic-upload-" + crypto.randomUUID();
     const previewUrl = URL.createObjectURL(processedFile);
-    
+
     setOptimisticUploads(prev => [...prev, { id, file: processedFile, previewUrl, caption }]);
 
     try {
@@ -531,7 +535,7 @@ export function MessageFeed({
           <TooltipProvider delayDuration={400}>
             <div className="flex items-center gap-3 text-muted-foreground">
               {/* Tickets popover */}
-              <Popover>
+              <Popover open={ticketsOpen} onOpenChange={setTicketsOpen}>
                 <Tooltip>
                   <TooltipTrigger asChild>
                     <PopoverTrigger asChild>
@@ -557,9 +561,19 @@ export function MessageFeed({
                       <TicketSlash className="h-4 w-4" />
                       <span className="text-sm font-semibold">Tickets</span>
                     </div>
-                    <span className="text-xs font-medium text-muted-foreground">
-                      {openTicketsCount} open / {tickets?.length || 0} total
-                    </span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs font-medium text-muted-foreground">
+                        {openTicketsCount} open / {tickets?.length || 0} total
+                      </span>
+                      <Button
+                        size="icon"
+                        variant="outline"
+                        className="h-6 w-6 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/40"
+                        onClick={() => setTicketsOpen(false)}
+                      >
+                        <X className="h-3.5 w-3.5" />
+                      </Button>
+                    </div>
                   </div>
 
                   <ScrollArea className="h-[380px]">
@@ -579,59 +593,29 @@ export function MessageFeed({
                           <div
                             key={ticket._id}
                             className={cn(
-                              "group relative border border-border/30 rounded-lg p-2.5 bg-muted/40 hover:bg-accent/10 transition-all duration-200",
-                              ticket.status !== "open" && "opacity-60"
+                              "group relative border border-border rounded-lg p-3.5 bg-muted/30 hover:bg-muted/60 transition-all duration-200"
                             )}
                           >
-                            <div className="flex items-center justify-between gap-2 mb-1.5">
-                              <span className={cn(
-                                "text-[8px] font-bold px-1.5 py-0.5 rounded uppercase tracking-wider",
-                                ticket.status === "open" ? "bg-emerald-500/10 text-emerald-500" : "bg-muted-foreground/15 text-muted-foreground"
-                              )}>
-                                {ticket.status}
-                              </span>
-                              <span className="text-[9px] text-muted-foreground">
-                                {format(new Date(ticket.createdAt), "MMM d, h:mm a")}
-                              </span>
-                            </div>
-
-                            <p className="text-xs text-foreground leading-relaxed break-words mb-2 pr-10">
-                              {ticket.body}
-                            </p>
-
-                            <div className="flex items-center justify-between pt-2 border-t border-border/20 text-[9px]">
-                              <div className="flex items-center gap-1">
-                                <span className="text-muted-foreground/80">Assignee:</span>
-                                <div className="flex items-center gap-1 truncate max-w-[100px]">
-                                  <Avatar className="h-3.5 w-3.5">
-                                    <AvatarImage src={ticket.assignee?.avatar ?? undefined} />
-                                    <AvatarFallback className="text-[7px] bg-primary/10 text-primary font-bold">
-                                      {(ticket.assignee?.name || "??").substring(0, 2).toUpperCase()}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <span className="font-semibold text-foreground/90 truncate">{ticket.assignee?.name || "Unassigned"}</span>
+                            {/* Top Row: Status badge and Close/Reopen button */}
+                            <div className="flex items-center justify-between gap-4 mb-2">
+                              <div className="flex items-center gap-4">
+                                <div className="flex items-center text-[10px] text-muted-foreground  font-medium">
+                                  <Timer className="h-3 w-3 mr-1" />  {format(new Date(ticket.createdAt), "MMM d, h:mm a")}
                                 </div>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <span className="text-muted-foreground/80">Creator:</span>
-                                <div className="flex items-center gap-1 truncate max-w-[100px]">
-                                  <Avatar className="h-3.5 w-3.5">
-                                    <AvatarImage src={ticket.creator?.avatar ?? undefined} />
-                                    <AvatarFallback className="text-[7px] bg-primary/10 text-primary font-bold">
-                                      {(ticket.creator?.name || "??").substring(0, 2).toUpperCase()}
-                                    </AvatarFallback>
-                                  </Avatar>
-                                  <span className="font-semibold text-foreground/90 truncate">{ticket.creator?.name || "Unknown"}</span>
-                                </div>
-                              </div>
-                            </div>
 
-                            {/* Ticket action to close/reopen */}
-                            <div className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                <span className={cn(
+                                  "text-[9px] font-medium px-3 py-0.5 rounded-full border uppercase tracking-wider",
+                                  ticket.status === "open" ? "bg-emerald-500/10 text-emerald-500" : "bg-muted-foreground/15 text-muted-foreground"
+                                )}>
+                                  {ticket.status}
+                                </span>
+                              </div>
+
+
                               <Button
                                 size="sm"
-                                variant="ghost"
-                                className="h-5 px-1.5 text-[9px] font-bold text-muted-foreground hover:text-foreground hover:bg-accent/40 rounded transition-all"
+                                variant="outline"
+                                className="h-5 px-2 text-[9px] font-semibold text-muted-foreground hover:text-foreground hover:bg-accent/40 rounded border border-border/40 transition-all"
                                 onClick={async () => {
                                   try {
                                     const nextStatus = ticket.status === "open" ? "closed" : "open";
@@ -648,6 +632,39 @@ export function MessageFeed({
                               >
                                 {ticket.status === "open" ? "Close" : "Reopen"}
                               </Button>
+                            </div>
+
+                            {/* Description/body below the date */}
+                            <p className="text-xs text-foreground leading-relaxed break-words mb-3">
+                              {ticket.body}
+                            </p>
+
+                            {/* Assignee & Creator below the description */}
+                            <div className="flex items-center justify-between pt-2.5 border-t border-border/20 text-xs">
+                              <div className="flex items-center gap-1">
+                                <span className="text-muted-foreground">Assignee:</span>
+                                <div className="flex items-center gap-1 truncate max-w-[100px]">
+                                  <Avatar className="h-5 w-5">
+                                    <AvatarImage src={ticket.assignee?.avatar ?? undefined} />
+                                    <AvatarFallback className="text-[7px] bg-primary/10 text-primary font-bold">
+                                      {(ticket.assignee?.name || "??").substring(0, 2).toUpperCase()}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  {/* <span className="font-semibold text-foreground/90 truncate">{ticket.assignee?.name || "Unassigned"}</span> */}
+                                </div>
+                              </div>
+                              <div className="flex items-center gap-1">
+                                <span className="text-muted-foreground">Creator:</span>
+                                <div className="flex items-center gap-1 truncate max-w-[100px]">
+                                  <Avatar className="h-5 w-5">
+                                    <AvatarImage src={ticket.creator?.avatar ?? undefined} />
+                                    <AvatarFallback className="text-[7px] bg-primary/10 text-primary font-bold">
+                                      {(ticket.creator?.name || "??").substring(0, 2).toUpperCase()}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  {/* <span className="font-semibold text-foreground/90 truncate">{ticket.creator?.name || "Unknown"}</span> */}
+                                </div>
+                              </div>
                             </div>
                           </div>
                         ))}
@@ -957,13 +974,13 @@ export function MessageFeed({
                 />
               );
             })}
-            
+
             {/* Optimistic Media Uploads */}
             {optimisticUploads.map(upload => {
               const isImage = upload.file.type.startsWith("image/");
               const mdLink = isImage ? `![${upload.file.name}](${upload.previewUrl})` : `[${upload.file.name}](${upload.previewUrl})`;
               const msgContent = upload.caption ? `${mdLink}\n\n${upload.caption}` : mdLink;
-              
+
               const msg: Message = {
                 id: upload.id,
                 channel_id: channel!.id,
@@ -986,20 +1003,20 @@ export function MessageFeed({
                   currentUserId={currentUserId}
                   isPinned={false}
                   canModerateAll={false}
-                  onReply={() => {}}
-                  onEdit={async () => {}}
-                  onDelete={async () => {}}
-                  onReact={async () => {}}
-                  onPin={async () => {}}
-                  onPollVote={async () => {}}
-                  onEditPoll={async () => {}}
+                  onReply={() => { }}
+                  onEdit={async () => { }}
+                  onDelete={async () => { }}
+                  onReact={async () => { }}
+                  onPin={async () => { }}
+                  onPollVote={async () => { }}
+                  onEditPoll={async () => { }}
                   projectMembers={projectMembers}
                   channelReads={channelReads}
                   repoFullName={project?.repoFullName}
                 />
               );
             })}
-            
+
             <div ref={bottomRef} />
           </div>
         )}
