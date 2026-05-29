@@ -121,26 +121,23 @@ export default function DocsIndexPage() {
       {/* Quickstart CTA */}
       <Link
         href="/web/docs/getting-started"
-        className="group relative flex items-center gap-4 p-5 mb-12 rounded-xl border border-blue-500/20 bg-gradient-to-r from-blue-950/30 via-blue-950/10 to-transparent hover:border-blue-500/30 hover:from-blue-950/40 transition-all duration-300"
+        className="group flex items-center gap-5 w-full px-5 py-4 mb-12 rounded-xl border-l-2 border-l-blue-500 border border-blue-500/30 bg-blue-950/20 hover:-translate-y-0.5 hover:shadow-lg hover:shadow-blue-500/[0.04] transition-all duration-200"
       >
-        <div className="w-10 h-10 rounded-xl bg-blue-500/15 border border-blue-500/20 flex items-center justify-center shrink-0 group-hover:bg-blue-500/20 transition-colors">
-          <Rocket className="h-5 w-5 text-blue-400" />
-        </div>
+        <Rocket className="h-5 w-5 text-blue-400 shrink-0" />
         <div className="min-w-0 flex-1">
-          <div className="flex items-center gap-2 mb-1">
-            <span className="text-sm font-semibold text-blue-300 group-hover:text-blue-200 transition-colors">
+          <div className="flex items-center gap-2.5">
+            <span className="text-sm font-semibold text-white tracking-tight">
               New to Wekraft?
             </span>
-            <span className="text-[9px] font-semibold rounded px-1.5 py-0.5 leading-none bg-blue-500/15 text-blue-400 border border-blue-500/20">
+            <span className="text-[9px] font-medium rounded-sm px-1.5 py-0.5 leading-none bg-blue-500/15 text-blue-400 border border-blue-500/30">
               5 min
             </span>
           </div>
-          <p className="text-xs text-white/40 leading-relaxed">
-            Follow our quick start guide to create your first project, invite
-            your team, and ship your first sprint.
+          <p className="text-[11px] text-white/45 mt-0.5">
+            Follow our quick start guide to create your first project, invite your team, and ship your first sprint.
           </p>
         </div>
-        <ArrowRight className="h-4 w-4 text-blue-400/50 group-hover:text-blue-400 group-hover:translate-x-1 transition-all shrink-0" />
+        <ArrowRight className="h-4 w-4 text-blue-400/40 group-hover:translate-x-0.5 transition-transform duration-200 shrink-0" />
       </Link>
 
       {/* Quick start cards */}

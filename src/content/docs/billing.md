@@ -18,7 +18,7 @@ Wekraft is designed to scale with your team. We offer three distinct plans tailo
 | **GitHub Activity Overlay** | — | — | ✓ |
 | **Project Deadline Alerts** | ✓ | ✓ | ✓ |
 | **Calendar & Events** | ✓ | ✓ | ✓ |
-| **File Explorer** | ✓ | ✓ | ✓ |
+| **Project Structure** | ✓ | ✓ | ✓ |
 | **Priority Support** | — | — | ✓ |
 
 ---
@@ -34,7 +34,7 @@ The Free plan is perfect for individuals and small teams getting started:
 - Full access to tasks, issues, sprints, calendar, and team space
 - VS Code extension in **read-only mode** (view tasks, but can't update status from IDE)
 - Basic heatmap view
-- File Explorer for connected GitHub repositories
+- Project Structure for connected GitHub repositories
 - All core features with no time limit
 
 ### Plus Plan
