@@ -32,7 +32,7 @@ Sign in if prompted, then click **"Grant Access to IDE"**. The web app generates
 vscode://wekraft.wekraft-vscode/auth?token=<hex>
 ```
 
-VS Code intercepts this URI, calls `exchangeHandshakeToken({ token })` on the Convex backend, and receives back `{ userId, apiKey }`. The token is **deleted immediately** after exchange — it is single-use. The permanent API key is then stored in VS Code's encrypted secret storage.
+VS Code intercepts this URI, exchanges the handshake token with the Wekraft backend, and receives back a permanent API key. The token is **deleted immediately** after exchange — it is single-use. The permanent API key is then stored in VS Code's encrypted secret storage.
 
 ### Step 3 — Open a Project
 
@@ -80,7 +80,7 @@ When creating or editing a task in the web app, you can set a **Codebase Link** 
 Wekraft uses a secure **one-time handshake token system** for IDE authentication — no manual API key pasting required.
 
 ```
-Extension                    Web App (/extension)         Convex DB
+Extension                    Web App (/extension)         Wekraft Backend
    |                              |                           |
    |-- Open browser with ------→  |                           |
    |   ?callback_url=vscode://... |                           |
@@ -91,7 +91,7 @@ Extension                    Web App (/extension)         Convex DB
    |                              |-- redirect to             |
    |   vscode://...?token=<hex> ← |   vscode:// URI           |
    |                              |                           |
-   |-- exchangeHandshakeToken() → |                → Convex   |
+   |-- exchangeHandshakeToken() → |                → Backend  |
    |   ← { userId, apiKey }       |                           |
    |                              |                ← Token deleted immediately
    |-- Store apiKey in            |                           |
@@ -111,7 +111,7 @@ This usually means the handshake token expired before you completed authorizatio
 ### Tasks not loading
 
 1. Make sure you have at least one project in Wekraft with tasks assigned to your account.
-2. Check your internet connection — the extension communicates with Convex in real time.
+2. Check your internet connection — the extension communicates with the Wekraft servers in real time.
 3. Click the **Refresh** button (↻) at the top of the extension panel.
 
 ### Status updates not syncing

@@ -584,7 +584,7 @@ export const AppSidebar = () => {
                       <Separator className="mb-1 opacity-50" />
 
                       <Link
-                        href="/dashboard/settings"
+                        href="/dashboard/my-profile"
                         className="flex items-center gap-2 px-2 py-2 rounded-sm text-xs hover:bg-accent transition-colors"
                       >
                         <Settings2 className="h-3.5 w-3.5" />

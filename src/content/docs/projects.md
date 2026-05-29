@@ -4,7 +4,7 @@ Projects are the top-level containers in Wekraft. Every task, issue, sprint, cal
 
 ## Creating a Project
 
-You can create a project from the **Dashboard** or during the **Onboarding** flow.
+You can create a project from the **Dashboard** (Projects tab) or during the **Onboarding** flow.
 
 1. Click **"New Project"** from the project list on your dashboard.
 2. Fill in the project details:
@@ -17,6 +17,9 @@ You can create a project from the **Dashboard** or during the **Onboarding** flo
 | **Work Status** | ✓ | The current phase of the project (see below). |
 
 3. Click **Create Project**. You're automatically added as the `owner`.
+
+> [!NOTE]
+> The number of projects you can create depends on your plan. Free: 2, Plus: 10, Pro: 20. See [Billing](/web/docs/billing) for details.
 
 ### Work Status Phases
 
@@ -35,12 +38,24 @@ Each project is tagged with one of six lifecycle phases. This helps collaborator
 
 ## The Project Dashboard
 
-When you open a project, the dashboard provides a real-time overview:
+When you open a project, the workspace dashboard provides a real-time overview organized into three top cards:
 
-- **Sprint progress**: How many tasks and issues are completed in the active sprint vs. total
-- **Member activity**: Who has been active recently
-- **Upcoming deadlines**: Tasks and sprint end dates coming up in the next 7 days
-- **Blocked items**: Tasks flagged as blocked due to an open issue
+| Card | What it shows |
+|---|---|
+| **Track Your Project** | Project deadline progress bar, days remaining, created/deadline dates, alert milestones, and deadline/alert buttons |
+| **Activity Overview** | Total tasks, open issues, recent task/issue activity counts |
+| **Task Status** | Pie chart showing task distribution across all five statuses |
+
+Below the cards, three tabs provide deeper analysis:
+
+| Tab | Description | Plan Required |
+|---|---|---|
+| **Advance Charts** | Team contribution radar, sprint bar chart, severity heatmap, weekly velocity, member workload, and weekly engagement | Plus or Pro |
+| **My Work** | Personal table showing tasks and issues assigned to you | All plans |
+| **Config** | Project settings, scheduler, and configuration (owner only) | All plans |
+
+> [!TIP]
+> Click **"Refresh Analytics"** at the top of the Advance Charts tab to force a fresh data pull. Analytics are cached for performance.
 
 ---
 
@@ -50,21 +65,28 @@ Every project member has an **Access Role** that controls what they can do.
 
 | Action | Owner | Admin | Member | Viewer |
 |---|---|---|---|---|
+| View all project data | ✓ | ✓ | ✓ | ✓ |
+| Comment on tasks/issues | ✓ | ✓ | ✓ | — |
 | Create/edit tasks | ✓ | ✓ | ✓* | — |
 | Create/edit issues | ✓ | ✓ | ✓* | — |
 | Create sprints | ✓ | ✓ | — | — |
 | Start/complete sprint | ✓ | ✓ | — | — |
 | Manage members | ✓ | ✓ | — | — |
-| Edit project settings | ✓ | — | — | — |
+| Edit project settings | ✓ | ✓ | — | — |
+| Set deadline & alerts | ✓ | — | — | — |
 | Delete project | ✓ | — | — | — |
 
-> *Members can create tasks and issues only if the project owner has enabled **"Members can create"** in Project Settings.
+> [!NOTE]
+> *Members can create tasks and issues only if the project owner has enabled **"Members can create"** in Project Settings → Configuration.
 
 ### Inviting Members
 
-From **Project Settings → Members**, click **"Invite Member"**. You can share the unique invite link directly, or accept join requests from users who discovered your public project.
+From the project workspace, click the **"Invite"** button in the header. Share the unique invite link with your teammates. When a user clicks the invite link:
 
-When a user clicks the invite link, they submit a join request. The owner or any admin can **Accept** or **Reject** the request from the **Join Requests** panel.
+1. They submit a **join request** with an optional message
+2. The owner or any admin can **Accept** or **Reject** the request from the **Join Requests** panel in Project Settings → Members
+
+Accepted users are added as `member` by default. You can then promote them to `admin` if needed.
 
 ---
 
@@ -72,43 +94,59 @@ When a user clicks the invite link, they submit a join request. The owner or any
 
 Linking a GitHub repository to your project unlocks powerful integrations:
 
-1. Navigate to **Project Settings → Repository**.
-2. Select a repository from your connected GitHub account.
-3. Optionally enable the **Webhook** to auto-sync new GitHub issues.
+1. Ensure your **GitHub account is connected** via the main dashboard (click "Connect Now" on the Commits card)
+2. Navigate to your project and link a repository from Project Settings
+3. Once linked, you can:
+   - **Browse the repository** using the built-in [File Explorer](/web/docs/file-structure) in the project sidebar
+   - **Import GitHub Issues** into Wekraft with one click from the Issues panel
+   - **Link tasks to code files** — set a codebase path on any task, clickable in the VS Code extension
 
-Once linked:
-- **GitHub Issues** can be imported as Wekraft Issues (one-click import from the Issues panel)
-- Commits and pull requests are referenced in the task timeline
+> [!TIP]
+> For the full GitHub integration experience, make sure you've connected GitHub on the main dashboard first. This gives Wekraft access to your repositories.
 
 ---
 
 ## Project Settings
 
-Access **Project Settings** from the gear icon (⚙) in the project sidebar.
+Access **Project Settings** from the gear icon (⚙) in the project sidebar or the **Config** tab in the workspace dashboard.
 
 ### General
 - Rename the project
 - Update description, tags, and work status
-- Set a **Project Target Date** (deadline) — sprints cannot exceed this date
+- Set a **Project Target Date** (deadline) — visible on the workspace progress bar
 - Upload a project thumbnail
 
 ### Configuration
-- **Member can create** — toggle whether members (not just owners/admins) can create tasks and issues
-- **Member use Kaya** — toggle Kaya AI access for members (Pro plan)
-- **Kaya threshold** — maximum number of Kaya AI calls this project can use per month
+
+| Setting | Default | Description |
+|---|---|---|
+| **Members can create** | Off | Allow `member` role to create tasks and issues |
+| **Members use Kaya** | Off | Allow members to access Kaya AI (Pro plan required) |
+| **Kaya threshold** | Plan limit | Max Kaya AI calls this project can use per month |
+
+### Project Deadline & Alerts
+
+Set a target deadline from the **"Set Deadline"** button on the workspace dashboard card:
+
+1. Pick a date — a progress bar shows elapsed time as a percentage
+2. Configure **Alerts** at 25%, 50%, 75%, or 90% milestones
+3. When a milestone is reached, the owner and admins receive a notification
+
+> [!NOTE]
+> Only the project **owner** can set deadlines and configure alerts.
 
 ### Danger Zone
-- **Delete project** — permanently deletes the project and all its data. This cannot be undone.
+- **Delete project** — permanently deletes the project and all its data (tasks, issues, sprints, members, time logs). This action **cannot be undone**.
 
 ---
 
 ## Project Limits by Plan
 
-| Plan | Projects owned | Projects joined |
-|---|---|---|
-| Free | 2 | 2 |
-| Plus | 3 | 5 |
-| Pro | 10 | Unlimited |
+| Plan | Projects owned | Projects joined | Members per project |
+|---|---|---|---|
+| Free | 2 | 2 | 3 |
+| Plus | 10 | 10 | 5 |
+| Pro | 20 | 20 | 15 |
 
 ---
 
@@ -117,3 +155,5 @@ Access **Project Settings** from the gear icon (⚙) in the project sidebar.
 - [Create and manage tasks →](/web/docs/tasks)
 - [Track bugs with issues →](/web/docs/issues)
 - [Plan your first sprint →](/web/docs/sprints)
+- [Browse files with the File Explorer →](/web/docs/file-structure)
+- [Set up team roles →](/web/docs/manage-teams)

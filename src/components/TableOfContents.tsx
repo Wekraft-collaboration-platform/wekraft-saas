@@ -12,10 +12,39 @@ interface Heading {
 
 export function TableOfContents({ headings }: { headings: Heading[] }) {
   const [activeId, setActiveId] = useState<string>("");
+  const [scrollProgress, setScrollProgress] = useState(0);
   const observer = useRef<IntersectionObserver | null>(null);
 
   useEffect(() => {
+    if (headings.length === 0) return;
+
+    const handleScroll = () => {
+      const scrollY = window.scrollY || window.pageYOffset;
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+      
+      if (totalHeight > 0) {
+        setScrollProgress((scrollY / totalHeight) * 100);
+      } else {
+        setScrollProgress(0);
+      }
+
+      // Automatically highlight the last heading when scrolled to the very bottom of the page
+      if (totalHeight > 0 && scrollY >= totalHeight - 15) {
+        setActiveId(headings[headings.length - 1].id);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+
     const handleObserver = (entries: IntersectionObserverEntry[]) => {
+      // Avoid observer overriding when we are already at the bottom
+      const scrollY = window.scrollY || window.pageYOffset;
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (totalHeight > 0 && scrollY >= totalHeight - 15) {
+        return;
+      }
+
       entries.forEach((entry) => {
         if (entry.isIntersecting) {
           setActiveId(entry.target.id);
@@ -25,7 +54,7 @@ export function TableOfContents({ headings }: { headings: Heading[] }) {
 
     observer.current = new IntersectionObserver(handleObserver, {
       rootMargin: "-80px 0% -80% 0%",
-      threshold: 1.0,
+      threshold: 0.1, // More responsive trigger threshold
     });
 
     const elements = headings.map((h) => document.getElementById(h.id));
@@ -33,7 +62,10 @@ export function TableOfContents({ headings }: { headings: Heading[] }) {
       if (el) observer.current?.observe(el);
     });
 
-    return () => observer.current?.disconnect();
+    return () => {
+      window.removeEventListener("scroll", handleScroll);
+      observer.current?.disconnect();
+    };
   }, [headings]);
 
   const handleClick = (e: React.MouseEvent<HTMLAnchorElement>, id: string) => {
@@ -72,9 +104,20 @@ export function TableOfContents({ headings }: { headings: Heading[] }) {
   return (
     <aside className="hidden xl:block w-52 shrink-0">
       <div className="sticky top-12">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/20 mb-4 px-1">
-          On this page
-        </p>
+        <div className="flex items-center justify-between mb-1.5 px-1">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/20">
+            On this page
+          </p>
+          <span className="text-[9px] font-mono text-white/25">
+            {Math.round(scrollProgress)}%
+          </span>
+        </div>
+        <div className="h-[2px] w-full bg-white/5 rounded-full overflow-hidden mb-4">
+          <div
+            className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-75 ease-out"
+            style={{ width: `${scrollProgress}%` }}
+          />
+        </div>
         <nav className="relative space-y-1">
           {headings.map((h) => (
             <a
