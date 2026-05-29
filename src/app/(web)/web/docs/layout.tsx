@@ -3,31 +3,41 @@
 import {
   AlertCircle,
   BarChart3,
+  Bell,
   BookOpen,
   Calendar,
   CheckSquare,
+  ChevronDown,
   ChevronRight,
   Clock,
+  Code,
   Command,
   CreditCard,
   FileText,
+  FolderTree,
   Info,
   Layers,
+  LayoutDashboard,
   Menu,
+  Rocket,
   Search,
   Settings,
   ShieldCheck,
   Sparkles,
   Terminal,
+  UserCog,
   Users,
   X,
   Zap,
+  ExternalLink,
+  MessageCircle,
+  FileCode2,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useCallback, useEffect, useRef, useState } from "react";
-import { allDocs, docsConfig } from "@/lib/docs-config";
+import { allDocs, docsConfig, getDocBadge } from "@/lib/docs-config";
 import { cn } from "@/lib/utils";
 
 const iconMap: { [key: string]: any } = {
@@ -48,6 +58,12 @@ const iconMap: { [key: string]: any } = {
   CreditCard,
   FileText,
   Info,
+  Rocket,
+  LayoutDashboard,
+  FolderTree,
+  UserCog,
+  Bell,
+  Code,
 };
 
 const badgeColors: Record<string, string> = {
@@ -119,7 +135,7 @@ function SearchDialog({
         <div className="max-h-64 overflow-y-auto">
           {query && results.length === 0 && (
             <p className="text-sm text-white/30 text-center py-8">
-              No results for "{query}"
+              No results for &quot;{query}&quot;
             </p>
           )}
           {!query && (
@@ -152,6 +168,160 @@ function SearchDialog({
             );
           })}
         </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Sidebar Item Text with Marquee on Hover/Active ──────────────────────────
+function SidebarItemText({ title, isActive }: { title: string; isActive: boolean }) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const textRef = useRef<HTMLSpanElement>(null);
+  const [scrollDist, setScrollDist] = useState(0);
+  const [isHovered, setIsHovered] = useState(false);
+
+  useEffect(() => {
+    const container = containerRef.current;
+    const textEl = textRef.current;
+    if (container && textEl) {
+      const dist = textEl.scrollWidth - container.offsetWidth;
+      setScrollDist(dist > 0 ? dist : 0);
+    }
+  }, [title]);
+
+  useEffect(() => {
+    const handleResize = () => {
+      const container = containerRef.current;
+      const textEl = textRef.current;
+      if (container && textEl) {
+        const dist = textEl.scrollWidth - container.offsetWidth;
+        setScrollDist(dist > 0 ? dist : 0);
+      }
+    };
+    window.addEventListener("resize", handleResize);
+    const timer = setTimeout(handleResize, 150);
+
+    return () => {
+      window.removeEventListener("resize", handleResize);
+      clearTimeout(timer);
+    };
+  }, [isActive, title]);
+
+  const shouldAnimate = scrollDist > 0 && (isActive || isHovered);
+
+  return (
+    <div
+      ref={containerRef}
+      className="flex-1 overflow-hidden relative whitespace-nowrap select-none"
+      onMouseEnter={() => setIsHovered(true)}
+      onMouseLeave={() => setIsHovered(false)}
+      title={title}
+    >
+      <span
+        ref={textRef}
+        className={cn(
+          "inline-block whitespace-nowrap",
+          shouldAnimate ? "animate-marquee-text" : "truncate w-full block"
+        )}
+        style={shouldAnimate ? ({ "--scroll-dist": `${scrollDist}px` } as React.CSSProperties) : undefined}
+      >
+        {title}
+      </span>
+    </div>
+  );
+}
+
+// ─── Collapsible Category ───────────────────────────────────────────────────
+function SidebarCategory({
+  category,
+  items,
+  pathname,
+  onNavClick,
+  defaultOpen,
+}: {
+  category: string;
+  items: typeof allDocs;
+  pathname: string;
+  onNavClick?: () => void;
+  defaultOpen: boolean;
+}) {
+  const [isOpen, setIsOpen] = useState(defaultOpen);
+
+  // Auto-expand if active item is in this category
+  useEffect(() => {
+    const hasActive = items.some(
+      (item) =>
+        pathname === `/web/docs/${item.slug}` ||
+        pathname.endsWith(`/web/docs/${item.slug}`),
+    );
+    if (hasActive) setIsOpen(true);
+  }, [pathname, items]);
+
+  return (
+    <div>
+      <button
+        onClick={() => setIsOpen(!isOpen)}
+        className="w-full flex items-center justify-between px-3 py-1.5 group cursor-pointer"
+      >
+        <h3 className="text-[10px] font-semibold uppercase tracking-widest text-white/25 group-hover:text-white/40 transition-colors">
+          {category}
+        </h3>
+        <ChevronDown
+          className={cn(
+            "h-3 w-3 text-white/20 group-hover:text-white/40 transition-all duration-200",
+            !isOpen && "-rotate-90",
+          )}
+        />
+      </button>
+      <div
+        className={cn(
+          "overflow-hidden transition-all duration-200 ease-in-out",
+          isOpen ? "max-h-[800px] opacity-100" : "max-h-0 opacity-0",
+        )}
+      >
+        <ul className="space-y-1 pb-1">
+          {items.map((item) => {
+            const Icon = iconMap[item.icon ?? ""] || BookOpen;
+            const badge = getDocBadge(item);
+            const isActive =
+              pathname === `/web/docs/${item.slug}` ||
+              pathname.endsWith(`/web/docs/${item.slug}`);
+            return (
+              <li key={item.slug}>
+                <Link
+                  href={`/web/docs/${item.slug}`}
+                  onClick={onNavClick}
+                  className={cn(
+                    "group flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all duration-150 min-w-0",
+                    isActive
+                      ? "bg-white/8 text-white font-medium border border-white/10"
+                      : "text-white/45 hover:bg-white/4 hover:text-white/80",
+                  )}
+                >
+                  <Icon
+                    className={cn(
+                      "h-3.5 w-3.5 shrink-0 transition-colors",
+                      isActive
+                        ? "text-white/90"
+                        : "text-white/25 group-hover:text-white/50",
+                    )}
+                  />
+                  <SidebarItemText title={item.title} isActive={isActive} />
+                  {badge && (
+                    <span
+                      className={cn(
+                        "text-[9px] font-semibold rounded px-1.5 py-0.5 leading-none",
+                        badgeColors[badge],
+                      )}
+                    >
+                      {badge}
+                    </span>
+                  )}
+                </Link>
+              </li>
+            );
+          })}
+        </ul>
       </div>
     </div>
   );
@@ -196,76 +366,50 @@ function SidebarContent({
         >
           <Search className="h-3.5 w-3.5 shrink-0" />
           <span className="flex-1 text-left text-xs">Search docs...</span>
-          <kbd className="hidden sm:flex items-center gap-0.5 text-[10px] text-white/20 font-mono border border-white/8 rounded px-1 py-0.5">
-            <Command className="h-2.5 w-2.5" />K
-          </kbd>
         </button>
       </div>
 
-      {/* Navigation */}
+      {/* Navigation — Collapsible categories */}
       <nav className="flex-1 overflow-y-auto px-3 pb-6 space-y-5">
-        {Object.entries(docsConfig).map(([category, items]) => (
-          <div key={category}>
-            <h3 className="px-3 mb-1.5 text-[10px] font-semibold uppercase tracking-widest text-white/25">
-              {category}
-            </h3>
-            <ul className="space-y-0.5">
-              {items.map((item) => {
-                const Icon = iconMap[item.icon ?? ""] || BookOpen;
-                const isActive =
-                  pathname === `/web/docs/${item.slug}` ||
-                  pathname.endsWith(`/web/docs/${item.slug}`);
-                return (
-                  <li key={item.slug}>
-                    <Link
-                      href={`/web/docs/${item.slug}`}
-                      onClick={onNavClick}
-                      className={cn(
-                        "group flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all duration-150",
-                        isActive
-                          ? "bg-white/8 text-white font-medium border border-white/10"
-                          : "text-white/45 hover:bg-white/4 hover:text-white/80",
-                      )}
-                    >
-                      <Icon
-                        className={cn(
-                          "h-3.5 w-3.5 shrink-0 transition-colors",
-                          isActive
-                            ? "text-white/90"
-                            : "text-white/25 group-hover:text-white/50",
-                        )}
-                      />
-                      <span className="flex-1 leading-none">{item.title}</span>
-                      {item.badge && (
-                        <span
-                          className={cn(
-                            "text-[9px] font-semibold rounded px-1.5 py-0.5 leading-none",
-                            badgeColors[item.badge],
-                          )}
-                        >
-                          {item.badge}
-                        </span>
-                      )}
-                      {isActive && (
-                        <ChevronRight className="h-3 w-3 text-white/30 ml-auto shrink-0" />
-                      )}
-                    </Link>
-                  </li>
-                );
-              })}
-            </ul>
-          </div>
+        {Object.entries(docsConfig).map(([category, items], index) => (
+          <SidebarCategory
+            key={category}
+            category={category}
+            items={items}
+            pathname={pathname}
+            onNavClick={onNavClick}
+            defaultOpen={true}
+          />
         ))}
       </nav>
 
       {/* Footer */}
-      <div className="px-5 py-3 border-t border-white/6">
+      <div className="px-4 py-3 border-t border-white/6 space-y-1.5">
         <Link
           href="/"
           className="flex items-center gap-1.5 text-[11px] text-white/25 hover:text-white/50 transition-colors"
         >
           ← Back to Wekraft
         </Link>
+        <div className="flex items-center gap-3 pt-1">
+          <Link
+            href="mailto:support@wekraft.xyz"
+            className="flex items-center gap-1 text-[10px] text-white/20 hover:text-white/40 transition-colors"
+          >
+            <MessageCircle className="h-3 w-3" />
+            Support
+          </Link>
+
+          <a
+            href="https://github.com/wekraft"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="flex items-center gap-1 text-[10px] text-white/20 hover:text-white/40 transition-colors"
+          >
+            <ExternalLink className="h-3 w-3" />
+            GitHub
+          </a>
+        </div>
       </div>
     </div>
   );
@@ -281,12 +425,7 @@ export default function DocsLayout({
   const [mobileOpen, setMobileOpen] = useState(false);
   const [searchOpen, setSearchOpen] = useState(false);
 
-  // Cmd+K shortcut
   const handleKeyDown = useCallback((e: KeyboardEvent) => {
-    if ((e.metaKey || e.ctrlKey) && e.key === "k") {
-      e.preventDefault();
-      setSearchOpen(true);
-    }
     if (e.key === "Escape") {
       setSearchOpen(false);
       setMobileOpen(false);
@@ -330,14 +469,14 @@ export default function DocsLayout({
         </button>
       </header>
 
-      {/* Mobile Sidebar Drawer */}
+      {/* Mobile Sidebar Drawer — with slide animation */}
       {mobileOpen && (
         <div className="fixed inset-0 z-40 lg:hidden">
           <div
-            className="absolute inset-0 bg-black/70 backdrop-blur-sm"
+            className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="absolute left-0 top-0 h-full w-72 bg-[#0a0a0a] border-r border-white/8 shadow-2xl">
+          <aside className="absolute left-0 top-0 h-full w-72 bg-[#0a0a0a] border-r border-white/8 shadow-2xl animate-in slide-in-from-left duration-200">
             <button
               onClick={() => setMobileOpen(false)}
               className="absolute top-4 right-4 p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition-colors z-10"

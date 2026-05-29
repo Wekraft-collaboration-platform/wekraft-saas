@@ -1,5 +1,16 @@
 import fs from "fs";
-import { Calendar, ChevronLeft, ChevronRight, Clock, User } from "lucide-react";
+import {
+  AlertTriangle,
+  Calendar,
+  ChevronLeft,
+  ChevronRight,
+  Clock,
+  Info,
+  Lightbulb,
+  OctagonX,
+  User,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
@@ -7,7 +18,9 @@ import path from "path";
 import type { Components } from "react-markdown";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { TableOfContents } from "@/components/TableOfContents";
+import { CopyButton } from "../../../../../components/CopyButton";
+import { FeedbackWidget } from "../../../../../components/FeedbackWidget";
+import { TableOfContents } from "../../../../../components/TableOfContents";
 import { allDocs, docsConfig } from "@/lib/docs-config";
 
 export async function generateStaticParams() {
@@ -59,6 +72,12 @@ const slugify = (text: any): string => {
     .replace(/\s+/g, "-");
 };
 
+// Calculate reading time from word count
+function calculateReadingTime(content: string): number {
+  const words = content.trim().split(/\s+/).length;
+  return Math.max(1, Math.ceil(words / 200));
+}
+
 // Extract plain-text headings from markdown for the TOC
 function extractHeadings(content: string) {
   const lines = content.split("\n");
@@ -74,6 +93,92 @@ function extractHeadings(content: string) {
   return headings;
 }
 
+// Parse callout type from blockquote content
+function parseCallout(children: React.ReactNode): {
+  type: string;
+  content: React.ReactNode;
+} | null {
+  if (!children) return null;
+
+  // Extract text content to check for callout pattern
+  const childArray = Array.isArray(children) ? children : [children];
+
+  for (const child of childArray) {
+    if (
+      child &&
+      typeof child === "object" &&
+      "props" in child &&
+      child.props?.children
+    ) {
+      const innerChildren = Array.isArray(child.props.children)
+        ? child.props.children
+        : [child.props.children];
+
+      for (const inner of innerChildren) {
+        if (typeof inner === "string") {
+          const match = inner.match(
+            /^\s*\[!(NOTE|TIP|IMPORTANT|WARNING|CAUTION)\]\s*/,
+          );
+          if (match) {
+            const type = match[1];
+            const remaining = inner.replace(match[0], "").trimStart();
+            // Reconstruct children without the callout marker
+            const newChildren = innerChildren.map((c: any) =>
+              c === inner ? remaining : c,
+            );
+            return {
+              type,
+              content: newChildren.length === 1 ? newChildren[0] : newChildren,
+            };
+          }
+        }
+      }
+    }
+  }
+  return null;
+}
+
+const calloutStyles: Record<
+  string,
+  { bg: string; border: string; icon: any; text: string; label: string }
+> = {
+  NOTE: {
+    bg: "bg-zinc-900/40",
+    border: "border-zinc-700/50",
+    icon: Info,
+    text: "text-zinc-300",
+    label: "Note",
+  },
+  TIP: {
+    bg: "bg-zinc-900/40",
+    border: "border-zinc-700/50",
+    icon: Lightbulb,
+    text: "text-zinc-300",
+    label: "Tip",
+  },
+  IMPORTANT: {
+    bg: "bg-purple-950/30",
+    border: "border-purple-500/30",
+    icon: Info,
+    text: "text-purple-300/80",
+    label: "Important",
+  },
+  WARNING: {
+    bg: "bg-amber-950/30",
+    border: "border-amber-500/30",
+    icon: AlertTriangle,
+    text: "text-amber-300/80",
+    label: "Warning",
+  },
+  CAUTION: {
+    bg: "bg-red-950/30",
+    border: "border-red-500/30",
+    icon: OctagonX,
+    text: "text-red-300/80",
+    label: "Caution",
+  },
+};
+
 // Custom markdown components
 const markdownComponents: Components = {
   h1: ({ children }) => (
@@ -84,7 +189,7 @@ const markdownComponents: Components = {
       <div className="flex items-center gap-6 text-[0.9rem] text-white/50 mb-8 border-b border-white/8 pb-8">
         <div className="flex items-center gap-2">
           <Clock className="h-4 w-4" />
-          <span>5 min read</span>
+          <span data-reading-time>5 min read</span>
         </div>
         <div className="flex items-center gap-2">
           <Calendar className="h-4 w-4" />
@@ -144,18 +249,47 @@ const markdownComponents: Components = {
       <span className="flex-1">{children}</span>
     </li>
   ),
-  blockquote: ({ children }) => (
-    <blockquote className="my-6 pl-4 border-l-2 border-blue-500/40 bg-blue-950/20 rounded-r-lg py-3 pr-4">
-      <div className="text-[0.875rem] text-blue-200/60 leading-[1.7] [&>p]:mb-0 [&>p]:text-blue-200/60">
-        {children}
-      </div>
-    </blockquote>
-  ),
+  blockquote: ({ children }) => {
+    // Check for GitHub-style callouts
+    const callout = parseCallout(children);
+
+    if (callout && calloutStyles[callout.type]) {
+      const style = calloutStyles[callout.type];
+      const IconComp = style.icon;
+
+      return (
+        <div
+          className={`my-6 rounded-lg border-l-[3px] ${style.border} ${style.bg} py-3 px-4`}
+        >
+          <div className={`flex items-center gap-2 mb-2 ${style.text}`}>
+            <IconComp className="h-4 w-4 shrink-0" />
+            <span className="text-xs font-semibold uppercase tracking-wider">
+              {style.label}
+            </span>
+          </div>
+          <div
+            className={`text-[0.875rem] ${style.text} leading-[1.7] [&>p]:mb-0 [&>p]:${style.text}`}
+          >
+            {callout.content}
+          </div>
+        </div>
+      );
+    }
+
+    // Default blockquote
+    return (
+      <blockquote className="my-6 pl-4 border-l-2 border-zinc-700/50 bg-zinc-900/30 rounded-r-lg py-3 pr-4">
+        <div className="text-[0.875rem] text-zinc-400 leading-[1.7] [&>p]:mb-0 [&>p]:text-zinc-400">
+          {children}
+        </div>
+      </blockquote>
+    );
+  },
   code: ({ className, children, ...props }: any) => {
     const isInline = !className;
     if (isInline) {
       return (
-        <code className="text-[0.8rem] font-mono text-emerald-300/90 bg-emerald-950/30 border border-emerald-500/15 rounded-md px-1.5 py-0.5 whitespace-nowrap">
+        <code className="text-[0.8rem] font-mono text-zinc-200 bg-zinc-900/50 border border-zinc-700/40 rounded-md px-1.5 py-0.5 whitespace-nowrap">
           {children}
         </code>
       );
@@ -169,11 +303,26 @@ const markdownComponents: Components = {
       </code>
     );
   },
-  pre: ({ children }) => (
-    <pre className="my-6 overflow-x-auto rounded-xl bg-[#0c0c0c] border border-white/8 px-5 py-4 text-[0.8rem] font-mono leading-6 shadow-inner">
-      {children}
-    </pre>
-  ),
+  pre: ({ children }) => {
+    // Extract text content for copy button
+    const extractText = (node: any): string => {
+      if (typeof node === "string") return node;
+      if (Array.isArray(node)) return node.map(extractText).join("");
+      if (node?.props?.children) return extractText(node.props.children);
+      return "";
+    };
+
+    const codeText = extractText(children);
+
+    return (
+      <div className="relative group my-6">
+        <pre className="overflow-x-auto rounded-xl bg-[#0c0c0c] border border-white/8 px-5 py-4 text-[0.8rem] font-mono leading-6 shadow-inner">
+          {children}
+        </pre>
+        <CopyButton text={codeText} />
+      </div>
+    );
+  },
   table: ({ children }) => (
     <div className="my-6 overflow-x-auto rounded-xl border border-white/8 shadow-sm">
       <table className="w-full text-[0.875rem] border-collapse">
@@ -219,6 +368,7 @@ export default async function DocPage({
   const content = fs.readFileSync(filePath, "utf8");
   const docInfo = allDocs.find((d) => d.slug === slug);
   const headings = extractHeadings(content);
+  const readingTime = calculateReadingTime(content);
 
   // Prev / Next
   const flat = allDocs;
@@ -230,6 +380,12 @@ export default async function DocPage({
   const category = Object.entries(docsConfig).find(([, items]) =>
     items.some((i) => i.slug === slug),
   )?.[0];
+
+  // Inject reading time into content rendering by replacing the placeholder
+  const contentWithMeta = content.replace(
+    /^# .+$/m,
+    (match) => match,
+  );
 
   return (
     <div className="flex gap-12 xl:gap-16 w-full">
@@ -255,52 +411,75 @@ export default async function DocPage({
           </span>
         )}
 
+        {/* Reading time override */}
+        <div className="hidden" data-reading-time-value={readingTime} />
+
         {/* Markdown content */}
         <article className="max-w-none">
           <ReactMarkdown
             remarkPlugins={[remarkGfm]}
-            components={markdownComponents}
+            components={{
+              ...markdownComponents,
+              h1: ({ children }) => (
+                <>
+                  <h1 className="text-[2.2rem] font-bold text-white tracking-tight mt-0 mb-4 leading-snug">
+                    {children}
+                  </h1>
+                  <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-[0.8rem] sm:text-[0.9rem] text-white/50 mb-8 border-b border-white/8 pb-8">
+                    <div className="flex items-center gap-2">
+                      <Clock className="h-4 w-4" />
+                      <span>{readingTime} min read</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Calendar className="h-4 w-4" />
+                      <span>Updated May 2026</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <User className="h-4 w-4" />
+                      <span>Wekraft Team</span>
+                    </div>
+                  </div>
+                </>
+              ),
+            }}
           >
-            {content}
+            {contentWithMeta}
           </ReactMarkdown>
         </article>
 
+        {/* Feedback widget */}
+        <FeedbackWidget />
+
         {/* Prev / Next Nav */}
-        <div className="mt-16 pt-6 border-t border-white/8 flex items-center justify-between gap-4">
+        <div className="mt-12 pt-6 border-t border-white/8 flex items-center justify-between">
           {prevDoc ? (
-            <Link
-              href={`/web/docs/${prevDoc.slug}`}
-              className="group flex items-center gap-3 rounded-xl border border-white/8 bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/14 px-4 py-3 transition-all"
-            >
-              <ChevronLeft className="h-4 w-4 text-white/30 group-hover:text-white/60 group-hover:-translate-x-0.5 transition-all shrink-0" />
-              <div>
-                <div className="text-[10px] text-white/60 mb-0.5 uppercase tracking-widest font-medium">
+            <Button variant="ghost" asChild className="h-auto py-3 px-4 flex-col items-start text-left gap-1">
+              <Link href={`/web/docs/${prevDoc.slug}`}>
+                <span className="text-[10px] text-white/30 uppercase tracking-widest font-semibold">
                   Previous
-                </div>
-                <div className="text-sm font-medium text-white group-hover:text-white transition-colors">
+                </span>
+                <span className="flex items-center gap-1.5 text-sm font-semibold text-white/70">
+                  <ChevronLeft className="h-4 w-4 text-white/40 shrink-0" />
                   {prevDoc.title}
-                </div>
-              </div>
-            </Link>
+                </span>
+              </Link>
+            </Button>
           ) : (
             <div />
           )}
 
           {nextDoc ? (
-            <Link
-              href={`/web/docs/${nextDoc.slug}`}
-              className="group flex items-center gap-3 rounded-xl border border-white/8 bg-white/[0.02] hover:bg-white/[0.04] hover:border-white/14 px-4 py-3 transition-all text-right ml-auto"
-            >
-              <div>
-                <div className="text-[10px] text-white/60 mb-0.5 uppercase tracking-widest font-medium">
+            <Button variant="ghost" asChild className="h-auto py-3 px-4 flex-col items-end text-right gap-1">
+              <Link href={`/web/docs/${nextDoc.slug}`}>
+                <span className="text-[10px] text-white/30 uppercase tracking-widest font-semibold">
                   Next
-                </div>
-                <div className="text-sm font-medium text-white group-hover:text-white transition-colors">
+                </span>
+                <span className="flex items-center gap-1.5 text-sm font-semibold text-white/70">
                   {nextDoc.title}
-                </div>
-              </div>
-              <ChevronRight className="h-4 w-4 text-white/30 group-hover:text-white/60 group-hover:translate-x-0.5 transition-all shrink-0" />
-            </Link>
+                  <ChevronRight className="h-4 w-4 text-white/40 shrink-0" />
+                </span>
+              </Link>
+            </Button>
           ) : (
             <div />
           )}

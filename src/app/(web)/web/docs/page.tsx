@@ -2,27 +2,34 @@ import {
   AlertCircle,
   ArrowRight,
   BarChart3,
+  Bell,
   BookOpen,
   Calendar,
   CheckSquare,
   Clock,
+  Code,
   Command,
   Compass,
   Cpu,
   CreditCard,
+  FileCode2,
   FileText,
+  FolderTree,
   Layers,
+  LayoutDashboard,
   LayoutGrid,
+  Rocket,
   Settings,
   ShieldCheck,
   Sparkles,
   Terminal,
+  UserCog,
   Users,
   Wrench,
   Zap,
 } from "lucide-react";
 import Link from "next/link";
-import { docsConfig } from "@/lib/docs-config";
+import { docsConfig, getDocBadge } from "@/lib/docs-config";
 
 const iconMap: { [key: string]: any } = {
   BookOpen,
@@ -41,6 +48,12 @@ const iconMap: { [key: string]: any } = {
   ShieldCheck,
   CreditCard,
   FileText,
+  Rocket,
+  LayoutDashboard,
+  FolderTree,
+  UserCog,
+  Bell,
+  Code,
 };
 
 const badgeColors: Record<string, string> = {
@@ -54,11 +67,19 @@ const categoryIcons: Record<string, any> = {
   "Core Features": Cpu,
   "Advanced Tools": Wrench,
   Platform: LayoutGrid,
+  Developers: FileCode2,
 };
 
 export default function DocsIndexPage() {
   const allItems = Object.values(docsConfig).flat();
-  const popularSlugs = ["overview", "extension", "tasks", "sprints"];
+  const popularSlugs = [
+    "getting-started",
+    "overview",
+    "extension",
+    "tasks",
+    "sprints",
+    "kaya-ai",
+  ];
   const popularItems = popularSlugs
     .map((s) => allItems.find((d) => d.slug === s)!)
     .filter(Boolean);
@@ -80,6 +101,31 @@ export default function DocsIndexPage() {
         </p>
       </div>
 
+      {/* Quickstart CTA */}
+      <Link
+        href="/web/docs/getting-started"
+        className="group relative flex items-center gap-4 p-5 mb-12 rounded-xl border border-emerald-500/20 bg-gradient-to-r from-emerald-950/30 via-emerald-950/10 to-transparent hover:border-emerald-500/30 hover:from-emerald-950/40 transition-all duration-300"
+      >
+        <div className="w-10 h-10 rounded-xl bg-emerald-500/15 border border-emerald-500/20 flex items-center justify-center shrink-0 group-hover:bg-emerald-500/20 transition-colors">
+          <Rocket className="h-5 w-5 text-emerald-400" />
+        </div>
+        <div className="min-w-0 flex-1">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-sm font-semibold text-emerald-300 group-hover:text-emerald-200 transition-colors">
+              New to Wekraft?
+            </span>
+            <span className="text-[9px] font-semibold rounded px-1.5 py-0.5 leading-none bg-emerald-500/15 text-emerald-400 border border-emerald-500/20">
+              5 min
+            </span>
+          </div>
+          <p className="text-xs text-white/40 leading-relaxed">
+            Follow our quick start guide to create your first project, invite
+            your team, and ship your first sprint.
+          </p>
+        </div>
+        <ArrowRight className="h-4 w-4 text-emerald-400/50 group-hover:text-emerald-400 group-hover:translate-x-1 transition-all shrink-0" />
+      </Link>
+
       {/* Quick start cards */}
       <div className="mb-12">
         <h2 className="text-xs font-semibold uppercase tracking-widest text-white/25 mb-4">
@@ -88,6 +134,7 @@ export default function DocsIndexPage() {
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
           {popularItems.map((doc) => {
             const Icon = iconMap[doc.icon ?? ""] || BookOpen;
+            const badge = getDocBadge(doc);
             return (
               <Link
                 key={doc.slug}
@@ -102,11 +149,11 @@ export default function DocsIndexPage() {
                     <span className="text-sm font-medium text-white/80 group-hover:text-white transition-colors">
                       {doc.title}
                     </span>
-                    {doc.badge && (
+                    {badge && (
                       <span
-                        className={`text-[9px] font-semibold rounded px-1.5 py-0.5 leading-none ${badgeColors[doc.badge]}`}
+                        className={`text-[9px] font-semibold rounded px-1.5 py-0.5 leading-none ${badgeColors[badge]}`}
                       >
-                        {doc.badge}
+                        {badge}
                       </span>
                     )}
                   </div>
@@ -134,10 +181,14 @@ export default function DocsIndexPage() {
                 <h2 className="text-sm font-semibold text-white/70">
                   {category}
                 </h2>
+                <span className="text-[10px] text-white/20 font-mono">
+                  {items.length} {items.length === 1 ? "article" : "articles"}
+                </span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                 {items.map((doc) => {
                   const Icon = iconMap[doc.icon ?? ""] || BookOpen;
+                  const badge = getDocBadge(doc);
                   return (
                     <Link
                       key={doc.slug}
@@ -148,11 +199,11 @@ export default function DocsIndexPage() {
                       <span className="text-sm text-white/55 group-hover:text-white/80 transition-colors flex-1 font-medium">
                         {doc.title}
                       </span>
-                      {doc.badge && (
+                      {badge && (
                         <span
-                          className={`text-[9px] font-semibold rounded px-1.5 py-0.5 leading-none shrink-0 ${badgeColors[doc.badge]}`}
+                          className={`text-[9px] font-semibold rounded px-1.5 py-0.5 leading-none shrink-0 ${badgeColors[badge]}`}
                         >
-                          {doc.badge}
+                          {badge}
                         </span>
                       )}
                       <ArrowRight className="h-3 w-3 text-white/10 group-hover:text-white/30 group-hover:translate-x-0.5 transition-all shrink-0" />
@@ -167,9 +218,9 @@ export default function DocsIndexPage() {
 
       {/* Footer hint */}
       <div className="mt-16 pt-8 border-t border-white/6 flex items-center justify-between text-xs text-white/20">
-        <span>Wekraft Documentation</span>
+        <span>Wekraft Documentation — {allItems.length} articles</span>
         <Link
-          href="/web/docs/overview"
+          href="/web/docs/getting-started"
           className="hover:text-white/40 transition-colors flex items-center gap-1"
         >
           Get started <ArrowRight className="h-3 w-3" />

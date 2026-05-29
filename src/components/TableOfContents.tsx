@@ -12,7 +12,24 @@ interface Heading {
 
 export function TableOfContents({ headings }: { headings: Heading[] }) {
   const [activeId, setActiveId] = useState<string>("");
+  const [scrollProgress, setScrollProgress] = useState(0);
   const observer = useRef<IntersectionObserver | null>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+      if (totalHeight > 0) {
+        setScrollProgress((window.pageYOffset / totalHeight) * 100);
+      } else {
+        setScrollProgress(0);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
 
   useEffect(() => {
     const handleObserver = (entries: IntersectionObserverEntry[]) => {
@@ -72,9 +89,20 @@ export function TableOfContents({ headings }: { headings: Heading[] }) {
   return (
     <aside className="hidden xl:block w-52 shrink-0">
       <div className="sticky top-12">
-        <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/20 mb-4 px-1">
-          On this page
-        </p>
+        <div className="flex items-center justify-between mb-1.5 px-1">
+          <p className="text-[10px] font-semibold uppercase tracking-[0.12em] text-white/20">
+            On this page
+          </p>
+          <span className="text-[9px] font-mono text-white/25">
+            {Math.round(scrollProgress)}%
+          </span>
+        </div>
+        <div className="h-[2px] w-full bg-white/5 rounded-full overflow-hidden mb-4">
+          <div
+            className="h-full bg-gradient-to-r from-blue-500 to-indigo-500 transition-all duration-75 ease-out"
+            style={{ width: `${scrollProgress}%` }}
+          />
+        </div>
         <nav className="relative space-y-1">
           {headings.map((h) => (
             <a
