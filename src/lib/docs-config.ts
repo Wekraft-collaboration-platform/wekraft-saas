@@ -189,7 +189,7 @@ export const docsConfig: { [key: string]: DocItem[] } = {
       created: "2026-05-29",
     },
     {
-      title: "Harry Sr Developer",
+      title: "Harry Dev Agent",
       slug: "harry-dev",
       description:
         "Meet your AI senior developer for code reviews, automation, and issue resolution.",
