@@ -807,9 +807,9 @@ export function MessageComposer({
                   animate={{ opacity: 1, y: 0, scale: 1 }}
                   exit={{ opacity: 0, y: 6, scale: 0.97 }}
                   transition={{ duration: 0.15, ease: "easeOut" }}
-                  className="absolute bottom-[calc(100%+8px)] left-0 w-64 bg-popover border border-border/50 shadow-2xl rounded-xl overflow-hidden z-[200]"
+                  className="absolute bottom-[calc(100%+8px)] left-0 w-64 bg-popover border border-border shadow-2xl rounded-xl overflow-hidden z-[200]"
                 >
-                  <div className="px-3 py-2 border-b border-border/40 bg-muted/50 flex items-center gap-2">
+                  <div className="px-3 py-2 border-b border-border bg-muted/50 flex items-center gap-2">
                     <AtSign className="h-3.5 w-3.5 text-primary" />
                     <span className="text-sm text-muted-foreground">
                       Mention someone
@@ -828,8 +828,8 @@ export function MessageComposer({
                           className={cn(
                             "w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-colors",
                             i === mentionIndex
-                              ? "bg-primary/15"
-                              : "hover:bg-accent/40",
+                              ? "bg-primary/10"
+                              : "hover:bg-accent/20",
                           )}
                         >
                           <Avatar className="h-8 w-8 border border-border/40 shrink-0">
@@ -855,7 +855,7 @@ export function MessageComposer({
                             </span>
                           </div>
                           {i === mentionIndex && (
-                            <span className="ml-auto text-[9px] text-muted-foreground/60 shrink-0">
+                            <span className="ml-auto text-xs text-muted-foreground shrink-0">
                               ↵
                             </span>
                           )}
