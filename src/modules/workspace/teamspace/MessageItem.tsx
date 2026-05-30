@@ -350,10 +350,20 @@ export function MessageItem({
             <div className="flex items-baseline gap-2 mb-1 px-1">
               <span
                 className="font-semibold text-xs hover:underline cursor-pointer leading-tight"
-                style={{ color: getUserColor(message.user_name) }}
+                style={{
+                  color:
+                    message.user_id === "kaya" || message.user_id === "harry"
+                      ? "#ffffff"
+                      : getUserColor(message.user_name),
+                }}
               >
                 {message.user_name}
               </span>
+              {(message.user_id === "kaya" || message.user_id === "harry") && (
+                <span className="text-[9px] text-muted-foreground font-semibold bg-accent/30 px-1.5 py-0.5 rounded border border-border/50 uppercase tracking-wider">
+                  {message.user_id === "kaya" ? "AI PM Agent" : "AI Dev Agent"}
+                </span>
+              )}
             </div>
           )}
 

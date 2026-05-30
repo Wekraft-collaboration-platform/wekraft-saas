@@ -1,5 +1,6 @@
 // hooks/use-teamspace-agent.ts
 import { useState, useCallback, useRef } from "react";
+import { toast } from "sonner";
 
 export interface Message {
     id: string;
@@ -55,7 +56,11 @@ async function streamAgent(
     });
 
     if (!res.ok || !res.body) {
-        callbacks.onError?.(new Error(`HTTP ${res.status}`));
+        if (res.status === 429) {
+            callbacks.onError?.(new Error("rate-limit"));
+        } else {
+            callbacks.onError?.(new Error(`HTTP ${res.status}`));
+        }
         return;
     }
 
@@ -134,29 +139,56 @@ export function useTeamspaceAgent(projectId: string, agent: "kaya" | "harry") {
     }, []);
 
     const sendMessage = useCallback(
-        async (text: string) => {
+        async (
+            text: string,
+            channelId: string,
+            threadParentId: string | null,
+            channelMessages: any[],
+            currentUserName: string
+        ) => {
             const userMsg: Message = {
                 id: `user-${Date.now()}`,
                 role: "user",
                 text,
             };
-            setMessages((prev) => [...prev, userMsg]);
-
             const assistantId = `assistant-${++assistantIdRef.current}`;
-            setMessages((prev) => [
-                ...prev,
+            setMessages([
+                userMsg,
                 { id: assistantId, role: "assistant", text: "" },
             ]);
             setIsStreaming(true);
             setToolStatus(null);
 
-            const allMessages = [...messages, userMsg]
-                .filter((m) => m.role === "user" || m.role === "assistant")
-                .map((m) => ({
+            const assistantTextRef = { current: "" };
+
+            // 1. Filter history: last 5 messages that are less than 1 hour old
+            const oneHourAgo = Date.now() - 60 * 60 * 1000;
+            const recentMessages = channelMessages
+                .filter((m) => m.created_at >= oneHourAgo)
+                .slice(-5);
+
+            // 2. Format history prefixing usernames for user messages
+            const history = recentMessages.map((m) => {
+                const isAgent = m.user_id === "kaya" || m.user_id === "harry";
+                return {
                     id: m.id,
-                    role: m.role,
-                    parts: [{ type: "text", text: m.text }],
-                }));
+                    role: isAgent ? "assistant" as const : "user" as const,
+                    parts: [{
+                        type: "text" as const,
+                        text: isAgent ? m.content : `[User: ${m.user_name}] ${m.content}`
+                    }]
+                };
+            });
+
+            // 3. Append the active message
+            const allMessages = [
+                ...history,
+                {
+                    id: `user-temp-${Date.now()}`,
+                    role: "user" as const,
+                    parts: [{ type: "text" as const, text: `[User: ${currentUserName}] ${text}` }]
+                }
+            ];
 
             try {
                 await streamAgent(
@@ -164,6 +196,7 @@ export function useTeamspaceAgent(projectId: string, agent: "kaya" | "harry") {
                     { projectId, messages: allMessages },
                     {
                         onText: (delta: string) => {
+                            assistantTextRef.current += delta;
                             setMessages((prev) =>
                                 prev.map((m) =>
                                     m.id === assistantId ? { ...m, text: m.text + delta } : m
@@ -193,14 +226,53 @@ export function useTeamspaceAgent(projectId: string, agent: "kaya" | "harry") {
                                 )
                             );
                         },
-                        onFinish: () => {
-                            setIsStreaming(false);
-                            setToolStatus(null);
+                        onFinish: async () => {
+                            // Save final response to the DB
+                            const finalMsgText = assistantTextRef.current;
+                            if (finalMsgText) {
+                                try {
+                                    await fetch("/api/teamspace/messages", {
+                                        method: "POST",
+                                        headers: { "Content-Type": "application/json" },
+                                        body: JSON.stringify({
+                                            channelId,
+                                            projectId,
+                                            content: finalMsgText,
+                                            threadParentId,
+                                            isAgent: true,
+                                            agentName: agent === "kaya" ? "Kaya" : "Harry",
+                                        }),
+                                    });
+                                } catch (e) {
+                                    console.error("Failed to save agent message to database:", e);
+                                }
+                            }
+
+                            // Delay hiding the streaming bubble to allow Ably propagation
+                            setTimeout(() => {
+                                setIsStreaming(false);
+                                setToolStatus(null);
+                            }, 800);
                         },
                         onError: (err: any) => {
                             console.error("Agent Stream error:", err);
-                            setIsStreaming(false);
-                            setToolStatus(null);
+                            const errMsg = err.message === "rate-limit"
+                                ? `Too many requests to ${agent === "kaya" ? "Kaya" : "Harry"}. Please wait for a minute to send again.`
+                                : `Failed to connect to ${agent === "kaya" ? "Kaya" : "Harry"}.`;
+
+                            toast.error(errMsg);
+
+                            setMessages((prev) =>
+                                prev.map((m) =>
+                                    m.id === assistantId ? { ...m, text: errMsg } : m
+                                )
+                            );
+
+                            // Keep error message bubble visible for 5 seconds so the user can read it
+                            setTimeout(() => {
+                                setIsStreaming(false);
+                                setToolStatus(null);
+                            }, 5000);
                         },
                     }
                 );

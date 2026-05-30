@@ -177,6 +177,8 @@ export async function POST(req: NextRequest) {
     content,
     threadParentId,
     poll,
+    isAgent,
+    agentName,
   } = body;
 
   if (!channelId || !projectId || (!content?.trim() && !poll)) {
@@ -195,6 +197,10 @@ export async function POST(req: NextRequest) {
     );
 
   const { user } = access;
+
+  const senderUserId = isAgent && agentName ? agentName.toLowerCase() : userId;
+  const senderUserName = isAgent && agentName ? (agentName.toLowerCase() === "kaya" ? "Kaya" : "Harry") : user.name;
+  const senderUserImage = isAgent && agentName ? `/${agentName.toLowerCase()}.svg` : user.avatarUrl;
 
   await initTeamspaceDB();
 
@@ -244,9 +250,9 @@ export async function POST(req: NextRequest) {
       id,
       channelId,
       projectId,
-      userId,
-      user.name,
-      user.avatarUrl,
+      senderUserId,
+      senderUserName,
+      senderUserImage,
       content ? content.trim() : "",
       linkPreview,
       poll ? JSON.stringify(poll) : null,
@@ -274,9 +280,9 @@ export async function POST(req: NextRequest) {
     id,
     channel_id: channelId,
     project_id: projectId,
-    user_id: userId,
-    user_name: user.name,
-    user_image: user.avatarUrl,
+    user_id: senderUserId,
+    user_name: senderUserName,
+    user_image: senderUserImage,
     content: content ? content.trim() : "",
     link_preview: linkPreview ? JSON.parse(linkPreview) : null,
     poll: poll ? { ...poll, votes: [] } : null,
