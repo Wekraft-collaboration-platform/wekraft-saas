@@ -340,6 +340,46 @@ export const getProjectUsage = query({
 });
 
 // ====================================
+// GET IDs OF PROJECTS THE USER BELONGS TO
+// Used by the Ably token route to scope channel capabilities.
+// ====================================
+export const getMyProjectIds = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) return [];
+
+    // All projects the user owns
+    const ownedProjects = await ctx.db
+      .query("projects")
+      .withIndex("by_owner", (q) => q.eq("ownerId", user._id))
+      .collect();
+
+    // All projects the user is a member of (but doesn't own)
+    const memberships = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    const ownedIds = new Set(ownedProjects.map((p) => p._id as string));
+    const memberIds = memberships
+      .map((m) => m.projectId as string)
+      .filter((id) => !ownedIds.has(id));
+
+    return [...ownedIds, ...memberIds];
+  },
+});
+
+// ====================================
 // GET USER PROJECTS with members (LIMITED )
 // ====================================
 export const getUserProjects = query({
