@@ -273,15 +273,15 @@ function SidebarContent({
     <div className="flex h-full flex-col">
       {/* Logo */}
       <div className="flex items-center justify-center gap-3 px-5 pt-5 pb-4 border-b border-white/6">
-        <Link href="/" className="flex items-center gap-2.5 group">
+        <Link href="/" className="flex items-center gap-3 group">
           <Image
             src="/logo.svg"
             alt="Wekraft"
-            width={24}
-            height={24}
+            width={32}
+            height={32}
             className="shrink-0"
           />
-          <span className="text-sm font-semibold text-white tracking-tight leading-none mt-0.5">
+          <span className="text-base font-semibold text-white tracking-tight leading-none mt-0.5">
             Wekraft
           </span>
         </Link>
@@ -313,7 +313,7 @@ function SidebarContent({
       </div>
 
       {/* Navigation — Collapsible categories */}
-      <nav className="flex-1 overflow-y-auto px-3 pb-6 space-y-5">
+      <nav className="flex-1 overflow-y-auto overscroll-contain px-3 pb-6 space-y-5">
         {Object.entries(filteredDocsConfig).map(([category, items]) => (
           <SidebarCategory
             key={category}
@@ -432,7 +432,7 @@ export default function DocsLayout({
             className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="absolute left-0 top-0 h-full w-72 bg-[#0a0a0a] border-r border-white/8 shadow-2xl animate-in slide-in-from-left duration-200">
+          <aside className="absolute left-0 top-0 h-full w-80 bg-[#0a0a0a] border-r border-white/8 shadow-2xl animate-in slide-in-from-left duration-200">
             <button
               onClick={() => setMobileOpen(false)}
               className="absolute top-4 right-4 p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition-colors z-10"
@@ -449,14 +449,14 @@ export default function DocsLayout({
 
       <div className="flex">
         {/* Desktop Sidebar */}
-        <aside className="fixed left-0 top-0 hidden h-full w-64 border-r border-white/6 bg-[#080808] lg:flex flex-col z-20">
+        <aside className="fixed left-0 top-0 hidden h-full w-72 border-r border-white/6 bg-[#080808] lg:flex flex-col z-20">
           <SidebarContent
             pathname={pathname}
           />
         </aside>
 
         {/* Main content */}
-        <main className="flex-1 lg:pl-64 min-w-0">
+        <main className="flex-1 lg:pl-72 min-w-0">
           <div className="w-full px-6 py-12 lg:px-10 lg:py-14">{children}</div>
         </main>
       </div>

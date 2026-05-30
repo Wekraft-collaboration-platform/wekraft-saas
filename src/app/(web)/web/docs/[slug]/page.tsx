@@ -43,7 +43,7 @@ export async function generateMetadata({
   }
 
   return {
-    title: `${doc.title} | Documentation`,
+    title: doc.title,
     description: doc.description,
     openGraph: {
       title: `${doc.title} | Wekraft Documentation`,
