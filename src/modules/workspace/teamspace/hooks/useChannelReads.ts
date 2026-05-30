@@ -2,18 +2,9 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Ably from "ably";
+import { getAblyClient } from "@/lib/ably";
 
-let ablyClient: Ably.Realtime | null = null;
 
-function getAblyClient(): Ably.Realtime {
-  if (!ablyClient) {
-    ablyClient = new Ably.Realtime({
-      authUrl: "/api/teamspace/ably-token",
-      authMethod: "GET",
-    });
-  }
-  return ablyClient;
-}
 
 export function useChannelReads(projectId: string, channelId?: string | null) {
   const [reads, setReads] = useState<Record<string, number>>({});

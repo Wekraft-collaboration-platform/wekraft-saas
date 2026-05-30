@@ -2,17 +2,7 @@
 import { useState, useCallback, useRef, useEffect } from "react";
 import { toast } from "sonner";
 import * as Ably from "ably";
-
-let ablyClient: Ably.Realtime | null = null;
-function getAblyClient(): Ably.Realtime {
-  if (!ablyClient) {
-    ablyClient = new Ably.Realtime({
-      authUrl: "/api/teamspace/ably-token",
-      authMethod: "GET",
-    });
-  }
-  return ablyClient;
-}
+import { getAblyClient } from "@/lib/ably";
 
 export interface Message {
   id: string;

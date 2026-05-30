@@ -27,15 +27,6 @@ export async function GET(req: NextRequest) {
 
   await initTeamspaceDB();
 
-  // Run migration to rename old default channels if any exist
-  try {
-    await turso.execute({
-      sql: "UPDATE ts_channels SET name = 'general' WHERE is_default = 1 AND project_id = ?",
-      args: [projectId],
-    });
-  } catch (e) {
-    // Ignore migration failures
-  }
 
   const querySql = `
     SELECT 

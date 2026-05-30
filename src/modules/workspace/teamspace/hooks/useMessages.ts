@@ -21,6 +21,7 @@
 
 import { useState, useEffect, useRef, useCallback } from "react";
 import Ably from "ably";
+import { getAblyClient } from "@/lib/ably";
 import { toast } from "sonner";
 import { chatDb } from "@/lib/db";
 
@@ -75,17 +76,7 @@ export interface TypingUser {
   userName: string;
 }
 
-let ablyClient: Ably.Realtime | null = null;
 
-function getAblyClient(): Ably.Realtime {
-  if (!ablyClient) {
-    ablyClient = new Ably.Realtime({
-      authUrl: "/api/teamspace/ably-token",
-      authMethod: "GET",
-    });
-  }
-  return ablyClient;
-}
 
 // Global in-memory cache for ultra-fast prefetching and cross-component sync
 const memoryCache: Record<string, { messages: Message[], nextCursor: string | null, timestamp: number }> = {};
@@ -147,6 +138,10 @@ export function useMessages(channelId: string | null, projectId: string, current
   
   const subscriptionRef = useRef<Ably.RealtimeChannel | null>(null);
   const typingTimerRef = useRef<NodeJS.Timeout | null>(null);
+  // Always-current snapshot of messages — lets mutation callbacks roll back
+  // without capturing `messages` in their deps and re-creating on every message.
+  const messagesRef = useRef<Message[]>(messages);
+  messagesRef.current = messages;
 
   // Initial cache load
   useEffect(() => {
@@ -446,7 +441,7 @@ export function useMessages(channelId: string | null, projectId: string, current
 
   const editMessage = useCallback(
     async (messageId: string, content: string) => {
-      const previousMessages = [...messages];
+      const snapshot = messagesRef.current;
       setMessages((prev) =>
         prev.map((m) => (m.id === messageId ? { ...m, content: content.trim(), edited_at: Date.now() } : m))
       );
@@ -460,16 +455,16 @@ export function useMessages(channelId: string | null, projectId: string, current
         if (!res.ok) throw new Error("Failed to edit message");
       } catch (err) {
         console.error("Edit message sync error:", err);
-        setMessages(previousMessages);
+        setMessages(snapshot);
         toast.error("Failed to edit message. Please try again.");
       }
     },
-    [messages, projectId]
+    [projectId]
   );
 
   const editPoll = useCallback(
     async (messageId: string, poll: any) => {
-      const previousMessages = [...messages];
+      const snapshot = messagesRef.current;
       setMessages((prev) =>
         prev.map((m) =>
           m.id === messageId
@@ -487,16 +482,16 @@ export function useMessages(channelId: string | null, projectId: string, current
         if (!res.ok) throw new Error("Failed to update poll");
       } catch (err) {
         console.error("Edit poll sync error:", err);
-        setMessages(previousMessages);
+        setMessages(snapshot);
         toast.error("Failed to update poll. Please try again.");
       }
     },
-    [messages, projectId]
+    [projectId]
   );
 
   const deleteMessage = useCallback(
     async (messageId: string) => {
-      const previousMessages = [...messages];
+      const snapshot = messagesRef.current;
       setMessages((prev) =>
         prev.map((m) =>
           m.id === messageId ? { ...m, content: "$__DELETED__$", poll: null, reactions: [], edited_at: Date.now() } : m
@@ -510,16 +505,16 @@ export function useMessages(channelId: string | null, projectId: string, current
         if (!res.ok) throw new Error("Failed to delete message");
       } catch (err) {
         console.error("Delete message sync error:", err);
-        setMessages(previousMessages);
+        setMessages(snapshot);
         toast.error("Failed to delete message. Please try again.");
       }
     },
-    [messages, projectId]
+    [projectId]
   );
 
   const togglePin = useCallback(
     async (messageId: string, pin: boolean) => {
-      const previousMessages = [...messages];
+      const snapshot = messagesRef.current;
       setMessages((prev) =>
         prev.map((m) => (m.id === messageId ? { ...m, is_pinned: pin ? 1 : 0 } : m))
       );
@@ -533,18 +528,18 @@ export function useMessages(channelId: string | null, projectId: string, current
         if (!res.ok) throw new Error("Failed to update pin");
       } catch (err) {
         console.error("Pin sync error:", err);
-        setMessages(previousMessages);
+        setMessages(snapshot);
         toast.error("Failed to update pin status.");
       }
     },
-    [messages, projectId]
+    [projectId]
   );
 
   const toggleReaction = useCallback(
     async (messageId: string, emoji: string, hasReacted: boolean) => {
       if (!channelId || !projectId) return;
 
-      const previousMessages = [...messages];
+      const snapshot = messagesRef.current;
       setMessages((prev) =>
         prev.map((m) => {
           if (m.id !== messageId) return m;
@@ -580,35 +575,36 @@ export function useMessages(channelId: string | null, projectId: string, current
         if (!response.ok) throw new Error("Failed to update reaction on server");
       } catch (error) {
         console.error("Reaction sync error:", error);
-        setMessages(previousMessages);
+        setMessages(snapshot);
       }
     },
-    [currentUserId, messages, channelId, projectId]
+    [currentUserId, channelId, projectId]
   );
 
   const togglePollVote = useCallback(
     async (messageId: string, optionId: string) => {
       if (!channelId || !projectId) return;
 
-      const msg = messages.find(m => m.id === messageId);
+      // Read from ref so we don't need `messages` in deps
+      const snapshot = messagesRef.current;
+      const msg = snapshot.find((m) => m.id === messageId);
       if (!msg || !msg.poll) return;
 
-      const previousMessages = [...messages];
       setMessages((prev) =>
         prev.map((m) => {
           if (m.id !== messageId || !m.poll) return m;
           let votes = [...m.poll.votes];
-          const existing = votes.find(v => v.option_id === optionId && v.user_id === currentUserId);
-          
+          const existing = votes.find((v) => v.option_id === optionId && v.user_id === currentUserId);
+
           if (existing) {
-            votes = votes.filter(v => !(v.option_id === optionId && v.user_id === currentUserId));
+            votes = votes.filter((v) => !(v.option_id === optionId && v.user_id === currentUserId));
           } else {
             if (!m.poll.allowMultiple) {
-              votes = votes.filter(v => v.user_id !== currentUserId);
+              votes = votes.filter((v) => v.user_id !== currentUserId);
             }
             votes.push({ option_id: optionId, user_id: currentUserId, user_name: currentUserName || "User", user_image: null });
           }
-          
+
           return { ...m, poll: { ...m.poll, votes } };
         })
       );
@@ -622,10 +618,10 @@ export function useMessages(channelId: string | null, projectId: string, current
         if (!response.ok) throw new Error("Failed to vote on poll");
       } catch (error) {
         console.error("Poll vote sync error:", error);
-        setMessages(previousMessages);
+        setMessages(snapshot);
       }
     },
-    [currentUserId, currentUserName, messages, channelId, projectId]
+    [currentUserId, currentUserName, channelId, projectId]
   );
 
   const loadMore = useCallback(() => {
@@ -648,5 +644,3 @@ export function useMessages(channelId: string | null, projectId: string, current
     loadMore,
   };
 }
-
-
