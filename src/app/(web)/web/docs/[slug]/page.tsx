@@ -43,7 +43,7 @@ export async function generateMetadata({
   }
 
   return {
-    title: `${doc.title} | Documentation`,
+    title: doc.title,
     description: doc.description,
     openGraph: {
       title: `${doc.title} | Wekraft Documentation`,
@@ -223,7 +223,7 @@ const markdownComponents: Components = {
       <h1 className="text-[2.2rem] font-bold text-white tracking-tight mt-0 mb-4 leading-snug">
         {children}
       </h1>
-      <div className="flex items-center gap-6 text-[0.9rem] text-white/50 mb-8 border-b border-white/8 pb-8">
+      <div className="flex items-center gap-6 text-[0.9rem] text-[#a3a3a3] mb-8 border-b border-white/8 pb-8">
         <div className="flex items-center gap-2">
           <Clock className="h-4 w-4" />
           <span data-reading-time>5 min read</span>
@@ -244,7 +244,7 @@ const markdownComponents: Components = {
     return (
       <h2
         id={id}
-        className="text-[1.2rem] font-semibold text-white mt-12 mb-4 pb-3 scroll-mt-24 border-b border-white/8"
+        className="text-[1.2rem] font-semibold text-[#e5e5e5] mt-12 mb-4 pb-3 scroll-mt-24 border-b border-white/8"
       >
         {children}
       </h2>
@@ -255,14 +255,14 @@ const markdownComponents: Components = {
     return (
       <h3
         id={id}
-        className="text-[0.95rem] font-semibold text-white/85 mt-8 mb-3 scroll-mt-24"
+        className="text-[0.95rem] font-semibold text-[#e5e5e5] mt-8 mb-3 scroll-mt-24"
       >
         {children}
       </h3>
     );
   },
   p: ({ children }) => (
-    <p className="text-[0.925rem] text-white/55 leading-[1.8] mb-5">
+    <p className="text-[0.925rem] text-[#a3a3a3] leading-[1.8] mb-5">
       {children}
     </p>
   ),
@@ -281,7 +281,7 @@ const markdownComponents: Components = {
     </ol>
   ),
   li: ({ children }) => (
-    <li className="flex items-start gap-3 text-[0.925rem] text-white/55 leading-[1.7]">
+    <li className="flex items-start gap-3 text-[0.925rem] text-[#a3a3a3] leading-[1.7]">
       <span className="mt-[0.55rem] h-[5px] w-[5px] rounded-full bg-white/20 shrink-0" />
       <span className="flex-1">{children}</span>
     </li>
@@ -381,15 +381,15 @@ const markdownComponents: Components = {
     </tr>
   ),
   td: ({ children }) => (
-    <td className="px-5 py-3 text-white/55 text-[0.875rem] leading-relaxed align-top border-r border-white/5 last:border-r-0 first:whitespace-nowrap first:font-medium">
+    <td className="px-5 py-3 text-[#a3a3a3] text-[0.875rem] leading-relaxed align-top border-r border-white/5 last:border-r-0 first:whitespace-nowrap first:font-medium">
       {parseLineBreaks(children)}
     </td>
   ),
   hr: () => <hr className="my-10 border-white/8" />,
   strong: ({ children }) => (
-    <strong className="font-semibold text-white/85">{children}</strong>
+    <strong className="font-semibold text-[#e5e5e5]">{children}</strong>
   ),
-  em: ({ children }) => <em className="italic text-white/50">{children}</em>,
+  em: ({ children }) => <em className="italic text-[#a3a3a3]">{children}</em>,
 };
 
 export default async function DocPage({
@@ -419,7 +419,10 @@ export default async function DocPage({
   )?.[0];
 
   // Inject reading time into content rendering by replacing the placeholder
-  const contentWithMeta = content.replace(/^# .+$/m, (match) => match);
+  const contentWithMeta = content.replace(
+    /^# .+$/m,
+    (match) => match,
+  );
 
   return (
     <div className="flex gap-12 xl:gap-16 w-full">
@@ -459,7 +462,7 @@ export default async function DocPage({
                   <h1 className="text-[2.2rem] font-bold text-white tracking-tight mt-0 mb-4 leading-snug">
                     {children}
                   </h1>
-                  <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-[0.8rem] sm:text-[0.9rem] text-white/50 mb-8 border-b border-white/8 pb-8">
+                  <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-[0.8rem] sm:text-[0.9rem] text-[#a3a3a3] mb-8 border-b border-white/8 pb-8">
                     <div className="flex items-center gap-2">
                       <Clock className="h-4 w-4" />
                       <span>{readingTime} min read</span>
@@ -487,11 +490,7 @@ export default async function DocPage({
         {/* Prev / Next Nav */}
         <div className="mt-12 pt-6 border-t border-white/8 flex items-center justify-between">
           {prevDoc ? (
-            <Button
-              variant="ghost"
-              asChild
-              className="h-auto py-3 px-4 flex-col items-start text-left gap-1"
-            >
+            <Button variant="ghost" asChild className="h-auto py-3 px-4 flex-col items-start text-left gap-1">
               <Link href={`/web/docs/${prevDoc.slug}`}>
                 <span className="text-[10px] text-white/30 uppercase tracking-widest font-semibold">
                   Previous
@@ -507,11 +506,7 @@ export default async function DocPage({
           )}
 
           {nextDoc ? (
-            <Button
-              variant="ghost"
-              asChild
-              className="h-auto py-3 px-4 flex-col items-end text-right gap-1"
-            >
+            <Button variant="ghost" asChild className="h-auto py-3 px-4 flex-col items-end text-right gap-1">
               <Link href={`/web/docs/${nextDoc.slug}`}>
                 <span className="text-[10px] text-white/30 uppercase tracking-widest font-semibold">
                   Next

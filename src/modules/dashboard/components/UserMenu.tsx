@@ -69,11 +69,7 @@ export function UserMenu() {
           className="cursor-pointer rounded-md transition-colors"
         >
           <Github className="mr-2 h-4 w-4" />
-          <span>
-            {user?.githubUsername
-              ? `@${user?.githubUsername}`
-              : "Not Connected yet"}
-          </span>
+          <span>{user?.githubUsername ? `@${user?.githubUsername}` : "Not Connected yet"}</span>
         </DropdownMenuItem>
 
         <DropdownMenuItem

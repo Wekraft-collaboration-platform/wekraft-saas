@@ -1,6 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
+
 // ====================================
 // CONNECT REPO  & update project.
 // ====================================
@@ -33,12 +34,10 @@ export const connectRepository = mutation({
     }
 
     // Check if repo already exists for this user
-    let repoId = (
-      await ctx.db
-        .query("repositories")
-        .withIndex("by_github_id", (q) => q.eq("githubId", args.githubId))
-        .unique()
-    )?._id;
+    let repoId = (await ctx.db
+      .query("repositories")
+      .withIndex("by_github_id", (q) => q.eq("githubId", args.githubId))
+      .unique())?._id;
 
     if (!repoId) {
       repoId = await ctx.db.insert("repositories", {
@@ -67,6 +66,8 @@ export const connectRepository = mutation({
     return { success: true, repoId, projectId: args.projectId };
   },
 });
+
+
 
 export const getConnectedRepos = query({
   args: {},
@@ -115,7 +116,7 @@ export const getRepositoryById = query({
     if (!repo) return null;
 
     const owner = await ctx.db.get(repo.userId);
-
+    
     // Extract raw clerk ID from tokenIdentifier (e.g., "https://clerk...|user_2...")
     const ownerClerkId = owner?.clerkToken.split("|").pop();
 
@@ -142,3 +143,5 @@ export const setWebhookConnected = mutation({
     }
   },
 });
+
+

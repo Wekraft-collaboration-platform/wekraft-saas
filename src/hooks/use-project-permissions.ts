@@ -4,12 +4,10 @@ import { useQuery } from "convex/react";
 import { api } from "../../convex/_generated/api";
 import { Id } from "../../convex/_generated/dataModel";
 
-export const useProjectPermissions = (
-  projectId: Id<"projects"> | undefined,
-) => {
+export const useProjectPermissions = (projectId: Id<"projects"> | undefined) => {
   const permissions = useQuery(
     api.project.getProjectPermissions,
-    projectId ? { projectId } : "skip",
+    projectId ? { projectId } : "skip"
   );
 
   return {

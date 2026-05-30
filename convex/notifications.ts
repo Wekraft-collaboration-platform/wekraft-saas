@@ -52,13 +52,12 @@ async function getPowerUsers(ctx: any, projectId: Id<"projects">) {
     (m: any) => m.AccessRole === "owner" || m.AccessRole === "admin",
   );
 
-  const powerUserIds = new Set(
-    powerMembers.map((m: any) => m.userId as Id<"users">),
-  );
+  const powerUserIds = new Set(powerMembers.map((m: any) => m.userId as Id<"users">));
   powerUserIds.add(project.ownerId);
 
   return Array.from(powerUserIds).map((userId) => ({ userId }));
 }
+
 
 // ─── Helper: fan-out a notification to multiple recipients ──────────────────
 async function fanOut(
@@ -89,8 +88,8 @@ async function fanOut(
  */
 export const notifyMemberJoined = internalMutation({
   args: {
-    actorId: v.id("users"), // who performed the action (admin accepting)
-    newMemberId: v.id("users"), // the person who joined
+    actorId: v.id("users"),          // who performed the action (admin accepting)
+    newMemberId: v.id("users"),      // the person who joined
     newMemberName: v.string(),
     newMemberAvatar: v.optional(v.string()),
     projectId: v.id("projects"),
@@ -230,8 +229,7 @@ export const notifyRequestDecision = internalMutation({
   },
   handler: async (ctx, args) => {
     const actor = await ctx.db.get(args.actorId);
-    const type =
-      args.decision === "accepted" ? "request_accepted" : "request_rejected";
+    const type = args.decision === "accepted" ? "request_accepted" : "request_rejected";
     const body =
       args.decision === "accepted"
         ? `Your request to join **${args.projectName}** was accepted. Welcome! 🎉`
@@ -314,6 +312,8 @@ export const notifyMentioned = internalMutation({
   },
 });
 
+
+
 /**
  * notifyTeamspaceMention (PUBLIC mutation)
  * Called from the /api/teamspace/messages REST route when someone @mentions
@@ -376,9 +376,7 @@ export const getMyNotifications = query({
 
     const user = await ctx.db
       .query("users")
-      .withIndex("by_token", (q) =>
-        q.eq("clerkToken", identity.tokenIdentifier),
-      )
+      .withIndex("by_token", (q) => q.eq("clerkToken", identity.tokenIdentifier))
       .unique();
 
     if (!user) return [];
@@ -415,9 +413,7 @@ export const getUnreadCount = query({
 
     const user = await ctx.db
       .query("users")
-      .withIndex("by_token", (q) =>
-        q.eq("clerkToken", identity.tokenIdentifier),
-      )
+      .withIndex("by_token", (q) => q.eq("clerkToken", identity.tokenIdentifier))
       .unique();
 
     if (!user) return 0;
@@ -452,9 +448,7 @@ export const markAsRead = mutation({
     // Safety: only the recipient can mark it read
     const user = await ctx.db
       .query("users")
-      .withIndex("by_token", (q) =>
-        q.eq("clerkToken", identity.tokenIdentifier),
-      )
+      .withIndex("by_token", (q) => q.eq("clerkToken", identity.tokenIdentifier))
       .unique();
 
     if (!user || notif.recipientId !== user._id) return;
@@ -473,9 +467,7 @@ export const markAllAsRead = mutation({
 
     const user = await ctx.db
       .query("users")
-      .withIndex("by_token", (q) =>
-        q.eq("clerkToken", identity.tokenIdentifier),
-      )
+      .withIndex("by_token", (q) => q.eq("clerkToken", identity.tokenIdentifier))
       .unique();
 
     if (!user) return;
@@ -501,9 +493,7 @@ export const clearAll = mutation({
 
     const user = await ctx.db
       .query("users")
-      .withIndex("by_token", (q) =>
-        q.eq("clerkToken", identity.tokenIdentifier),
-      )
+      .withIndex("by_token", (q) => q.eq("clerkToken", identity.tokenIdentifier))
       .unique();
 
     if (!user) return;
@@ -532,9 +522,7 @@ export const deleteNotification = mutation({
     // Safety: only the recipient can delete it
     const user = await ctx.db
       .query("users")
-      .withIndex("by_token", (q) =>
-        q.eq("clerkToken", identity.tokenIdentifier),
-      )
+      .withIndex("by_token", (q) => q.eq("clerkToken", identity.tokenIdentifier))
       .unique();
 
     if (!user || notif.recipientId !== user._id) return;
@@ -564,9 +552,7 @@ export const deleteOldNotifications = internalMutation({
       count++;
     }
 
-    console.log(
-      `[Cron Cleanup] Successfully deleted ${count} notifications older than ${args.maxAgeDays} days.`,
-    );
+    console.log(`[Cron Cleanup] Successfully deleted ${count} notifications older than ${args.maxAgeDays} days.`);
     return { deletedCount: count };
   },
 });
@@ -614,3 +600,4 @@ export const sendProjectDurationAlert = internalMutation({
     }
   },
 });
+

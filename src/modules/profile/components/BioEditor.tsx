@@ -11,12 +11,9 @@ import { Textarea } from "@/components/ui/textarea";
 import { api } from "../../../../convex/_generated/api";
 
 // Dynamic import to avoid SSR errors with the editor
-const MDEditor = dynamic(
-  () => import("@uiw/react-md-editor").then((mod) => mod.default),
-  {
-    ssr: false,
-  },
-);
+const MDEditor = dynamic(() => import("@uiw/react-md-editor").then((mod) => mod.default), {
+  ssr: false,
+});
 
 interface BioEditorProps {
   initialBio?: string;
@@ -47,9 +44,7 @@ export function BioEditor({ initialBio = "", isUpgraded }: BioEditorProps) {
         <div className="flex justify-between items-center mb-4 border-b pb-2">
           <div className="flex items-center gap-2">
             <FileText className="h-4 w-4 text-muted-foreground" />
-            <span className="text-sm font-medium text-muted-foreground">
-              About Me.md
-            </span>
+            <span className="text-sm font-medium text-muted-foreground">About Me.md</span>
           </div>
           <Button variant="ghost" size="sm" onClick={() => setIsEditing(true)}>
             <Edit2 className="h-3 w-3 mr-2" />
@@ -60,9 +55,7 @@ export function BioEditor({ initialBio = "", isUpgraded }: BioEditorProps) {
           {bio ? (
             <ReactMarkdown remarkPlugins={[remarkGfm]}>{bio}</ReactMarkdown>
           ) : (
-            <p className="text-muted-foreground italic text-sm">
-              No bio provided yet. Click edit to tell the world about yourself!
-            </p>
+            <p className="text-muted-foreground italic text-sm">No bio provided yet. Click edit to tell the world about yourself!</p>
           )}
         </div>
       </div>
@@ -74,18 +67,14 @@ export function BioEditor({ initialBio = "", isUpgraded }: BioEditorProps) {
       <div className="flex justify-between items-center p-2 border-b bg-muted/30">
         <div className="flex items-center gap-2">
           <FileText className="h-4 w-4 text-muted-foreground" />
-          <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">
-            Editing Profile Content
-          </span>
+          <span className="text-xs font-medium uppercase tracking-wider text-muted-foreground">Editing Profile Content</span>
         </div>
         <div className="flex gap-2">
           <Button variant="ghost" size="sm" onClick={() => setIsEditing(false)}>
             Cancel
           </Button>
           <Button size="sm" onClick={handleSave} disabled={isSaving}>
-            <Save
-              className={`h-3 w-3 mr-2 ${isSaving ? "animate-spin" : ""}`}
-            />
+            <Save className={`h-3 w-3 mr-2 ${isSaving ? "animate-spin" : ""}`} />
             {isSaving ? "Saving..." : "Save Draft"}
           </Button>
         </div>
@@ -107,14 +96,10 @@ export function BioEditor({ initialBio = "", isUpgraded }: BioEditorProps) {
             <div className="p-3 bg-blue-500/10 border border-blue-500/20 rounded-lg text-xs flex items-center gap-3">
               <CheckCircle2 className="h-4 w-4 text-blue-500 shrink-0" />
               <p>
-                As a <strong>Free</strong> user, you can use plain text here.
-                <span
-                  className="text-blue-500 cursor-pointer ml-1 hover:underline font-semibold"
-                  onClick={() => (window.location.href = "/web/pricing")}
-                >
+                As a <strong>Free</strong> user, you can use plain text here. 
+                <span className="text-blue-500 cursor-pointer ml-1 hover:underline font-semibold" onClick={() => (window.location.href = '/web/pricing')}>
                   Upgrade to Plus
-                </span>{" "}
-                to unlock Markdown icons, tables, and stylish formatting.
+                </span> to unlock Markdown icons, tables, and stylish formatting.
               </p>
             </div>
             <Textarea

@@ -2,12 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  Calendar,
-  ChevronDown,
-  FolderKanban,
-  RefreshCwIcon,
-} from "lucide-react";
+import { Calendar, ChevronDown, FolderKanban, RefreshCwIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -75,7 +70,9 @@ export function UpcomingEvents({
         <div className="flex items-center gap-1.5 w-full justify-between">
           <div className="flex items-center gap-1.5">
             <Calendar className="h-4 w-4 text-primary" />
-            <h3 className="text-sm font-medium ">Upcoming Events</h3>
+            <h3 className="text-sm font-medium ">
+              Upcoming Events
+            </h3>
           </div>
           <div className="flex items-center gap-2.5">
             <DropdownMenu>
@@ -84,32 +81,18 @@ export function UpcomingEvents({
                   variant="outline"
                   className="text-[10px] h-6 font-medium text-primary bg-accent! px-2.5 py-0.5 rounded-md cursor-pointer transition-colors shadow-none flex items-center gap-1"
                 >
-                  <span>
-                    {selectedWeeks === 1 ? "1 Week" : `${selectedWeeks} Weeks`}
-                  </span>
+                  <span>{selectedWeeks === 1 ? "1 Week" : `${selectedWeeks} Weeks`}</span>
                   <ChevronDown className="h-3 w-3 opacity-80 shrink-0" />
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent
-                align="start"
-                className="bg-popover border border-border text-foreground"
-              >
-                <DropdownMenuItem
-                  onClick={() => setSelectedWeeks(1)}
-                  className="cursor-pointer text-xs"
-                >
+              <DropdownMenuContent align="start" className="bg-popover border border-border text-foreground">
+                <DropdownMenuItem onClick={() => setSelectedWeeks(1)} className="cursor-pointer text-xs">
                   1 Week
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setSelectedWeeks(2)}
-                  className="cursor-pointer text-xs"
-                >
+                <DropdownMenuItem onClick={() => setSelectedWeeks(2)} className="cursor-pointer text-xs">
                   2 Weeks
                 </DropdownMenuItem>
-                <DropdownMenuItem
-                  onClick={() => setSelectedWeeks(3)}
-                  className="cursor-pointer text-xs"
-                >
+                <DropdownMenuItem onClick={() => setSelectedWeeks(3)} className="cursor-pointer text-xs">
                   3 Weeks
                 </DropdownMenuItem>
               </DropdownMenuContent>
@@ -123,11 +106,17 @@ export function UpcomingEvents({
               className="bg-accent!"
             >
               <RefreshCwIcon
-                className={cn("h-3 w-3", refreshing && "animate-spin")}
+                className={cn(
+                  "h-3 w-3",
+                  refreshing && "animate-spin"
+                )}
               />
             </Button>
           </div>
+
         </div>
+
+
       </div>
 
       {/* Body */}
@@ -135,10 +124,7 @@ export function UpcomingEvents({
         {loading ? (
           <div className="flex flex-col divide-y divide-border/10">
             {Array.from({ length: 2 }).map((_, i) => (
-              <div
-                key={i}
-                className="flex items-start gap-3 px-4 py-2.5 animate-pulse"
-              >
+              <div key={i} className="flex items-start gap-3 px-4 py-2.5 animate-pulse">
                 {/* Date skeleton */}
                 <div className="flex flex-col items-center shrink-0 w-8 gap-1 mt-0.5">
                   <div className="h-4 w-6 bg-muted/40 rounded" />
@@ -161,8 +147,7 @@ export function UpcomingEvents({
             <div>
               <p className="text-base font-medium">No events soon</p>
               <p className="text-sm text-muted-foreground mt-0.5 max-w-[240px]">
-                No upcoming events or meetings in the next {selectedWeeks * 7}{" "}
-                days.
+                No upcoming events or meetings in the next {selectedWeeks * 7} days.
               </p>
             </div>
           </div>
@@ -174,11 +159,7 @@ export function UpcomingEvents({
             return (
               <button
                 key={event._id}
-                onClick={() =>
-                  router.push(
-                    `/dashboard/my-projects/${event.projectSlug}/workspace/calendar`,
-                  )
-                }
+                onClick={() => router.push(`/dashboard/my-projects/${event.projectSlug}/workspace/calendar`)}
                 className="w-full flex items-start gap-0 px-4 py-2 text-left hover:bg-accent/30 cursor-pointer transition-colors duration-150 group outline-none"
               >
                 {/* Left: Date block */}
@@ -186,7 +167,7 @@ export function UpcomingEvents({
                   <span
                     className={cn(
                       "text-[15px] font-bold leading-none",
-                      isToday ? "text-primary" : "text-foreground/80",
+                      isToday ? "text-primary" : "text-foreground/80"
                     )}
                   >
                     {formatDateNum(event.start)}
@@ -194,7 +175,7 @@ export function UpcomingEvents({
                   <span
                     className={cn(
                       "text-[9px] font-semibold uppercase tracking-wider mt-0.5",
-                      isToday ? "text-primary/70" : "text-muted-foreground/60",
+                      isToday ? "text-primary/70" : "text-muted-foreground/60"
                     )}
                   >
                     {isToday ? "TODAY" : formatDay(event.start)}
@@ -214,7 +195,7 @@ export function UpcomingEvents({
                     <div
                       className={cn(
                         "w-full h-full rounded-full",
-                        isToday ? "bg-primary/60" : "bg-border/50",
+                        isToday ? "bg-primary/60" : "bg-border/50"
                       )}
                     />
                   )}

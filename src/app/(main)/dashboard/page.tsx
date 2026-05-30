@@ -79,10 +79,14 @@ export default function DashboardPage() {
   const { user: clerkUser } = useUser();
   const searchParams = useSearchParams();
 
-  const [activeTab, setActiveTab] = useState<"stats" | "projects" | "discover">(
-    "stats",
-  );
+
+
+  const [activeTab, setActiveTab] = useState<"stats" | "projects" | "discover">("stats");
   const [isRightSidebarExpanded, setIsRightSidebarExpanded] = useState(false);
+
+
+
+
 
   const [deadlines, setDeadlines] = useState<any[] | null>(null);
   const [events, setEvents] = useState<any[] | null>(null);
@@ -127,24 +131,14 @@ export default function DashboardPage() {
     const handleExtensionInstalledEvent = () => {
       setExtensionInstalled(true);
     };
-    window.addEventListener(
-      "mark-extension-installed",
-      handleExtensionInstalledEvent,
-    );
-    return () =>
-      window.removeEventListener(
-        "mark-extension-installed",
-        handleExtensionInstalledEvent,
-      );
+    window.addEventListener('mark-extension-installed', handleExtensionInstalledEvent);
+    return () => window.removeEventListener('mark-extension-installed', handleExtensionInstalledEvent);
   }, []);
 
-  const completedIds = useMemo(
-    () => [
-      ...(progressData?.completedSteps ?? []),
-      ...(extensionInstalled ? [7] : []),
-    ],
-    [progressData?.completedSteps, extensionInstalled],
-  );
+  const completedIds = useMemo(() => [
+    ...(progressData?.completedSteps ?? []),
+    ...(extensionInstalled ? [7] : [])
+  ], [progressData?.completedSteps, extensionInstalled]);
 
   useEffect(() => {
     if (searchParams.get("tour") === "resume") {
@@ -152,17 +146,9 @@ export default function DashboardPage() {
       const resumeAfterStr = searchParams.get("resumeAfter");
       const timer = setTimeout(() => {
         if (stepStr) {
-          window.dispatchEvent(
-            new CustomEvent("start-quick-tour", {
-              detail: { step: parseInt(stepStr) },
-            }),
-          );
+          window.dispatchEvent(new CustomEvent("start-quick-tour", { detail: { step: parseInt(stepStr) } }));
         } else if (resumeAfterStr) {
-          window.dispatchEvent(
-            new CustomEvent("start-quick-tour", {
-              detail: { resumeAfter: parseInt(resumeAfterStr) },
-            }),
-          );
+          window.dispatchEvent(new CustomEvent("start-quick-tour", { detail: { resumeAfter: parseInt(resumeAfterStr) } }));
         } else {
           window.dispatchEvent(new CustomEvent("start-quick-tour"));
         }
@@ -174,13 +160,14 @@ export default function DashboardPage() {
 
   // Fetch current user details (for GitHub username & account type limits)
   const currentUser = useQuery(api.user.getCurrentUser);
-  const isGettingStartedCompleted =
-    currentUser?.gettingstartedcompleted ?? false;
+  const isGettingStartedCompleted = currentUser?.gettingstartedcompleted ?? false;
   const githubUsername = currentUser?.githubUsername;
   const updateGithubUsername = useMutation(api.user.updateGithubUsername);
   const userPlan = currentUser?.accountType || "free";
   const createLimit = userPlan === "pro" ? 20 : userPlan === "plus" ? 10 : 2;
   const joinLimit = userPlan === "pro" ? 20 : userPlan === "plus" ? 10 : 2;
+
+
 
   // React query for git stats
   const { data: dashboardStats, isLoading: isStatsLoading } = useReactQuery({
@@ -195,6 +182,7 @@ export default function DashboardPage() {
   // Fetch projects counts
   const ownerProjects = useQuery(api.project.getUserProjects);
   const teamProjects = useQuery(api.project.getJoinedProjects);
+
 
   // ------------GITHUB CONNECTION------------------------
   useEffect(() => {
@@ -216,9 +204,7 @@ export default function DashboardPage() {
         githubAccount?.verification?.status === "verified"
       ) {
         try {
-          await updateGithubUsername({
-            githubUsername: githubAccount.username,
-          });
+          await updateGithubUsername({ githubUsername: githubAccount.username });
         } catch (err) {
           console.error("Failed to update GitHub username in Convex:", err);
         }
@@ -257,7 +243,7 @@ export default function DashboardPage() {
       console.error("❌ Failed to connect GitHub:", error);
       toast.error(
         error?.errors?.[0]?.message ||
-          "Something went wrong while connecting GitHub",
+        "Something went wrong while connecting GitHub",
       );
     }
   };
@@ -268,10 +254,9 @@ export default function DashboardPage() {
     ...(teamProjects?.map((p) => ({ ...p, role: "joined" as const })) ?? []),
   ];
 
-  const sortedProjects =
-    ownerProjects === undefined || teamProjects === undefined
-      ? undefined
-      : allProjects.sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
+  const sortedProjects = ownerProjects === undefined || teamProjects === undefined
+    ? undefined
+    : allProjects.sort((a, b) => (b.createdAt ?? 0) - (a.createdAt ?? 0));
 
   return (
     <div className="w-full bg-background min-h-full text-foreground">
@@ -285,34 +270,23 @@ export default function DashboardPage() {
           <div className="flex-1 min-w-0 flex flex-col gap-6 py-8 pl-8">
             {/* Connect Github */}
 
+
             {/* 3 Metric Cards */}
-            <div
-              id="tour-metrics"
-              className={cn("grid grid-cols-3 gap-8", isSidebarOpen && "gap-5")}
-            >
+            <div id="tour-metrics" className={cn("grid grid-cols-3 gap-8", isSidebarOpen && "gap-5")}>
               {/* Total Commits Card */}
               <div className="dark:bg-sidebar bg-card border border-border rounded-xl p-4 shadow-md flex items-center justify-between group h-[126px]">
                 <div className="flex flex-col justify-between h-full w-full">
                   <div className="flex items-center gap-1.5">
                     <span className="text-sm tracking-wide text-primary flex items-center gap-1">
                       Commits
-                      <span className=" tracking-tighter">
-                        <LucideGitCommitHorizontal />
-                      </span>
+                      <span className=" tracking-tighter"><LucideGitCommitHorizontal /></span>
                     </span>
                   </div>
                   <div className="text-3xl tracking-tight text-foreground mt-1">
                     {currentUser === undefined || isStatsLoading ? (
                       <span className="inline-block h-9 w-20 bg-muted animate-pulse rounded" />
                     ) : !githubUsername ? (
-                      <Button
-                        id="connect-github-btn"
-                        variant="outline"
-                        onClick={handleConnectGithub}
-                        className="text-xs h-7! px-3! font-medium text-muted-foreground cursor-pointer hover:text-primary transition-all"
-                      >
-                        Connect Now
-                      </Button>
+                      <Button id="connect-github-btn" variant='outline' onClick={handleConnectGithub} className="text-xs h-7! px-3! font-medium text-muted-foreground cursor-pointer hover:text-primary transition-all">Connect Now</Button>
                     ) : (
                       <span>{dashboardStats?.totalCommits ?? 0}</span>
                     )}
@@ -339,9 +313,7 @@ export default function DashboardPage() {
                       {currentUser === undefined || isStatsLoading ? (
                         <span className="inline-block h-9 w-12 bg-muted animate-pulse rounded" />
                       ) : !githubUsername ? (
-                        <span className="text-lg font-medium text-muted-foreground">
-                          ....
-                        </span>
+                        <span className="text-lg font-medium text-muted-foreground">....</span>
                       ) : (
                         <span>{dashboardStats?.totalPRs ?? 0}</span>
                       )}
@@ -361,9 +333,7 @@ export default function DashboardPage() {
                       {currentUser === undefined || isStatsLoading ? (
                         <span className="inline-block h-9 w-12 bg-muted animate-pulse rounded" />
                       ) : !githubUsername ? (
-                        <span className="text-lg font-medium text-muted-foreground">
-                          ....
-                        </span>
+                        <span className="text-lg font-medium text-muted-foreground">....</span>
                       ) : (
                         <span>{dashboardStats?.totalMergedPRs ?? 0}</span>
                       )}
@@ -397,9 +367,7 @@ export default function DashboardPage() {
                       ) : (
                         <>
                           <span>{ownerProjects.length}</span>
-                          <span className="text-muted-foreground text-lg font-light ml-1.5">
-                            /{createLimit}
-                          </span>
+                          <span className="text-muted-foreground text-lg font-light ml-1.5">/{createLimit}</span>
                         </>
                       )}
                     </div>
@@ -420,9 +388,7 @@ export default function DashboardPage() {
                       ) : (
                         <>
                           <span>{teamProjects.length}</span>
-                          <span className="text-muted-foreground text-lg font-light ml-1.5">
-                            /{joinLimit}
-                          </span>
+                          <span className="text-muted-foreground text-lg font-light ml-1.5">/{joinLimit}</span>
                         </>
                       )}
                     </div>
@@ -435,10 +401,7 @@ export default function DashboardPage() {
             </div>
 
             {/* Tabs Navigation */}
-            <div
-              id="tour-tabs"
-              className="flex items-center gap-2 border-b border-accent pb-px mt-4"
-            >
+            <div id="tour-tabs" className="flex items-center gap-2 border-b border-accent pb-px mt-4">
               <button
                 type="button"
                 onClick={() => setActiveTab("stats")}
@@ -480,17 +443,9 @@ export default function DashboardPage() {
 
             {/* Tab Content */}
             {/* Stats Tab */}
-            <div
-              className={cn(
-                "grid grid-cols-1 md:grid-cols-2 gap-8 w-full animate-in fade-in-50 duration-300",
-                activeTab !== "stats" && "hidden",
-              )}
-            >
+            <div className={cn("grid grid-cols-1 md:grid-cols-2 gap-8 w-full animate-in fade-in-50 duration-300", activeTab !== "stats" && "hidden")}>
               {/* Left Side Column: Notifications Card */}
-              <div
-                id="tour-getting-started"
-                className="flex flex-col rounded-lg border border-border bg-sidebar shadow-md h-150 overflow-hidden"
-              >
+              <div id="tour-getting-started" className="flex flex-col rounded-lg border border-border bg-sidebar shadow-md h-150 overflow-hidden">
                 {/* Onboarding Guide Top Section */}
                 <GettingStartedChecklist />
 
@@ -498,9 +453,7 @@ export default function DashboardPage() {
                   <div className="flex items-center justify-between px-4 py-3 border-b border-border dark:bg-muted bg-accent/80 shrink-0">
                     <div className="flex items-center gap-2">
                       <Bell className="h-4 w-4 text-primary" />
-                      <span className="text-sm font-semibold text-primary">
-                        Notifications
-                      </span>
+                      <span className="text-sm font-semibold text-primary">Notifications</span>
                     </div>
                     <span className="text-xs font-medium text-primary bg-primary/10 px-2 py-0.5 rounded-full border border-primary/10">
                       Total: {notifications?.length ?? 0}
@@ -513,10 +466,7 @@ export default function DashboardPage() {
                   {notifications === undefined ? (
                     <div className="flex flex-col divide-y divide-border/10">
                       {Array.from({ length: 3 }).map((_, i) => (
-                        <div
-                          key={i}
-                          className="flex items-center gap-3 px-4 py-3 animate-pulse"
-                        >
+                        <div key={i} className="flex items-center gap-3 px-4 py-3 animate-pulse">
                           <div className="h-7 w-7 rounded-full bg-muted/40 shrink-0" />
                           <div className="flex-1 space-y-2">
                             <div className="h-3.5 bg-muted/40 rounded w-3/4" />
@@ -541,15 +491,13 @@ export default function DashboardPage() {
                       return (
                         <div
                           key={notif._id}
-                          onClick={() =>
-                            redirectUrl && router.push(redirectUrl)
-                          }
+                          onClick={() => redirectUrl && router.push(redirectUrl)}
                           className={cn(
                             "group relative flex items-start gap-3 px-4 py-3 transition-colors duration-150 text-left outline-none",
                             notif.isRead
                               ? "hover:bg-accent/15"
                               : "bg-primary/5 hover:bg-primary/10",
-                            redirectUrl && "cursor-pointer",
+                            redirectUrl && "cursor-pointer"
                           )}
                         >
                           {/* Left part: Avatar / Type Icon */}
@@ -558,9 +506,7 @@ export default function DashboardPage() {
                               <Avatar className="h-7 w-7 border border-border/20 shadow-sm">
                                 <AvatarImage src={notif.senderAvatar} />
                                 <AvatarFallback className="text-[10px]">
-                                  {notif.senderName
-                                    ?.substring(0, 1)
-                                    .toUpperCase()}
+                                  {notif.senderName?.substring(0, 1).toUpperCase()}
                                 </AvatarFallback>
                               </Avatar>
                             ) : (
@@ -664,26 +610,19 @@ export default function DashboardPage() {
             </div>
 
             {/* Discover Tab */}
-            <div
-              className={cn(
-                "w-full space-y-8 animate-in fade-in-50 duration-300",
-                activeTab !== "discover" && "hidden",
-              )}
-            >
+            <div className={cn("w-full space-y-8 animate-in fade-in-50 duration-300", activeTab !== "discover" && "hidden")}>
               <div className="text-center py-6 max-w-2xl mx-auto space-y-3">
                 <Image
-                  src="/pat106.svg"
+                  src='/pat106.svg'
                   height="100"
-                  width="100"
+                  width='100'
                   className="flex items-center justify-center mx-auto dark:invert-0 invert"
-                  alt="Discover"
-                />
+                  alt="Discover" />
                 <h3 className="text-xl font-bold tracking-tight text-foreground/90">
                   Explore Community Creations
                 </h3>
                 <p className="text-sm text-muted-foreground leading-relaxed">
-                  Coming Soon. Build in public and collaborate with others
-                  worldwide.
+                  Coming Soon. Build in public and collaborate with others worldwide.
                 </p>
                 {/* <div className="pt-4">
                   <CommunitySearchBar />

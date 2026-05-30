@@ -32,8 +32,7 @@ export const MoveToSprintDialog = ({ trigger }: MoveToSprintDialogProps) => {
           <div className="space-y-1">
             <h3 className="font-medium">Sprint Management Coming Soon</h3>
             <p className="text-xs text-muted-foreground max-w-[240px]">
-              You'll soon be able to assign tasks to active sprints directly
-              from here.
+              You'll soon be able to assign tasks to active sprints directly from here.
             </p>
           </div>
         </div>

@@ -1,6 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
+
 export const updatePlanServerSide = mutation({
   args: {
     backendSecret: v.string(),
@@ -26,7 +27,7 @@ export const updatePlanServerSide = mutation({
     }
 
     const user = await ctx.db.get(normalizedUserId);
-
+    
     // Only upgrade the plan if the subscription is active or in trial
     let newPlan = args.plan;
     if (args.status !== "active" && args.status !== "trialing") {
@@ -67,9 +68,7 @@ export const handleSubscriptionUpdate = mutation({
     // Find the user with this customerId or subscriptionId
     let user = await ctx.db
       .query("users")
-      .withIndex("by_subscriptionId", (q) =>
-        q.eq("subscriptionId", args.subscriptionId),
-      )
+      .withIndex("by_subscriptionId", (q) => q.eq("subscriptionId", args.subscriptionId))
       .first();
 
     if (!user) {
@@ -80,14 +79,12 @@ export const handleSubscriptionUpdate = mutation({
     }
 
     if (!user) {
-      throw new Error(
-        `[Stripe Webhook] User not found for customerId: ${args.customerId}`,
-      );
+      throw new Error(`[Stripe Webhook] User not found for customerId: ${args.customerId}`);
     }
 
     // Determine plan type. If canceled, they usually drop to free at the end of the period
     // but here we just update status and let them stay "pro" or "plus" until `currentPeriodEnd`.
-    // In actual implementation, a cron job or a check on the `accountType` would downgrade them
+    // In actual implementation, a cron job or a check on the `accountType` would downgrade them 
     // when `currentPeriodEnd` is reached.
 
     // For now, if status is "canceled" or "past_due" and currentPeriodEnd is in the past, downgrade them immediately.

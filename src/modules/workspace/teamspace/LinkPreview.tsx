@@ -1,5 +1,5 @@
-import React from "react";
-import { ExternalLink } from "lucide-react";
+import React from 'react';
+import { ExternalLink } from 'lucide-react';
 
 interface LinkPreviewProps {
   preview: {
@@ -14,19 +14,14 @@ interface LinkPreviewProps {
 export const LinkPreview: React.FC<LinkPreviewProps> = ({ preview }) => {
   return (
     <div className="mt-2 max-w-md border border-border/50 rounded-lg overflow-hidden bg-muted/30 hover:bg-muted/50 transition-colors group cursor-pointer shadow-sm">
-      <a
-        href={preview.url}
-        target="_blank"
-        rel="noopener noreferrer"
-        className="flex flex-col"
-      >
+      <a href={preview.url} target="_blank" rel="noopener noreferrer" className="flex flex-col">
         {preview.image && (
           <div className="relative w-full h-40 bg-muted overflow-hidden border-b border-border/20">
-            <img
-              src={preview.image}
-              alt={preview.title || "Link preview"}
+            <img 
+              src={preview.image} 
+              alt={preview.title || "Link preview"} 
               className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-              onError={(e) => (e.currentTarget.style.display = "none")}
+              onError={(e) => (e.currentTarget.style.display = 'none')}
             />
           </div>
         )}

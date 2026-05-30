@@ -1,12 +1,12 @@
 /**
  * DeleteChannelDialog.tsx
- *
+ * 
  * Confirmation dialog for deleting a channel.
- *
+ * 
  * Features:
  * - Warning about permanent data loss.
  * - Disables the default channel from being deleted (handled in parent).
- *
+ * 
  * Integration:
  * - Calls the `onConfirm` callback passed from `ChannelsSidebar`.
  */
@@ -35,12 +35,7 @@ interface Props {
   channel: Channel | null;
 }
 
-export function DeleteChannelDialog({
-  open,
-  onOpenChange,
-  onConfirm,
-  channel,
-}: Props) {
+export function DeleteChannelDialog({ open, onOpenChange, onConfirm, channel }: Props) {
   const [loading, setLoading] = useState(false);
   const [confirmName, setConfirmName] = useState("");
 
@@ -71,11 +66,7 @@ export function DeleteChannelDialog({
             <div className="flex-shrink-0 w-12 h-12 rounded-2xl bg-destructive/10 border border-destructive/20 flex items-center justify-center">
               <motion.div
                 animate={{ rotate: [0, 5, -5, 0] }}
-                transition={{
-                  repeat: Infinity,
-                  duration: 2,
-                  ease: "easeInOut",
-                }}
+                transition={{ repeat: Infinity, duration: 2, ease: "easeInOut" }}
               >
                 <AlertTriangle className="w-6 h-6 text-destructive" />
               </motion.div>
@@ -92,31 +83,19 @@ export function DeleteChannelDialog({
 
           <div className="bg-accent/40 rounded-2xl p-4 border border-border/40 mb-6">
             <p className="text-sm text-muted-foreground leading-relaxed mb-4">
-              Are you sure you want to delete{" "}
-              <span className="text-foreground font-bold italic">
-                #{channel?.name}
-              </span>
-              ? All messages and attachments in this channel will be purged from
-              our servers.
+              Are you sure you want to delete <span className="text-foreground font-bold italic">#{channel?.name}</span>? 
+              All messages and attachments in this channel will be purged from our servers.
             </p>
-
+            
             <div className="space-y-2">
               <p className="text-[11px] font-bold uppercase tracking-wider text-muted-foreground/60">
-                To confirm, type{" "}
-                <span className="text-foreground select-none">
-                  "{channel?.name}"
-                </span>{" "}
-                below:
+                To confirm, type <span className="text-foreground select-none">"{channel?.name}"</span> below:
               </p>
               <Input
                 value={confirmName}
                 onChange={(e) => setConfirmName(e.target.value)}
                 onKeyDown={(e) => {
-                  if (
-                    e.key === "Enter" &&
-                    confirmName === channel?.name &&
-                    !loading
-                  ) {
+                  if (e.key === "Enter" && confirmName === channel?.name && !loading) {
                     handleConfirm();
                   }
                 }}

@@ -44,11 +44,7 @@ function deriveCalendarDimensions(containerWidth: number) {
 const ContributionGraph = () => {
   const { theme } = useTheme();
   const containerRef = useRef<HTMLDivElement>(null);
-  const [dims, setDims] = useState({
-    blockSize: 11,
-    blockMargin: 4,
-    fontSize: 12,
-  });
+  const [dims, setDims] = useState({ blockSize: 11, blockMargin: 4, fontSize: 12 });
 
   const user = useConvexQuery(api.user.getCurrentUser);
   const userName = user?.githubUsername;
@@ -81,10 +77,7 @@ const ContributionGraph = () => {
 
   if (isLoading) {
     return (
-      <div
-        className="w-full space-y-3 py-2"
-        aria-label="Loading contribution graph"
-      >
+      <div className="w-full space-y-3 py-2" aria-label="Loading contribution graph">
         <div className="flex items-center gap-2">
           <Skeleton className="h-4 w-4 rounded" />
           <Skeleton className="h-4 w-40" />
@@ -102,9 +95,7 @@ const ContributionGraph = () => {
     return (
       <div className="flex flex-col items-center gap-2 py-8 text-center">
         <AlertCircle className="h-6 w-6 text-muted-foreground/30" />
-        <p className="text-sm text-muted-foreground">
-          No contribution data available
-        </p>
+        <p className="text-sm text-muted-foreground">No contribution data available</p>
       </div>
     );
   }

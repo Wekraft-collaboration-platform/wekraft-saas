@@ -274,10 +274,7 @@ export default function ProjectSidebar() {
       >
         {isCollapsed ? (
           <div className="flex items-center justify-center w-full">
-            <Link
-              href="/dashboard"
-              className="flex items-center justify-center"
-            >
+            <Link href="/dashboard" className="flex items-center justify-center">
               <Image
                 src="/logo.svg"
                 alt="Logo"
@@ -426,10 +423,7 @@ export default function ProjectSidebar() {
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton
                           asChild
-                          isActive={
-                            pathname.includes("/workspace/ai") &&
-                            pathname.includes("kaya=true")
-                          }
+                          isActive={pathname.includes("/workspace/ai") && pathname.includes("kaya=true")}
                           className="group relative h-8 overflow-hidden"
                         >
                           <Link
@@ -454,10 +448,7 @@ export default function ProjectSidebar() {
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton
                           asChild
-                          isActive={
-                            pathname.includes("/workspace/ai") &&
-                            pathname.includes("harry=true")
-                          }
+                          isActive={pathname.includes("/workspace/ai") && pathname.includes("harry=true")}
                           className="group relative h-8 overflow-hidden"
                         >
                           <Link
@@ -488,10 +479,7 @@ export default function ProjectSidebar() {
                   <SidebarMenuButton
                     asChild
                     tooltip="Kaya PM Agent"
-                    isActive={
-                      pathname.includes("/workspace/ai") &&
-                      pathname.includes("kaya=true")
-                    }
+                    isActive={pathname.includes("/workspace/ai") && pathname.includes("kaya=true")}
                     className="group relative overflow-hidden cursor-pointer"
                   >
                     <Link
@@ -511,10 +499,7 @@ export default function ProjectSidebar() {
                   <SidebarMenuButton
                     asChild
                     tooltip="Harry Dev Agent"
-                    isActive={
-                      pathname.includes("/workspace/ai") &&
-                      pathname.includes("harry=true")
-                    }
+                    isActive={pathname.includes("/workspace/ai") && pathname.includes("harry=true")}
                     className="group relative overflow-hidden cursor-pointer"
                   >
                     <Link
@@ -594,192 +579,194 @@ export default function ProjectSidebar() {
 
         {(filteredCollapsibleItems.length > 0 ||
           filteredWorkspaceMenu.length > 0) && (
-          <SidebarMenu className="flex flex-col space-y-1.5">
-            {/*  PROJECT MANAGE COLLAPSIBLE */}
-            {filteredCollapsibleItems.length > 0 &&
-              (!isCollapsed ? (
-                <Collapsible
-                  defaultOpen
-                  open={searchQuery ? true : undefined}
-                  className="group/collapsible"
-                >
-                  <SidebarMenuItem>
-                    <CollapsibleTrigger asChild>
-                      <SidebarMenuButton
-                        asChild
-                        tooltip="Manage Projects"
-                        className="group relative overflow-hidden group-data-[collapsible=icon]:bg-transparent! cursor-pointer"
-                        onClick={() =>
-                          router.push(
-                            `/dashboard/my-projects/${slug}/workspace/tasks`,
-                          )
-                        }
-                      >
-                        <Link
-                          href={`/dashboard/my-projects/${slug}/workspace/tasks`}
-                          className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
+            <SidebarMenu className="flex flex-col space-y-1.5">
+              {/*  PROJECT MANAGE COLLAPSIBLE */}
+              {filteredCollapsibleItems.length > 0 &&
+                (!isCollapsed ? (
+                  <Collapsible
+                    defaultOpen
+                    open={searchQuery ? true : undefined}
+                    className="group/collapsible"
+                  >
+                    <SidebarMenuItem>
+                      <CollapsibleTrigger asChild>
+                        <SidebarMenuButton
+                          asChild
+                          tooltip="Manage Projects"
+                          className="group relative overflow-hidden group-data-[collapsible=icon]:bg-transparent! cursor-pointer"
+                          onClick={() =>
+                            router.push(
+                              `/dashboard/my-projects/${slug}/workspace/tasks`,
+                            )
+                          }
                         >
-                          <ListTree className="h-5 w-5" />
-                          <span className="text-sm font-medium group-data-[collapsible=icon]:hidden">
-                            Manage
-                          </span>
-                          <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]:hidden" />
-                        </Link>
-                      </SidebarMenuButton>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <SidebarMenuSub className="border-l border-dashed dark:border-neautral-400! border-muted-foreground ml-[21px] pl-3 gap-1.5">
-                        {filteredCollapsibleItems.map((item) => {
-                          const href = `/dashboard/my-projects/${slug}/${item.path}`;
-                          const active = isActive(href);
-                          return (
-                            <SidebarMenuSubItem key={item.path}>
-                              <SidebarMenuSubButton
-                                asChild
-                                isActive={active}
-                                className="group relative h-8 overflow-hidden"
-                              >
-                                <Link
-                                  href={href}
-                                  className="relative z-10 flex items-center w-full gap-2.5"
+                          <Link
+                            href={`/dashboard/my-projects/${slug}/workspace/tasks`}
+                            className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
+                          >
+                            <ListTree className="h-5 w-5" />
+                            <span className="text-sm font-medium group-data-[collapsible=icon]:hidden">
+                              Manage
+                            </span>
+                            <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]:hidden" />
+                          </Link>
+                        </SidebarMenuButton>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <SidebarMenuSub className="border-l border-dashed dark:border-neautral-400! border-muted-foreground ml-[21px] pl-3 gap-1.5">
+                          {filteredCollapsibleItems.map((item) => {
+                            const href = `/dashboard/my-projects/${slug}/${item.path}`;
+                            const active = isActive(href);
+                            return (
+                              <SidebarMenuSubItem key={item.path}>
+                                <SidebarMenuSubButton
+                                  asChild
+                                  isActive={active}
+                                  className="group relative h-8 overflow-hidden"
                                 >
-                                  <item.icon
-                                    className={cn(
-                                      "h-4 w-4 shrink-0 transition-colors",
-                                      active
-                                        ? "text-foreground"
-                                        : "text-muted-foreground!",
-                                    )}
-                                  />
-                                  <span
-                                    className={cn(
-                                      "text-sm transition-colors",
-                                      active
-                                        ? " text-foreground"
-                                        : "text-muted-foreground hover:text-foreground",
-                                    )}
+                                  <Link
+                                    href={href}
+                                    className="relative z-10 flex items-center w-full gap-2.5"
                                   >
-                                    {item.label}
-                                  </span>
+                                    <item.icon
+                                      className={cn(
+                                        "h-4 w-4 shrink-0 transition-colors",
+                                        active
+                                          ? "text-foreground"
+                                          : "text-muted-foreground!",
+                                      )}
+                                    />
+                                    <span
+                                      className={cn(
+                                        "text-sm transition-colors",
+                                        active
+                                          ? " text-foreground"
+                                          : "text-muted-foreground hover:text-foreground",
+                                      )}
+                                    >
+                                      {item.label}
+                                    </span>
 
-                                  <span
-                                    className="
+                                    <span
+                                      className="
                             pointer-events-none absolute inset-y-0 right-0 left-[-13px] -z-10
                             opacity-0 transition-opacity
                             group-data-[active=true]:opacity-100
                             bg-linear-to-l from-blue-600 dark:from-blue-600/70 via-blue-600/20 to-transparent!
                           "
-                                  />
-                                </Link>
-                              </SidebarMenuSubButton>
-                            </SidebarMenuSubItem>
-                          );
-                        })}
-                      </SidebarMenuSub>
-                    </CollapsibleContent>
-                  </SidebarMenuItem>
-                </Collapsible>
-              ) : (
-                filteredCollapsibleItems.map((item) => {
-                  const Icon = item.icon;
-                  const href = `/dashboard/my-projects/${slug}/${item.path}`;
+                                    />
+                                  </Link>
+                                </SidebarMenuSubButton>
+                              </SidebarMenuSubItem>
+                            );
+                          })}
+                        </SidebarMenuSub>
+                      </CollapsibleContent>
+                    </SidebarMenuItem>
+                  </Collapsible>
+                ) : (
+                  filteredCollapsibleItems.map((item) => {
+                    const Icon = item.icon;
+                    const href = `/dashboard/my-projects/${slug}/${item.path}`;
 
-                  return (
-                    <SidebarMenuItem key={item.path}>
-                      <SidebarMenuButton
-                        key={item.path}
-                        asChild
-                        tooltip={item.label}
-                        isActive={isActive(href)}
-                        className="group relative overflow-hidden cursor-pointer"
-                      >
-                        <Link
-                          href={href}
-                          className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
+                    return (
+                      <SidebarMenuItem key={item.path}>
+                        <SidebarMenuButton
+                          key={item.path}
+                          asChild
+                          tooltip={item.label}
+                          isActive={isActive(href)}
+                          className="group relative overflow-hidden cursor-pointer"
                         >
-                          <Icon
-                            className={cn(
-                              "h-5 w-5 transition-colors",
-                              isActive(href)
-                                ? "text-foreground"
-                                : "text-foreground",
-                            )}
-                          />
-                          <span className="text-sm group-data-[collapsible=icon]:hidden">
-                            {item.label}
-                          </span>
-                          <span
-                            className="
+                          <Link
+                            href={href}
+                            className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
+                          >
+                            <Icon
+                              className={cn(
+                                "h-5 w-5 transition-colors",
+                                isActive(href)
+                                  ? "text-foreground"
+                                  : "text-foreground",
+                              )}
+                            />
+                            <span className="text-sm group-data-[collapsible=icon]:hidden">
+                              {item.label}
+                            </span>
+                            <span
+                              className="
                     pointer-events-none absolute inset-0 -z-10
                     opacity-0 transition-opacity
                     group-data-[active=true]:opacity-100
                     bg-linear-to-l from-blue-600 dark:from-blue-600/70 via-blue-600/20 to-transparent!
                   "
-                          />
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })
-              ))}
+                            />
+                          </Link>
+                        </SidebarMenuButton>
+                      </SidebarMenuItem>
+                    );
+                  })
+                ))}
 
-            {/* OTHER ITEMS */}
-            {filteredWorkspaceMenu.map((item) => {
-              const Icon = item.icon;
-              const href = `/dashboard/my-projects/${slug}/${item.path}`;
+              {/* OTHER ITEMS */}
+              {filteredWorkspaceMenu.map((item) => {
+                const Icon = item.icon;
+                const href = `/dashboard/my-projects/${slug}/${item.path}`;
 
-              return (
-                <SidebarMenuItem key={item.path}>
-                  <SidebarMenuButton
-                    key={item.path}
-                    asChild
-                    tooltip={item.label}
-                    isActive={isActive(href)}
-                    className="group relative overflow-hidden cursor-pointer"
-                  >
-                    <Link
-                      href={href}
-                      className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
+                return (
+                  <SidebarMenuItem key={item.path}>
+                    <SidebarMenuButton
+                      key={item.path}
+                      asChild
+                      tooltip={item.label}
+                      isActive={isActive(href)}
+                      className="group relative overflow-hidden cursor-pointer"
                     >
-                      <Icon
-                        className={cn(
-                          "h-5 w-5 transition-colors",
-                          isActive(href)
-                            ? "text-foreground"
-                            : "text-foreground",
-                        )}
-                      />
-                      <span
-                        className={cn(
-                          "text-sm group-data-[collapsible=icon]:hidden transition-colors",
-                          isActive(href)
-                            ? "text-foreground font-medium"
-                            : "text-foreground",
-                        )}
+                      <Link
+                        href={href}
+                        className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
                       >
-                        {item.label}
-                      </span>
+                        <Icon
+                          className={cn(
+                            "h-5 w-5 transition-colors",
+                            isActive(href)
+                              ? "text-foreground"
+                              : "text-foreground",
+                          )}
+                        />
+                        <span
+                          className={cn(
+                            "text-sm group-data-[collapsible=icon]:hidden transition-colors",
+                            isActive(href)
+                              ? "text-foreground font-medium"
+                              : "text-foreground",
+                          )}
+                        >
+                          {item.label}
+                        </span>
 
-                      <span
-                        className="
+                        <span
+                          className="
                 pointer-events-none absolute inset-0 -z-10
                 opacity-0 transition-opacity
                 group-data-[active=true]:opacity-100
                 bg-linear-to-l from-blue-600 dark:from-blue-600/70 via-blue-600/20 to-transparent!
               "
-                      />
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              );
-            })}
-          </SidebarMenu>
-        )}
+                        />
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+            </SidebarMenu>
+          )}
 
         {(!searchQuery || matchesHelp || matchesDelete) && (
           <>
             <SidebarSeparator className="my-2 mx-0 w-full" />
             <SidebarMenu className="flex flex-col space-y-1.5">
+
+
               {/* HELP & SUPPORT */}
               {(!searchQuery || matchesHelp) && (
                 <SidebarMenuItem>
@@ -797,6 +784,7 @@ export default function ProjectSidebar() {
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               )}
+
 
               {/* DELETE */}
               {(!searchQuery || matchesDelete) && (

@@ -80,9 +80,8 @@ export function calculateImpactScore(stats: GitHubStats): ImpactScoreResult {
 
   // 1. Raw Stats (Unlimited Age Influence Removal)
   const effectiveCommits = Math.min(stats.totalCommits, yearlyCommitCap);
-  const mergeRate =
-    stats.totalPRs > 0 ? stats.totalMergedPRs / stats.totalPRs : 0;
-
+  const mergeRate = stats.totalPRs > 0 ? stats.totalMergedPRs / stats.totalPRs : 0;
+  
   // 2. Weighted Impact Breakdown (More strict on output)
   const breakdown = {
     commits: effectiveCommits * weights.commits,
@@ -114,8 +113,7 @@ export function calculateImpactScore(stats: GitHubStats): ImpactScoreResult {
       {
         code: "LOW_COLLAB",
         label: "Isolationist",
-        roastLine:
-          "Collaborative activity is low. Impact is usually shared, not solo.",
+        roastLine: "Collaborative activity is low. Impact is usually shared, not solo.",
         multiplier: 0.6,
       },
     ],
@@ -124,8 +122,7 @@ export function calculateImpactScore(stats: GitHubStats): ImpactScoreResult {
       {
         code: "COMMIT_FARMER",
         label: "Commit Spammer",
-        roastLine:
-          "Your commit-to-PR ratio is suspicious. Quality over quantity.",
+        roastLine: "Your commit-to-PR ratio is suspicious. Quality over quantity.",
         multiplier: 0.7,
       },
     ],
@@ -143,8 +140,7 @@ export function calculateImpactScore(stats: GitHubStats): ImpactScoreResult {
       {
         code: "DRAFT_KING",
         label: "Unfinished Business",
-        roastLine:
-          "A low merge rate suggests poor PR quality or unfinished work.",
+        roastLine: "A low merge rate suggests poor PR quality or unfinished work.",
         multiplier: 0.75,
       },
     ],
@@ -153,8 +149,7 @@ export function calculateImpactScore(stats: GitHubStats): ImpactScoreResult {
       {
         code: "BUG_SILENCE",
         label: "Bug Avoider",
-        roastLine:
-          "Almost zero issues closed. Great devs fix problems, not just write code.",
+        roastLine: "Almost zero issues closed. Great devs fix problems, not just write code.",
         multiplier: 0.9,
       },
     ],
@@ -210,8 +205,7 @@ export function calculateImpactScore(stats: GitHubStats): ImpactScoreResult {
   }
 
   const rawScore = Math.round(baseScore);
-  const consistencyBonus =
-    activityTypes >= 4 ? 1.3 : activityTypes >= 3 ? 1.1 : 1.0;
+  const consistencyBonus = activityTypes >= 4 ? 1.3 : activityTypes >= 3 ? 1.1 : 1.0;
 
   // 5. Signals & Archetype
   const signals = {
@@ -229,12 +223,7 @@ export function calculateImpactScore(stats: GitHubStats): ImpactScoreResult {
     rawScore,
     displayScore: rawScore,
     tier: getTier(rawScore),
-    eliteBadge:
-      rawScore >= 120
-        ? "Legendary Contributor"
-        : rawScore >= 95
-          ? "Senior Architect"
-          : null,
+    eliteBadge: rawScore >= 120 ? "Legendary Contributor" : rawScore >= 95 ? "Senior Architect" : null,
     weightedActivity,
     consistencyBonus,
     archetype,

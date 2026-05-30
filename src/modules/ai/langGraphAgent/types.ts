@@ -144,18 +144,21 @@ export interface ReplayAgentInput extends AgentInput {
   config: CheckpointConfig;
 }
 
-export interface RunAgentInputInternal<TAgentState>
-  extends RunAgentInput<TAgentState> {
+export interface RunAgentInputInternal<
+  TAgentState,
+> extends RunAgentInput<TAgentState> {
   type: "run";
 }
 
-export interface ResumeAgentInputInternal<TResumeValue>
-  extends ResumeAgentInput<TResumeValue> {
+export interface ResumeAgentInputInternal<
+  TResumeValue,
+> extends ResumeAgentInput<TResumeValue> {
   type: "resume";
 }
 
-export interface ForkAgentInputInternal<TAgentState>
-  extends ForkAgentInput<TAgentState> {
+export interface ForkAgentInputInternal<
+  TAgentState,
+> extends ForkAgentInput<TAgentState> {
   type: "fork";
 }
 

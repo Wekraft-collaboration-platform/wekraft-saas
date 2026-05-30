@@ -90,13 +90,8 @@ export async function* callAgentRoute<
     // Final cleanup for any remaining data in the buffer
     if (currentEvent || currentDataString) {
       try {
-        const data = currentDataString
-          ? JSON.parse(currentDataString)
-          : undefined;
-        yield { event: currentEvent || "message", data } as AgentEvent<
-          TAgentState,
-          TInterruptValue
-        >;
+        const data = currentDataString ? JSON.parse(currentDataString) : undefined;
+        yield { event: currentEvent || "message", data } as AgentEvent<TAgentState, TInterruptValue>;
       } catch (e) {
         // Silently fail on cleanup if incomplete
       }

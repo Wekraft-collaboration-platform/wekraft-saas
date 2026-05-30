@@ -21,7 +21,7 @@ export function DashboardBreadcrumbs() {
 
   const activeItem = navigationItems
     .filter(
-      (item) => pathname === item.url || pathname.startsWith(item.url + "/"),
+      (item) => pathname === item.url || pathname.startsWith(item.url + "/")
     )
     .sort((a, b) => b.url.length - a.url.length)[0];
 

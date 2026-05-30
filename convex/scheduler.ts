@@ -94,9 +94,7 @@ async function getSprintInsightsLogic(
       const sprintTasks = allTasks.filter((t) => t.sprintId === s._id);
       const sprintIssues = allIssues.filter((i) => i.sprintId === s._id);
 
-      completedTasks = sprintTasks.filter(
-        (t) => t.status === "completed",
-      ).length;
+      completedTasks = sprintTasks.filter((t) => t.status === "completed").length;
       totalTasks = sprintTasks.length;
       closedIssues = sprintIssues.filter((i) => i.status === "closed").length;
       totalIssues = sprintIssues.length;
@@ -104,8 +102,7 @@ async function getSprintInsightsLogic(
 
     const totalItems = totalTasks + totalIssues;
     const completedItems = completedTasks + closedIssues;
-    const progress =
-      totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
+    const progress = totalItems > 0 ? Math.round((completedItems / totalItems) * 100) : 0;
 
     return {
       name: s.sprintName,
@@ -185,11 +182,7 @@ async function getTasksSummaryLogic(
     const isHighPriority = t.priority === "high";
 
     return (
-      isOverdue ||
-      isNearOverdue ||
-      isNotStarted ||
-      isHighPriority ||
-      t.isBlocked
+      isOverdue || isNearOverdue || isNotStarted || isHighPriority || t.isBlocked
     );
   });
 
@@ -204,14 +197,10 @@ async function getTasksSummaryLogic(
 
       let timelineStatus = "on track";
       if (isOverdue) {
-        const days = Math.ceil(
-          (now - t.estimation.endDate) / (1000 * 60 * 60 * 24),
-        );
+        const days = Math.ceil((now - t.estimation.endDate) / (1000 * 60 * 60 * 24));
         timelineStatus = `OVERDUE by ${days} days`;
       } else if (isNearOverdue) {
-        const days = Math.ceil(
-          (t.estimation.endDate - now) / (1000 * 60 * 60 * 24),
-        );
+        const days = Math.ceil((t.estimation.endDate - now) / (1000 * 60 * 60 * 24));
         timelineStatus = `Near overdue (due in ${days} days)`;
       }
 
@@ -220,9 +209,7 @@ async function getTasksSummaryLogic(
         status: t.status,
         priority: t.priority ?? "medium",
         isBlocked: t.isBlocked ?? false,
-        assignees: taskAssignees
-          .filter((a) => a.taskId === t._id)
-          .map((a) => a.name),
+        assignees: taskAssignees.filter((a) => a.taskId === t._id).map((a) => a.name),
         endDate: new Date(t.estimation.endDate).toLocaleDateString(),
         timelineStatus,
       };
@@ -259,9 +246,7 @@ async function getIssuesSummaryLogic(
       status: i.status,
       severity: i.severity ?? "medium",
       type: i.type,
-      assignees: issueAssignees
-        .filter((a) => a.issueId === i._id)
-        .map((a) => a.name),
+      assignees: issueAssignees.filter((a) => a.issueId === i._id).map((a) => a.name),
     })),
     closedCount,
     criticalCount,

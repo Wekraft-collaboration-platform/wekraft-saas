@@ -37,9 +37,7 @@ export const chatDb = {
       request.onupgradeneeded = () => {
         const db = request.result;
         if (!db.objectStoreNames.contains(STORE_NAME)) {
-          const store = db.createObjectStore(STORE_NAME, {
-            keyPath: "channelId",
-          });
+          const store = db.createObjectStore(STORE_NAME, { keyPath: "channelId" });
           store.createIndex("lastAccessed", "lastAccessed", { unique: false });
         }
       };
@@ -72,7 +70,7 @@ export const chatDb = {
     // Strip messages older than 30 days to stay consistent with server retention
     const cutoff = Date.now() - MESSAGE_MAX_AGE_MS;
     const filteredMessages = result.messages.filter(
-      (m: any) => (m.created_at ?? 0) >= cutoff,
+      (m: any) => (m.created_at ?? 0) >= cutoff
     );
 
     // If we filtered some out, persist the cleaner list back
@@ -92,9 +90,7 @@ export const chatDb = {
 
     // Never cache messages older than 30 days
     const cutoff = Date.now() - MESSAGE_MAX_AGE_MS;
-    const freshMessages = messages.filter(
-      (m: any) => (m.created_at ?? 0) >= cutoff,
-    );
+    const freshMessages = messages.filter((m: any) => (m.created_at ?? 0) >= cutoff);
 
     const chat: CachedChat = {
       channelId,

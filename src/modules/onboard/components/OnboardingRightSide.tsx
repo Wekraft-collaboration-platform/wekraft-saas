@@ -944,7 +944,7 @@ export function OnboardingRightSide({
           Math.min(
             1,
             (ROCKET_HUD_CONFIG.sizes.starMaxZ - star.z) /
-              (ROCKET_HUD_CONFIG.sizes.starMaxZ / 2),
+            (ROCKET_HUD_CONFIG.sizes.starMaxZ / 2),
           ) *
           (step === 4
             ? ROCKET_HUD_CONFIG.colors.starWarpOpacity
@@ -1842,7 +1842,9 @@ export function OnboardingRightSide({
             <Button
               onClick={onLaunch}
               disabled={isLaunching}
-              className={cn("px-5! text-sm")}
+              className={cn(
+                "px-5! text-sm",
+              )}
             >
               {isLaunching ? (
                 <>

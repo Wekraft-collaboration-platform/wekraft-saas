@@ -72,6 +72,7 @@ export function ShareProjectDialog({
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
       <DialogContent className="sm:max-w-md bg-sidebar border border-border shadow-2xl rounded-2xl p-5 overflow-hidden">
+
         <DialogHeader className="space-y-3 relative z-10">
           <div className="mx-auto sm:mx-0 w-12 h-12 rounded-xl bg-blue-500/10 border border-blue-500/25 flex items-center justify-center">
             <Share2 className="w-5 h-5 animate-pulse" />

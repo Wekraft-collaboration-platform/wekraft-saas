@@ -2,12 +2,7 @@
 
 import React from "react";
 import { cn } from "@/lib/utils";
-import {
-  Compass,
-  BadgeAlert,
-  LucideAlertTriangle,
-  TrendingUpDown,
-} from "lucide-react";
+import { Compass, BadgeAlert, LucideAlertTriangle, TrendingUpDown } from "lucide-react";
 import { Task } from "@/types/types";
 import { format } from "date-fns";
 
@@ -47,9 +42,7 @@ export const MilestoneTrajectory = ({
           </h3>
         </div>
         <div className="flex flex-col items-center justify-center space-y-3 mt-6">
-          <LucideAlertTriangle
-            className={cn("w-8 h-8 text-primary opacity-50")}
-          />
+          <LucideAlertTriangle className={cn("w-8 h-8 text-primary opacity-50")} />
           <p className="text-xs text-muted-foreground leading-relaxed text-center px-8">
             Your workspace atleast have{" "}
             <span className="text-primary">6 tasks and 3 days of history</span>{" "}
@@ -77,8 +70,7 @@ export const MilestoneTrajectory = ({
   // Timeline math
   const totalDuration = Math.max(deadline, projectedCompletion) - createdAt;
   const targetPos = ((deadline - createdAt) / totalDuration) * 100;
-  const projectedPos =
-    ((projectedCompletion - createdAt) / totalDuration) * 100;
+  const projectedPos = ((projectedCompletion - createdAt) / totalDuration) * 100;
   const currentPos = ((now - createdAt) / totalDuration) * 100;
 
   return (
@@ -109,8 +101,7 @@ export const MilestoneTrajectory = ({
 
         <div className="mt-4">
           <div className="text-xs text-primary font-medium mb-1">
-            Expected Projected Completion{" "}
-            <TrendingUpDown className="w-4 h-4 inline ml-1" />
+            Expected  Projected Completion <TrendingUpDown className="w-4 h-4 inline ml-1" />
           </div>
           <div className="text-xl font-semibold tracking-tight text-black font-pop! dark:text-white">
             {format(projectedCompletion, "MMM dd, yyyy")}
@@ -150,8 +141,7 @@ export const MilestoneTrajectory = ({
           <span>Start</span>
           <div className="flex gap-4">
             <span className="flex items-center gap-1">
-              <div className="w-1.5 h-1.5 bg-neutral-900 dark:bg-white rounded-full" />{" "}
-              Target
+              <div className="w-1.5 h-1.5 bg-neutral-900 dark:bg-white rounded-full" /> Target
             </span>
             <span className="flex items-center gap-1">
               <div

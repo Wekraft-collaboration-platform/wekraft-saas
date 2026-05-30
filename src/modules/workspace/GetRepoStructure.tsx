@@ -235,9 +235,7 @@ export const GetRepoStructure = ({
                     <GitBranch className="w-4 h-4 inline" /> No items found
                   </p>
                   <Link href="/dashboard/repositories">
-                    <Button className="text-[10px] rounded" size={"xs"}>
-                      Link Repo now <ExternalLink className="h-3 w-3 ml-2" />
-                    </Button>
+                  <Button className="text-[10px] rounded" size={'xs'}>Link Repo now <ExternalLink className="h-3 w-3 ml-2"/></Button>
                   </Link>
                 </div>
               )}

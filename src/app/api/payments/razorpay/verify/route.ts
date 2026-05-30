@@ -24,11 +24,7 @@ export async function POST(req: NextRequest) {
       plan,
     } = await req.json();
 
-    if (
-      !razorpay_payment_id ||
-      !razorpay_signature ||
-      !razorpay_subscription_id
-    ) {
+    if (!razorpay_payment_id || !razorpay_signature || !razorpay_subscription_id) {
       return NextResponse.json(
         { error: "subscription_id, payment_id and signature are required" },
         { status: 400 },
@@ -101,9 +97,7 @@ export async function POST(req: NextRequest) {
           key_id: razorpayKeyId,
           key_secret: keySecret,
         });
-        const subscription = await razorpay.subscriptions.fetch(
-          razorpay_subscription_id,
-        );
+        const subscription = await razorpay.subscriptions.fetch(razorpay_subscription_id);
         if (subscription && subscription.current_end) {
           currentPeriodEnd = subscription.current_end * 1000;
         }
@@ -112,31 +106,21 @@ export async function POST(req: NextRequest) {
         if (subscription && subscription.plan_id) {
           if (subscription.plan_id === process.env.RAZORPAY_PRO_PLAN_ID) {
             plan = "pro";
-          } else if (
-            subscription.plan_id === process.env.RAZORPAY_PLUS_PLAN_ID
-          ) {
+          } else if (subscription.plan_id === process.env.RAZORPAY_PLUS_PLAN_ID) {
             plan = "plus";
           } else {
-            console.error(
-              `[Razorpay Verify] Unknown plan_id ${subscription.plan_id}`,
-            );
-            return NextResponse.json(
-              { success: false, error: "Unknown subscription plan" },
-              { status: 400 },
-            );
+            console.error(`[Razorpay Verify] Unknown plan_id ${subscription.plan_id}`);
+            return NextResponse.json({ success: false, error: "Unknown subscription plan" }, { status: 400 });
           }
         }
       }
     } catch (err) {
-      console.error(
-        "[Razorpay Verify] Failed to fetch subscription details:",
-        err,
-      );
+      console.error("[Razorpay Verify] Failed to fetch subscription details:", err);
       currentPeriodEnd = Date.now() + 30 * 24 * 60 * 60 * 1000; // Fallback to 30 days
     }
 
     const convex = new ConvexHttpClient(convexUrl);
-
+    
     await convex.mutation(api.razorpay.updatePlanServerSide, {
       backendSecret,
       userId,

@@ -1,4 +1,11 @@
-import { Clock, CreditCard, Globe, MapPin, Star, Sparkles } from "lucide-react";
+import {
+  Clock,
+  CreditCard,
+  Globe,
+  MapPin,
+  Star,
+  Sparkles,
+} from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 

@@ -66,7 +66,7 @@ export const useRazorpay = () => {
 
   const initiatePayment = async (
     plan: Plan,
-    userDetails: { id: Id<"users">; name: string; email: string },
+    userDetails: { id: Id<"users">; name: string; email: string }
   ) => {
     if (!userDetails?.id) {
       toast.error("User data missing");
@@ -96,7 +96,7 @@ export const useRazorpay = () => {
       const orderData = await orderRes.json();
       if (!orderRes.ok) {
         let errMsg = orderData.error;
-        if (typeof errMsg === "object") {
+        if (typeof errMsg === 'object') {
           errMsg = errMsg?.description || JSON.stringify(errMsg);
         }
         throw new Error(errMsg || "Failed to create subscription");
@@ -126,8 +126,7 @@ export const useRazorpay = () => {
               toast.success(`Successfully upgraded to ${plan.name}!`);
             } else {
               toast.error(
-                verifyData.error ||
-                  "Payment verification failed. Please contact support.",
+                verifyData.error || "Payment verification failed. Please contact support.",
               );
             }
           } catch (err) {

@@ -11,6 +11,8 @@ const PricingPage = () => {
 
   return (
     <div className="relative">
+
+
       <Pricing />
     </div>
   );

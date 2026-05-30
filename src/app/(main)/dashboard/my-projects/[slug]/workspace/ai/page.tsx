@@ -329,7 +329,7 @@ const AIWorkspace = () => {
                       exit={{ opacity: 0, y: -8 }}
                       transition={{ duration: 0.2 }}
                       className={cn(
-                        "text-3xl font-semibold tracking-tight font-pop",
+                        "text-3xl font-semibold tracking-tight font-pop"
                       )}
                     >
                       {isHarry ? "Harry" : "Kaya"}
@@ -340,64 +340,30 @@ const AIWorkspace = () => {
                 <div className="w-full max-w-2xl flex flex-col relative group">
                   <div className="flex ml-3 gap-1">
                     <button
-                      onClick={() =>
-                        router.replace(
-                          `/dashboard/my-projects/${slug}/workspace/ai?kaya=true`,
-                        )
-                      }
+                      onClick={() => router.replace(`/dashboard/my-projects/${slug}/workspace/ai?kaya=true`)}
                       className={cn(
                         "flex items-center gap-2 px-5 pt-2 pb-1.5 cursor-pointer rounded-t-2xl text-sm font-medium tracking-tight transition-all duration-300 relative",
                         !isHarry
                           ? "text-black"
-                          : "text-muted-foreground hover:text-foreground bg-muted",
+                          : "text-muted-foreground hover:text-foreground bg-muted"
                       )}
-                      style={
-                        !isHarry
-                          ? {
-                              background:
-                                "linear-gradient(135deg, #f9a8d4 0%, #93c5fd 40%, #c4b5fd 70%, #fda4af 100%)",
-                            }
-                          : undefined
-                      }
+                      style={!isHarry ? { background: "linear-gradient(135deg, #f9a8d4 0%, #93c5fd 40%, #c4b5fd 70%, #fda4af 100%)" } : undefined}
                     >
-                      <Image
-                        src="/kaya.svg"
-                        alt=""
-                        width={20}
-                        height={20}
-                        className="shrink-0"
-                      />
+                      <Image src="/kaya.svg" alt="" width={20} height={20} className="shrink-0" />
                       <span>Ask Kaya</span>
                     </button>
 
                     <button
-                      onClick={() =>
-                        router.replace(
-                          `/dashboard/my-projects/${slug}/workspace/ai?harry=true`,
-                        )
-                      }
+                      onClick={() => router.replace(`/dashboard/my-projects/${slug}/workspace/ai?harry=true`)}
                       className={cn(
                         "flex items-center gap-2 px-5 pt-2 pb-1.5 cursor-pointer rounded-t-2xl text-sm font-medium tracking-tight transition-all duration-300 relative",
                         isHarry
                           ? "text-white"
-                          : "text-muted-foreground hover:text-foreground bg-muted",
+                          : "text-muted-foreground hover:text-foreground bg-muted"
                       )}
-                      style={
-                        isHarry
-                          ? {
-                              background:
-                                "linear-gradient(135deg, #fcd34d 0%, #f97316 50%, #ef4444 100%)",
-                            }
-                          : undefined
-                      }
+                      style={isHarry ? { background: "linear-gradient(135deg, #fcd34d 0%, #f97316 50%, #ef4444 100%)" } : undefined}
                     >
-                      <Image
-                        src="/harry.svg"
-                        alt=""
-                        width={20}
-                        height={20}
-                        className="shrink-0"
-                      />
+                      <Image src="/harry.svg" alt="" width={20} height={20} className="shrink-0" />
                       <span>Ask Harry</span>
                     </button>
                   </div>
@@ -407,7 +373,7 @@ const AIWorkspace = () => {
                       "rounded-2xl p-0.5 shadow-2xl transition-all duration-500",
                       isHarry
                         ? "group-hover:shadow-orange-500/10"
-                        : "group-hover:shadow-indigo-500/10",
+                        : "group-hover:shadow-indigo-500/10"
                     )}
                     style={{
                       background: isHarry
@@ -428,12 +394,8 @@ const AIWorkspace = () => {
                         disabled={!isPro}
                         placeholder={
                           !isPro
-                            ? isHarry
-                              ? "Harry is available for Pro projects. Upgrade to Pro to unlock."
-                              : "Kaya is available for Pro projects. Upgrade to Pro to unlock."
-                            : isHarry
-                              ? "Ask Harry to review code, suggest architecture or write PR summaries..."
-                              : "Get instant answers, insights, and ideas."
+                            ? (isHarry ? "Harry is available for Pro projects. Upgrade to Pro to unlock." : "Kaya is available for Pro projects. Upgrade to Pro to unlock.")
+                            : (isHarry ? "Ask Harry to review code, suggest architecture or write PR summaries..." : "Get instant answers, insights, and ideas.")
                         }
                         className="resize-none border-none outline-none focus:ring-0 min-h-[130px] text-primary/90 placeholder:text-muted-foreground text-[16px] px-5 pt-5 pb-2 bg-input/30 rounded-2xl w-full"
                       />
@@ -441,10 +403,7 @@ const AIWorkspace = () => {
                       <div className="flex items-center justify-between px-4 py-3 border-t border-border/10">
                         <div className="flex items-center gap-2">
                           <Select defaultValue="auto">
-                            <SelectTrigger
-                              disabled={!isPro}
-                              className="h-7! px-3 rounded-full border border-border bg-accent text-xs text-primary font-medium shadow-none focus:ring-0 gap-1.5 min-w-[110px]"
-                            >
+                            <SelectTrigger disabled={!isPro} className="h-7! px-3 rounded-full border border-border bg-accent text-xs text-primary font-medium shadow-none focus:ring-0 gap-1.5 min-w-[110px]">
                               <Brain size={15} />
                               <SelectValue placeholder="Auto" />
                             </SelectTrigger>
@@ -455,18 +414,14 @@ const AIWorkspace = () => {
                                   <SelectItem value="harry-fast">
                                     Harry Fast
                                   </SelectItem>
-                                  <SelectItem value="harry-pro">
-                                    Harry Pro
-                                  </SelectItem>
+                                  <SelectItem value="harry-pro">Harry Pro</SelectItem>
                                 </>
                               ) : (
                                 <>
                                   <SelectItem value="kaya-fast">
                                     Kaya Fast
                                   </SelectItem>
-                                  <SelectItem value="kaya-pro">
-                                    Kaya Pro
-                                  </SelectItem>
+                                  <SelectItem value="kaya-pro">Kaya Pro</SelectItem>
                                 </>
                               )}
                             </SelectContent>
@@ -482,11 +437,10 @@ const AIWorkspace = () => {
                                   "h-8 px-4 rounded-full font-semibold text-xs text-white transition-all cursor-pointer flex items-center gap-1 shrink-0",
                                   isHarry
                                     ? "bg-gradient-to-r from-amber-500 to-orange-600 hover:from-amber-600 hover:to-orange-700"
-                                    : "bg-gradient-to-r from-pink-500 to-violet-600 hover:from-pink-600 hover:to-violet-700",
+                                    : "bg-gradient-to-r from-pink-500 to-violet-600 hover:from-pink-600 hover:to-violet-700"
                                 )}
                               >
-                                Upgrade to Pro{" "}
-                                <Clover className="w-3.5 h-3.5" />
+                                Upgrade to Pro <Clover className="w-3.5 h-3.5" />
                               </Button>
                             </Link>
                           ) : (
@@ -502,8 +456,8 @@ const AIWorkspace = () => {
                                   : "bg-muted text-muted-foreground",
                               )}
                             >
-                              <ArrowRight size={15} />
-                            </button>
+                            <ArrowRight size={15} />
+                          </button>
                           )}
                         </div>
                       </div>
@@ -516,13 +470,9 @@ const AIWorkspace = () => {
                   onSelectPrompt={handleSendMessage}
                   onToggleAgent={(targetIsHarry) => {
                     if (targetIsHarry) {
-                      router.replace(
-                        `/dashboard/my-projects/${slug}/workspace/ai?harry=true`,
-                      );
+                      router.replace(`/dashboard/my-projects/${slug}/workspace/ai?harry=true`);
                     } else {
-                      router.replace(
-                        `/dashboard/my-projects/${slug}/workspace/ai?kaya=true`,
-                      );
+                      router.replace(`/dashboard/my-projects/${slug}/workspace/ai?kaya=true`);
                     }
                   }}
                 />
@@ -607,11 +557,7 @@ const AIWorkspace = () => {
                   if (e.key === "Enter") handleSendMessage(message);
                 }}
                 disabled={!isPro}
-                placeholder={
-                  !isPro
-                    ? "Upgrade to Pro to send follow up messages..."
-                    : "Ask follow up..."
-                }
+                placeholder={!isPro ? "Upgrade to Pro to send follow up messages..." : "Ask follow up..."}
                 className="flex-1 bg-transparent border-none outline-none text-[14px] text-primary placeholder:text-muted-foreground py-2"
               />
               {!isPro ? (
@@ -634,12 +580,12 @@ const AIWorkspace = () => {
                       : "bg-muted text-muted-foreground",
                   )}
                 >
-                  {status === "running" ? (
-                    <Spinner className="w-4 h-4 text-primary-foreground" />
-                  ) : (
-                    <ArrowRight size={16} />
-                  )}
-                </button>
+                {status === "running" ? (
+                  <Spinner className="w-4 h-4 text-primary-foreground" />
+                ) : (
+                  <ArrowRight size={16} />
+                )}
+              </button>
               )}
             </div>
           </motion.div>

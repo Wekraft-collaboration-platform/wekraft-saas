@@ -71,93 +71,57 @@ export function useNotifications(userId: string) {
         if (avatarUrl) {
           return React.createElement(
             Avatar,
-            {
-              className: "h-6 w-6 border border-neutral-200 shadow-sm shrink-0",
-            },
+            { className: "h-6 w-6 border border-neutral-200 shadow-sm shrink-0" },
             React.createElement(AvatarImage, { src: avatarUrl }),
             React.createElement(
               AvatarFallback,
-              {
-                className:
-                  "text-[10px] font-bold bg-neutral-100 text-neutral-900",
-              },
-              name[0].toUpperCase(),
-            ),
+              { className: "text-[10px] font-bold bg-neutral-100 text-neutral-900" },
+              name[0].toUpperCase()
+            )
           );
         }
         return React.createElement(
           "div",
-          {
-            className:
-              "h-6 w-6 rounded-full bg-neutral-100 text-neutral-900 text-[10px] font-bold border border-neutral-200 flex items-center justify-center shadow-sm shrink-0 mt-0.5",
-          },
-          name[0].toUpperCase(),
+          { className: "h-6 w-6 rounded-full bg-neutral-100 text-neutral-900 text-[10px] font-bold border border-neutral-200 flex items-center justify-center shadow-sm shrink-0 mt-0.5" },
+          name[0].toUpperCase()
         );
       };
 
       if (notification.type === "mention") {
-        const formattedContent = formatNotificationContent(
-          notification.content,
-        );
+        const formattedContent = formatNotificationContent(notification.content);
         toast(`✨ Mentioned in #${notification.channel_name || "channel"}`, {
           description: `${notification.sender_name}: "${formattedContent || "Mentioned you in a message."}"`,
-          icon: getToastIcon(
-            notification.sender_image,
-            notification.sender_name,
-          ),
+          icon: getToastIcon(notification.sender_image, notification.sender_name),
           duration: 5000,
         });
       } else if (notification.type === "join") {
         toast(`👥 Joined Project`, {
-          description:
-            notification.content ||
-            `${notification.sender_name} joined the project.`,
-          icon: getToastIcon(
-            notification.sender_image,
-            notification.sender_name,
-          ),
+          description: notification.content || `${notification.sender_name} joined the project.`,
+          icon: getToastIcon(notification.sender_image, notification.sender_name),
           duration: 5000,
         });
       } else if (notification.type === "leave") {
         toast(`🚪 Left Project`, {
-          description:
-            notification.content ||
-            `${notification.sender_name} left the project.`,
-          icon: getToastIcon(
-            notification.sender_image,
-            notification.sender_name,
-          ),
+          description: notification.content || `${notification.sender_name} left the project.`,
+          icon: getToastIcon(notification.sender_image, notification.sender_name),
           duration: 5000,
         });
       } else if (notification.type === "remove") {
         toast(`❌ Removed from Project`, {
-          description:
-            notification.content ||
-            `${notification.sender_name} was removed from the project.`,
-          icon: getToastIcon(
-            notification.sender_image,
-            notification.sender_name,
-          ),
+          description: notification.content || `${notification.sender_name} was removed from the project.`,
+          icon: getToastIcon(notification.sender_image, notification.sender_name),
           duration: 5000,
         });
       } else if (notification.type === "join_request") {
         toast(`⏳ Join Request`, {
-          description:
-            notification.content ||
-            `${notification.sender_name} requested to join the project.`,
-          icon: getToastIcon(
-            notification.sender_image,
-            notification.sender_name,
-          ),
+          description: notification.content || `${notification.sender_name} requested to join the project.`,
+          icon: getToastIcon(notification.sender_image, notification.sender_name),
           duration: 5000,
         });
       } else if (notification.type === "request_accepted") {
         toast(`🎉 Request Accepted`, {
           description: notification.content || "Welcome to the team!",
-          icon: getToastIcon(
-            notification.sender_image,
-            notification.sender_name,
-          ),
+          icon: getToastIcon(notification.sender_image, notification.sender_name),
           duration: 5000,
         });
       }

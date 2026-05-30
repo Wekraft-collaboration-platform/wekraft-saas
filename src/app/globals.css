@@ -190,9 +190,7 @@
     user-select: none;
     -webkit-user-select: none;
   }
-  input,
-  textarea,
-  [contenteditable] {
+  input, textarea, [contenteditable] {
     user-select: text;
     -webkit-user-select: text;
   }
@@ -715,3 +713,4 @@
 .animate-marquee-text {
   animation: marquee-scroll 5s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
 }
+

@@ -58,9 +58,7 @@ function validateRepoParams(
     throw new Error("Invalid repository owner or name");
   }
   if (linkedRepoFullName && linkedRepoFullName !== `${owner}/${repo}`) {
-    throw new Error(
-      "Repository does not match the project's linked repository",
-    );
+    throw new Error("Repository does not match the project's linked repository");
   }
 }
 
@@ -68,12 +66,8 @@ export async function getRepoStructure(
   owner: string,
   repo: string,
   forceRefresh: boolean = false,
-  projectId?: string,
-): Promise<{
-  data: RepoStructure | null;
-  error?: string;
-  rateLimited?: boolean;
-}> {
+  projectId?: string
+): Promise<{ data: RepoStructure | null; error?: string; rateLimited?: boolean }> {
   try {
     const { userId, getToken } = await auth();
     if (!userId) throw new Error("Unauthorized");
@@ -85,21 +79,12 @@ export async function getRepoStructure(
       const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
       if (token) convex.setAuth(token);
 
-      const projectPerms = await convex.query(
-        api.project.getProjectPermissions,
-        { projectId: projectId as any },
-      );
-      if (
-        !projectPerms.isPower &&
-        !projectPerms.isMember &&
-        !projectPerms.isViewer
-      ) {
+      const projectPerms = await convex.query(api.project.getProjectPermissions, { projectId: projectId as any });
+      if (!projectPerms.isPower && !projectPerms.isMember && !projectPerms.isViewer) {
         throw new Error("Unauthorized to access project repository");
       }
-
-      const projectData = await convex.query(api.project.getProjectById, {
-        projectId: projectId as any,
-      });
+      
+      const projectData = await convex.query(api.project.getProjectById, { projectId: projectId as any });
       if (projectData && projectData.ownerClerkId) {
         finalOwnerClerkId = projectData.ownerClerkId;
       }
@@ -107,9 +92,7 @@ export async function getRepoStructure(
       // ✅ Validate owner/repo against the project's actual linked repository
       validateRepoParams(owner, repo, projectData?.repoFullName);
 
-      tasksData = (await convex.query(api.workspace.getTimelineTasks, {
-        projectId: projectId as any,
-      })) as TaskRecord[];
+      tasksData = await convex.query(api.workspace.getTimelineTasks, { projectId: projectId as any }) as TaskRecord[];
     } else {
       // ✅ Even without a projectId, sanitize the input format
       validateRepoParams(owner, repo);
@@ -122,14 +105,9 @@ export async function getRepoStructure(
 
     // 1. Check Rate Limit if force refreshing
     if (forceRefresh) {
-      const acquired = await redis.set(rateLimitKey, "1", {
-        nx: true,
-        ex: REFRESH_COOLDOWN,
-      });
+      const acquired = await redis.set(rateLimitKey, "1", { nx: true, ex: REFRESH_COOLDOWN });
       if (!acquired) {
-        console.log(
-          `----------[Heatmap] Rate limited for ${owner}/${repo}----------`,
-        );
+        console.log(`----------[Heatmap] Rate limited for ${owner}/${repo}----------`);
         return { data: null, rateLimited: true };
       }
     }
@@ -138,9 +116,7 @@ export async function getRepoStructure(
     if (!forceRefresh) {
       const cachedData = await redis.get<RepoStructure>(cacheKey);
       if (cachedData) {
-        console.log(
-          `------------[Heatmap] Cache hit for ${owner}/${repo}---------------`,
-        );
+        console.log(`------------[Heatmap] Cache hit for ${owner}/${repo}---------------`);
         return { data: cachedData };
       }
     }
@@ -161,9 +137,7 @@ export async function getRepoStructure(
     });
 
     if (treeData.truncated) {
-      console.warn(
-        `[Heatmap] Tree for ${owner}/${repo} is truncated — results are partial.`,
-      );
+      console.warn(`[Heatmap] Tree for ${owner}/${repo} is truncated — results are partial.`);
     }
 
     // 4. Process Tree
@@ -178,9 +152,7 @@ export async function getRepoStructure(
       isOpen: true,
     };
 
-    const sortedTree = [...treeData.tree].sort((a) =>
-      a.type === "tree" ? -1 : 1,
-    );
+    const sortedTree = [...treeData.tree].sort((a) => (a.type === "tree" ? -1 : 1));
 
     sortedTree.forEach((item) => {
       const parts = item.path?.split("/") || [];
@@ -241,20 +213,14 @@ export async function getRepoStructure(
     return { data: structure };
   } catch (error) {
     console.error(`[Heatmap] Error fetching repo structure:`, error);
-    return {
-      data: null,
-      error:
-        error instanceof Error
-          ? error.message
-          : "Failed to fetch repo structure",
-    };
+    return { data: null, error: error instanceof Error ? error.message : "Failed to fetch repo structure" };
   }
 }
 
 export async function getRecentlyChangedPaths(
   owner: string,
   repo: string,
-  projectId?: string,
+  projectId?: string
 ): Promise<string[]> {
   try {
     const { userId, getToken } = await auth();
@@ -266,21 +232,12 @@ export async function getRecentlyChangedPaths(
       const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
       if (token) convex.setAuth(token);
 
-      const projectPerms = await convex.query(
-        api.project.getProjectPermissions,
-        { projectId: projectId as any },
-      );
-      if (
-        !projectPerms.isPower &&
-        !projectPerms.isMember &&
-        !projectPerms.isViewer
-      ) {
+      const projectPerms = await convex.query(api.project.getProjectPermissions, { projectId: projectId as any });
+      if (!projectPerms.isPower && !projectPerms.isMember && !projectPerms.isViewer) {
         throw new Error("Unauthorized to access project repository");
       }
-
-      const projectData = await convex.query(api.project.getProjectById, {
-        projectId: projectId as any,
-      });
+      
+      const projectData = await convex.query(api.project.getProjectById, { projectId: projectId as any });
       if (projectData && projectData.ownerClerkId) {
         finalOwnerClerkId = projectData.ownerClerkId;
       }
@@ -323,11 +280,11 @@ export async function getRecentlyChangedPaths(
     });
 
     const changedPaths = new Set<string>();
-    comparison.files?.forEach((file) => {
+    comparison.files?.forEach(file => {
       if (file.filename) {
-        const parts = file.filename.split("/");
+        const parts = file.filename.split('/');
         for (let i = 1; i <= parts.length; i++) {
-          const path = parts.slice(0, i).join("/");
+          const path = parts.slice(0, i).join('/');
           if (path) changedPaths.add(path);
         }
       }
@@ -347,7 +304,7 @@ export async function getLatestCommits(
   owner: string,
   repo: string,
   forceRefresh: boolean = false,
-  projectId?: string,
+  projectId?: string
 ): Promise<{
   data: CommitInfo[] | null;
   error?: string;
@@ -363,21 +320,12 @@ export async function getLatestCommits(
       const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
       if (token) convex.setAuth(token);
 
-      const projectPerms = await convex.query(
-        api.project.getProjectPermissions,
-        { projectId: projectId as any },
-      );
-      if (
-        !projectPerms.isPower &&
-        !projectPerms.isMember &&
-        !projectPerms.isViewer
-      ) {
+      const projectPerms = await convex.query(api.project.getProjectPermissions, { projectId: projectId as any });
+      if (!projectPerms.isPower && !projectPerms.isMember && !projectPerms.isViewer) {
         throw new Error("Unauthorized to access project repository");
       }
-
-      const projectData = await convex.query(api.project.getProjectById, {
-        projectId: projectId as any,
-      });
+      
+      const projectData = await convex.query(api.project.getProjectById, { projectId: projectId as any });
       if (projectData && projectData.ownerClerkId) {
         finalOwnerClerkId = projectData.ownerClerkId;
       }
@@ -437,7 +385,8 @@ export async function getLatestCommits(
     console.error(`[Heatmap] Error fetching commits:`, error);
     return {
       data: null,
-      error: error instanceof Error ? error.message : "Failed to fetch commits",
+      error:
+        error instanceof Error ? error.message : "Failed to fetch commits",
     };
   }
 }

@@ -136,7 +136,7 @@ export const AppSidebar = () => {
       console.error("❌ Failed to connect GitHub:", error);
       toast.error(
         error?.errors?.[0]?.message ||
-          "Something went wrong while connecting GitHub",
+        "Something went wrong while connecting GitHub",
       );
     }
   };
@@ -261,6 +261,7 @@ export const AppSidebar = () => {
             </div>
           </SidebarMenuButton>
 
+
           {/* 4 */}
           <SidebarMenuButton
             asChild
@@ -322,11 +323,7 @@ export const AppSidebar = () => {
                           {ownerProjects.map((project, index) => (
                             <Link
                               key={project._id}
-                              id={
-                                index === 0
-                                  ? "sidebar-first-project"
-                                  : undefined
-                              }
+                              id={index === 0 ? "sidebar-first-project" : undefined}
                               href={`/dashboard/my-projects/${project.slug}`}
                               className="flex items-center justify-between gap-2 p-0.5 rounded-md hover:bg-accent/40 cursor-pointer transition-all border border-transparent hover:border-sidebar-border"
                             >
@@ -339,7 +336,7 @@ export const AppSidebar = () => {
 
                               <div className="flex -space-x-0.5 overflow-hidden">
                                 {project.members &&
-                                project.members.length > 0 ? (
+                                  project.members.length > 0 ? (
                                   project.members
                                     .slice(0, 3)
                                     .map((member, idx) => (
@@ -370,7 +367,7 @@ export const AppSidebar = () => {
                             </Link>
                           ))}
                         </div>
-                        <CreateProjectDialog
+                        <CreateProjectDialog 
                           trigger={
                             <Button
                               size="sm"
@@ -432,7 +429,7 @@ export const AppSidebar = () => {
 
                               <div className="flex -space-x-1.5 overflow-hidden">
                                 {project?.members &&
-                                project?.members.length > 0 ? (
+                                  project?.members.length > 0 ? (
                                   project?.members
                                     .slice(0, 3)
                                     .map((member, idx) => (
@@ -507,6 +504,7 @@ export const AppSidebar = () => {
               />
             </Link>
           </SidebarMenuButton>
+
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter className="border-t border-accent px-2 py-2 group-data-[collapsible=icon]:hidden">

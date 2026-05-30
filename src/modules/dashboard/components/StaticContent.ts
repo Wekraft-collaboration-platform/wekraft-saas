@@ -62,13 +62,13 @@ export const CONFIG = {
   weights: {
     commits: 0.8,
     prs: 3,
-    mergedPrs: 3,
-    issues: 3,
-    reviews: 2,
+    mergedPrs: 3, 
+    issues: 3,    
+    reviews: 2,   
   },
   yearlyCommitCap: 2000,
-  scoreDivisor: 18,
-  penaltyFloor: 0.4,
+  scoreDivisor: 18,      
+  penaltyFloor: 0.4,     
   mergeRateMultipliers: [
     { threshold: 0.9, multiplier: 1.2 },
     { threshold: 0.75, multiplier: 1.05 },

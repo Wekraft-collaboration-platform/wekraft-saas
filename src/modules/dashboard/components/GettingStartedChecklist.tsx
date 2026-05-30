@@ -75,9 +75,7 @@ export const STEPS: StepConfig[] = [
     action: (router, context) => {
       const projects = context?.projects;
       if (projects && projects.length > 0) {
-        router.push(
-          `/dashboard/my-projects/${projects[0].slug}?tour=workspace`,
-        );
+        router.push(`/dashboard/my-projects/${projects[0].slug}?tour=workspace`);
       } else {
         router.push("/dashboard");
       }
@@ -94,9 +92,7 @@ export const STEPS: StepConfig[] = [
     action: (router, context) => {
       const projects = context?.projects;
       if (projects && projects.length > 0) {
-        router.push(
-          `/dashboard/my-projects/${projects[0].slug}/workspace/tasks?tour=create-task`,
-        );
+        router.push(`/dashboard/my-projects/${projects[0].slug}/workspace/tasks?tour=create-task`);
       } else {
         router.push("/dashboard");
       }
@@ -168,40 +164,24 @@ export function GettingStartedChecklist() {
     const handleExtensionInstalledEvent = () => {
       setExtensionInstalled(true);
     };
-    window.addEventListener(
-      "mark-extension-installed",
-      handleExtensionInstalledEvent,
-    );
-    return () =>
-      window.removeEventListener(
-        "mark-extension-installed",
-        handleExtensionInstalledEvent,
-      );
+    window.addEventListener('mark-extension-installed', handleExtensionInstalledEvent);
+    return () => window.removeEventListener('mark-extension-installed', handleExtensionInstalledEvent);
   }, []);
 
   const handleMarkExtensionInstalled = () => {
     setExtensionInstalled(true);
-    window.dispatchEvent(new CustomEvent("mark-extension-installed"));
+    window.dispatchEvent(new CustomEvent('mark-extension-installed'));
   };
 
-  const completedIds = useMemo(
-    () => [
-      ...(progressData?.completedSteps ?? []),
-      ...(extensionInstalled ? [7] : []),
-    ],
-    [progressData?.completedSteps, extensionInstalled],
-  );
+  const completedIds = useMemo(() => [
+    ...(progressData?.completedSteps ?? []),
+    ...(extensionInstalled ? [7] : [])
+  ], [progressData?.completedSteps, extensionInstalled]);
 
   // Auto-mark completed in DB if all steps finished locally
   useEffect(() => {
-    if (
-      currentUser &&
-      !currentUser.gettingstartedcompleted &&
-      completedIds.length >= 7
-    ) {
-      completeGettingStarted().catch((err) =>
-        console.error("Error completing getting started checklist:", err),
-      );
+    if (currentUser && !currentUser.gettingstartedcompleted && completedIds.length >= 7) {
+      completeGettingStarted().catch((err) => console.error("Error completing getting started checklist:", err));
     }
   }, [currentUser, completedIds, completeGettingStarted]);
 
@@ -239,14 +219,8 @@ export function GettingStartedChecklist() {
 
   // -1 = user explicitly closed everything, null = never interacted
   // Auto-open first incomplete step only when user hasn't explicitly closed
-  const firstIncompleteId =
-    STEPS.find((s) => !completedIds.includes(s.id))?.id ?? null;
-  const activeId =
-    expandedStep === -1
-      ? null
-      : expandedStep !== null
-        ? expandedStep
-        : firstIncompleteId;
+  const firstIncompleteId = STEPS.find((s) => !completedIds.includes(s.id))?.id ?? null;
+  const activeId = expandedStep === -1 ? null : expandedStep !== null ? expandedStep : firstIncompleteId;
 
   const handleRowClick = (stepId: number) => {
     // If this step is currently open → close it (use -1 sentinel so auto-expand doesn't re-open)
@@ -264,19 +238,15 @@ export function GettingStartedChecklist() {
         <div className="flex items-center gap-3">
           <Compass className="h-[22px] w-[22px] text-white" />
           <div className="flex flex-col items-start gap-1">
-            <h2 className="text-[15px] font-medium text-white leading-none">
-              Getting Started
-            </h2>
-            <span className="text-[10px] font-medium text-neutral-300 leading-none">
-              {totalDone} of {totalSteps} completed
-            </span>
+            <h2 className="text-[15px] font-medium text-white leading-none">Getting Started</h2>
+            <span className="text-[10px] font-medium text-neutral-300 leading-none">{totalDone} of {totalSteps} completed</span>
           </div>
         </div>
         <div className="flex items-center gap-1.5">
           <button
             type="button"
             onClick={() => {
-              window.dispatchEvent(new CustomEvent("start-quick-tour"));
+              window.dispatchEvent(new CustomEvent('start-quick-tour'));
             }}
             title="Quick Tour"
             className="flex items-center gap-1 h-7 px-3! rounded text-xs font-medium text-primary/70 hover:text-primary bg-primary/5 hover:bg-primary/15 transition-colors cursor-pointer border border-primary/15"
@@ -305,13 +275,7 @@ export function GettingStartedChecklist() {
           const open = activeId === step.id;
 
           return (
-            <div
-              key={step.id}
-              className={cn(
-                "rounded-md transition-colors border",
-                open ? "bg-white/5 border-white/5" : "border-transparent",
-              )}
-            >
+            <div key={step.id} className={cn("rounded-md transition-colors border", open ? "bg-white/5 border-white/5" : "border-transparent")}>
               {/* Step Row */}
               <button
                 id={`tour-step-${step.id}`}
@@ -321,10 +285,8 @@ export function GettingStartedChecklist() {
                 }}
                 className={cn(
                   "w-full flex items-center gap-3 px-3 py-2 rounded-md text-left transition-all duration-150 outline-none group",
-                  open
-                    ? "bg-white/5"
-                    : "hover:bg-white/5 data-[tour-active=true]:bg-white/5",
-                  !done ? "cursor-pointer" : "cursor-default",
+                  open ? "bg-white/5" : "hover:bg-white/5 data-[tour-active=true]:bg-white/5",
+                  !done ? "cursor-pointer" : "cursor-default"
                 )}
               >
                 {/* Completion status */}
@@ -337,7 +299,7 @@ export function GettingStartedChecklist() {
                         "h-4 w-4 transition-colors",
                         open
                           ? "text-muted-foreground/60"
-                          : "text-muted-foreground/25 group-hover:text-muted-foreground/50 group-data-[tour-active=true]:text-muted-foreground/50",
+                          : "text-muted-foreground/25 group-hover:text-muted-foreground/50 group-data-[tour-active=true]:text-muted-foreground/50"
                       )}
                     />
                   )}
@@ -352,7 +314,7 @@ export function GettingStartedChecklist() {
                         ? "text-muted-foreground line-through decoration-muted-foreground/50"
                         : open
                           ? "text-white"
-                          : "text-white group-hover:text-white data-[tour-active=true]:text-white",
+                          : "text-white group-hover:text-white data-[tour-active=true]:text-white"
                     )}
                   >
                     {step.label}
@@ -369,7 +331,7 @@ export function GettingStartedChecklist() {
                   <ChevronDown
                     className={cn(
                       "h-4 w-4 shrink-0 transition-transform duration-200 text-primary",
-                      open ? "rotate-180 text-white" : "",
+                      open ? "rotate-180 text-white" : ""
                     )}
                   />
                 )}
@@ -401,6 +363,8 @@ export function GettingStartedChecklist() {
           );
         })}
       </div>
+
+
     </div>
   );
 }

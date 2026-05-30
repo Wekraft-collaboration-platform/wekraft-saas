@@ -118,7 +118,7 @@ export const getUpcomingEvents = query({
     const user = await ctx.db
       .query("users")
       .withIndex("by_token", (q) =>
-        q.eq("clerkToken", identity.tokenIdentifier),
+        q.eq("clerkToken", identity.tokenIdentifier)
       )
       .unique();
 
@@ -179,3 +179,4 @@ export const getUpcomingEvents = query({
     return results.slice(0, 35);
   },
 });
+

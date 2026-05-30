@@ -1,4 +1,4 @@
-"use client";
+"use client"
 
 import {
   CircleCheckIcon,
@@ -6,8 +6,8 @@ import {
   Loader2Icon,
   OctagonXIcon,
   TriangleAlertIcon,
-} from "lucide-react";
-import { Toaster as Sonner, type ToasterProps } from "sonner";
+} from "lucide-react"
+import { Toaster as Sonner, type ToasterProps } from "sonner"
 
 const Toaster = ({ ...props }: ToasterProps) => {
   return (
@@ -15,17 +15,11 @@ const Toaster = ({ ...props }: ToasterProps) => {
       theme="light"
       className="toaster group"
       icons={{
-        success: (
-          <CircleCheckIcon className="size-4 mt-0.5 shrink-0 text-black" />
-        ),
+        success: <CircleCheckIcon className="size-4 mt-0.5 shrink-0 text-black" />,
         info: <InfoIcon className="size-4 mt-0.5 shrink-0 text-black" />,
-        warning: (
-          <TriangleAlertIcon className="size-4 mt-0.5 shrink-0 text-black" />
-        ),
+        warning: <TriangleAlertIcon className="size-4 mt-0.5 shrink-0 text-black" />,
         error: <OctagonXIcon className="size-4 mt-0.5 shrink-0 text-black" />,
-        loading: (
-          <Loader2Icon className="size-4 mt-0.5 shrink-0 animate-spin text-black" />
-        ),
+        loading: <Loader2Icon className="size-4 mt-0.5 shrink-0 animate-spin text-black" />,
       }}
       style={
         {
@@ -37,8 +31,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       }
       toastOptions={{
         classNames: {
-          toast:
-            "cn-toast !bg-white !border-neutral-200 !items-start !text-neutral-900 !shadow-lg",
+          toast: "cn-toast !bg-white !border-neutral-200 !items-start !text-neutral-900 !shadow-lg",
           icon: "!mt-0.5",
           title: "!text-neutral-900 !font-semibold",
           description: "!text-neutral-700",
@@ -46,7 +39,7 @@ const Toaster = ({ ...props }: ToasterProps) => {
       }}
       {...props}
     />
-  );
-};
+  )
+}
 
-export { Toaster };
+export { Toaster }

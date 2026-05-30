@@ -10,7 +10,7 @@ import {
   DialogDescription,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
+  DialogTrigger
 } from "@/components/ui/dialog";
 import { Tabs, TabsContent } from "@/components/ui/tabs";
 import { Button } from "@/components/ui/button";
@@ -31,7 +31,7 @@ import {
   Loader2,
   HelpCircleIcon,
   Send,
-  User,
+  User
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -42,11 +42,7 @@ interface HelpSupportDialogProps {
   onOpenChange?: (open: boolean) => void;
 }
 
-export function HelpSupportDialog({
-  trigger,
-  open,
-  onOpenChange,
-}: HelpSupportDialogProps) {
+export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDialogProps) {
   const [internalOpen, setInternalOpen] = useState(false);
   const isOpen = open !== undefined ? open : internalOpen;
   const setIsOpen = onOpenChange !== undefined ? onOpenChange : setInternalOpen;
@@ -56,9 +52,7 @@ export function HelpSupportDialog({
   const isPro = accountType === "pro";
 
   // Chatbot State
-  const { messages, toolStatus, isStreaming, sendMessage } = useChatbot(
-    currentUser?._id ?? "",
-  );
+  const { messages, toolStatus, isStreaming, sendMessage } = useChatbot(currentUser?._id ?? "");
   const [chatInput, setChatInput] = useState("");
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
@@ -75,9 +69,7 @@ export function HelpSupportDialog({
   const [activeTab, setActiveTab] = useState<"contact" | "ai">("contact");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
-  const [selectedTag, setSelectedTag] = useState<
-    "found bug" | "help needed" | "query" | "payment issue" | "others"
-  >("found bug");
+  const [selectedTag, setSelectedTag] = useState<"found bug" | "help needed" | "query" | "payment issue" | "others">("found bug");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const createSupportTicket = useMutation(api.support.createSupportQuery);
@@ -99,7 +91,7 @@ export function HelpSupportDialog({
       title: "e.g., How to link multiple repositories to a project",
       desc: "Tell us what you are trying to achieve and where you are stuck...",
     },
-    query: {
+    "query": {
       title: "e.g., Custom webhook payloads support on Plus plan",
       desc: "Ask us anything about Wekraft features, integrations, or settings...",
     },
@@ -107,7 +99,7 @@ export function HelpSupportDialog({
       title: "e.g., Invoice details updated for subscription renewal",
       desc: "Specify the payment date, transaction/invoice ID, and describe the billing issue...",
     },
-    others: {
+    "others": {
       title: "e.g., Collaboration proposal / feedback",
       desc: "How can we help you today?",
     },
@@ -129,17 +121,13 @@ export function HelpSupportDialog({
         reason: selectedTag,
         description,
       });
-      toast.success(
-        "Support ticket submitted successfully! Check your email for updates.",
-      );
+      toast.success("Support ticket submitted successfully! Check your email for updates.");
       setTitle("");
       setDescription("");
       setIsOpen(false);
     } catch (err: any) {
       console.error(err);
-      toast.error(
-        err.message || "Failed to submit support ticket. Please try again.",
-      );
+      toast.error(err.message || "Failed to submit support ticket. Please try again.");
     } finally {
       setIsSubmitting(false);
     }
@@ -176,21 +164,13 @@ export function HelpSupportDialog({
           </div>
         </DialogHeader>
 
-        <Tabs
-          value={activeTab}
-          onValueChange={(val) => setActiveTab(val as "contact" | "ai")}
-          className="w-full -mt-1.5 flex-1 flex flex-col min-h-0"
-        >
-          <TabsContent
-            value="contact"
-            className="flex-1 min-h-0 overflow-y-auto focus:outline-none space-y-4 pr-1 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent"
-          >
+        <Tabs value={activeTab} onValueChange={(val) => setActiveTab(val as "contact" | "ai")} className="w-full -mt-1.5 flex-1 flex flex-col min-h-0">
+
+          <TabsContent value="contact" className="flex-1 min-h-0 overflow-y-auto focus:outline-none space-y-4 pr-1 scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent">
             <form onSubmit={handleSubmit} className="space-y-4 text-left">
               {/* Support Tag select row */}
               <div className="space-y-4">
-                <Label className="text-sm font-medium text-zinc-300">
-                  Category Tag
-                </Label>
+                <Label className="text-sm font-medium text-zinc-300">Category Tag</Label>
                 <div className="flex flex-wrap gap-1.5">
                   {supportTags.map((tag) => {
                     const isSelected = selectedTag === tag.id;
@@ -205,7 +185,7 @@ export function HelpSupportDialog({
                           "flex items-center gap-2 px-3 py-1.5 text-[10px] rounded-full border font-medium cursor-pointer transition-all duration-200 select-none",
                           isSelected
                             ? "bg-neutral-100 text-zinc-950 border-white shadow-sm"
-                            : "bg-zinc-900/50 text-zinc-400 border-zinc-800 hover:bg-zinc-800 hover:text-zinc-200",
+                            : "bg-zinc-900/50 text-zinc-400 border-zinc-800 hover:bg-zinc-800 hover:text-zinc-200"
                         )}
                       >
                         <Icon className="h-3 w-3 shrink-0" />
@@ -218,12 +198,7 @@ export function HelpSupportDialog({
 
               {/* Title input */}
               <div className="space-y-1.5">
-                <Label
-                  htmlFor="support-title"
-                  className="text-xs font-medium text-zinc-300"
-                >
-                  Title
-                </Label>
+                <Label htmlFor="support-title" className="text-xs font-medium text-zinc-300">Title</Label>
                 <Input
                   id="support-title"
                   type="text"
@@ -237,12 +212,7 @@ export function HelpSupportDialog({
 
               {/* Description textarea */}
               <div className="space-y-1.5">
-                <Label
-                  htmlFor="support-description"
-                  className="text-xs font-medium text-zinc-300"
-                >
-                  Description
-                </Label>
+                <Label htmlFor="support-description" className="text-xs font-medium text-zinc-300">Description</Label>
                 <Textarea
                   id="support-description"
                   required
@@ -263,11 +233,9 @@ export function HelpSupportDialog({
                   <div className="flex flex-col text-left">
                     <div className="text-xs font-semibold text-white flex items-center gap-1.5">
                       Priority Support Active
-                      <span className="text-[10px] bg-blue-500/20 text-blue-300 font-bold uppercase tracking-wider px-2.5 py-1 rounded-full">
-                        {" "}
-                        Estimated response time: within 12 hours.
-                      </span>
+                      <span className="text-[10px] bg-blue-500/20 text-blue-300 font-bold uppercase tracking-wider px-2.5 py-1 rounded-full"> Estimated response time: within 12 hours.</span>
                     </div>
+
                   </div>
                 </div>
               ) : (
@@ -278,11 +246,9 @@ export function HelpSupportDialog({
                   <div className="flex flex-col text-left">
                     <div className="text-xs font-semibold text-white flex items-center gap-1.5">
                       Basic Support Active
-                      <span className="text-[10px] bg-zinc-800 text-zinc-300 font-medium capitalize px-2.5 py-1 rounded-full">
-                        {" "}
-                        Estimated response time: within 48 hours.
-                      </span>
+                      <span className="text-[10px] bg-zinc-800 text-zinc-300 font-medium capitalize px-2.5 py-1 rounded-full"> Estimated response time: within 48 hours.</span>
                     </div>
+
                   </div>
                 </div>
               )}
@@ -318,10 +284,7 @@ export function HelpSupportDialog({
             </form>
           </TabsContent>
 
-          <TabsContent
-            value="ai"
-            className="flex-1 flex flex-col min-h-0 focus:outline-none justify-between"
-          >
+          <TabsContent value="ai" className="flex-1 flex flex-col min-h-0 focus:outline-none justify-between">
             {/* Messages Container */}
             <div
               ref={scrollContainerRef}
@@ -331,78 +294,45 @@ export function HelpSupportDialog({
                 <div className="flex flex-col items-center justify-center h-full text-center p-4 space-y-3 select-none">
                   <Bot className="h-7 w-7" />
                   <div className="space-y-1">
-                    <h4 className="text-base font-medium text-white">
-                      Wekraft AI Assistant
-                    </h4>
+                    <h4 className="text-base font-medium text-white">Wekraft AI Assistant</h4>
+
                   </div>
                   <div className="grid grid-cols-2 gap-2 w-full max-w-[440px] pt-1">
                     <button
                       type="button"
-                      onClick={() =>
-                        sendMessage(
-                          "Help me get started with Wekraft and explain what I can do here.",
-                        )
-                      }
+                      onClick={() => sendMessage("Help me get started with Wekraft and explain what I can do here.")}
                       className="flex flex-col items-start gap-1 p-2 text-left bg-zinc-900/40 hover:bg-zinc-800/60 border border-zinc-800/80 rounded-xl transition-all duration-200 cursor-pointer group hover:border-zinc-700"
                     >
                       <HelpCircle className="h-3.5 w-3.5 text-blue-400 group-hover:text-blue-300 transition-colors" />
-                      <span className="text-[10px] font-medium text-zinc-200 mt-0.5">
-                        Get help about anything
-                      </span>
-                      <span className="text-[8px] text-zinc-500 leading-tight">
-                        Ask questions or find features in Wekraft.
-                      </span>
+                      <span className="text-[10px] font-medium text-zinc-200 mt-0.5">Get help about anything</span>
+                      <span className="text-[8px] text-zinc-500 leading-tight">Ask questions or find features in Wekraft.</span>
                     </button>
                     <button
                       type="button"
-                      onClick={() =>
-                        sendMessage(
-                          "I have a query regarding my account or project settings.",
-                        )
-                      }
+                      onClick={() => sendMessage("I have a query regarding my account or project settings.")}
                       className="flex flex-col items-start gap-1 p-2 text-left bg-zinc-900/40 hover:bg-zinc-800/60 border border-zinc-800/80 rounded-xl transition-all duration-200 cursor-pointer group hover:border-zinc-700"
                     >
                       <MessageSquare className="h-3.5 w-3.5 text-indigo-400 group-hover:text-indigo-300 transition-colors" />
-                      <span className="text-[10px] font-medium text-zinc-200 mt-0.5">
-                        Raise queries
-                      </span>
-                      <span className="text-[8px] text-zinc-500 leading-tight">
-                        Ask about pricing, plans, or configurations.
-                      </span>
+                      <span className="text-[10px] font-medium text-zinc-200 mt-0.5">Raise queries</span>
+                      <span className="text-[8px] text-zinc-500 leading-tight">Ask about pricing, plans, or configurations.</span>
                     </button>
                     <button
                       type="button"
-                      onClick={() =>
-                        sendMessage(
-                          "I found a bug in the app. Can you help me report it?",
-                        )
-                      }
+                      onClick={() => sendMessage("I found a bug in the app. Can you help me report it?")}
                       className="flex flex-col items-start gap-1 p-2 text-left bg-zinc-900/40 hover:bg-zinc-800/60 border border-zinc-800/80 rounded-xl transition-all duration-200 cursor-pointer group hover:border-zinc-700"
                     >
                       <Bug className="h-3.5 w-3.5 text-rose-400 group-hover:text-rose-300 transition-colors" />
-                      <span className="text-[10px] font-medium text-zinc-200 mt-0.5">
-                        Report bugs
-                      </span>
-                      <span className="text-[8px] text-zinc-500 leading-tight">
-                        Identify UI issues, performance bugs, or errors.
-                      </span>
+                      <span className="text-[10px] font-medium text-zinc-200 mt-0.5">Report bugs</span>
+                      <span className="text-[8px] text-zinc-500 leading-tight">Identify UI issues, performance bugs, or errors.</span>
                     </button>
                     <button
                       type="button"
-                      onClick={() =>
-                        sendMessage(
-                          "Tell me more about Wekraft and what makes it unique.",
-                        )
-                      }
+                      onClick={() => sendMessage("Tell me more about Wekraft and what makes it unique.")}
                       className="flex flex-col items-start gap-1 p-2 text-left bg-zinc-900/40 hover:bg-zinc-800/60 border border-zinc-800/80 rounded-xl transition-all duration-200 cursor-pointer group hover:border-zinc-700"
                     >
                       <Bot className="h-3.5 w-3.5 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
-                      <span className="text-[10px] font-medium text-zinc-200 mt-0.5">
-                        Understand Wekraft more
-                      </span>
-                      <span className="text-[8px] text-zinc-500 leading-tight">
-                        Explore the platform's vision, tools, and integrations.
-                      </span>
+                      <span className="text-[10px] font-medium text-zinc-200 mt-0.5">Understand Wekraft more</span>
+                      <span className="text-[8px] text-zinc-500 leading-tight">Explore the platform's vision, tools, and integrations.</span>
                     </button>
                   </div>
                 </div>
@@ -410,16 +340,10 @@ export function HelpSupportDialog({
                 <div className="space-y-3 text-left animate-in fade-in-50 duration-200">
                   {messages.map((msg) => {
                     if (msg.role === "tool") {
-                      const Icon =
-                        msg.toolName === "createSupportQuery"
-                          ? MessageSquare
-                          : HelpCircle;
+                      const Icon = msg.toolName === "createSupportQuery" ? MessageSquare : HelpCircle;
                       const isRunning = msg.toolStatus === "running";
                       return (
-                        <div
-                          key={msg.id}
-                          className="flex justify-start pl-8 my-2 animate-in fade-in duration-200"
-                        >
+                        <div key={msg.id} className="flex justify-start pl-8 my-2 animate-in fade-in duration-200">
                           <div className="flex items-center gap-2 px-3 py-2 bg-zinc-900/60 border border-zinc-800 rounded-xl text-xs text-zinc-300 shadow-sm">
                             {isRunning ? (
                               <Loader2 className="h-3.5 w-3.5 animate-spin text-blue-400 shrink-0" />
@@ -428,16 +352,11 @@ export function HelpSupportDialog({
                             )}
                             <span className="text-sm font-medium text-zinc-200">
                               {msg.toolName === "createSupportQuery"
-                                ? isRunning
-                                  ? "Creating support ticket..."
-                                  : "Created support ticket successfully"
+                                ? (isRunning ? "Creating support ticket..." : "Created support ticket successfully")
                                 : msg.toolName === "getSupportQueries"
-                                  ? isRunning
-                                    ? "Fetching support queries..."
-                                    : "Fetched support queries"
-                                  : isRunning
-                                    ? `Running: ${msg.toolName}...`
-                                    : `Executed: ${msg.toolName}`}
+                                  ? (isRunning ? "Fetching support queries..." : "Fetched support queries")
+                                  : (isRunning ? `Running: ${msg.toolName}...` : `Executed: ${msg.toolName}`)
+                              }
                             </span>
                           </div>
                         </div>
@@ -450,7 +369,7 @@ export function HelpSupportDialog({
                         key={msg.id}
                         className={cn(
                           "flex w-full gap-2",
-                          isUser ? "justify-end" : "justify-start",
+                          isUser ? "justify-end" : "justify-start"
                         )}
                       >
                         {!isUser && (
@@ -463,7 +382,7 @@ export function HelpSupportDialog({
                             "max-w-[75%] rounded-2xl p-2.5 text-[11px] leading-relaxed break-words",
                             isUser
                               ? "bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-tr-none shadow-md"
-                              : "bg-zinc-900/40 border border-zinc-800/80 text-zinc-100 rounded-tl-none",
+                              : "bg-zinc-900/40 border border-zinc-800/80 text-zinc-100 rounded-tl-none"
                           )}
                         >
                           {msg.text || (
@@ -474,16 +393,9 @@ export function HelpSupportDialog({
                         </div>
                         {isUser && (
                           <Avatar className="h-6 w-6 border border-zinc-800 shrink-0 mt-0.5">
-                            <AvatarImage
-                              src={currentUser?.avatarUrl}
-                              alt={currentUser?.name || "User"}
-                            />
+                            <AvatarImage src={currentUser?.avatarUrl} alt={currentUser?.name || "User"} />
                             <AvatarFallback className="text-[9px] font-semibold bg-zinc-800 text-zinc-300 flex items-center justify-center">
-                              {currentUser?.name ? (
-                                currentUser.name.slice(0, 2).toUpperCase()
-                              ) : (
-                                <User className="h-3 w-3 text-zinc-400" />
-                              )}
+                              {currentUser?.name ? currentUser.name.slice(0, 2).toUpperCase() : <User className="h-3 w-3 text-zinc-400" />}
                             </AvatarFallback>
                           </Avatar>
                         )}
@@ -508,9 +420,7 @@ export function HelpSupportDialog({
                 type="text"
                 placeholder="Ask assistant anything..."
                 value={chatInput}
-                onChange={(e) =>
-                  chatInput !== e.target.value && setChatInput(e.target.value)
-                }
+                onChange={(e) => chatInput !== e.target.value && setChatInput(e.target.value)}
                 disabled={isStreaming}
                 className="bg-transparent! border-none! text-white placeholder:text-zinc-600 h-8 text-xs focus-visible:ring-0! flex-1 outline-none pr-10"
               />

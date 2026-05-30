@@ -383,7 +383,7 @@ const TaskGroup = ({
                     className={cn(
                       "group border-none dark:hover:bg-neutral-900 hover:bg-neutral-100 transition-all duration-200 cursor-pointer",
                       selectedTaskIds.includes(task._id as Id<"tasks">) &&
-                        "bg-primary/5",
+                      "bg-primary/5",
                     )}
                     onClick={() => onTaskClick(task)}
                   >
@@ -417,11 +417,7 @@ const TaskGroup = ({
                                   className="px-2 py-4! bg-neutral-900 border border-neutral-800 text-neutral-200"
                                 >
                                   <p className="text-[11px] font-medium">
-                                    Overdue: due on{" "}
-                                    {format(
-                                      task.estimation.endDate,
-                                      "MMM d, yyyy",
-                                    )}
+                                    Overdue: due on {format(task.estimation.endDate, "MMM d, yyyy")}
                                   </p>
                                 </TooltipContent>
                               </Tooltip>
@@ -455,15 +451,15 @@ const TaskGroup = ({
                             className={cn(
                               "flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium font-inter capitalize tracking-wide border",
                               task.type.color === "green" &&
-                                "bg-emerald-500/10  text-primary/80 border-emerald-400/20",
+                              "bg-emerald-500/10  text-primary/80 border-emerald-400/20",
                               task.type.color === "yellow" &&
-                                "bg-yellow-500/10  text-primary/80 border-yellow-400/20",
+                              "bg-yellow-500/10  text-primary/80 border-yellow-400/20",
                               task.type.color === "purple" &&
-                                "bg-purple-500/10  text-primary/80 border-purple-400/20",
+                              "bg-purple-500/10  text-primary/80 border-purple-400/20",
                               task.type.color === "blue" &&
-                                "bg-blue-500/20  text-primary/80 border-blue-400/20",
+                              "bg-blue-500/20  text-primary/80 border-blue-400/20",
                               task.type.color === "grey" &&
-                                "bg-neutral-500/10  text-primary/80 border-neutral-400/20",
+                              "bg-neutral-500/10  text-primary/80 border-neutral-400/20",
                             )}
                           >
                             {task.type.label}

@@ -8,9 +8,7 @@ if (
   !process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ||
   !process.env.RAZORPAY_KEY_SECRET
 ) {
-  console.warn(
-    "[Razorpay] Missing NEXT_PUBLIC_RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET in env",
-  );
+  console.warn("[Razorpay] Missing NEXT_PUBLIC_RAZORPAY_KEY_ID or RAZORPAY_KEY_SECRET in env");
 }
 
 export async function POST(req: NextRequest) {

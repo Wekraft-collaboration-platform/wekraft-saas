@@ -28,6 +28,7 @@ export default function MeetPage() {
         </div>
 
         <div className="flex items-center gap-5">
+
           <Button size="sm" className="shadow-sm text-xs" disabled>
             <Plus className="w-4 h-4 mr-2" />
             New Meeting
@@ -60,7 +61,9 @@ export default function MeetPage() {
 
             {/* Static Pro Access Alert Banner */}
             <div className="p-3 rounded-lg border bg-blue-500/5 text-xs text-muted-foreground leading-normal w-full">
-              <span className="font-semibold text-primary">PRO Feature:</span>{" "}
+              <span className="font-semibold text-primary">
+                PRO Feature:
+              </span>{" "}
               Pro Access needed to use this feature.
             </div>
           </div>

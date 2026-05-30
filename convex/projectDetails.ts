@@ -46,9 +46,7 @@ async function rescheduleProjectAlerts(ctx: any, projectId: Id<"projects">) {
     const total = details.targetDate - project.createdAt;
 
     for (const percent of details.alerts) {
-      const triggerTime = Math.round(
-        project.createdAt + total * (percent / 100),
-      );
+      const triggerTime = Math.round(project.createdAt + total * (percent / 100));
 
       if (triggerTime > Date.now()) {
         const jobId = await ctx.scheduler.runAt(
@@ -57,7 +55,7 @@ async function rescheduleProjectAlerts(ctx: any, projectId: Id<"projects">) {
           {
             projectId,
             alertPercent: percent,
-          },
+          }
         );
         newScheduledJobs.push({ percent, jobId: jobId as string });
       }
@@ -71,7 +69,7 @@ async function rescheduleProjectAlerts(ctx: any, projectId: Id<"projects">) {
 }
 
 // ------------------------------------------------------
-// set target date for the project ( 7 days to 1 year)
+// set target date for the project ( 7 days to 1 year) 
 // -------------------------------------------------------
 export const updateTargetDate = mutation({
   args: {
@@ -86,9 +84,7 @@ export const updateTargetDate = mutation({
     const durationDays = (args.targetDate - project.createdAt) / MS_IN_DAY;
 
     if (durationDays < 7) {
-      throw new Error(
-        "Project duration must be at least 7 days from creation.",
-      );
+      throw new Error("Project duration must be at least 7 days from creation.");
     }
     if (durationDays > 365) {
       throw new Error("Project deadline cannot exceed 1 year from creation.");

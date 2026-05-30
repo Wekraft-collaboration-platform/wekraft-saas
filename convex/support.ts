@@ -38,7 +38,7 @@ export const createSupportQuery = mutation({
 });
 
 // -----------------------------------
-// AI Call
+// AI Call 
 // -----------------------------------
 export const getSupportQueriesForUser = query({
   args: {

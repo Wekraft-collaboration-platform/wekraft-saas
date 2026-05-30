@@ -2,13 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import {
-  CalendarClock,
-  ChevronDown,
-  Clock,
-  FolderKanban,
-  RefreshCwIcon,
-} from "lucide-react";
+import { CalendarClock, ChevronDown, Clock, FolderKanban, RefreshCwIcon } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import {
@@ -117,7 +111,9 @@ export function UpcomingDeadlines({
       <div className="px-4 py-2.5 border-b border-border bg-muted shrink-0 flex items-center justify-between">
         <div className="flex items-center gap-1.5">
           <CalendarClock className="h-4 w-4 text-primary" />
-          <h3 className="text-sm font-medium ">Upcoming Deadlines</h3>
+          <h3 className="text-sm font-medium ">
+            Upcoming Deadlines
+          </h3>
         </div>
 
         <div className="flex items-center gap-2.5">
@@ -127,32 +123,18 @@ export function UpcomingDeadlines({
                 variant="outline"
                 className="text-[10px]  h-6 font-medium text-primary bg-accent! hover:bg-sidebar px-2.5 py-0.5 rounded-md cursor-pointer transition-colors shadow-none flex items-center gap-1"
               >
-                <span>
-                  {selectedWeeks === 1 ? "1 Week" : `${selectedWeeks} Weeks`}
-                </span>
+                <span>{selectedWeeks === 1 ? "1 Week" : `${selectedWeeks} Weeks`}</span>
                 <ChevronDown className="h-3 w-3 opacity-80 shrink-0" />
               </Button>
             </DropdownMenuTrigger>
-            <DropdownMenuContent
-              align="start"
-              className="bg-popover border border-border text-foreground"
-            >
-              <DropdownMenuItem
-                onClick={() => setSelectedWeeks(1)}
-                className="cursor-pointer text-xs"
-              >
+            <DropdownMenuContent align="start" className="bg-popover border border-border text-foreground">
+              <DropdownMenuItem onClick={() => setSelectedWeeks(1)} className="cursor-pointer text-xs">
                 1 Week
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setSelectedWeeks(2)}
-                className="cursor-pointer text-xs"
-              >
+              <DropdownMenuItem onClick={() => setSelectedWeeks(2)} className="cursor-pointer text-xs">
                 2 Weeks
               </DropdownMenuItem>
-              <DropdownMenuItem
-                onClick={() => setSelectedWeeks(3)}
-                className="cursor-pointer text-xs"
-              >
+              <DropdownMenuItem onClick={() => setSelectedWeeks(3)} className="cursor-pointer text-xs">
                 3 Weeks
               </DropdownMenuItem>
             </DropdownMenuContent>
@@ -166,10 +148,14 @@ export function UpcomingDeadlines({
             title="Refresh deadlines"
           >
             <RefreshCwIcon
-              className={cn("h-3 w-3 ", refreshing && "animate-spin")}
+              className={cn(
+                "h-3 w-3 ",
+                refreshing && "animate-spin"
+              )}
             />
           </Button>
         </div>
+
       </div>
 
       {/* Body - Scrollable */}
@@ -178,10 +164,7 @@ export function UpcomingDeadlines({
           // Loading skeleton
           <div className="flex flex-col divide-y divide-border/10">
             {Array.from({ length: 2 }).map((_, i) => (
-              <div
-                key={i}
-                className="flex items-center gap-3 px-4 py-2.5 animate-pulse"
-              >
+              <div key={i} className="flex items-center gap-3 px-4 py-2.5 animate-pulse">
                 <div className="h-7 w-7 rounded-lg bg-muted/40 shrink-0" />
                 <div className="flex-1 space-y-2">
                   <div className="h-3 bg-muted/40 rounded w-3/4" />
@@ -196,9 +179,7 @@ export function UpcomingDeadlines({
           <div className="flex flex-col items-center justify-center h-full py-6 px-6 text-center gap-2">
             <CalendarClock className="h-7 w-7 text-muted-foreground" />
             <div>
-              <p className="text-base font-medium text-foreground">
-                No deadlines soon
-              </p>
+              <p className="text-base font-medium text-foreground">No deadlines soon</p>
               <p className="text-sm text-muted-foreground mt-0.5 max-w-[240px]">
                 No projects have deadlines in the next {selectedWeeks * 7} days.
               </p>
@@ -213,11 +194,7 @@ export function UpcomingDeadlines({
             return (
               <button
                 key={project._id}
-                onClick={() =>
-                  router.push(
-                    `/dashboard/my-projects/${project.slug}/workspace`,
-                  )
-                }
+                onClick={() => router.push(`/dashboard/my-projects/${project.slug}/workspace`)}
                 className="w-full flex items-center gap-3 px-5 py-3.5 text-left hover:bg-accent/30 cursor-pointer transition-colors duration-150 group outline-none"
               >
                 {/* Icon */}
@@ -252,7 +229,7 @@ export function UpcomingDeadlines({
                           "text-[10px] rounded-sm border bg-muted px-2 py-0.6 shrink-0 ml-4",
                           project.role === "owned"
                             ? "bg-primary/10 border-primary/20 text-primary"
-                            : "bg-background/20  px-3! py-0.5",
+                            : "bg-background/20  px-3! py-0.5"
                         )}
                       >
                         {project.role}
