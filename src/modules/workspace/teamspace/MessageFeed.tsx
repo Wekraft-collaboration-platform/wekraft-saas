@@ -144,20 +144,18 @@ export function MessageFeed({
     projectId as Id<"projects">,
   );
 
-  const kayaAgent = useTeamspaceAgent(projectId, "kaya");
-  const harryAgent = useTeamspaceAgent(projectId, "harry");
+  const kayaAgent = useTeamspaceAgent(projectId, "kaya", channel?.id ?? null);
+  const harryAgent = useTeamspaceAgent(projectId, "harry", channel?.id ?? null);
 
   const kayaAssistantMsg = [...kayaAgent.messages]
     .reverse()
     .find((m) => m.role === "assistant");
   const kayaToolStatus = kayaAgent.toolStatus;
-  const showKayaTemp = kayaAgent.isStreaming || !!kayaToolStatus;
 
   const harryAssistantMsg = [...harryAgent.messages]
     .reverse()
     .find((m) => m.role === "assistant");
   const harryToolStatus = harryAgent.toolStatus;
-  const showHarryTemp = harryAgent.isStreaming || !!harryToolStatus;
 
   const kayaStreamingText = kayaAssistantMsg?.text;
   const harryStreamingText = harryAssistantMsg?.text;
@@ -191,6 +189,17 @@ export function MessageFeed({
     currentUserId,
     currentUserName,
   );
+
+  const lastFeedMessage =
+    messages.length > 0 ? messages[messages.length - 1] : null;
+  const isAgentLastMessage =
+    lastFeedMessage &&
+    (lastFeedMessage.user_id === "kaya" || lastFeedMessage.user_id === "harry");
+
+  const showKayaTemp =
+    (kayaAgent.isStreaming || !!kayaToolStatus) && !isAgentLastMessage;
+  const showHarryTemp =
+    (harryAgent.isStreaming || !!harryToolStatus) && !isAgentLastMessage;
 
   const [optimisticUploads, setOptimisticUploads] = useState<
     Array<{
