@@ -68,6 +68,9 @@ export function useNotifications(userId: string) {
           description: notification.content || `${notification.sender_name} joined the project.`,
           duration: 5000,
         });
+        // Force Ably token refresh so the new project's channels are
+        // immediately scoped into the token (instead of waiting up to 1 hour).
+        ably.auth.authorize().catch(() => {});
       } else if (notification.type === "leave") {
         toast(`🚪 Left Project`, {
           description: notification.content || `${notification.sender_name} left the project.`,
@@ -88,6 +91,9 @@ export function useNotifications(userId: string) {
           description: notification.content || "Welcome to the team!",
           duration: 5000,
         });
+        // Also force a token refresh here — the user's join request was accepted,
+        // meaning they've just been added to the project.
+        ably.auth.authorize().catch(() => {});
       }
     };
 
