@@ -33,6 +33,7 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useHarryStore } from "@/store/useHarryStore";
 import { useKayaStore } from "@/store/useKayaStore";
 
+
 export function HarryAssistantSheet() {
   const { isOpen, setIsOpen, threadId, createNewSession } = useHarryStore();
   const currentUser = useQuery(api.user.getCurrentUser);
@@ -61,10 +62,7 @@ export function HarryAssistantSheet() {
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
-        if (
-          typeof window !== "undefined" &&
-          window.location.pathname.includes("/workspace/ai")
-        ) {
+        if (typeof window !== "undefined" && window.location.pathname.includes("/workspace/ai")) {
           return;
         }
         if (!isHarryActive) return; // Let Kaya's sheet handle it
@@ -106,29 +104,15 @@ export function HarryAssistantSheet() {
                 onClick={() => {
                   setIsOpen(false);
                   useKayaStore.getState().setIsOpen(true);
-                  if (
-                    typeof window !== "undefined" &&
-                    window.location.pathname.includes("/workspace/ai")
-                  ) {
-                    router.replace(
-                      `/dashboard/my-projects/${slug}/workspace/ai?kaya=true`,
-                    );
+                  if (typeof window !== "undefined" && window.location.pathname.includes("/workspace/ai")) {
+                    router.replace(`/dashboard/my-projects/${slug}/workspace/ai?kaya=true`);
                   }
                 }}
               >
                 <Image src="/kaya.svg" alt="kaya" width={24} height={24} />
                 Open Kaya
               </Button>
-              <Button
-                onClick={() =>
-                  router.replace(
-                    `/dashboard/my-projects/${slug}/workspace/ai?harry=true`,
-                  )
-                }
-                size="sm"
-                variant="default"
-                className="text-[10px]"
-              >
+              <Button onClick={() => router.replace(`/dashboard/my-projects/${slug}/workspace/ai?harry=true`)} size="sm" variant="default" className="text-[10px]">
                 Visit space <MessagesSquare className="h-3 w-3" />
               </Button>
             </div>
@@ -168,17 +152,15 @@ export function HarryAssistantSheet() {
             <div className="flex flex-col items-center justify-center p-4 bg-card backdrop-blur-md rounded-xl border border-accent shadow-lg">
               <div className="flex items-center gap-2 mb-2">
                 <Clover className="w-5 h-5 " />
-                <h4 className="text-sm font-semibold ">Pro Feature</h4>
+                <h4 className="text-sm font-semibold ">
+                  Pro Feature
+                </h4>
               </div>
               <p className="text-[11px] text-muted-foreground text-center mb-3 px-6">
-                Harry is available for Pro Plan Owner projects. Get codebase
-                review, pull requests support, and architecture analysis.
+                Harry is available for Pro Plan Owner projects. Get codebase review,
+                pull requests support, and architecture analysis.
               </p>
-              <Button
-                size="sm"
-                className="w-full text-sm "
-                onClick={() => router.push("/web/pricing")}
-              >
+              <Button size="sm" className="w-full text-sm " onClick={() => router.push("/web/pricing")}>
                 Upgrade to Pro <LayersPlus />
               </Button>
             </div>

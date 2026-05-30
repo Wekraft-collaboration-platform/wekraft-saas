@@ -1,6 +1,6 @@
 /**
  * usePresence.ts
- *
+ * 
  * Shared hook to track project-wide or channel-specific presence.
  * Centralizes Ably presence logic to avoid redundant connections.
  */
@@ -21,11 +21,7 @@ function getAblyClient(): Ably.Realtime {
   return ablyClient;
 }
 
-export function usePresence(
-  projectId: string | null,
-  currentUserId: string,
-  currentUserName?: string,
-) {
+export function usePresence(projectId: string | null, currentUserId: string, currentUserName?: string) {
   const [onlineIds, setOnlineIds] = useState<Set<string>>(new Set());
 
   useEffect(() => {
@@ -35,14 +31,11 @@ export function usePresence(
     const ch = ably.channels.get(`teamspace:presence:${projectId}`);
 
     ch.presence.enter({ userId: currentUserId, userName: currentUserName });
-
+    
     const updatePresence = () => {
-      ch.presence
-        .get()
-        .then((members) => {
-          setOnlineIds(new Set(members.map((m) => m.clientId)));
-        })
-        .catch(console.error);
+      ch.presence.get().then((members) => {
+        setOnlineIds(new Set(members.map((m) => m.clientId)));
+      }).catch(console.error);
     };
 
     ch.presence.subscribe("enter", updatePresence);

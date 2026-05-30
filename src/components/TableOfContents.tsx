@@ -20,9 +20,8 @@ export function TableOfContents({ headings }: { headings: Heading[] }) {
 
     const handleScroll = () => {
       const scrollY = window.scrollY || window.pageYOffset;
-      const totalHeight =
-        document.documentElement.scrollHeight - window.innerHeight;
-
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
+      
       if (totalHeight > 0) {
         setScrollProgress((scrollY / totalHeight) * 100);
       } else {
@@ -41,8 +40,7 @@ export function TableOfContents({ headings }: { headings: Heading[] }) {
     const handleObserver = (entries: IntersectionObserverEntry[]) => {
       // Avoid observer overriding when we are already at the bottom
       const scrollY = window.scrollY || window.pageYOffset;
-      const totalHeight =
-        document.documentElement.scrollHeight - window.innerHeight;
+      const totalHeight = document.documentElement.scrollHeight - window.innerHeight;
       if (totalHeight > 0 && scrollY >= totalHeight - 15) {
         return;
       }
@@ -74,8 +72,7 @@ export function TableOfContents({ headings }: { headings: Heading[] }) {
     e.preventDefault();
     const element = document.getElementById(id);
     if (element) {
-      const targetPosition =
-        element.getBoundingClientRect().top + window.pageYOffset - 90;
+      const targetPosition = element.getBoundingClientRect().top + window.pageYOffset - 90;
       const startPosition = window.pageYOffset;
       const distance = targetPosition - startPosition;
       const duration = 1200; // Slower duration (1.2 seconds)
@@ -85,12 +82,11 @@ export function TableOfContents({ headings }: { headings: Heading[] }) {
         if (!start) start = timestamp;
         const progress = timestamp - start;
         const percentage = Math.min(progress / duration, 1);
-
+        
         // Easing function (easeInOutCubic)
-        const easing =
-          percentage < 0.5
-            ? 4 * percentage * percentage * percentage
-            : 1 - Math.pow(-2 * percentage + 2, 3) / 2;
+        const easing = percentage < 0.5 
+          ? 4 * percentage * percentage * percentage 
+          : 1 - Math.pow(-2 * percentage + 2, 3) / 2;
 
         window.scrollTo(0, startPosition + distance * easing);
 
@@ -133,7 +129,7 @@ export function TableOfContents({ headings }: { headings: Heading[] }) {
                 activeId === h.id
                   ? "text-white font-semibold"
                   : "text-white/30 hover:text-white/60 font-medium",
-                h.level === 3 ? "pl-5" : "pl-3",
+                h.level === 3 ? "pl-5" : "pl-3"
               )}
             >
               <AnimatePresence>
@@ -148,16 +144,12 @@ export function TableOfContents({ headings }: { headings: Heading[] }) {
                   />
                 )}
               </AnimatePresence>
-
+              
               {h.level === 3 && (
-                <span
-                  className={cn(
-                    "mt-[0.45rem] h-[3px] w-[3px] rounded-full shrink-0 transition-colors duration-300",
-                    activeId === h.id
-                      ? "bg-blue-400"
-                      : "bg-white/15 group-hover:bg-white/30",
-                  )}
-                />
+                <span className={cn(
+                  "mt-[0.45rem] h-[3px] w-[3px] rounded-full shrink-0 transition-colors duration-300",
+                  activeId === h.id ? "bg-blue-400" : "bg-white/15 group-hover:bg-white/30"
+                )} />
               )}
               <span className="truncate">{h.text}</span>
             </a>

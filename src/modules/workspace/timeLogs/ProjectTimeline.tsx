@@ -105,6 +105,8 @@ const DAY_COL_MIN_PX = 14;
 const TRACK_MIN_PX = 900;
 const WEEK_COL_MIN_PX = 92;
 
+
+
 // -------------------DAILY FUNCTION--------------------------
 function TimelineDayAxis({
   config,
@@ -139,10 +141,7 @@ function TimelineDayAxis({
     <div className="w-full min-w-0 overflow-auto max-h-[500px] dark:bg-card">
       <div
         className="relative flex min-h-[440px] w-full pl-0.5"
-        style={{
-          width: `max(${trackWidth}px, 100%)`,
-          height: `${containerHeight}px`,
-        }}
+        style={{ width: `max(${trackWidth}px, 100%)`, height: `${containerHeight}px` }}
         aria-label={`Timeline from ${format(days[0]!, "PPP")} to ${format(days[days.length - 1]!, "PPP")}, one column per day`}
       >
         {days.map((day, i) => {
@@ -424,6 +423,8 @@ export const ProjectTimeline = ({
 
   if (!config) return null;
 
+
+
   // Simple normalization for comparing statuses
   const normalizeStatus = (s: string) =>
     s.toLowerCase().replace(/[^a-z0-9]+/g, "");
@@ -484,12 +485,9 @@ export const ProjectTimeline = ({
               <DropdownMenuSeparator />
               {Object.entries(statusIcons)
                 .filter(([status]) =>
-                  [
-                    "not started",
-                    "inprogress",
-                    "reviewing",
-                    "testing",
-                  ].includes(status),
+                  ["not started", "inprogress", "reviewing", "testing"].includes(
+                    status,
+                  ),
                 )
                 .map(([status, icon]) => (
                   <DropdownMenuItem

@@ -6,6 +6,7 @@ import { motion } from "motion/react";
 
 import { useEffect, useState } from "react";
 
+
 interface OnboardCardProps {
   duration?: number;
   step1?: string;

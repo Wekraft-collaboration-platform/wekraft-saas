@@ -26,9 +26,7 @@ export async function POST(req: NextRequest) {
     event = stripe.webhooks.constructEvent(body, signature, webhookSecret);
   } catch (err) {
     const errorMessage = err instanceof Error ? err.message : "Unknown error";
-    console.error(
-      `[Stripe Webhook] Error verifying signature: ${errorMessage}`,
-    );
+    console.error(`[Stripe Webhook] Error verifying signature: ${errorMessage}`);
     return NextResponse.json(
       { error: `Webhook Error: ${errorMessage}` },
       { status: 400 },
@@ -52,7 +50,7 @@ export async function POST(req: NextRequest) {
     switch (event.type) {
       case "checkout.session.completed": {
         const session = event.data.object as Stripe.Checkout.Session;
-
+        
         // Ensure this is a subscription checkout
         if (session.mode === "subscription") {
           const userId = session.client_reference_id;
@@ -61,21 +59,17 @@ export async function POST(req: NextRequest) {
           const customerId = session.customer as string;
 
           if (!userId || !plan) {
-            console.error(
-              "[Stripe Webhook] Missing userId or plan in session metadata",
-            );
+            console.error("[Stripe Webhook] Missing userId or plan in session metadata");
             break;
           }
 
           // Fetch the subscription to get the current period end
-          const subscription =
-            await stripe.subscriptions.retrieve(subscriptionId);
+          const subscription = await stripe.subscriptions.retrieve(subscriptionId);
 
-          const periodEndSec =
-            subscription.items?.data?.[0]?.current_period_end ||
-            (subscription as any).current_period_end ||
+          const periodEndSec = subscription.items?.data?.[0]?.current_period_end || 
+            (subscription as any).current_period_end || 
             (subscription as any).currentPeriodEnd ||
-            Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
+            (Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60);
 
           // Update Convex
           // @ts-ignore
@@ -89,9 +83,7 @@ export async function POST(req: NextRequest) {
             currentPeriodEnd: periodEndSec * 1000,
           });
 
-          console.log(
-            `[Stripe Webhook] Successfully upgraded user ${userId} to ${plan}`,
-          );
+          console.log(`[Stripe Webhook] Successfully upgraded user ${userId} to ${plan}`);
         }
         break;
       }
@@ -99,25 +91,24 @@ export async function POST(req: NextRequest) {
       case "customer.subscription.updated":
       case "customer.subscription.deleted": {
         const subscription = event.data.object as Stripe.Subscription;
-
+        
         // To find the user, we'd ideally search by subscriptionId or customerId in Convex.
         // Wait, the API doesn't currently expose a way to query by subscriptionId via a public unauthenticated route.
         // But since this is a server-to-server webhook, we can create an internal query to get user by customerId.
         // Let's implement that if needed. For now, since `updatePlanServerSide` takes `userId`, we need a way to look it up.
         // I will add a convex internal query to find user by customerId, and then call updatePlanServerSide.
-
-        // Actually, let's create a new mutation `handleSubscriptionUpdate` in `convex/stripe.ts`
+        
+        // Actually, let's create a new mutation `handleSubscriptionUpdate` in `convex/stripe.ts` 
         // to handle finding the user by customerId or subscriptionId and updating their status.
-
-        const periodEndSec =
-          subscription.items?.data?.[0]?.current_period_end ||
-          (subscription as any).current_period_end ||
+        
+        const periodEndSec = subscription.items?.data?.[0]?.current_period_end || 
+          (subscription as any).current_period_end || 
           (subscription as any).currentPeriodEnd ||
-          Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60;
+          (Math.floor(Date.now() / 1000) + 30 * 24 * 60 * 60);
 
         const cancelAtPeriodEnd = !!(
-          subscription.cancel_at_period_end ||
-          subscription.cancel_at ||
+          subscription.cancel_at_period_end || 
+          subscription.cancel_at || 
           (subscription as any).cancelAtPeriodEnd
         );
 
@@ -131,12 +122,10 @@ export async function POST(req: NextRequest) {
           cancelAtPeriodEnd,
         });
 
-        console.log(
-          `[Stripe Webhook] Handled subscription update for ${subscription.id}`,
-        );
+        console.log(`[Stripe Webhook] Handled subscription update for ${subscription.id}`);
         break;
       }
-
+      
       default:
         console.log(`[Stripe Webhook] Unhandled event type ${event.type}`);
     }

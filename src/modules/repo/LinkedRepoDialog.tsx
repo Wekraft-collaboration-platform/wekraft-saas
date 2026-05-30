@@ -36,10 +36,7 @@ export function LinkedRepoDialog({
           <DialogHeader>
             <DialogTitle className="text-xl font-bold tracking-tight text-foreground flex items-center gap-2">
               Repo Connected!
-              <Badge
-                variant="outline"
-                className="flex items-center gap-1.5 bg-[#18181A] border-accent/60 text-[10px] px-2.5 py-0.5 rounded-full font-semibold text-primary"
-              >
+              <Badge variant="outline" className="flex items-center gap-1.5 bg-[#18181A] border-accent/60 text-[10px] px-2.5 py-0.5 rounded-full font-semibold text-primary">
                 <Github className="size-3 text-primary" />
                 <span>GitHub</span>
               </Badge>
@@ -56,10 +53,7 @@ export function LinkedRepoDialog({
               </span>
               <p className="text-sm font-semibold text-foreground leading-snug max-w-[260px]">
                 Your repository is now successfully synced with the project{" "}
-                <span className="font-bold text-pink-500 capitalize">
-                  {projectName}
-                </span>
-                .
+                <span className="font-bold text-pink-500 capitalize">{projectName}</span>.
               </p>
             </div>
             {/* 25.svg Illustration - Bigger and Absolute */}
@@ -79,6 +73,7 @@ export function LinkedRepoDialog({
             <div className="space-y-3.5">
               {/* Perk 1 */}
               <div className="flex items-start gap-3.5 group">
+
                 <Link2 className="size-4" />
 
                 <div className="space-y-0.5">
@@ -86,14 +81,14 @@ export function LinkedRepoDialog({
                     Link tasks with codebase
                   </h4>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    Associate your development tasks with specific folders or
-                    files in your linked repository.
+                    Associate your development tasks with specific folders or files in your linked repository.
                   </p>
                 </div>
               </div>
 
               {/* Perk 2 */}
               <div className="flex items-start gap-3.5 group">
+
                 <GitPullRequest className="size-4" />
 
                 <div className="space-y-0.5">
@@ -101,14 +96,14 @@ export function LinkedRepoDialog({
                     Import and manage GitHub issues
                   </h4>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    Pull your repository&apos;s issues directly into your
-                    workspace kanban board to keep everything in one place.
+                    Pull your repository&apos;s issues directly into your workspace kanban board to keep everything in one place.
                   </p>
                 </div>
               </div>
 
               {/* Perk 3 */}
               <div className="flex items-start gap-3.5 group">
+
                 <img
                   src="/harry.svg"
                   className="size-4 object-contain"
@@ -123,15 +118,14 @@ export function LinkedRepoDialog({
                     </span>
                   </h4>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    Receive automated in-depth code reviews and quality reports
-                    from Harry, your dedicated AI developer, for every pull
-                    request and commit.
+                    Receive automated in-depth code reviews and quality reports from Harry, your dedicated AI developer, for every pull request and commit.
                   </p>
                 </div>
               </div>
 
               {/* Perk 4 */}
               <div className="flex items-start gap-3.5 group">
+
                 <BarChart3 className="size-4" />
 
                 <div className="space-y-0.5">
@@ -139,8 +133,7 @@ export function LinkedRepoDialog({
                     Visual codebase heatmaps
                   </h4>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    Explore structure, active hotspots, and density changes in
-                    interactive visual representations of your repository.
+                    Explore structure, active hotspots, and density changes in interactive visual representations of your repository.
                   </p>
                 </div>
               </div>

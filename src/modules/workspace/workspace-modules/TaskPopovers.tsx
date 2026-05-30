@@ -56,17 +56,13 @@ export const DurationSortPopover = ({
     <SortOption
       label="Upcoming First"
       icon={<Calendar className="w-3.5 h-3.5" />}
-      isActive={
-        sortConfig?.field === "duration" && sortConfig?.direction === "asc"
-      }
+      isActive={sortConfig?.field === "duration" && sortConfig?.direction === "asc"}
       onClick={() => setSortConfig({ field: "duration", direction: "asc" })}
     />
     <SortOption
       label="Near Deadline"
       icon={<Clock className="w-3.5 h-3.5" />}
-      isActive={
-        sortConfig?.field === "duration" && sortConfig?.direction === "desc"
-      }
+      isActive={sortConfig?.field === "duration" && sortConfig?.direction === "desc"}
       onClick={() => setSortConfig({ field: "duration", direction: "desc" })}
     />
     <SortOption
@@ -126,17 +122,13 @@ export const PrioritySortPopover = ({
     <SortOption
       label="High to Low"
       icon={<ArrowDown className="w-3.5 h-3.5" />}
-      isActive={
-        sortConfig?.field === "priority" && sortConfig?.direction === "desc"
-      }
+      isActive={sortConfig?.field === "priority" && sortConfig?.direction === "desc"}
       onClick={() => setSortConfig({ field: "priority", direction: "desc" })}
     />
     <SortOption
       label="Low to High"
       icon={<ArrowUp className="w-3.5 h-3.5" />}
-      isActive={
-        sortConfig?.field === "priority" && sortConfig?.direction === "asc"
-      }
+      isActive={sortConfig?.field === "priority" && sortConfig?.direction === "asc"}
       onClick={() => setSortConfig({ field: "priority", direction: "asc" })}
     />
     <SortOption

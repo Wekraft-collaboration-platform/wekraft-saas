@@ -24,7 +24,7 @@ export function useChannelReads(projectId: string, channelId?: string | null) {
       const res = await fetch(`/api/teamspace/channels/${channelId}/read`);
       if (!res.ok) return;
       const data = await res.json();
-
+      
       const newReads: Record<string, number> = {};
       for (const r of data.reads || []) {
         newReads[r.userId] = r.lastReadAt;
@@ -46,11 +46,7 @@ export function useChannelReads(projectId: string, channelId?: string | null) {
     const ch = ably.channels.get(`project:${projectId}:reads`);
 
     const onChannelRead = (msg: Ably.Message) => {
-      const data = msg.data as {
-        userId: string;
-        channelId: string;
-        lastReadAt: number;
-      };
+      const data = msg.data as { userId: string; channelId: string; lastReadAt: number };
       if (data.channelId === channelId) {
         setReads((prev) => ({
           ...prev,

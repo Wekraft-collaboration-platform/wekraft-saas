@@ -24,12 +24,7 @@ interface InviteDialogProps {
   onOpenChange?: (open: boolean) => void;
 }
 
-export function InviteDialog({
-  inviteLink,
-  trigger,
-  open,
-  onOpenChange,
-}: InviteDialogProps) {
+export function InviteDialog({ inviteLink, trigger, open, onOpenChange }: InviteDialogProps) {
   const [copied, setCopied] = React.useState(false);
 
   const fullInviteLink = inviteLink ? `${INVITE_LINK}invite/${inviteLink}` : "";
@@ -43,7 +38,7 @@ export function InviteDialog({
         background: "var(--popover)",
         color: "var(--popover-foreground)",
         border: "1px solid var(--border)",
-      },
+      }
     });
     setTimeout(() => setCopied(false), 2000);
   };
@@ -81,9 +76,7 @@ export function InviteDialog({
               disabled={!fullInviteLink}
               className={cn(
                 "h-8 px-4 rounded-lg text-sm font-medium transition-all duration-200 active:scale-95 cursor-pointer",
-                copied
-                  ? "bg-primary text-primary-foreground"
-                  : "bg-primary hover:bg-primary/90 text-primary-foreground",
+                copied ? "bg-primary text-primary-foreground" : "bg-primary hover:bg-primary/90 text-primary-foreground"
               )}
             >
               {copied ? (
@@ -105,15 +98,13 @@ export function InviteDialog({
               className="resize-none border h-20"
             />
           </div>
+
+
         </div>
 
         <div className="bg-accent/5 px-6 py-4 flex items-center justify-between border-t border-accent/10">
-          <p className="text-xs text-muted-foreground ">
-            You can Gnerate New Link
-          </p>
-          <button className="text-xs text-primary hover:underline underline-offset-2 cursor-pointer">
-            Generate new link
-          </button>
+          <p className="text-xs text-muted-foreground ">You can Gnerate New Link</p>
+          <button className="text-xs text-primary hover:underline underline-offset-2 cursor-pointer">Generate new link</button>
         </div>
       </DialogContent>
 

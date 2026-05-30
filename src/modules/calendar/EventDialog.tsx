@@ -4,12 +4,7 @@ import { useEffect, useState } from "react";
 import { useMutation } from "convex/react";
 import { format } from "date-fns";
 import { api } from "../../../convex/_generated/api";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -31,12 +26,7 @@ const colorOptions = [
   { value: "#fecdd3", label: "Pink" },
 ];
 
-export default function EventDialog({
-  open,
-  onOpenChange,
-  projectId,
-  initialData,
-}: EventDialogProps) {
+export default function EventDialog({ open, onOpenChange, projectId, initialData }: EventDialogProps) {
   const createEvent = useMutation(api.calendar.createEvent);
   const updateEvent = useMutation(api.calendar.updateEvent);
   const deleteEvent = useMutation(api.calendar.deleteEvent);
@@ -74,9 +64,7 @@ export default function EventDialog({
         setDescription("");
         setType("event");
         setColor(colorOptions[0].value);
-        const base = initialData?.start
-          ? new Date(initialData.start)
-          : new Date();
+        const base = initialData?.start ? new Date(initialData.start) : new Date();
         setStartDate(format(base, "yyyy-MM-dd"));
         setStartTime("09:00");
         setEndDate(format(base, "yyyy-MM-dd"));
@@ -160,9 +148,7 @@ export default function EventDialog({
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="sm:max-w-[425px] bg-zinc-950 border border-zinc-800 text-zinc-100">
         <DialogHeader>
-          <DialogTitle className="text-zinc-100">
-            {initialData?.id ? "Edit Entry" : "New Entry"}
-          </DialogTitle>
+          <DialogTitle className="text-zinc-100">{initialData?.id ? "Edit Entry" : "New Entry"}</DialogTitle>
         </DialogHeader>
 
         <form onSubmit={handleSubmit} className="space-y-4">
@@ -171,9 +157,7 @@ export default function EventDialog({
               type="button"
               onClick={() => setType("event")}
               className={`flex-1 text-sm py-1.5 rounded font-medium transition-colors ${
-                type === "event"
-                  ? "bg-zinc-700 text-zinc-100 shadow-sm"
-                  : "text-zinc-500 hover:text-zinc-300"
+                type === "event" ? "bg-zinc-700 text-zinc-100 shadow-sm" : "text-zinc-500 hover:text-zinc-300"
               }`}
             >
               Event
@@ -182,9 +166,7 @@ export default function EventDialog({
               type="button"
               onClick={() => setType("milestone")}
               className={`flex-1 text-sm py-1.5 rounded font-medium transition-colors ${
-                type === "milestone"
-                  ? "bg-zinc-700 text-zinc-100 shadow-sm"
-                  : "text-zinc-500 hover:text-zinc-300"
+                type === "milestone" ? "bg-zinc-700 text-zinc-100 shadow-sm" : "text-zinc-500 hover:text-zinc-300"
               }`}
             >
               Milestone
@@ -193,9 +175,7 @@ export default function EventDialog({
 
           <div className="space-y-4 pt-2">
             <div className="space-y-2">
-              <Label className="text-zinc-400" htmlFor="title">
-                Title
-              </Label>
+              <Label className="text-zinc-400" htmlFor="title">Title</Label>
               <Input
                 id="title"
                 value={title}
@@ -206,43 +186,18 @@ export default function EventDialog({
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-zinc-400">Start</Label>
-                <Input
-                  type="date"
-                  value={startDate}
-                  onChange={(e: any) => handleStartDateChange(e.target.value)}
-                  required
-                  className="bg-zinc-900 border-zinc-700 text-zinc-300"
-                />
-                <Input
-                  type="time"
-                  value={startTime}
-                  onChange={(e: any) => handleStartTimeChange(e.target.value)}
-                  required
-                  className="bg-zinc-900 border-zinc-700 text-zinc-300"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label className="text-zinc-400">Start</Label>
+                  <Input type="date" value={startDate} onChange={(e: any) => handleStartDateChange(e.target.value)} required className="bg-zinc-900 border-zinc-700 text-zinc-300" />
+                  <Input type="time" value={startTime} onChange={(e: any) => handleStartTimeChange(e.target.value)} required className="bg-zinc-900 border-zinc-700 text-zinc-300" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-zinc-400">End</Label>
+                  <Input type="date" value={endDate} onChange={(e: any) => setEndDate(e.target.value)} min={startDate} required className="bg-zinc-900 border-zinc-700 text-zinc-300" />
+                  <Input type="time" value={endTime} onChange={(e: any) => setEndTime(e.target.value)} required className="bg-zinc-900 border-zinc-700 text-zinc-300" />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label className="text-zinc-400">End</Label>
-                <Input
-                  type="date"
-                  value={endDate}
-                  onChange={(e: any) => setEndDate(e.target.value)}
-                  min={startDate}
-                  required
-                  className="bg-zinc-900 border-zinc-700 text-zinc-300"
-                />
-                <Input
-                  type="time"
-                  value={endTime}
-                  onChange={(e: any) => setEndTime(e.target.value)}
-                  required
-                  className="bg-zinc-900 border-zinc-700 text-zinc-300"
-                />
-              </div>
-            </div>
 
             <div className="space-y-2">
               <Label className="text-zinc-400">Description</Label>
@@ -254,52 +209,37 @@ export default function EventDialog({
               />
             </div>
 
-            <div className="space-y-2">
-              <Label className="text-zinc-400">Color</Label>
-              <div className="flex gap-2">
-                {colorOptions.map((c) => (
-                  <button
-                    key={c.value}
-                    type="button"
-                    onClick={() => setColor(c.value)}
-                    className={`w-6 h-6 rounded-full border-2 ${color === c.value ? "border-zinc-300" : "border-transparent"}`}
-                    style={{ backgroundColor: c.value }}
-                    title={c.label}
-                  />
-                ))}
+              <div className="space-y-2">
+                <Label className="text-zinc-400">Color</Label>
+                <div className="flex gap-2">
+                  {colorOptions.map((c) => (
+                    <button
+                      key={c.value}
+                      type="button"
+                      onClick={() => setColor(c.value)}
+                      className={`w-6 h-6 rounded-full border-2 ${color === c.value ? "border-zinc-300" : "border-transparent"}`}
+                      style={{ backgroundColor: c.value }}
+                      title={c.label}
+                    />
+                  ))}
+                </div>
               </div>
-            </div>
           </div>
 
           <div className="flex justify-between pt-4 pb-2 border-t border-zinc-800">
             {initialData?.id ? (
-              <Button
-                type="button"
-                variant="destructive"
-                onClick={handleDelete}
-                disabled={isLoading}
-                size="icon"
-              >
+              <Button type="button" variant="destructive" onClick={handleDelete} disabled={isLoading} size="icon">
                 <Trash className="h-4 w-4" />
               </Button>
             ) : (
               <div />
             )}
             <div className="flex gap-2">
-              <Button
-                type="button"
-                variant="outline"
-                onClick={() => onOpenChange(false)}
-                disabled={isLoading}
-              >
+              <Button type="button" variant="outline" onClick={() => onOpenChange(false)} disabled={isLoading}>
                 Cancel
               </Button>
               <Button type="submit" disabled={isLoading} className="w-24">
-                {isLoading ? (
-                  <Loader2 className="w-4 h-4 animate-spin" />
-                ) : (
-                  "Save"
-                )}
+                {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Save"}
               </Button>
             </div>
           </div>

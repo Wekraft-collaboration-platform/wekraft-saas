@@ -6,14 +6,14 @@ import { useQuery } from "@tanstack/react-query";
 import { getDashboardStats } from "@/modules/dashboard/action/action";
 import { PieChartVariant1 } from "@/modules/dashboard/components/PieChart";
 import { Button } from "@/components/ui/button";
-import {
-  Github,
-  Youtube,
-  ExternalLink,
-  MessageSquare,
-  Trophy,
-  Code2,
-  Monitor,
+import { 
+  Github, 
+  Youtube, 
+  ExternalLink, 
+  MessageSquare, 
+  Trophy, 
+  Code2, 
+  Monitor, 
   Lock,
   GitCommit,
   GitPullRequest,
@@ -23,20 +23,20 @@ import {
   Link2,
   Globe,
   Trash2,
-  Loader2,
+  Loader2
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { cn } from "@/lib/utils";
 import { useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
+import { 
+  Dialog, 
+  DialogContent, 
+  DialogDescription, 
+  DialogHeader, 
+  DialogTitle, 
+  DialogTrigger 
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { toast } from "sonner";
@@ -49,17 +49,12 @@ interface ProfileTabsProps {
 const getPlatformInfo = (url: string) => {
   if (!url) return { label: "Empty Slot", icon: Plus };
   const lowerUrl = url.toLowerCase();
-  if (lowerUrl.includes("youtube.com"))
-    return { label: "YouTube", icon: Youtube };
-  if (lowerUrl.includes("producthunt.com"))
-    return { label: "Product Hunt", icon: Monitor };
-  if (lowerUrl.includes("dev.to"))
-    return { label: "Dev.to", icon: MessageSquare };
+  if (lowerUrl.includes("youtube.com")) return { label: "YouTube", icon: Youtube };
+  if (lowerUrl.includes("producthunt.com")) return { label: "Product Hunt", icon: Monitor };
+  if (lowerUrl.includes("dev.to")) return { label: "Dev.to", icon: MessageSquare };
   if (lowerUrl.includes("kaggle.com")) return { label: "Kaggle", icon: Trophy };
-  if (lowerUrl.includes("codeforces.com"))
-    return { label: "Codeforces", icon: Code2 };
-  if (lowerUrl.includes("stackoverflow.com"))
-    return { label: "StackOverflow", icon: ExternalLink };
+  if (lowerUrl.includes("codeforces.com")) return { label: "Codeforces", icon: Code2 };
+  if (lowerUrl.includes("stackoverflow.com")) return { label: "StackOverflow", icon: ExternalLink };
   return { label: "Social", icon: Globe };
 };
 
@@ -83,7 +78,7 @@ export function ProfileTabs({ user, isUpgraded }: ProfileTabsProps) {
     setIsUpdating(true);
     const newLinks = [...socialLinks];
     newLinks[index] = url;
-
+    
     try {
       await updateSocialLinks({ links: newLinks });
       toast.success("Social link connected!");
@@ -97,7 +92,7 @@ export function ProfileTabs({ user, isUpgraded }: ProfileTabsProps) {
   const handleRemoveLink = async (index: number) => {
     setIsUpdating(true);
     const newLinks = socialLinks.filter((_: string, i: number) => i !== index);
-
+    
     try {
       await updateSocialLinks({ links: newLinks });
       toast.success("Social link removed.");
@@ -134,8 +129,7 @@ export function ProfileTabs({ user, isUpgraded }: ProfileTabsProps) {
                   disabled={isLocked}
                   className={cn(
                     "flex items-center gap-1.5 px-4 sm:px-6 py-2 border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent rounded-none transition-all relative whitespace-nowrap",
-                    isLocked &&
-                      "grayscale opacity-50 cursor-not-allowed border-none",
+                    isLocked && "grayscale opacity-50 cursor-not-allowed border-none"
                   )}
                 >
                   <info.icon className="h-4 w-4" />
@@ -178,34 +172,10 @@ export function ProfileTabs({ user, isUpgraded }: ProfileTabsProps) {
             </Card>
 
             <div className="grid grid-cols-2 gap-4">
-              <StatCard
-                title="Commits"
-                value={dashboardStats?.totalCommits}
-                subValue="Last Year"
-                icon={GitCommit}
-                isLoading={isLoading}
-              />
-              <StatCard
-                title="PRs"
-                value={dashboardStats?.totalPRs}
-                subValue="Created"
-                icon={GitPullRequest}
-                isLoading={isLoading}
-              />
-              <StatCard
-                title="Merged PRs"
-                value={dashboardStats?.totalMergedPRs}
-                subValue="Successful"
-                icon={Merge}
-                isLoading={isLoading}
-              />
-              <StatCard
-                title="Issues"
-                value={dashboardStats?.totalIssuesClosed}
-                subValue="Closed"
-                icon={AlertCircle}
-                isLoading={isLoading}
-              />
+              <StatCard title="Commits" value={dashboardStats?.totalCommits} subValue="Last Year" icon={GitCommit} isLoading={isLoading} />
+              <StatCard title="PRs" value={dashboardStats?.totalPRs} subValue="Created" icon={GitPullRequest} isLoading={isLoading} />
+              <StatCard title="Merged PRs" value={dashboardStats?.totalMergedPRs} subValue="Successful" icon={Merge} isLoading={isLoading} />
+              <StatCard title="Issues" value={dashboardStats?.totalIssuesClosed} subValue="Closed" icon={AlertCircle} isLoading={isLoading} />
             </div>
           </div>
         </TabsContent>
@@ -215,11 +185,7 @@ export function ProfileTabs({ user, isUpgraded }: ProfileTabsProps) {
           const info = getPlatformInfo(currentLink);
 
           return (
-            <TabsContent
-              key={index}
-              value={`slot-${index}`}
-              className="focus-visible:outline-none"
-            >
+            <TabsContent key={index} value={`slot-${index}`} className="focus-visible:outline-none">
               <div className="flex flex-col items-center justify-center p-12 border border-dashed rounded-lg bg-accent/5 transition-all hover:bg-accent/10 min-h-[350px]">
                 {currentLink ? (
                   <div className="text-center space-y-5 animate-in fade-in zoom-in duration-300">
@@ -231,32 +197,23 @@ export function ProfileTabs({ user, isUpgraded }: ProfileTabsProps) {
                         {info.label} Connected
                       </h3>
                       <p className="text-muted-foreground font-mono text-sm max-w-sm mt-1 px-4 truncate mx-auto bg-card py-2 rounded border border-dashed">
-                        {currentLink}
+                         {currentLink}
                       </p>
                     </div>
                     <div className="flex gap-3 justify-center">
-                      <Button variant="outline" size="sm" asChild>
-                        <a
-                          href={currentLink}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                        >
-                          View Profile{" "}
-                          <ExternalLink className="ml-2 h-3.5 w-3.5" />
-                        </a>
-                      </Button>
-                      <Button
-                        variant="destructive"
-                        size="sm"
+                       <Button variant="outline" size="sm" asChild>
+                         <a href={currentLink} target="_blank" rel="noopener noreferrer">
+                           View Profile <ExternalLink className="ml-2 h-3.5 w-3.5" />
+                         </a>
+                       </Button>
+                       <Button 
+                        variant="destructive" 
+                        size="sm" 
                         onClick={() => handleRemoveLink(index)}
                         disabled={isUpdating}
-                      >
-                        {isUpdating ? (
-                          <Loader2 className="h-3.5 w-3.5 animate-spin" />
-                        ) : (
-                          <Trash2 className="h-3.5 w-3.5" />
-                        )}
-                      </Button>
+                       >
+                         {isUpdating ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Trash2 className="h-3.5 w-3.5" />}
+                       </Button>
                     </div>
                   </div>
                 ) : (
@@ -265,18 +222,12 @@ export function ProfileTabs({ user, isUpgraded }: ProfileTabsProps) {
                       <Plus className="h-7 w-7" />
                     </div>
                     <div className="space-y-1">
-                      <h3 className="text-lg font-semibold">
-                        Social Slot Available
-                      </h3>
+                      <h3 className="text-lg font-semibold">Social Slot Available</h3>
                       <p className="text-sm text-muted-foreground max-w-[280px] mx-auto">
-                        Showcase your other professional profiles like YouTube,
-                        StackOverflow or Kaggle.
+                        Showcase your other professional profiles like YouTube, StackOverflow or Kaggle.
                       </p>
                     </div>
-                    <ConnectModal
-                      onConnect={(url) => handleAddLink(index, url)}
-                      isLoading={isUpdating}
-                    />
+                    <ConnectModal onConnect={(url) => handleAddLink(index, url)} isLoading={isUpdating} />
                   </div>
                 )}
               </div>
@@ -288,13 +239,7 @@ export function ProfileTabs({ user, isUpgraded }: ProfileTabsProps) {
   );
 }
 
-function ConnectModal({
-  onConnect,
-  isLoading,
-}: {
-  onConnect: (url: string) => void;
-  isLoading: boolean;
-}) {
+function ConnectModal({ onConnect, isLoading }: { onConnect: (url: string) => void; isLoading: boolean }) {
   const [url, setUrl] = React.useState("");
   const [open, setOpen] = React.useState(false);
 
@@ -307,8 +252,7 @@ function ConnectModal({
         <DialogHeader>
           <DialogTitle>Add Social Link</DialogTitle>
           <DialogDescription>
-            Paste the profile URL (YouTube, dev.to, Product Hunt, etc.). We'll
-            automatically identify the platform.
+            Paste the profile URL (YouTube, dev.to, Product Hunt, etc.). We'll automatically identify the platform.
           </DialogDescription>
         </DialogHeader>
         <div className="grid gap-4 py-4">
@@ -320,21 +264,15 @@ function ConnectModal({
           />
         </div>
         <div className="flex justify-end gap-3">
-          <Button variant="outline" onClick={() => setOpen(false)}>
-            Cancel
-          </Button>
-          <Button
-            disabled={!url || isLoading}
+          <Button variant="outline" onClick={() => setOpen(false)}>Cancel</Button>
+          <Button 
+            disabled={!url || isLoading} 
             onClick={() => {
               onConnect(url);
               setOpen(false);
             }}
           >
-            {isLoading ? (
-              <Loader2 className="animate-spin h-4 w-4 mr-2" />
-            ) : (
-              <Plus className="h-4 w-4 mr-2" />
-            )}
+            {isLoading ? <Loader2 className="animate-spin h-4 w-4 mr-2" /> : <Plus className="h-4 w-4 mr-2" />}
             Connect Profile
           </Button>
         </div>
@@ -357,7 +295,9 @@ function StatCard({ title, value, subValue, icon: Icon, isLoading }: any) {
           {isLoading ? (
             <Skeleton className="h-8 w-16 mb-1" />
           ) : (
-            <p className="text-2xl font-bold font-mono">{value ?? 0}</p>
+            <p className="text-2xl font-bold font-mono">
+              {value ?? 0}
+            </p>
           )}
           <p className="text-[10px] text-muted-foreground font-medium">
             {subValue}

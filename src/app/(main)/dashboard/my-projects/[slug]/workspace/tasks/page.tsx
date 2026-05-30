@@ -170,10 +170,7 @@ const TaskPage = () => {
           className="fixed inset-0 z-[100] pointer-events-none"
           onClick={() => setShowTaskTour(false)}
         >
-          <div
-            className="absolute inset-0 bg-background/40 backdrop-blur-[1px] pointer-events-auto"
-            onClick={() => setShowTaskTour(false)}
-          />
+          <div className="absolute inset-0 bg-background/40 backdrop-blur-[1px] pointer-events-auto" onClick={() => setShowTaskTour(false)} />
           <CreateTaskTourTooltip
             targetId="create-task-btn"
             onDismiss={() => setShowTaskTour(false)}
@@ -483,11 +480,7 @@ function CreateTaskTourTooltip({
   onNext: () => void;
   onCreate: () => void;
 }) {
-  const [pos, setPos] = useState<{
-    top: number;
-    left: number;
-    arrowOffset?: number;
-  } | null>(null);
+  const [pos, setPos] = useState<{ top: number; left: number; arrowOffset?: number } | null>(null);
 
   useEffect(() => {
     const calculate = () => {
@@ -500,7 +493,7 @@ function CreateTaskTourTooltip({
       const rawLeft = targetCenter - tooltipWidth / 2;
       const clampedLeft = Math.min(
         Math.max(margin, rawLeft),
-        window.innerWidth - tooltipWidth - margin,
+        window.innerWidth - tooltipWidth - margin
       );
       setPos({
         top: rect.bottom + 20,
@@ -525,25 +518,14 @@ function CreateTaskTourTooltip({
       style={{ top: pos.top, left: pos.left, width: 320 }}
       onClick={(e) => e.stopPropagation()}
     >
-      <div
+      <div 
         className="mb-1 -mt-5"
-        style={{
-          transform: `translateX(${pos.arrowOffset ? pos.arrowOffset - 160 : 0}px)`,
-        }}
+        style={{ transform: `translateX(${pos.arrowOffset ? pos.arrowOffset - 160 : 0}px)` }}
       >
-        <svg
-          width="60"
-          height="80"
-          viewBox="0 0 60 80"
-          fill="none"
-          className="text-white drop-shadow-md rotate-180"
-        >
+        <svg width="60" height="80" viewBox="0 0 60 80" fill="none" className="text-white drop-shadow-md rotate-180">
           <path
             d="M 30 5 C 45 30, 15 50, 30 75 M 30 75 L 22 65 M 30 75 L 38 65"
-            stroke="currentColor"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
+            stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
           />
         </svg>
       </div>
@@ -554,16 +536,13 @@ function CreateTaskTourTooltip({
             <span className="flex items-center justify-center bg-primary text-primary-foreground text-[10px] font-bold w-5 h-5 rounded-full shrink-0">
               4
             </span>
-            <h3 className="text-sm font-semibold text-foreground">
-              Create your first task
-            </h3>
+            <h3 className="text-sm font-semibold text-foreground">Create your first task</h3>
           </div>
 
           <div className="h-px w-full bg-accent my-3" />
 
           <p className="text-xs text-muted-foreground leading-relaxed">
-            Click the &quot;New Task&quot; button above to create a task, assign
-            it to a teammate, set priorities, and track progress.
+            Click the &quot;New Task&quot; button above to create a task, assign it to a teammate, set priorities, and track progress.
           </p>
         </div>
 
@@ -586,7 +565,10 @@ function CreateTaskTourTooltip({
             >
               Next
             </Button>
-            <Button onClick={onCreate} className="h-8 text-xs px-4">
+            <Button
+              onClick={onCreate}
+              className="h-8 text-xs px-4"
+            >
               Create Task
             </Button>
           </div>

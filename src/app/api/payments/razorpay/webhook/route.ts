@@ -9,7 +9,10 @@ export async function POST(req: NextRequest) {
     const signature = req.headers.get("x-razorpay-signature");
 
     if (!signature) {
-      return NextResponse.json({ error: "Missing signature" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Missing signature" },
+        { status: 400 },
+      );
     }
 
     const webhookSecret = process.env.RAZORPAY_WEBHOOK_SECRET;
@@ -30,25 +33,28 @@ export async function POST(req: NextRequest) {
     try {
       isValid = crypto.timingSafeEqual(
         Buffer.from(expectedSignature),
-        Buffer.from(signature),
+        Buffer.from(signature)
       );
     } catch {
       isValid = false;
     }
 
     if (!isValid) {
-      return NextResponse.json({ error: "Invalid signature" }, { status: 400 });
+      return NextResponse.json(
+        { error: "Invalid signature" },
+        { status: 400 },
+      );
     }
 
     const event = JSON.parse(bodyText);
-
+    
     // We only care about subscription events
     const supportedEvents = [
       "subscription.charged",
       "subscription.cancelled",
       "subscription.halted",
       "subscription.paused",
-      "subscription.resumed",
+      "subscription.resumed"
     ];
 
     if (!supportedEvents.includes(event.event)) {
@@ -56,7 +62,7 @@ export async function POST(req: NextRequest) {
     }
 
     const subscription = event.payload.subscription.entity;
-
+    
     const convexUrl = process.env.NEXT_PUBLIC_CONVEX_URL;
     const backendSecret = process.env.BACKEND_SECRET;
 
@@ -76,14 +82,10 @@ export async function POST(req: NextRequest) {
       backendSecret,
       subscriptionId: subscription.id,
       status: subscription.status,
-      currentPeriodEnd: subscription.current_end
-        ? subscription.current_end * 1000
-        : undefined,
+      currentPeriodEnd: subscription.current_end ? subscription.current_end * 1000 : undefined,
     });
 
-    console.log(
-      `[Razorpay Webhook] Handled ${event.event} for subscription ${subscription.id}`,
-    );
+    console.log(`[Razorpay Webhook] Handled ${event.event} for subscription ${subscription.id}`);
 
     return NextResponse.json({ received: true });
   } catch (error) {

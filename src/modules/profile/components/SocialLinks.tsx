@@ -31,8 +31,7 @@ function getPlatformInfo(url: string): PlatformInfo | null {
       label: "GitHub",
       icon: FaGithub,
       colorClass: "text-[#24292e] dark:text-white",
-      badgeClass:
-        "bg-zinc-500/10 border-zinc-500/20 text-zinc-600 dark:text-zinc-400",
+      badgeClass: "bg-zinc-500/10 border-zinc-500/20 text-zinc-600 dark:text-zinc-400",
     };
   }
   if (lower.includes("linkedin.com")) {
@@ -40,8 +39,7 @@ function getPlatformInfo(url: string): PlatformInfo | null {
       label: "LinkedIn",
       icon: FaLinkedin,
       colorClass: "text-[#0077b5]",
-      badgeClass:
-        "bg-blue-500/10 border-blue-500/20 text-blue-600 dark:text-blue-400",
+      badgeClass: "bg-blue-500/10 border-blue-500/20 text-blue-600 dark:text-blue-400",
     };
   }
   if (lower.includes("twitter.com") || lower.includes("x.com")) {
@@ -49,21 +47,15 @@ function getPlatformInfo(url: string): PlatformInfo | null {
       label: "Twitter / X",
       icon: FaTwitter,
       colorClass: "text-[#1da1f2] dark:text-white",
-      badgeClass:
-        "bg-sky-500/10 border-sky-500/20 text-sky-600 dark:text-sky-400",
+      badgeClass: "bg-sky-500/10 border-sky-500/20 text-sky-600 dark:text-sky-400",
     };
   }
-  if (
-    lower.includes("discord.com") ||
-    lower.includes("discord.gg") ||
-    lower.includes("discordapp.com")
-  ) {
+  if (lower.includes("discord.com") || lower.includes("discord.gg") || lower.includes("discordapp.com")) {
     return {
       label: "Discord",
       icon: FaDiscord,
       colorClass: "text-[#5865f2]",
-      badgeClass:
-        "bg-indigo-500/10 border-indigo-500/20 text-indigo-600 dark:text-indigo-400",
+      badgeClass: "bg-indigo-500/10 border-indigo-500/20 text-indigo-600 dark:text-indigo-400",
     };
   }
   if (lower.includes("instagram.com")) {
@@ -71,8 +63,7 @@ function getPlatformInfo(url: string): PlatformInfo | null {
       label: "Instagram",
       icon: FaInstagram,
       colorClass: "text-[#e1306c]",
-      badgeClass:
-        "bg-pink-500/10 border-pink-500/20 text-pink-600 dark:text-pink-400",
+      badgeClass: "bg-pink-500/10 border-pink-500/20 text-pink-600 dark:text-pink-400",
     };
   }
   return null;
@@ -118,7 +109,7 @@ export const SocialLinks = ({ socialLinks = [] }: SocialLinksProps) => {
                 rel="noopener noreferrer"
                 className={cn(
                   "flex h-9 w-9 items-center justify-center rounded-lg border border-border/60 bg-muted/20 hover:bg-muted/55 hover:border-border/80 hover:shadow-sm transition-all hover:scale-105 shrink-0",
-                  platform.colorClass,
+                  platform.colorClass
                 )}
                 title={platform.label}
               >
@@ -130,9 +121,7 @@ export const SocialLinks = ({ socialLinks = [] }: SocialLinksProps) => {
       ) : (
         <div className="flex-1 flex flex-col items-center justify-center gap-1.5 rounded-lg border border-dashed border-border/60 bg-muted/10 text-center py-4 px-4">
           <Link2 className="h-4 w-4 text-muted-foreground/25" />
-          <p className="text-[11px] text-muted-foreground/60">
-            No links connected yet
-          </p>
+          <p className="text-[11px] text-muted-foreground/60">No links connected yet</p>
           <Button
             onClick={() => setIsEditing(true)}
             variant="outline"

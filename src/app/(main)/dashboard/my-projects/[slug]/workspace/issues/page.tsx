@@ -55,10 +55,10 @@ const GithubIssueCard = ({
   const severity = issue.severity
     ? SEVERITY_CONFIG[issue.severity]
     : {
-        label: "No Severity",
-        iconColor: "text-neutral-500",
-        icon: null,
-      };
+      label: "No Severity",
+      iconColor: "text-neutral-500",
+      icon: null,
+    };
   const type = TYPE_CONFIG[issue.type];
 
   return (
@@ -159,7 +159,9 @@ const GithubIssueCard = ({
               {issue.assignedTo?.slice(0, 3).map((assignee, i) => (
                 <Tooltip key={i}>
                   <TooltipTrigger asChild>
-                    <Avatar className="h-5.5 w-5.5 border dark:border-sidebar border-neutral-200 dark:group-hover:border-neutral-800 group-hover:border-neutral-300 transition-all cursor-pointer">
+                    <Avatar
+                      className="h-5.5 w-5.5 border dark:border-sidebar border-neutral-200 dark:group-hover:border-neutral-800 group-hover:border-neutral-300 transition-all cursor-pointer"
+                    >
                       <AvatarImage src={assignee.avatar} />
                       <AvatarFallback className="text-[8px] dark:bg-neutral-800 bg-neutral-200 dark:text-neutral-400 text-neutral-600">
                         {assignee.name[0]}
@@ -245,7 +247,9 @@ const IssuesPage = () => {
                 members.slice(0, 5).map((member) => (
                   <Tooltip key={member.userId}>
                     <TooltipTrigger asChild>
-                      <Avatar className="w-8 h-8 border-2 border-background hover:z-10 transition cursor-pointer">
+                      <Avatar
+                        className="w-8 h-8 border-2 border-background hover:z-10 transition cursor-pointer"
+                      >
                         <AvatarImage src={member.userImage} />
                         <AvatarFallback className="text-[10px] uppercase font-bold">
                           {member.userName?.[0] || "?"}

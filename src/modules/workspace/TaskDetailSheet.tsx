@@ -364,15 +364,15 @@ export const TaskDetailSheet = ({
                       className={cn(
                         "flex items-center gap-1.5 px-3 py-1 rounded-full text-xs border transition-all duration-200",
                         currentTask.type.color === "green" &&
-                          "bg-emerald-500/10 text-primary/80 border-emerald-400/20 shadow-[0_0_10px_rgba(52,211,153,0.05)]",
+                        "bg-emerald-500/10 text-primary/80 border-emerald-400/20 shadow-[0_0_10px_rgba(52,211,153,0.05)]",
                         currentTask.type.color === "yellow" &&
-                          "bg-yellow-500/10 text-primary/80 border-yellow-400/20 shadow-[0_0_10px_rgba(250,204,21,0.05)]",
+                        "bg-yellow-500/10 text-primary/80 border-yellow-400/20 shadow-[0_0_10px_rgba(250,204,21,0.05)]",
                         currentTask.type.color === "purple" &&
-                          "bg-purple-500/10 text-primary/80 border-purple-400/20 shadow-[0_0_10px_rgba(192,132,252,0.05)]",
+                        "bg-purple-500/10 text-primary/80 border-purple-400/20 shadow-[0_0_10px_rgba(192,132,252,0.05)]",
                         currentTask.type.color === "blue" &&
-                          "bg-blue-500/10 text-primary/80 border-blue-400/20 shadow-[0_0_10px_rgba(96,165,250,0.05)]",
+                        "bg-blue-500/10 text-primary/80 border-blue-400/20 shadow-[0_0_10px_rgba(96,165,250,0.05)]",
                         currentTask.type.color === "grey" &&
-                          "bg-muted text-muted-foreground border-border",
+                        "bg-muted text-muted-foreground border-border",
                       )}
                     >
                       {currentTask.type.label}
@@ -405,8 +405,7 @@ export const TaskDetailSheet = ({
               {/* Row 1: Duration */}
               <div className="grid grid-cols-[100px_1fr] items-center px-4 py-3 border-b border-neutral-200 dark:border-neutral-800">
                 <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
-                  <Calendar size={14} className="text-muted-foreground/80" />{" "}
-                  Duration
+                  <Calendar size={14} className="text-muted-foreground/80" /> Duration
                 </div>
                 <div className="text-xs text-primary/80 pl-2">
                   {currentTask.estimation ? (
@@ -425,8 +424,7 @@ export const TaskDetailSheet = ({
                 {/* Status */}
                 <div className="px-4 py-3 space-y-2">
                   <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
-                    <Clock size={14} className="text-muted-foreground/80" />{" "}
-                    Status
+                    <Clock size={14} className="text-muted-foreground/80" /> Status
                   </div>
                   <div className="flex items-center">
                     <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] bg-neutral-100 dark:bg-neutral-900 border border-neutral-200 dark:border-neutral-800 text-neutral-600 dark:text-neutral-300 capitalize">
@@ -441,15 +439,14 @@ export const TaskDetailSheet = ({
                 {/* Assignee */}
                 <div className="px-4 py-3 space-y-2">
                   <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
-                    <Users size={14} className="text-muted-foreground/80" />{" "}
-                    Assignee
+                    <Users size={14} className="text-muted-foreground/80" /> Assignee
                   </div>
                   <div className="flex items-center gap-2">
                     <DropdownMenu>
                       <DropdownMenuTrigger asChild>
                         <div className="cursor-pointer flex items-center">
                           {currentTask.assignees &&
-                          currentTask.assignees.length > 0 ? (
+                            currentTask.assignees.length > 0 ? (
                             <div className="flex items-center gap-2">
                               <div className="flex -space-x-1.5">
                                 {currentTask.assignees.map((person, i) => (
@@ -527,11 +524,7 @@ export const TaskDetailSheet = ({
                 {/* Priority */}
                 <div className="px-4 py-3 space-y-4">
                   <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
-                    <AlertCircle
-                      size={14}
-                      className="text-muted-foreground/80"
-                    />{" "}
-                    Priority
+                    <AlertCircle size={14} className="text-muted-foreground/80" /> Priority
                   </div>
                   <div className="flex items-center gap-1.5 text-xs text-primary capitalize pl-1">
                     {priorityIcons2[currentTask.priority || "none"]}
@@ -542,25 +535,18 @@ export const TaskDetailSheet = ({
                 {/* Link with Codebase */}
                 <div className="px-4 py-3 space-y-2">
                   <div className="flex items-center gap-2 text-muted-foreground text-xs font-medium">
-                    <Tag size={14} className="text-muted-foreground/80" />{" "}
-                    Codebase
+                    <Tag size={14} className="text-muted-foreground/80" /> Codebase
                   </div>
                   <div>
                     {currentTask.linkWithCodebase ? (
                       <div className="text-xs font-medium text-primary truncate max-w-[190px] pl-1 flex items-center gap-1">
-                        <GitBranch
-                          size={12}
-                          className="inline text-muted-foreground"
-                        />{" "}
+                        <GitBranch size={12} className="inline text-muted-foreground" />{" "}
                         {currentTask.linkWithCodebase}
                       </div>
                     ) : (
                       <p className="text-[11px] text-muted-foreground italic pl-1 flex items-center gap-1">
-                        <GitBranch
-                          size={12}
-                          className="inline text-muted-foreground/55"
-                        />{" "}
-                        No codebase linked
+                        <GitBranch size={12} className="inline text-muted-foreground/55" /> No codebase
+                        linked
                       </p>
                     )}
                   </div>
@@ -597,10 +583,7 @@ export const TaskDetailSheet = ({
                 </div>
               ) : (
                 <div className="flex items-center gap-2 border border-neutral-200 dark:border-neutral-800 bg-neutral-100/50 dark:bg-neutral-900/5 rounded-xl p-3 text-muted-foreground text-xs">
-                  <CalendarClock
-                    size={14}
-                    className="text-muted-foreground/80"
-                  />
+                  <CalendarClock size={14} className="text-muted-foreground/80" />
                   <span>Last updated:</span>
                   <span className="text-primary/95 ml-1">
                     {format(currentTask.updatedAt, "d MMMM, yyyy")}
@@ -660,7 +643,7 @@ export const TaskDetailSheet = ({
                       </div>
                     )}
                     {currentTask.attachments &&
-                    currentTask.attachments.length > 0 ? (
+                      currentTask.attachments.length > 0 ? (
                       <div className="grid grid-cols-1 gap-2 w-full">
                         {currentTask.attachments.map((file, idx) => (
                           <div
@@ -698,12 +681,8 @@ export const TaskDetailSheet = ({
                                         variant="ghost"
                                         size="icon"
                                         className="h-8 w-8 text-muted-foreground hover:text-destructive"
-                                        onClick={() =>
-                                          handleRemoveAttachment(file.url)
-                                        }
-                                        disabled={
-                                          project?.ownerAccountType === "free"
-                                        }
+                                        onClick={() => handleRemoveAttachment(file.url)}
+                                        disabled={project?.ownerAccountType === "free"}
                                       >
                                         <Trash2 size={14} />
                                       </Button>
@@ -711,8 +690,7 @@ export const TaskDetailSheet = ({
                                   </TooltipTrigger>
                                   {project?.ownerAccountType === "free" && (
                                     <TooltipContent className="bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200 text-xs p-2 max-w-[200px] text-center">
-                                      Ask project owner to upgrade to unlock
-                                      cloud storage.
+                                      Ask project owner to upgrade to unlock cloud storage.
                                     </TooltipContent>
                                   )}
                                 </Tooltip>
@@ -728,10 +706,7 @@ export const TaskDetailSheet = ({
                                   variant="outline"
                                   size="sm"
                                   className="h-9 w-full px-3 text-xs bg-muted/30 border-border text-muted-foreground hover:text-foreground rounded-xl gap-2 border-dashed"
-                                  disabled={
-                                    isUploading ||
-                                    project?.ownerAccountType === "free"
-                                  }
+                                  disabled={isUploading || project?.ownerAccountType === "free"}
                                   onClick={() =>
                                     document
                                       .getElementById("detail-file-upload")
@@ -749,8 +724,7 @@ export const TaskDetailSheet = ({
                             </TooltipTrigger>
                             {project?.ownerAccountType === "free" && (
                               <TooltipContent className="bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200 text-xs p-2 max-w-[200px] text-center">
-                                Ask project owner to upgrade to unlock cloud
-                                storage.
+                                Ask project owner to upgrade to unlock cloud storage.
                               </TooltipContent>
                             )}
                           </Tooltip>
@@ -773,10 +747,7 @@ export const TaskDetailSheet = ({
                                   variant="outline"
                                   size="sm"
                                   className="h-9 px-4 text-xs bg-muted/30 border-border text-muted-foreground hover:text-foreground rounded-xl gap-2"
-                                  disabled={
-                                    isUploading ||
-                                    project?.ownerAccountType === "free"
-                                  }
+                                  disabled={isUploading || project?.ownerAccountType === "free"}
                                   onClick={() =>
                                     document
                                       .getElementById("detail-file-upload")
@@ -794,8 +765,7 @@ export const TaskDetailSheet = ({
                             </TooltipTrigger>
                             {project?.ownerAccountType === "free" && (
                               <TooltipContent className="bg-[#1c1c1c] border-[#2b2b2b] text-neutral-200 text-xs p-2 max-w-[200px] text-center">
-                                Ask project owner to upgrade to unlock cloud
-                                storage.
+                                Ask project owner to upgrade to unlock cloud storage.
                               </TooltipContent>
                             )}
                           </Tooltip>
@@ -889,7 +859,12 @@ export const TaskDetailSheet = ({
                         "h-8 w-8 rounded-lg transition-all duration-300",
                       )}
                     >
-                      <Send size={14} className={cn("transition-transform")} />
+                      <Send
+                        size={14}
+                        className={cn(
+                          "transition-transform",
+                        )}
+                      />
                     </Button>
                   </div>
                 </div>

@@ -80,7 +80,7 @@ export function useTeamspaceSettings(projectId: string) {
         if (res.ok) {
           const data = await res.json();
           setSettings(data.settings);
-
+          
           // Broadcast update to other connected clients
           const ably = getAblyClient();
           const ch = ably.channels.get(`project:settings:${projectId}`);
@@ -96,7 +96,7 @@ export function useTeamspaceSettings(projectId: string) {
         return false;
       }
     },
-    [projectId, settings],
+    [projectId, settings]
   );
 
   return { settings, loading, updateSettings, refetch: fetchSettings };

@@ -14,56 +14,15 @@ import {
 } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import {
-  SiPython,
-  SiNextdotjs,
-  SiReact,
-  SiTypescript,
-  SiJavascript,
-  SiNodedotjs,
-  SiTailwindcss,
-  SiCss,
-  SiHtml5,
-  SiGit,
-  SiGithub,
-  SiDocker,
-  SiFigma,
-  SiSass,
-  SiGo,
-  SiRust,
-  SiCplusplus,
-  SiPhp,
-  SiRuby,
-  SiPostgresql,
-  SiMongodb,
-  SiMysql,
-  SiFirebase,
-  SiFlutter,
-  SiAngular,
-  SiVuedotjs,
-  SiRedux,
-  SiGraphql,
-  SiPrisma,
-  SiSupabase,
-  SiKotlin,
-  SiSwift,
-  SiDjango,
-  SiFlask,
-  SiGooglecloud,
-  SiKubernetes,
-  SiLinux,
-  SiLaravel,
-  SiNestjs,
-  SiVite,
-  SiWebpack,
-  SiBabel,
-  SiEslint,
-  SiPrettier,
-  SiFramer,
-  SiPnpm,
-  SiNpm,
-  SiYarn,
-  SiPostman,
+import { 
+  SiPython, SiNextdotjs, SiReact, SiTypescript, SiJavascript, SiNodedotjs, 
+  SiTailwindcss, SiCss, SiHtml5, SiGit, SiGithub, SiDocker, SiFigma, 
+  SiSass, SiGo, SiRust, SiCplusplus, SiPhp, SiRuby, 
+  SiPostgresql, SiMongodb, SiMysql, SiFirebase, SiFlutter, 
+  SiAngular, SiVuedotjs, SiRedux, SiGraphql, SiPrisma, SiSupabase, 
+  SiKotlin, SiSwift, SiDjango, SiFlask, SiGooglecloud, SiKubernetes, 
+  SiLinux, SiLaravel, SiNestjs, SiVite, SiWebpack, SiBabel, SiEslint, 
+  SiPrettier, SiFramer, SiPnpm, SiNpm, SiYarn, SiPostman
 } from "react-icons/si";
 import { FaJava, FaAws, FaCode } from "react-icons/fa";
 
@@ -72,23 +31,14 @@ interface ProfileSkillsProps {
 }
 
 interface SkillInfo {
-  Icon: React.ComponentType<{
-    className?: string;
-    style?: React.CSSProperties;
-  }>;
+  Icon: React.ComponentType<{ className?: string; style?: React.CSSProperties }>;
   color: string;
 }
 
 function getSkillInfo(skillName: string): SkillInfo | null {
-  const name = skillName
-    .toLowerCase()
-    .trim()
-    .replace(/[\.\s-]/g, "");
-
-  const iconMap: Record<
-    string,
-    { Icon: React.ComponentType<{ className?: string }>; color: string }
-  > = {
+  const name = skillName.toLowerCase().trim().replace(/[\.\s-]/g, "");
+  
+  const iconMap: Record<string, { Icon: React.ComponentType<{ className?: string }>, color: string }> = {
     python: { Icon: SiPython, color: "#3776AB" },
     nextjs: { Icon: SiNextdotjs, color: "#000000" },
     next: { Icon: SiNextdotjs, color: "#000000" },
@@ -166,58 +116,14 @@ function getSkillInfo(skillName: string): SkillInfo | null {
 }
 
 const PREDEFINED_SKILLS = [
-  "Python",
-  "Next.js",
-  "React",
-  "TypeScript",
-  "JavaScript",
-  "Node.js",
-  "Tailwind CSS",
-  "HTML5",
-  "CSS3",
-  "Git",
-  "GitHub",
-  "Docker",
-  "Figma",
-  "Sass",
-  "Go",
-  "Rust",
-  "Java",
-  "C++",
-  "C#",
-  "PHP",
-  "Ruby",
-  "PostgreSQL",
-  "MongoDB",
-  "MySQL",
-  "Firebase",
-  "AWS",
-  "Flutter",
-  "Angular",
-  "Vue.js",
-  "Redux",
-  "GraphQL",
-  "Prisma",
-  "Supabase",
-  "Kotlin",
-  "Swift",
-  "Django",
-  "Flask",
-  "Google Cloud",
-  "Kubernetes",
-  "Linux",
-  "Laravel",
-  "NestJS",
-  "Vite",
-  "Webpack",
-  "Babel",
-  "ESLint",
-  "Prettier",
-  "Framer Motion",
-  "pnpm",
-  "npm",
-  "Yarn",
-  "Postman",
+  "Python", "Next.js", "React", "TypeScript", "JavaScript", "Node.js", 
+  "Tailwind CSS", "HTML5", "CSS3", "Git", "GitHub", "Docker", "Figma", 
+  "Sass", "Go", "Rust", "Java", "C++", "C#", "PHP", "Ruby", 
+  "PostgreSQL", "MongoDB", "MySQL", "Firebase", "AWS", "Flutter", 
+  "Angular", "Vue.js", "Redux", "GraphQL", "Prisma", "Supabase", 
+  "Kotlin", "Swift", "Django", "Flask", "Google Cloud", "Kubernetes", 
+  "Linux", "Laravel", "NestJS", "Vite", "Webpack", "Babel", "ESLint", 
+  "Prettier", "Framer Motion", "pnpm", "npm", "Yarn", "Postman"
 ];
 
 export const ProfileSkills = ({ skills }: ProfileSkillsProps) => {
@@ -233,9 +139,7 @@ export const ProfileSkills = ({ skills }: ProfileSkillsProps) => {
     const normalizedSkill = skill.toLowerCase().replace(/[\.\s-]/g, "");
     return (
       skill.toLowerCase().includes(newSkill.toLowerCase()) &&
-      !tempSkills.some(
-        (s) => s.toLowerCase().replace(/[\.\s-]/g, "") === normalizedSkill,
-      )
+      !tempSkills.some((s) => s.toLowerCase().replace(/[\.\s-]/g, "") === normalizedSkill)
     );
   });
 
@@ -251,12 +155,12 @@ export const ProfileSkills = ({ skills }: ProfileSkillsProps) => {
   const handleAddSkill = () => {
     const trimmed = newSkill.trim();
     if (!trimmed) return;
-
+    
     const normalizedNew = trimmed.toLowerCase().replace(/[\.\s-]/g, "");
-    const alreadyExists = tempSkills.some(
-      (s) => s.toLowerCase().replace(/[\.\s-]/g, "") === normalizedNew,
+    const alreadyExists = tempSkills.some((s) => 
+      s.toLowerCase().replace(/[\.\s-]/g, "") === normalizedNew
     );
-
+    
     if (alreadyExists) {
       toast.error("Skill already added in the list");
       return;
@@ -300,9 +204,7 @@ export const ProfileSkills = ({ skills }: ProfileSkillsProps) => {
           </DialogTrigger>
           <DialogContent className="sm:max-w-[420px] bg-card border border-border/40 text-foreground shadow-2xl">
             <DialogHeader>
-              <DialogTitle className="text-xl font-bold tracking-tight">
-                Manage Skills
-              </DialogTitle>
+              <DialogTitle className="text-xl font-bold tracking-tight">Manage Skills</DialogTitle>
               <DialogDescription className="text-muted-foreground text-sm">
                 Add or remove skills from your public profile.
               </DialogDescription>
@@ -321,12 +223,7 @@ export const ProfileSkills = ({ skills }: ProfileSkillsProps) => {
                         key={skill}
                         className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-white text-xs font-bold text-black shadow-sm"
                       >
-                        {info && (
-                          <info.Icon
-                            className="h-3.5 w-3.5 shrink-0"
-                            style={{ color: info.color }}
-                          />
-                        )}
+                        {info && <info.Icon className="h-3.5 w-3.5 shrink-0" style={{ color: info.color }} />}
                         {skill}
                         <button
                           type="button"
@@ -348,10 +245,7 @@ export const ProfileSkills = ({ skills }: ProfileSkillsProps) => {
               </div>
 
               <div className="space-y-2">
-                <Label
-                  htmlFor="new-skill"
-                  className="text-xs font-semibold uppercase tracking-wider text-muted-foreground"
-                >
+                <Label htmlFor="new-skill" className="text-xs font-semibold uppercase tracking-wider text-muted-foreground">
                   Add New Skill
                 </Label>
                 <div className="flex gap-2">
@@ -373,7 +267,7 @@ export const ProfileSkills = ({ skills }: ProfileSkillsProps) => {
                       className="w-full bg-background border-border/45 text-foreground text-sm focus:border-primary/50 focus:ring-1 focus:ring-primary/20"
                       autoComplete="off"
                     />
-
+                    
                     {/* Custom Dropdown */}
                     {isFocused && filteredSkills.length > 0 && (
                       <div className="absolute left-0 right-0 top-full mt-1 max-h-[160px] overflow-y-auto rounded-md border border-border/40 bg-zinc-950 p-1 shadow-2xl z-50 divide-y divide-zinc-900/50">
@@ -394,12 +288,7 @@ export const ProfileSkills = ({ skills }: ProfileSkillsProps) => {
                               }}
                               className="w-full text-left px-3 py-2 text-xs text-foreground hover:bg-zinc-900 rounded-sm flex items-center gap-2 cursor-pointer transition-colors"
                             >
-                              {info && (
-                                <info.Icon
-                                  className="h-3.5 w-3.5"
-                                  style={{ color: info.color }}
-                                />
-                              )}
+                              {info && <info.Icon className="h-3.5 w-3.5" style={{ color: info.color }} />}
                               {skill}
                             </button>
                           );
@@ -452,12 +341,7 @@ export const ProfileSkills = ({ skills }: ProfileSkillsProps) => {
                 key={skill}
                 className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded bg-white text-xs font-bold text-black border-none shadow-sm"
               >
-                {info && (
-                  <info.Icon
-                    className="h-3.5 w-3.5 shrink-0"
-                    style={{ color: info.color }}
-                  />
-                )}
+                {info && <info.Icon className="h-3.5 w-3.5 shrink-0" style={{ color: info.color }} />}
                 {skill}
               </span>
             );
@@ -465,9 +349,7 @@ export const ProfileSkills = ({ skills }: ProfileSkillsProps) => {
         </div>
       ) : (
         <div className="flex flex-col items-center gap-2 py-3 rounded-lg border border-dashed border-border/60 bg-muted/10 text-center">
-          <p className="text-[11px] text-muted-foreground/60">
-            No skills added yet
-          </p>
+          <p className="text-[11px] text-muted-foreground/60">No skills added yet</p>
           <Button
             onClick={() => setIsAdding(true)}
             variant="outline"

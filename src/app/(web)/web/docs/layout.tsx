@@ -77,13 +77,7 @@ const badgeColors: Record<string, string> = {
 };
 
 // ─── Sidebar Item Text with Marquee on Hover/Active ──────────────────────────
-function SidebarItemText({
-  title,
-  isActive,
-}: {
-  title: string;
-  isActive: boolean;
-}) {
+function SidebarItemText({ title, isActive }: { title: string; isActive: boolean }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const textRef = useRef<HTMLSpanElement>(null);
   const [scrollDist, setScrollDist] = useState(0);
@@ -130,13 +124,9 @@ function SidebarItemText({
         ref={textRef}
         className={cn(
           "inline-block whitespace-nowrap",
-          shouldAnimate ? "animate-marquee-text" : "truncate w-full block",
+          shouldAnimate ? "animate-marquee-text" : "truncate w-full block"
         )}
-        style={
-          shouldAnimate
-            ? ({ "--scroll-dist": `${scrollDist}px` } as React.CSSProperties)
-            : undefined
-        }
+        style={shouldAnimate ? ({ "--scroll-dist": `${scrollDist}px` } as React.CSSProperties) : undefined}
       >
         {title}
       </span>
@@ -225,7 +215,7 @@ function SidebarCategory({
                       "pointer-events-none absolute inset-0 -z-10 transition-opacity",
                       isActive
                         ? "opacity-100 bg-linear-to-l from-blue-600 dark:from-blue-600/70 via-blue-600/20 to-transparent!"
-                        : "opacity-0",
+                        : "opacity-0"
                     )}
                   />
                   <Icon
@@ -267,34 +257,31 @@ function SidebarContent({
 }) {
   const [searchQuery, setSearchQuery] = useState("");
 
-  const filteredDocsConfig = Object.entries(docsConfig).reduce(
-    (acc, [category, items]) => {
-      const filteredItems = items.filter(
-        (item) =>
-          item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          item.description.toLowerCase().includes(searchQuery.toLowerCase()),
-      );
-      if (filteredItems.length > 0) {
-        acc[category] = filteredItems;
-      }
-      return acc;
-    },
-    {} as typeof docsConfig,
-  );
+  const filteredDocsConfig = Object.entries(docsConfig).reduce((acc, [category, items]) => {
+    const filteredItems = items.filter(
+      (item) =>
+        item.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        item.description.toLowerCase().includes(searchQuery.toLowerCase())
+    );
+    if (filteredItems.length > 0) {
+      acc[category] = filteredItems;
+    }
+    return acc;
+  }, {} as typeof docsConfig);
 
   return (
     <div className="flex h-full flex-col">
       {/* Logo */}
       <div className="flex items-center justify-center gap-3 px-5 pt-5 pb-4 border-b border-white/6">
-        <Link href="/" className="flex items-center gap-2.5 group">
+        <Link href="/" className="flex items-center gap-3 group">
           <Image
             src="/logo.svg"
             alt="Wekraft"
-            width={24}
-            height={24}
+            width={32}
+            height={32}
             className="shrink-0"
           />
-          <span className="text-sm font-semibold text-white tracking-tight leading-none mt-0.5">
+          <span className="text-base font-semibold text-white tracking-tight leading-none mt-0.5">
             Wekraft
           </span>
         </Link>
@@ -326,7 +313,7 @@ function SidebarContent({
       </div>
 
       {/* Navigation — Collapsible categories */}
-      <nav className="flex-1 overflow-y-auto px-3 pb-6 space-y-5">
+      <nav className="flex-1 overflow-y-auto overscroll-contain px-3 pb-6 space-y-5">
         {Object.entries(filteredDocsConfig).map(([category, items]) => (
           <SidebarCategory
             key={category}
@@ -353,24 +340,12 @@ function SidebarContent({
           className="group relative flex items-center gap-3 w-full px-3.5 py-3 rounded-xl bg-gradient-to-r from-white/6 via-white/3 to-transparent border border-white/8 hover:border-white/15 hover:from-white/8 hover:via-white/4 transition-all duration-200 mb-2.5 overflow-hidden"
         >
           <div className="shrink-0 w-7 h-7 rounded-lg bg-white/8 border border-white/10 flex items-center justify-center group-hover:bg-white/12 transition-colors">
-            <svg
-              className="h-3.5 w-3.5 text-white/50 transition-transform group-hover:-translate-x-0.5 group-hover:text-white/80"
-              fill="none"
-              viewBox="0 0 24 24"
-              stroke="currentColor"
-              strokeWidth={2}
-            >
-              <path
-                strokeLinecap="round"
-                strokeLinejoin="round"
-                d="M10 19l-7-7m0 0l7-7m-7 7h18"
-              />
+            <svg className="h-3.5 w-3.5 text-white/50 transition-transform group-hover:-translate-x-0.5 group-hover:text-white/80" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M10 19l-7-7m0 0l7-7m-7 7h18" />
             </svg>
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-semibold text-white/60 group-hover:text-white/90 transition-colors leading-none">
-              Back to Wekraft
-            </p>
+            <p className="text-xs font-semibold text-white/60 group-hover:text-white/90 transition-colors leading-none">Back to Wekraft</p>
           </div>
         </Link>
 
@@ -457,7 +432,7 @@ export default function DocsLayout({
             className="absolute inset-0 bg-black/70 backdrop-blur-sm animate-in fade-in duration-200"
             onClick={() => setMobileOpen(false)}
           />
-          <aside className="absolute left-0 top-0 h-full w-72 bg-[#0a0a0a] border-r border-white/8 shadow-2xl animate-in slide-in-from-left duration-200">
+          <aside className="absolute left-0 top-0 h-full w-80 bg-[#0a0a0a] border-r border-white/8 shadow-2xl animate-in slide-in-from-left duration-200">
             <button
               onClick={() => setMobileOpen(false)}
               className="absolute top-4 right-4 p-1.5 rounded-lg text-white/40 hover:text-white hover:bg-white/5 transition-colors z-10"
@@ -474,12 +449,14 @@ export default function DocsLayout({
 
       <div className="flex">
         {/* Desktop Sidebar */}
-        <aside className="fixed left-0 top-0 hidden h-full w-64 border-r border-white/6 bg-[#080808] lg:flex flex-col z-20">
-          <SidebarContent pathname={pathname} />
+        <aside className="fixed left-0 top-0 hidden h-full w-72 border-r border-white/6 bg-[#080808] lg:flex flex-col z-20">
+          <SidebarContent
+            pathname={pathname}
+          />
         </aside>
 
         {/* Main content */}
-        <main className="flex-1 lg:pl-64 min-w-0">
+        <main className="flex-1 lg:pl-72 min-w-0">
           <div className="w-full px-6 py-12 lg:px-10 lg:py-14">{children}</div>
         </main>
       </div>

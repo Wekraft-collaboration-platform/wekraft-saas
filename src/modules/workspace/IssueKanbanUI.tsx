@@ -442,11 +442,7 @@ const IssueColumn = ({
           strategy={verticalListSortingStrategy}
         >
           {issues.map((issue) => (
-            <SortableIssue
-              key={issue._id}
-              issue={issue}
-              onClick={() => onIssueClick?.(issue)}
-            />
+            <SortableIssue key={issue._id} issue={issue} onClick={() => onIssueClick?.(issue)} />
           ))}
         </SortableContext>
 
@@ -462,13 +458,7 @@ const IssueColumn = ({
   );
 };
 
-const SortableIssue = ({
-  issue,
-  onClick,
-}: {
-  issue: Issue;
-  onClick?: () => void;
-}) => {
+const SortableIssue = ({ issue, onClick }: { issue: Issue; onClick?: () => void }) => {
   const {
     attributes,
     listeners,
@@ -542,7 +532,7 @@ export const IssueCard = ({
         loading: "Closing issue...",
         success: "Issue marked as closed",
         error: "Failed to close issue",
-      },
+      }
     );
   };
 
@@ -557,7 +547,7 @@ export const IssueCard = ({
         loading: "Reopening issue...",
         success: "Issue marked as reopened",
         error: "Failed to reopen issue",
-      },
+      }
     );
   };
 
@@ -572,7 +562,7 @@ export const IssueCard = ({
         loading: "Deleting issue...",
         success: "Issue deleted successfully",
         error: "Failed to delete issue",
-      },
+      }
     );
   };
 
@@ -580,8 +570,7 @@ export const IssueCard = ({
     <Card
       className={cn(
         "group cursor-pointer p-2.5! dark:bg-muted bg-card dark:border-neutral-800 border-neutral-200 dark:hover:border-neutral-700 hover:border-neutral-300 transition-all rounded-xl shadow-sm",
-        isOverlay &&
-          "scale-[1.02] shadow-2xl dark:border-neutral-700 border-neutral-300 dark:bg-sidebar bg-card",
+        isOverlay && "scale-[1.02] shadow-2xl dark:border-neutral-700 border-neutral-300 dark:bg-sidebar bg-card",
       )}
     >
       <div className="flex flex-col gap-3">
@@ -679,8 +668,7 @@ export const IssueCard = ({
                   disabled={!isPower}
                   className={cn(
                     "text-xs cursor-pointer flex items-center gap-2 text-rose-500 hover:text-rose-400 hover:bg-rose-500/10",
-                    !isPower &&
-                      "opacity-50 cursor-not-allowed pointer-events-none",
+                    !isPower && "opacity-50 cursor-not-allowed pointer-events-none"
                   )}
                 >
                   <Bug className="w-3.5 h-3.5 text-rose-500" />
@@ -724,7 +712,9 @@ export const IssueCard = ({
               {issue.assignedTo?.slice(0, 3).map((assignee, i) => (
                 <Tooltip key={i}>
                   <TooltipTrigger asChild>
-                    <Avatar className="h-5 w-5 border border-sidebar group-hover:border-neutral-800 transition-all cursor-pointer">
+                    <Avatar
+                      className="h-5 w-5 border border-sidebar group-hover:border-neutral-800 transition-all cursor-pointer"
+                    >
                       <AvatarImage src={assignee.avatar} />
                       <AvatarFallback className="text-[8px] dark:bg-neutral-800 bg-neutral-200 dark:text-neutral-400 text-neutral-600">
                         {assignee.name[0]}

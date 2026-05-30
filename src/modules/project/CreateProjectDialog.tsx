@@ -55,17 +55,15 @@ interface CreateProjectDialogProps {
 const CreateProjectDialog = ({
   trigger,
   open: controlledOpen,
-  onOpenChange: setControlledOpen,
+  onOpenChange: setControlledOpen
 }: CreateProjectDialogProps) => {
   const [internalOpen, setInternalOpen] = useState(false);
   const open = controlledOpen !== undefined ? controlledOpen : internalOpen;
-  const setOpen =
-    setControlledOpen !== undefined ? setControlledOpen : setInternalOpen;
+  const setOpen = setControlledOpen !== undefined ? setControlledOpen : setInternalOpen;
 
   const [step, setStep] = useState(1);
   const [isLoading, setIsLoading] = useState(false);
-  const [createdProjectId, setCreatedProjectId] =
-    useState<Id<"projects"> | null>(null);
+  const [createdProjectId, setCreatedProjectId] = useState<Id<"projects"> | null>(null);
 
   // Form State
   const [projectName, setProjectName] = useState("");
@@ -84,11 +82,7 @@ const CreateProjectDialog = ({
   const connectRepo = useMutation(api.repo.connectRepository);
   const user = useQuery(api.user.getCurrentUser);
 
-  const { data: repositories, isLoading: reposLoading } = useRepositories(
-    repoPage,
-    REPOS_PER_PAGE,
-    !!user?.githubUsername,
-  );
+  const { data: repositories, isLoading: reposLoading } = useRepositories(repoPage, REPOS_PER_PAGE, !!user?.githubUsername);
 
   const handleCreateProject = async () => {
     if (!projectName.trim()) {
@@ -189,9 +183,7 @@ const CreateProjectDialog = ({
             {/* Left text */}
             <div className="pl-6 z-10">
               <p className="text-2xl font-semibold leading-tight tracking-tight text-foreground">
-                Project creation
-                <br />
-                limit reached
+                Project creation<br />limit reached
               </p>
             </div>
 
@@ -212,13 +204,9 @@ const CreateProjectDialog = ({
             <DialogHeader>
               <DialogDescription className="text-sm text-muted-foreground leading-relaxed">
                 You&apos;ve reached your limit of{" "}
-                <span className="font-semibold text-foreground">
-                  {usage.limit} projects
-                </span>{" "}
+                <span className="font-semibold text-foreground">{usage.limit} projects</span>{" "}
                 on the{" "}
-                <span className="font-semibold text-foreground capitalize">
-                  {usage.accountType}
-                </span>{" "}
+                <span className="font-semibold text-foreground capitalize">{usage.accountType}</span>{" "}
                 plan. Upgrade now to keep building more amazing things!
               </DialogDescription>
             </DialogHeader>
@@ -241,7 +229,7 @@ const CreateProjectDialog = ({
             <div className="flex items-center gap-3 pt-1">
               <Button
                 className="flex-1 text-sm"
-                onClick={() => (window.location.href = "/web/pricing")}
+                onClick={() => window.location.href = "/web/pricing"}
               >
                 Upgrade Now <Clover className="ml-2 h-4 w-4" />
               </Button>
@@ -260,15 +248,13 @@ const CreateProjectDialog = ({
   }
 
   return (
-    <Dialog
-      open={open}
-      onOpenChange={(val) => {
-        setOpen(val);
-        if (!val) resetForm();
-      }}
-    >
+    <Dialog open={open} onOpenChange={(val) => {
+      setOpen(val);
+      if (!val) resetForm();
+    }}>
       {trigger && <DialogTrigger asChild>{trigger}</DialogTrigger>}
       <DialogContent className="w-full max-w-[520px] p-0 overflow-hidden bg-sidebar border border-accent">
+
         {step === 1 && (
           <div className="relative h-[160px] w-full overflow-hidden shrink-0">
             <img
@@ -280,16 +266,10 @@ const CreateProjectDialog = ({
             <div className="absolute bottom-3 left-5 flex flex-col">
               <div className="flex items-center gap-2 text-primary font-medium mb-1">
                 <Rocket className="size-4" />
-                <span className="text-[10px] uppercase tracking-widest font-bold opacity-70">
-                  Step 1 of 2
-                </span>
+                <span className="text-[10px] uppercase tracking-widest font-bold opacity-70">Step 1 of 2</span>
               </div>
-              <h2 className="text-xl font-bold tracking-tight">
-                Start New Project
-              </h2>
-              <p className="text-xs text-muted-foreground line-clamp-1">
-                Define your vision and set the stage for collaboration.
-              </p>
+              <h2 className="text-xl font-bold tracking-tight">Start New Project</h2>
+              <p className="text-xs text-muted-foreground line-clamp-1">Define your vision and set the stage for collaboration.</p>
             </div>
           </div>
         )}
@@ -310,9 +290,7 @@ const CreateProjectDialog = ({
             <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
               {/* Title Section */}
               <div className="flex flex-col space-y-1.5">
-                <Label className="text-sm font-medium text-muted-foreground ml-1">
-                  Project Name
-                </Label>
+                <Label className="text-sm font-medium text-muted-foreground ml-1">Project Name</Label>
                 <Input
                   placeholder="e.g. My Awesome Startup"
                   className="text-lg font-medium border bg-transparent p-1 h-9! focus-visible:ring-0 placeholder:text-neutral-700"
@@ -324,9 +302,7 @@ const CreateProjectDialog = ({
               {/* Action Buttons Row */}
               <div className="flex items-center gap-3">
                 <div className="flex flex-col space-y-2">
-                  <p className="text-sm font-medium text-muted-foreground ml-1">
-                    Settings & Visibility
-                  </p>
+                  <p className="text-sm font-medium text-muted-foreground ml-1">Settings & Visibility</p>
                   <div className="flex items-center gap-2">
                     {/* Visibility Toggle */}
                     <DropdownMenu>
@@ -336,28 +312,16 @@ const CreateProjectDialog = ({
                           size="sm"
                           className="h-8 bg-[#18181A] border-accent/20 hover:bg-[#212123] text-neutral-300 px-3 gap-2 rounded-lg text-xs"
                         >
-                          {isPublic ? (
-                            <Globe className="size-3.5 text-emerald-500" />
-                          ) : (
-                            <Lock className="size-3.5 text-amber-500" />
-                          )}
-                          <span className="capitalize">
-                            {isPublic ? "Public" : "Private"}
-                          </span>
+                          {isPublic ? <Globe className="size-3.5 text-emerald-500" /> : <Lock className="size-3.5 text-amber-500" />}
+                          <span className="capitalize">{isPublic ? "Public" : "Private"}</span>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent className="bg-[#0A0A0B] border-accent/20 text-neutral-200">
-                        <DropdownMenuItem
-                          onClick={() => setIsPublic(true)}
-                          className="gap-2 cursor-pointer"
-                        >
+                        <DropdownMenuItem onClick={() => setIsPublic(true)} className="gap-2 cursor-pointer">
                           <Globe className="size-3.5 text-emerald-500" />
                           <span className="text-xs">Public Project</span>
                         </DropdownMenuItem>
-                        <DropdownMenuItem
-                          onClick={() => setIsPublic(false)}
-                          className="gap-2 cursor-pointer"
-                        >
+                        <DropdownMenuItem onClick={() => setIsPublic(false)} className="gap-2 cursor-pointer">
                           <Lock className="size-3.5 text-amber-500" />
                           <span className="text-xs">Private Project</span>
                         </DropdownMenuItem>
@@ -372,42 +336,28 @@ const CreateProjectDialog = ({
                           size="sm"
                           className="h-8 bg-[#18181A] border-accent/20 hover:bg-[#212123] text-neutral-300 px-3 gap-2 rounded-lg text-xs"
                         >
-                          <div
-                            className={cn(
-                              "size-2 rounded-full",
-                              status === "ideation" && "bg-blue-500",
-                              status === "validation" && "bg-amber-500",
-                              status === "development" && "bg-indigo-500",
-                              status === "beta" && "bg-purple-500",
-                              status === "production" && "bg-emerald-500",
-                            )}
-                          />
+                          <div className={cn(
+                            "size-2 rounded-full",
+                            status === "ideation" && "bg-blue-500",
+                            status === "validation" && "bg-amber-500",
+                            status === "development" && "bg-indigo-500",
+                            status === "beta" && "bg-purple-500",
+                            status === "production" && "bg-emerald-500",
+                          )} />
                           <span className="capitalize">{status}</span>
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent className="bg-[#0A0A0B] border-accent/20 text-neutral-200">
-                        {[
-                          "ideation",
-                          "validation",
-                          "development",
-                          "beta",
-                          "production",
-                        ].map((s) => (
-                          <DropdownMenuItem
-                            key={s}
-                            onClick={() => setStatus(s)}
-                            className="gap-2 cursor-pointer capitalize text-xs"
-                          >
-                            <div
-                              className={cn(
-                                "size-2 rounded-full",
-                                s === "ideation" && "bg-blue-500",
-                                s === "validation" && "bg-amber-500",
-                                s === "development" && "bg-indigo-500",
-                                s === "beta" && "bg-purple-500",
-                                s === "production" && "bg-emerald-500",
-                              )}
-                            />
+                        {["ideation", "validation", "development", "beta", "production"].map((s) => (
+                          <DropdownMenuItem key={s} onClick={() => setStatus(s)} className="gap-2 cursor-pointer capitalize text-xs">
+                            <div className={cn(
+                              "size-2 rounded-full",
+                              s === "ideation" && "bg-blue-500",
+                              s === "validation" && "bg-amber-500",
+                              s === "development" && "bg-indigo-500",
+                              s === "beta" && "bg-purple-500",
+                              s === "production" && "bg-emerald-500",
+                            )} />
                             {s}
                           </DropdownMenuItem>
                         ))}
@@ -419,9 +369,7 @@ const CreateProjectDialog = ({
 
               {/* Description Section */}
               <div className="flex flex-col space-y-1.5">
-                <Label className="text-sm font-medium text-muted-foreground ml-1">
-                  Project Brief
-                </Label>
+                <Label className="text-sm font-medium text-muted-foreground ml-1">Project Brief</Label>
                 <Textarea
                   placeholder="Tell us what you're building..."
                   className="bg-transparent border p-1 focus-visible:ring-0 transition-all h-[100px] resize-none font-inter text-sm leading-relaxed placeholder:text-neutral-700"
@@ -436,20 +384,15 @@ const CreateProjectDialog = ({
                 <ScrollArea className="h-[280px] pr-4">
                   {reposLoading && user?.githubUsername ? (
                     <div className="space-y-3">
-                      {[1, 2, 3].map((i) => (
-                        <div
-                          key={i}
-                          className="h-14 rounded-lg bg-accent/20 animate-pulse"
-                        />
+                      {[1, 2, 3].map(i => (
+                        <div key={i} className="h-14 rounded-lg bg-accent/20 animate-pulse" />
                       ))}
                     </div>
-                  ) : !user?.githubUsername || repositories?.length === 0 ? (
+                  ) : (!user?.githubUsername || repositories?.length === 0) ? (
                     <div className="flex flex-col items-center justify-center p-8 text-center bg-accent/10 rounded-xl border border-dashed border-accent/20">
                       <Github className="size-8 text-muted-foreground/30 mb-2" />
                       <p className="text-xs text-muted-foreground">
-                        {!user?.githubUsername
-                          ? "Please connect your GitHub account."
-                          : "No repositories found."}
+                        {!user?.githubUsername ? "Please connect your GitHub account." : "No repositories found."}
                       </p>
                     </div>
                   ) : (
@@ -463,27 +406,17 @@ const CreateProjectDialog = ({
                             selectedRepo?.id === repo.id
                               ? "bg-primary/10 border-primary/40"
                               : "bg-accent/20 border-accent/10 hover:border-primary/20 hover:bg-accent/30",
-                            isLoading && "opacity-50 cursor-not-allowed",
+                            isLoading && "opacity-50 cursor-not-allowed"
                           )}
                         >
                           <div className="flex items-center gap-3 min-w-0">
-                            <img
-                              src={repo.owner.avatar_url}
-                              className="size-8 rounded border border-accent/10"
-                              alt=""
-                            />
+                            <img src={repo.owner.avatar_url} className="size-8 rounded border border-accent/10" alt="" />
                             <div className="min-w-0">
-                              <p className="text-sm font-semibold truncate">
-                                {repo.name}
-                              </p>
-                              <p className="text-[9px] text-muted-foreground uppercase">
-                                {repo.owner.login}
-                              </p>
+                              <p className="text-sm font-semibold truncate">{repo.name}</p>
+                              <p className="text-[9px] text-muted-foreground uppercase">{repo.owner.login}</p>
                             </div>
                           </div>
-                          {selectedRepo?.id === repo.id && (
-                            <CheckCircle2 className="size-4 text-primary shrink-0 transition-all animate-in zoom-in" />
-                          )}
+                          {selectedRepo?.id === repo.id && <CheckCircle2 className="size-4 text-primary shrink-0 transition-all animate-in zoom-in" />}
                         </div>
                       ))}
                     </div>
@@ -497,25 +430,17 @@ const CreateProjectDialog = ({
                       size="icon"
                       className="size-7"
                       disabled={repoPage === 1 || isLoading}
-                      onClick={() =>
-                        setRepoPage((prev) => Math.max(1, prev - 1))
-                      }
+                      onClick={() => setRepoPage(prev => Math.max(1, prev - 1))}
                     >
                       <ChevronLeft className="size-3" />
                     </Button>
-                    <span className="text-[10px] font-medium px-2">
-                      Page {repoPage}
-                    </span>
+                    <span className="text-[10px] font-medium px-2">Page {repoPage}</span>
                     <Button
                       variant="outline"
                       size="icon"
                       className="size-7"
-                      disabled={
-                        !repositories ||
-                        repositories.length < REPOS_PER_PAGE ||
-                        isLoading
-                      }
-                      onClick={() => setRepoPage((prev) => prev + 1)}
+                      disabled={!repositories || repositories.length < REPOS_PER_PAGE || isLoading}
+                      onClick={() => setRepoPage(prev => prev + 1)}
                     >
                       <ChevronRight className="size-3" />
                     </Button>
@@ -524,10 +449,7 @@ const CreateProjectDialog = ({
                     variant="ghost"
                     onClick={() => setSelectedRepo(null)}
                     disabled={isLoading}
-                    className={cn(
-                      "text-[10px] h-7 px-3",
-                      !selectedRepo && "hidden",
-                    )}
+                    className={cn("text-[10px] h-7 px-3", !selectedRepo && "hidden")}
                   >
                     Clear selection
                   </Button>
@@ -539,8 +461,7 @@ const CreateProjectDialog = ({
                   <AlertCircle className="size-4 text-primary" />
                 </div>
                 <p className="text-[10px] text-muted-foreground leading-relaxed">
-                  Syncing a repository will setup a{" "}
-                  <strong>GitHub Webhook</strong> for real-time insights.
+                  Syncing a repository will setup a <strong>GitHub Webhook</strong> for real-time insights.
                 </p>
               </div>
             </div>
@@ -567,15 +488,14 @@ const CreateProjectDialog = ({
             <div className="flex items-center gap-3">
               {step === 1 ? (
                 <Button
-                  size="sm"
+                  size='sm'
                   onClick={handleCreateProject}
                   className="min-w-[120px] text-xs h-8 shadow-sm"
                   disabled={isLoading || !projectName.trim()}
                 >
                   {isLoading ? (
                     <>
-                      <Loader2 className="size-3 animate-spin mr-2" />{" "}
-                      Creating...
+                      <Loader2 className="size-3 animate-spin mr-2" /> Creating...
                     </>
                   ) : (
                     <>
@@ -595,14 +515,13 @@ const CreateProjectDialog = ({
                   </Button>
                   <Button
                     onClick={handleConnectRepo}
-                    size="sm"
+                    size='sm'
                     disabled={isLoading || !selectedRepo}
                     className="text-xs min-w-[120px] h-8 shadow-lg shadow-primary/10"
                   >
                     {isLoading ? (
                       <>
-                        <Loader2 className="size-3 animate-spin mr-2" />{" "}
-                        Linking...
+                        <Loader2 className="size-3 animate-spin mr-2" /> Linking...
                       </>
                     ) : (
                       <>

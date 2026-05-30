@@ -86,7 +86,9 @@ export const getSprintsByProject = query({
         const completedTasks = tasks.filter(
           (t) => t.status === "completed",
         ).length;
-        const closedIssues = issues.filter((i) => i.status === "closed").length;
+        const closedIssues = issues.filter(
+          (i) => i.status === "closed",
+        ).length;
 
         return {
           ...sprint,
@@ -134,9 +136,9 @@ export const getSprintById = query({
 // used in: Sprint detail page routing
 //==================
 export const getSprintByName = query({
-  args: {
+  args: { 
     projectId: v.id("projects"),
-    sprintName: v.string(),
+    sprintName: v.string() 
   },
   handler: async (ctx, args) => {
     const sprints = await ctx.db
@@ -330,7 +332,7 @@ export const getSprintStats = query({
           .withIndex("by_task", (q) => q.eq("taskId", task._id))
           .collect();
         return { ...task, assignees };
-      }),
+      })
     );
 
     // Unique team members from task assignees + issue assignees
@@ -412,9 +414,7 @@ export const getBacklogTasks = query({
       .collect();
 
     // Only backlog tasks: no sprintId AND not completed
-    const backlogTasks = tasks.filter(
-      (t) => !t.sprintId && t.status !== "completed",
-    );
+    const backlogTasks = tasks.filter((t) => !t.sprintId && t.status !== "completed");
 
     return await Promise.all(
       backlogTasks.map(async (task) => {
@@ -441,9 +441,7 @@ export const getBacklogIssues = query({
       .collect();
 
     // Only backlog issues: no sprintId AND not closed
-    const backlogIssues = issues.filter(
-      (i) => !i.sprintId && i.status !== "closed",
-    );
+    const backlogIssues = issues.filter((i) => !i.sprintId && i.status !== "closed");
 
     return await Promise.all(
       backlogIssues.map(async (issue) => {
@@ -487,9 +485,7 @@ export const createSprint = mutation({
       .collect();
 
     if (existingSprints.length > 0) {
-      throw new Error(
-        "A sprint with this name already exists in this project.",
-      );
+      throw new Error("A sprint with this name already exists in this project.");
     }
 
     // Validation 2: end date must be after start date
@@ -505,7 +501,9 @@ export const createSprint = mutation({
 
     if (projectDetails?.targetDate) {
       if (args.duration.endDate > projectDetails.targetDate) {
-        throw new Error("Sprint end date cannot exceed the project deadline.");
+        throw new Error(
+          "Sprint end date cannot exceed the project deadline.",
+        );
       }
     }
 
@@ -600,6 +598,7 @@ export const startSprint = mutation({
       issueIds: currentIssues.map((i) => i._id),
       updatedAt: Date.now(),
     });
+
   },
 });
 
@@ -652,12 +651,8 @@ export const completeSprint = mutation({
         .collect();
     }
 
-    const completedTasksCount = historicalTasks.filter(
-      (t) => t.status === "completed",
-    ).length;
-    const closedIssuesCount = historicalIssues.filter(
-      (i) => i.status === "closed",
-    ).length;
+    const completedTasksCount = historicalTasks.filter((t) => t.status === "completed").length;
+    const closedIssuesCount = historicalIssues.filter((i) => i.status === "closed").length;
 
     // Mark sprint as completed and store final stats
     await ctx.db.patch(args.sprintId, {
@@ -700,6 +695,7 @@ export const completeSprint = mutation({
         });
       }
     }
+
   },
 });
 
@@ -736,10 +732,7 @@ export const updateSprint = mutation({
       throw new Error("Completed sprints cannot be edited.");
     }
 
-    if (
-      args.sprintName !== undefined &&
-      args.sprintName !== sprint.sprintName
-    ) {
+    if (args.sprintName !== undefined && args.sprintName !== sprint.sprintName) {
       const existingSprints = await ctx.db
         .query("sprints")
         .withIndex("by_project", (q) => q.eq("projectId", sprint.projectId))
@@ -747,9 +740,7 @@ export const updateSprint = mutation({
         .collect();
 
       if (existingSprints.length > 0) {
-        throw new Error(
-          "A sprint with this name already exists in this project.",
-        );
+        throw new Error("A sprint with this name already exists in this project.");
       }
     }
 
@@ -800,9 +791,7 @@ export const assignTaskToSprint = mutation({
     if (task.sprintId && task.sprintId !== args.sprintId) {
       const oldSprint = await ctx.db.get(task.sprintId);
       if (oldSprint) {
-        const newTaskIds = (oldSprint.taskIds || []).filter(
-          (id) => id !== task._id,
-        );
+        const newTaskIds = (oldSprint.taskIds || []).filter((id) => id !== task._id);
         await ctx.db.patch(task.sprintId, { taskIds: newTaskIds });
       }
     }
@@ -858,9 +847,7 @@ export const assignIssueToSprint = mutation({
     if (issue.sprintId && issue.sprintId !== args.sprintId) {
       const oldSprint = await ctx.db.get(issue.sprintId);
       if (oldSprint) {
-        const newIssueIds = (oldSprint.issueIds || []).filter(
-          (id) => id !== issue._id,
-        );
+        const newIssueIds = (oldSprint.issueIds || []).filter((id) => id !== issue._id);
         await ctx.db.patch(issue.sprintId, { issueIds: newIssueIds });
       }
     }

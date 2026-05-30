@@ -67,10 +67,7 @@ export async function POST(req: NextRequest) {
     }
 
     // ─── Step 3: Create Stripe Billing Portal session ──────────────────────────
-    const origin =
-      req.headers.get("origin") ||
-      process.env.NEXT_PUBLIC_APP_URL ||
-      "http://localhost:3000";
+    const origin = req.headers.get("origin") || process.env.NEXT_PUBLIC_APP_URL || "http://localhost:3000";
 
     const session = await stripe.billingPortal.sessions.create({
       customer: customerId,
@@ -80,8 +77,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ url: session.url });
   } catch (error) {
     console.error("[Stripe Portal Error]", error);
-    const message =
-      error instanceof Error ? error.message : "Internal Server Error";
+    const message = error instanceof Error ? error.message : "Internal Server Error";
     return NextResponse.json({ error: message }, { status: 500 });
   }
 }

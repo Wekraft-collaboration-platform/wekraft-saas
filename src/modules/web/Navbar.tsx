@@ -80,12 +80,10 @@ const Navbar = () => {
         </div>
 
         {/* Desktop Links */}
-        <div
-          className={clsx(
-            "hidden md:flex text-sm font-medium shrink-0 items-center ",
-            scrolled || isLightSection ? "gap-1" : "gap-2",
-          )}
-        >
+        <div className={clsx(
+          "hidden md:flex text-sm font-medium shrink-0 items-center ",
+          scrolled || isLightSection ? "gap-1" : "gap-2"
+        )}>
           {navLinks.map(({ label, href }) => (
             <Link
               key={label}
@@ -114,9 +112,7 @@ const Navbar = () => {
                       size="sm"
                       className={clsx(
                         "duration-300 hover:scale-105 transition-all cursor-pointer font-medium text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 border-none shadow-[0_0_20px_rgba(37,99,235,0.4)] rounded-full",
-                        scrolled || isLightSection
-                          ? "px-4 py-1.5 text-xs"
-                          : "px-5 py-2 text-sm",
+                        (scrolled || isLightSection) ? "px-4 py-1.5 text-xs" : "px-5 py-2 text-sm",
                       )}
                     >
                       Dashboard <ArrowRight className="ml-2 w-4 h-4" />
@@ -142,9 +138,7 @@ const Navbar = () => {
                       size="sm"
                       className={clsx(
                         "duration-300 hover:scale-105 transition-all cursor-pointer font-medium text-white bg-blue-600 hover:bg-blue-500",
-                        scrolled || isLightSection
-                          ? "px-4 py-1.5 text-xs"
-                          : "px-5 py-2 text-sm",
+                        (scrolled || isLightSection) ? "px-4 py-1.5 text-xs" : "px-5 py-2 text-sm",
                       )}
                     >
                       Sign-up
@@ -205,7 +199,7 @@ const Navbar = () => {
                         </span>
                       </div>
                       <Link href="/dashboard" className="w-full">
-                        <Button
+                        <Button 
                           className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                           onClick={() => setIsMenuOpen(false)}
                         >

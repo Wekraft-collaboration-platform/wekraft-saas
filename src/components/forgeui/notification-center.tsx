@@ -1,19 +1,19 @@
 "use client";
 import { motion, Variants } from "motion/react";
 import React, { useState } from "react";
-import {
-  Phone,
-  Music,
-  Headphones,
-  Mail,
-  Video,
-  Calendar,
-  MessageSquare,
+import { 
+  Phone, 
+  Music, 
+  Headphones, 
+  Mail, 
+  Video, 
+  Calendar, 
+  MessageSquare, 
   Camera,
   Layout,
   Globe,
   Settings,
-  Users,
+  Users
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import Image from "next/image";
@@ -144,10 +144,7 @@ const NotificationCenter = ({
         className="relative mx-auto h-[320px] w-[290px] rounded-[44px] bg-neutral-300 p-1.5 dark:bg-neutral-800 -translate-y-8"
       >
         <div className="relative h-[328px] overflow-hidden rounded-[38px] bg-neutral-200 dark:bg-neutral-950/50">
-          <div
-            className="absolute left-8 top-3.5 text-[9px] text-neutral-500"
-            suppressHydrationWarning={true}
-          >
+          <div className="absolute left-8 top-3.5 text-[9px] text-neutral-500" suppressHydrationWarning={true}>
             {new Date().toLocaleTimeString([], {
               hour: "2-digit",
               minute: "2-digit",
@@ -273,9 +270,7 @@ const NotificationCenter = ({
           <div className="absolute bottom-0 left-0 hidden h-[140px] w-full rounded-b-lg [background-image:linear-gradient(to_top,#0a0a0a_40%,transparent_100%)] dark:block" />
           <div className="absolute bottom-0 left-0 block h-[140px] w-full rounded-b-lg [background-image:linear-gradient(to_top,#f5f5f5_40%,transparent_100%)] dark:hidden" />
           <div className="absolute bottom-4 left-0 w-full px-8 text-center">
-            <h3 className="text-base font-semibold text-primary">
-              {cardTitle}
-            </h3>
+            <h3 className="text-base font-semibold text-primary">{cardTitle}</h3>
             <p className="mt-1 text-xs text-neutral-500">{cardDescription}</p>
           </div>
         </>

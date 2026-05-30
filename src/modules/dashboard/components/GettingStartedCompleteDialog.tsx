@@ -8,31 +8,28 @@ import { useRouter } from "next/navigation";
 
 export function GettingStartedCompleteDialog() {
   const currentUser = useQuery(api.user.getCurrentUser);
-  const markGettingStartedCompleteSeen = useMutation(
-    api.user.markGettingStartedCompleteSeen,
-  );
+  const markGettingStartedCompleteSeen = useMutation(api.user.markGettingStartedCompleteSeen);
   const router = useRouter();
 
   if (currentUser === undefined || currentUser === null) return null;
 
-  const showCompleteDialog =
-    !!currentUser.gettingstartedcompleted &&
-    !currentUser.hasSeenGettingStartedComplete;
+  const showCompleteDialog = !!currentUser.gettingstartedcompleted && !currentUser.hasSeenGettingStartedComplete;
 
   if (!showCompleteDialog) return null;
 
   const handleDismissCompleteDialog = () => {
-    markGettingStartedCompleteSeen().catch(() => {});
+    markGettingStartedCompleteSeen().catch(() => { });
   };
 
   const handleUpgradeCompleteDialog = () => {
-    markGettingStartedCompleteSeen().catch(() => {});
+    markGettingStartedCompleteSeen().catch(() => { });
     router.push("/web/pricing");
   };
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-[2px] p-4 transition-all duration-300 animate-in fade-in">
       <div className="bg-sidebar text-sidebar-foreground rounded-2xl max-w-[440px] w-full min-h-[400px] border border-accent shadow-xl flex flex-col justify-between p-6 overflow-hidden animate-in fade-in-50 zoom-in-95 duration-200">
+
         {/* Top Section */}
         <div className="flex flex-col gap-4">
           {/* Tag (outside inner box) */}
@@ -59,9 +56,7 @@ export function GettingStartedCompleteDialog() {
               Very good! You just completed the basic steps.
             </h3>
             <p className="text-neutral-200 text-xs leading-relaxed mt-1">
-              You are ready to manage your repositories, deadlines, and tasks.
-              Upgrade now to unlock advanced tools, unlimited projects, and Kaya
-              AI support.
+              You are ready to manage your repositories, deadlines, and tasks. Upgrade now to unlock advanced tools, unlimited projects, and Kaya AI support.
             </p>
           </div>
         </div>

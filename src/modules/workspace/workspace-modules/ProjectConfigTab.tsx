@@ -12,7 +12,11 @@ import {
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { ShieldCheck, BrainCircuit, MessageSquarePlus } from "lucide-react";
+import {
+  ShieldCheck,
+  BrainCircuit,
+  MessageSquarePlus,
+} from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
 
@@ -29,9 +33,7 @@ export const ProjectConfigTab = ({
   scheduler,
   isOwner,
 }: ProjectConfigTabProps) => {
-  const updateProjectConfig = useMutation(
-    api.projectDetails.updateProjectConfig,
-  );
+  const updateProjectConfig = useMutation(api.projectDetails.updateProjectConfig);
 
   const handleUpdateConfig = async (updates: any) => {
     try {

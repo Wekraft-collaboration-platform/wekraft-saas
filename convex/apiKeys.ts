@@ -26,7 +26,7 @@ export const getOrCreateApiKey = mutation({
     const user = await ctx.db
       .query("users")
       .withIndex("by_token", (q) =>
-        q.eq("clerkToken", identity.tokenIdentifier),
+        q.eq("clerkToken", identity.tokenIdentifier)
       )
       .unique();
 
@@ -64,7 +64,7 @@ export const createHandshakeToken = mutation({
     const user = await ctx.db
       .query("users")
       .withIndex("by_token", (q) =>
-        q.eq("clerkToken", identity.tokenIdentifier),
+        q.eq("clerkToken", identity.tokenIdentifier)
       )
       .unique();
 

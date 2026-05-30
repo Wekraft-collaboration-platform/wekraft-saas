@@ -114,9 +114,7 @@ export const CreateIssueDialog = ({
     { userId: Id<"users">; name: string; avatar?: string }[]
   >([]);
   const [isPending, setIsPending] = useState(false);
-  const [attachments, setAttachments] = useState<
-    { name: string; url: string; size?: number }[]
-  >([]);
+  const [attachments, setAttachments] = useState<{ name: string; url: string; size?: number }[]>([]);
   const [isUploading, setIsUploading] = useState(false);
   const [showStorageLimitDialog, setShowStorageLimitDialog] = useState(false);
 
@@ -156,10 +154,7 @@ export const CreateIssueDialog = ({
       const data = await response.json();
       if (data.error) throw new Error(data.error);
 
-      setAttachments((prev) => [
-        ...prev,
-        { name: data.name, url: data.url, size: file.size },
-      ]);
+      setAttachments((prev) => [...prev, { name: data.name, url: data.url, size: file.size }]);
       toast.success("File uploaded successfully", { id: toastId });
     } catch (error: any) {
       const msg = error.message || "";
@@ -269,8 +264,7 @@ export const CreateIssueDialog = ({
                   size="sm"
                   className={cn(
                     "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
-                    status &&
-                      "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
+                    status && "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
                   )}
                 >
                   {status ? (
@@ -309,7 +303,7 @@ export const CreateIssueDialog = ({
                   className={cn(
                     "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
                     severity &&
-                      "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
+                    "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
                   )}
                 >
                   {severity ? (
@@ -346,7 +340,7 @@ export const CreateIssueDialog = ({
                   className={cn(
                     "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
                     environment &&
-                      "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
+                    "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
                   )}
                 >
                   {environment ? (
@@ -387,7 +381,7 @@ export const CreateIssueDialog = ({
                   className={cn(
                     "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
                     dueDate &&
-                      "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
+                    "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
                   )}
                 >
                   <CalendarIcon className="w-3.5 h-3.5" />
@@ -431,7 +425,7 @@ export const CreateIssueDialog = ({
                   className={cn(
                     "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
                     selectedPath &&
-                      "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/50 dark:bg-blue-900/10",
+                    "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/50 dark:bg-blue-900/10",
                   )}
                 >
                   <Link2 className="w-3.5 h-3.5" />
@@ -457,7 +451,7 @@ export const CreateIssueDialog = ({
                   className={cn(
                     "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-3 gap-1.5 rounded-full text-[11px]",
                     assignedMembers.length > 0 &&
-                      "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
+                    "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
                   )}
                 >
                   <User className="w-3.5 h-3.5" />
@@ -548,14 +542,10 @@ export const CreateIssueDialog = ({
                         className={cn(
                           "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
                           attachments.length > 0 &&
-                            "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
+                          "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
                         )}
-                        disabled={
-                          isUploading || project?.ownerAccountType === "free"
-                        }
-                        onClick={() =>
-                          document.getElementById("issue-file-upload")?.click()
-                        }
+                        disabled={isUploading || project?.ownerAccountType === "free"}
+                        onClick={() => document.getElementById("issue-file-upload")?.click()}
                       >
                         {isUploading ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />

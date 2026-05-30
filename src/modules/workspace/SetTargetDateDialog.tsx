@@ -81,8 +81,7 @@ export const SetTargetDateDialog = ({
 
     if (durationDays < 7) {
       toast.error("Project duration must be at least 7 days from creation", {
-        description:
-          "Wekraft is designed for projects that span at least a week.",
+        description: "Wekraft is designed for projects that span at least a week.",
       });
       setIsSubmitting(false);
       return;
@@ -90,8 +89,7 @@ export const SetTargetDateDialog = ({
 
     if (durationDays > 365) {
       toast.error("Deadline exceeds 1 year threshold", {
-        description:
-          "Small teams usually focus on yearly goals. Try a shorter target!",
+        description: "Small teams usually focus on yearly goals. Try a shorter target!",
       });
       setIsSubmitting(false);
       return;

@@ -69,9 +69,7 @@ export const PaceTracker = ({
           </h3>
         </div>
         <div className="flex flex-col items-center justify-center space-y-3 mt-6">
-          <LucideAlertTriangle
-            className={cn("w-8 h-8 text-primary opacity-50")}
-          />
+          <LucideAlertTriangle className={cn("w-8 h-8 text-primary opacity-50")} />
           <p className="text-xs text-muted-foreground leading-relaxed text-center px-7">
             Your workspace atleast have{" "}
             <span className="text-primary">6 tasks and 3 days of history</span>{" "}
@@ -81,6 +79,7 @@ export const PaceTracker = ({
       </div>
     );
   }
+
 
   // READY STATE
   const gap = timeConsumedPct - taskCompletedPct; // Positive means Behind
@@ -205,6 +204,7 @@ export const PaceTracker = ({
 
       {/* STATS FOOTER */}
       <div className="mt-3">
+
         <div className="grid grid-cols-4 gap-1.5">
           <div className="bg-accent/60 rounded-lg p-2 border border-accent max-h-[48px] flex flex-col justify-center">
             <div className="text-base font-bold font-mono text-neutral-900 dark:text-white tracking-tight leading-none mb-0.5">
@@ -241,6 +241,7 @@ export const PaceTracker = ({
             </div>
           </div>
         </div>
+
       </div>
     </div>
   );

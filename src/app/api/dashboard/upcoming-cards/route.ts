@@ -28,17 +28,8 @@ export async function GET(req: NextRequest) {
   // Check cache (skip if ?refresh=true is passed)
   const forceRefresh = req.nextUrl.searchParams.get("refresh") === "true";
   const cached = cache.get(userId);
-  const isStaleCache =
-    cached &&
-    cached.data.deadlines &&
-    cached.data.deadlines.length > 0 &&
-    !("role" in cached.data.deadlines[0]);
-  if (
-    !forceRefresh &&
-    cached &&
-    !isStaleCache &&
-    Date.now() - cached.timestamp < CACHE_TTL
-  ) {
+  const isStaleCache = cached && cached.data.deadlines && cached.data.deadlines.length > 0 && !("role" in cached.data.deadlines[0]);
+  if (!forceRefresh && cached && !isStaleCache && Date.now() - cached.timestamp < CACHE_TTL) {
     console.log("==========CACHED HIT FOR DASHBOARD CARDS===============");
     return NextResponse.json(cached.data);
   }
