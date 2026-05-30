@@ -26,6 +26,7 @@ import type * as scheduler from "../scheduler.js";
 import type * as sprint from "../sprint.js";
 import type * as stripe from "../stripe.js";
 import type * as support from "../support.js";
+import type * as teamspaceAgents from "../teamspaceAgents.js";
 import type * as user from "../user.js";
 import type * as workspace from "../workspace.js";
 
@@ -54,6 +55,7 @@ declare const fullApi: ApiFromModules<{
   sprint: typeof sprint;
   stripe: typeof stripe;
   support: typeof support;
+  teamspaceAgents: typeof teamspaceAgents;
   user: typeof user;
   workspace: typeof workspace;
 }>;

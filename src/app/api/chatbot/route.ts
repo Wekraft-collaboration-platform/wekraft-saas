@@ -215,14 +215,14 @@ export async function POST(req: Request) {
         }
 
         const apiKey = process.env.OPENAI_API_KEY;
-        if (apiKey) {
-            console.log(
-                "Chatbot OpenAI Key used (first 10 + last 4):",
-                `${apiKey.slice(0, 10)}...${apiKey.slice(-4)}`,
-            );
-        } else {
-            console.log("No API Key found in process.env.OPENAI_API_KEY!");
-        }
+        // if (apiKey) {
+        //     console.log(
+        //         "Chatbot OpenAI Key used (first 10 + last 4):",
+        //         `${apiKey.slice(0, 10)}...${apiKey.slice(-4)}`,
+        //     );
+        // } else {
+        //     console.log("No API Key found in process.env.OPENAI_API_KEY!");
+        // }
 
         const customOpenai = createOpenAI({
             apiKey: apiKey,
