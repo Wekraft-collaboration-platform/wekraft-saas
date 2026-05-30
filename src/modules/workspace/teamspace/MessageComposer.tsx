@@ -16,6 +16,7 @@
 "use client";
 
 import { useState, useRef, useCallback, KeyboardEvent, useEffect } from "react";
+import Image from "next/image";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import {
@@ -31,6 +32,7 @@ import {
   FileIcon,
   TicketSlash,
   Save,
+  ChevronDown,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -94,6 +96,8 @@ export function MessageComposer({
   projectSlug,
 }: Props) {
   const [content, setContent] = useState("");
+  const [activeAgent, setActiveAgent] = useState<"kaya" | "harry">("kaya");
+  const [agentDropdownOpen, setAgentDropdownOpen] = useState(false);
   const [isPollDialogOpen, setIsPollDialogOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const captionTextareaRef = useRef<HTMLTextAreaElement>(null);
@@ -183,19 +187,30 @@ export function MessageComposer({
 
   const selectedMember = members?.find((m) => m.userId === ticketAssigneeId);
 
+  // AI agents shown at top of mention dropdown
+  const agentEntries = [
+    ...("kaya".includes(mentionQuery.toLowerCase())
+      ? [{ _id: "kaya-bot", userName: "kaya", AccessRole: "AI PM Agent", userImage: "/kaya.svg", role: "ai" }]
+      : []),
+    ...("harry".includes(mentionQuery.toLowerCase())
+      ? [{ _id: "harry-bot", userName: "harry", AccessRole: "AI Dev Agent", userImage: "/harry.svg", role: "ai" }]
+      : []),
+  ];
+
   const filteredMembers = [
+    ...agentEntries,
     ...(mentionQuery.toLowerCase() === "e" ||
-    mentionQuery.toLowerCase() === "ev" ||
-    "everyone".includes(mentionQuery.toLowerCase())
+      mentionQuery.toLowerCase() === "ev" ||
+      "everyone".includes(mentionQuery.toLowerCase())
       ? [
-          {
-            _id: "everyone",
-            userName: "everyone",
-            AccessRole: "Notify everyone in project",
-            userImage: undefined,
-            role: "system",
-          },
-        ]
+        {
+          _id: "everyone",
+          userName: "everyone",
+          AccessRole: "Notify everyone in project",
+          userImage: undefined,
+          role: "system",
+        },
+      ]
       : []),
     ...(members?.filter(
       (m) =>
@@ -617,16 +632,16 @@ export function MessageComposer({
                         "h-10 w-10 rounded-full flex items-center justify-center shadow-sm transition-transform duration-200 group-hover:scale-110 group-active:scale-95",
                         item.color,
                         uploadingMedia &&
-                          item.label === "Media (Max 10MB)" &&
-                          "opacity-70 cursor-not-allowed",
+                        item.label === "Media (Max 10MB)" &&
+                        "opacity-70 cursor-not-allowed",
                       )}
                     >
                       <item.icon
                         className={cn(
                           "h-[18px] w-[18px]",
                           uploadingMedia &&
-                            item.label === "Media (Max 10MB)" &&
-                            "animate-spin",
+                          item.label === "Media (Max 10MB)" &&
+                          "animate-spin",
                         )}
                       />
                     </div>
@@ -726,7 +741,20 @@ export function MessageComposer({
                   charBeforeAt === " " ||
                   charBeforeAt === "\n";
 
-                if (validStart && !textAfterAt.includes(" ")) {
+                // --- @kaya / @harry intercept — never show member dropdown ---
+                const lowerAfterAt = textAfterAt.toLowerCase();
+                if (validStart && lowerAfterAt === "kaya") {
+                  setActiveAgent("kaya");
+                  setShowMentions(false);
+                  setMentionStartIndex(-1);
+                  setShowCodeLinker(false);
+                } else if (validStart && lowerAfterAt === "harry") {
+                  setActiveAgent("harry");
+                  toast.info("Harry is coming soon!", { duration: 3000 });
+                  setShowMentions(false);
+                  setMentionStartIndex(-1);
+                  setShowCodeLinker(false);
+                } else if (validStart && !textAfterAt.includes(" ")) {
                   setMentionQuery(textAfterAt);
                   setShowMentions(true);
                   setMentionIndex(0);
@@ -814,10 +842,11 @@ export function MessageComposer({
                           </Avatar>
                           <div className="flex flex-col min-w-0">
                             <span
-                              className="text-[13px] font-semibold truncate leading-tight"
-                              style={{
-                                color: getUserColor(member.userName || ""),
-                              }}
+                              className={cn(
+                                "text-[13px] font-semibold truncate leading-tight",
+                                (member as any).role === "ai" ? "text-white" : "",
+                              )}
+                              style={(member as any).role !== "ai" ? { color: getUserColor(member.userName || "") } : undefined}
                             >
                               {member.userName}
                             </span>
@@ -838,6 +867,70 @@ export function MessageComposer({
               )}
           </AnimatePresence>
         </div>
+
+        {/* AI Agent Selector — right side dropdown */}
+        <Popover open={agentDropdownOpen} onOpenChange={setAgentDropdownOpen}>
+          <PopoverTrigger asChild>
+            <button
+              type="button"
+              disabled={disabled}
+              className={cn(
+                "flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] font-medium transition-all duration-200 border select-none shrink-0 text-foreground border-border bg-accent! hover:bg-muted/60",
+                disabled && "opacity-40 cursor-not-allowed",
+              )}
+            >
+              <Image
+                src={activeAgent === "kaya" ? "/kaya.svg" : "/harry.svg"}
+                alt={activeAgent === "kaya" ? "Kaya" : "Harry"}
+                width={20}
+                height={20}
+                className="shrink-0"
+              />
+              <span className="capitalize">{activeAgent}</span>
+              <ChevronDown className="h-4 w-4" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent
+            side="top"
+            align="end"
+            sideOffset={8}
+            className="w-44 p-1.5 bg-card backdrop-blur-xl border-border space-y-3 shadow-2xl rounded-xl"
+          >
+            <p className="text-sm text-center border-b border-accent mb-2 text-muted-foreground px-2 py-1">AI Assistant</p>
+            {([
+              { id: "kaya", label: "Kaya", svg: "/kaya.svg", desc: "AI PM Agent", color: "text-white" },
+              { id: "harry", label: "Harry", svg: "/harry.svg", desc: "AI Dev Agent", color: "text-white" },
+            ] as const).map((agent) => (
+              <button
+                key={agent.id}
+                type="button"
+                onClick={() => {
+                  setActiveAgent(agent.id);
+                  setAgentDropdownOpen(false);
+                  // Swap prefix in textarea
+                  setContent((c) => {
+                    const stripped = c.replace(/^@kaya\s*/i, "").replace(/^@harry\s*/i, "");
+                    return `@${agent.id} ${stripped}`;
+                  });
+                  setTimeout(() => textareaRef.current?.focus(), 10);
+                }}
+                className={cn(
+                  "w-full flex items-center gap-4 px-2 py-1 rounded-md text-left transition-colors hover:bg-accent/60",
+                  activeAgent === agent.id && "bg-accent/50",
+                )}
+              >
+                <Image src={agent.svg} alt={agent.label} width={16} height={16} className="shrink-0" />
+                <div className="flex flex-col space-y-1">
+                  <span className="text-[12px] font-medium leading-tight text-foreground">{agent.label}</span>
+                  <span className="text-[10px] text-muted-foreground leading-tight">{agent.desc}</span>
+                </div>
+                {activeAgent === agent.id && (
+                  <span className="ml-auto text-[9px] text-muted-foreground">✓</span>
+                )}
+              </button>
+            ))}
+          </PopoverContent>
+        </Popover>
 
         {/* Send button */}
         <div className="flex items-center shrink-0 pr-1">
