@@ -8,18 +8,9 @@
 
 import { useState, useEffect } from "react";
 import Ably from "ably";
+import { getAblyClient } from "@/lib/ably";
 
-let ablyClient: Ably.Realtime | null = null;
 
-function getAblyClient(): Ably.Realtime {
-  if (!ablyClient) {
-    ablyClient = new Ably.Realtime({
-      authUrl: "/api/teamspace/ably-token",
-      authMethod: "GET",
-    });
-  }
-  return ablyClient;
-}
 
 export function usePresence(projectId: string | null, currentUserId: string, currentUserName?: string) {
   const [onlineIds, setOnlineIds] = useState<Set<string>>(new Set());

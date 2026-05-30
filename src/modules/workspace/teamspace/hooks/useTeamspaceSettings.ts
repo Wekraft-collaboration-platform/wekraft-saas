@@ -2,6 +2,7 @@
 
 import { useState, useEffect, useCallback } from "react";
 import Ably from "ably";
+import { getAblyClient } from "@/lib/ably";
 
 export interface TeamspaceSettings {
   project_id: string;
@@ -11,17 +12,7 @@ export interface TeamspaceSettings {
   updated_at: number;
 }
 
-let ablyClient: Ably.Realtime | null = null;
 
-function getAblyClient(): Ably.Realtime {
-  if (!ablyClient) {
-    ablyClient = new Ably.Realtime({
-      authUrl: "/api/teamspace/ably-token",
-      authMethod: "GET",
-    });
-  }
-  return ablyClient;
-}
 
 export function useTeamspaceSettings(projectId: string) {
   const [settings, setSettings] = useState<TeamspaceSettings | null>(null);

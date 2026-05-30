@@ -17,6 +17,8 @@
 
 import { useState, useEffect, useCallback, useRef } from "react";
 import Ably from "ably";
+import { getAblyClient } from "@/lib/ably";
+
 
 export interface Channel {
   id: string;
@@ -32,17 +34,7 @@ export interface Channel {
   mention_count?: number;
 }
 
-let ablyClient: Ably.Realtime | null = null;
 
-function getAblyClient(): Ably.Realtime {
-  if (!ablyClient) {
-    ablyClient = new Ably.Realtime({
-      authUrl: "/api/teamspace/ably-token",
-      authMethod: "GET",
-    });
-  }
-  return ablyClient;
-}
 
 export function useChannels(
   projectId: string,
