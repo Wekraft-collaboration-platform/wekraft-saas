@@ -13,7 +13,7 @@ At its core, Wekraft is:
 
 - **A project management hub** — tasks, issues, sprints, calendars, and team spaces all in one place
 - **A developer-first tool** — deep VS Code extension integration means you manage work without leaving your editor
-- **An AI-powered assistant** — Kaya, the built-in AI, plans sprints, analyzes workloads, and generates daily standups automatically
+- **An AI-powered platform** — Kaya PM Agent and Harry Dev Agent handle planning, code reviews, and automation
 - **A real-time platform** — every change syncs instantly across all connected clients with zero page refreshes
 
 ## Core Concepts
@@ -58,13 +58,44 @@ Here is a typical workflow for a team using Wekraft:
 
 When you log in, the main dashboard shows three tabs:
 
-| Tab          | What it shows                                                                                         |
-| ------------ | ----------------------------------------------------------------------------------------------------- |
-| **Stats**    | GitHub metrics (commits, PRs, merged PRs), notification feed, upcoming deadlines, and upcoming events |
-| **Projects** | A grid of all projects you own or have joined — click any to enter its workspace                      |
-| **Discover** | Community projects (coming soon) — explore and collaborate with others worldwide                      |
+| Tab | What it shows |
+| --- | --- |
+| **Stats** | GitHub metrics (commits, PRs, merged PRs), notification feed, upcoming deadlines, and upcoming events |
+| **Projects** | A grid of all projects you own or have joined — click any to enter its workspace |
+| **Discover** | Community projects — explore and collaborate with others worldwide |
 
 The dashboard also displays a **Getting Started Checklist** for new users, guiding you through every key setup step with a progress tracker.
+
+---
+
+## AI Agents
+
+Wekraft ships with two built-in AI agents, each with a distinct role:
+
+### Kaya PM Agent
+
+**Kaya** is your AI-native Product Manager. She possesses full context of your project — tasks, sprints, Git activity, and team workloads — and operates like a human PM at machine speed.
+
+- Automated sprint planning from backlog
+- Intelligent reporting & stakeholder summaries
+- Backlog grooming, triage, and task creation
+- Full workspace management (create screens, assign tasks)
+- Team Space integration — mention **@Kaya** in chat and she replies like a teammate
+
+Access Kaya via the AI Workspace tab, the floating chat bubble, or `Ctrl+K` / `Cmd+K`.
+
+### Harry Dev Agent
+
+**Harry** is your AI-native Dev Agent. He monitors your codebase, detects bugs, conducts autonomous web research, and acts as a vigilant guardian over your repository's health.
+
+- Continuous codebase monitoring & indexing
+- Proactive bug detection and root cause analysis
+- AI-driven web research for unknown dependencies
+- Code review with PR comments and fix suggestions
+- Two modes: **Harry Fast** (quick answers) and **Harry Deep** (full codebase analysis)
+
+> [!NOTE]
+> Both Kaya and Harry are **Pro plan** features. Harry is currently under active development.
 
 ---
 
@@ -72,16 +103,17 @@ The dashboard also displays a **Getting Started Checklist** for new users, guidi
 
 Wekraft offers three plans:
 
-| Feature             | Free      | Plus      | Pro               |
-| ------------------- | --------- | --------- | ----------------- |
-| Projects (owned)    | 2         | 10        | 20                |
-| Projects (joined)   | 2         | 10        | 20                |
-| Members per project | 3         | 5         | 15                |
-| Kaya AI             | —         | —         | 50 calls/mo       |
-| VS Code Extension   | Read-only | Read-only | Full Two-Way Sync |
-| Advanced Analytics  | —         | ✓         | ✓                 |
-| Team Heatmaps       | Limited   | Limited   | Full              |
-| Priority support    | —         | —         | ✓                 |
+| Feature | Free | Plus | Pro |
+| --- | --- | --- | --- |
+| Projects (owned) | 2 | 10 | 20 |
+| Projects (joined) | 2 | 10 | 20 |
+| Members per project | 3 | 5 | 15 |
+| Kaya AI | — | — | 300 calls/mo |
+| Harry Dev Agent | — | — | ✓ |
+| VS Code Extension | Read-only | Read-only | Full Two-Way Sync |
+| Advanced Analytics | — | ✓ | ✓ |
+| Team Heatmaps | Limited | Limited | Full |
+| Priority support | — | — | ✓ |
 
 > [!NOTE]
 > Free and Plus users can still use the VS Code extension for task viewing. Full two-way sync (completing tasks, logging time from the IDE) requires a Pro plan.
@@ -98,9 +130,9 @@ Link a repository to your project to automatically sync GitHub Issues as Wekraft
 
 The Wekraft extension for VS Code is available in the [VS Code Marketplace](https://marketplace.visualstudio.com). After a one-click authentication handshake, your assigned tasks appear directly in your editor sidebar. See the [VS Code Extension guide](/web/docs/extension) for setup instructions.
 
-### Kaya AI (PM Agent)
+### Team Meet
 
-Kaya is Wekraft's built-in AI agent available to Pro users. It can plan and create sprints from your backlog, analyze team workloads, generate daily standup reports, and predict sprint completion risks — all without leaving the dashboard. Access Kaya via the AI Workspace tab, the floating chat bubble, or the `Ctrl+K` / `Cmd+K` command palette.
+**Team Meet** lets your team collaborate in real-time through video call rooms built directly into the platform — no external tools needed. Start a call from the Team Space and bring your whole team together instantly.
 
 ---
 
@@ -110,4 +142,6 @@ Kaya is Wekraft's built-in AI agent available to Pro users. It can plan and crea
 - [Install the VS Code Extension →](/web/docs/extension)
 - [Create your first project →](/web/docs/projects)
 - [Plan your first sprint →](/web/docs/sprints)
+- [Meet Kaya PM Agent →](/web/docs/kaya-pm)
+- [Meet Harry Dev Agent →](/web/docs/harry-dev)
 - [Explore keyboard shortcuts →](/web/docs/shortcuts)

@@ -175,7 +175,7 @@ function SidebarCategory({
         onClick={() => setIsOpen(!isOpen)}
         className="w-full flex items-center justify-between px-3 py-1.5 group cursor-pointer"
       >
-        <h3 className="text-[10px] font-semibold uppercase tracking-widest text-white/25 group-hover:text-white/40 transition-colors">
+        <h3 className="text-[10px] font-semibold uppercase tracking-widest text-[#525252] group-hover:text-[#a3a3a3] transition-colors">
           {category}
         </h3>
         <ChevronDown
@@ -207,7 +207,7 @@ function SidebarCategory({
                     "group relative overflow-hidden flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all duration-150 min-w-0",
                     isActive
                       ? "text-white font-medium"
-                      : "text-white/45 hover:bg-white/4 hover:text-white/80",
+                      : "text-[#a3a3a3] hover:bg-white/4 hover:text-[#e5e5e5]",
                   )}
                 >
                   <span
@@ -223,7 +223,7 @@ function SidebarCategory({
                       "h-3.5 w-3.5 shrink-0 transition-colors",
                       isActive
                         ? "text-white"
-                        : "text-white/25 group-hover:text-white/50",
+                        : "text-[#525252] group-hover:text-[#a3a3a3]",
                     )}
                   />
                   <SidebarItemText title={item.title} isActive={isActive} />
