@@ -58,11 +58,11 @@ Here is a typical workflow for a team using Wekraft:
 
 When you log in, the main dashboard shows three tabs:
 
-| Tab | What it shows |
-| --- | --- |
-| **Stats** | GitHub metrics (commits, PRs, merged PRs), notification feed, upcoming deadlines, and upcoming events |
-| **Projects** | A grid of all projects you own or have joined — click any to enter its workspace |
-| **Discover** | Community projects — explore and collaborate with others worldwide |
+| Tab          | What it shows                                                                                         |
+| ------------ | ----------------------------------------------------------------------------------------------------- |
+| **Stats**    | GitHub metrics (commits, PRs, merged PRs), notification feed, upcoming deadlines, and upcoming events |
+| **Projects** | A grid of all projects you own or have joined — click any to enter its workspace                      |
+| **Discover** | Community projects — explore and collaborate with others worldwide                                    |
 
 The dashboard also displays a **Getting Started Checklist** for new users, guiding you through every key setup step with a progress tracker.
 
@@ -103,17 +103,17 @@ Access Kaya via the AI Workspace tab, the floating chat bubble, or `Ctrl+K` / `C
 
 Wekraft offers three plans:
 
-| Feature | Free | Plus | Pro |
-| --- | --- | --- | --- |
-| Projects (owned) | 2 | 10 | 20 |
-| Projects (joined) | 2 | 10 | 20 |
-| Members per project | 3 | 5 | 15 |
-| Kaya AI | — | — | 300 calls/mo |
-| Harry Dev Agent | — | — | ✓ |
-| VS Code Extension | Read-only | Read-only | Full Two-Way Sync |
-| Advanced Analytics | — | ✓ | ✓ |
-| Team Heatmaps | Limited | Limited | Full |
-| Priority support | — | — | ✓ |
+| Feature             | Free      | Plus      | Pro               |
+| ------------------- | --------- | --------- | ----------------- |
+| Projects (owned)    | 2         | 10        | 20                |
+| Projects (joined)   | 2         | 10        | 20                |
+| Members per project | 3         | 5         | 15                |
+| Kaya AI             | —         | —         | 300 calls/mo      |
+| Harry Dev Agent     | —         | —         | ✓                 |
+| VS Code Extension   | Read-only | Read-only | Full Two-Way Sync |
+| Advanced Analytics  | —         | ✓         | ✓                 |
+| Team Heatmaps       | Limited   | Limited   | Full              |
+| Priority support    | —         | —         | ✓                 |
 
 > [!NOTE]
 > Free and Plus users can still use the VS Code extension for task viewing. Full two-way sync (completing tasks, logging time from the IDE) requires a Pro plan.
