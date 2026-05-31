@@ -180,6 +180,18 @@ const RequestCard = ({ request, isPower, onAction, isLimitReached, onLimitReache
               >
                 <User2 className="w-3 h-3 mr-1" /> Visit Profile
               </Badge>
+              {request.role && (
+                <Badge
+                  variant="outline"
+                  className={`text-[10px] px-2.5 py-1 h-6! font-bold transition-all ${
+                    request.role === "admin"
+                      ? "bg-amber-500/10 text-amber-500 border-amber-500/20 hover:bg-amber-500/20"
+                      : "bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500/20"
+                  }`}
+                >
+                  {request.role === "admin" ? "Admin" : "Member"}
+                </Badge>
+              )}
               {!isPending && (
                 <Badge
                   variant={request.status === "accepted" ? "default" : "destructive"}

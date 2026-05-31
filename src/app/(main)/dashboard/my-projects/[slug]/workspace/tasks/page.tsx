@@ -242,6 +242,7 @@ const TaskPage = () => {
           {/* Invite Button */}
           <InviteDialog
             inviteLink={projectInviteLink}
+            projectName={projectName}
             trigger={
               <Button
                 className="text-xs cursor-pointer px-4 bg-blue-600 text-white hover:bg-blue-700"
