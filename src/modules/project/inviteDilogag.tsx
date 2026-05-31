@@ -193,14 +193,15 @@ export function InviteDialog({ inviteLink, projectName, trigger, open, onOpenCha
           </div>
 
           {/* Copy Invite Link Option */}
-          <button
+          <Button
+            variant="outline"
             onClick={handleCopy}
             disabled={!fullInviteLink}
-            className="flex items-center justify-center gap-1.5 mx-auto text-xs text-zinc-400 hover:text-white hover:underline transition-colors font-medium cursor-pointer pt-2"
+            className="flex items-center justify-center gap-1.5 mx-auto text-xs text-white bg-transparent border border-white hover:bg-white hover:text-black transition-all font-semibold cursor-pointer w-fit px-8 h-9 rounded-md mt-4"
           >
             <Link2 className="w-3.5 h-3.5" />
             {copied ? "Copied invite link!" : "Copy invite link"}
-          </button>
+          </Button>
         </div>
 
         <div className="bg-[#111111] px-6 py-4 flex items-center justify-between border-t border-[#333333]">
