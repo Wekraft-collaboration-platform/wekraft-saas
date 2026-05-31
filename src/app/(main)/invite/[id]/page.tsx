@@ -296,7 +296,15 @@ export default function InvitePage() {
                   ) : (
                     <Button
                       className="w-full h-10 rounded-lg text-sm font-semibold group bg-primary text-primary-foreground"
-                      onClick={() => router.push("/auth")}
+                      onClick={() => {
+                        if (typeof window !== "undefined") {
+                          sessionStorage.setItem(
+                            "wekraft_post_login_redirect",
+                            window.location.pathname + window.location.search
+                          );
+                        }
+                        router.push("/auth");
+                      }}
                     >
                       Login to Continue
                       <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />

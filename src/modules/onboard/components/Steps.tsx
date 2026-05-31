@@ -212,7 +212,13 @@ export function MultiStepOnboarding() {
       if (currentStep === 5) {
         await completeOnboarding();
         toast.success("Welcome to WeKraft!");
-        router.push("/dashboard");
+        const postLoginRedirect = typeof window !== "undefined" ? sessionStorage.getItem("wekraft_post_login_redirect") : null;
+        if (postLoginRedirect) {
+          typeof window !== "undefined" && sessionStorage.removeItem("wekraft_post_login_redirect");
+          router.push(postLoginRedirect);
+        } else {
+          router.push("/dashboard");
+        }
         return;
       }
 
@@ -559,7 +565,7 @@ export function MultiStepOnboarding() {
                       <div className="flex gap-4">
                         <Input
                           readOnly
-                          value={`${INVITE_LINK}${generatedInviteLink}`}
+                          value={`${INVITE_LINK}invite/${generatedInviteLink}`}
                           className="flex-1 bg-neutral-900! h-11 text-sm tracking-tight border border-zinc-800! rounded-sm focus-visible:ring-1 focus-visible:ring-zinc-500/25!"
                         />
                         <Button
@@ -568,7 +574,7 @@ export function MultiStepOnboarding() {
                           className="bg-zinc-900 hover:bg-zinc-900/60 h-11 text-white px-5! text-xs border border-zinc-700/80 rounded-sm cursor-pointer transition-all"
                           onClick={() => {
                             navigator.clipboard.writeText(
-                              `${INVITE_LINK}${generatedInviteLink}`,
+                              `${INVITE_LINK}invite/${generatedInviteLink}`,
                             );
                             toast.success("Link copied to clipboard!");
                           }}
