@@ -8,6 +8,9 @@ import {
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
+  SidebarMenuSub,
+  SidebarMenuSubButton,
+  SidebarMenuSubItem,
   useSidebar,
 } from "@/components/ui/sidebar";
 import Link from "next/link";
@@ -63,6 +66,8 @@ import {
   UserPlus,
   Users,
   Wallet,
+  Check,
+  Copy,
 } from "lucide-react";
 
 import {
@@ -85,6 +90,14 @@ import { ThemeButtons } from "./ThemeButton";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import CreateProjectDialog from "@/modules/project/CreateProjectDialog";
+import { HelpSupportDialog } from "@/modules/dashboard/components/HelpSupportDialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
 
 export const AppSidebar = () => {
   const { theme, setTheme } = useTheme();
@@ -96,6 +109,19 @@ export const AppSidebar = () => {
   const user: Doc<"users"> | undefined | null = useQuery(
     api.user.getCurrentUser,
   );
+
+  const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [isReferralOpen, setIsReferralOpen] = useState(false);
+  const [copied, setCopied] = useState(false);
+
+  const handleCopyReferral = () => {
+    if (user?.referalCreated) {
+      navigator.clipboard.writeText(user.referalCreated);
+      setCopied(true);
+      toast.success("Referral code copied to clipboard!");
+      setTimeout(() => setCopied(false), 2000);
+    }
+  };
 
   const ownerProjects = useQuery(api.project.getUserProjects);
   const teamProjects = useQuery(api.project.getJoinedProjects);
@@ -505,6 +531,34 @@ export const AppSidebar = () => {
             </Link>
           </SidebarMenuButton>
 
+          {/* Help & Support */}
+          <SidebarMenuButton
+            tooltip="Help & Support"
+            onClick={() => setIsHelpOpen(true)}
+            className="group relative overflow-hidden cursor-pointer"
+          >
+            <div className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center">
+              <Compass className="h-5 w-5" />
+              <span className="text-sm group-data-[collapsible=icon]:hidden font-medium">
+                Help & Support
+              </span>
+            </div>
+          </SidebarMenuButton>
+
+          {/* My Referral */}
+          <SidebarMenuButton
+            tooltip="My Referral"
+            onClick={() => setIsReferralOpen(true)}
+            className="group relative overflow-hidden cursor-pointer"
+          >
+            <div className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center">
+              <Gift className="h-5 w-5" />
+              <span className="text-sm group-data-[collapsible=icon]:hidden font-medium">
+                My Referral
+              </span>
+            </div>
+          </SidebarMenuButton>
+
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter className="border-t border-accent px-2 py-2 group-data-[collapsible=icon]:hidden">
@@ -625,6 +679,48 @@ export const AppSidebar = () => {
           </div>
         )}
       </SidebarFooter>
+      <HelpSupportDialog open={isHelpOpen} onOpenChange={setIsHelpOpen} />
+
+      <Dialog open={isReferralOpen} onOpenChange={setIsReferralOpen}>
+        <DialogContent className="sm:max-w-md bg-zinc-950 border border-zinc-800 rounded-xl shadow-2xl p-6 font-sans">
+          <DialogHeader className="space-y-1">
+            <DialogTitle className="text-xl font-bold text-white flex items-center gap-2">
+              <Gift className="h-5 w-5 text-blue-500 shrink-0" />
+              My Referral
+            </DialogTitle>
+            <DialogDescription className="text-xs text-zinc-400 leading-relaxed">
+              copy and share with others , once they signed up u can have a achnage to get paid. leanr more -{">"}{" "}
+              <Link
+                href="/docs"
+                className="text-blue-500 hover:underline inline-flex"
+                onClick={() => setIsReferralOpen(false)}
+              >
+                docs.
+              </Link>
+            </DialogDescription>
+          </DialogHeader>
+          <div className="flex flex-col gap-4 mt-4">
+            <div className="flex items-center gap-2 bg-[#0f0f12] border border-zinc-800 rounded-lg p-2.5">
+              <span className="flex-1 font-mono text-sm tracking-wider text-zinc-200 select-all px-1">
+                {user?.referalCreated || "Generating..."}
+              </span>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="h-8 w-8 p-0 hover:bg-zinc-900 transition-colors shrink-0"
+                onClick={handleCopyReferral}
+                disabled={!user?.referalCreated}
+              >
+                {copied ? (
+                  <Check className="h-4 w-4 text-emerald-500" />
+                ) : (
+                  <Copy className="h-4 w-4 text-zinc-400" />
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </Sidebar>
   );
 };
