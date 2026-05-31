@@ -24,6 +24,8 @@ import {
   Sun,
   TrendingUp,
   User,
+  ChevronDown,
+  Link2,
 } from "lucide-react";
 import { nanoid } from "nanoid";
 import Image from "next/image";
@@ -36,6 +38,12 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
 import { INVITE_LINK, PROJECT_STATUS, ROLES } from "@/lib/static-store";
 import { cn } from "@/lib/utils";
 import { api } from "../../../../convex/_generated/api";
@@ -133,6 +141,76 @@ export function MultiStepOnboarding() {
   const [projectStatus, setProjectStatus] = useState("");
   const [generatedInviteLink, setGeneratedInviteLink] = useState("");
 
+  // Step 5: Invite
+  const [email, setEmail] = useState("");
+  const [inviting, setInviting] = useState(false);
+  const [role, setRole] = useState<"member" | "admin">("member");
+  const [copied, setCopied] = useState(false);
+
+  const fullInviteLink = generatedInviteLink ? `${INVITE_LINK}invite/${generatedInviteLink}?role=${role}` : "";
+
+  const isValidEmail = (val: string) => {
+    return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
+  };
+
+  const handleCopy = () => {
+    if (!fullInviteLink) return;
+    navigator.clipboard.writeText(fullInviteLink);
+    setCopied(true);
+    toast.success("Invite link copied!", {
+      style: {
+        background: "var(--popover)",
+        color: "var(--popover-foreground)",
+        border: "1px solid var(--border)",
+      }
+    });
+    setTimeout(() => setCopied(false), 2000);
+  };
+
+  const handleInvite = async () => {
+    if (!isValidEmail(email)) return;
+    setInviting(true);
+    try {
+      const res = await fetch("/api/invite/send", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          to: email,
+          projectName: projectName || "WeKraft Project",
+          inviteLink: fullInviteLink,
+          role: role,
+        }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to send invitation email");
+      }
+
+      toast.success(`Invitation sent to ${email}`, {
+        style: {
+          background: "var(--popover)",
+          color: "var(--popover-foreground)",
+          border: "1px solid var(--border)",
+        }
+      });
+      setEmail("");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to send invitation. Please try again.", {
+        style: {
+          background: "var(--popover)",
+          color: "var(--popover-foreground)",
+          border: "1px solid var(--border)",
+        }
+      });
+    } finally {
+      setInviting(false);
+    }
+  };
+
   const selectedTheme = "dark";
 
   const handleNext = async () => {
@@ -212,7 +290,13 @@ export function MultiStepOnboarding() {
       if (currentStep === 5) {
         await completeOnboarding();
         toast.success("Welcome to WeKraft!");
-        router.push("/dashboard");
+        const postLoginRedirect = typeof window !== "undefined" ? sessionStorage.getItem("wekraft_post_login_redirect") : null;
+        if (postLoginRedirect) {
+          typeof window !== "undefined" && sessionStorage.removeItem("wekraft_post_login_redirect");
+          router.push(postLoginRedirect);
+        } else {
+          router.push("/dashboard");
+        }
         return;
       }
 
@@ -344,7 +428,7 @@ export function MultiStepOnboarding() {
                             className={cn(
                               "flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all duration-200 cursor-pointer h-18 select-none",
                               selected
-                                ? "bg-zinc-900/40! border-zinc-550! text-zinc-100! shadow-[0_0_12px_rgba(255,255,255,0.015)]"
+                                ? "bg-white/5! border-white/20! text-zinc-100! shadow-[0_0_12px_rgba(255,255,255,0.015)]"
                                 : "bg-[#0f0f12]! border-zinc-800! text-zinc-300 hover:border-zinc-700! hover:bg-zinc-900/10! hover:text-white",
                             )}
                           >
@@ -551,48 +635,60 @@ export function MultiStepOnboarding() {
 
                 {/* STEP 5 */}
                 {currentStep === 5 && (
-                  <div className="space-y-4 font-sans">
-                    <div className="space-y-1.5">
-                      <Label className="text-base text-zinc-300 font-medium">
-                        Project Invite Link
-                      </Label>
-                      <div className="flex gap-4">
-                        <Input
-                          readOnly
-                          value={`${INVITE_LINK}${generatedInviteLink}`}
-                          className="flex-1 bg-neutral-900! h-11 text-sm tracking-tight border border-zinc-800! rounded-sm focus-visible:ring-1 focus-visible:ring-zinc-500/25!"
-                        />
-                        <Button
-                          variant="default"
-                          size="sm"
-                          className="bg-zinc-900 hover:bg-zinc-900/60 h-11 text-white px-5! text-xs border border-zinc-700/80 rounded-sm cursor-pointer transition-all"
-                          onClick={() => {
-                            navigator.clipboard.writeText(
-                              `${INVITE_LINK}${generatedInviteLink}`,
-                            );
-                            toast.success("Link copied to clipboard!");
+                  <div className="space-y-6 font-sans bg-[#0a0a0a] border border-[#333333] shadow-[0_0_50px_rgba(0,0,0,0.8)] rounded-xl p-6 text-white animate-in fade-in duration-300">
+                    {/* Header */}
+                    <div className="space-y-1.5 text-left">
+                      <h3 className="text-lg font-bold tracking-tight text-white flex items-center gap-1.5">
+                        Invite Teammate
+                      </h3>
+                      <p className="text-zinc-400 text-xs leading-relaxed">
+                        Share this link with your team to collaborate.
+                      </p>
+                    </div>
+
+                    {/* Email Invite Section */}
+                    <div className="flex flex-col gap-2">
+                      <div className="flex items-center gap-2 p-1.5 pl-3.5 border border-[#333333] rounded-lg focus-within:border-neutral-400 focus-within:ring-1 focus-within:ring-neutral-400/30 transition-all duration-150 bg-black">
+                        <input
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && isValidEmail(email) && !inviting) {
+                              e.preventDefault();
+                              handleInvite();
+                            }
                           }}
+                          placeholder="Email address"
+                          className="border-none bg-transparent outline-none focus:outline-none focus:ring-0 focus-visible:ring-0 text-xs font-normal text-white px-1 h-10 truncate placeholder:text-zinc-500 flex-grow [&:-webkit-autofill]:transition-colors [&:-webkit-autofill]:duration-[5000000ms] [&:-webkit-autofill]:text-white"
+                        />
+
+                        <Button
+                          size="sm"
+                          onClick={handleInvite}
+                          disabled={!isValidEmail(email) || inviting}
+                          variant={isValidEmail(email) ? "default" : "secondary"}
+                          className="h-8 px-4 rounded-md text-xs font-semibold transition-all duration-150 active:scale-95 cursor-pointer border-none"
                         >
-                          <Copy className="w-3.5 h-3.5" />
-                          Copy
+                          {inviting ? (
+                            <span className="animate-in fade-in duration-200">Inviting...</span>
+                          ) : (
+                            <span className="animate-in fade-in duration-200">Invite</span>
+                          )}
                         </Button>
                       </div>
                     </div>
 
-                    <div className="flex items-center gap-3 my-5">
-                      <div className="h-[1px] flex-1 bg-zinc-800" />
-                      <span className="text-[9px] text-zinc-400 uppercase tracking-widest font-normal">
-                        Share via
-                      </span>
-                      <div className="h-[1px] flex-1 bg-zinc-800" />
-                    </div>
-
-                    <div className="">
-                      <Textarea
-                        placeholder="enter your Teammate email here...."
-                        className="resize-none bg-[#0f0f12]! border border-zinc-800! h-24! placeholder:text-zinc-500 text-neutral-100 rounded-sm focus-visible:ring-1 focus-visible:ring-zinc-500/25!"
-                      />
-                    </div>
+                    {/* Copy Invite Link Option */}
+                    <Button
+                      variant="outline"
+                      onClick={handleCopy}
+                      disabled={!fullInviteLink}
+                      className="flex items-center justify-center gap-1.5 mx-auto text-xs text-white bg-transparent border border-white hover:bg-white hover:text-black transition-all font-semibold cursor-pointer w-fit px-8 h-9 rounded-md mt-2"
+                    >
+                      <Link2 className="w-3.5 h-3.5" />
+                      {copied ? "Copied invite link!" : "Copy invite link"}
+                    </Button>
                   </div>
                 )}
               </div>

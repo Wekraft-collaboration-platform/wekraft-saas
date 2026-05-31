@@ -554,6 +554,7 @@ export const createJoinRequest = mutation({
     projectId: v.id("projects"),
     message: v.optional(v.string()),
     source: v.union(v.literal("invited"), v.literal("manual")),
+    role: v.optional(v.union(v.literal("admin"), v.literal("member"))),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -613,6 +614,7 @@ export const createJoinRequest = mutation({
       userImage: user.avatarUrl,
       message: args.message,
       source: args.source,
+      role: args.role || "member",
       status: "pending",
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -862,7 +864,7 @@ export const handleJoinRequest = mutation({
           userId: request.userId,
           userName: request.userName,
           userImage: request.userImage,
-          AccessRole: "member",
+          AccessRole: request.role || "member",
           joinedAt: Date.now(),
         });
       }

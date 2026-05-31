@@ -267,6 +267,7 @@ const IssuesPage = () => {
           {/* Invite Button */}
           <InviteDialog
             inviteLink={project.inviteLink}
+            projectName={projectName}
             trigger={
               <Button
                 className="text-xs cursor-pointer px-5! bg-blue-600 text-white hover:bg-blue-700"

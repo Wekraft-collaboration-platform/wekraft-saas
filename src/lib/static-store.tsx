@@ -292,7 +292,14 @@ export const SortPopover = ({
   </Popover>
 );
 
-export const INVITE_LINK = "https://wekraft.xyz/";
+export const INVITE_LINK =
+  (typeof window !== "undefined"
+    ? `${window.location.origin}/`
+    : process.env.NEXT_PUBLIC_APP_URL
+      ? process.env.NEXT_PUBLIC_APP_URL.endsWith("/")
+        ? process.env.NEXT_PUBLIC_APP_URL
+        : `${process.env.NEXT_PUBLIC_APP_URL}/`
+      : "http://localhost:3000/");
 
 export const NOTIFICATION_ICONS: Record<string, React.ComponentType<any>> = {
   member_joined: UserPlus,
@@ -362,7 +369,7 @@ export function renderNotificationBody(text: string): React.ReactNode {
     <span>
       {parts.map((part, i) =>
         i % 2 === 1 ? (
-          <strong key={i} className="font-semibold text-foreground">
+          <strong key={i} className="font-semibold text-inherit">
             {part}
           </strong>
         ) : (

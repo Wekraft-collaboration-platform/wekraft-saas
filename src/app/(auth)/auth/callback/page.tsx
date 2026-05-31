@@ -51,7 +51,13 @@ const AuthCallback = () => {
       // }
 
       if (user && user.hasCompletedOnboarding) {
-        router.push("/dashboard");
+        const postLoginRedirect = typeof window !== "undefined" ? sessionStorage.getItem("wekraft_post_login_redirect") : null;
+        if (postLoginRedirect) {
+          typeof window !== "undefined" && sessionStorage.removeItem("wekraft_post_login_redirect");
+          router.push(postLoginRedirect);
+        } else {
+          router.push("/dashboard");
+        }
       } else if (user) {
         router.push(`/onboard/user`);
       }

@@ -182,6 +182,7 @@ export default function TeamPage() {
           </div>
           <InviteDialog
             inviteLink={project?.inviteLink}
+            projectName={project?.projectName}
             trigger={
               <Button
                 id="invite-member-btn"

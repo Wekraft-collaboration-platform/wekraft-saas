@@ -351,6 +351,7 @@ const ProjectPage = () => {
 
           <InviteDialog
             inviteLink={projectInviteLink}
+            projectName={project.projectName}
             open={inviteOpen}
             onOpenChange={setInviteOpen}
             trigger={
