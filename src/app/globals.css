@@ -714,3 +714,16 @@
   animation: marquee-scroll 5s cubic-bezier(0.45, 0.05, 0.55, 0.95) infinite;
 }
 
+/* Logo Marquee (Hero trusted-by section) */
+@keyframes logo-marquee {
+  0% {
+    transform: translateX(0);
+  }
+  100% {
+    transform: translateX(-50%);
+  }
+}
+
+.animate-logo-marquee {
+  animation: logo-marquee 25s linear infinite;
+}

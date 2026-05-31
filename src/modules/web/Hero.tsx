@@ -1,18 +1,12 @@
 "use client";
-import React, { useState, useEffect } from "react";
-import {
-  motion,
-  AnimatePresence,
-  useScroll,
-  useTransform,
-  useSpring,
-} from "framer-motion";
-import { Spotlight } from "@/components/ui/spotlight";
+import { motion, useScroll, useSpring, useTransform } from "framer-motion";
+import { Megaphone, PlaneTakeoff } from "lucide-react";
 import Image from "next/image";
-import { FlipText } from "@/components/ui/flip-text";
-import { Button } from "@/components/ui/button";
-import { Megaphone, PlaneTakeoff, Speaker } from "lucide-react";
 import Link from "next/link";
+import React, { useEffect, useState } from "react";
+import { Button } from "@/components/ui/button";
+import { FlipText } from "@/components/ui/flip-text";
+import { Spotlight } from "@/components/ui/spotlight";
 
 const Hero = () => {
   const containerRef = React.useRef<HTMLDivElement>(null);
@@ -31,8 +25,154 @@ const Hero = () => {
   const y = useSpring(rawY, { stiffness: 80, damping: 20 });
 
   // ── Waitlist ──────────────────────────────────────────────
-  const [email, setEmail] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [_email, _setEmail] = useState("");
+  const [_loading, _setLoading] = useState(false);
+
+  // ── Floating Cursor ──────────────────────────────────────────────
+  const FloatingCursor = ({
+    name,
+    color,
+    initialX,
+    initialY,
+    isLeft = false,
+  }: {
+    name: string;
+    color: string;
+    initialX: string;
+    initialY: string;
+    isLeft?: boolean;
+  }) => {
+    const [pos, setPos] = useState({ x: 0, y: 0 });
+    const posRef = React.useRef(pos);
+    posRef.current = pos;
+
+    const [transitionSettings, setTransitionSettings] = useState<{
+      type: "spring";
+      stiffness: number;
+      damping: number;
+      mass: number;
+    }>({
+      type: "spring",
+      stiffness: 60,
+      damping: 18,
+      mass: 0.6,
+    });
+
+    useEffect(() => {
+      let timeoutId: NodeJS.Timeout;
+
+      const move = () => {
+        // Determine type of movement:
+        // 70% chance of a medium/large movement, 30% chance of a small micro-movement/wiggle
+        const isMicro = Math.random() < 0.3;
+
+        let newX = 0;
+        let newY = 0;
+        let nextDelay = 0;
+
+        if (isMicro) {
+          // Small wiggle/read adjustment
+          newX = posRef.current.x + (Math.random() - 0.5) * 45;
+          newY = posRef.current.y + (Math.random() - 0.5) * 25;
+
+          setTransitionSettings({
+            type: "spring",
+            stiffness: 85,
+            damping: 14,
+            mass: 0.4,
+          });
+          nextDelay = 800 + Math.random() * 1200; // Stay/wiggle for 0.8 - 2s
+        } else {
+          // Larger movement
+          const maxW = 380;
+          const maxH = 140;
+
+          newX = (Math.random() - 0.5) * maxW;
+          newY = (Math.random() - 0.5) * maxH;
+
+          // Randomize speed/stiffness for the spring
+          const speedMode = Math.random();
+          if (speedMode < 0.3) {
+            // Fast flick/jump
+            setTransitionSettings({
+              type: "spring",
+              stiffness: 110,
+              damping: 16,
+              mass: 0.5,
+            });
+            nextDelay = 1200 + Math.random() * 1000;
+          } else if (speedMode < 0.75) {
+            // Normal human movement
+            setTransitionSettings({
+              type: "spring",
+              stiffness: 55,
+              damping: 18,
+              mass: 0.7,
+            });
+            nextDelay = 2200 + Math.random() * 1800;
+          } else {
+            // Slow drag/glide
+            setTransitionSettings({
+              type: "spring",
+              stiffness: 22,
+              damping: 12,
+              mass: 0.9,
+            });
+            nextDelay = 3500 + Math.random() * 2000;
+          }
+        }
+
+        // Boundaries to prevent going too far off
+        // (especially preventing left cursors from going too far left, and right cursors too far right)
+        if (isLeft) {
+          newX = Math.max(-60, Math.min(320, newX));
+        } else {
+          newX = Math.max(-320, Math.min(60, newX));
+        }
+        // General vertical bounds to keep it near the heading text
+        newY = Math.max(-80, Math.min(80, newY));
+
+        setPos({ x: newX, y: newY });
+        timeoutId = setTimeout(move, nextDelay);
+      };
+
+      move();
+
+      return () => clearTimeout(timeoutId);
+    }, [isLeft]);
+
+    return (
+      <motion.div
+        className="absolute z-50 pointer-events-none"
+        style={{ top: initialY, left: initialX }}
+        animate={{
+          x: pos.x,
+          y: pos.y,
+        }}
+        transition={transitionSettings}
+      >
+        <div className="relative">
+          <svg
+            width="24"
+            height="24"
+            viewBox="0 0 24 24"
+            fill={color}
+            className={`drop-shadow-xl ${isLeft ? "scale-x-[-1]" : ""}`}
+            role="img"
+            aria-label="Cursor"
+          >
+            <path d="M3 2L21 12L13 14L11 22L3 2Z" />
+          </svg>
+          <div
+            className="mt-1 px-2.5 py-1 text-[10px] font-medium rounded-md shadow-2xl text-white whitespace-nowrap"
+            style={{ backgroundColor: color }}
+          >
+            {name}
+          </div>
+        </div>
+      </motion.div>
+    );
+  };
 
   return (
     <div
@@ -73,7 +213,7 @@ const Hero = () => {
           </span>
         </div>
 
-        <div className="flex flex-col  items-center justify-center font-pop relative px-4">
+        <div className="flex flex-col items-center justify-center font-pop relative px-4">
           <h1 className="text-white font-sans tracking-tight text-[64px] font-semibold">
             Meet The Simplest Workspace
           </h1>
@@ -82,6 +222,30 @@ const Hero = () => {
             <FlipText className="" duration={3.5}>
               Complex Projects
             </FlipText>
+          </div>
+
+          <div className="hidden min-[600px]:block">
+            <FloatingCursor
+              name="Ritesh"
+              color="#3b82f6"
+              initialX="-5%"
+              initialY="20%"
+              isLeft={true}
+            />
+            <FloatingCursor
+              name="Rox"
+              color="#6366f1"
+              initialX="100%"
+              initialY="90%"
+            />
+
+            <FloatingCursor
+              name="Sanjali"
+              color="#06b6d4"
+              initialX="-5%"
+              initialY="90%"
+              isLeft={true}
+            />
           </div>
         </div>
 
@@ -131,7 +295,7 @@ const Hero = () => {
             {/* Border frame */}
             <div className="rounded-xl overflow-hidden border border-white/10 shadow-[0_0_80px_rgba(59,130,246,0.08)]">
               <Image
-                src="/hero-img-1.jpeg"
+                src="/hero-img-new.png"
                 alt="Hero Image"
                 className="w-full h-auto block"
                 width="1920"
@@ -151,7 +315,7 @@ const Hero = () => {
             <div className="absolute -inset-x-4 -top-4 h-8 bg-blue-500/20 blur-2xl rounded-full pointer-events-none" />
             <div className="rounded-xl overflow-hidden border border-white/10 shadow-[0_0_50px_rgba(59,130,246,0.1)]">
               <Image
-                src="/hero-img1.png"
+                src="/hero-img-new.png"
                 alt="Hero Image"
                 className="w-full h-auto block"
                 width={1920}

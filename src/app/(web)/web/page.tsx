@@ -5,6 +5,7 @@ import InfraSection from "@/modules/web/infraSection";
 import Navbar from "@/modules/web/Navbar";
 import Section1 from "@/modules/web/Section1";
 import Section2 from "@/modules/web/Section2";
+import TrustedBy from "@/modules/web/TrustedBy";
 import WallOfLove from "@/modules/web/WallOfLove";
 import WhyUs from "@/modules/web/WhyUs";
 
@@ -13,6 +14,7 @@ const WebPage = () => {
     <div className="bg-black scroll-smooth selection:bg-blue-500/30 min-h-screen">
       <Navbar />
       <Hero />
+      <TrustedBy />
       <Section1 />
       <Features />
       <WhyUs />
