@@ -362,7 +362,7 @@ export function renderNotificationBody(text: string): React.ReactNode {
     <span>
       {parts.map((part, i) =>
         i % 2 === 1 ? (
-          <strong key={i} className="font-semibold text-foreground">
+          <strong key={i} className="font-semibold text-inherit">
             {part}
           </strong>
         ) : (
