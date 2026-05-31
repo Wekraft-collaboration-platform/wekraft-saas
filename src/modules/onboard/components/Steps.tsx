@@ -350,7 +350,7 @@ export function MultiStepOnboarding() {
                             className={cn(
                               "flex flex-col items-center justify-center p-3 rounded-lg border text-center transition-all duration-200 cursor-pointer h-18 select-none",
                               selected
-                                ? "bg-zinc-900/40! border-zinc-550! text-zinc-100! shadow-[0_0_12px_rgba(255,255,255,0.015)]"
+                                ? "bg-white/5! border-white/20! text-zinc-100! shadow-[0_0_12px_rgba(255,255,255,0.015)]"
                                 : "bg-[#0f0f12]! border-zinc-800! text-zinc-300 hover:border-zinc-700! hover:bg-zinc-900/10! hover:text-white",
                             )}
                           >
