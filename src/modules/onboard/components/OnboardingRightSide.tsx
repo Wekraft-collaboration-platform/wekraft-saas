@@ -568,25 +568,31 @@ export function OnboardingRightSide({
     let newLogs: string[] = [];
     if (step === 1) {
       newLogs = [
-        "STATUS: ASSEMBLY MODE // EXPLODED STATE ACTIVED",
-        "CONNECTING structural segments to launchpad turntable...",
-        "WAITING for mission pilot assignment...",
+        "STATUS: ANALYZING USER PROFILE // SOURCE SURVEY",
+        "RETRIEVING referral channels and campaign sources...",
+        "AWAITING referral validation or selection...",
       ];
     } else if (step === 2) {
+      newLogs = [
+        "STATUS: ASSEMBLY MODE // EXPLODED STATE ACTIVATED",
+        "CONNECTING structural segments to launchpad turntable...",
+        "WAITING for purpose selection registry...",
+      ];
+    } else if (step === 3) {
       newLogs = [
         "STATUS: CREW BOARDING IN PROGRESS",
         `PILOT LOGGED: ${username || clerkUser?.fullName || ROCKET_HUD_CONFIG.hudLabels.crewCardDefaultName}`,
         `BIO-SYNC ROLE: ${selectedRole || ROCKET_HUD_CONFIG.hudLabels.crewCardDefaultRole}`,
         "COMMENCING structural module docking locking sequence...",
       ];
-    } else if (step === 3) {
+    } else if (step === 4) {
       newLogs = [
         "STATUS: ALL HARDPOINTS LOCKED & DOCKED",
         `VESSEL NAME DECLARED: [${projectName || "WEKRAFT-01"}]`,
         "IGNITING fusion reactor plasma rings...",
         "CHECKING fuel rods pressure metrics [OK]",
       ];
-    } else if (step === 4) {
+    } else if (step === 5) {
       newLogs = [
         "STATUS: WARP DRIVE ENGAGED // GO FOR LAUNCH",
         "VELOCITY: OVERDRIVE warp speed index [OK]",
@@ -757,7 +763,7 @@ export function OnboardingRightSide({
       let shakeAmt = 0;
 
       if (step === 1) {
-        // Exploded view - topCap gap is reduced to prevent huge gaps
+        // Exploded view (Step 1)
         targetOffsets = {
           topCap: -220,
           upperSleeve: -145,
@@ -765,14 +771,22 @@ export function OnboardingRightSide({
           base: 190,
         };
       } else if (step === 2) {
-        // Halfways assembled - topCap gap is reduced
-        targetOffsets = { topCap: -70, upperSleeve: -45, core: 5, base: 70 };
+        // Exploded view starting to align (Step 2)
+        targetOffsets = {
+          topCap: -145,
+          upperSleeve: -95,
+          core: 12,
+          base: 130,
+        };
       } else if (step === 3) {
-        // Fully locked & Ignited (rumble starts!)
+        // Halfways assembled - topCap gap is reduced (Step 3)
+        targetOffsets = { topCap: -70, upperSleeve: -45, core: 5, base: 70 };
+      } else if (step === 4) {
+        // Fully locked & Ignited (rumble starts!) (Step 4)
         targetOffsets = { topCap: 0, upperSleeve: 0, core: 0, base: 0 };
         shakeAmt = 1.8;
-      } else if (step === 4) {
-        // Launch warp speed (blastoff up the frame!)
+      } else if (step === 5) {
+        // Launch warp speed (blastoff up the frame!) (Step 5)
         targetOffsets = { topCap: 0, upperSleeve: 0, core: 0, base: 0 };
         targetLaunchpadY = 500; // discard turntable launchpad down out of frame
         targetVesselCenterYOffset = 0; // Handled by takeoffY flying loop
@@ -834,13 +848,13 @@ export function OnboardingRightSide({
       vesselCenterYOffset +=
         (targetVesselCenterYOffset - vesselCenterYOffset) * 0.05;
 
-      // Update takeoff vertical position when not in Step 4
-      if (step !== 4) {
+      // Update takeoff vertical position when not in Step 5
+      if (step !== 5) {
         takeoffY += (0 - takeoffY) * 0.1; // return smoothly to launchpad if step back
       }
 
       // Handle continuous rotation
-      if (step === 4) {
+      if (step === 5) {
         yaw += 0.015;
       } else {
         yaw += 0.005;
@@ -946,12 +960,12 @@ export function OnboardingRightSide({
             (ROCKET_HUD_CONFIG.sizes.starMaxZ - star.z) /
             (ROCKET_HUD_CONFIG.sizes.starMaxZ / 2),
           ) *
-          (step === 4
+          (step === 5
             ? ROCKET_HUD_CONFIG.colors.starWarpOpacity
             : ROCKET_HUD_CONFIG.colors.starNormalOpacity) *
           star.brightness;
         ctx.strokeStyle = `rgba(${ROCKET_HUD_CONFIG.colors.starRgb}, ${opacity})`;
-        ctx.lineWidth = step === 4 ? 1.4 : 0.7;
+        ctx.lineWidth = step === 5 ? 1.4 : 0.7;
         ctx.stroke();
       });
 
@@ -1043,8 +1057,8 @@ export function OnboardingRightSide({
         });
 
         geom.edges.forEach((edge) => {
-          if (edge.type === "pilot" && step < 2) return;
-          if (edge.type === "core" && step === 1 && !isAssembled) {
+          if (edge.type === "pilot" && step < 3) return;
+          if (edge.type === "core" && step <= 2 && !isAssembled) {
             // Keep rods showing exploded
           }
 
@@ -1091,14 +1105,14 @@ export function OnboardingRightSide({
       };
 
       // 4. Render the 4 rocket components with their respectiveOffsets
-      drawComponent3D(topCap, lockedY.topCap + offsets.topCap, step >= 3);
+      drawComponent3D(topCap, lockedY.topCap + offsets.topCap, step >= 4);
       drawComponent3D(
         upperSleeve,
         lockedY.upperSleeve + offsets.upperSleeve,
-        step >= 3,
+        step >= 4,
       );
-      drawComponent3D(core, lockedY.core + offsets.core, step >= 3);
-      drawComponent3D(base, lockedY.base + offsets.base, step >= 3);
+      drawComponent3D(core, lockedY.core + offsets.core, step >= 4);
+      drawComponent3D(base, lockedY.base + offsets.base, step >= 4);
 
       // 5. Draw Exploded-view layout arrows (Step 1 Blueprint exact recreation)
       if (step === 1 && Math.abs(offsets.base - 190) < 15) {
@@ -1224,8 +1238,8 @@ export function OnboardingRightSide({
         ctx.fill();
       }
 
-      // 6. Draw 3D Projected Vessel Name (Step 3)
-      if (step >= 3) {
+      // 6. Draw 3D Projected Vessel Name (Step 4)
+      if (step >= 4) {
         const anchor = { x: 0, y: 0, z: -87 };
         const rotAnchor = rotatePointOpt({
           x: anchor.x,
@@ -1263,8 +1277,8 @@ export function OnboardingRightSide({
         }
       }
 
-      // 7. Draw ignition thruster energy rings (Step 3)
-      if (step >= 3) {
+      // 7. Draw ignition thruster energy rings (Step 4)
+      if (step >= 4) {
         const ringBaseY = lockedY.base + offsets.base + 47;
         const ringSpacing = 16;
         const count = 3;
@@ -1300,12 +1314,12 @@ export function OnboardingRightSide({
         }
       }
 
-      // 8. Physics-based exhaust flame lines (Step 3 onwards - Heavy ignition density)
-      if (step >= 3) {
+      // 8. Physics-based exhaust flame lines (Step 4 onwards - Heavy ignition density)
+      if (step >= 4) {
         const nozzleBaseY = lockedY.base + offsets.base + 45;
 
         // Spawn flame particles
-        const flameSpawns = step === 4 ? 4 : 3;
+        const flameSpawns = step === 5 ? 4 : 3;
         for (let k = 0; k < flameSpawns; k++) {
           const theta = Math.random() * Math.PI * 2;
           const r = Math.random() * 32;
@@ -1345,7 +1359,7 @@ export function OnboardingRightSide({
       }
 
       // 9. Volumetric Smoke/Steam (Spreads OUTSIDE the rocket and flows DOWNWARDS + LEFT/RIGHT - Ribbon CAD Wind lines & soft shadows)
-      if (step >= 3) {
+      if (step >= 4) {
         const nozzleBaseY = lockedY.base + offsets.base + 45;
         const shipProjBase = project({ x: 0, y: nozzleBaseY, z: 0 });
 
@@ -1445,8 +1459,8 @@ export function OnboardingRightSide({
         });
       }
 
-      // 10. Warp aerodynamic air-splashes (Step 4 warp speed)
-      if (step === 4) {
+      // 10. Warp aerodynamic air-splashes (Step 5 warp speed)
+      if (step === 5) {
         if (time % 8 === 0 && splashRings.length < 5) {
           splashRings.push({
             y: lockedY.topCap - 80,
@@ -1502,7 +1516,7 @@ export function OnboardingRightSide({
       const cockpitProjected = project(cockpitRotated);
 
       if (
-        step === 2 &&
+        step === 3 &&
         overlayRef.current &&
         arrowSvgRef.current &&
         arrowPathRef.current &&
@@ -1545,7 +1559,7 @@ export function OnboardingRightSide({
       const tipProjected = project(tipRotated);
 
       if (
-        step === 3 &&
+        step === 4 &&
         nameOverlayRef.current &&
         nameArrowSvgRef.current &&
         nameArrowPathRef.current &&
@@ -1749,14 +1763,14 @@ export function OnboardingRightSide({
           </div>
 
           <div className="min-w-0">
-            <div className="text-zinc-400 text-xs">Personal Details</div>
+            <div className="text-zinc-450 text-xs">Personal Details</div>
             <div className="font-bold text-zinc-100 truncate mt-0.5 max-w-[130px] capitalize">
               Name:{" "}
               {username ||
                 clerkUser?.fullName ||
                 ROCKET_HUD_CONFIG.hudLabels.crewCardDefaultName}
             </div>
-            <div className="text-zinc-400 text-[10px] mt-0.5 truncate ">
+            <div className="text-zinc-450 text-[10px] mt-0.5 truncate ">
               Role:{" "}
               {selectedRole || ROCKET_HUD_CONFIG.hudLabels.crewCardDefaultRole}
             </div>
@@ -1774,7 +1788,7 @@ export function OnboardingRightSide({
         <div className="flex justify-between items-center text-xs text-zinc-400 font-medium">
           <span className="uppercase">SYSTEM STATUS</span>
           <span className="text-zinc-400 flex items-center gap-1">
-            {currentStep === 4 ? (
+            {currentStep === 5 ? (
               <span className="text-emerald-500 font-mono">
                 <Typewriter
                   words={["your workspace is ready . launching the system...."]}
@@ -1791,11 +1805,12 @@ export function OnboardingRightSide({
                   <Typewriter
                     key={currentStep}
                     words={[
-                      currentStep === 1 ? " awaiting purpose selection..." : "",
-                      currentStep === 2
+                      currentStep === 1 ? " awaiting referral registry..." : "",
+                      currentStep === 2 ? " awaiting purpose selection..." : "",
+                      currentStep === 3
                         ? " awaiting pilot authorization..."
                         : "",
-                      currentStep === 3
+                      currentStep === 4
                         ? " awaiting spaceship designation registry..."
                         : "",
                     ].filter(Boolean)}
@@ -1809,16 +1824,17 @@ export function OnboardingRightSide({
               </>
             )}
           </span>
-          <span className="font-mono">ONBOARDING STEP {currentStep} OF 4</span>
+          <span className="font-mono">ONBOARDING STEP {currentStep} OF 5</span>
         </div>
-        <div className="w-full bg-zinc-950 h-1.5 rounded-full overflow-hidden border border-zinc-800">
+        <div className="w-full bg-zinc-955 h-1.5 rounded-full overflow-hidden border border-zinc-800">
           <div
             className={cn(
               "h-full bg-blue-600 transition-all duration-700 rounded-full",
-              currentStep === 1 && "w-[25%]",
-              currentStep === 2 && "w-[50%]",
-              currentStep === 3 && "w-[75%]",
-              currentStep === 4 && "w-full bg-emerald-500 ",
+              currentStep === 1 && "w-[20%]",
+              currentStep === 2 && "w-[40%]",
+              currentStep === 3 && "w-[60%]",
+              currentStep === 4 && "w-[80%]",
+              currentStep === 5 && "w-full bg-emerald-500 ",
             )}
           />
         </div>
