@@ -143,6 +143,108 @@ export default function Layout({
                   }}
                 /> */}
                 <div className="flex items-center gap-3">
+                  {/* Only when workspace ! */}
+                  {isWorkspaceRoute && (
+                    <div className="flex items-center gap-2">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => setShowWorkspaceTools(!showWorkspaceTools)}
+                        className="h-8 gap-1.5 px-3 cursor-pointer hover:scale-105 transition-all duration-200 select-none rounded-lg text-xs font-medium flex items-center"
+                      >
+                        <ChevronLeft
+                          className={`h-4 w-4 transition-transform duration-300 ${showWorkspaceTools ? "rotate-180" : ""
+                            }`}
+                        />
+                        <span className="whitespace-nowrap">
+                          {showWorkspaceTools ? "Close" : "View More"}
+                        </span>
+
+                      </Button>
+                      <AnimatePresence>
+                        {showWorkspaceTools && (
+                          <motion.div
+                            variants={containerVariants}
+                            initial="hidden"
+                            animate="visible"
+                            exit="exit"
+                            className="flex items-center gap-2 overflow-hidden whitespace-nowrap"
+                          >
+                            {/* HOME */}
+                            <motion.div variants={itemVariants}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    size="icon-sm"
+                                    variant="outline"
+                                    onClick={() => router.push(`/dashboard/my-projects/${slug}`)}
+                                    aria-label="Home"
+                                    className="cursor-pointer hover:scale-105 transition-all duration-200"
+                                  >
+                                    <Home className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Home</TooltipContent>
+                              </Tooltip>
+                            </motion.div>
+
+                            {/* MY WORK */}
+                            <motion.div variants={itemVariants}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    size="icon-sm"
+                                    variant="outline"
+                                    aria-label="My-work"
+                                    onClick={() => setIsWorkOpen(true)}
+                                    className="cursor-pointer hover:scale-105 transition-all duration-200"
+                                  >
+                                    <BriefcaseBusiness className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>My Work</TooltipContent>
+                              </Tooltip>
+                            </motion.div>
+
+                            {/* Share */}
+                            <motion.div variants={itemVariants}>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Button
+                                    size="icon-sm"
+                                    variant="outline"
+                                    onClick={() => setIsShareOpen(true)}
+                                    aria-label="Share project"
+                                  >
+                                    <Share2 className="h-4 w-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Share Project</TooltipContent>
+                              </Tooltip>
+                            </motion.div>
+
+                            {/* Team Meet */}
+                            <motion.div variants={itemVariants}>
+                              <Link href={`/dashboard/my-projects/${slug}/workspace/meet`}>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      size="icon-sm"
+                                      variant="outline"
+                                      aria-label="Start video call"
+                                    >
+                                      <Video className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Team Meet</TooltipContent>
+                                </Tooltip>
+                              </Link>
+                            </motion.div>
+                          </motion.div>
+                        )}
+                      </AnimatePresence>
+                    </div>
+                  )}
                   <TooltipProvider>
                     <NotificationCenter />
                     <Tooltip>
@@ -159,108 +261,7 @@ export default function Layout({
                       </TooltipTrigger>
                       <TooltipContent>Help & Support</TooltipContent>
                     </Tooltip>
-                    {/* Only when workspace ! */}
-                    {isWorkspaceRoute && (
-                      <div className="flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          onClick={() => setShowWorkspaceTools(!showWorkspaceTools)}
-                          className="h-8 gap-1.5 px-3 cursor-pointer hover:scale-105 transition-all duration-200 select-none rounded-lg text-xs font-medium flex items-center"
-                        >
-                          <ChevronLeft
-                            className={`h-4 w-4 transition-transform duration-300 ${showWorkspaceTools ? "rotate-180" : ""
-                              }`}
-                          />
-                          <span className="whitespace-nowrap">
-                            {showWorkspaceTools ? "Close" : "View More"}
-                          </span>
 
-                        </Button>
-                        <AnimatePresence>
-                          {showWorkspaceTools && (
-                            <motion.div
-                              variants={containerVariants}
-                              initial="hidden"
-                              animate="visible"
-                              exit="exit"
-                              className="flex items-center gap-2 overflow-hidden whitespace-nowrap"
-                            >
-                              {/* HOME */}
-                              <motion.div variants={itemVariants}>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      size="icon-sm"
-                                      variant="outline"
-                                      onClick={() => router.push(`/dashboard/my-projects/${slug}`)}
-                                      aria-label="Home"
-                                      className="cursor-pointer hover:scale-105 transition-all duration-200"
-                                    >
-                                      <Home className="h-4 w-4" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>Home</TooltipContent>
-                                </Tooltip>
-                              </motion.div>
-
-                              {/* MY WORK */}
-                              <motion.div variants={itemVariants}>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      size="icon-sm"
-                                      variant="outline"
-                                      aria-label="My-work"
-                                      onClick={() => setIsWorkOpen(true)}
-                                      className="cursor-pointer hover:scale-105 transition-all duration-200"
-                                    >
-                                      <BriefcaseBusiness className="h-4 w-4" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>My Work</TooltipContent>
-                                </Tooltip>
-                              </motion.div>
-
-                              {/* Share */}
-                              <motion.div variants={itemVariants}>
-                                <Tooltip>
-                                  <TooltipTrigger asChild>
-                                    <Button
-                                      size="icon-sm"
-                                      variant="outline"
-                                      onClick={() => setIsShareOpen(true)}
-                                      aria-label="Share project"
-                                    >
-                                      <Share2 className="h-4 w-4" />
-                                    </Button>
-                                  </TooltipTrigger>
-                                  <TooltipContent>Share Project</TooltipContent>
-                                </Tooltip>
-                              </motion.div>
-
-                              {/* Team Meet */}
-                              <motion.div variants={itemVariants}>
-                                <Link href={`/dashboard/my-projects/${slug}/workspace/meet`}>
-                                  <Tooltip>
-                                    <TooltipTrigger asChild>
-                                      <Button
-                                        size="icon-sm"
-                                        variant="outline"
-                                        aria-label="Start video call"
-                                      >
-                                        <Video className="h-4 w-4" />
-                                      </Button>
-                                    </TooltipTrigger>
-                                    <TooltipContent>Team Meet</TooltipContent>
-                                  </Tooltip>
-                                </Link>
-                              </motion.div>
-                            </motion.div>
-                          )}
-                        </AnimatePresence>
-                      </div>
-                    )}
                   </TooltipProvider>
                 </div>
                 <UserMenu />
