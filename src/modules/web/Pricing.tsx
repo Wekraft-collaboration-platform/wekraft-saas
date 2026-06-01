@@ -29,7 +29,7 @@ import { Button } from "@/components/ui/button";
 import { toast } from "sonner";
 import { api } from "../../../convex/_generated/api";
 import { useRazorpay } from "@/modules/payments/hooks/useRazorpay";
-import { useStripeCheckout } from "@/modules/payments/hooks/useStripeCheckout";
+import { useLemonSqueezyCheckout } from "@/modules/payments/hooks/useLemonSqueezyCheckout";
 import Script from "next/script";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -213,7 +213,7 @@ const Pricing = () => {
   const [countryCode, setCountryCode] = React.useState<string | null>(null);
   
   const { initiatePayment: initiateRazorpay, loadingPlan: loadingRazorpay, cancelPayment: cancelRazorpay } = useRazorpay();
-  const { initiatePayment: initiateStripe, loadingPlan: loadingStripe } = useStripeCheckout();
+  const { initiatePayment: initiateLemonSqueezy, loadingPlan: loadingLemonSqueezy } = useLemonSqueezyCheckout();
 
   React.useEffect(() => {
     fetch("https://ipapi.co/json/")
@@ -351,7 +351,7 @@ const Pricing = () => {
                       onClick={async () => {
                         if (plan.key === (user?.accountType || "free")) return;
                         
-                        const isLoadingPlan = loadingRazorpay === plan.name || loadingStripe === plan.name;
+                        const isLoadingPlan = loadingRazorpay === plan.name || loadingLemonSqueezy === plan.name;
                         if (isLoadingPlan) return;
                         
                         if (!isAuthenticated) {
@@ -376,7 +376,7 @@ const Pricing = () => {
                               { id: user._id, name: user.name || "", email: user.email || "" }
                             );
                           } else {
-                            await initiateStripe(
+                            await initiateLemonSqueezy(
                               { name: plan.name, planType: plan.key as "plus" | "pro", priceUSD: plan.priceUSD },
                               { id: user._id, name: user.name || "", email: user.email || "" }
                             );
@@ -385,13 +385,13 @@ const Pricing = () => {
                           console.error("Payment failed", e);
                         }
                       }}
-                      disabled={loadingRazorpay !== null || loadingStripe !== null || plan.key === (user?.accountType || "free")}
+                      disabled={loadingRazorpay !== null || loadingLemonSqueezy !== null || plan.key === (user?.accountType || "free")}
                       className={cn(
                         "w-full py-2 px-4 rounded-full font-medium text-sm transition-all duration-300 shadow-sm flex items-center justify-center gap-2",
                         plan.key === (user?.accountType || "free")
                           ? "bg-blue-500/10 border border-blue-500/35 text-blue-400 cursor-default font-semibold"
                           : "bg-[#1c1c1c] border border-white/10 text-gray-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] hover:bg-white hover:text-black cursor-pointer",
-                        (loadingRazorpay !== null || loadingStripe !== null) && "opacity-50 cursor-not-allowed"
+                        (loadingRazorpay !== null || loadingLemonSqueezy !== null) && "opacity-50 cursor-not-allowed"
                       )}
                     >
                       {plan.key === (user?.accountType || "free") ? (
@@ -399,7 +399,7 @@ const Pricing = () => {
                           <Check className="w-4 h-4 text-blue-400" strokeWidth={3} />
                           <span>Current Plan</span>
                         </div>
-                      ) : (loadingRazorpay === plan.name || loadingStripe === plan.name) ? (
+                      ) : (loadingRazorpay === plan.name || loadingLemonSqueezy === plan.name) ? (
                         "Processing..."
                       ) : (
                         plan.cta
@@ -423,7 +423,7 @@ const Pricing = () => {
                                 return;
                               }
 
-                              // Stripe Cancellation
+                              // Lemon Squeezy Cancellation
                               if (!user?.customerId) {
                                 toast.error("No active billing profile found. Please contact support.");
                                 return;
@@ -431,7 +431,7 @@ const Pricing = () => {
                               
                               toast.loading("Redirecting to billing portal...", { id: "portal-loading" });
                               
-                              const res = await fetch("/api/payments/stripe/portal", {
+                              const res = await fetch("/api/payments/lemonsqueezy/portal", {
                                 method: "POST",
                                 headers: { "Content-Type": "application/json" },
                                 body: JSON.stringify({ customerId: user.customerId })

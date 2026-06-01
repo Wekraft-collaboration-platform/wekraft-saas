@@ -116,7 +116,6 @@ export const useRazorpay = () => {
                 razorpay_subscription_id: response.razorpay_subscription_id,
                 razorpay_payment_id: response.razorpay_payment_id,
                 razorpay_signature: response.razorpay_signature,
-                userId: userDetails.id,
                 plan: plan.planType,
               }),
             });

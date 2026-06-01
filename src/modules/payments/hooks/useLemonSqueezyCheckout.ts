@@ -12,7 +12,7 @@ export interface Plan {
   priceUSD: number;
 }
 
-export const useStripeCheckout = () => {
+export const useLemonSqueezyCheckout = () => {
   const [loadingPlan, setLoadingPlan] = useState<string | null>(null);
 
   const initiatePayment = async (
@@ -27,14 +27,13 @@ export const useStripeCheckout = () => {
     setLoadingPlan(plan.name);
 
     try {
-      const res = await fetch("/api/payments/stripe/checkout", {
+      const res = await fetch("/api/payments/lemonsqueezy/checkout", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           planName: plan.name,
           planType: plan.planType,
           priceUSD: plan.priceUSD,
-          userId: userDetails.id,
           userEmail: userDetails.email,
         }),
       });
@@ -46,7 +45,7 @@ export const useStripeCheckout = () => {
       }
 
       if (data.url) {
-        // Redirect to Stripe Checkout
+        // Redirect to Lemon Squeezy Checkout
         window.location.href = data.url;
       } else {
         throw new Error("No checkout URL returned from server");
@@ -56,7 +55,7 @@ export const useStripeCheckout = () => {
         error instanceof Error
           ? error.message
           : "An error occurred while initiating payment.";
-      console.error("[Stripe] Checkout initiation error:", error);
+      console.error("[Lemon Squeezy] Checkout initiation error:", error);
       toast.error(message);
       setLoadingPlan(null);
     }

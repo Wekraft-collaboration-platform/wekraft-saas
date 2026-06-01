@@ -1,5 +1,6 @@
 import { type NextRequest, NextResponse } from "next/server";
 import Razorpay from "razorpay";
+import { auth } from "@clerk/nextjs/server";
 
 if (
   !process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ||
@@ -18,6 +19,11 @@ type RazorpayPlan = {
 
 export async function POST(req: NextRequest) {
   try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     const razorpayKeyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID;
     const razorpayKeySecret = process.env.RAZORPAY_KEY_SECRET;
 
@@ -60,6 +66,9 @@ export async function POST(req: NextRequest) {
       total_count: 120, // 10 years
       quantity: 1,
       customer_notify: 1,
+      notes: {
+        userId: userId,
+      },
     });
 
     return NextResponse.json({
