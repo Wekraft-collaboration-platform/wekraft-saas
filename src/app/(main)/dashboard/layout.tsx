@@ -144,21 +144,6 @@ export default function Layout({
                 /> */}
                 <div className="flex items-center gap-3">
                   <TooltipProvider>
-                    <NotificationCenter />
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          size="icon-sm"
-                          variant="outline"
-                          onClick={() => setIsHelpOpen(true)}
-                          aria-label="Help & Support"
-                          className="cursor-pointer hover:scale-105 transition-all duration-200"
-                        >
-                          <HelpCircle className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Help & Support</TooltipContent>
-                    </Tooltip>
                     {/* Only when workspace ! */}
                     {isWorkspaceRoute && (
                       <div className="flex items-center gap-2">
@@ -261,6 +246,22 @@ export default function Layout({
                         </AnimatePresence>
                       </div>
                     )}
+                    <NotificationCenter />
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          size="icon-sm"
+                          variant="outline"
+                          onClick={() => setIsHelpOpen(true)}
+                          aria-label="Help & Support"
+                          className="cursor-pointer hover:scale-105 transition-all duration-200"
+                        >
+                          <HelpCircle className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Help & Support</TooltipContent>
+                    </Tooltip>
+
                   </TooltipProvider>
                 </div>
                 <UserMenu />
