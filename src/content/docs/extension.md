@@ -48,14 +48,14 @@ The extension sidebar shows all tasks and issues across your projects, organized
 
 **What you can do from the IDE:**
 
-| Action | Tasks | Issues |
-|---|---|---|
-| View details | ✓ | ✓ |
-| Update status | ✓ | ✓ |
-| Update priority | ✓ | ✓ |
-| Update assignees | ✓ | ✓ |
-| Delete | ✓ | ✓ |
-| **Create new** | ✗ | ✗ |
+| Action           | Tasks | Issues |
+| ---------------- | ----- | ------ |
+| View details     | ✓     | ✓      |
+| Update status    | ✓     | ✓      |
+| Update priority  | ✓     | ✓      |
+| Update assignees | ✓     | ✓      |
+| Delete           | ✓     | ✓      |
+| **Create new**   | ✗     | ✗      |
 
 > Creating new tasks or issues is intentionally not supported from the IDE. Use the web app for that. This keeps the extension focused on execution, not planning.
 

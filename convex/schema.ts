@@ -434,20 +434,33 @@ export default defineSchema({
     .index("by_project", ["projectId"])
     .index("by_issue_user", ["issueId", "userId"]),
 
-  // -------------- IDE Extension Support ---------------------
+   // -------------- IDE Extension Support ---------------------
   userApiKeys: defineTable({
     userId: v.id("users"),
-    key: v.string(), // Secure, permanent API key
+    key: v.string(),       // Secure, permanent API key (wk_ prefix + 64 hex chars)
     createdAt: v.number(),
+    lastUsedAt: v.optional(v.number()),  // Tracked on every authenticated request
+    revokedAt: v.optional(v.number()),   // Set on revocation — key is permanently dead
   })
     .index("by_user", ["userId"])
     .index("by_key", ["key"]),
+
+  // Per-API-key sliding-window rate limit counters
+  // One document per (apiKeyId, windowStart) pair, auto-cleaned up
+  apiKeyRateLimits: defineTable({
+    apiKeyId: v.id("userApiKeys"),
+    windowStart: v.number(),  // Unix ms — start of the 1-minute window
+    count: v.number(),         // How many requests in this window
+  })
+    .index("by_key_window", ["apiKeyId", "windowStart"]),
 
   handshakeTokens: defineTable({
     token: v.string(), // Short-lived one-time token (5 min TTL)
     userId: v.id("users"),
     expiresAt: v.number(),
-  }).index("by_token", ["token"]),
+  })
+    .index("by_token", ["token"]),
+
 
   // -------------- Project Upvotes (per-user join table) ---------------------
   projectUpvoteRecords: defineTable({
