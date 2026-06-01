@@ -1,5 +1,7 @@
 import path from "node:path";
+import fs from "node:fs";
 import dotenv from "dotenv";
+import { allDocs } from "@/lib/docs-config";
 
 // Force load env variables from .env.local to override any system/shell variables
 dotenv.config({
@@ -113,6 +115,121 @@ const allTools = {
             };
         },
     }),
+
+    searchDocumentation: tool({
+        description:
+            "Search the Wekraft documentation to find relevant pages and their slugs based on keywords or user query. Returns page titles, descriptions, and slugs.",
+
+        inputSchema: z.object({
+            query: z.string().describe("Keywords to search for in page titles and descriptions"),
+        }),
+
+        execute: async ({ query }: { query: string }) => {
+            console.log("-------- searchDocumentation called with query --------", query);
+
+            // Clean query, tokenize, filter out common short words and stop words
+            const words = query
+                .toLowerCase()
+                .replace(/[^\w\s-]/g, "") // keep hyphens
+                .split(/\s+/)
+                .filter((w) => w.length > 1 && !["how", "to", "the", "and", "for", "with", "this", "that", "you", "your", "can", "get", "what", "is", "an", "of", "in", "on", "at", "by", "install", "installation"].includes(w));
+
+            // Also keep 'install' if it was the only keyword or add it to check
+            const hasInstall = query.toLowerCase().includes("install");
+            if (hasInstall && !words.includes("install")) {
+                words.push("install");
+            }
+
+            console.log("Filtered keywords for doc search:", words);
+            if (words.length === 0) {
+                console.log("No valid search terms extracted, fallback to query contains matching");
+                words.push(query.toLowerCase());
+            }
+
+            const results = [];
+            for (const doc of allDocs) {
+                let score = 0;
+                const titleLower = doc.title.toLowerCase();
+                const descLower = doc.description.toLowerCase();
+                const slugLower = doc.slug.toLowerCase();
+
+                // 1. Match title, description, slug
+                for (const word of words) {
+                    if (titleLower.includes(word)) {
+                        score += 10;
+                    }
+                    if (descLower.includes(word)) {
+                        score += 3;
+                    }
+                    if (slugLower.includes(word)) {
+                        score += 5;
+                    }
+                }
+
+                // 2. Scan actual file contents on disk
+                try {
+                    const filePath = path.join(process.cwd(), "src/content/docs", `${doc.slug}.md`);
+                    if (fs.existsSync(filePath)) {
+                        const contentLower = fs.readFileSync(filePath, "utf8").toLowerCase();
+                        for (const word of words) {
+                            const occurrences = contentLower.split(word).length - 1;
+                            if (occurrences > 0) {
+                                score += Math.min(occurrences, 5) * 1.5; // up to 7.5 pts for content match
+                            }
+                        }
+                    }
+                } catch (err) {
+                    console.error(`Error reading ${doc.slug}.md during search:`, err);
+                }
+
+                if (score > 0) {
+                    results.push({
+                        title: doc.title,
+                        slug: doc.slug,
+                        description: doc.description,
+                        score,
+                    });
+                }
+            }
+
+            // Sort by score descending
+            results.sort((a, b) => b.score - a.score);
+            const topResults = results.slice(0, 5);
+
+            console.log("Search matched pages:", topResults.map(r => ({ slug: r.slug, score: r.score })));
+
+            return {
+                query,
+                results: topResults,
+            };
+        },
+    }),
+
+    getDocumentationPage: tool({
+        description:
+            "Retrieve the raw markdown content of a specific Wekraft documentation page by its slug to get context about features, setups, flows, etc.",
+
+        inputSchema: z.object({
+            slug: z.string().describe("The slug of the documentation page (e.g., 'getting-started', 'repositories', 'extension', 'sprints', 'kaya-pm')"),
+        }),
+
+        execute: async ({ slug }: { slug: string }) => {
+            console.log("-------- getDocumentationPage called for slug --------", slug);
+            try {
+                const filePath = path.join(process.cwd(), "src/content/docs", `${slug}.md`);
+                if (fs.existsSync(filePath)) {
+                    const content = fs.readFileSync(filePath, "utf8");
+                    console.log(`Successfully read ${slug}.md, content length: ${content.length} characters`);
+                    return { slug, content };
+                }
+                console.error(`Documentation file not found at path: ${filePath}`);
+                return { error: `Documentation page with slug '${slug}' not found.` };
+            } catch (err: any) {
+                console.error(`Error reading documentation file ${slug}.md:`, err);
+                return { error: `Failed to read documentation page: ${err.message}` };
+            }
+        },
+    }),
 } satisfies ToolSet;
 
 // -----------------------------------
@@ -156,9 +273,9 @@ Closing an issue auto-unblocks any linked task.
 Time-boxed work periods. States: planned → active → completed.
 One active sprint per project at a time. Incomplete items return to backlog on completion.
 
-### Kaya AI
-Built-in AI PM agent (Pro plan, 50 calls/month). Can plan sprints, analyse workloads,
-generate standups, and predict sprint risks.
+### AI Agents (Kaya PM & Harry Dev)
+- Kaya PM Agent: Built-in AI PM agent (Pro plan, 50 calls/month). Can plan sprints, analyse workloads, generate standups, and predict sprint risks.
+- Harry Dev Agent: Built-in AI senior developer agent (Pro plan). Can monitor the codebase, detect bugs, review pull requests, and perform autonomous web research.
 
 ### VS Code Extension
 Lets developers view/start/complete tasks and auto-log time without leaving their editor.
@@ -178,6 +295,7 @@ Link a repo to sync GitHub Issues as Wekraft Issues. Commits/PRs visible in task
 - Be concise, professional, and helpful.
 - When the user reports a bug or issue, gather: category, and a clear description and form title by own.
 - When the user asks about their past raised quiries or support tickets, call getSupportQueries.
+- If a user asks questions about Wekraft's features, agents (like Kaya PM or Harry Dev), setup guides, navigation, options, billing, or pricing, use the searchDocumentation tool to find the relevant page slug, or call getDocumentationPage directly if you know the exact slug (e.g. 'getting-started', 'sprints', 'extension', 'kaya-pm', 'harry-dev'). Always read the documentation page to get accurate context before answering.
 - The current user's ID is: ${userId}
 - If you are unsure about something, direct the user to the docs or support@wekraft.xyz.
 `.trim();
@@ -215,14 +333,6 @@ export async function POST(req: Request) {
         }
 
         const apiKey = process.env.OPENAI_API_KEY;
-        // if (apiKey) {
-        //     console.log(
-        //         "Chatbot OpenAI Key used (first 10 + last 4):",
-        //         `${apiKey.slice(0, 10)}...${apiKey.slice(-4)}`,
-        //     );
-        // } else {
-        //     console.log("No API Key found in process.env.OPENAI_API_KEY!");
-        // }
 
         const customOpenai = createOpenAI({
             apiKey: apiKey,
