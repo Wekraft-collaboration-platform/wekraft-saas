@@ -15,7 +15,6 @@ import {
   Search,
   Sparkles,
   UserPlus,
-  BriefcaseBusiness,
 } from "lucide-react";
 import Image from "next/image";
 import { useParams } from "next/navigation";
@@ -42,7 +41,6 @@ import {
   TYPE_CONFIG,
 } from "@/modules/workspace/IssueKanbanUI";
 import { useKayaStore } from "@/store/useKayaStore";
-import { useMyWorkStore } from "@/store/useMyWorkStore";
 import { api } from "../../../../../../../../convex/_generated/api";
 
 // Project members list is retrieved dynamically via query below
@@ -194,7 +192,6 @@ const IssuesPage = () => {
     any | null
   >(null);
   const { setIsOpen } = useKayaStore();
-  const { setIsOpen: setIsWorkOpen, setActiveTab: setWorkActiveTab } = useMyWorkStore();
   const currentUser = useQuery(api.user.getCurrentUser);
   const members = useQuery(
     api.project.getProjectMembers,
@@ -335,6 +332,7 @@ const IssuesPage = () => {
             <Filter className="w-5 h-5 mr-2" />
             Filters
           </Button> */}
+
           {/* Ask Kaya */}
           <Button
             size="sm"
@@ -344,20 +342,6 @@ const IssuesPage = () => {
           >
             <Image src="/kaya.svg" alt="Kaya AI" width={18} height={18} />
             Ask about Issues
-          </Button>
-
-          {/* My work */}
-          <Button
-            size="sm"
-            variant="default"
-            onClick={() => {
-              setWorkActiveTab("issues");
-              setIsWorkOpen(true);
-            }}
-            className="text-xs cursor-pointer gap-1.5"
-          >
-            <BriefcaseBusiness className="w-4 h-4 " />
-            View Your Issues
           </Button>
 
           {/* New Issue */}
