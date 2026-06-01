@@ -366,26 +366,17 @@ export default function ProjectSidebar() {
                 className="w-64 p-3 bg-sidebar backdrop-blur-md border border-accent! shadow-xl rounded-xl font-sans"
               >
                 <div className="flex flex-col gap-2">
-                  {/* Top Link */}
-                  {project && (
-                    <Link
-                      href={`/dashboard/my-projects/${project.slug}`}
-                      className="flex items-center gap-2 p-2 rounded-md bg-accent/30 hover:bg-accent transition-all text-xs text-white border border-accent"
-                    >
-                      <Home className="h-3.5 w-3.5 text-primary shrink-0" />
-                      <span>Back to Project Dashboard</span>
-                    </Link>
-                  )}
 
-                  <Separator className="bg-accent opacity-50 my-1" />
 
                   {/* Heading */}
-                  <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground px-1.5">
+                  <span className="text-xs text-center text-white px-1.5">
                     Switch Workspace
                   </span>
 
+                  <Separator className="bg-white/20" />
+
                   {/* Projects List */}
-                  <div className="h-[200px] overflow-y-auto pr-1 flex flex-col gap-1.5">
+                  <div className="h-[140px] overflow-y-auto pr-1 flex flex-col gap-1.5">
                     {ownerProjects === undefined && teamProjects === undefined ? (
                       <div className="flex flex-col gap-1.5 p-1">
                         <Skeleton className="h-7 w-full rounded" />
