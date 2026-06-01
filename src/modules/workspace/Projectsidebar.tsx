@@ -38,6 +38,7 @@ import {
   Workflow,
   X,
   ChevronsDownUp,
+  Blocks,
 } from "lucide-react";
 import { HelpSupportDialog } from "@/modules/dashboard/components/HelpSupportDialog";
 import Image from "next/image";
@@ -941,7 +942,7 @@ export default function ProjectSidebar() {
                         className="group relative overflow-hidden cursor-pointer"
                       >
                         <div className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center">
-                          <LayoutGrid className="h-5 w-5 text-foreground" />
+                          <Blocks className="h-5 w-5 text-foreground" />
                           <span className="text-sm text-foreground group-data-[collapsible=icon]:hidden">
                             More
                           </span>
@@ -951,26 +952,22 @@ export default function ProjectSidebar() {
                     </PopoverTrigger>
                     <PopoverContent
                       side="right"
-                      align="start"
-                      sideOffset={10}
-                      className="w-64 p-4 bg-sidebar backdrop-blur-md border border-accent! shadow-xl rounded-2xl animate-in fade-in-50 zoom-in-95 duration-100"
+                      align="center"
+                      sideOffset={6}
+                      className="w-64 p-4 bg-sidebar backdrop-blur-md border border-accent! shadow-xl rounded-lg animate-in fade-in-50 zoom-in-95 duration-100"
                     >
-                      <div className="px-1 mb-3 text-center border-b border-accent pb-2">
-                        <span className="text-sm text-center text-white">
-                          Manage everything all-in-one
-                        </span>
-                      </div>
-                      <div className="grid grid-cols-2 gap-x-4 gap-y-5 justify-items-center py-1">
+
+                      <div className="grid grid-cols-3 gap-x-4 gap-y-5 justify-items-center py-1">
                         {moreMenu.map((item) => (
                           <Link
                             key={item.label}
                             href={`/dashboard/my-projects/${slug}/${item.path}`}
                             className="flex flex-col items-center gap-2 group cursor-pointer"
                           >
-                            <div className="h-12 w-12 rounded-xl flex items-center justify-center bg-muted/70 border border-accent text-white transition-all duration-300 transform group-hover:scale-110 shadow-sm group-hover:bg-muted/90 group-hover:border-accent-foreground/30">
-                              <item.icon className="h-5 w-5" />
+                            <div className="h-9 w-9 rounded flex items-center justify-center bg-muted/40 border border-accent! text-white transition-all duration-300 shadow-sm group-hover:bg-muted/90 group-hover:border-accent-foreground/30">
+                              <item.icon className="h-4! w-4!" />
                             </div>
-                            <span className="text-xs text-muted-foreground group-hover:text-foreground transition-colors duration-200">
+                            <span className="text-xs whitespace-nowrap">
                               {item.label}
                             </span>
                           </Link>

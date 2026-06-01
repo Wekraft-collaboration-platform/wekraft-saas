@@ -355,7 +355,7 @@ const TaskPage = () => {
             className="bg-linear-to-t from-indigo-600/30 via-purple-600/10 to-transparent text-xs cursor-pointer px-6!"
           >
             <Image src="/kaya.svg" alt="Kaya AI" width={18} height={18} />
-            Ask Kaya
+            View Breakdown
           </Button>
 
           <Button
