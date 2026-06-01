@@ -70,7 +70,6 @@ import { SchedulerCard } from "@/modules/workspace/workspace-modules/SchedulerCa
 import { SprintBarChart } from "@/modules/workspace/workspace-modules/SprintBarChart";
 import { TaskStatusCard } from "@/modules/workspace/workspace-modules/TaskStatusCard";
 import { TeamContributionRadarCard } from "@/modules/workspace/workspace-modules/TeamContributionRadarCard";
-import { UserWorkTable } from "@/modules/workspace/workspace-modules/UserWorkTable";
 import { WeeklyEngagementChartCard } from "@/modules/workspace/workspace-modules/WeeklyEngagementChartCard";
 import { WeeklyVelocityChart } from "@/modules/workspace/workspace-modules/WeeklyVelocityChart";
 import { api } from "../../../../../../../convex/_generated/api";
@@ -80,7 +79,7 @@ const ProjectWorkspace = () => {
   const params = useParams();
   const slug = params.slug as string;
   const [isDeadlineDialogOpen, setIsDeadlineDialogOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"charts" | "work" | "config">(
+  const [activeTab, setActiveTab] = useState<"charts" | "config">(
     "charts",
   );
   const [cachedData, setCachedData] = useState<any>(null);
@@ -450,7 +449,7 @@ const ProjectWorkspace = () => {
         <TaskStatusCard tasks={tasks || []} />
       </section>
 
-      {/* TABS: advance charts (scheduler + advance charts) / My work table */}
+      {/* TABS: advance charts (scheduler + advance charts) / Config */}
       <div className="flex mt-8 mb-2 items-center justify-end px-10">
         <div className="flex items-center gap-4">
           <Button
@@ -460,15 +459,6 @@ const ProjectWorkspace = () => {
             onClick={() => setActiveTab("charts")}
           >
             Advance Charts <ChartBar />
-          </Button>
-
-          <Button
-            className="text-xs cursor-pointer"
-            variant={activeTab === "work" ? "default" : "outline"}
-            size={"sm"}
-            onClick={() => setActiveTab("work")}
-          >
-            My Work <Table />
           </Button>
 
           <Button
@@ -571,15 +561,6 @@ const ProjectWorkspace = () => {
           </div>
         )}
 
-        {/* My Work Area */}
-        {activeTab === "work" && (
-          <div className="mt-6 px-8">
-            <UserWorkTable
-              userName={user?.name}
-              projectId={projectId as Id<"projects">}
-            />
-          </div>
-        )}
 
         {/* Config Area */}
         {activeTab === "config" && projectId && (

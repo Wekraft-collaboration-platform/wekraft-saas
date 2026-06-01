@@ -9,15 +9,18 @@ import {
   ChevronLast,
   ChevronLeft,
   ChevronRight,
+  ArrowUpRight,
   ChevronsUpDown,
   ClipboardList,
   Clover,
   Compass,
   FastForward,
+  Folder,
   FolderEdit,
   Home,
   Inbox,
   Layers,
+  LayoutGrid,
   ListTree,
   LogOut,
   MessageCircleQuestionMark,
@@ -26,12 +29,16 @@ import {
   Network,
   Palette,
   PlaneTakeoff,
+  Presentation,
   Search,
   Settings2,
   Trash2,
   Users2,
   Video,
+  Workflow,
   X,
+  ChevronsDownUp,
+  Blocks,
 } from "lucide-react";
 import { HelpSupportDialog } from "@/modules/dashboard/components/HelpSupportDialog";
 import Image from "next/image";
@@ -78,6 +85,7 @@ import {
   TooltipProvider,
   TooltipTrigger,
 } from "@/components/ui/tooltip";
+import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "../../../convex/_generated/api";
 import type { Doc } from "../../../convex/_generated/dataModel";
 import { ThemeButtons } from "../dashboard/components/ThemeButton";
@@ -94,11 +102,6 @@ const workspaceMenu = [
     icon: PlaneTakeoff,
   },
   {
-    label: "Team Meet",
-    path: "workspace/meet",
-    icon: Video,
-  },
-  {
     label: "Calendar",
     path: "workspace/calendar",
     icon: Calendar,
@@ -107,6 +110,29 @@ const workspaceMenu = [
     label: "Heatmap",
     path: "workspace/heatmap",
     icon: Network,
+  },
+];
+
+const moreMenu = [
+  {
+    label: "Meet",
+    path: "workspace/meet",
+    icon: Video,
+  },
+  {
+    label: "Docs",
+    path: "workspace/docs",
+    icon: ClipboardList,
+  },
+  {
+    label: "Whiteboard",
+    path: "workspace/whiteboard",
+    icon: Presentation,
+  },
+  {
+    label: "Flow-Charts",
+    path: "workspace/flow-charts",
+    icon: Workflow,
   },
 ];
 
@@ -152,6 +178,8 @@ export default function ProjectSidebar() {
   );
 
   const project = useQuery(api.project.getProjectBySlug, { slug });
+  const ownerProjects = useQuery(api.project.getUserProjects);
+  const teamProjects = useQuery(api.project.getJoinedProjects);
 
   useEffect(() => {
     setMounted(true);
@@ -230,17 +258,38 @@ export default function ProjectSidebar() {
           "members".includes(queryLower) ||
           "users".includes(queryLower))) ||
       (labelLower === "teamspace" && "space".includes(queryLower)) ||
-      (labelLower === "team meet" &&
-        ("video".includes(queryLower) ||
-          "call".includes(queryLower) ||
-          "meet".includes(queryLower) ||
-          "conference".includes(queryLower))) ||
       (labelLower === "calendar" &&
         ("schedule".includes(queryLower) || "events".includes(queryLower))) ||
       (labelLower === "heatmap" &&
         ("activity".includes(queryLower) ||
           "network".includes(queryLower) ||
           "commits".includes(queryLower)))
+    );
+  });
+
+  const filteredMoreMenu = moreMenu.filter((item) => {
+    const labelLower = item.label.toLowerCase();
+    const queryLower = searchQuery.toLowerCase();
+    return (
+      labelLower.includes(queryLower) ||
+      (labelLower === "meet" &&
+        ("video".includes(queryLower) ||
+          "call".includes(queryLower) ||
+          "meet".includes(queryLower) ||
+          "conference".includes(queryLower))) ||
+      (labelLower === "docs" &&
+        ("documents".includes(queryLower) ||
+          "notes".includes(queryLower) ||
+          "wiki".includes(queryLower))) ||
+      (labelLower === "whiteboard" &&
+        ("canvas".includes(queryLower) ||
+          "draw".includes(queryLower) ||
+          "board".includes(queryLower))) ||
+      (labelLower === "flow-charts" &&
+        ("flow".includes(queryLower) ||
+          "charts".includes(queryLower) ||
+          "diagram".includes(queryLower) ||
+          "workflow".includes(queryLower)))
     );
   });
 
@@ -260,6 +309,7 @@ export default function ProjectSidebar() {
     searchQuery.trim().length > 0 &&
     filteredCollapsibleItems.length === 0 &&
     filteredWorkspaceMenu.length === 0 &&
+    filteredMoreMenu.length === 0 &&
     !matchesAi &&
     !matchesWorkspace &&
     !matchesHelp &&
@@ -300,24 +350,95 @@ export default function ProjectSidebar() {
               {project?.projectName}
             </h1>
 
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Link href={`/dashboard/my-projects/${project?.slug}`}>
-                    <Button
-                      size="icon-xs"
-                      variant="outline"
-                      className="cursor-pointer hover:scale-105 transition-all duration-200"
-                    >
-                      <ChevronLeft className="h-3.5 w-3.5" />
-                    </Button>
-                  </Link>
-                </TooltipTrigger>
-                <TooltipContent side="bottom" align="end">
-                  Back to Projects
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button
+                  size="icon-xs"
+                  variant="outline"
+                  className="cursor-pointer  transition-all duration-200"
+                >
+                  <ChevronsDownUp className="h-4 w-4!" />
+                </Button>
+              </PopoverTrigger>
+              <PopoverContent
+                side="right"
+                align="start"
+                sideOffset={8}
+                className="w-64 p-3 bg-sidebar backdrop-blur-md border border-accent! shadow-xl rounded-xl font-sans"
+              >
+                <div className="flex flex-col gap-2">
+
+                  {/* Heading */}
+                  <span className="text-xs text-center px-1.5">
+                    Switch Workspace
+                  </span>
+
+                  <Separator className="bg-accent my-1" />
+
+                  {/* Projects List */}
+                  <div className="h-[140px] overflow-y-auto pr-1 flex flex-col gap-1.5">
+                    {ownerProjects === undefined && teamProjects === undefined ? (
+                      <div className="flex flex-col gap-1.5 p-1">
+                        <Skeleton className="h-7 w-full rounded" />
+                        <Skeleton className="h-7 w-full rounded" />
+                        <Skeleton className="h-7 w-full rounded" />
+                      </div>
+                    ) : (
+                      <>
+                        {/* Deduplicated projects list */}
+                        {Array.from(
+                          new Map(
+                            [
+                              ...(ownerProjects || []),
+                              ...(teamProjects || []),
+                            ].map((p) => [p._id, p])
+                          ).values()
+                        ).map((p) => {
+                          return (
+                            <Link
+                              key={p._id}
+                              href={`/dashboard/my-projects/${p.slug}/workspace`}
+                              className="flex items-center justify-between gap-2 p-1.5 rounded-md hover:bg-accent/40 cursor-pointer transition-all border border-transparent text-left"
+                            >
+                              <div className="flex items-center gap-2 max-w-[140px] truncate">
+                                <Folder className="h-3.5 w-3.5 text-primary shrink-0" />
+                                <span className="text-xs font-medium truncate text-white">
+                                  {p.projectName}
+                                </span>
+                              </div>
+
+                              <div className="flex -space-x-1 overflow-hidden shrink-0">
+                                {p.members && p.members.length > 0 ? (
+                                  p.members
+                                    .slice(0, 3)
+                                    .map((member: any, idx: number) => (
+                                      <Avatar
+                                        key={idx}
+                                        className="h-5 w-5 border border-primary/20 shrink-0"
+                                      >
+                                        <AvatarImage src={member.userImage} />
+                                        <AvatarFallback className="text-[7px]">
+                                          {member.userName
+                                            .substring(0, 1)
+                                            .toUpperCase()}
+                                        </AvatarFallback>
+                                      </Avatar>
+                                    ))
+                                ) : (
+                                  <span className="text-[9px] text-muted-foreground px-1">
+                                    Empty
+                                  </span>
+                                )}
+                              </div>
+                            </Link>
+                          );
+                        })}
+                      </>
+                    )}
+                  </div>
+                </div>
+              </PopoverContent>
+            </Popover>
           </div>
         )}
       </SidebarHeader>
@@ -578,7 +699,8 @@ export default function ProjectSidebar() {
         )}
 
         {(filteredCollapsibleItems.length > 0 ||
-          filteredWorkspaceMenu.length > 0) && (
+          filteredWorkspaceMenu.length > 0 ||
+          (searchQuery && filteredMoreMenu.length > 0)) && (
             <SidebarMenu className="flex flex-col space-y-1.5">
               {/*  PROJECT MANAGE COLLAPSIBLE */}
               {filteredCollapsibleItems.length > 0 &&
@@ -649,11 +771,11 @@ export default function ProjectSidebar() {
 
                                     <span
                                       className="
-                            pointer-events-none absolute inset-y-0 right-0 left-[-13px] -z-10
-                            opacity-0 transition-opacity
-                            group-data-[active=true]:opacity-100
-                            bg-linear-to-l from-blue-600 dark:from-blue-600/70 via-blue-600/20 to-transparent!
-                          "
+                             pointer-events-none absolute inset-y-0 right-0 left-[-13px] -z-10
+                             opacity-0 transition-opacity
+                             group-data-[active=true]:opacity-100
+                             bg-linear-to-l from-blue-600 dark:from-blue-600/70 via-blue-600/20 to-transparent!
+                           "
                                     />
                                   </Link>
                                 </SidebarMenuSubButton>
@@ -695,11 +817,11 @@ export default function ProjectSidebar() {
                             </span>
                             <span
                               className="
-                    pointer-events-none absolute inset-0 -z-10
-                    opacity-0 transition-opacity
-                    group-data-[active=true]:opacity-100
-                    bg-linear-to-l from-blue-600 dark:from-blue-600/70 via-blue-600/20 to-transparent!
-                  "
+                     pointer-events-none absolute inset-0 -z-10
+                     opacity-0 transition-opacity
+                     group-data-[active=true]:opacity-100
+                     bg-linear-to-l from-blue-600 dark:from-blue-600/70 via-blue-600/20 to-transparent!
+                   "
                             />
                           </Link>
                         </SidebarMenuButton>
@@ -710,6 +832,57 @@ export default function ProjectSidebar() {
 
               {/* OTHER ITEMS */}
               {filteredWorkspaceMenu.map((item) => {
+                const Icon = item.icon;
+                const href = `/dashboard/my-projects/${slug}/${item.path}`;
+
+                return (
+                  <SidebarMenuItem key={item.path}>
+                    <SidebarMenuButton
+                      key={item.path}
+                      asChild
+                      tooltip={item.label}
+                      isActive={isActive(href)}
+                      className="group relative overflow-hidden cursor-pointer"
+                    >
+                      <Link
+                        href={href}
+                        className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
+                      >
+                        <Icon
+                          className={cn(
+                            "h-5 w-5 transition-colors",
+                            isActive(href)
+                              ? "text-foreground"
+                              : "text-foreground",
+                          )}
+                        />
+                        <span
+                          className={cn(
+                            "text-sm group-data-[collapsible=icon]:hidden transition-colors",
+                            isActive(href)
+                              ? "text-foreground font-medium"
+                              : "text-foreground",
+                          )}
+                        >
+                          {item.label}
+                        </span>
+
+                        <span
+                          className="
+                 pointer-events-none absolute inset-0 -z-10
+                 opacity-0 transition-opacity
+                 group-data-[active=true]:opacity-100
+                 bg-linear-to-l from-blue-600 dark:from-blue-600/70 via-blue-600/20 to-transparent!
+               "
+                        />
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
+
+              {/* FILTERED MORE MENU ITEMS IF SEARCHING */}
+              {searchQuery && filteredMoreMenu.map((item) => {
                 const Icon = item.icon;
                 const href = `/dashboard/my-projects/${slug}/${item.path}`;
 
@@ -758,6 +931,52 @@ export default function ProjectSidebar() {
                   </SidebarMenuItem>
                 );
               })}
+
+              {/* MORE LINK (only when not searching) */}
+              {!searchQuery && (
+                <SidebarMenuItem>
+                  <Popover>
+                    <PopoverTrigger asChild>
+                      <SidebarMenuButton
+                        tooltip="More"
+                        className="group relative overflow-hidden cursor-pointer"
+                      >
+                        <div className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center">
+                          <Blocks className="h-5 w-5 text-foreground" />
+                          <span className="text-sm text-foreground group-data-[collapsible=icon]:hidden">
+                            More
+                          </span>
+                          <ChevronRight className="ml-auto h-4 w-4 text-muted-foreground group-data-[collapsible=icon]:hidden" />
+                        </div>
+                      </SidebarMenuButton>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      side="right"
+                      align="center"
+                      sideOffset={6}
+                      className="w-64 p-4 bg-sidebar backdrop-blur-md border border-accent! shadow-xl rounded-lg animate-in fade-in-50 zoom-in-95 duration-100"
+                    >
+
+                      <div className="grid grid-cols-3 gap-x-4 gap-y-5 justify-items-center py-1">
+                        {moreMenu.map((item) => (
+                          <Link
+                            key={item.label}
+                            href={`/dashboard/my-projects/${slug}/${item.path}`}
+                            className="flex flex-col items-center gap-2 group cursor-pointer"
+                          >
+                            <div className="h-9 w-9 rounded flex items-center justify-center bg-muted/40 border border-accent! text-white transition-all duration-300 shadow-sm group-hover:bg-muted/90 group-hover:border-accent-foreground/30">
+                              <item.icon className="h-4! w-4!" />
+                            </div>
+                            <span className="text-xs whitespace-nowrap">
+                              {item.label}
+                            </span>
+                          </Link>
+                        ))}
+                      </div>
+                    </PopoverContent>
+                  </Popover>
+                </SidebarMenuItem>
+              )}
             </SidebarMenu>
           )}
 

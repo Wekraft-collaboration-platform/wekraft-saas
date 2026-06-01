@@ -24,7 +24,8 @@ export interface ChatbotStreamCallbacks {
 
 export async function streamChatbot(
     body: { userId: string; messages: unknown[] },
-    callbacks: ChatbotStreamCallbacks
+    callbacks: ChatbotStreamCallbacks,
+    signal?: AbortSignal
 ) {
     const res = await fetch("/api/chatbot", {
         method: "POST",
@@ -33,10 +34,12 @@ export async function streamChatbot(
             Accept: "text/event-stream",
         },
         body: JSON.stringify(body),
+        signal,
     });
 
     if (!res.ok || !res.body) {
-        callbacks.onError?.(new Error(`HTTP ${res.status}`));
+        const errText = await res.text().catch(() => "");
+        callbacks.onError?.(new Error(errText || `HTTP ${res.status}`));
         return;
     }
 

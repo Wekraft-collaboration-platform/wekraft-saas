@@ -35,7 +35,7 @@ export default defineSchema({
     subscriptionId: v.optional(v.string()),
     customerId: v.optional(v.string()),
     subscriptionStatus: v.optional(v.string()), // "active", "past_due", "cancelled", etc.
-    subscriptionProvider: v.optional(v.string()), // "razorpay" | "stripe"
+    subscriptionProvider: v.optional(v.string()), // "razorpay"
     currentPeriodEnd: v.optional(v.number()), // Unix timestamp in ms
     cancelAtPeriodEnd: v.optional(v.boolean()),
 

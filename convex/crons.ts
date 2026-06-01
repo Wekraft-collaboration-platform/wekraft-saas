@@ -12,7 +12,7 @@ crons.daily(
 );
 
 // Safety-net: downgrade users whose paid plan period has expired.
-// This fires even if the Stripe/Razorpay "subscription.deleted" webhook was missed.
+// This fires even if the Razorpay "subscription.deleted" webhook was missed.
 crons.daily(
   "downgrade-expired-plans",
   { hourUTC: 0, minuteUTC: 30 }, // 00:30 AM UTC daily

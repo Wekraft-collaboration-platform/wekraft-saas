@@ -1,38 +1,35 @@
 "use client";
 
-import { History, Plus, Video } from "lucide-react";
+import { History, Plus, FileText } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
 import React from "react";
 import { Button } from "@/components/ui/button";
-import { useKayaStore } from "@/store/useKayaStore";
 
-export default function MeetPage() {
+export default function DocsPage() {
   const params = useParams();
   const router = useRouter();
   const slug = params.slug as string;
-  const { setIsOpen } = useKayaStore();
 
   return (
     <div className="w-full h-full p-6 max-w-7xl mx-auto">
       {/* ── Header ───────────────────────────────────── */}
       <header className="flex items-center justify-between gap-4 mb-8">
         <div>
-          <h1 className="text-2xl font-semibold">
-            <Video className="w-6 h-6 mr-2 text-primary inline-block" />
-            Team Meet
+          <h1 className="text-2xl font-semibold flex items-center">
+            <FileText className="w-6 h-6 mr-2 text-primary" />
+            Project Docs
           </h1>
           <p className="text-sm text-muted-foreground mt-1">
-            Connect with your teammates in real-time meetings and collaborate.
+            Create, share, and organize documents and wikis for your project.
           </p>
         </div>
 
         <div className="flex items-center gap-5">
-
           <Button size="sm" className="shadow-sm text-xs" disabled>
             <Plus className="w-4 h-4 mr-2" />
-            New Meeting
+            New Document
           </Button>
         </div>
       </header>
@@ -42,7 +39,7 @@ export default function MeetPage() {
         <div className="flex flex-col items-start justify-center space-y-2.5 p-4 w-[380px] mx-auto">
           <Image
             src="/pat106.svg"
-            alt="Empty Workspace"
+            alt="Empty Docs"
             width={160}
             height={160}
             className="mb-1"
@@ -51,12 +48,11 @@ export default function MeetPage() {
           <div className="space-y-2.5 w-full">
             <div>
               <p className="text-xl font-semibold text-primary">
-                No Active Meetings
+                No Documents Yet
               </p>
               <p className="text-muted-foreground text-sm lg:text-[15px] leading-relaxed">
-                Real-time video collaboration is coming soon! Host secure team
-                meetings, share your screen, and brainstorm ideas with your
-                teammates.
+                Collaborative project documentation is coming soon! Write rich-text
+                guides, maintain meeting notes, and link them to your sprints.
               </p>
             </div>
 

@@ -11,6 +11,7 @@ import {
   Sparkles,
   Trash2,
   UserPlus,
+  BriefcaseBusiness,
 } from "lucide-react";
 import Image from "next/image";
 import { useParams, useRouter } from "next/navigation";
@@ -47,6 +48,7 @@ import { KanbanTask } from "@/modules/workspace/KanbanTask";
 import { ListTab } from "@/modules/workspace/ListTab";
 import { TableTab } from "@/modules/workspace/TableTab";
 import { useKayaStore } from "@/store/useKayaStore";
+import { useMyWorkStore } from "@/store/useMyWorkStore";
 import { api } from "../../../../../../../../convex/_generated/api";
 import type { Id } from "../../../../../../../../convex/_generated/dataModel";
 
@@ -58,6 +60,7 @@ const TaskPage = () => {
   const [taskLimit, setTaskLimit] = useState(10);
   const [selectedTaskIds, setSelectedTaskIds] = useState<Id<"tasks">[]>([]);
   const { setIsOpen } = useKayaStore();
+  const { setIsOpen: setIsWorkOpen, setActiveTab: setWorkActiveTab } = useMyWorkStore();
   const [sortConfig, setSortConfig] = useState<SortConfig>(null);
   const [tagFilter, setTagFilter] = useState<string | null>(null);
   const [showTaskTour, setShowTaskTour] = useState(false);
@@ -272,11 +275,10 @@ const TaskPage = () => {
                     setActiveTab(tab.id);
                   });
                 }}
-                className={`flex items-center gap-2 transition pb-2 -mb-px text-base ${
-                  isActive
-                    ? "text-foreground border-b-2 border-b-primary! rounded-none rounded-t-md"
-                    : "hover:text-foreground border-b-2 border-transparent"
-                }`}
+                className={`flex items-center gap-2 transition pb-2 -mb-px text-base ${isActive
+                  ? "text-foreground border-b-2 border-b-primary! rounded-none rounded-t-md"
+                  : "hover:text-foreground border-b-2 border-transparent"
+                  }`}
               >
                 <Icon className="w-5 h-5" />
                 {tab.label}
@@ -353,7 +355,20 @@ const TaskPage = () => {
             className="bg-linear-to-t from-indigo-600/30 via-purple-600/10 to-transparent text-xs cursor-pointer px-6!"
           >
             <Image src="/kaya.svg" alt="Kaya AI" width={18} height={18} />
-            Ask Kaya
+            View Breakdown
+          </Button>
+
+          <Button
+            size="sm"
+            variant="default"
+            onClick={() => {
+              setWorkActiveTab("tasks");
+              setIsWorkOpen(true);
+            }}
+            className="text-xs cursor-pointer gap-1.5"
+          >
+            <BriefcaseBusiness className="w-4 h-4" />
+            View Your tasks
           </Button>
           <CreateTaskDialog
             projectName={projectName || "Project"}
@@ -519,7 +534,7 @@ function CreateTaskTourTooltip({
       style={{ top: pos.top, left: pos.left, width: 320 }}
       onClick={(e) => e.stopPropagation()}
     >
-      <div 
+      <div
         className="mb-1 -mt-5"
         style={{ transform: `translateX(${pos.arrowOffset ? pos.arrowOffset - 160 : 0}px)` }}
       >

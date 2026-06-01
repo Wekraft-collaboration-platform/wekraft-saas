@@ -1,6 +1,7 @@
 import crypto from "crypto";
 import { type NextRequest, NextResponse } from "next/server";
 import Razorpay from "razorpay";
+import { auth } from "@clerk/nextjs/server";
 import { ConvexHttpClient } from "convex/browser";
 import { api } from "../../../../../../convex/_generated/api";
 
@@ -16,11 +17,15 @@ function getRazorpayKeySecret(): string {
 
 export async function POST(req: NextRequest) {
   try {
+    const { userId } = await auth();
+    if (!userId) {
+      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    }
+
     let {
       razorpay_subscription_id,
       razorpay_payment_id,
       razorpay_signature,
-      userId,
       plan,
     } = await req.json();
 
@@ -31,9 +36,9 @@ export async function POST(req: NextRequest) {
       );
     }
 
-    if (!userId || !plan) {
+    if (!plan) {
       return NextResponse.json(
-        { error: "userId and plan are required for fulfillment" },
+        { error: "plan is required for fulfillment" },
         { status: 400 },
       );
     }
@@ -98,6 +103,13 @@ export async function POST(req: NextRequest) {
           key_secret: keySecret,
         });
         const subscription = await razorpay.subscriptions.fetch(razorpay_subscription_id);
+
+        // SECURITY: Prevent payment verification replay for different users
+        if (subscription && subscription.notes && subscription.notes.userId !== userId) {
+          console.error(`[Razorpay Verify] userId mismatch. Expected ${subscription.notes.userId}, got ${userId}`);
+          return NextResponse.json({ success: false, error: "Unauthorized userId for this payment" }, { status: 403 });
+        }
+
         if (subscription && subscription.current_end) {
           currentPeriodEnd = subscription.current_end * 1000;
         }
@@ -121,9 +133,14 @@ export async function POST(req: NextRequest) {
 
     const convex = new ConvexHttpClient(convexUrl);
     
+    const userObj = await convex.query(api.user.getUserByClerkToken, { clerkToken: userId });
+    if (!userObj) {
+      return NextResponse.json({ success: false, error: "User not found in database" }, { status: 404 });
+    }
+
     await convex.mutation(api.razorpay.updatePlanServerSide, {
       backendSecret,
-      userId,
+      userId: userObj._id,
       plan,
       subscriptionId: razorpay_subscription_id,
       status: "active",
