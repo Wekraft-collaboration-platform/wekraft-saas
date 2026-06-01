@@ -2,7 +2,7 @@
 
 import { RedirectToSignIn } from "@clerk/nextjs";
 import { Authenticated, Unauthenticated, useQuery } from "convex/react";
-import { BugPlay, Home, Moon, Share2, SunMedium, Video, HelpCircle } from "lucide-react";
+import { BugPlay, Home, Moon, Share2, SunMedium, Video, HelpCircle, BriefcaseBusiness } from "lucide-react";
 import Link from "next/link";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -93,24 +93,40 @@ export default function Layout({
                 /> */}
                 <div className="flex items-center gap-3">
                   <TooltipProvider>
-                    <NotificationCenter />
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          size="icon-sm"
-                          variant="outline"
-                          onClick={() => setIsHelpOpen(true)}
-                          aria-label="Help & Support"
-                          className="cursor-pointer hover:scale-105 transition-all duration-200"
-                        >
-                          <HelpCircle className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Help & Support</TooltipContent>
-                    </Tooltip>
                     {/* Only when workspace ! */}
                     {isWorkspaceRoute && (
                       <>
+                        {/* HOME */}
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              size="icon-sm"
+                              variant="outline"
+                              onClick={() => router.push(`/dashboard/my-projects/${slug}`)}
+                              aria-label="Home"
+                              className="cursor-pointer hover:scale-105 transition-all duration-200"
+                            >
+                              <Home className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>Home</TooltipContent>
+                        </Tooltip>
+                        {/* MY WORK */}
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button
+                              size="icon-sm"
+                              variant="outline"
+
+                              aria-label="My-work"
+                              className="cursor-pointer hover:scale-105 transition-all duration-200"
+                            >
+                              <BriefcaseBusiness className="h-4 w-4" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent>My Work</TooltipContent>
+                        </Tooltip>
+                        {/* Share */}
                         <Tooltip>
                           <TooltipTrigger asChild>
                             <Button
@@ -138,8 +154,25 @@ export default function Layout({
                             <TooltipContent>Team Meet</TooltipContent>
                           </Tooltip>
                         </Link>
+
                       </>
                     )}
+                    <NotificationCenter />
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          size="icon-sm"
+                          variant="outline"
+                          onClick={() => setIsHelpOpen(true)}
+                          aria-label="Help & Support"
+                          className="cursor-pointer hover:scale-105 transition-all duration-200"
+                        >
+                          <HelpCircle className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Help & Support</TooltipContent>
+                    </Tooltip>
+
                   </TooltipProvider>
                 </div>
                 <UserMenu />
