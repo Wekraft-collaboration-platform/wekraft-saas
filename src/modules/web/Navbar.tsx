@@ -16,8 +16,8 @@ const navLinks: { label: string; href: string }[] = [
   { label: "Home", href: "/" },
   { label: "Features", href: "#" },
   { label: "Pricing", href: "/web/pricing" },
-  { label: "Reach us", href: "/web/reach-us" },
-  { label: "Why us?", href: "/web/why-us" },
+  { label: "Contact", href: "/web/contact" },
+  { label: "Why Wekraft?", href: "/web/why-wekraft" },
   { label: "Docs", href: "/web/docs" },
 ];
 
@@ -56,11 +56,11 @@ const Navbar = () => {
         "fixed top-4 left-1/2 -translate-x-1/2 z-50 transition-all duration-500 ease-out",
         scrolled || isMenuOpen || isLightSection
           ? clsx(
-              "backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] max-w-4xl w-[95%] md:w-full rounded-2xl border",
-              isLightSection
-                ? "bg-neutral-950/80 border-white/10"
-                : "bg-neutral-900/50 border-white/10",
-            )
+            "backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] max-w-4xl w-[95%] md:w-full rounded-2xl border",
+            isLightSection
+              ? "bg-neutral-950/80 border-white/10"
+              : "bg-neutral-900/50 border-white/10",
+          )
           : "bg-transparent w-full",
       )}
     >
@@ -199,7 +199,7 @@ const Navbar = () => {
                         </span>
                       </div>
                       <Link href="/dashboard" className="w-full">
-                        <Button 
+                        <Button
                           className="w-full bg-blue-600 hover:bg-blue-700 text-white"
                           onClick={() => setIsMenuOpen(false)}
                         >
