@@ -59,6 +59,7 @@ import Image from "next/image";
 import { GettingStartedChecklist } from "@/modules/dashboard/components/GettingStartedChecklist";
 import { WelcomeDialog } from "@/modules/dashboard/components/WelcomeDialog";
 import { GettingStartedCompleteDialog } from "@/modules/dashboard/components/GettingStartedCompleteDialog";
+import { FreeTrialDialog } from "@/modules/dashboard/components/FreeTrialDialog";
 
 // ─── Utility: human-readable relative time ─────────────────────────────────
 function timeAgo(ts: number): string {
@@ -79,7 +80,15 @@ export default function DashboardPage() {
   const { user: clerkUser } = useUser();
   const searchParams = useSearchParams();
 
+  const [isFreeTrialDialogOpen, setIsFreeTrialDialogOpen] = useState(false);
 
+  useEffect(() => {
+    const handleOpenFreeTrial = () => {
+      setIsFreeTrialDialogOpen(true);
+    };
+    window.addEventListener("open-free-trial-dialog", handleOpenFreeTrial);
+    return () => window.removeEventListener("open-free-trial-dialog", handleOpenFreeTrial);
+  }, []);
 
   const [activeTab, setActiveTab] = useState<"stats" | "projects" | "discover">("stats");
   const [isRightSidebarExpanded, setIsRightSidebarExpanded] = useState(false);
@@ -262,6 +271,7 @@ export default function DashboardPage() {
     <div className="w-full bg-background min-h-full text-foreground">
       <WelcomeDialog />
       <GettingStartedCompleteDialog />
+      <FreeTrialDialog open={isFreeTrialDialogOpen} onClose={() => setIsFreeTrialDialogOpen(false)} />
 
       {/* Parent Divided */}
       <main className="flex flex-col w-full">

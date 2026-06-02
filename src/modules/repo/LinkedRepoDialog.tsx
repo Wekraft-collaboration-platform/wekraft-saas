@@ -30,7 +30,7 @@ export function LinkedRepoDialog({
 }: LinkedRepoDialogProps) {
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-[480px] p-0 overflow-hidden bg-sidebar border border-accent shadow-2xl rounded-xl">
+      <DialogContent className="sm:max-w-[500px] p-0 overflow-hidden bg-sidebar border border-accent shadow-2xl rounded-xl">
         {/* Header Banner */}
         <div className="relative p-4">
           <DialogHeader>
@@ -48,19 +48,19 @@ export function LinkedRepoDialog({
           {/* Inner Sync Box - Gradient from Muted to Pink & border-accent */}
           <div className="relative overflow-hidden rounded-xl border border-accent bg-linear-to-r from-muted/50 to-orange-500/10 p-5 flex items-center justify-between gap-4 h-32">
             <div className="flex-1 space-y-1.5 z-10 relative">
-              <span className="text-[10px] uppercase font-black tracking-wider text-orange-500">
+              <span className="text-[12px] uppercase font-black tracking-wider text-orange-500">
                 Sync Status
               </span>
-              <p className="text-sm font-semibold text-foreground leading-snug max-w-[260px]">
+              <p className="text-base foreground leading-snug max-w-[260px]">
                 Your repository is now successfully synced with the project{" "}
-                <span className="font-bold text-pink-500 capitalize">{projectName}</span>.
+                <span className="font-bold text-blue-500 capitalize">{projectName}</span>.
               </p>
             </div>
             {/* 25.svg Illustration - Bigger and Absolute */}
             <img
               src="/25.svg"
               alt="Repository Syncing"
-              className="absolute -right-8 -bottom-2 w-40 h-40 object-contain pointer-events-none select-none z-0 opacity-90"
+              className="absolute -right-8 -bottom-5 w-40 h-40 object-contain pointer-events-none select-none z-0 opacity-90"
             />
           </div>
 
@@ -118,7 +118,7 @@ export function LinkedRepoDialog({
                     </span>
                   </h4>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    Receive automated in-depth code reviews and quality reports from Harry, your dedicated AI developer, for every pull request and commit.
+                    Receive automated in-depth code reviews and quality reports from Harry, your dedicated Senior Dev.
                   </p>
                 </div>
               </div>
@@ -133,7 +133,7 @@ export function LinkedRepoDialog({
                     Visual codebase heatmaps
                   </h4>
                   <p className="text-[11px] text-muted-foreground leading-relaxed">
-                    Explore structure, active hotspots, and density changes in interactive visual representations of your repository.
+                    Explore structure, active hotspots, and density changes in interactive visual representations.
                   </p>
                 </div>
               </div>

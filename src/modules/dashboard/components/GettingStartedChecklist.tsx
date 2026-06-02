@@ -135,16 +135,14 @@ export const STEPS: StepConfig[] = [
   },
   {
     id: 7,
-    icon: Puzzle,
-    label: "Install the VS Code extension",
-    hint: "Manage tasks without leaving your editor",
+    icon: Sparkles,
+    label: "Unlock your free trial (no charges)",
+    hint: "Absolutely free for 1 week, upgrade to plus",
     description:
-      "The Wekraft VS Code extension lets you view tasks, log time, and push updates to your project — all inside your editor.",
-    cta: "Installed",
+      "Use your 1 free trial. It has no charges, is absolutely free for 1 week, and lets you experience the Plus plan features.",
+    cta: "Unlock Trial",
     action: (router, context) => {
-      if (context?.markExtensionInstalled) {
-        context.markExtensionInstalled();
-      }
+      window.dispatchEvent(new CustomEvent("open-free-trial-dialog"));
     },
   },
 ];
@@ -158,25 +156,12 @@ export function GettingStartedChecklist() {
   const router = useRouter();
   const [expandedStep, setExpandedStep] = useState<number | null>(-1);
 
-  const [extensionInstalled, setExtensionInstalled] = useState(false);
-
-  useEffect(() => {
-    const handleExtensionInstalledEvent = () => {
-      setExtensionInstalled(true);
-    };
-    window.addEventListener('mark-extension-installed', handleExtensionInstalledEvent);
-    return () => window.removeEventListener('mark-extension-installed', handleExtensionInstalledEvent);
-  }, []);
-
-  const handleMarkExtensionInstalled = () => {
-    setExtensionInstalled(true);
-    window.dispatchEvent(new CustomEvent('mark-extension-installed'));
-  };
+  const userDetails = useQuery(api.user.getUserDetails);
 
   const completedIds = useMemo(() => [
     ...(progressData?.completedSteps ?? []),
-    ...(extensionInstalled ? [7] : [])
-  ], [progressData?.completedSteps, extensionInstalled]);
+    ...(userDetails?.freeTrialUsed ? [7] : [])
+  ], [progressData?.completedSteps, userDetails?.freeTrialUsed]);
 
   // Auto-mark completed in DB if all steps finished locally
   useEffect(() => {
@@ -348,7 +333,6 @@ export function GettingStartedChecklist() {
                     onClick={() => {
                       step.action(router, {
                         projects: userProjects,
-                        markExtensionInstalled: handleMarkExtensionInstalled,
                       });
                       setExpandedStep(null);
                     }}
