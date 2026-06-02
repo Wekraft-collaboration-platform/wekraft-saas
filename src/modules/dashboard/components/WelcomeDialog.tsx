@@ -102,20 +102,12 @@ export function WelcomeDialog() {
 
   const progressData = useQuery(api.user.getOnboardingProgress);
   const userProjects = useQuery(api.project.getUserProjects);
-  const [extensionInstalled, setExtensionInstalled] = useState(false);
-
-  useEffect(() => {
-    const handleExtensionInstalledEvent = () => {
-      setExtensionInstalled(true);
-    };
-    window.addEventListener('mark-extension-installed', handleExtensionInstalledEvent);
-    return () => window.removeEventListener('mark-extension-installed', handleExtensionInstalledEvent);
-  }, []);
+  const userDetails = useQuery(api.user.getUserDetails);
 
   const completedIds = useMemo(() => [
     ...(progressData?.completedSteps ?? []),
-    ...(extensionInstalled ? [7] : [])
-  ], [progressData?.completedSteps, extensionInstalled]);
+    ...(userDetails?.freeTrialUsed ? [7] : [])
+  ], [progressData?.completedSteps, userDetails?.freeTrialUsed]);
 
   const hasSeenWelcome = useQuery(api.user.getHasSeenWelcome);
 
@@ -306,8 +298,7 @@ export function WelcomeDialog() {
     const currentStepConfig = STEPS[tourStep - 1];
     
     if (tourStep === 7) {
-      setExtensionInstalled(true);
-      window.dispatchEvent(new CustomEvent('mark-extension-installed'));
+      window.dispatchEvent(new CustomEvent("open-free-trial-dialog"));
     }
     if (currentStepConfig?.action) {
       currentStepConfig.action(router, { projects: userProjects });

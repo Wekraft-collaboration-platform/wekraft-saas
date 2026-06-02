@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import { useQuery } from "convex/react";
-import { ChevronLeft, ChevronRight, Gem } from "lucide-react";
+import { ChevronLeft, ChevronRight, Gem, Sparkles } from "lucide-react";
 import { PieChart, Pie, Label } from "recharts";
 import { api } from "../../../../convex/_generated/api";
 import { cn } from "@/lib/utils";
@@ -33,10 +33,22 @@ export default function RightSidebar({
   const [mounted, setMounted] = React.useState(false);
   const currentUser = useQuery(api.user.getCurrentUser);
   const userLimits = useQuery(api.user.getUserLimits);
+  const userDetails = useQuery(api.user.getUserDetails);
+
+  const [activeSlide, setActiveSlide] = React.useState(0);
+  const freeTrialUsed = !!userDetails?.freeTrialUsed;
 
   React.useEffect(() => {
     setMounted(true);
   }, []);
+
+  React.useEffect(() => {
+    if (freeTrialUsed) return;
+    const interval = setInterval(() => {
+      setActiveSlide((prev) => (prev === 0 ? 1 : 0));
+    }, 6000);
+    return () => clearInterval(interval);
+  }, [freeTrialUsed]);
 
   // Compute Cloud Storage usage and limits
   const cloudStorageLimit = userLimits?.cloud_storage ?? 2 * 1024 * 1024 * 1024;
@@ -164,37 +176,137 @@ export default function RightSidebar({
         {isRightSidebarExpanded && (
           <div className="flex flex-col gap-6 w-full h-[calc(100vh-80px)]">
 
-            {/* Card 1: Upgrade Promotion / Plan Details */}
-            <div className="relative overflow-hidden bg-linear-to-br dark:from-black/75 from-white to-blue-700/60  border-accent rounded-xl p-4.5 flex flex-col justify-between shadow-lg flex-1 min-h-0 text-left">
-              <div className="space-y-3.5 z-10">
-                <div className="flex items-center justify-between">
-                  <span className="text-xs text-white/80 bg-white/20 px-2 py-0.5 rounded-full capitalize">
-                    Current Plan: {accountType}
-                  </span>
+            {freeTrialUsed ? (
+              /* Card 1: Upgrade Promotion / Plan Details */
+              <div className="relative overflow-hidden bg-linear-to-br dark:from-black/75 from-white to-blue-700/60  border-accent rounded-xl p-4.5 flex flex-col justify-between shadow-lg flex-1 min-h-0 text-left">
+                <div className="space-y-3.5 z-10">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-white/80 bg-white/20 px-2 py-0.5 rounded-full capitalize">
+                      Current Plan: {accountType}
+                    </span>
+                  </div>
+
+                  <div className="space-y-1">
+                    <h4 className="text-sm font-bold text-white tracking-tight">{promoContent.title}</h4>
+                    <p className="text-[10px] text-blue-100/80 leading-normal font-medium">{promoContent.description}</p>
+                  </div>
+
+                  <ul className="space-y-1.5 text-[10px] text-blue-50/90 font-semibold">
+                    {promoContent.features.map((feature, idx) => (
+                      <li key={idx} className="flex items-center gap-1.5">
+                        <div className="w-1.5 h-1.5 rounded-full bg-blue-300" />
+                        {feature}
+                      </li>
+                    ))}
+                  </ul>
                 </div>
 
-                <div className="space-y-1">
-                  <h4 className="text-sm font-bold text-white tracking-tight">{promoContent.title}</h4>
-                  <p className="text-[10px] text-blue-100/80 leading-normal font-medium">{promoContent.description}</p>
-                </div>
-
-                <ul className="space-y-1.5 text-[10px] text-blue-50/90 font-semibold">
-                  {promoContent.features.map((feature, idx) => (
-                    <li key={idx} className="flex items-center gap-1.5">
-                      <div className="w-1.5 h-1.5 rounded-full bg-blue-300" />
-                      {feature}
-                    </li>
-                  ))}
-                </ul>
+                {/* Bottom right background illustration */}
+                <img
+                  src="/22.svg"
+                  alt="Upgrade illustration"
+                  className="absolute -bottom-2 -right-2 w-24 h-24  object-cover pointer-events-none select-none z-0"
+                />
               </div>
+            ) : (
+              <div className="flex flex-col gap-2 flex-1 min-h-0">
+                <div className="relative flex-1 min-h-0">
+                  {activeSlide === 0 ? (
+                    <div className="relative overflow-hidden bg-linear-to-br dark:from-black/75 from-white to-blue-700/60 border-accent rounded-xl p-4.5 flex flex-col justify-between shadow-lg h-full text-left animate-in fade-in duration-500">
+                      <div className="space-y-3.5 z-10">
+                        <div className="flex items-center justify-between">
+                          <span className="text-xs text-white/80 bg-white/20 px-2 py-0.5 rounded-full capitalize">
+                            Current Plan: {accountType}
+                          </span>
+                        </div>
 
-              {/* Bottom right background illustration */}
-              <img
-                src="/22.svg"
-                alt="Upgrade illustration"
-                className="absolute -bottom-2 -right-2 w-24 h-24  object-cover pointer-events-none select-none z-0"
-              />
-            </div>
+                        <div className="space-y-1">
+                          <h4 className="text-sm font-bold text-white tracking-tight">{promoContent.title}</h4>
+                          <p className="text-[10px] text-blue-100/80 leading-normal font-medium">{promoContent.description}</p>
+                        </div>
+
+                        <ul className="space-y-1.5 text-[10px] text-blue-50/90 font-semibold">
+                          {promoContent.features.map((feature, idx) => (
+                            <li key={idx} className="flex items-center gap-1.5">
+                              <div className="w-1.5 h-1.5 rounded-full bg-blue-300" />
+                              {feature}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+
+                      <img
+                        src="/22.svg"
+                        alt="Upgrade illustration"
+                        className="absolute -bottom-2 -right-2 w-24 h-24 object-cover pointer-events-none select-none z-0"
+                      />
+                    </div>
+                  ) : (
+                    <div className="relative overflow-hidden bg-linear-to-br dark:from-purple-950/70 from-pink-500/10 to-indigo-700/60 border border-accent/20 rounded-xl p-4.5 flex flex-col justify-between shadow-lg h-full text-left animate-in fade-in duration-500">
+                      <div className="space-y-3 z-10 w-full flex flex-col justify-between h-full">
+                        <div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-[9px] font-bold tracking-wider text-blue-300 bg-blue-500/20 px-2 py-0.5 rounded-full uppercase border border-blue-500/30">
+                              Free Trial Available
+                            </span>
+                          </div>
+
+                          <div className="space-y-1 mt-2.5">
+                            <h4 className="text-sm font-bold text-white tracking-tight">Unlock Plus Plan</h4>
+                            <p className="text-[10px] text-purple-100/90 leading-normal font-medium">Try Wekraft Plus absolutely free for 1 week! No charges upfront.</p>
+                          </div>
+
+                          <ul className="space-y-1 mt-2.5 text-[10px] text-purple-50/90 font-medium">
+                            <li className="flex items-center gap-1.5">
+                              <div className="w-1 h-1 rounded-full bg-purple-300" />
+                              15 GB Cloud Storage
+                            </li>
+                            <li className="flex items-center gap-1.5">
+                              <div className="w-1 h-1 rounded-full bg-purple-300" />
+                              Up to 10 project creations
+                            </li>
+                          </ul>
+                        </div>
+
+                        <button
+                          type="button"
+                          onClick={() => window.dispatchEvent(new CustomEvent('open-free-trial-dialog'))}
+                          className="mt-3.5 w-full bg-white text-indigo-950 font-bold text-xs py-1.5 rounded-md hover:bg-white/95 active:scale-98 transition-all cursor-pointer shadow-md text-center flex items-center justify-center gap-1 shrink-0 z-10"
+                        >
+                          Unlock Free Trial
+                          <Sparkles className="w-3 h-3 text-indigo-600 animate-pulse" />
+                        </button>
+                      </div>
+
+                      <img
+                        src="/flw1.svg"
+                        alt="Trial decoration"
+                        className="absolute -bottom-4 -right-4 w-20 h-20 object-cover pointer-events-none select-none z-0 opacity-20 mix-blend-screen"
+                      />
+                    </div>
+                  )}
+                </div>
+
+                <div className="flex justify-center gap-1.5 mt-1 shrink-0">
+                  <button
+                    onClick={() => setActiveSlide(0)}
+                    className={cn(
+                      "w-1.5 h-1.5 rounded-full transition-all duration-300 cursor-pointer",
+                      activeSlide === 0 ? "bg-white w-3" : "bg-white/40 hover:bg-white/60"
+                    )}
+                    aria-label="Upgrade Promo Slide"
+                  />
+                  <button
+                    onClick={() => setActiveSlide(1)}
+                    className={cn(
+                      "w-1.5 h-1.5 rounded-full transition-all duration-300 cursor-pointer",
+                      activeSlide === 1 ? "bg-white w-3" : "bg-white/40 hover:bg-white/60"
+                    )}
+                    aria-label="Free Trial Promo Slide"
+                  />
+                </div>
+              </div>
+            )}
 
             {/* Card 2: AI Usage */}
             <div className="bg-sidebar border border-accent rounded-md p-3.5 flex flex-col items-center justify-between text-center shadow-sm flex-1 min-h-0">
