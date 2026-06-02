@@ -20,6 +20,9 @@ import {
 import { INVITE_LINK } from "@/lib/static-store";
 import { toast } from "sonner";
 import { LuExternalLink } from "react-icons/lu";
+import { cn } from "@/lib/utils";
+import { useMutation } from "convex/react";
+import { api } from "../../../convex/_generated/api";
 
 interface InviteDialogProps {
   inviteLink?: string;
@@ -27,15 +30,19 @@ interface InviteDialogProps {
   trigger?: React.ReactNode;
   open?: boolean;
   onOpenChange?: (open: boolean) => void;
+  contentClassName?: string;
+  preventCloseOutside?: boolean;
 }
 
-export function InviteDialog({ inviteLink, projectName, trigger, open, onOpenChange }: InviteDialogProps) {
+export function InviteDialog({ inviteLink, projectName, trigger, open, onOpenChange, contentClassName, preventCloseOutside }: InviteDialogProps) {
   const [copied, setCopied] = React.useState(false);
   const [email, setEmail] = React.useState("");
   const [inviting, setInviting] = React.useState(false);
   const [role, setRole] = React.useState<"member" | "admin">("member");
 
   const fullInviteLink = inviteLink ? `${INVITE_LINK}invite/${inviteLink}?role=${role}` : "";
+
+  const markInviteStepCompleted = useMutation(api.user.markInviteStepCompleted);
 
   const isValidEmail = (val: string) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val);
@@ -53,6 +60,7 @@ export function InviteDialog({ inviteLink, projectName, trigger, open, onOpenCha
       }
     });
     setTimeout(() => setCopied(false), 2000);
+    markInviteStepCompleted().catch((err) => console.error("Error marking invite step complete:", err));
   };
 
   const handleInvite = async () => {
@@ -86,6 +94,7 @@ export function InviteDialog({ inviteLink, projectName, trigger, open, onOpenCha
         }
       });
       setEmail("");
+      markInviteStepCompleted().catch((err) => console.error("Error marking invite step complete:", err));
     } catch (err: any) {
       toast.error(err.message || "Failed to send invitation. Please try again.", {
         style: {
@@ -114,7 +123,12 @@ export function InviteDialog({ inviteLink, projectName, trigger, open, onOpenCha
       <DialogTrigger asChild>
         {trigger || <Button variant="outline">Invite</Button>}
       </DialogTrigger>
-      <DialogContent className="w-full max-w-lg bg-sidebar border border-accent shadow-[0_0_50px_rgba(0,0,0,0.8)] rounded-xl p-0 overflow-hidden gap-0 text-white">
+      <DialogContent
+        className={cn("w-full max-w-lg bg-sidebar border border-accent shadow-[0_0_50px_rgba(0,0,0,0.8)] rounded-xl p-0 overflow-hidden gap-0 text-white", contentClassName)}
+        onPointerDownOutside={preventCloseOutside ? (e) => e.preventDefault() : undefined}
+        onInteractOutside={preventCloseOutside ? (e) => e.preventDefault() : undefined}
+        onEscapeKeyDown={preventCloseOutside ? (e) => e.preventDefault() : undefined}
+      >
         <div className="p-6 pb-4">
           <DialogHeader className="gap-1">
             <DialogTitle className="text-xl font-bold tracking-tight text-white text-left">
@@ -203,6 +217,7 @@ export function InviteDialog({ inviteLink, projectName, trigger, open, onOpenCha
 
           {/* Copy Invite Link Option */}
           <Button
+            id="copy-invite-link-btn"
             variant="outline"
             onClick={handleCopy}
             disabled={!fullInviteLink}

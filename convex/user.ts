@@ -723,7 +723,7 @@ export const getOnboardingProgress = query({
 
     if (hasTasks) steps.push(4);
     if (hasDeadline) steps.push(5);
-    if (hasTeamMembers) steps.push(6);
+    if (hasTeamMembers || user.hasCompletedInviteStep) steps.push(6);
 
     // Step 3: Visit workspace
     if (user.hasVisitedWorkspace) steps.push(3);
@@ -816,6 +816,29 @@ export const completeGettingStarted = mutation({
 
     await ctx.db.patch(user._id, {
       gettingstartedcompleted: true,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
+export const markInviteStepCompleted = mutation({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) throw new Error("User not found");
+
+    if (user.hasCompletedInviteStep) return;
+
+    await ctx.db.patch(user._id, {
+      hasCompletedInviteStep: true,
       updatedAt: Date.now(),
     });
   },

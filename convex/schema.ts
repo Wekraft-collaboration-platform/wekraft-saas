@@ -21,6 +21,7 @@ export default defineSchema({
     hasCompletedOnboarding: v.boolean(),
     primaryUsage: v.optional(v.array(v.string())),
     hasVisitedWorkspace: v.optional(v.boolean()),
+    hasCompletedInviteStep: v.optional(v.boolean()),
     hasSeenWelcome: v.optional(v.boolean()),
     gettingstartedcompleted: v.optional(v.boolean()),
     hasSeenGettingStartedComplete: v.optional(v.boolean()),
