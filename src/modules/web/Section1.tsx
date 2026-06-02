@@ -19,8 +19,8 @@ const Section1 = () => {
           {/* Main Heading Section */}
           <div className="p-12 md:p-12 text-center border-b border-white/10">
             <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-blue-500/20 backdrop-blur-md bg-blue-500/5 shadow-[0_0_20px_rgba(59,130,246,0.1)] mb-8">
-              <div className="w-1.5 h-1.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.8)] animate-pulse" />
-              <span className="text-sm  text-blue-200 tracking-wide">
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(96,165,250,0.8)] " />
+              <span className="text-sm  text-neutral-200 tracking-wide">
                 Purpose-built for engineering teams
               </span>
             </div>
@@ -43,12 +43,14 @@ const Section1 = () => {
             {/* Element 1 */}
             <div className="relative overflow-hidden border-b md:border-b md:border-r border-white/10 group hover:bg-white/[0.01] transition-colors duration-500 min-h-[500px] flex flex-col items-stretch justify-between">
               {/* Background Pattern */}
-              <StripedPattern
-                className="absolute inset-y-0 left-8 right-8 opacity-25 text-white/40 [mask-image:radial-gradient(ellipse_at_center,white,transparent)"
-                width={20}
-                height={20}
+              <FlickeringGrid
+                className="absolute inset-y-0 left-8 right-8 z-0 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]"
+                squareSize={3}
+                gridGap={6}
+                color="#F4F4F6"
+                maxOpacity={0.2}
+                flickerChance={0.1}
               />
-
               {/* Side Decorations */}
               <div className="absolute inset-y-0 left-0 w-8 border-r border-white/10 bg-neutral-900 z-20" />
               <div className="absolute inset-y-0 right-0 w-8 border-l border-white/10 bg-neutral-950 z-20" />
@@ -88,7 +90,7 @@ const Section1 = () => {
                 squareSize={3}
                 gridGap={6}
                 color="#F4F4F6"
-                maxOpacity={0.3}
+                maxOpacity={0.2}
                 flickerChance={0.1}
               />
 
@@ -125,7 +127,7 @@ const Section1 = () => {
                 squareSize={3}
                 gridGap={6}
                 color="#F4F4F6"
-                maxOpacity={0.25}
+                maxOpacity={0.2}
                 flickerChance={0.1}
               />
 
@@ -133,13 +135,7 @@ const Section1 = () => {
               <div className="absolute inset-y-0 left-0 w-8 border-r border-white/10 bg-neutral-900 z-20" />
               <div className="absolute inset-y-0 right-0 w-8 border-l border-white/10 bg-neutral-950 z-20" />
 
-              <div className="w-full px-12 md:px-20 relative z-10 flex items-center justify-center scale-100">
-                <VaultLock
-                  isHovered={isHovered3}
-                  cardTitle="Vault Access"
-                  cardDescription="Smooth and secure login experience, backed by encrypted access and seamless visual transitions"
-                />
-              </div>
+
               {/* Ticks/Markers */}
               <div className="absolute top-0 left-8 w-px h-5 bg-white/40" />
               <div className="absolute top-0 right-8 w-px h-5 bg-white/40" />
@@ -152,22 +148,18 @@ const Section1 = () => {
               <FlickeringGrid
                 className="absolute inset-y-0 left-8 right-8 z-0 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]"
                 squareSize={3}
-                gridGap={10}
+                gridGap={6}
                 color="#F4F4F6"
-                maxOpacity={0.3}
-                flickerChance={0.05}
+                maxOpacity={0.2}
+                flickerChance={0.1}
               />
+
 
               {/* Side Decorations */}
               <div className="absolute inset-y-0 left-0 w-8 border-r border-white/10 bg-neutral-950 z-20" />
               <div className="absolute inset-y-0 right-0 w-8 border-l  border-white/10 bg-neutral-900 z-20" />
 
-              <div className="text-center relative z-10 px-12 md:px-20">
-                <FrameworkAgnostic
-                  cardTitle="All In one Place"
-                  cardDescription="Channels to communicateand share/ Meet with stakeholders and Track project deadline in most simples way possible."
-                />
-              </div>
+
               {/* Ticks/Markers */}
               <div className="absolute top-0 left-8 w-px h-5 bg-white/40" />
               <div className="absolute top-0 right-8 w-px h-5 bg-white/40" />
