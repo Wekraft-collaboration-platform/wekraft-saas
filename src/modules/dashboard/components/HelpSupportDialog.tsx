@@ -23,7 +23,6 @@ import { toast } from "sonner";
 import {
   LifeBuoy,
   MessageSquare,
-  Bot,
   Bug,
   HelpCircle,
   CreditCard,
@@ -36,10 +35,41 @@ import {
   User,
   Headset,
   Trash2,
-  Square
+  Square,
+  ChevronRight
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+
+const AIAssistantIcon = ({ className }: { className?: string }) => (
+  <svg
+    viewBox="0 0 24 24"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+    className={className}
+  >
+    <defs>
+      <linearGradient id="aiIconGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+        <stop offset="0%" stopColor="#3b82f6" />
+        <stop offset="100%" stopColor="#8b5cf6" />
+      </linearGradient>
+    </defs>
+    <path
+      d="M12 3L14.5 8.5L20 11L14.5 13.5L12 19L9.5 13.5L4 11L9.5 8.5L12 3Z"
+      fill="url(#aiIconGrad)"
+    />
+    <path
+      d="M19 3L20 5.5L22.5 6.5L20 7.5L19 10L18 7.5L15.5 6.5L18 5.5L19 3Z"
+      fill="url(#aiIconGrad)"
+      opacity="0.7"
+    />
+    <path
+      d="M5 15L6 17.5L8.5 18.5L6 19.5L5 22L4 19.5L1.5 18.5L4 17.5L5 15Z"
+      fill="url(#aiIconGrad)"
+      opacity="0.7"
+    />
+  </svg>
+);
 
 interface HelpSupportDialogProps {
   trigger?: React.ReactNode;
@@ -321,49 +351,28 @@ export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDi
               className="flex-1 overflow-y-auto pr-1 mb-3 space-y-3 min-h-0 select-none scrollbar-thin scrollbar-thumb-zinc-800 scrollbar-track-transparent"
             >
               {messages.length === 0 ? (
-                <div className="flex flex-col items-center justify-center h-full text-center p-4 space-y-3 select-none">
-                  <Bot className="h-7 w-7" />
+                <div className="flex flex-col items-center justify-center h-full text-center p-4 space-y-4 select-none">
+                  <AIAssistantIcon className="h-9 w-9" />
                   <div className="space-y-1">
                     <h4 className="text-base font-medium text-white">Wekraft AI Assistant</h4>
-
                   </div>
-                  <div className="grid grid-cols-2 gap-2 w-full max-w-[440px] pt-1">
-                    <button
-                      type="button"
-                      onClick={() => sendMessage("Help me get started with Wekraft and explain what I can do here.")}
-                      className="flex flex-col items-start gap-1 p-2 text-left bg-zinc-900/40 hover:bg-zinc-800/60 border border-zinc-800/80 rounded-xl transition-all duration-200 cursor-pointer group hover:border-zinc-700"
-                    >
-                      <HelpCircle className="h-3.5 w-3.5 text-blue-400 group-hover:text-blue-300 transition-colors" />
-                      <span className="text-[10px] font-medium text-zinc-200 mt-0.5">Get help about anything</span>
-                      <span className="text-[8px] text-zinc-500 leading-tight">Ask questions or find features in Wekraft.</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => sendMessage("I have a query regarding my account or project settings.")}
-                      className="flex flex-col items-start gap-1 p-2 text-left bg-zinc-900/40 hover:bg-zinc-800/60 border border-zinc-800/80 rounded-xl transition-all duration-200 cursor-pointer group hover:border-zinc-700"
-                    >
-                      <MessageSquare className="h-3.5 w-3.5 text-indigo-400 group-hover:text-indigo-300 transition-colors" />
-                      <span className="text-[10px] font-medium text-zinc-200 mt-0.5">Raise queries</span>
-                      <span className="text-[8px] text-zinc-500 leading-tight">Ask about pricing, plans, or configurations.</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => sendMessage("I found a bug in the app. Can you help me report it?")}
-                      className="flex flex-col items-start gap-1 p-2 text-left bg-zinc-900/40 hover:bg-zinc-800/60 border border-zinc-800/80 rounded-xl transition-all duration-200 cursor-pointer group hover:border-zinc-700"
-                    >
-                      <Bug className="h-3.5 w-3.5 text-rose-400 group-hover:text-rose-300 transition-colors" />
-                      <span className="text-[10px] font-medium text-zinc-200 mt-0.5">Report bugs</span>
-                      <span className="text-[8px] text-zinc-500 leading-tight">Identify UI issues, performance bugs, or errors.</span>
-                    </button>
-                    <button
-                      type="button"
-                      onClick={() => sendMessage("Tell me more about Wekraft and what makes it unique.")}
-                      className="flex flex-col items-start gap-1 p-2 text-left bg-zinc-900/40 hover:bg-zinc-800/60 border border-zinc-800/80 rounded-xl transition-all duration-200 cursor-pointer group hover:border-zinc-700"
-                    >
-                      <Bot className="h-3.5 w-3.5 text-emerald-400 group-hover:text-emerald-300 transition-colors" />
-                      <span className="text-[10px] font-medium text-zinc-200 mt-0.5">Understand Wekraft more</span>
-                      <span className="text-[8px] text-zinc-500 leading-tight">Explore the platform's vision, tools, and integrations.</span>
-                    </button>
+                  <div className="flex flex-col gap-2 w-full max-w-[400px] pt-1">
+                    {[
+                      { label: "Ask anything about Wekraft", query: "Help me get started with Wekraft and explain what I can do here." },
+                      { label: "Raise queries", query: "I have a query regarding my account or project settings." },
+                      { label: "Report bugs", query: "I found a bug in the app. Can you help me report it?" },
+                      { label: "Know more features", query: "Tell me more about Wekraft and what makes it unique." }
+                    ].map((item, idx) => (
+                      <button
+                        key={idx}
+                        type="button"
+                        onClick={() => sendMessage(item.query)}
+                        className="flex items-center justify-between px-4 py-2.5 bg-zinc-900/30 hover:bg-zinc-900/60 border border-zinc-800/80 rounded-xl text-xs text-zinc-300 transition-all duration-200 cursor-pointer group hover:border-zinc-700"
+                      >
+                        <span className="font-medium text-zinc-200 group-hover:text-white transition-colors">{item.label}</span>
+                        <ChevronRight className="w-3.5 h-3.5 text-zinc-500 group-hover:text-zinc-300 transition-colors" />
+                      </button>
+                    ))}
                   </div>
                 </div>
               ) : (
@@ -471,9 +480,7 @@ export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDi
                             )}
                           >
                             {!isUser && (
-                              <div className="h-6 w-6 rounded-full bg-blue-500/10 flex items-center justify-center border border-blue-500/20 shrink-0 mt-0.5">
-                                <Bot className="h-3 w-3 text-blue-400" />
-                              </div>
+                              <AIAssistantIcon className="h-5 w-5 shrink-0 mt-0.5 text-blue-400" />
                             )}
                             <div
                               className={cn(
@@ -515,7 +522,6 @@ export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDi
                                 </ReactMarkdown>
                               ) : (
                                 <span className="flex items-center gap-1.5 font-medium text-shimmer">
-                                  <Loader2 className="h-3 w-3 animate-spin shrink-0 text-zinc-400" />
                                   Assistant is thinking...
                                 </span>
                               )}

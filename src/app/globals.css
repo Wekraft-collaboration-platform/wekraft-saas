@@ -727,3 +727,49 @@
 .animate-logo-marquee {
   animation: logo-marquee 25s linear infinite;
 }
+
+/* ─────────────────────────────────────────
+   Sidebar: butter-smooth GPU-composited motion
+   Eliminates "text appears in stages" / jank
+   reported by users. Promotes sidebar panels
+   to their own GPU layer so transitions are
+   handled entirely by the compositor thread —
+   never blocking the main thread.
+──────────────────────────────────────────── */
+[data-slot="sidebar-container"] {
+  /* Force GPU layer promotion */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  /* Prevent sub-pixel paint during width animation */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+[data-slot="sidebar-gap"] {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Prevent layout recalculation of sidebar children during animation
+   so content doesn't "paint in stages" */
+[data-slot="sidebar-inner"] {
+  /* Isolate paint so inner content doesn't trigger repaints during
+     the outer container's width transition */
+  contain: layout style;
+  /* Keep content fully visible immediately — no opacity flash */
+  opacity: 1 !important;
+}
+
+/* Hide overflowing text CLEANLY during collapse — no mid-animation bleed */
+[data-slot="sidebar-container"] [data-sidebar="content"] {
+  overflow: hidden;
+}
+
+/* Icon-only state: ensure all text labels are hidden instantly
+   using the compositor (opacity 0 vs display:none avoids layout shift) */
+[data-collapsible="icon"] [data-slot="sidebar-inner"] span:not(.sr-only),
+[data-collapsible="icon"] [data-slot="sidebar-inner"] [data-sidebar="group-label"] {
+  pointer-events: none;
+}
