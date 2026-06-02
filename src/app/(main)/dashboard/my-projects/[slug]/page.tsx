@@ -68,6 +68,7 @@ const ProjectPage = () => {
   const [showInviteTour, setShowInviteTour] = useState(false);
   const visitBtnRef = useRef<HTMLAnchorElement>(null);
   const markWorkspaceVisited = useMutation(api.user.markWorkspaceVisited);
+  const markInviteStepCompleted = useMutation(api.user.markInviteStepCompleted);
 
   useEffect(() => {
     if (typeof window !== "undefined") {
@@ -314,16 +315,23 @@ const ProjectPage = () => {
         </div>
       )}
 
+      {/* INVITE TOUR BACKDROP */}
+      {showInviteTour && inviteOpen && (
+        <div className="fixed inset-0 z-[100] bg-background/40 backdrop-blur-[1px] pointer-events-auto" />
+      )}
+
       {/* INVITE TOUR TOOLTIP */}
       {showInviteTour && inviteOpen && (
-        <div
-          className="fixed inset-0 z-[100] pointer-events-none"
-          onClick={() => setShowInviteTour(false)}
-        >
+        <div className="fixed inset-0 z-[110] pointer-events-none">
           <InviteTourTooltip
             targetId="copy-invite-link-btn"
-            onDismiss={() => setShowInviteTour(false)}
-            onNext={() => {
+            onDismiss={async () => {
+              try { await markInviteStepCompleted(); } catch {}
+              setShowInviteTour(false);
+              setInviteOpen(false);
+            }}
+            onNext={async () => {
+              try { await markInviteStepCompleted(); } catch {}
               // Resume tour for Step 7 (Install extension) on dashboard
               router.push("/dashboard?tour=resume&resumeAfter=6");
             }}
@@ -354,6 +362,8 @@ const ProjectPage = () => {
             projectName={project.projectName}
             open={inviteOpen}
             onOpenChange={setInviteOpen}
+            contentClassName={showInviteTour ? "z-[105]" : ""}
+            preventCloseOutside={showInviteTour}
             trigger={
               <Button
                 className="px-5! h-7! rounded-md text-xs cursor-pointer bg-blue-500 text-white hover:bg-blue-600"
@@ -619,7 +629,14 @@ function InviteTourTooltip({
   onDismiss: () => void;
   onNext: () => void;
 }) {
-  const [pos, setPos] = useState<{ top: number; left: number; arrowOffset?: number } | null>(null);
+  const [pos, setPos] = useState<{
+    top: number;
+    left: number;
+    buttonX: number;
+    buttonY: number;
+    tooltipX: number;
+    tooltipY: number;
+  } | null>(null);
 
   useEffect(() => {
     const calculate = () => {
@@ -627,21 +644,35 @@ function InviteTourTooltip({
       if (!el) return;
       const rect = el.getBoundingClientRect();
       const tooltipWidth = 320;
+      const tooltipHeight = 210;
+      const arrowWidth = 200; // long curvy arrow width
+      const gap = arrowWidth + 16;
       const margin = 12;
-      const targetCenter = rect.left + rect.width / 2;
-      const rawLeft = targetCenter - tooltipWidth / 2;
-      const clampedLeft = Math.min(
-        Math.max(margin, rawLeft),
-        window.innerWidth - tooltipWidth - margin
-      );
+
+      // Tooltip sits to the RIGHT of the button, with enough room for the arrow
+      let left = rect.right + gap;
+      let top = rect.top + rect.height / 2 - tooltipHeight / 2 + 20; // Shipped down by 20px (moved little up from 40px)
+
+      // Clamp to screen bounds
+      left = Math.min(left, window.innerWidth - tooltipWidth - margin);
+      top = Math.max(margin, Math.min(window.innerHeight - tooltipHeight - margin, top));
+
+      // Connection points
+      const buttonX = rect.right;
+      const buttonY = rect.top + rect.height / 2;
+      const tooltipX = left;
+      const tooltipY = top + 40; // Connect 40px down from tooltip top
+
       setPos({
-        top: rect.bottom + 20,
-        left: clampedLeft,
-        arrowOffset: targetCenter - clampedLeft,
+        top,
+        left,
+        buttonX,
+        buttonY,
+        tooltipX,
+        tooltipY,
       });
     };
     calculate();
-    // Re-calculate shortly after mount in case dialog animation shifts layout
     const timer = setTimeout(calculate, 150);
     window.addEventListener("resize", calculate);
     return () => {
@@ -652,26 +683,60 @@ function InviteTourTooltip({
 
   if (!pos) return null;
 
-  return (
-    <div
-      className="fixed z-[100] pointer-events-auto animate-in fade-in duration-200 flex flex-col items-center"
-      style={{ top: pos.top, left: pos.left, width: 320 }}
-      onClick={(e) => e.stopPropagation()}
-      onPointerDown={(e) => e.stopPropagation()}
-    >
-      <div 
-        className="mb-1 -mt-5"
-        style={{ transform: `translateX(${pos.arrowOffset ? pos.arrowOffset - 160 : 0}px)` }}
-      >
-        <svg width="60" height="80" viewBox="0 0 60 80" fill="none" className="text-white drop-shadow-md rotate-180">
-          <path
-            d="M 30 5 C 45 30, 15 50, 30 75 M 30 75 L 22 65 M 30 75 L 38 65"
-            stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"
-          />
-        </svg>
-      </div>
+  // SVG bounding box
+  const svgLeft = pos.buttonX;
+  const svgWidth = pos.tooltipX - pos.buttonX;
+  const svgTop = Math.min(pos.buttonY, pos.tooltipY) - 50; // 50px padding to avoid clipping curvy wave
+  const svgHeight = Math.abs(pos.tooltipY - pos.buttonY) + 100; // 100px padding to avoid clipping curvy wave
 
-      <div className="flex flex-col w-full">
+  const startX = 16; // 16px gap from the copy button
+  const startY = pos.buttonY - svgTop;
+  const endX = svgWidth - 8; // 8px gap from the tooltip card
+  const endY = pos.tooltipY - svgTop;
+
+  const controlOffset = svgWidth * 0.45;
+
+  return (
+    <>
+      {/* Dynamic curvy arrow — rendered separately so it doesn't affect tooltip layout */}
+      <svg
+        className="fixed z-[112] pointer-events-none"
+        style={{
+          top: svgTop,
+          left: svgLeft,
+          width: svgWidth,
+          height: svgHeight,
+          overflow: "visible",
+        }}
+        viewBox={`0 0 ${svgWidth} ${svgHeight}`}
+        fill="none"
+      >
+        {/* Curvy bezier: starts at right (tooltip side) → sweeps → ends at left (button side) */}
+        <path
+          d={`M ${endX} ${endY} C ${endX - controlOffset} ${endY - 35}, ${startX + controlOffset} ${startY + 35}, ${startX} ${startY}`}
+          stroke="white"
+          strokeWidth="2"
+          strokeLinecap="round"
+          opacity="0.9"
+        />
+        {/* Arrowhead pointing left */}
+        <path
+          d={`M ${startX} ${startY} L ${startX + 12} ${startY - 8} M ${startX} ${startY} L ${startX + 12} ${startY + 8}`}
+          stroke="white"
+          strokeWidth="2"
+          strokeLinecap="round"
+          strokeLinejoin="round"
+          opacity="0.9"
+        />
+      </svg>
+
+      {/* Tooltip card */}
+      <div
+        className="fixed z-[111] pointer-events-auto animate-in fade-in duration-200 flex flex-col w-[320px]"
+        style={{ top: pos.top, left: pos.left }}
+        onClick={(e) => e.stopPropagation()}
+        onPointerDown={(e) => e.stopPropagation()}
+      >
         {/* Tooltip Card — matches WelcomeDialog exactly */}
         <div className="bg-linear-to-br from-neutral-800 to-neutral-950 text-card-foreground border border-border shadow-2xl rounded-lg p-5">
           <div className="flex items-center gap-2">
@@ -715,6 +780,6 @@ function InviteTourTooltip({
           </div>
         </div>
       </div>
-    </div>
+    </>
   );
 }

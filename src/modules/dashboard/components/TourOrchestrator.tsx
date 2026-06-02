@@ -14,6 +14,7 @@ export function TourOrchestrator() {
   const router = useRouter();
   const prevCompletedRef = useRef<number[] | null>(null);
   const [completedTask, setCompletedTask] = useState<number | null>(null);
+  const timeoutIdRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     if (!progressData) return;
@@ -27,13 +28,24 @@ export function TourOrchestrator() {
         // If there's an active tour session
         if (sessionStorage.getItem("wekraft_tour_active") === "true") {
           const maxNewStep = Math.max(...newSteps);
-          setCompletedTask(maxNewStep);
+          if (maxNewStep !== 6) {
+            if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
+            timeoutIdRef.current = setTimeout(() => {
+              setCompletedTask(maxNewStep);
+            }, 2500);
+          }
         }
       }
     }
     
     prevCompletedRef.current = currentCompleted;
   }, [progressData]);
+
+  useEffect(() => {
+    return () => {
+      if (timeoutIdRef.current) clearTimeout(timeoutIdRef.current);
+    };
+  }, []);
 
   if (completedTask !== null) {
     if (completedTask === 2) {

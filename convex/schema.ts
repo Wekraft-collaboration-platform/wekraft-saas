@@ -21,13 +21,14 @@ export default defineSchema({
     hasCompletedOnboarding: v.boolean(),
     primaryUsage: v.optional(v.array(v.string())),
     hasVisitedWorkspace: v.optional(v.boolean()),
+    hasCompletedInviteStep: v.optional(v.boolean()),
     hasSeenWelcome: v.optional(v.boolean()),
     gettingstartedcompleted: v.optional(v.boolean()),
     hasSeenGettingStartedComplete: v.optional(v.boolean()),
     heardFrom: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
-    planExpiry: v.optional(v.number()), // For temporary upgrades/coupons
+    planExpiry: v.optional(v.union(v.null(), v.number())), // For temporary upgrades/coupons
 
     // Subscription Data
     subscriptionId: v.optional(v.string()),

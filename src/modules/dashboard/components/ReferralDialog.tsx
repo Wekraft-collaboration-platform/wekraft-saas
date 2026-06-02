@@ -100,16 +100,17 @@ export function ReferralDialog({ open: propOpen, onClose }: ReferralDialogProps)
               {userDetails?.referalCreated || "Generating..."}
             </span>
             <Button
-              variant="ghost"
+              variant="default"
               size="sm"
-              className="h-8 w-8 p-0 hover:bg-white/10 transition-colors shrink-0 cursor-pointer"
+              className="h-7! text-xs shrink-0 cursor-pointer"
               onClick={handleCopyReferral}
               disabled={!userDetails?.referalCreated}
             >
+              <span>Copy Link</span>
               {copied ? (
-                <Check className="h-4 w-4 text-emerald-500" />
+                <Check className="h-4 w-4 text-black" />
               ) : (
-                <Copy className="h-4 w-4 text-muted-foreground" />
+                <Copy className="h-4 w-4 " />
               )}
             </Button>
           </div>

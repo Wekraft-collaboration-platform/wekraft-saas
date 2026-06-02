@@ -1,6 +1,7 @@
 import { mutation, query, internalMutation } from "./_generated/server";
 import { v } from "convex/values";
-import { getPlanLimits } from "./pricing";
+import { getPlanLimits, getActiveUserPlan } from "./pricing";
+import { internal } from "./_generated/api";
 
 async function generateUniqueReferralCode(
   ctx: any,
@@ -106,7 +107,11 @@ export const getCurrentUser = query({
       )
       .unique();
 
-    return user ?? null;
+    if (!user) return null;
+    return {
+      ...user,
+      accountType: getActiveUserPlan(user),
+    };
   },
 });
 
@@ -118,17 +123,25 @@ export const getUserByClerkToken = query({
       .query("users")
       .withIndex("by_token", (q) => q.eq("clerkToken", args.clerkToken))
       .unique();
-    if (exact) return exact;
+    if (exact) {
+      return {
+        ...exact,
+        accountType: getActiveUserPlan(exact),
+      };
+    }
 
     // Try finding by suffix if it's just the Clerk user_id
     const all = await ctx.db.query("users").collect();
-    return (
-      all.find(
-        (u) =>
-          u.clerkToken === args.clerkToken ||
-          u.clerkToken.endsWith(`|${args.clerkToken}`),
-      ) ?? null
+    const matched = all.find(
+      (u) =>
+        u.clerkToken === args.clerkToken ||
+        u.clerkToken.endsWith(`|${args.clerkToken}`),
     );
+    if (!matched) return null;
+    return {
+      ...matched,
+      accountType: getActiveUserPlan(matched),
+    };
   },
 });
 
@@ -475,7 +488,7 @@ export const upgradeAccount = internalMutation({
     const user = await ctx.db.get(args.userId);
     if (!user) throw new Error("User not found");
 
-    let planExpiry = undefined;
+    let planExpiry: number | null = null;
     if (args.durationDays) {
       planExpiry = Date.now() + args.durationDays * 24 * 60 * 60 * 1000;
     }
@@ -552,7 +565,7 @@ export const getUserById = query({
     return {
       name: user.name ?? "Unknown",
       avatarUrl: user.avatarUrl ?? null,
-      accountType: user.accountType,
+      accountType: getActiveUserPlan(user),
       clerkToken: user.clerkToken,
       email: user.email,
     };
@@ -630,6 +643,7 @@ export const updateUserSubscriptionInternal = internalMutation({
     // This prevents 'past_due' webhooks from silently downgrading users.
     if (args.plan !== undefined) {
       patch.accountType = args.plan;
+      patch.planExpiry = null;
     }
 
     await ctx.db.patch(args.userId, patch);
@@ -723,7 +737,7 @@ export const getOnboardingProgress = query({
 
     if (hasTasks) steps.push(4);
     if (hasDeadline) steps.push(5);
-    if (hasTeamMembers) steps.push(6);
+    if (hasTeamMembers || user.hasCompletedInviteStep) steps.push(6);
 
     // Step 3: Visit workspace
     if (user.hasVisitedWorkspace) steps.push(3);
@@ -821,6 +835,29 @@ export const completeGettingStarted = mutation({
   },
 });
 
+export const markInviteStepCompleted = mutation({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) throw new Error("User not found");
+
+    if (user.hasCompletedInviteStep) return;
+
+    await ctx.db.patch(user._id, {
+      hasCompletedInviteStep: true,
+      updatedAt: Date.now(),
+    });
+  },
+});
+
 export const markGettingStartedCompleteSeen = mutation({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();
@@ -859,7 +896,7 @@ export const checkAndIncrementStorage = mutation({
     if (!owner) throw new Error("Project owner not found");
 
     // Check 1: Free plan owner cannot upload task/issue attachments
-    const plan = owner.accountType || "free";
+    const plan = getActiveUserPlan(owner);
     if (!args.isTeamspace && plan === "free") {
       throw new Error("Attachments are disabled for Free projects. Upgrade to Plus/Pro to unlock.");
     }
@@ -967,6 +1004,11 @@ export const activateFreeTrial = mutation({
       accountType: "plus",
       planExpiry: Date.now() + oneWeekMs,
       updatedAt: Date.now(),
+    });
+
+    // Schedule background downgrade safety-net job to run exactly when trial expires
+    await ctx.scheduler.runAfter(oneWeekMs, internal.payments.downgradeUserByIdInternal, {
+      userId: user._id,
     });
 
     // Save freeTrialUsed: true in userDetails
