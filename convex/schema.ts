@@ -28,7 +28,7 @@ export default defineSchema({
     heardFrom: v.optional(v.string()),
     createdAt: v.number(),
     updatedAt: v.number(),
-    planExpiry: v.optional(v.number()), // For temporary upgrades/coupons
+    planExpiry: v.optional(v.union(v.null(), v.number())), // For temporary upgrades/coupons
 
     // Subscription Data
     subscriptionId: v.optional(v.string()),

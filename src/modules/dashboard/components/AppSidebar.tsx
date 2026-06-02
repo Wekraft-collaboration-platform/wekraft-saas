@@ -105,7 +105,7 @@ export const AppSidebar = () => {
   // after a trial expires, rather than waiting up to 24h for the cron to run.
   const effectivePlan = (() => {
     if (!user) return "free";
-    const isExpired = user.planExpiry !== undefined && user.planExpiry < Date.now();
+    const isExpired = user.planExpiry !== undefined && user.planExpiry !== null && user.planExpiry < Date.now();
     return isExpired ? "free" : (user.accountType || "free");
   })();
 

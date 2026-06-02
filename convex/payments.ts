@@ -1,4 +1,5 @@
 import { internalMutation } from "./_generated/server";
+import { v } from "convex/values";
 
 /**
  * Cron job: runs daily to auto-downgrade users whose paid plan period has expired.
@@ -31,6 +32,7 @@ export const downgradeExpiredPlans = internalMutation({
 
       const hasExpiredTemporaryPlan =
         user.planExpiry !== undefined &&
+        user.planExpiry !== null &&
         user.planExpiry < now;
 
       if (hasExpiredSubscription || hasExpiredTemporaryPlan) {
@@ -38,7 +40,7 @@ export const downgradeExpiredPlans = internalMutation({
           accountType: "free",
           subscriptionStatus: hasExpiredSubscription ? "canceled" : undefined,
           cancelAtPeriodEnd: false,
-          planExpiry: undefined,
+          planExpiry: null,
           updatedAt: now,
         });
         downgraded++;
@@ -50,5 +52,30 @@ export const downgradeExpiredPlans = internalMutation({
 
     console.log(`[Cron] downgradeExpiredPlans: checked ${paidUsers.length} paid users, downgraded ${downgraded}`);
     return { checked: paidUsers.length, downgraded };
+  },
+});
+
+export const downgradeUserByIdInternal = internalMutation({
+  args: { userId: v.id("users") },
+  handler: async (ctx, args) => {
+    const user = await ctx.db.get(args.userId);
+    if (!user) return;
+
+    const now = Date.now();
+    const hasExpiredTemporaryPlan =
+      user.planExpiry !== undefined &&
+      user.planExpiry !== null &&
+      user.planExpiry < now + 5000;
+
+    if (hasExpiredTemporaryPlan) {
+      await ctx.db.patch(user._id, {
+        accountType: "free",
+        planExpiry: null,
+        updatedAt: now,
+      });
+      console.log(
+        `[Scheduler] Downgraded user ${user._id} (${user.email}) to free — expired trial`,
+      );
+    }
   },
 });
