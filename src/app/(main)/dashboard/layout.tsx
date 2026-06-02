@@ -2,7 +2,7 @@
 
 import { RedirectToSignIn } from "@clerk/nextjs";
 import { Authenticated, Unauthenticated, useQuery } from "convex/react";
-import { BugPlay, Home, Moon, Share2, SunMedium, Video, HelpCircle, BriefcaseBusiness, ChevronRight, ChevronLeft } from "lucide-react";
+import { BugPlay, Home, Moon, Share2, SunMedium, Video, HelpCircle, BriefcaseBusiness, ChevronRight, ChevronLeft, Gift } from "lucide-react";
 import Link from "next/link";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -245,6 +245,7 @@ export default function Layout({
                       </AnimatePresence>
                     </div>
                   )}
+                  {/* NOTIFICATION + HELP & SUPPORT */}
                   <TooltipProvider>
                     <NotificationCenter />
                     <Tooltip>
@@ -260,6 +261,24 @@ export default function Layout({
                         </Button>
                       </TooltipTrigger>
                       <TooltipContent>Help & Support</TooltipContent>
+                    </Tooltip>
+
+                  </TooltipProvider>
+                  {/* Referal */}
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          size="icon-sm"
+                          variant="outline"
+                          onClick={() => window.dispatchEvent(new CustomEvent("open-referral-dialog"))}
+                          aria-label="Referral Program"
+                          className="cursor-pointer hover:scale-105 transition-all duration-200"
+                        >
+                          <Gift className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent>Referral Program</TooltipContent>
                     </Tooltip>
 
                   </TooltipProvider>

@@ -77,7 +77,7 @@ export function ReferralDialog({ open: propOpen, onClose }: ReferralDialogProps)
 
 
           {/* Inner Box with gradient and SVG decoration */}
-          <div className="relative overflow-hidden bg-linear-to-br from-transparent via-slate-900/60 to-rose-500/60 rounded-xl border border-neutral-800 p-5 min-h-[130px] flex items-center">
+          <div className="relative overflow-hidden bg-linear-to-br from-transparent via-slate-900/60 to-rose-500/30 rounded-xl border border-neutral-800 p-5 min-h-[130px] flex items-center">
             <div className="absolute right-0 bottom-0 top-0 w-32 pointer-events-none select-none" />
             <img
               src="/flw1.svg"
@@ -137,8 +137,8 @@ export function ReferralDialog({ open: propOpen, onClose }: ReferralDialogProps)
                 </div>
               </li>
               <li className="flex items-start gap-2.5">
-                <span className="p-0.5 rounded-full bg-purple-500/20 text-purple-400 mt-0.5">
-                  <Star className="w-3 h-3" />
+                <span className="p-0.5 rounded-full bg-green-500/20 text-emerald-400 mt-0.5">
+                  <Check className="w-3 h-3" />
                 </span>
                 <div>
                   <strong className="text-white block font-medium">20% Upgrade Commission</strong>

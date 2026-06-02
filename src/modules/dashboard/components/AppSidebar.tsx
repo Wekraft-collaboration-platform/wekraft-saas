@@ -482,6 +482,21 @@ export const AppSidebar = () => {
             <span className="w-10 h-px bg-muted-foreground/30"></span>
           </div>
 
+          {/* My Referral */}
+          <SidebarMenuButton
+            tooltip="My Referral"
+            onClick={() => window.dispatchEvent(new CustomEvent("open-referral-dialog"))}
+            className="group relative overflow-hidden cursor-pointer"
+          >
+            <div className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center">
+              <Gift className="h-5 w-5" />
+              <span className="text-sm group-data-[collapsible=icon]:hidden font-medium">
+                My Referral
+              </span>
+            </div>
+          </SidebarMenuButton>
+
+
           {/* 6 */}
           <SidebarMenuButton
             asChild
@@ -522,19 +537,6 @@ export const AppSidebar = () => {
             </div>
           </SidebarMenuButton>
 
-          {/* My Referral */}
-          <SidebarMenuButton
-            tooltip="My Referral"
-            onClick={() => window.dispatchEvent(new CustomEvent("open-referral-dialog"))}
-            className="group relative overflow-hidden cursor-pointer"
-          >
-            <div className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center">
-              <Gift className="h-5 w-5" />
-              <span className="text-sm group-data-[collapsible=icon]:hidden font-medium">
-                My Referral
-              </span>
-            </div>
-          </SidebarMenuButton>
 
         </SidebarMenu>
       </SidebarContent>
