@@ -24,21 +24,26 @@ export const downgradeExpiredPlans = internalMutation({
     let downgraded = 0;
 
     for (const user of paidUsers) {
-      const hasExpired =
+      const hasExpiredSubscription =
         user.cancelAtPeriodEnd === true &&
         user.currentPeriodEnd !== undefined &&
         user.currentPeriodEnd < now;
 
-      if (hasExpired) {
+      const hasExpiredTemporaryPlan =
+        user.planExpiry !== undefined &&
+        user.planExpiry < now;
+
+      if (hasExpiredSubscription || hasExpiredTemporaryPlan) {
         await ctx.db.patch(user._id, {
           accountType: "free",
-          subscriptionStatus: "canceled",
+          subscriptionStatus: hasExpiredSubscription ? "canceled" : undefined,
           cancelAtPeriodEnd: false,
+          planExpiry: undefined,
           updatedAt: now,
         });
         downgraded++;
         console.log(
-          `[Cron] Downgraded user ${user._id} (${user.email}) from ${user.accountType} to free — period ended at ${new Date(user.currentPeriodEnd!).toISOString()}`,
+          `[Cron] Downgraded user ${user._id} (${user.email}) from ${user.accountType} to free — expired plan/subscription`,
         );
       }
     }

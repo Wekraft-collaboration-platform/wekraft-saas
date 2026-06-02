@@ -29,7 +29,7 @@ async function generateUniqueReferralCode(
     }
     const code = `${prefix}-${suffix}`;
     const existing = await ctx.db
-      .query("users")
+      .query("userDetails")
       .withIndex("by_referalCreated", (q: any) => q.eq("referalCreated", code))
       .unique();
     if (!existing) {
@@ -67,7 +67,7 @@ export const createNewUser = mutation({
       identity.name || identity.nickname || ""
     );
 
-    return await ctx.db.insert("users", {
+    const userId = await ctx.db.insert("users", {
       // Excluded name for later unique constraint
       clerkToken: identity?.tokenIdentifier!,
       email: identity?.email!,
@@ -75,10 +75,17 @@ export const createNewUser = mutation({
       avatarUrl: identity.pictureUrl,
       accountType: "free",
       hasCompletedOnboarding: false,
-      referalCreated: code,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
+
+    await ctx.db.insert("userDetails", {
+      userId,
+      freeTrialUsed: false,
+      referalCreated: code,
+    });
+
+    return userId;
   },
 });
 // ==================================
@@ -292,12 +299,25 @@ export const completeOnboarding = mutation({
       updatedAt: Date.now(),
     };
 
-    if (!user.referalCreated) {
-      const generatedCode = await generateUniqueReferralCode(ctx, user.email, user.name);
-      patch.referalCreated = generatedCode;
-    }
-
     await ctx.db.patch(user._id, patch);
+
+    const details = await ctx.db
+      .query("userDetails")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .unique();
+
+    if (!details || !details.referalCreated) {
+      const generatedCode = await generateUniqueReferralCode(ctx, user.email, user.name);
+      if (details) {
+        await ctx.db.patch(details._id, { referalCreated: generatedCode });
+      } else {
+        await ctx.db.insert("userDetails", {
+          userId: user._id,
+          freeTrialUsed: false,
+          referalCreated: generatedCode,
+        });
+      }
+    }
   },
 });
 
@@ -315,6 +335,8 @@ export const checkReferralCode = query({
       )
       .unique();
 
+    if (!currentUser) return { valid: false, message: "User not found" };
+
     const checkCode = args.code.trim().toLowerCase();
     
     // Validate format: must contain a hyphen and suffix must be at least 5 characters
@@ -323,20 +345,28 @@ export const checkReferralCode = query({
       return { valid: false, message: "Referral code incomplete" };
     }
 
-    if (currentUser && currentUser.referalCreated?.toLowerCase() === checkCode) {
+    const details = await ctx.db
+      .query("userDetails")
+      .withIndex("by_user", (q) => q.eq("userId", currentUser._id))
+      .unique();
+
+    if (details && details.referalCreated?.toLowerCase() === checkCode) {
       return { valid: false, message: "You cannot use your own referral code" };
     }
 
-    const referringUser = await ctx.db
-      .query("users")
+    const referringDetails = await ctx.db
+      .query("userDetails")
       .withIndex("by_referalCreated", (q) => q.eq("referalCreated", checkCode))
       .unique();
 
-    if (referringUser) {
-      return {
-        valid: true,
-        message: `Valid referral code from ${referringUser.name || referringUser.email}`,
-      };
+    if (referringDetails) {
+      const referringUser = await ctx.db.get(referringDetails.userId);
+      if (referringUser) {
+        return {
+          valid: true,
+          message: `Valid referral code from ${referringUser.name || referringUser.email}`,
+        };
+      }
     }
 
     return { valid: false, message: "Referral code not found" };
@@ -365,44 +395,66 @@ export const updateUserReferralAndSource = mutation({
       throw new Error("User not found");
     }
 
-    const patch: Record<string, any> = {
+    const details = await ctx.db
+      .query("userDetails")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .unique();
+
+    const userPatch: Record<string, any> = {
       updatedAt: Date.now(),
     };
 
     if (args.heardFrom !== undefined) {
-      patch.heardFrom = args.heardFrom;
+      userPatch.heardFrom = args.heardFrom;
     }
+
+    const detailsPatch: Record<string, any> = {};
 
     if (args.referalUsing !== undefined) {
       const code = args.referalUsing.trim().toLowerCase();
       if (code) {
         const parts = code.split("-");
         if (parts.length >= 2 && parts[parts.length - 1].length >= 5) {
-          if (user.referalCreated?.toLowerCase() === code) {
+          const myReferralCode = details?.referalCreated;
+          if (myReferralCode?.toLowerCase() === code) {
             throw new Error("You cannot use your own referral code");
           }
-          const referrer = await ctx.db
-            .query("users")
+          const referringDetails = await ctx.db
+            .query("userDetails")
             .withIndex("by_referalCreated", (q) => q.eq("referalCreated", code))
             .unique();
-          if (!referrer) {
+          if (!referringDetails) {
             throw new Error("Invalid referral code");
           }
-          patch.referalUsing = code;
+          detailsPatch.referalUsing = code;
         } else {
           throw new Error("Referral code is incomplete");
         }
       } else {
-        patch.referalUsing = undefined;
+        detailsPatch.referalUsing = undefined;
       }
     }
 
-    if (!user.referalCreated) {
+    if (!details?.referalCreated) {
       const generatedCode = await generateUniqueReferralCode(ctx, user.email, user.name);
-      patch.referalCreated = generatedCode;
+      detailsPatch.referalCreated = generatedCode;
     }
 
-    await ctx.db.patch(user._id, patch);
+    if (userPatch.heardFrom !== undefined) {
+      await ctx.db.patch(user._id, userPatch);
+    } else {
+      await ctx.db.patch(user._id, { updatedAt: Date.now() });
+    }
+
+    if (details) {
+      await ctx.db.patch(details._id, detailsPatch);
+    } else {
+      await ctx.db.insert("userDetails", {
+        userId: user._id,
+        freeTrialUsed: false,
+        ...detailsPatch,
+      });
+    }
   },
 });
 
@@ -853,5 +905,126 @@ export const decrementStorage = mutation({
     return { success: true, currentUsage: newUsage };
   },
 });
+
+// =======================================
+// USER DETAILS & FREE TRIAL
+// =======================================
+export const getUserDetails = query({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) return null;
+
+    const details = await ctx.db
+      .query("userDetails")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .unique();
+
+    return details ?? {
+      userId: user._id,
+      freeTrialUsed: false,
+      referalUsing: undefined,
+      referalCreated: undefined,
+    };
+  },
+});
+
+export const activateFreeTrial = mutation({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) throw new Error("User not found");
+
+    const details = await ctx.db
+      .query("userDetails")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .unique();
+
+    if (details?.freeTrialUsed) {
+      throw new Error("Free trial already used");
+    }
+
+    const oneWeekMs = 7 * 24 * 60 * 60 * 1000;
+
+    // Upgrade user's account to plus for 1 week
+    await ctx.db.patch(user._id, {
+      accountType: "plus",
+      planExpiry: Date.now() + oneWeekMs,
+      updatedAt: Date.now(),
+    });
+
+    // Save freeTrialUsed: true in userDetails
+    if (details) {
+      await ctx.db.patch(details._id, {
+        freeTrialUsed: true,
+      });
+    } else {
+      await ctx.db.insert("userDetails", {
+        userId: user._id,
+        freeTrialUsed: true,
+      });
+    }
+
+    return { success: true };
+  },
+});
+
+export const getReferralCount = query({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return 0;
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) return 0;
+
+    const details = await ctx.db
+      .query("userDetails")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .unique();
+
+    if (!details || !details.referalCreated) return 0;
+
+    const myReferralCode = details.referalCreated.toLowerCase();
+
+    // Query all userDetails where referalUsing matches myReferralCode
+    const matches = await ctx.db
+      .query("userDetails")
+      .withIndex("by_referalUsing", (q) => q.eq("referalUsing", myReferralCode))
+      .collect();
+
+    let count = 0;
+    for (const match of matches) {
+      const refUser = await ctx.db.get(match.userId);
+      if (refUser && refUser.hasCompletedOnboarding && refUser.gettingstartedcompleted) {
+        count++;
+      }
+    }
+
+    return count;
+  },
+});
+
 
 
