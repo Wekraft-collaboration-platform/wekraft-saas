@@ -100,6 +100,15 @@ export const AppSidebar = () => {
   );
   const [isHelpOpen, setIsHelpOpen] = useState(false);
 
+  // Bug fix: planExpiry may have passed but DB hasn't been updated yet by cron.
+  // Compute effective plan client-side so the sidebar shows "free" immediately
+  // after a trial expires, rather than waiting up to 24h for the cron to run.
+  const effectivePlan = (() => {
+    if (!user) return "free";
+    const isExpired = user.planExpiry !== undefined && user.planExpiry < Date.now();
+    return isExpired ? "free" : (user.accountType || "free");
+  })();
+
   const ownerProjects = useQuery(api.project.getUserProjects);
   const teamProjects = useQuery(api.project.getJoinedProjects);
 
@@ -552,24 +561,24 @@ export const AppSidebar = () => {
                 <div className="flex flex-col">
                   <h3 className="text-sm font-medium">Current Plan</h3>
                   <p className="text-xs text-muted-foreground capitalize">
-                    {user.accountType || "Free"}
+                    {effectivePlan}
                   </p>
                 </div>
               </div>
               <p className="text-[11px] text-muted-foreground text-left my-1.5 leading-relaxed">
-                {user.accountType === "pro"
+                {effectivePlan === "pro"
                   ? "You have full access to all premium features."
-                  : user.accountType === "plus"
+                  : effectivePlan === "plus"
                     ? "Upgrade to Pro to unlock Kaya and Other AI features."
                     : "Upgrade to Plus to unlock AI and boost your productivity."}
               </p>
-              {user.accountType !== "pro" && (
+              {effectivePlan !== "pro" && (
                 <Link href="/web/pricing">
                   <Button
                     className="text-[10px] cursor-pointer w-full my-1.5 font-medium"
                     size="xs"
                   >
-                    {user.accountType === "plus"
+                    {effectivePlan === "plus"
                       ? "Upgrade to Pro"
                       : "Upgrade Now"}
                   </Button>
@@ -577,7 +586,7 @@ export const AppSidebar = () => {
               )}
             </div>
 
-            {user.accountType === "pro" && (
+            {effectivePlan === "pro" && (
               <div className="flex items-center gap-3 p-2 rounded-md border border-accent bg-muted transition-all cursor-pointer group">
                 <Avatar className="h-8 w-8 shrink-0 border border-primary/20">
                   <AvatarImage src={user.avatarUrl} />
