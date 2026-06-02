@@ -78,9 +78,16 @@ export function getActiveUserPlan(user: Doc<"users">): PlanType {
   const now = Date.now();
 
   // If user has an expiration date and it's in the past, fall back to free
-  // Note: You could also have a 'basePlan' field if users can be 'plus' permanently
-  // but have 'pro' temporary. For now, we'll assume free is the fallback.
   if (user.planExpiry && now > user.planExpiry) {
+    return "free";
+  }
+
+  // If the user cancelled a subscription and the paid period has ended, fall back to free
+  if (
+    user.cancelAtPeriodEnd === true &&
+    user.currentPeriodEnd !== undefined &&
+    now > user.currentPeriodEnd
+  ) {
     return "free";
   }
 

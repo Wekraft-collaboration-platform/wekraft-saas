@@ -163,12 +163,20 @@ export function GettingStartedChecklist() {
     ...(userDetails?.freeTrialUsed ? [7] : [])
   ], [progressData?.completedSteps, userDetails?.freeTrialUsed]);
 
-  // Auto-mark completed in DB if all steps finished locally
+  // The first 6 steps are required. Step 7 (free trial) is optional/bonus —
+  // skipping it should NOT block gettingstartedcompleted from being set in the DB.
+  // This fixes a bug where referred users who skipped the trial were never counted
+  // toward the referrer's referral reward (getReferralCount checks gettingstartedcompleted).
+  const REQUIRED_STEPS = STEPS.filter((s) => s.id !== 7).map((s) => s.id); // [1,2,3,4,5,6]
+  const requiredDone = REQUIRED_STEPS.every((id) => completedIds.includes(id));
+
+  // Auto-mark completed in DB when all required steps (1-6) are finished.
+  // Step 7 (free trial) is optional and does not block this.
   useEffect(() => {
-    if (currentUser && !currentUser.gettingstartedcompleted && completedIds.length >= 7) {
+    if (currentUser && !currentUser.gettingstartedcompleted && requiredDone) {
       completeGettingStarted().catch((err) => console.error("Error completing getting started checklist:", err));
     }
-  }, [currentUser, completedIds, completeGettingStarted]);
+  }, [currentUser, requiredDone, completeGettingStarted]);
 
   // Skeleton while Convex query loads
   if (progressData === undefined || currentUser === undefined) {
@@ -191,9 +199,6 @@ export function GettingStartedChecklist() {
       </div>
     );
   }
-
-  // Hide when fully done in DB
-  if (currentUser?.gettingstartedcompleted) return null;
 
   const totalDone = completedIds.length;
   const totalSteps = STEPS.length;

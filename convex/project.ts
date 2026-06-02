@@ -334,7 +334,7 @@ export const getProjectUsage = query({
       canCreate: count < limits.project_creation_limit,
       currentCount: count,
       limit: limits.project_creation_limit,
-      accountType: user.accountType,
+      accountType: getActiveUserPlan(user),
     };
   },
 });
@@ -468,7 +468,7 @@ export const getProjectBySlug = query({
     const projectWithOwner = {
       ...project,
       ownerClerkId,
-      ownerAccountType: owner?.accountType,
+      ownerAccountType: owner ? getActiveUserPlan(owner) : "free",
       memberLimit: limits?.members_per_project_limit ?? 3,
       totalMemberCount: membersTable.length,
     };
@@ -847,7 +847,7 @@ export const handleJoinRequest = mutation({
 
       if (members.length >= limits.members_per_project_limit) {
         throw new Error(
-          `Member limit reached! Your ${owner.accountType || "free"} plan allows maximum ${limits.members_per_project_limit} seats (including you).`,
+          `Member limit reached! Your ${getActiveUserPlan(owner)} plan allows maximum ${limits.members_per_project_limit} seats (including you).`,
         );
       }
 
@@ -1159,7 +1159,7 @@ export const getProjectById = query({
     return {
       ...project,
       ownerClerkId,
-      ownerAccountType: owner?.accountType || "free",
+      ownerAccountType: owner ? getActiveUserPlan(owner) : "free",
     };
   },
 });

@@ -78,7 +78,7 @@ export async function POST(req: NextRequest) {
 
     // Call convex to handle the subscription update
     // @ts-ignore
-    await convex.mutation(api.razorpay.handleSubscriptionUpdate, {
+    await convex.action(api.razorpay.handleSubscriptionUpdate, {
       backendSecret,
       subscriptionId: subscription.id,
       status: subscription.status,

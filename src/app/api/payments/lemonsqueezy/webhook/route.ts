@@ -102,7 +102,7 @@ export async function POST(req: NextRequest) {
         }
 
         // @ts-ignore
-        await convex.mutation(api.lemonsqueezy.updatePlanServerSide, {
+        await convex.action(api.lemonsqueezy.updatePlanServerSide, {
           backendSecret,
           userId,
           plan,
@@ -120,7 +120,7 @@ export async function POST(req: NextRequest) {
       case "subscription_cancelled":
       case "subscription_expired": {
         // @ts-ignore
-        await convex.mutation(api.lemonsqueezy.handleSubscriptionUpdate, {
+        await convex.action(api.lemonsqueezy.handleSubscriptionUpdate, {
           backendSecret,
           subscriptionId,
           customerId,
