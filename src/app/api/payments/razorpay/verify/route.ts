@@ -138,7 +138,7 @@ export async function POST(req: NextRequest) {
       return NextResponse.json({ success: false, error: "User not found in database" }, { status: 404 });
     }
 
-    await convex.mutation(api.razorpay.updatePlanServerSide, {
+    await convex.action(api.razorpay.updatePlanServerSide, {
       backendSecret,
       userId: userObj._id,
       plan,

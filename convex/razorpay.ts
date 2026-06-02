@@ -1,10 +1,9 @@
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalMutation, action } from "./_generated/server";
 import { v } from "convex/values";
+import { internal } from "./_generated/api";
 
-
-export const updatePlanServerSide = mutation({
+export const updatePlanServerSideInternal = internalMutation({
   args: {
-    backendSecret: v.string(),
     userId: v.id("users"),
     plan: v.union(v.literal("free"), v.literal("plus"), v.literal("pro")),
     subscriptionId: v.optional(v.string()),
@@ -13,12 +12,6 @@ export const updatePlanServerSide = mutation({
     currentPeriodEnd: v.optional(v.number()),
   },
   handler: async (ctx, args) => {
-    // Validate secret
-    const secret = process.env.BACKEND_SECRET;
-    if (!secret || args.backendSecret !== secret) {
-      throw new Error("Unauthorized backend request");
-    }
-
     // Update user plan
     await ctx.db.patch(args.userId, {
       accountType: args.plan,
@@ -35,21 +28,14 @@ export const updatePlanServerSide = mutation({
   },
 });
 
-export const handleSubscriptionUpdate = mutation({
+export const handleSubscriptionUpdateInternal = internalMutation({
   args: {
-    backendSecret: v.string(),
     subscriptionId: v.string(),
     status: v.string(),
     currentPeriodEnd: v.optional(v.number()),
     cancelAtPeriodEnd: v.optional(v.boolean()),
   },
   handler: async (ctx, args) => {
-    // Validate secret
-    const secret = process.env.BACKEND_SECRET;
-    if (!secret || args.backendSecret !== secret) {
-      throw new Error("Unauthorized backend request");
-    }
-
     // Find the user with this subscriptionId
     const user = await ctx.db
       .query("users")
@@ -85,6 +71,60 @@ export const handleSubscriptionUpdate = mutation({
     await ctx.db.patch(user._id, patchPayload);
 
     return { success: true };
+  },
+});
+
+export const updatePlanServerSide = action({
+  args: {
+    backendSecret: v.string(),
+    userId: v.id("users"),
+    plan: v.union(v.literal("free"), v.literal("plus"), v.literal("pro")),
+    subscriptionId: v.optional(v.string()),
+    customerId: v.optional(v.string()),
+    status: v.string(),
+    currentPeriodEnd: v.optional(v.number()),
+  },
+  handler: async (ctx, args): Promise<{ success: boolean }> => {
+    // Validate secret
+    const secret = process.env.BACKEND_SECRET;
+    if (!secret || args.backendSecret !== secret) {
+      throw new Error("Unauthorized backend request");
+    }
+
+    await ctx.runMutation((internal.razorpay as any).updatePlanServerSideInternal, {
+      userId: args.userId,
+      plan: args.plan,
+      subscriptionId: args.subscriptionId,
+      customerId: args.customerId,
+      status: args.status,
+      currentPeriodEnd: args.currentPeriodEnd,
+    });
+
+    return { success: true };
+  },
+});
+
+export const handleSubscriptionUpdate = action({
+  args: {
+    backendSecret: v.string(),
+    subscriptionId: v.string(),
+    status: v.string(),
+    currentPeriodEnd: v.optional(v.number()),
+    cancelAtPeriodEnd: v.optional(v.boolean()),
+  },
+  handler: async (ctx, args): Promise<{ success: boolean; error?: string }> => {
+    // Validate secret
+    const secret = process.env.BACKEND_SECRET;
+    if (!secret || args.backendSecret !== secret) {
+      throw new Error("Unauthorized backend request");
+    }
+
+    return await ctx.runMutation((internal.razorpay as any).handleSubscriptionUpdateInternal, {
+      subscriptionId: args.subscriptionId,
+      status: args.status,
+      currentPeriodEnd: args.currentPeriodEnd,
+      cancelAtPeriodEnd: args.cancelAtPeriodEnd,
+    });
   },
 });
 
