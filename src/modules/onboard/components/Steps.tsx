@@ -26,6 +26,7 @@ import {
   User,
   ChevronDown,
   Link2,
+  ExternalLink,
 } from "lucide-react";
 import { nanoid } from "nanoid";
 import Image from "next/image";
@@ -668,13 +669,14 @@ export function MultiStepOnboarding() {
                           onClick={handleInvite}
                           disabled={!isValidEmail(email) || inviting}
                           variant={isValidEmail(email) ? "default" : "secondary"}
-                          className="h-8 px-4 rounded-md text-xs font-semibold transition-all duration-150 active:scale-95 cursor-pointer border-none"
+                          className="h-8 px-4 rounded-md text-xs border border-accent! cursor-pointer "
                         >
                           {inviting ? (
                             <span className="animate-in fade-in duration-200">Inviting...</span>
                           ) : (
                             <span className="animate-in fade-in duration-200">Invite</span>
                           )}
+                          <ExternalLink className="w-3 h-3 -mt-1" />
                         </Button>
                       </div>
                     </div>
@@ -684,7 +686,7 @@ export function MultiStepOnboarding() {
                       variant="outline"
                       onClick={handleCopy}
                       disabled={!fullInviteLink}
-                      className="flex items-center justify-center gap-1.5 mx-auto text-xs text-white bg-transparent border border-white hover:bg-white hover:text-black transition-all font-semibold cursor-pointer w-fit px-8 h-9 rounded-md mt-2"
+                      className="flex items-center gap-2 justify-center mx-auto text-xs"
                     >
                       <Link2 className="w-3.5 h-3.5" />
                       {copied ? "Copied invite link!" : "Copy invite link"}
