@@ -150,6 +150,7 @@ interface Props {
   projectMembers?: any[];
   channelReads?: Record<string, number>;
   repoFullName?: string;
+  isShimmering?: boolean;
 }
 
 // ── Component ──────────────────────────────────────────────────────────────────
@@ -172,6 +173,7 @@ export function MessageItem({
   projectMembers,
   channelReads,
   repoFullName,
+  isShimmering = false,
 }: Props) {
   const [hovered, setHovered] = useState(false);
   const [dropdownOpen, setDropdownOpen] = useState(false);
@@ -648,7 +650,11 @@ export function MessageItem({
                   // Default text render
                   return (
                     <div className="text-[14px] leading-snug break-all md:break-words whitespace-pre-wrap text-foreground/80 font-normal">
-                      {renderText(message.content)}
+                      {isShimmering ? (
+                        <span className="ai-shimmer-text">{message.content}</span>
+                      ) : (
+                        renderText(message.content)
+                      )}
                       {editedTag}
                       {timestampSpacer}
                     </div>

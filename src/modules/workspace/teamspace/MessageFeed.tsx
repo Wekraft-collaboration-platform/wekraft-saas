@@ -98,7 +98,7 @@ function DateDivider({ timestamp }: { timestamp: number }) {
       : format(d, "MMMM d, yyyy");
   return (
     <div className="flex items-center mt-4 mb-2 mx-4 relative group">
-      <div className="flex-1 h-[1px] bg-border/80 group-hover:bg-border/90 transition-colors" />
+      <div className="flex-1 h-px bg-border/80 group-hover:bg-border/90 transition-colors" />
       <span className="absolute left-1/2 -translate-x-1/2 bg-background px-2 text-[11px] font-semibold text-muted-foreground/80 capitalize">
         {label}
       </span>
@@ -573,18 +573,16 @@ export function MessageFeed({
         currentUserName,
       );
     } else if (mentionsHarry) {
-      await harryAgent.sendMessage(
-        content,
-        channel!.id,
-        parentId,
-        messages,
-        currentUserName,
-      );
+      toast.info("Harry is coming soon! Stay tuned.", { duration: 3000 });
     }
   };
 
   const isAnnouncement = channel?.type === "announcement";
   const canSend = !isAnnouncement || isPower;
+
+
+  // null = still loading; true/false = owner plan resolved
+  const ownerIsPro = project ? project.ownerAccountType === "pro" : null;
 
   // Group messages by date for date dividers
   const withDividers: Array<Message | { type: "divider"; date: number }> = [];
@@ -1136,13 +1134,13 @@ export function MessageFeed({
                   currentUserId={currentUserId}
                   isPinned={false}
                   canModerateAll={false}
-                  onReply={() => {}}
-                  onEdit={async () => {}}
-                  onDelete={async () => {}}
-                  onReact={async () => {}}
-                  onPin={async () => {}}
-                  onPollVote={async () => {}}
-                  onEditPoll={async () => {}}
+                  onReply={() => { }}
+                  onEdit={async () => { }}
+                  onDelete={async () => { }}
+                  onReact={async () => { }}
+                  onPin={async () => { }}
+                  onPollVote={async () => { }}
+                  onEditPoll={async () => { }}
                   projectMembers={projectMembers}
                   channelReads={channelReads}
                   repoFullName={project?.repoFullName}
@@ -1174,16 +1172,17 @@ export function MessageFeed({
                 currentUserId={currentUserId}
                 isPinned={false}
                 canModerateAll={false}
-                onReply={() => {}}
-                onEdit={async () => {}}
-                onDelete={async () => {}}
-                onReact={async () => {}}
-                onPin={() => {}}
-                onPollVote={async () => {}}
-                onEditPoll={async () => {}}
+                onReply={() => { }}
+                onEdit={async () => { }}
+                onDelete={async () => { }}
+                onReact={async () => { }}
+                onPin={() => { }}
+                onPollVote={async () => { }}
+                onEditPoll={async () => { }}
                 projectMembers={projectMembers}
                 channelReads={channelReads}
                 repoFullName={project?.repoFullName}
+                isShimmering={!kayaAssistantMsg?.text}
               />
             )}
 
@@ -1211,16 +1210,17 @@ export function MessageFeed({
                 currentUserId={currentUserId}
                 isPinned={false}
                 canModerateAll={false}
-                onReply={() => {}}
-                onEdit={async () => {}}
-                onDelete={async () => {}}
-                onReact={async () => {}}
-                onPin={() => {}}
-                onPollVote={async () => {}}
-                onEditPoll={async () => {}}
+                onReply={() => { }}
+                onEdit={async () => { }}
+                onDelete={async () => { }}
+                onReact={async () => { }}
+                onPin={() => { }}
+                onPollVote={async () => { }}
+                onEditPoll={async () => { }}
                 projectMembers={projectMembers}
                 channelReads={channelReads}
                 repoFullName={project?.repoFullName}
+                isShimmering={!harryAssistantMsg?.text}
               />
             )}
 
@@ -1267,7 +1267,9 @@ export function MessageFeed({
         isAnnouncement={isAnnouncement}
         currentUserId={currentUserId}
         projectSlug={projectSlug}
+        ownerIsPro={ownerIsPro}
       />
+
 
       {/* Jump to bottom FAB */}
       <AnimatePresence>
