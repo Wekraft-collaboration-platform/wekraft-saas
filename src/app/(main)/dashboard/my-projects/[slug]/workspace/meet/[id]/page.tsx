@@ -8,7 +8,6 @@ import {
     ToggleVideoPublishingButton,
     ScreenShareButton,
     ReactionsButton,
-    RecordCallButton,
     SpeakingWhileMutedNotification,
     CancelCallButton,
 } from '@stream-io/video-react-sdk';
@@ -265,7 +264,6 @@ function MyMeetingUI({
                         <ToggleVideoPublishingButton />
                         <ScreenShareButton />
                         <ReactionsButton />
-                        {isHost && <RecordCallButton />}
                         <CancelCallButton onLeave={handleLeave} disabled={isLeaving} />
                     </div>
                 </div>
