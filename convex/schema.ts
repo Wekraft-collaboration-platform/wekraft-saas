@@ -529,12 +529,10 @@ export default defineSchema({
     meetingId: v.string(),           // Stream call ID — also the URL segment
     projectId: v.id("projects"),
 
-    // Creator (denormalized for fast reads — no joins needed)
     createdById: v.id("users"),
     createdByName: v.string(),
     createdByAvatar: v.optional(v.string()),
 
-    // Lifecycle
     status: v.union(v.literal("active"), v.literal("inactive")),
     startedAt: v.number(),           // Date.now() when the row is inserted
     endedAt: v.optional(v.number()), // Date.now() when the host ends the call
