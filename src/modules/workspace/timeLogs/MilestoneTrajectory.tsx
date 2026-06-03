@@ -1,10 +1,15 @@
 "use client";
 
+import { format } from "date-fns";
+import {
+  BadgeAlert,
+  Compass,
+  LucideAlertTriangle,
+  TrendingUpDown,
+} from "lucide-react";
 import React from "react";
 import { cn } from "@/lib/utils";
-import { Compass, BadgeAlert, LucideAlertTriangle, TrendingUpDown } from "lucide-react";
-import { Task } from "@/types/types";
-import { format } from "date-fns";
+import type { Task } from "@/types/types";
 
 interface MilestoneTrajectoryProps {
   tasks: Task[];
@@ -27,8 +32,8 @@ export const MilestoneTrajectory = ({
 
   const daysConsumed = Math.max(0.1, (now - createdAt) / msInDay);
 
-  // Threshold: more than 5 tasks (>=6) and >= 3 days
-  const isReady = totalTasks >= 6 && daysConsumed >= 3;
+  // Threshold: more than 2 tasks (>=3) and >= 2 days
+  const isReady = totalTasks >= 3 && daysConsumed >= 2;
 
   if (!isReady) {
     return (
@@ -42,10 +47,12 @@ export const MilestoneTrajectory = ({
           </h3>
         </div>
         <div className="flex flex-col items-center justify-center space-y-3 mt-6">
-          <LucideAlertTriangle className={cn("w-8 h-8 text-primary opacity-50")} />
+          <LucideAlertTriangle
+            className={cn("w-8 h-8 text-primary opacity-50")}
+          />
           <p className="text-xs text-muted-foreground leading-relaxed text-center px-8">
-            Your workspace atleast have{" "}
-            <span className="text-primary">6 tasks and 3 days of history</span>{" "}
+            Your workspace must have at least{" "}
+            <span className="text-primary">3 tasks and 2 days of history</span>{" "}
             to establish trajectory forecasting.
           </p>
         </div>
@@ -70,7 +77,8 @@ export const MilestoneTrajectory = ({
   // Timeline math
   const totalDuration = Math.max(deadline, projectedCompletion) - createdAt;
   const targetPos = ((deadline - createdAt) / totalDuration) * 100;
-  const projectedPos = ((projectedCompletion - createdAt) / totalDuration) * 100;
+  const projectedPos =
+    ((projectedCompletion - createdAt) / totalDuration) * 100;
   const currentPos = ((now - createdAt) / totalDuration) * 100;
 
   return (
@@ -101,7 +109,8 @@ export const MilestoneTrajectory = ({
 
         <div className="mt-4">
           <div className="text-xs text-primary font-medium mb-1">
-            Expected  Projected Completion <TrendingUpDown className="w-4 h-4 inline ml-1" />
+            Expected Projected Completion{" "}
+            <TrendingUpDown className="w-4 h-4 inline ml-1" />
           </div>
           <div className="text-xl font-semibold tracking-tight text-black font-pop! dark:text-white">
             {format(projectedCompletion, "MMM dd, yyyy")}
@@ -141,7 +150,8 @@ export const MilestoneTrajectory = ({
           <span>Start</span>
           <div className="flex gap-4">
             <span className="flex items-center gap-1">
-              <div className="w-1.5 h-1.5 bg-neutral-900 dark:bg-white rounded-full" /> Target
+              <div className="w-1.5 h-1.5 bg-neutral-900 dark:bg-white rounded-full" />{" "}
+              Target
             </span>
             <span className="flex items-center gap-1">
               <div
