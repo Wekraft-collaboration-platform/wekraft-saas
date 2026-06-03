@@ -155,6 +155,16 @@ export async function POST(req: NextRequest) {
       });
     }
 
+    // Pro plan check — single Convex query, ownerAccountType already computed
+    const project = await convex.query(api.project.getProjectById, {
+      projectId: projectId as any,
+    });
+    if (!project || project.ownerAccountType !== "pro") {
+      return new Response("Pro plan required to use AI agents in Teamspace.", {
+        status: 403,
+      });
+    }
+
     // Strict rate limit per project (3 requests per minute for the whole project team)
     const limitKey = projectId;
     const { success, limit, reset, remaining } =

@@ -34,6 +34,7 @@ import {
 } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
 import { CreateSprintDialog } from "@/modules/workspace/CreateSprintDialog";
+import { FeatureTutorialDialog } from "@/modules/workspace/FeatureTutorialDialog";
 import { useKayaStore } from "@/store/useKayaStore";
 import { api } from "../../../../../../../../convex/_generated/api";
 import type { Id } from "../../../../../../../../convex/_generated/dataModel";
@@ -173,6 +174,8 @@ const SprintPage = () => {
 
   return (
     <div className="w-full h-full p-6 max-w-7xl mx-auto">
+      {/* ── One-time tutorial dialog ─────────────────── */}
+      <FeatureTutorialDialog feature="sprint" />
       {/* Header */}
       <header className="flex items-center justify-between gap-4 mb-8">
         <div>

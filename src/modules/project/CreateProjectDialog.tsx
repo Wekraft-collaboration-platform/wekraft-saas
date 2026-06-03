@@ -38,6 +38,10 @@ import {
   Loader2,
   Clover,
   Infinity,
+  ChevronDown,
+  Lightbulb,
+  Search,
+  Code2,
 } from "lucide-react";
 import { useRepositories } from "../repo";
 import { Repository } from "@/types/types";
@@ -45,6 +49,14 @@ import { cn } from "@/lib/utils";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Id } from "../../../convex/_generated/dataModel";
 import { createWebhook } from "../github/actions/action";
+
+const STATUS_ICONS: Record<string, React.ElementType> = {
+  ideation: Lightbulb,
+  validation: Search,
+  development: Code2,
+  beta: Rocket,
+  production: Globe,
+};
 
 interface CreateProjectDialogProps {
   trigger?: React.ReactNode;
@@ -290,7 +302,7 @@ const CreateProjectDialog = ({
             <div className="space-y-5 animate-in fade-in slide-in-from-right-4 duration-300">
               {/* Title Section */}
               <div className="flex flex-col space-y-1.5">
-                <Label className="text-sm font-medium text-muted-foreground ml-1">Project Name</Label>
+                <Label className="text-sm ml-1">Project Name</Label>
                 <Input
                   placeholder="e.g. My Awesome Startup"
                   className="text-lg font-medium border bg-transparent p-1 h-9! focus-visible:ring-0 placeholder:text-neutral-700"
@@ -298,78 +310,86 @@ const CreateProjectDialog = ({
                   onChange={(e) => setProjectName(e.target.value)}
                 />
               </div>
-
-              {/* Action Buttons Row */}
-              <div className="flex items-center gap-3">
+              {/* Settings & Visibility Section */}
+              <div className="grid grid-cols-2 gap-4">
+                {/* Visibility */}
                 <div className="flex flex-col space-y-2">
-                  <p className="text-sm font-medium text-muted-foreground ml-1">Settings & Visibility</p>
-                  <div className="flex items-center gap-2">
-                    {/* Visibility Toggle */}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-8 bg-[#18181A] border-accent/20 hover:bg-[#212123] text-neutral-300 px-3 gap-2 rounded-lg text-xs"
-                        >
-                          {isPublic ? <Globe className="size-3.5 text-emerald-500" /> : <Lock className="size-3.5 text-amber-500" />}
+                  <Label className="text-sm ml-1">Visibility</Label>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className={cn(
+                          "h-9 w-full justify-between px-3 rounded-lg text-xs transition-colors",
+                        )}
+                      >
+                        <div className="flex items-center gap-2">
+                          {isPublic ? <Globe className="size-3.5 text-neutral-400" /> : <Lock className="size-3.5 text-neutral-400" />}
                           <span className="capitalize">{isPublic ? "Public" : "Private"}</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="bg-[#0A0A0B] border-accent/20 text-neutral-200">
-                        <DropdownMenuItem onClick={() => setIsPublic(true)} className="gap-2 cursor-pointer">
-                          <Globe className="size-3.5 text-emerald-500" />
-                          <span className="text-xs">Public Project</span>
-                        </DropdownMenuItem>
-                        <DropdownMenuItem onClick={() => setIsPublic(false)} className="gap-2 cursor-pointer">
-                          <Lock className="size-3.5 text-amber-500" />
-                          <span className="text-xs">Private Project</span>
-                        </DropdownMenuItem>
-                      </DropdownMenuContent>
-                    </DropdownMenu>
+                        </div>
+                        <ChevronDown className="size-3.5 opacity-50 shrink-0" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="bg-[#0A0A0B] border-accent/20 text-neutral-200 w-[180px]">
+                      <DropdownMenuItem onClick={() => setIsPublic(true)} className="gap-2 cursor-pointer">
+                        <Globe className="size-3.5 text-neutral-400" />
+                        <span className="text-xs">Public Project</span>
+                      </DropdownMenuItem>
+                      <DropdownMenuItem onClick={() => setIsPublic(false)} className="gap-2 cursor-pointer">
+                        <Lock className="size-3.5 text-neutral-400" />
+                        <span className="text-xs">Private Project</span>
+                      </DropdownMenuItem>
+                    </DropdownMenuContent>
+                  </DropdownMenu>
+                </div>
 
-                    {/* Status Select */}
-                    <DropdownMenu>
-                      <DropdownMenuTrigger asChild>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          className="h-8 bg-[#18181A] border-accent/20 hover:bg-[#212123] text-neutral-300 px-3 gap-2 rounded-lg text-xs"
-                        >
-                          <div className={cn(
-                            "size-2 rounded-full",
-                            status === "ideation" && "bg-blue-500",
-                            status === "validation" && "bg-amber-500",
-                            status === "development" && "bg-indigo-500",
-                            status === "beta" && "bg-purple-500",
-                            status === "production" && "bg-emerald-500",
-                          )} />
+                {/* Status */}
+                <div className="flex flex-col space-y-2">
+                  <Label className="text-sm ml-1">Project Status</Label>
+                  <DropdownMenu>
+                    <DropdownMenuTrigger asChild>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className={cn(
+                          "h-9 w-full justify-between px-3 rounded-lg text-xs transition-colors"
+                        )}
+                      >
+                        <div className="flex items-center gap-2">
+                          {(() => {
+                            const IconComponent = STATUS_ICONS[status] || Lightbulb;
+                            return (
+                              <IconComponent className="size-3.5 text-neutral-400" />
+                            );
+                          })()}
                           <span className="capitalize">{status}</span>
-                        </Button>
-                      </DropdownMenuTrigger>
-                      <DropdownMenuContent className="bg-[#0A0A0B] border-accent/20 text-neutral-200">
-                        {["ideation", "validation", "development", "beta", "production"].map((s) => (
-                          <DropdownMenuItem key={s} onClick={() => setStatus(s)} className="gap-2 cursor-pointer capitalize text-xs">
-                            <div className={cn(
-                              "size-2 rounded-full",
-                              s === "ideation" && "bg-blue-500",
-                              s === "validation" && "bg-amber-500",
-                              s === "development" && "bg-indigo-500",
-                              s === "beta" && "bg-purple-500",
-                              s === "production" && "bg-emerald-500",
-                            )} />
-                            {s}
+                        </div>
+                        <ChevronDown className="size-3.5 opacity-50 shrink-0" />
+                      </Button>
+                    </DropdownMenuTrigger>
+                    <DropdownMenuContent className="bg-[#0A0A0B] border-accent/20 text-neutral-200 w-[180px]">
+                      {["ideation", "validation", "development", "beta", "production"].map((s) => {
+                        const IconComponent = STATUS_ICONS[s] || Lightbulb;
+                        return (
+                          <DropdownMenuItem
+                            key={s}
+                            onClick={() => setStatus(s)}
+                            className="gap-2 cursor-pointer capitalize text-xs"
+                          >
+                            <IconComponent className="size-3.5 text-neutral-400" />
+                            <span>{s}</span>
                           </DropdownMenuItem>
-                        ))}
-                      </DropdownMenuContent>
-                    </DropdownMenu>
-                  </div>
+                        );
+                      })}
+                    </DropdownMenuContent>
+                  </DropdownMenu>
                 </div>
               </div>
 
               {/* Description Section */}
               <div className="flex flex-col space-y-1.5">
-                <Label className="text-sm font-medium text-muted-foreground ml-1">Project Brief</Label>
+                <Label className="text-sm ml-1">Project Brief</Label>
                 <Textarea
                   placeholder="Tell us what you're building..."
                   className="bg-transparent border p-1 focus-visible:ring-0 transition-all h-[100px] resize-none font-inter text-sm leading-relaxed placeholder:text-neutral-700"

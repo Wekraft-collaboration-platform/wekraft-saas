@@ -58,6 +58,11 @@ export default defineSchema({
     freeTrialUsed: v.boolean(),
     referalUsing: v.optional(v.string()),
     referalCreated: v.optional(v.string()),
+    // ── One-time feature tutorial flags ────────────────────────────────────
+    taskTutorialSeen: v.optional(v.boolean()),
+    issueTutorialSeen: v.optional(v.boolean()),
+    sprintTutorialSeen: v.optional(v.boolean()),
+    timeLogsTutorialSeen: v.optional(v.boolean()),
   })
     .index("by_user", ["userId"])
     .index("by_referalCreated", ["referalCreated"])
@@ -506,6 +511,7 @@ export default defineSchema({
       v.literal("role_changed"), // Role changed
       v.literal("mentioned"), // @mention in comment
       v.literal("project_alert"), // Project duration alert
+      v.literal("meeting_started"), // Team video call started
     ),
     // Human-readable notification body
     body: v.string(),
@@ -530,5 +536,32 @@ export default defineSchema({
   })
     .index("by_user", ["userId"])
     .index("by_created", ["createdAt"]),
+
+  // ─── Team Meets ─────────────────────────────────────────────────────────
+  team_meets: defineTable({
+    meetingId: v.string(),           // Stream call ID — also the URL segment
+    projectId: v.id("projects"),
+
+    createdById: v.id("users"),
+    createdByName: v.string(),
+    createdByAvatar: v.optional(v.string()),
+
+    status: v.union(v.literal("active"), v.literal("inactive")),
+    startedAt: v.number(),           // Date.now() when the row is inserted
+    endedAt: v.optional(v.number()), // Date.now() when the host ends the call
+    durationMs: v.optional(v.number()), // endedAt - startedAt
+
+    // Members who joined (appended as participants connect; no duplicates)
+    members: v.array(
+      v.object({
+        userId: v.string(),
+        name: v.string(),
+        avatar: v.optional(v.string()),
+      }),
+    ),
+  })
+    .index("by_meetingId", ["meetingId"])
+    .index("by_project", ["projectId"])
+    .index("by_project_status", ["projectId", "status"]),
 
 });

@@ -190,10 +190,14 @@
     user-select: none;
     -webkit-user-select: none;
   }
-  input, textarea, [contenteditable] {
+
+  input,
+  textarea,
+  [contenteditable] {
     user-select: text;
     -webkit-user-select: text;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -249,28 +253,22 @@
     --fc-border-color: color-mix(in oklab, var(--border) 78%, black);
     --fc-page-bg-color: transparent;
     --fc-neutral-bg-color: color-mix(in oklab, var(--background) 92%, white);
-    --fc-list-event-hover-bg-color: color-mix(
-      in oklab,
-      var(--accent) 55%,
-      black
-    );
+    --fc-list-event-hover-bg-color: color-mix(in oklab,
+        var(--accent) 55%,
+        black);
     --fc-event-bg-color: color-mix(in oklab, var(--primary) 80%, #334155);
     --fc-event-border-color: transparent;
     --fc-today-bg-color: color-mix(in oklab, #2563eb 9%, transparent);
     --fc-button-bg-color: color-mix(in oklab, var(--secondary) 90%, black);
     --fc-button-border-color: color-mix(in oklab, var(--border) 85%, black);
     --fc-button-hover-bg-color: color-mix(in oklab, var(--accent) 72%, black);
-    --fc-button-hover-border-color: color-mix(
-      in oklab,
-      var(--border) 75%,
-      black
-    );
+    --fc-button-hover-border-color: color-mix(in oklab,
+        var(--border) 75%,
+        black);
     --fc-button-active-bg-color: color-mix(in oklab, var(--accent) 62%, black);
-    --fc-button-active-border-color: color-mix(
-      in oklab,
-      var(--border) 72%,
-      black
-    );
+    --fc-button-active-border-color: color-mix(in oklab,
+        var(--border) 72%,
+        black);
   }
 
   .fc-theme .fc {
@@ -350,20 +348,25 @@
   .fc-theme .fc-task-status-completed {
     color: #22c55e !important;
   }
+
   .fc-theme .fc-task-status-inprogress,
   .fc-theme .fc-task-status-in-progress {
     color: #3b82f6 !important;
   }
+
   .fc-theme .fc-task-status-reviewing {
     color: #a78bfa !important;
   }
+
   .fc-theme .fc-task-status-testing {
     color: #06b6d4 !important;
   }
+
   .fc-theme .fc-task-status-not-started,
   .fc-theme .fc-task-status-not_started {
     color: #94a3b8 !important;
   }
+
   .fc-theme .fc-task-status-issue,
   .fc-theme .fc-task-status-blocked {
     color: #ef4444 !important;
@@ -447,6 +450,7 @@
       opacity: 0;
       filter: blur(3px);
     }
+
     to {
       opacity: 1;
       filter: blur(0);
@@ -457,6 +461,7 @@
     from {
       transform: translateY(10px);
     }
+
     to {
       transform: translateY(0);
     }
@@ -468,6 +473,7 @@
       150ms ease-in both fade reverse,
       400ms ease-in-out both slide reverse;
   }
+
   ::view-transition-new(.nav-forward) {
     --slide-offset: 60px;
     animation:
@@ -481,6 +487,7 @@
       150ms ease-in both fade reverse,
       400ms ease-in-out both slide reverse;
   }
+
   ::view-transition-new(.nav-back) {
     --slide-offset: -60px;
     animation:
@@ -492,6 +499,7 @@
     from {
       translate: var(--slide-offset);
     }
+
     to {
       translate: 0;
     }
@@ -502,6 +510,7 @@
     from {
       opacity: 0;
     }
+
     to {
       opacity: 1;
     }
@@ -520,14 +529,17 @@
     animation: none;
     z-index: 100;
   }
+
   ::view-transition-old(site-header) {
     display: none;
   }
+
   ::view-transition-new(site-header) {
     animation: none;
   }
 
   @media (prefers-reduced-motion: reduce) {
+
     ::view-transition-old(*),
     ::view-transition-new(*),
     ::view-transition-group(*) {
@@ -541,6 +553,7 @@
       opacity: 0;
       transform: translate(-72%, -62%) scale(0.5);
     }
+
     100% {
       opacity: 1;
       transform: translate(-50%, -40%) scale(1);
@@ -561,8 +574,7 @@
     line-height: 1.2em;
     vertical-align: middle;
     transform-style: preserve-3d;
-    animation: flip var(--flip-duration, 2.2s) var(--flip-delay, 0s)
-      var(--flip-iteration, infinite) cubic-bezier(0.76, 0, 0.24, 1);
+    animation: flip var(--flip-duration, 2.2s) var(--flip-delay, 0s) var(--flip-iteration, infinite) cubic-bezier(0.76, 0, 0.24, 1);
   }
 
   .flip-char::before,
@@ -584,26 +596,27 @@
   /* Front Face */
   .flip-char::after {
     transform: translateZ(0.55em);
-    animation: face-fade-out var(--flip-duration, 2.2s) var(--flip-delay, 0s)
-      var(--flip-iteration, infinite) cubic-bezier(0.76, 0, 0.24, 1);
+    animation: face-fade-out var(--flip-duration, 2.2s) var(--flip-delay, 0s) var(--flip-iteration, infinite) cubic-bezier(0.76, 0, 0.24, 1);
   }
 
   /* Bottom Face (Rotates in) */
   .flip-char::before {
     transform: rotateX(-90deg) translateZ(0.55em);
-    animation: face-fade-in var(--flip-duration, 2.2s) var(--flip-delay, 0s)
-      var(--flip-iteration, infinite) cubic-bezier(0.76, 0, 0.24, 1);
+    animation: face-fade-in var(--flip-duration, 2.2s) var(--flip-delay, 0s) var(--flip-iteration, infinite) cubic-bezier(0.76, 0, 0.24, 1);
   }
 
   @keyframes flip {
+
     0%,
     15% {
       transform: rotateX(0deg);
     }
+
     40%,
     65% {
       transform: rotateX(90deg);
     }
+
     85%,
     100% {
       transform: rotateX(0deg);
@@ -611,16 +624,19 @@
   }
 
   @keyframes face-fade-out {
+
     0%,
     15% {
       opacity: 1;
       filter: brightness(1);
     }
+
     40%,
     65% {
       opacity: 0;
       filter: brightness(0.5);
     }
+
     85%,
     100% {
       opacity: 1;
@@ -629,16 +645,19 @@
   }
 
   @keyframes face-fade-in {
+
     0%,
     15% {
       opacity: 0;
       filter: brightness(0.5);
     }
+
     40%,
     65% {
       opacity: 1;
       filter: brightness(1);
     }
+
     85%,
     100% {
       opacity: 0;
@@ -653,11 +672,12 @@
     background-color: transparent;
     box-shadow: inset 3px 0 0 0 transparent;
   }
+
   35% {
     background-color: color-mix(in oklab, var(--foreground) 6%, transparent);
-    box-shadow: inset 3.5px 0 0 0
-      color-mix(in oklab, var(--foreground) 30%, transparent);
+    box-shadow: inset 3.5px 0 0 0 color-mix(in oklab, var(--foreground) 30%, transparent);
   }
+
   100% {
     background-color: transparent;
     box-shadow: inset 3px 0 0 0 transparent;
@@ -666,6 +686,36 @@
 
 .premium-message-highlight {
   animation: premium-message-pulse 3.2s cubic-bezier(0.25, 1, 0.5, 1) forwards;
+}
+
+/* ─── AI Agent Shimmer Effect ──────────────────────────────────────────────────
+   Applied to the temp AI message text during "thinking" / tool-calling state.
+   Animates a bright gradient sweep from left→right in a loop.
+   NOT applied during streaming (when text is actively appearing).
+─────────────────────────────────────────────────────────────────────────────── */
+@keyframes ai-shimmer-sweep {
+  0% {
+    background-position: -200% center;
+  }
+
+  100% {
+    background-position: 200% center;
+  }
+}
+
+.ai-shimmer-text {
+  background: linear-gradient(90deg,
+      var(--muted-foreground) 30%,
+      var(--muted-foreground) 35%,
+      var(--foreground) 40%,
+      var(--muted-foreground) 60%,
+      var(--muted-foreground) 75%);
+  background-size: 200% auto;
+  background-clip: text;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: ai-shimmer-sweep 1.8s linear infinite;
+  display: inline-block;
 }
 
 .frameworkline {
@@ -677,18 +727,19 @@
 }
 
 .framework-line {
-  offset-path: path(
-    "M 1 0 v 5 q 0 5 5 5 h 39 q 5 0 5 5 v 71 q 0 5 5 5 h 39 q 5 0 5 5 v 20"
-  );
+  offset-path: path("M 1 0 v 5 q 0 5 5 5 h 39 q 5 0 5 5 v 71 q 0 5 5 5 h 39 q 5 0 5 5 v 20"
+    );
 }
 
 @keyframes frameworkline-animation-path {
   0% {
     offset-distance: 0%;
   }
+
   85% {
     offset-distance: 100%;
   }
+
   100% {
     offset-distance: 100%;
   }
@@ -699,12 +750,15 @@
   0% {
     transform: translateX(0);
   }
+
   15% {
     transform: translateX(0);
   }
+
   85% {
     transform: translateX(calc(-1 * var(--scroll-dist, 0px)));
   }
+
   100% {
     transform: translateX(calc(-1 * var(--scroll-dist, 0px)));
   }
@@ -719,6 +773,7 @@
   0% {
     transform: translateX(0);
   }
+
   100% {
     transform: translateX(-50%);
   }
@@ -726,4 +781,46 @@
 
 .animate-logo-marquee {
   animation: logo-marquee 25s linear infinite;
+}
+
+/* ─────────────────────────────────────────
+   Sidebar: butter-smooth GPU-composited motion
+   Eliminates "text appears in stages" / jank
+   reported by users. Promotes sidebar panels
+   to their own GPU layer so transitions are
+   handled entirely by the compositor thread —
+   never blocking the main thread.
+──────────────────────────────────────────── */
+[data-slot="sidebar-container"] {
+  /* Force GPU layer promotion */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  /* Prevent sub-pixel paint during width animation */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+[data-slot="sidebar-gap"] {
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* Prevent layout recalculation of sidebar children during animation
+   so content doesn't "paint in stages" */
+[data-slot="sidebar-inner"] {
+  /* Isolate paint so inner content doesn't trigger repaints during
+     the outer container's width transition */
+  contain: layout style;
+  /* Keep content fully visible immediately — no opacity flash */
+  opacity: 1 !important;
+}
+
+
+/* Icon-only state: ensure all text labels are hidden instantly
+   using the compositor (opacity 0 vs display:none avoids layout shift) */
+[data-collapsible="icon"] [data-slot="sidebar-inner"] span:not(.sr-only),
+[data-collapsible="icon"] [data-slot="sidebar-inner"] [data-sidebar="group-label"] {
+  pointer-events: none;
 }

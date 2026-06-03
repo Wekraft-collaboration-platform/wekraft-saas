@@ -214,13 +214,13 @@ const Hero = () => {
         </div>
 
         <div className="flex flex-col items-center justify-center font-pop relative px-4">
-          <h1 className="text-white font-sans tracking-tight text-[64px] font-semibold">
-            Meet The Simplest Workspace
+          <h1 className="text-white font-sans tracking-tight text-[62px] font-semibold">
+            Your Project Lives in Github,
           </h1>
-          <div className="flex items-center gap-3 text-white tracking-tight text-[64px] font-semibold">
-            <h1 className="mr-2">for the most</h1>
+          <div className="flex items-center gap-3 text-white tracking-tight text-[62px] font-semibold">
+            <h1 className="mr-2">so should your</h1>
             <FlipText className="" duration={3.5}>
-              Complex Projects
+              Workspace.
             </FlipText>
           </div>
 
@@ -239,13 +239,13 @@ const Hero = () => {
               initialY="90%"
             />
 
-            <FloatingCursor
+            {/* <FloatingCursor
               name="Sanjali"
               color="#06b6d4"
               initialX="-5%"
               initialY="90%"
               isLeft={true}
-            />
+            /> */}
           </div>
         </div>
 
@@ -257,9 +257,7 @@ const Hero = () => {
           <div className="absolute left-1/2 -translate-x-1/2 top-0 bg-linear-to-r from-transparent via-blue-500 to-transparent h-px w-1/4" />
 
           <p className="text-neutral-300 text-base md:text-[20px] max-w-3xl mx-auto mt-5 font-sans tracking-tight text-pretty text-center px-4">
-            Project management shouldn’t slow teams down. Wekraft keeps
-            everything simple, organized, and AI-assisted — so your team can
-            focus on building.
+            AI-first project management for software teams — synced with GitHub, powered by automation, built for shipping, Not for Chaos
           </p>
         </div>
 
@@ -274,7 +272,7 @@ const Hero = () => {
             variant="outline"
             className="rounded-md border-white/10 bg-white/5 text-white  px-10 py-3 text-sm "
           >
-            Book a demo
+            Get a demo
           </Button>
         </div>
 

@@ -814,6 +814,94 @@ export const getHasSeenWelcome = query({
   },
 });
 
+// ==================================
+// FEATURE TUTORIAL SEEN FLAGS
+// ==================================
+
+/**
+ * Returns the four tutorial-seen flags from userDetails.
+ * Returns null when the record doesn't exist yet (new user).
+ */
+export const getTutorialSeenStatus = query({
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return null;
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) return null;
+
+    const details = await ctx.db
+      .query("userDetails")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .unique();
+
+    return {
+      taskTutorialSeen: details?.taskTutorialSeen ?? false,
+      issueTutorialSeen: details?.issueTutorialSeen ?? false,
+      sprintTutorialSeen: details?.sprintTutorialSeen ?? false,
+      timeLogsTutorialSeen: details?.timeLogsTutorialSeen ?? false,
+    };
+  },
+});
+
+/**
+ * Marks a specific feature tutorial as seen.
+ * feature: "task" | "issue" | "sprint" | "timeLogs"
+ */
+export const markTutorialSeen = mutation({
+  args: {
+    feature: v.union(
+      v.literal("task"),
+      v.literal("issue"),
+      v.literal("sprint"),
+      v.literal("timeLogs"),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) throw new Error("Unauthorized");
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) throw new Error("User not found");
+
+    const details = await ctx.db
+      .query("userDetails")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .unique();
+
+    const fieldMap = {
+      task: "taskTutorialSeen",
+      issue: "issueTutorialSeen",
+      sprint: "sprintTutorialSeen",
+      timeLogs: "timeLogsTutorialSeen",
+    } as const;
+
+    const field = fieldMap[args.feature];
+
+    if (details) {
+      await ctx.db.patch(details._id, { [field]: true });
+    } else {
+      await ctx.db.insert("userDetails", {
+        userId: user._id,
+        freeTrialUsed: false,
+        [field]: true,
+      });
+    }
+  },
+});
+
 export const completeGettingStarted = mutation({
   handler: async (ctx) => {
     const identity = await ctx.auth.getUserIdentity();

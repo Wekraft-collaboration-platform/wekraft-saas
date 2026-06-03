@@ -40,6 +40,7 @@ import {
 import { TABS } from "@/lib/static-store";
 import { InviteDialog } from "@/modules/project/inviteDilogag";
 import { CreateTaskDialog } from "@/modules/workspace/CreateTaskDialog";
+import { FeatureTutorialDialog } from "@/modules/workspace/FeatureTutorialDialog";
 import {
   applyTaskFilters,
   type SortConfig,
@@ -168,6 +169,8 @@ const TaskPage = () => {
 
   return (
     <div className="w-full h-full p-6 2xl:p-8 relative">
+      {/* ── One-time tutorial dialog ─────────────────── */}
+      <FeatureTutorialDialog feature="task" />
       {showTaskTour && (
         <div
           className="fixed inset-0 z-[100] pointer-events-none"

@@ -11,6 +11,7 @@ import { FloatingKaya } from "@/modules/ai/FloatingKaya";
 import ProjectSidebar from "@/modules/workspace/Projectsidebar";
 import { api } from "../../../../../../../convex/_generated/api";
 import type { Id } from "../../../../../../../convex/_generated/dataModel";
+import StreamVideoProvider from "@/modules/streamVideo/VideoProvider";
 
 export default function WorkspaceLayout({
   children,
@@ -109,11 +110,14 @@ export default function WorkspaceLayout({
   // 4. Authorized Access State
   return (
     <div className="">
-      <ProjectSidebar />
-      <main className="flex-1">{children}</main>
-      <FloatingKaya />
-      <AiAssistantSheet />
-      <HarryAssistantSheet />
+      <StreamVideoProvider>
+        <ProjectSidebar />
+        <main className="flex-1">{children}</main>
+        <FloatingKaya />
+        <AiAssistantSheet />
+        <HarryAssistantSheet />
+      </StreamVideoProvider>
+
     </div>
   );
 }
