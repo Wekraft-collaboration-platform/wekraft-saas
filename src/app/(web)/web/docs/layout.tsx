@@ -32,8 +32,10 @@ import {
   ExternalLink,
   MessageCircle,
   FileCode2,
-  Video,
   Bot,
+  UserPlus,
+  HelpCircle,
+  Video,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -68,6 +70,8 @@ const iconMap: { [key: string]: any } = {
   Code,
   Video,
   Bot,
+  UserPlus,
+  HelpCircle,
 };
 
 const badgeColors: Record<string, string> = {

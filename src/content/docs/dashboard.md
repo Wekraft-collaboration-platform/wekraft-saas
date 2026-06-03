@@ -57,7 +57,7 @@ Press `Ctrl+B` (or `Cmd+B` on Mac) to toggle sidebar visibility. This gives you 
 
 ## The Right Sidebar
 
-The right side of the dashboard has a collapsible panel that you can expand or collapse. It provides quick access to account details and shortcuts.
+The right side of the dashboard has a collapsible panel that you can expand or collapse. It provides quick access to account details, shortcuts, and the **Referral Dialog**, where you can view your unique referral code, track your progress, and earn rewards for inviting users.
 
 ---
 
@@ -166,3 +166,4 @@ Wekraft supports keyboard shortcuts for power users:
 - [Manage your profile →](/web/docs/profile)
 - [View notifications →](/web/docs/notifications)
 - [Explore keyboard shortcuts →](/web/docs/shortcuts)
+- [Learn about the Referral Program →](/web/docs/referrals)

@@ -1,245 +1,118 @@
-# API & Webhooks (Beta)
+# API & Integrations
 
-Integrate Wekraft into your existing workflows with our REST API and real-time Webhooks. 
-
-> [!NOTE]
-> The Wekraft API is currently in **Public Beta**. Rate limits and endpoint structures are subject to change based on feedback.
-
-## Authentication
-
-Wekraft uses **Personal Access Tokens (PAT)** for API authentication. You can generate a token in your **[User Settings](/dashboard/my-profile)**.
-
-All API requests must include the token in the `Authorization` header:
-
-```http
-Authorization: Bearer wk_your_token_here
-```
-
-### Unauthenticated Request Error
-If you omit the token or supply an invalid token, the API returns a `401 Unauthorized` response:
-```json
-{
-  "success": false,
-  "error": {
-    "code": "unauthorized",
-    "message": "The provided API token is invalid or has expired."
-  }
-}
-```
+Integrate Wekraft data into your developer portals, custom scripts, or external tools. Wekraft exposes public APIs and a secure handshake protocol to power external integrations.
 
 ---
 
-## Core Endpoints
+## 1. Public Project Metadata API
 
-The base URL for all API requests is:
-`https://api.wekraft.xyz`
+Wekraft provides a public JSON endpoint to retrieve project profiles, language distributions, and repository health metrics.
 
-### Tasks
+### Request Specification
+- **URL**: `/api/public/slug`
+- **Method**: `GET`
+- **Query Parameters**:
+  - `slug` (string, required): The unique project URL slug identifier (e.g. `my-team-project`).
 
-#### List Project Tasks
-`GET /v1/projects/:slug/tasks`
+### Caching and Architecture
+- **Redis Cache Layer**: To ensure high performance, Wekraft caches the compiled project metadata in Redis (TTL = 30 minutes). Cache hits bypass database and GitHub API requests completely.
+- **GitHub Sync**: For public projects containing a connected repository, the endpoint fetches real-time repository stats (programming language breakdown and health indicators) directly via the GitHub API before fanning out the response.
 
-Retrieve a paginated list of tasks belonging to a specific project.
+### Response Schema
 
-**Query Parameters:**
-- `status` (string, optional) - Filter tasks by status (e.g. `todo`, `in_progress`, `done`).
-- `page` (number, optional) - The page number to retrieve. Default is `1`.
-- `limit` (number, optional) - Number of results per page. Default is `20`. Max is `100`.
-
-**Response Example (`200 OK`):**
+#### Public Project Response (`200 OK`)
 ```json
 {
-  "success": true,
-  "data": [
-    {
-      "id": "task_8a7d2c1",
-      "title": "Implement OAuth2 login flow",
-      "description": "Add support for Google and GitHub authentication",
-      "status": "in_progress",
-      "priority": "high",
-      "assignee": {
-        "id": "usr_91238",
-        "name": "Jane Doe",
-        "email": "jane@example.com"
-      },
-      "created_at": "2026-05-14T10:15:30Z",
-      "updated_at": "2026-05-15T14:22:10Z"
-    }
-  ],
-  "pagination": {
-    "total": 45,
-    "page": 1,
-    "limit": 20,
-    "has_more": true
+  "profile": {
+    "_id": "project_id_123",
+    "projectName": "Sample Project",
+    "slug": "sample-project",
+    "isPrivate": false,
+    "repo": {
+      "repoOwner": "github-username",
+      "repoName": "github-repo-name"
+    },
+    "ownerClerkId": "user_clerk_id"
+  },
+  "languages": {
+    "TypeScript": 145020,
+    "CSS": 12500,
+    "HTML": 8300
+  },
+  "health": {
+    "openIssues": 12,
+    "lastCommit": "2026-06-03T18:42:00Z",
+    "activePullRequests": 3
   }
 }
 ```
 
-#### Create a Task
-`POST /v1/projects/:slug/tasks`
-
-Create a new task within a project.
-
-**Request Body (`application/json`):**
-- `title` (string, required) - The title of the task.
-- `description` (string, optional) - Detailed description.
-- `status` (string, optional) - Defaults to `todo`.
-- `priority` (string, optional) - One of `low`, `medium`, `high`, `urgent`. Defaults to `medium`.
-- `assignee_id` (string, optional) - User ID of the assignee.
-
-**Request Example:**
+#### Private Project Response (`200 OK`)
+If the requested project has `isPrivate: true` in its settings, Wekraft restricts external analytics. The endpoint returns the profile data without linking GitHub metadata:
 ```json
 {
-  "title": "Refactor navigation component",
-  "description": "Optimize layout for mobile responsiveness",
-  "priority": "high"
+  "profile": {
+    "_id": "private_project_id_456",
+    "projectName": "Internal Dashboard",
+    "slug": "internal-dashboard",
+    "isPrivate": true,
+    "ownerClerkId": "user_clerk_id"
+  },
+  "languages": null,
+  "health": null
 }
 ```
 
-**Response Example (`201 Created`):**
-```json
-{
-  "success": true,
-  "data": {
-    "id": "task_9c8b3d2",
-    "title": "Refactor navigation component",
-    "description": "Optimize layout for mobile responsiveness",
-    "status": "todo",
-    "priority": "high",
-    "assignee": null,
-    "created_at": "2026-05-29T13:45:00Z",
-    "updated_at": "2026-05-29T13:45:00Z"
-  }
-}
-```
-
-#### Update a Task
-`PATCH /v1/tasks/:id`
-
-Modify an existing task.
-
-**Response Example (`200 OK`):**
-```json
-{
-  "success": true,
-  "data": {
-    "id": "task_9c8b3d2",
-    "status": "in_progress",
-    "updated_at": "2026-05-29T14:10:00Z"
-  }
-}
-```
+#### Error States
+- `400 Bad Request`: `{"error": "slug is required"}`
+- `404 Not Found`: `{"error": "Project not found"}`
+- `500 Server Error`: `{"error": "Failed to fetch project"}`
 
 ---
 
-### Issues
+## 2. VS Code Extension Authentication Handshake
 
-#### Retrieve Active Issues
-`GET /v1/projects/:slug/issues`
+The Wekraft VS Code Extension connects to your developer workspace using a secure, zero-copy **Authentication Handshake** protocol to provision your permanent API Key (`wk_...`).
 
-Retrieve all active issues (bugs, user reports, incident logs) for the specified project.
+### The Handshake Sequence
 
-**Response Example (`200 OK`):**
-```json
-{
-  "success": true,
-  "data": [
-    {
-      "id": "issue_3f81e",
-      "title": "Memory leak on dashboard load",
-      "severity": "critical",
-      "source": "client_error",
-      "status": "open",
-      "created_at": "2026-05-28T09:00:00Z"
-    }
-  ]
-}
+```mermaid
+sequenceDiagram
+    participant VSCode as VS Code Extension
+    participant WebApp as Wekraft Web App
+    participant DB as Convex Database
+    
+    VSCode->>WebApp: 1. Launch Login Page in Browser
+    WebApp->>DB: 2. Invoke createHandshakeToken (Auth session)
+    DB-->>WebApp: 3. Return 64-character token
+    WebApp->>VSCode: 4. Redirect with ?token=<hex_token>
+    VSCode->>DB: 5. Invoke exchangeHandshakeToken(token)
+    DB->>DB: 6. Validate & Delete token (one-time use)
+    DB->>DB: 7. Get or Create User API Key (wk_...)
+    DB-->>VSCode: 8. Return apiKey & userId
+    VSCode->>VSCode: 9. Store apiKey in SecretStorage
 ```
 
-#### Report a New Issue
-`POST /v1/projects/:slug/issues`
+### Protocol Mechanics
 
-Submit an issue. Ideal for integrating automated error reporting from external crash monitors (e.g. Sentry).
+#### A. Token Generation (`createHandshakeToken`)
+When authenticating, the Wekraft web application calls `createHandshakeToken`. 
+- **Token Format**: A cryptographically secure random 64-character hex string.
+- **TTL Constraint**: Token expires exactly **5 minutes** after insertion.
+- **Table Registry**: Registered in the `handshakeTokens` schema table.
 
-**Request Body:**
-- `title` (string, required) - Issue summary.
-- `description` (string, required) - Error trace or description.
-- `severity` (string, optional) - `low`, `medium`, `high`, `critical`. Defaults to `medium`.
-
----
-
-### Sprints
-
-#### Get Active Sprint
-`GET /v1/projects/:slug/sprints/active`
-
-Fetch information about the current sprint, including goals, start/end dates, and associated tasks.
-
----
-
-## Webhooks
-
-Webhooks allow you to receive real-time HTTP POST notifications when events happen in Wekraft.
-
-### Supported Events
-- `task.created`
-- `task.completed`
-- `issue.reported`
-- `sprint.started`
-- `sprint.ended`
-
-### Webhook Signatures (Security)
-To ensure webhook payloads originate from Wekraft, each request contains an `X-Wekraft-Signature` header calculated using an HMAC hex digest of the request body with your webhook secret.
-
-**Verification Example (Node.js):**
-```javascript
-const crypto = require('crypto');
-
-function verifyWebhook(secret, payload, signature) {
-  const hmac = crypto.createHmac('sha256', secret);
-  const digest = hmac.update(payload).digest('hex');
-  return crypto.timingSafeEqual(Buffer.from(digest), Buffer.from(signature));
-}
-```
-
-### Payload Example
-```json
-{
-  "event": "task.completed",
-  "timestamp": "2026-05-14T12:00:00Z",
-  "data": {
-    "task_id": "task_123",
-    "title": "Fix login bug",
-    "completed_by": "user_abc"
-  }
-}
-```
-
----
-
-## Rate Limits
-
-To ensure platform stability, we enforce the following limits based on your subscription plan:
-
-| Plan | Limit | Header |
-| :--- | :--- | :--- |
-| **Free Plan** | 100 requests / hour | `X-RateLimit-Limit: 100` |
-| **Pro Plan** | 5,000 requests / hour | `X-RateLimit-Limit: 5000` |
-
-If you exceed these limits, the API returns a `429 Too Many Requests` response:
-```json
-{
-  "success": false,
-  "error": {
-    "code": "rate_limit_exceeded",
-    "message": "Too many requests. Please slow down and try again later."
-  }
-}
-```
+#### B. Token Exchange (`exchangeHandshakeToken`)
+The VS Code Extension captures the token from the redirect URL and calls the `exchangeHandshakeToken` mutation:
+- **Immediate Deletion**: The token is **deleted from the database immediately** upon check, ensuring it is strictly single-use.
+- **API Key Provisioning**: If a permanent API key (`wk_...`) does not exist for the user in `userApiKeys`, it is generated:
+  - **API Key Format**: `wk_` prefix followed by a cryptographically random 64-character hex string.
+- **Storage**: The API key is transferred to the extension and saved securely inside VS Code's encrypted secret storage.
 
 ---
 
 ## Next Steps
-- [Generate an API Token →](/dashboard/my-profile)
-- [View GitHub Integration →](/web/docs/projects#github-integration)
-- [Need help? Contact Support →](https://mail.google.com/mail/?view=cm&fs=1&to=support@wekraft.xyz)
+
+- [Install and set up the VS Code Extension →](/web/docs/extension)
+- [Connect your GitHub Repositories →](/web/docs/repositories)
+- [Review security permissions and RBAC →](/web/docs/security)
+- [Refer teams and track your rewards →](/web/docs/referrals)
