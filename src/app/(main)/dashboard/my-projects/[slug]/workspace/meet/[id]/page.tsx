@@ -9,7 +9,8 @@ import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
 import { Loader2, VideoOff } from 'lucide-react';
 import { toast } from 'sonner';
-import { useQuery } from 'convex/react';
+import { useQuery, useMutation } from 'convex/react';
+import { useUser } from '@clerk/nextjs';
 
 import { useProjectPermissions } from '@/hooks/use-project-permissions';
 import '@stream-io/video-react-sdk/dist/css/styles.css';
@@ -20,6 +21,7 @@ export default function MeetingPage() {
     const { id, slug } = useParams<{ id: string; slug: string }>();
     const client = useStreamVideoClient();
     const router = useRouter();
+    const { user: clerkUser } = useUser();
 
     const [call, setCall] = useState<Call>();
     const [fatalError, setFatalError] = useState<string>();
@@ -28,6 +30,8 @@ export default function MeetingPage() {
     // useEffect can fire multiple times (Strict Mode, client state change).
     // This ref ensures join() is called exactly once per (client, id) pair.
     const hasJoined = useRef(false);
+    // Guard to ensure recordMeetingJoin is called only once
+    const hasRecordedJoin = useRef(false);
 
     // ── Bug 3 fix: know if the current user is host ─────────────────────────
     const project = useQuery(api.project.getProjectBySlug, { slug });
@@ -35,6 +39,9 @@ export default function MeetingPage() {
         project?._id as Id<'projects'> | undefined
     );
     const isHost = isOwner || isAdmin;
+
+    // ── Meet DB mutations ───────────────────────────────────────────────────
+    const recordMeetingJoin = useMutation(api.notifications.recordMeetingJoin);
 
     useEffect(() => {
         // Wait for the Stream client to be ready
@@ -76,7 +83,25 @@ export default function MeetingPage() {
                 await _call.join({ create: true });
             }
 
-            if (mounted) setCall(_call);
+            if (mounted) {
+                setCall(_call);
+
+                // ── Record this participant's join in team_meets ───────────
+                // Only fire once per page mount (guard against Strict Mode double-runs)
+                if (!hasRecordedJoin.current && clerkUser) {
+                    hasRecordedJoin.current = true;
+                    recordMeetingJoin({
+                        meetingId: id,
+                        userId: clerkUser.id,
+                        name:
+                            clerkUser.fullName ??
+                            clerkUser.username ??
+                            clerkUser.primaryEmailAddress?.emailAddress ??
+                            'Unknown',
+                        avatar: clerkUser.imageUrl,
+                    }).catch(() => null); // non-blocking
+                }
+            }
         };
 
         initCall().catch((err) => {
@@ -88,6 +113,7 @@ export default function MeetingPage() {
             mounted = false;
             // Reset the guard so a future navigation to the same URL works correctly
             hasJoined.current = false;
+            hasRecordedJoin.current = false;
             _call?.leave().catch(() => null);
         };
     }, [client, id]);  // intentionally omit router/slug — stable across renders
@@ -114,7 +140,7 @@ export default function MeetingPage() {
 
     return (
         <StreamCall call={call}>
-            <MyMeetingUI slug={slug} isHost={isHost} permLoading={permLoading} />
+            <MyMeetingUI slug={slug} isHost={isHost} permLoading={permLoading} meetingId={id} />
         </StreamCall>
     );
 }
@@ -124,10 +150,12 @@ function MyMeetingUI({
     slug,
     isHost,
     permLoading,
+    meetingId,
 }: {
     slug: string;
     isHost: boolean;
     permLoading: boolean;
+    meetingId: string;
 }) {
     const { useCallCallingState } = useCallStateHooks();
     const callingState = useCallCallingState();
@@ -136,6 +164,9 @@ function MyMeetingUI({
     // useCall() gives us the active Call object from StreamCall context.
     // This is the correct way to access it inside <StreamCall>.
     const call = useCall();
+
+    // ── Meet DB mutations ───────────────────────────────────────────────────
+    const endMeeting = useMutation(api.notifications.endMeeting);
 
     // ── Bug 3 fix: listen for remote "call ended" event ─────────────────────
     // When the host calls call.endCall(), Stream broadcasts a `call.ended`
@@ -168,6 +199,8 @@ function MyMeetingUI({
                 // endCall() terminates the call server-side and broadcasts
                 // `call.ended` to every connected participant.
                 await call.endCall();
+                // Mark the meeting as inactive in our DB
+                endMeeting({ meetingId }).catch(() => null);
             } else {
                 await call.leave();
             }
@@ -189,9 +222,15 @@ function MyMeetingUI({
     }
 
     return (
-        <StreamTheme>
-            <SpeakerLayout participantsBarPosition="bottom" />
-            <CallControls onLeave={handleLeave} />
-        </StreamTheme>
+        <div className="flex flex-col h-screen w-screen bg-black">
+            <StreamTheme className="flex-1 flex flex-col overflow-hidden">
+                <div className="flex-1 flex items-center justify-center overflow-hidden">
+                    <SpeakerLayout participantsBarPosition="bottom" />
+                </div>
+                <div className="flex-shrink-0">
+                    <CallControls onLeave={handleLeave} />
+                </div>
+            </StreamTheme>
+        </div>
     );
 }

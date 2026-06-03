@@ -49,7 +49,6 @@ function timeAgo(ts: number): string {
   return `${d}d ago`;
 }
 
-// ─── Single notification row ────────────────────────────────────────────────
 function NotificationItem({
   notif,
   onRead,
@@ -139,6 +138,139 @@ function NotificationItem({
           </Button>
         )}
         {/* Single delete button */}
+        <Button
+          variant="ghost"
+          size="icon"
+          className="h-6 w-6 p-0 rounded-md border border-border/30 bg-background/80 backdrop-blur-sm text-muted-foreground/60 hover:text-destructive hover:bg-destructive/10 transition-all opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100 shadow-sm"
+          onClick={(e) => {
+            e.stopPropagation();
+            onDelete(notif._id);
+          }}
+          title="Delete notification"
+        >
+          <Trash2 className="h-3 w-3" />
+        </Button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Meeting notification row — active-gated ──────────────────────────────
+// Subscribes to getMeetingStatus so the redirect is gated on the meeting
+// being live. If it has ended (or the record is missing), clicking shows a
+// toast instead of navigating into a dead call room.
+function MeetingNotificationItem({
+  notif,
+  onRead,
+  onDelete,
+}: {
+  notif: Doc<"notifications"> & { projectSlug?: string };
+  onRead: (id: Id<"notifications">) => void;
+  onDelete: (id: Id<"notifications">) => void;
+}) {
+  const router = useRouter();
+
+  // Reactively track meeting status — updates in real-time if the host ends
+  // the call while this popover is open.
+  const meetingStatus = useQuery(
+    api.notifications.getMeetingStatus,
+    notif.entityId ? { meetingId: notif.entityId } : "skip",
+  );
+
+  const handleClick = () => {
+    if (!notif.isRead) {
+      onRead(notif._id);
+    }
+
+    // Guard: only navigate if the meeting is still active
+    if (meetingStatus === undefined) {
+      // Still loading — fallback to normal navigation
+      const url = getNotificationRedirectUrl(notif);
+      router.push(url);
+      return;
+    }
+
+    if (!meetingStatus || meetingStatus.status !== "active") {
+      toast.error("This meeting has already ended.");
+      return;
+    }
+
+    const url = getNotificationRedirectUrl(notif);
+    router.push(url);
+  };
+
+  // Derive a subtle visual cue: dim the row if the meeting is over
+  const isEnded = meetingStatus !== undefined && (!meetingStatus || meetingStatus.status !== "active");
+
+  return (
+    <div
+      onClick={handleClick}
+      className={cn(
+        "group relative flex items-start gap-3.5 px-4 py-3.5 cursor-pointer transition-all duration-200",
+        "border-b border-border/70",
+        "hover:bg-accent/20",
+        !notif.isRead && "bg-primary/[0.02]",
+        isEnded && "opacity-60",
+      )}
+    >
+      {/* Avatar / Icon */}
+      <div className="relative shrink-0 mt-0.5">
+        {notif.senderAvatar ? (
+          <Avatar className="h-6 w-6 ring-1 ring-border/40 shadow-sm">
+            <AvatarImage src={notif.senderAvatar} />
+            <AvatarFallback className="text-[9px] font-semibold bg-accent">
+              {notif.senderName?.[0]?.toUpperCase() ?? "?"}
+            </AvatarFallback>
+          </Avatar>
+        ) : (
+          <div className="h-7 w-7 rounded-full bg-accent/30 border border-border/40 flex items-center justify-center text-xs shadow-sm">
+            {(() => {
+              const IconComponent = NOTIFICATION_ICONS[notif.type] ?? Bell;
+              return <IconComponent className="h-3.5 w-3.5 text-muted-foreground/80" />;
+            })()}
+          </div>
+        )}
+      </div>
+
+      {/* Body & Metadata */}
+      <div className="flex-1 min-w-0 pr-12">
+        {notif.projectName && (
+          <div className="flex items-center gap-1.5 mb-1.5 flex-wrap">
+            <span className="inline-flex items-center gap-1 text-[10px] text-primary bg-primary/5 px-2 py-0.5 rounded-md border border-primary/10 tracking-wide shadow-sm">
+              <FolderKanban className="h-3 w-3 text-primary/80 shrink-0" />
+              <span className="truncate max-w-50">
+                {notif.projectName}
+              </span>
+            </span>
+            {/* Ended badge */}
+            {isEnded && (
+              <span className="inline-flex items-center text-[9px] font-medium text-muted-foreground bg-muted px-1.5 py-0.5 rounded border border-border/40">
+                Ended
+              </span>
+            )}
+          </div>
+        )}
+        <p className="text-[11px] leading-relaxed text-foreground font-normal">
+          {renderNotificationBody(notif.body)}
+        </p>
+      </div>
+
+      {/* Action panel */}
+      <div className="absolute right-3.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+        {!notif.isRead && (
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-6 w-6 p-0 rounded-md border border-border/30 bg-background/80 backdrop-blur-sm text-muted-foreground/60 hover:text-primary hover:bg-primary/10 transition-all opacity-0 group-hover:opacity-100 scale-95 group-hover:scale-100 shadow-sm"
+            onClick={(e) => {
+              e.stopPropagation();
+              onRead(notif._id);
+            }}
+            title="Mark as read"
+          >
+            <Check className="h-3 w-3" />
+          </Button>
+        )}
         <Button
           variant="ghost"
           size="icon"
@@ -345,14 +477,23 @@ export function NotificationCenter() {
             </div>
           ) : (
             <div className="flex flex-col">
-              {notifications.map((n) => (
-                <NotificationItem
-                  key={n._id}
-                  notif={n}
-                  onRead={(id) => markAsRead({ notificationId: id })}
-                  onDelete={(id) => deleteNotification({ notificationId: id })}
-                />
-              ))}
+              {notifications.map((n) =>
+                n.type === "meeting_started" ? (
+                  <MeetingNotificationItem
+                    key={n._id}
+                    notif={n}
+                    onRead={(id) => markAsRead({ notificationId: id })}
+                    onDelete={(id) => deleteNotification({ notificationId: id })}
+                  />
+                ) : (
+                  <NotificationItem
+                    key={n._id}
+                    notif={n}
+                    onRead={(id) => markAsRead({ notificationId: id })}
+                    onDelete={(id) => deleteNotification({ notificationId: id })}
+                  />
+                )
+              )}
             </div>
           )}
         </ScrollArea>
