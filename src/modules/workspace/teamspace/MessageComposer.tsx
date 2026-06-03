@@ -80,6 +80,7 @@ interface Props {
   isAnnouncement?: boolean;
   currentUserId?: string;
   projectSlug?: string;
+  ownerIsPro?: boolean | null;
 }
 
 export function MessageComposer({
@@ -94,6 +95,7 @@ export function MessageComposer({
   isAnnouncement,
   currentUserId,
   projectSlug,
+  ownerIsPro = null,
 }: Props) {
   const [content, setContent] = useState("");
   const [activeAgent, setActiveAgent] = useState<"kaya" | "harry">("kaya");
@@ -873,11 +875,12 @@ export function MessageComposer({
           <PopoverTrigger asChild>
             <button
               type="button"
-              disabled={disabled}
+              disabled={disabled || ownerIsPro === false}
               className={cn(
                 "flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] font-medium transition-all duration-200 border select-none shrink-0 text-foreground border-border bg-accent! hover:bg-muted/60",
-                disabled && "opacity-40 cursor-not-allowed",
+                (disabled || ownerIsPro === false) && "opacity-70 cursor-not-allowed",
               )}
+              title={ownerIsPro === false ? "Upgrade to Pro to use AI agents" : undefined}
             >
               <Image
                 src={activeAgent === "kaya" ? "/kaya.svg" : "/harry.svg"}
@@ -898,16 +901,20 @@ export function MessageComposer({
           >
             <p className="text-sm text-center border-b border-accent mb-2 text-muted-foreground px-2 py-1">AI Assistant</p>
             {([
-              { id: "kaya", label: "Kaya", svg: "/kaya.svg", desc: "AI PM Agent", color: "text-white" },
-              { id: "harry", label: "Harry", svg: "/harry.svg", desc: "AI Dev Agent", color: "text-white" },
+              { id: "kaya", label: "Kaya", svg: "/kaya.svg", desc: "AI PM Agent" },
+              { id: "harry", label: "Harry", svg: "/harry.svg", desc: "AI Dev Agent", comingSoon: true },
             ] as const).map((agent) => (
               <button
                 key={agent.id}
                 type="button"
                 onClick={() => {
-                  setActiveAgent(agent.id);
+                  if ((agent as any).comingSoon) {
+                    toast.info("Harry is coming soon! Stay tuned.", { duration: 3000 });
+                    setAgentDropdownOpen(false);
+                    return;
+                  }
+                  setActiveAgent(agent.id as "kaya" | "harry");
                   setAgentDropdownOpen(false);
-                  // Swap prefix in textarea
                   setContent((c) => {
                     const stripped = c.replace(/^@kaya\s*/i, "").replace(/^@harry\s*/i, "");
                     return `@${agent.id} ${stripped}`;
@@ -917,14 +924,17 @@ export function MessageComposer({
                 className={cn(
                   "w-full flex items-center gap-4 px-2 py-1 rounded-md text-left transition-colors hover:bg-accent/60",
                   activeAgent === agent.id && "bg-accent/50",
+                  (agent as any).comingSoon && "opacity-60 cursor-not-allowed",
                 )}
               >
                 <Image src={agent.svg} alt={agent.label} width={16} height={16} className="shrink-0" />
-                <div className="flex flex-col space-y-1">
+                <div className="flex flex-col space-y-0.5">
                   <span className="text-[12px] font-medium leading-tight text-foreground">{agent.label}</span>
-                  <span className="text-[10px] text-muted-foreground leading-tight">{agent.desc}</span>
+                  <span className="text-[10px] text-muted-foreground leading-tight">
+                    {(agent as any).comingSoon ? "Coming soon" : agent.desc}
+                  </span>
                 </div>
-                {activeAgent === agent.id && (
+                {activeAgent === agent.id && !((agent as any).comingSoon) && (
                   <span className="ml-auto text-[9px] text-muted-foreground">✓</span>
                 )}
               </button>

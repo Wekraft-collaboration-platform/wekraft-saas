@@ -43,6 +43,7 @@ import {
 } from "@/modules/workspace/IssueKanbanUI";
 import { useKayaStore } from "@/store/useKayaStore";
 import { useMyWorkStore } from "@/store/useMyWorkStore";
+import { FeatureTutorialDialog } from "@/modules/workspace/FeatureTutorialDialog";
 import { api } from "../../../../../../../../convex/_generated/api";
 
 // Project members list is retrieved dynamically via query below
@@ -236,6 +237,8 @@ const IssuesPage = () => {
 
   return (
     <div className="w-full h-full p-6 2xl:p-8 flex flex-col">
+      {/* ── One-time tutorial dialog ─────────────────── */}
+      <FeatureTutorialDialog feature="issue" />
       {/* ── Header ───────────────────────────────────── */}
       <header className="flex items-center justify-between">
         <h1 className="text-2xl font-semibold">

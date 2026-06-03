@@ -378,7 +378,7 @@ const ProjectWorkspace = () => {
                       Set Alerts <AlertCircle className="w-3 h-3!" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent align="end" className="w-64 p-4 bg-card border border-accent rounded-xl shadow-xl dark:shadow-none">
+                  <PopoverContent align="end" side="bottom" avoidCollisions={false} className="w-64 p-4 bg-card border border-accent rounded-xl shadow-xl dark:shadow-none">
                     <h3 className="text-sm font-semibold mb-2 text-center text-foreground flex items-center justify-center gap-1.5">
                       <AlertCircle className="w-4 h-4 text-primary" /> Project Alerts
                     </h3>

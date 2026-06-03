@@ -13,6 +13,7 @@ const notificationType = v.union(
   v.literal("role_changed"),
   v.literal("mentioned"),
   v.literal("project_alert"),
+  v.literal("meeting_started"),
 );
 
 // ─── Helper: insert one notification record ──────────────────────────────────
@@ -362,9 +363,176 @@ export const notifyTeamspaceMention = mutation({
   },
 });
 
+/**
+ * notifyMeetingStarted (PUBLIC mutation)
+ * Called when an owner/admin starts a new meeting.
+ * Resolves the caller's Convex user ID from ctx.auth — no client-supplied ID needed.
+ * Fans out to every project member (except the host) so they can click to join.
+ * Also creates a team_meets record to track the meeting lifecycle.
+ */
+export const notifyMeetingStarted = mutation({
+  args: {
+    hostName: v.string(),
+    hostAvatar: v.optional(v.string()),
+    projectId: v.id("projects"),
+    meetingId: v.string(), // The Stream call ID used as the room URL segment
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return;
+
+    // Resolve to Convex user record
+    const host = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("clerkToken", identity.tokenIdentifier))
+      .unique();
+    if (!host) return;
+
+    const project = await ctx.db.get(args.projectId);
+    if (!project) return;
+
+    // ── Create team_meets record ────────────────────────────────────────────
+    // Guard against duplicate inserts (e.g. double-click)
+    const existing = await ctx.db
+      .query("team_meets")
+      .withIndex("by_meetingId", (q) => q.eq("meetingId", args.meetingId))
+      .unique();
+
+    if (!existing) {
+      await ctx.db.insert("team_meets", {
+        meetingId: args.meetingId,
+        projectId: args.projectId,
+        createdById: host._id,
+        createdByName: args.hostName,
+        createdByAvatar: args.hostAvatar,
+        status: "active",
+        startedAt: Date.now(),
+        members: [], // populated as participants join via recordMeetingJoin
+      });
+    }
+
+    // All current project members (excluding the host who started it)
+    const members = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
+    const recipientIds = members
+      .map((m) => m.userId as Id<"users">)
+      .filter((id) => id !== host._id);
+
+    await fanOut(ctx, recipientIds, {
+      senderId: host._id,
+      senderName: args.hostName,
+      senderAvatar: args.hostAvatar,
+      projectId: args.projectId,
+      projectName: project.projectName,
+      type: "meeting_started",
+      body: `**${args.hostName}** started a team meeting in **${project.projectName}**. Join ID: \`${args.meetingId}\``,
+      entityId: args.meetingId, // deep-link: navigate to meet/[meetingId]
+      entityTitle: `Meet · ${args.meetingId}`,
+    });
+  },
+});
+
+/**
+ * recordMeetingJoin (PUBLIC mutation)
+ * Called from the meeting room page after a participant successfully joins.
+ * Appends the user to team_meets.members — idempotent (skips if already present).
+ */
+export const recordMeetingJoin = mutation({
+  args: {
+    meetingId: v.string(),
+    userId: v.string(),
+    name: v.string(),
+    avatar: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const meet = await ctx.db
+      .query("team_meets")
+      .withIndex("by_meetingId", (q) => q.eq("meetingId", args.meetingId))
+      .unique();
+
+    if (!meet) return; // meeting record not found — silently ignore
+
+    // Idempotent: only append if this user isn't already in the list
+    const alreadyJoined = meet.members.some((m) => m.userId === args.userId);
+    if (alreadyJoined) return;
+
+    await ctx.db.patch(meet._id, {
+      members: [
+        ...meet.members,
+        { userId: args.userId, name: args.name, avatar: args.avatar },
+      ],
+    });
+  },
+});
+
+/**
+ * endMeeting (PUBLIC mutation)
+ * Called by the host when they end the call.
+ * Sets status to inactive and records endedAt + durationMs.
+ */
+export const endMeeting = mutation({
+  args: {
+    meetingId: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const meet = await ctx.db
+      .query("team_meets")
+      .withIndex("by_meetingId", (q) => q.eq("meetingId", args.meetingId))
+      .unique();
+
+    if (!meet || meet.status === "inactive") return; // already ended
+
+    const now = Date.now();
+    await ctx.db.patch(meet._id, {
+      status: "inactive",
+      endedAt: now,
+      durationMs: now - meet.startedAt,
+    });
+  },
+});
+
+/**
+ * getMeetingStatus (PUBLIC query)
+ * Lightweight query used by the notification click guard.
+ * Returns the status of a meeting by its meetingId, or null if not found.
+ */
+export const getMeetingStatus = query({
+  args: { meetingId: v.string() },
+  handler: async (ctx, args) => {
+    if (!args.meetingId) return null;
+    const meet = await ctx.db
+      .query("team_meets")
+      .withIndex("by_meetingId", (q) => q.eq("meetingId", args.meetingId))
+      .unique();
+    if (!meet) return null;
+    return { status: meet.status, projectId: meet.projectId };
+  },
+});
+
+/**
+ * getProjectMeetings (PUBLIC query)
+ * Returns all meetings for a project, sorted newest-first.
+ * Used by the meet lobby to render the history list.
+ */
+export const getProjectMeetings = query({
+  args: { projectId: v.id("projects") },
+  handler: async (ctx, args) => {
+    const meetings = await ctx.db
+      .query("team_meets")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .order("desc")
+      .collect();
+    return meetings;
+  },
+});
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // PUBLIC QUERIES — consumed by the frontend
 // ═══════════════════════════════════════════════════════════════════════════════
+
 
 /**
  * Get the 30 most recent notifications for the current user.

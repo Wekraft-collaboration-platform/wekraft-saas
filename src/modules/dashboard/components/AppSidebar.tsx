@@ -411,17 +411,6 @@ export const AppSidebar = () => {
                         <p className="text-xs text-muted-foreground">
                           No team projects
                         </p>
-                        <Button
-                          size="sm"
-                          variant="outline"
-                          asChild
-                          className="text-[10px] mt-2 h-7 w-full cursor-pointer"
-                        >
-                          {/* <Link href="/dashboard/community?mode=discover">
-                            <Layers3 className="h-4 w-4 mr-1" />
-                            Discover Projects
-                          </Link> */}
-                        </Button>
                       </div>
                     ) : (
                       <>

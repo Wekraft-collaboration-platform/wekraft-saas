@@ -20,6 +20,7 @@ import { PaceTracker } from "@/modules/workspace/timeLogs/PaceTracker";
 import { ProjectTimeline } from "@/modules/workspace/timeLogs/ProjectTimeline";
 import { api } from "../../../../../../../../convex/_generated/api";
 import type { Id } from "../../../../../../../../convex/_generated/dataModel";
+import { FeatureTutorialDialog } from "@/modules/workspace/FeatureTutorialDialog";
 
 const TimeLogsSkeleton = () => {
   return (
@@ -90,6 +91,8 @@ const TimeLogsPage = () => {
 
   return (
     <div className="w-full h-full p-6">
+      {/* ── One-time tutorial dialog ─────────────────── */}
+      <FeatureTutorialDialog feature="timeLogs" />
       <header>
         <h1 className="text-2xl font-semibold">
           <ChartNoAxesGantt className="w-6 h-6 ml-1 text-primary inline" /> Time
