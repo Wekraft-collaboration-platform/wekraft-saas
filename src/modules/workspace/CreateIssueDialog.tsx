@@ -1,36 +1,36 @@
 "use client";
 
-import React, { useState } from "react";
 import { useMutation, useQuery } from "convex/react";
-import { api } from "../../../convex/_generated/api";
+import {
+  AlertCircle,
+  CalendarIcon,
+  Check,
+  CheckCircle2,
+  ChevronRight,
+  Clock,
+  Globe,
+  Link2,
+  ListFilter,
+  Loader2,
+  LucideSettings2,
+  Paperclip,
+  Trash2,
+  User,
+  X,
+  Zap,
+} from "lucide-react";
+import Image from "next/image";
+import React, { useState } from "react";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
-import {
-  ChevronRight,
-  Loader2,
-  LucideSettings2,
-  CalendarIcon,
-  Globe,
-  Zap,
-  CheckCircle2,
-  Clock,
-  AlertCircle,
-  Link2,
-  ListFilter,
-  Paperclip,
-  Check,
-  User,
-  X,
-  Trash2,
-} from "lucide-react";
-import Image from "next/image";
+import { api } from "../../../convex/_generated/api";
 
 const getFileIcon = (fileName: string) => {
   const ext = fileName.split(".").pop()?.toLowerCase() ?? "";
@@ -49,37 +49,50 @@ const getFileIcon = (fileName: string) => {
   };
   return map[ext] ?? "/file.svg";
 };
-import { Label } from "@/components/ui/label";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
-import { toast } from "sonner";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
+
 import { format } from "date-fns";
+import { toast } from "sonner";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Calendar } from "@/components/ui/calendar";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
-import { Id } from "../../../convex/_generated/dataModel";
-import { GetRepoStructure } from "./GetRepoStructure";
+import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import {
   ISSUE_ENVIRONMENT_ICONS,
   ISSUE_SEVERITY_ICONS,
   ISSUE_STATUS_ICONS,
 } from "@/lib/static-store";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
+import type { Id } from "../../../convex/_generated/dataModel";
+import { GetRepoStructure } from "./GetRepoStructure";
 import { StorageLimitDialog } from "./StorageLimitDialog";
+
+const getCleanIcon = (icon: React.ReactNode) => {
+  if (!React.isValidElement(icon)) return icon;
+  const currentClassName = (icon.props as any).className || "";
+  const cleanClassName = currentClassName
+    .split(" ")
+    .filter((c: string) => !c.startsWith("text-"))
+    .join(" ");
+  return React.cloneElement(icon as React.ReactElement<any>, {
+    className: cleanClassName,
+  });
+};
 
 interface CreateIssueDialogProps {
   projectName?: string;
@@ -114,7 +127,9 @@ export const CreateIssueDialog = ({
     { userId: Id<"users">; name: string; avatar?: string }[]
   >([]);
   const [isPending, setIsPending] = useState(false);
-  const [attachments, setAttachments] = useState<{ name: string; url: string; size?: number }[]>([]);
+  const [attachments, setAttachments] = useState<
+    { name: string; url: string; size?: number }[]
+  >([]);
   const [isUploading, setIsUploading] = useState(false);
   const [showStorageLimitDialog, setShowStorageLimitDialog] = useState(false);
 
@@ -154,7 +169,10 @@ export const CreateIssueDialog = ({
       const data = await response.json();
       if (data.error) throw new Error(data.error);
 
-      setAttachments((prev) => [...prev, { name: data.name, url: data.url, size: file.size }]);
+      setAttachments((prev) => [
+        ...prev,
+        { name: data.name, url: data.url, size: file.size },
+      ]);
       toast.success("File uploaded successfully", { id: toastId });
     } catch (error: any) {
       const msg = error.message || "";
@@ -262,13 +280,10 @@ export const CreateIssueDialog = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className={cn(
-                    "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
-                    status && "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
-                  )}
+                  className="h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]"
                 >
                   {status ? (
-                    ISSUE_STATUS_ICONS[status]
+                    getCleanIcon(ISSUE_STATUS_ICONS[status])
                   ) : (
                     <ListFilter className="w-3.5 h-3.5" />
                   )}
@@ -300,14 +315,10 @@ export const CreateIssueDialog = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className={cn(
-                    "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
-                    severity &&
-                    "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
-                  )}
+                  className="h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]"
                 >
                   {severity ? (
-                    ISSUE_SEVERITY_ICONS[severity]
+                    getCleanIcon(ISSUE_SEVERITY_ICONS[severity])
                   ) : (
                     <Zap className="w-3.5 h-3.5" />
                   )}
@@ -337,14 +348,10 @@ export const CreateIssueDialog = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className={cn(
-                    "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
-                    environment &&
-                    "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
-                  )}
+                  className="h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]"
                 >
                   {environment ? (
-                    ISSUE_ENVIRONMENT_ICONS[environment]
+                    getCleanIcon(ISSUE_ENVIRONMENT_ICONS[environment])
                   ) : (
                     <Globe className="w-3.5 h-3.5" />
                   )}
@@ -378,11 +385,7 @@ export const CreateIssueDialog = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className={cn(
-                    "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
-                    dueDate &&
-                    "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
-                  )}
+                  className="h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]"
                 >
                   <CalendarIcon className="w-3.5 h-3.5" />
                   {dueDate ? (
@@ -422,11 +425,7 @@ export const CreateIssueDialog = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className={cn(
-                    "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
-                    selectedPath &&
-                    "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/50 dark:bg-blue-900/10",
-                  )}
+                  className="h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]"
                 >
                   <Link2 className="w-3.5 h-3.5" />
                   {selectedPath ? selectedPath.split("/").pop() : "Link Code"}
@@ -448,11 +447,7 @@ export const CreateIssueDialog = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className={cn(
-                    "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-3 gap-1.5 rounded-full text-[11px]",
-                    assignedMembers.length > 0 &&
-                    "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
-                  )}
+                  className="h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-3 gap-1.5 rounded-full text-[11px]"
                 >
                   <User className="w-3.5 h-3.5" />
                   {assignedMembers.length > 0
@@ -539,13 +534,13 @@ export const CreateIssueDialog = ({
                         type="button"
                         variant="outline"
                         size="sm"
-                        className={cn(
-                          "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
-                          attachments.length > 0 &&
-                          "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
-                        )}
-                        disabled={isUploading || project?.ownerAccountType === "free"}
-                        onClick={() => document.getElementById("issue-file-upload")?.click()}
+                        className="h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]"
+                        disabled={
+                          isUploading || project?.ownerAccountType === "free"
+                        }
+                        onClick={() =>
+                          document.getElementById("issue-file-upload")?.click()
+                        }
                       >
                         {isUploading ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />

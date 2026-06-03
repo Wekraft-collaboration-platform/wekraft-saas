@@ -1,16 +1,16 @@
 "use client";
 
-import React from "react";
-import { cn } from "@/lib/utils";
 import {
-  Clock,
   Activity,
   AlertCircle,
   ArrowUpRight,
   BadgeAlert,
+  Clock,
   LucideAlertTriangle,
 } from "lucide-react";
-import { Task } from "@/types/types";
+import React from "react";
+import { cn } from "@/lib/utils";
+import type { Task } from "@/types/types";
 
 interface PaceTrackerProps {
   tasks: Task[];
@@ -53,7 +53,7 @@ export const PaceTracker = ({
   // Amber (Yellow): You're slipping. There is a small gap (0-15%) between time spent and work done.
   // Rose (Red): Critical danger. The gap is >15%, meaning the deadline is severely at risk.
 
-  const isReady = totalTasks >= 6 && daysConsumed >= 3;
+  const isReady = totalTasks >= 3 && daysConsumed >= 2;
   let state = "empty";
   if (isReady) state = "ready";
 
@@ -69,17 +69,18 @@ export const PaceTracker = ({
           </h3>
         </div>
         <div className="flex flex-col items-center justify-center space-y-3 mt-6">
-          <LucideAlertTriangle className={cn("w-8 h-8 text-primary opacity-50")} />
+          <LucideAlertTriangle
+            className={cn("w-8 h-8 text-primary opacity-50")}
+          />
           <p className="text-xs text-muted-foreground leading-relaxed text-center px-7">
-            Your workspace atleast have{" "}
-            <span className="text-primary">6 tasks and 3 days of history</span>{" "}
+            Your workspace must have at least{" "}
+            <span className="text-primary">3 tasks and 2 days of history</span>{" "}
             to establish velocity.
           </p>
         </div>
       </div>
     );
   }
-
 
   // READY STATE
   const gap = timeConsumedPct - taskCompletedPct; // Positive means Behind
@@ -204,7 +205,6 @@ export const PaceTracker = ({
 
       {/* STATS FOOTER */}
       <div className="mt-3">
-
         <div className="grid grid-cols-4 gap-1.5">
           <div className="bg-accent/60 rounded-lg p-2 border border-accent max-h-[48px] flex flex-col justify-center">
             <div className="text-base font-bold font-mono text-neutral-900 dark:text-white tracking-tight leading-none mb-0.5">
@@ -241,7 +241,6 @@ export const PaceTracker = ({
             </div>
           </div>
         </div>
-
       </div>
     </div>
   );

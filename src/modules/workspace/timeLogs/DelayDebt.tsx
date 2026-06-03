@@ -1,12 +1,18 @@
 "use client";
 
-import React, { useState, useMemo } from "react";
-import { cn } from "@/lib/utils";
-import { AlertCircle, BadgeAlert, CircleMinus, Hourglass, LucideAlertTriangle } from "lucide-react";
-import { Task } from "@/types/types";
 import { useQuery } from "convex/react";
-import { Id } from "../../../../convex/_generated/dataModel";
+import {
+  AlertCircle,
+  BadgeAlert,
+  CircleMinus,
+  Hourglass,
+  LucideAlertTriangle,
+} from "lucide-react";
+import React, { useMemo, useState } from "react";
+import { cn } from "@/lib/utils";
+import type { Task } from "@/types/types";
 import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 interface DelayDebtProps {
   tasks: Task[];
@@ -70,11 +76,13 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
           </h3>
         </div>
         <div className="flex flex-col items-center justify-center space-y-3 mt-6">
-          <LucideAlertTriangle className={cn("w-8 h-8 text-primary opacity-50")} />
+          <LucideAlertTriangle
+            className={cn("w-8 h-8 text-primary opacity-50")}
+          />
           <p className="text-xs text-muted-foreground leading-relaxed text-center px-7">
             Your workspace atleast have{" "}
-            <span className="text-primary">more than 5 tasks </span>{" "}
-            to establish delay debt tracking.
+            <span className="text-primary">more than 5 tasks </span> to
+            establish delay debt tracking.
           </p>
         </div>
       </div>
@@ -95,7 +103,8 @@ export const DelayDebt = ({ tasks, projectId }: DelayDebtProps) => {
   const hiddenOffendersCount = Math.max(0, currentOverdueCount - 5);
 
   // Simple color logic - primary usage
-  let badgeColor = "text-muted-foreground border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900/70";
+  let badgeColor =
+    "text-muted-foreground border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-900/70";
   if (currentOverdueCount > 0) {
     badgeColor = "text-primary border-primary/20 bg-primary/5";
   }
