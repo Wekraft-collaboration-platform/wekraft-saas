@@ -11,7 +11,7 @@ import { FloatingKaya } from "@/modules/ai/FloatingKaya";
 import ProjectSidebar from "@/modules/workspace/Projectsidebar";
 import { api } from "../../../../../../../convex/_generated/api";
 import type { Id } from "../../../../../../../convex/_generated/dataModel";
-import StreamVideoProvider from "@/modules/streamVideo/VideoProvider";
+import StreamVideoProvider from "@/modules/team-meet/VideoProvider";
 
 export default function WorkspaceLayout({
   children,

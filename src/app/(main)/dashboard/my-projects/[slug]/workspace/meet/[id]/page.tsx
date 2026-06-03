@@ -1,9 +1,15 @@
 'use client';
 
 import {
-    StreamCall, StreamTheme, SpeakerLayout, CallControls,
+    StreamCall, StreamTheme, SpeakerLayout,
     useCallStateHooks, CallingState, useStreamVideoClient, useCall,
     type Call,
+    ToggleAudioPublishingButton,
+    ToggleVideoPublishingButton,
+    ScreenShareButton,
+    ReactionsButton,
+    SpeakingWhileMutedNotification,
+    CancelCallButton,
 } from '@stream-io/video-react-sdk';
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -128,6 +134,21 @@ export default function MeetingPage() {
         );
     }
 
+    // ── Render: Stream client not ready (provider failed to init) ───────────
+    // If client is still null after Clerk has loaded, the StreamVideoProvider
+    // likely failed to obtain a token. Show a friendly error instead of an
+    // infinite "Joining meeting…" spinner.
+    if (!client && clerkUser) {
+        return (
+            <div className="flex h-screen flex-col items-center justify-center gap-4 bg-black">
+                <VideoOff className="w-10 h-10 text-destructive" />
+                <p className="text-sm text-muted-foreground">
+                    Could not connect to the video service. Please refresh the page.
+                </p>
+            </div>
+        );
+    }
+
     // ── Render: loading / connecting ────────────────────────────────────────
     if (!call) {
         return (
@@ -168,6 +189,9 @@ function MyMeetingUI({
     // ── Meet DB mutations ───────────────────────────────────────────────────
     const endMeeting = useMutation(api.notifications.endMeeting);
 
+    // ── Fix: prevent double-click on leave/end ──────────────────────────────
+    const [isLeaving, setIsLeaving] = useState(false);
+
     // ── Bug 3 fix: listen for remote "call ended" event ─────────────────────
     // When the host calls call.endCall(), Stream broadcasts a `call.ended`
     // event to every participant. We listen here so all members are
@@ -189,6 +213,10 @@ function MyMeetingUI({
 
     // ── Bug 3 fix: host ends for everyone; members just leave ────────────────
     const handleLeave = async () => {
+        // Guard against double-click while async leave is in flight
+        if (isLeaving) return;
+        setIsLeaving(true);
+
         if (!call) {
             router.push(`/dashboard/my-projects/${slug}/workspace/meet`);
             return;
@@ -228,7 +256,16 @@ function MyMeetingUI({
                     <SpeakerLayout participantsBarPosition="bottom" />
                 </div>
                 <div className="flex-shrink-0">
-                    <CallControls onLeave={handleLeave} />
+                    {/* Custom controls — recording only for owner/admin */}
+                    <div className="str-video__call-controls">
+                        <SpeakingWhileMutedNotification>
+                            <ToggleAudioPublishingButton />
+                        </SpeakingWhileMutedNotification>
+                        <ToggleVideoPublishingButton />
+                        <ScreenShareButton />
+                        <ReactionsButton />
+                        <CancelCallButton onLeave={handleLeave} disabled={isLeaving} />
+                    </div>
                 </div>
             </StreamTheme>
         </div>
