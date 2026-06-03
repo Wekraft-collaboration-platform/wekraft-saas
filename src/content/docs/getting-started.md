@@ -1,173 +1,55 @@
-# Getting Started
+# Zero to Hero Quickstart Tutorial
 
-Get up and running with Wekraft in under five minutes. This guide walks you through creating your account, setting up your first project, inviting your team, and starting your first sprint.
-
-> [!TIP]
-> Wekraft includes a built-in **Getting Started Checklist** on your dashboard that tracks your progress through each setup step. Complete all steps to unlock the full platform experience.
-
-## Step 1 — Sign Up
-
-Visit [wekraft.xyz](https://wekraft.xyz) and click **"Get Started"**. You can sign up using:
-
-- **GitHub** — recommended for developers, as it also enables repository linking and commit stats later
-- **Google** — quick sign-in with your Google account
-
-After authentication, you'll land on the **Onboarding** flow.
-
-> [!NOTE]
-> Wekraft uses secure, enterprise-grade identity providers for authentication. We never store your passwords. See [Security & Permissions](/web/docs/security) for more details.
+Welcome to Wekraft! This quickstart guide is structured directly around the **Getting Started Checklist** on your dashboard. Completing these 7 steps will take you from a fresh sign-up to a fully configured, collaborative, and AI-enabled workspace.
 
 ---
 
-## Step 2 — Complete Onboarding
+## The Onboarding Setup Checklist
 
-The onboarding flow collects a few details to personalize your experience:
+Your dashboard tracks 7 key onboarding steps. Here is how to complete each one:
 
-### Identity
-- **Full Name** — displayed on your profile and in team spaces
-- **Username** — a unique handle (e.g., `@ritesh`) used across the platform
-- **Avatar** — upload a profile photo or use the auto-generated initials
+### Step 1: Connect your GitHub Account
+- **Objective**: Link your developer profile to GitHub to enable sync features.
+- **Action**: From the dashboard checklist, click **"Connect GitHub account"**. This opens the Clerk/GitHub OAuth dialog. Once authenticated, your commits and pull requests can sync with Wekraft.
 
-### Role & Occupation
-- Select your **identity** — Student, Professional, or Freelancer
-- Pick your **role** — Developer, Designer, Project Manager, Product Owner, or Other
-- Add your **occupation title** (e.g., "Senior Frontend Developer")
+### Step 2: Link Repository to your Project
+- **Objective**: Attach a repository to synchronize file trees and code changes.
+- **Action**: Go to **Repositories** in the sidebar. Select a connected GitHub repository and link it to your active project workspace.
 
-### Skills
-- Add relevant skills (e.g., `React`, `Node.js`, `UI/UX`, `Python`)
-- These appear on your public profile and help teams understand your expertise
+### Step 3: Visit your Project Workspace
+- **Objective**: Tour the project layout.
+- **Action**: From the home page of your project (`/dashboard/my-projects/[slug]`), click **"Visit workspace"** to enter the main developer dashboard.
 
-> [!TIP]
-> You can always update these details later from your [Profile & Settings](/web/docs/profile) page.
+### Step 4: Create your First Task
+- **Objective**: Populate the task list or backlog.
+- **Action**: Navigate to **Tasks** inside your workspace and click **"New Task"** (or use the `/` shortcut in the Message Composer). Add a title, priority level, estimation window, and assign it to yourself.
 
----
+### Step 5: Set a Project Deadline to Track
+- **Objective**: Establish the delivery target date.
+- **Action**: Go to the **Project Settings** or the **Time Logs** timeline page. Click **"set Deadline"** and pick the final delivery date. This activates metrics tracking such as Milestone Trajectory and Delay Debt.
 
-## Step 3 — Explore the Dashboard
+### Step 6: Invite Teammates to Collaborate
+- **Objective**: Add team members up to your plan limit.
+- **Action**: Click the **"Invite"** button at the top-right of your Project Home screen. Copy the generated invite link and share it. When they open it, you can approve their join request under the **Requests** tab.
 
-After onboarding, you land on the **Main Dashboard**. Here's what you'll see:
-
-| Section | What it shows |
-|---|---|
-| **Metric Cards** | Your GitHub stats (commits, PRs, merged PRs) — connect GitHub to populate |
-| **Stats Tab** | Getting Started Checklist, notifications, upcoming deadlines, and calendar events |
-| **Projects Tab** | All projects you own or have joined, with role badges and status indicators |
-| **Discover Tab** | Community projects (coming soon) |
-| **Right Sidebar** | Collapsible panel with quick links and account info |
-
-The **Getting Started Checklist** at the top of the Stats tab guides you through the remaining setup steps. Complete each one to get the most out of Wekraft.
+### Step 7: Unlock your Free Trial
+- **Objective**: Experience premium features.
+- **Action**: Click **"Unlock Trial"** on your dashboard checklist to activate a 1-week free trial of the Plus plan features without entering credit card details.
 
 ---
 
-## Step 4 — Create Your First Project
+## Frequently Asked Questions
 
-1. Click **"New Project"** from the sidebar or the Projects tab
-2. Enter a **Project Name** — a URL-safe slug is generated automatically (e.g., `my-app-a3x7k`)
-3. Add an optional **Description**
-4. Choose **Visibility**: `Public` (discoverable) or `Private` (invite-only)
-5. Set the **Work Status**: Ideation, Validation, Development, Beta, Production, or Scaling
-6. Click **Create Project**
+**Q: Do I have to complete Step 7 (Free Trial) to finish the onboarding?**
+A: No. Step 7 is optional. Steps 1-6 are the required core steps. Once you finish steps 1-6, your checklist is officially marked complete, which triggers any referral credits if you were referred by another user.
 
-You're now the project **owner** with full control.
-
-### Project Limits by Plan
-
-| Plan | Projects you can create | Projects you can join |
-|---|---|---|
-| Free | 2 | 2 |
-| Plus | 10 | 10 |
-| Pro | 20 | 20 |
+**Q: Can I change my linked GitHub repository later?**
+A: Yes, you can unlink and link a new repository from the **Repositories** dashboard view at any time.
 
 ---
 
-## Step 5 — Connect GitHub (Optional)
+## Next Steps
 
-If your project has a code repository:
-
-1. On the main dashboard, click **"Connect Now"** on the Commits card (or go to the dashboard header)
-2. Authorize Wekraft to access your GitHub account
-3. Your GitHub username is synced automatically — commits, PRs, and merged PRs appear on the dashboard
-
-Once connected, you can link specific repositories to individual projects for file browsing and issue importing. See [Projects → GitHub Integration](/web/docs/projects#github-integration) for setup instructions.
-
----
-
-## Step 6 — Invite Your Team
-
-1. Open your project by clicking on it from the dashboard
-2. Click the **"Invite"** button in the project header
-3. Copy and share the unique **invite link** with your teammates
-4. When teammates click the link, they submit a **join request**
-5. Accept their request from the **Join Requests** panel in Project Settings → Members
-
-Team members are assigned the `member` role by default. Promote trusted collaborators to `admin` for expanded permissions.
-
-### Member Limits by Plan
-
-| Plan | Members per project |
-|---|---|
-| Free | 3 (including owner) |
-| Plus | 5 (including owner) |
-| Pro | 15 (including owner) |
-
----
-
-## Step 7 — Create Tasks & Plan a Sprint
-
-### Create Your First Task
-1. Navigate to the **Tasks** tab in your project workspace
-2. Click **"New Task"** (the button appears in the top-right)
-3. Fill in the title, description, priority, assignees, date range, and optional tags
-4. Save — the task appears in your backlog
-
-> [!NOTE]
-> If you're a `member` role and can't see the "New Task" button, the project owner needs to enable **"Members can create"** in Project Settings → Configuration.
-
-### Plan Your First Sprint
-1. Go to the **Sprints** tab
-2. Click **"New Sprint"** — set a name, goal, and date range
-3. Add tasks from the **Backlog** into your sprint
-4. Click **"Start Sprint"** when ready
-
-> [!IMPORTANT]
-> Only one sprint can be active per project at a time. Complete the active sprint before starting a new one.
-
----
-
-## Step 8 — Install the VS Code Extension
-
-For the full developer experience:
-
-1. Open VS Code → Extensions (`Ctrl+Shift+X`)
-2. Search for **"Wekraft"** and click **Install**
-3. Click the Wekraft icon in the Activity Bar
-4. Click **"Login with Wekraft"** and authorize in your browser
-5. Select your project — your assigned tasks appear in the sidebar
-
-> [!NOTE]
-> **Pro plan** required for full two-way sync (status updates, time tracking from IDE). Free and Plus users can view and browse tasks but cannot update status from the IDE.
-
----
-
-## Step 9 — Set a Project Deadline (Optional)
-
-From the **Project Workspace Dashboard**, you can set a target deadline for your project:
-
-1. Click **"Set Deadline"** in the Track Your Project card
-2. Pick a date — the progress bar tracks how much time has elapsed
-3. Optionally configure **Alerts** at 25%, 50%, 75%, or 90% milestones to notify the owner and admins
-
-This helps your team stay aware of the bigger timeline beyond individual sprints.
-
----
-
-## What's Next?
-
-You're all set! Here are the best places to go from here:
-
-- [Understand the Dashboard →](/web/docs/dashboard)
-- [Master Tasks →](/web/docs/tasks)
-- [Track bugs with Issues →](/web/docs/issues)
-- [Plan Sprints →](/web/docs/sprints)
-- [Meet Kaya AI →](/web/docs/kaya-ai)
-- [Learn Keyboard Shortcuts →](/web/docs/shortcuts)
-- [Set up the VS Code Extension →](/web/docs/extension)
+- Review the list of [Keyboard Shortcuts & Composer Hotkeys](/web/docs/shortcuts).
+- Learn how to manage project visibility in [Projects Management](/web/docs/projects).
+- Learn about the [Project Delivery Timeline & Gantt Chart](/web/docs/time-logs).

@@ -1,147 +1,65 @@
-# Wekraft Overview
+# Wekraft Platform Overview
 
-Welcome to **Wekraft** — the unified collaboration platform built for software teams who want to move fast without losing visibility. This documentation covers every feature, from creating your first project to advanced AI-driven sprint insights.
-
-> [!TIP]
-> **New to Wekraft?** Get up and running in under 5 minutes with our **[Getting Started Quick Start Guide](/web/docs/getting-started)**. It walks you through setting up a project, inviting your team, and launching your first sprint.
-
-## What is Wekraft?
-
-Wekraft bridges the gap between your **project management dashboard** and your **development environment**. Instead of context-switching between Linear, Jira, GitHub, and your IDE, Wekraft brings all of these into one coherent workflow.
-
-At its core, Wekraft is:
-
-- **A project management hub** — tasks, issues, sprints, calendars, and team spaces all in one place
-- **A developer-first tool** — deep VS Code extension integration means you manage work without leaving your editor
-- **An AI-powered platform** — Kaya PM Agent and Harry Dev Agent handle planning, code reviews, and automation
-- **A real-time platform** — every change syncs instantly across all connected clients with zero page refreshes
-
-## Core Concepts
-
-Understanding these four concepts will help you navigate Wekraft quickly.
-
-### Projects
-
-A **Project** is the top-level container for all your work. Each project has its own tasks, issues, sprints, members, and settings. Projects can be public (discoverable by other users) or private. Each project gets a globally unique URL slug like `my-app-a3x7k`.
-
-### Tasks
-
-**Tasks** are the fundamental units of planned work. Every task has a status (`not started`, `inprogress`, `reviewing`, `testing`, `completed`), a priority level (`high`, `medium`, `low`), a date range, and can be assigned to one or more members. Tasks can be linked to a codebase path and grouped into sprints.
-
-### Issues
-
-**Issues** track unplanned or reactive work — bugs, production incidents, and enhancement requests. Issues have a severity (`critical`, `medium`, `low`) and an environment (`local`, `dev`, `staging`, `production`). They can originate from three sources: created manually, escalated from a blocked task, or imported directly from a linked GitHub repository.
-
-### Sprints
-
-**Sprints** are time-boxed work periods where your team commits to completing a defined set of tasks and issues. Sprints have three states: `planned`, `active`, and `completed`. Only one sprint can be active per project at any time. When a sprint completes, unfinished items are automatically moved back to the backlog.
+Welcome to **Wekraft** — the unified software engineering and collaboration platform. Wekraft bridges the gap between where your work is planned and where it is built. By bringing **project planning**, **real-time team communication**, **git metrics**, and **editor-level integrations** into one unified, real-time environment, Wekraft eliminates traditional context-switching.
 
 ---
 
-## How Wekraft Works: End-to-End
+## Technical Architecture & Flow
 
-Here is a typical workflow for a team using Wekraft:
+Wekraft operates in a hierarchical model designed to mirror standard engineering team organizations:
 
-1. **Create a project** and set its work status (ideation, validation, development, beta, production, or scaling).
-2. **Connect a GitHub repository** to auto-import issues and track commits per task.
-3. **Add team members** via an invite link or by sharing a join request URL. Assign roles: `owner`, `admin`, `member`, or `viewer`.
-4. **Create tasks** and add them to a sprint backlog. Set priorities, due dates, and assignees.
-5. **Plan a sprint** by moving tasks from the backlog into a sprint with a defined goal and date range.
-6. **Start the sprint** — Wekraft locks the sprint composition and begins tracking burn rate.
-7. **Install the VS Code extension** so developers can view, start, and complete tasks directly from their editor. Time is automatically logged.
-8. **Monitor progress** through Heatmaps (member workload), the Calendar (milestones and events), and Kaya AI (predictive sprint analytics).
-9. **Complete the sprint** — final stats are frozen, incomplete items return to the backlog, and you're ready for the next cycle.
+```mermaid
+graph TD
+    User[User Profile & Subscription] -->|Belongs to| Project[Projects max 2 Free / 10 Plus / 20 Pro]
+    Project -->|Timeboxed by| Sprint[Sprints one active at a time]
+    Project -->|Linked to| Repo[GitHub Repositories]
+    Project -->|Configured by| Policies[Project Config/Policies]
+    Sprint -->|Contains| Task[Tasks Planned Backlog]
+    Project -->|Handles| Issues[Issues Reactive Bugs/Incidents]
+    Repo -->|Syncs Code to| Heatmap[React Flow Codebase Map]
+```
 
----
-
-## The Dashboard at a Glance
-
-When you log in, the main dashboard shows three tabs:
-
-| Tab          | What it shows                                                                                         |
-| ------------ | ----------------------------------------------------------------------------------------------------- |
-| **Stats**    | GitHub metrics (commits, PRs, merged PRs), notification feed, upcoming deadlines, and upcoming events |
-| **Projects** | A grid of all projects you own or have joined — click any to enter its workspace                      |
-| **Discover** | Community projects — explore and collaborate with others worldwide                                    |
-
-The dashboard also displays a **Getting Started Checklist** for new users, guiding you through every key setup step with a progress tracker.
+1. **User Accounts & Billing**: Every user belongs to a plan tier (**Free**, **Plus**, or **Pro**) which governs limits across all projects they own or join.
+2. **Projects**: The top-level workspace container. Each project can link to a GitHub repository, invite members, and toggle governance settings.
+3. **Sprints & Backlog**: Time-boxed execution periods. Tasks are planned within sprints.
+4. **Tasks & Issues**: Tasks represent planned milestones; Issues represent reactive bugs or incidents.
+5. **Team Communication**: Embedded chat channels and real-time video meetings inside the workspace.
 
 ---
 
-## AI Agents
+## Subscription Plans & Feature Support
 
-Wekraft ships with two built-in AI agents, each with a distinct role:
+All usage limits are enforced both server-side via Convex and client-side in the dashboard:
 
-### Kaya PM Agent
-
-**Kaya** is your AI-native Product Manager. She possesses full context of your project — tasks, sprints, Git activity, and team workloads — and operates like a human PM at machine speed.
-
-- Automated sprint planning from backlog
-- Intelligent reporting & stakeholder summaries
-- Backlog grooming, triage, and task creation
-- Full workspace management (create screens, assign tasks)
-- Team Space integration — mention **@Kaya** in chat and she replies like a teammate
-
-Access Kaya via the AI Workspace tab, the floating chat bubble, or `Ctrl+K` / `Cmd+K`.
-
-### Harry Dev Agent
-
-**Harry** is your AI-native Dev Agent. He monitors your codebase, detects bugs, conducts autonomous web research, and acts as a vigilant guardian over your repository's health.
-
-- Continuous codebase monitoring & indexing
-- Proactive bug detection and root cause analysis
-- AI-driven web research for unknown dependencies
-- Code review with PR comments and fix suggestions
-- Two modes: **Harry Fast** (quick answers) and **Harry Deep** (full codebase analysis)
-
-> [!NOTE]
-> Both Kaya and Harry are **Pro plan** features. Harry is currently under active development.
+| Feature / Limit | Free Plan | Plus Plan | Pro Plan |
+| :--- | :--- | :--- | :--- |
+| **Created Projects Limit** | 2 projects | 10 projects | 20 projects |
+| **Joined Projects Limit** | 2 projects | 10 projects | 20 projects |
+| **Members Per Project** | Max 3 members | Max 6 members | Max 15 members |
+| **Kaya AI PM Agent** | Not available | Not available | Full access (360 calls/mo) |
+| **Harry AI Dev Agent** | Not available | Not available | Beta Access (Coming Soon) |
+| **Interactive Heatmaps** | Read-only structure | Full Structure & Git activity | Full structures & issue overlay |
+| **VS Code Sync** | Read-only extension | Read-only extension | Full Two-way editor sync |
+| **Cloud Storage** | 2 GB | 15 GB | 30 GB |
+| **Support SLA** | Basic | Basic | Priority 24/7 |
 
 ---
 
-## Plans & Limits
+## Frequently Asked Questions
 
-Wekraft offers three plans:
+### What happens when I hit my member limit?
+If you hit your project's member limit (e.g., 3 members on the Free plan), any incoming join requests will show as pending but cannot be approved until you either remove an existing member or upgrade your subscription plan.
 
-| Feature             | Free      | Plus      | Pro               |
-| ------------------- | --------- | --------- | ----------------- |
-| Projects (owned)    | 2         | 10        | 20                |
-| Projects (joined)   | 2         | 10        | 20                |
-| Members per project | 3         | 5         | 15                |
-| Kaya AI             | —         | —         | 300 calls/mo      |
-| Harry Dev Agent     | —         | —         | ✓                 |
-| VS Code Extension   | Read-only | Read-only | Full Two-Way Sync |
-| Advanced Analytics  | —         | ✓         | ✓                 |
-| Team Heatmaps       | Limited   | Limited   | Full              |
-| Priority support    | —         | —         | ✓                 |
-
-> [!NOTE]
-> Free and Plus users can still use the VS Code extension for task viewing. Full two-way sync (completing tasks, logging time from the IDE) requires a Pro plan.
-
----
-
-## Key Integrations
-
-### GitHub
-
-Link a repository to your project to automatically sync GitHub Issues as Wekraft Issues. Commits and pull requests are visible in the task timeline, giving full traceability from task to code. The dashboard also pulls your GitHub contribution stats (total commits, pull requests, and merged PRs) for the past year.
-
-### VS Code Extension
-
-The Wekraft extension for VS Code is available in the [VS Code Marketplace](https://marketplace.visualstudio.com). After a one-click authentication handshake, your assigned tasks appear directly in your editor sidebar. See the [VS Code Extension guide](/web/docs/extension) for setup instructions.
-
-### Team Meet
-
-**Team Meet** lets your team collaborate in real-time through video call rooms built directly into the platform — no external tools needed. Start a call from the Team Space and bring your whole team together instantly.
+### Can team members configure project settings?
+Wekraft maintains a strict distinction:
+- **Project Settings** (names, public/private visibility, descriptive tags) are managed on the Project Home page and restricted to the **Project Owner**.
+- **Workspace Configs** (Member task creation, Member AI access policies) are configured in the Workspace sub-tab.
 
 ---
 
 ## Next Steps
 
-- [Quick Start Guide →](/web/docs/getting-started)
-- [Install the VS Code Extension →](/web/docs/extension)
-- [Create your first project →](/web/docs/projects)
-- [Plan your first sprint →](/web/docs/sprints)
-- [Meet Kaya PM Agent →](/web/docs/kaya-pm)
-- [Meet Harry Dev Agent →](/web/docs/harry-dev)
-- [Explore keyboard shortcuts →](/web/docs/shortcuts)
+- Get started in 5 minutes with the [Getting Started Tutorial](/web/docs/getting-started).
+- Learn about the [Project Home Settings & Configs](/web/docs/projects).
+- Explore interactive code tracking in [Repository Heatmaps](/web/docs/heatmaps).
+- Review [VS Code Extension Setup](/web/docs/extension).

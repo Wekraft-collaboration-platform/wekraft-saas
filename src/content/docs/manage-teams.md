@@ -1,135 +1,71 @@
-# Manage Teams
+# Manage Teams & Roles
 
-Managing your team effectively in Wekraft means understanding roles, permissions, and the mechanics of adding and removing members. This page covers everything an owner or admin needs to know.
+Wekraft projects support role-based member governance, allowing you to regulate workspace access, assign execution responsibilities, and control AI usage policies.
 
-## Access Roles
+---
 
-Every project member is assigned exactly one access role. Roles are hierarchical — each role includes all permissions of the roles below it.
+## Workspace Access Roles
 
-### Owner
-The creator of the project. There is always exactly one owner per project.
+Wekraft structures project roles into four hierarchical levels:
 
-**Exclusive to owner:**
-- Delete the project permanently
-- Transfer ownership (coming soon)
-- Edit all project settings
+### 1. Owner
+- **Scope**: The creator of the project.
+- **Exclusive Powers**: Toggles public/private visibility, updates tags, uploads banners, manages policies in the Config tab, sets target project deadlines, and handles billing integrations.
 
-### Admin
-Trusted collaborators with near-full access. Owners promote members to admin status.
+### 2. Admin
+- **Scope**: Project managers and team leads promoted by the Owner.
+- **Powers**: Creates sprints, manages tasks/issues, accepts or rejects join requests, and promotes or demotes members (except the Owner).
 
-**Admin can do everything a member can, plus:**
-- Accept or reject join requests
-- Promote/demote member roles
-- Edit project settings (name, description, visibility)
-- Create, start, and delete sprints
+### 3. Member
+- **Scope**: Standard developers and team contributors.
+- **Powers**: Updates task statuses, replies to chat threads, and starts video meeting rooms.
+- **Restricted Powers**: Can only create tasks/issues if the policy `memberCanCreate` is enabled by the owner. Can only invoke Kaya AI if the policy `memberUseKaya` is enabled.
 
-### Member
-The default role for project contributors.
-
-**Member can:**
-- Create and edit tasks (if "member can create" is enabled in settings)
-- Create and edit issues (if enabled)
-- Comment on tasks and issues
-- Log time
-- View all project data
-
-### Viewer
-A read-only role. Viewers can browse the project — tasks, issues, sprints, team space — but cannot make any changes.
+### 4. Viewer
+- **Scope**: Read-only external stakeholders or clients.
+- **Powers**: Browses boards, views calendars, and reads chat channels. Write actions are entirely disabled.
 
 ---
 
 ## Role Permissions Matrix
 
-| Action | Owner | Admin | Member | Viewer |
-|---|---|---|---|---|
-| View all project data | ✓ | ✓ | ✓ | ✓ |
-| Comment on tasks/issues | ✓ | ✓ | ✓ | — |
-| Create tasks | ✓ | ✓ | ✓* | — |
-| Create issues | ✓ | ✓ | ✓* | — |
-| Edit any task/issue | ✓ | ✓ | Own only | — |
-| Log time | ✓ | ✓ | ✓ | — |
-| Create sprints | ✓ | ✓ | — | — |
-| Start sprint | ✓ | ✓ | — | — |
-| Complete sprint | Creator | Creator | — | — |
-| Accept join requests | ✓ | ✓ | — | — |
-| Promote/demote roles | ✓ | ✓ | — | — |
-| Remove a member | ✓ | ✓ | — | — |
-| Edit project settings | ✓ | ✓ | — | — |
-| Delete project | ✓ | — | — | — |
-
-> *Requires "Members can create" to be enabled in Project Settings.
+| Workspace Capability | Owner | Admin | Member | Viewer |
+| :--- | :--- | :--- | :--- | :--- |
+| **View Project Data** | ✓ | ✓ | ✓ | ✓ |
+| **Edit Task Status** | ✓ | ✓ | ✓ | — |
+| **Write Channel Messages**| ✓ | ✓ | ✓ | — |
+| **Create Sprints** | ✓ | ✓ | — | — |
+| **Complete Sprints** | ✓ | ✓ | — | — |
+| **Create Tasks & Issues**| ✓ | ✓ | Allowed if policy enabled | — |
+| **Invoke Kaya AI** | ✓ | ✓ | Allowed if policy enabled | — |
+| **Manage Join Requests**| ✓ | ✓ | — | — |
+| **Configure Settings** | ✓ | — | — | — |
 
 ---
 
-## Adding Members
+## Member Allocation Limits
 
-### Invite Link
-Every project has a unique invite link (e.g. `https://wekraft.xyz/join/abc123xyz`). Share this link with your team.
+Seat limitations are enforced server-side based on the Project Owner's active subscription tier:
 
-When someone visits the link:
-- If the project is **private**, they submit a join request with an optional message
-- If the project is **public**, they can join directly or submit a request (depending on settings)
+- **Free Tier**: Max **3 members** per project (including the Owner).
+- **Plus Tier**: Max **6 members** per project (including the Owner).
+- **Pro Tier**: Max **15 members** per project (including the Owner).
 
-Owner and admins see join requests in the **Join Requests** panel (bell icon or Project Settings → Members → Requests).
-
-### Accepting a Request
-Click **Accept** on a pending request. The user is immediately added as a `member`. You can then promote them to `admin` if needed.
-
-### Rejecting a Request
-Click **Reject** to decline the request. The user is notified. They can re-apply in the future.
+*Note: Join requests will show as pending if approving them would exceed your active tier limit.*
 
 ---
 
-## Changing a Member's Role
+## Handling Join Requests
 
-1. Go to **Project Settings → Members**
-2. Find the member in the list
-3. Click the role badge (e.g. `member`) to open the role selector
-4. Select the new role
-
-Role changes take effect immediately. Downgrading a member to `viewer` will immediately restrict their write access.
-
----
-
-## Removing a Member
-
-1. Go to **Project Settings → Members**
-2. Click the ⋯ menu next to the member
-3. Select **Remove from project**
-
-Removed members:
-- Lose access immediately
-- Are recorded in the membership history with a `leftAt` timestamp
-- Their past work (tasks created, comments, time logs) is preserved
-
----
-
-## Member Limits
-
-| Plan | Members per project |
-|---|---|
-| Free | 3 (including owner) |
-| Plus | 5 (including owner) |
-| Pro | 15 (including owner) |
-
-If you've reached your member limit, you'll need to either remove an existing member or upgrade your plan before adding new ones.
-
----
-
-## Project Configuration for Members
-
-In **Project Settings → Configuration**, owners can control what members are allowed to do:
-
-| Setting | Default | Description |
-|---|---|---|
-| **Members can create** | Off | Allow `member` role to create tasks and issues |
-| **Members use Kaya** | Off | Allow members to access Kaya AI (Pro plan required) |
-| **Kaya threshold** | Plan limit | Max Kaya AI calls for this project per month |
+When developers use your project's invite link:
+1. They are prompted to submit a join request.
+2. Owners and Admins receive notification alerts and see these requests in the **Requests** tab on the Project Home page.
+3. Once **Accepted**, the developer is added to the project members list as a default `member`.
 
 ---
 
 ## Next Steps
 
-- [See your team's live workload →](/web/docs/team-space)
-- [Analyze productivity with Heatmaps →](/web/docs/heatmaps)
-- [Set up your project settings →](/web/docs/projects)
+- Communicate with team members in [Teamspace Channels](/web/docs/team-space).
+- Coordinate video meetings in [Team Meet Rooms](/web/docs/team-meet).
+- Review workload allocations in the [Project Delivery Timeline & Gantt Chart](/web/docs/time-logs).

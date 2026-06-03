@@ -1,83 +1,69 @@
-# Time Logs
+# Project Timeline & Gantt Chart
 
-Time logs give you a clear record of how long work actually takes versus how long it was estimated. Wekraft supports both automatic time tracking via the VS Code extension and manual entry from the web app.
-
-## Why Track Time?
-
-Accurate time data helps your team:
-- **Improve estimation** — compare planned vs. actual time to calibrate future sprints
-- **Understand capacity** — see how much time each member has been spending on tasks
-- **Generate client reports** — export a summary of hours spent per project
-- **Identify bottlenecks** — tasks with disproportionately high time logged relative to their estimate signal complexity that wasn't planned for
+The **Time Logs** page (accessed via the `Time Logs` workspace sidebar tab) functions as Wekraft's **Project Delivery Timeline & Gantt Chart**. Rather than tracking billable hours or stopwatch timers, this page serves as an automated delivery calibration tool that visualizes your sprint tasks against the project's target deadline.
 
 ---
 
-## Automatic Time Tracking (VS Code Extension)
+## Workspace Prerequisites
 
-When you use the Wekraft VS Code extension, time tracking happens silently in the background:
-
-1. **Set a task to "In Progress"** — the timer starts automatically.
-2. **Work in your editor** — time is tracked while VS Code is the focused window.
-3. **Mark the task as "Reviewing" or "Completed"** — the timer stops and the elapsed duration is saved as a time log entry.
-
-> **Note:** Automatic time tracking requires the **Pro plan** and the VS Code extension. Free and Plus users can view time logs but cannot auto-log from the IDE.
-
-The auto-log entry includes:
-- Duration (in minutes)
-- Associated task
-- Timestamp of the session
-- A system-generated description ("Auto-tracked via VS Code extension")
+For Wekraft to track and render project timeline metrics:
+1. The **Project Owner** must set a target delivery date (deadline) for the project.
+2. If no deadline is set, the timeline will show a *"Deadline not set"* screen, prompting you to set one using the **"set Deadline"** dialog.
 
 ---
 
-## Manual Time Logging
+## Top Dashboard Metrics
 
-You can log time manually from the task detail page on the web app:
+Once the deadline is set, Wekraft calculates three performance cards at the top of the timeline:
 
-1. Open a task by clicking on it in any view (List, Board, or Table).
-2. In the **Task Detail Sheet**, scroll to the **Time Logs** section.
-3. Click **"+ Log Time"**.
-4. Enter:
-   - **Duration** — hours and minutes worked
-   - **Description** — what you did during this session (optional but recommended)
-   - **Date** — defaults to today, can be backdated
+### 1. Milestone Trajectory
+- **Purpose**: Evaluates whether current task velocities align with your final deadline.
+- **Inputs**: Analyzes sprint completion logs, start dates, and time elapsed.
 
-5. Click **Save**. The entry is added to the task's log immediately.
+### 2. Delay Debt
+- **Purpose**: Highlights tasks and issues that have slipped past their due dates.
+- **Overdue Threshold**: Requires **more than 5 tasks** with set due dates in your project to establish a tracking baseline. If you have fewer than 5 tasks, it displays a helper prompt.
+- **Details**:
+  - Displays total accumulated **Days Overdue**.
+  - Renders a **"Worst Offenders"** list sorting overdue tasks and issues by severity.
 
----
-
-## Viewing Time Logs
-
-### Per Task
-Every task shows a **Total Time Logged** badge at the top of its detail sheet, alongside a log history of all individual entries (who logged, when, and how long).
-
-### Per Project (Time Logs Tab)
-The **Time Logs** tab in your project gives a project-wide view. You can:
-- Filter by team member
-- Filter by date range
-- See a daily/weekly breakdown chart of hours logged
-- Export the log as a CSV
+### 3. Pace Tracker
+- **Purpose**: Calculates the team's output rate.
+- **Goal**: Helps project managers determine if scope expansion or scheduling delays are threatening the target delivery window.
 
 ---
 
-## Time Estimation vs. Actuals
+## The Gantt Chart Timeline Grid (`ProjectTimeline.tsx`)
 
-Every task has an **estimation window** (`startDate` → `endDate`). This is the planned time range for completing the task, not a duration estimate. Time logs give you the actual hours spent within (or outside) that window.
+Below the metric cards sits the interactive Gantt chart:
 
-Use the **Table View** of tasks to see both the estimation window and the total hours logged side-by-side — a quick way to spot tasks that overran.
+```mermaid
+graph TD
+    Timeline[Gantt Chart Timeline Grid] -->|Horizontal Bars| TaskBars[Tasks mapped on a Daily Grid]
+    TaskBars -->|Color: Red| Overdue[Overdue - end date passed, not completed]
+    TaskBars -->|Color: Orange| AtRisk[At Risk - ending in next 1-2 days]
+    TaskBars -->|Color: Blue/Gray| Stable[Standard Progress]
+    Timeline -->|Filter Controls| Filters[Filter by Status & Adjust Grid Tick Intervals]
+```
 
----
+### Visual Task Bars
+Each task is rendered on a daily timeline grid based on its `estimation` window:
+- **Red Bar**: Overdue task (estimated end date is in the past, and status is not `completed`).
+- **Amber / Orange Bar**: At-risk task (estimated end date is approaching in the next 48 hours).
+- **Blue / Dark Bar**: Stable task progress.
+- **Duration Badge**: Shows the task's span (e.g., `5d` for five days).
+- **Teammate Avatars**: Renders stacked avatar icons of all assigned developers directly on the Gantt bar.
 
-## Best Practices
-
-- **Log daily, not retroactively** — logging at the end of the week leads to inaccurate entries. Make it a habit to log at the end of each work session.
-- **Use descriptions** — "Debugged auth flow, found token expiry mismatch" is far more useful than "worked on task" three months later.
-- **Auto-tracking + manual corrections** — let the extension auto-track, then add a manual entry if you worked on paper or in a meeting that wasn't captured.
+### Grid Controls
+The Gantt header includes tools to filter and focus your view:
+- **Filter by Status**: Toggle dropdown to display only `not started`, `inprogress`, `reviewing`, or `testing` tasks.
+- **Grid Intervals**: Switch tick intervals (e.g., `2 Days`, `3 Days`, `5 Days` or `10 Days` ticks) to compress or expand the horizontal layout.
+- **Hover Tooltips**: Hovering over any task bar reveals its full title, dates, and a list of all assigned team members.
 
 ---
 
 ## Next Steps
 
-- [Use the VS Code extension for auto-tracking →](/web/docs/extension)
-- [Analyze team workload with Heatmaps →](/web/docs/heatmaps)
-- [View activity in the Calendar →](/web/docs/calendar)
+- Check the codebase overlays in [Repository Heatmaps](/web/docs/heatmaps).
+- Plan task dates in [Tasks & Backlog](/web/docs/tasks).
+- Organize sprint dates in [Sprints & Planning](/web/docs/sprints).

@@ -131,3 +131,4 @@ When you connect a GitHub repository, Wekraft only requests the minimum permissi
 - [Configure project settings →](/web/docs/projects)
 - [Learn about Billing →](/web/docs/billing)
 - [View your profile →](/web/docs/profile)
+- [Learn about the Referral Program →](/web/docs/referrals)
