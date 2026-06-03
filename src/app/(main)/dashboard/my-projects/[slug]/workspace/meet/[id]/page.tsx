@@ -1,9 +1,16 @@
 'use client';
 
 import {
-    StreamCall, StreamTheme, SpeakerLayout, CallControls,
+    StreamCall, StreamTheme, SpeakerLayout,
     useCallStateHooks, CallingState, useStreamVideoClient, useCall,
     type Call,
+    ToggleAudioPublishingButton,
+    ToggleVideoPublishingButton,
+    ScreenShareButton,
+    ReactionsButton,
+    RecordCallButton,
+    SpeakingWhileMutedNotification,
+    CancelCallButton,
 } from '@stream-io/video-react-sdk';
 import { useEffect, useRef, useState } from 'react';
 import { useParams, useRouter } from 'next/navigation';
@@ -228,7 +235,17 @@ function MyMeetingUI({
                     <SpeakerLayout participantsBarPosition="bottom" />
                 </div>
                 <div className="flex-shrink-0">
-                    <CallControls onLeave={handleLeave} />
+                    {/* Custom controls — recording only for owner/admin */}
+                    <div className="str-video__call-controls">
+                        <SpeakingWhileMutedNotification>
+                            <ToggleAudioPublishingButton />
+                        </SpeakingWhileMutedNotification>
+                        <ToggleVideoPublishingButton />
+                        <ScreenShareButton />
+                        <ReactionsButton />
+                        {isHost && <RecordCallButton />}
+                        <CancelCallButton onLeave={handleLeave} />
+                    </div>
                 </div>
             </StreamTheme>
         </div>
