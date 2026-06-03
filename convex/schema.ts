@@ -58,6 +58,11 @@ export default defineSchema({
     freeTrialUsed: v.boolean(),
     referalUsing: v.optional(v.string()),
     referalCreated: v.optional(v.string()),
+    // ── One-time feature tutorial flags ────────────────────────────────────
+    taskTutorialSeen: v.optional(v.boolean()),
+    issueTutorialSeen: v.optional(v.boolean()),
+    sprintTutorialSeen: v.optional(v.boolean()),
+    timeLogsTutorialSeen: v.optional(v.boolean()),
   })
     .index("by_user", ["userId"])
     .index("by_referalCreated", ["referalCreated"])
