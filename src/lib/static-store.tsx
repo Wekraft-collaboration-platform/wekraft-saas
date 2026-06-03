@@ -25,6 +25,7 @@ import {
   MessageSquare,
   Bell,
   XCircle,
+  Video,
 } from "lucide-react";
 import {
   Popover,
@@ -311,6 +312,7 @@ export const NOTIFICATION_ICONS: Record<string, React.ComponentType<any>> = {
   role_changed: UserCog,
   mentioned: MessageSquare,
   project_alert: AlertCircle,
+  meeting_started: Video,
 };
 
 export function getNotificationRedirectUrl(notif: {
@@ -357,6 +359,12 @@ export function getNotificationRedirectUrl(notif: {
     case "member_removed":
     case "role_changed":
       return `${workspaceBase}/team`;
+
+    case "meeting_started":
+      // entityId is the Stream call ID — navigate directly into the call room
+      return notif.entityId
+        ? `${workspaceBase}/meet/${notif.entityId}`
+        : `${workspaceBase}/meet`;
 
     default:
       return workspaceBase;

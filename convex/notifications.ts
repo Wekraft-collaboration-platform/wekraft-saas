@@ -13,6 +13,7 @@ const notificationType = v.union(
   v.literal("role_changed"),
   v.literal("mentioned"),
   v.literal("project_alert"),
+  v.literal("meeting_started"),
 );
 
 // ─── Helper: insert one notification record ──────────────────────────────────
@@ -362,9 +363,61 @@ export const notifyTeamspaceMention = mutation({
   },
 });
 
+/**
+ * notifyMeetingStarted (PUBLIC mutation)
+ * Called when an owner/admin starts a new meeting.
+ * Resolves the caller's Convex user ID from ctx.auth — no client-supplied ID needed.
+ * Fans out to every project member (except the host) so they can click to join.
+ */
+export const notifyMeetingStarted = mutation({
+  args: {
+    hostName: v.string(),
+    hostAvatar: v.optional(v.string()),
+    projectId: v.id("projects"),
+    meetingId: v.string(), // The Stream call ID used as the room URL segment
+  },
+  handler: async (ctx, args) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return;
+
+    // Resolve to Convex user record
+    const host = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) => q.eq("clerkToken", identity.tokenIdentifier))
+      .unique();
+    if (!host) return;
+
+    const project = await ctx.db.get(args.projectId);
+    if (!project) return;
+
+    // All current project members (excluding the host who started it)
+    const members = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .collect();
+
+    const recipientIds = members
+      .map((m) => m.userId as Id<"users">)
+      .filter((id) => id !== host._id);
+
+    await fanOut(ctx, recipientIds, {
+      senderId: host._id,
+      senderName: args.hostName,
+      senderAvatar: args.hostAvatar,
+      projectId: args.projectId,
+      projectName: project.projectName,
+      type: "meeting_started",
+      body: `**${args.hostName}** started a team meeting in **${project.projectName}**. Join ID: \`${args.meetingId}\``,
+      entityId: args.meetingId, // deep-link: navigate to meet/[meetingId]
+      entityTitle: `Meet · ${args.meetingId}`,
+    });
+  },
+});
+
 // ═══════════════════════════════════════════════════════════════════════════════
 // PUBLIC QUERIES — consumed by the frontend
 // ═══════════════════════════════════════════════════════════════════════════════
+
 
 /**
  * Get the 30 most recent notifications for the current user.

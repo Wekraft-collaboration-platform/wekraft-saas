@@ -493,6 +493,7 @@ export default defineSchema({
       v.literal("role_changed"), // Role changed
       v.literal("mentioned"), // @mention in comment
       v.literal("project_alert"), // Project duration alert
+      v.literal("meeting_started"), // Team video call started
     ),
     // Human-readable notification body
     body: v.string(),
