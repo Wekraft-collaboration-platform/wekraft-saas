@@ -102,6 +102,11 @@ const workspaceMenu = [
     icon: PlaneTakeoff,
   },
   {
+    label: "Customer Desk",
+    path: "workspace/customer-desk",
+    icon: Inbox,
+  },
+  {
     label: "Calendar",
     path: "workspace/calendar",
     icon: Calendar,
@@ -263,7 +268,13 @@ export default function ProjectSidebar() {
       (labelLower === "heatmap" &&
         ("activity".includes(queryLower) ||
           "network".includes(queryLower) ||
-          "commits".includes(queryLower)))
+          "commits".includes(queryLower))) ||
+      (labelLower === "customer desk" &&
+        ("customer".includes(queryLower) ||
+          "desk".includes(queryLower) ||
+          "feedback".includes(queryLower) ||
+          "requests".includes(queryLower) ||
+          "support".includes(queryLower)))
     );
   });
 

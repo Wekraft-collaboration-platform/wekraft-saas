@@ -551,4 +551,39 @@ export default defineSchema({
     .index("by_project", ["projectId"])
     .index("by_project_status", ["projectId", "status"]),
 
+  // ─── Customer Desk Tables ────────────────────────────────────────────────
+  serviceCustomers: defineTable({
+    projectId: v.id("projects"),
+    name: v.string(),
+    email: v.string(),
+    contact: v.optional(v.string()),
+    createdBy: v.id("users"),           // always the Owner
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_project", ["projectId"])
+    .index("by_project_email", ["projectId", "email"]),
+
+  serviceRequests: defineTable({
+    projectId: v.id("projects"),
+    customerId: v.id("serviceCustomers"),
+    title: v.string(),
+    description: v.optional(v.string()),
+    type: v.union(v.literal("feature_request"), v.literal("bug_report")),
+    status: v.union(
+      v.literal("pending"),     // awaiting approval
+      v.literal("approved"),    // approved → task/issue created
+      v.literal("rejected"),    // declined
+    ),
+    // Metadata
+    createdBy: v.id("users"),           // Member/Admin/Owner who logged it
+    approvedBy: v.optional(v.id("users")),
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_project", ["projectId"])
+    .index("by_customer", ["customerId"])
+    .index("by_project_status", ["projectId", "status"]),
+
 });
+
