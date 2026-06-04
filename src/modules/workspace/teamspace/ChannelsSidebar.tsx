@@ -251,15 +251,8 @@ export function ChannelsSidebar({
           )}
 
           {/* Lock icon for private channels */}
-          {isPrivate && (
-            <Lock
-              className={cn(
-                "h-3 w-3 ml-auto shrink-0",
-                isAccessible
-                  ? "text-muted-foreground"
-                  : "text-muted-foreground/40",
-              )}
-            />
+          {isPrivate && !isAccessible && (
+            <Lock className="h-3 w-3 ml-auto shrink-0 text-muted-foreground/40" />
           )}
 
           {/* Existing announcement lock (for non-power users) */}

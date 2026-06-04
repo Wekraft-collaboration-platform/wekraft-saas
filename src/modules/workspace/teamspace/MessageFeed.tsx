@@ -624,7 +624,7 @@ export function MessageFeed({
               <h2 className="font-semibold text-xl leading-tight text-foreground truncate tracking-tight capitalize">
                 {channel.name}
               </h2>
-              {(isAnnouncement || isPrivate) && (
+              {((isAnnouncement && !isPower) || (isPrivate && channel.has_access === 0)) && (
                 <Lock className="h-4 w-4 text-muted-foreground" />
               )}
             </div>
