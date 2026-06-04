@@ -5,7 +5,7 @@ import clsx from "clsx";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
-import { Menu, TimerIcon, TimerReset, X, ArrowRight } from "lucide-react";
+import { Menu, TimerIcon, TimerReset, X, ArrowRight, Compass, Layers, CheckCircle2, FileText, Send, ArrowUpRight } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
@@ -25,6 +25,7 @@ const Navbar = () => {
   const [scrolled, setScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLightSection, setIsLightSection] = useState(false);
+  const [showDropdown, setShowDropdown] = useState(false);
   const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
   const currentUser = useQuery(api.user.getCurrentUser);
 
@@ -84,16 +85,140 @@ const Navbar = () => {
           "hidden md:flex text-sm font-medium shrink-0 items-center ",
           scrolled || isLightSection ? "gap-1" : "gap-2"
         )}>
-          {navLinks.map(({ label, href }) => (
-            <Link
-              key={label}
-              href={href}
-              className="relative cursor-pointer transition-all duration-300 text-neutral-200 hover:text-white px-4 py-1.5 group"
-            >
-              <span>{label}</span>
-              <span className="absolute bottom-0 left-1/2 w-0 h-[2px] bg-white transition-all duration-300 ease-out -translate-x-1/2 group-hover:w-[calc(100%-2rem)]" />
-            </Link>
-          ))}
+          {navLinks.map(({ label, href }) => {
+            if (label === "Why Wekraft?") {
+              return (
+                <div
+                  key={label}
+                  className="relative group py-1.5"
+                  onMouseEnter={() => setShowDropdown(true)}
+                  onMouseLeave={() => setShowDropdown(false)}
+                >
+                  <Link
+                    href={href}
+                    className="relative cursor-pointer transition-all duration-300 text-neutral-200 hover:text-white px-4 py-1.5"
+                  >
+                    <span>{label}</span>
+                    <span className="absolute bottom-0 left-1/2 w-0 h-[2px] bg-white transition-all duration-300 ease-out -translate-x-1/2 group-hover:w-[calc(100%-2rem)]" />
+                  </Link>
+
+                  {/* Dropdown Popover */}
+                  <AnimatePresence>
+                    {showDropdown && (
+                      <motion.div
+                        initial={{ opacity: 0, y: 12, scale: 0.96 }}
+                        animate={{ opacity: 1, y: 0, scale: 1 }}
+                        exit={{ opacity: 0, y: 12, scale: 0.96 }}
+                        transition={{ duration: 0.2, ease: "easeOut" }}
+                        className="absolute top-full right-[-140px] mt-3.5 w-[630px] bg-neutral-950/95 border border-white/[0.08] rounded-2xl p-6 shadow-[0_30px_70px_-15px_rgba(0,0,0,0.9),inset_0_1px_1px_rgba(255,255,255,0.06)] backdrop-blur-3xl text-left z-50 flex flex-row gap-6 origin-top-right"
+                      >
+                        {/* Left Column: Info and Links */}
+                        <div className="flex-[1.25] flex flex-col gap-4">
+                          <div>
+                            <h4 className="font-semibold font-pop text-sm tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-neutral-400">
+                              Discover why teams switch to Wekraft
+                            </h4>
+                            <p className="text-neutral-400 text-[11px] mt-1 font-normal font-sans leading-relaxed">
+                              See how Wekraft stacks up against the tools you know. Select a platform to view feature matrices.
+                            </p>
+                          </div>
+
+                          <div className="grid grid-cols-2 gap-2 mt-1">
+                            <Link
+                              href="/web/wekraft-vs-linear"
+                              className="group border border-white/[0.05] bg-white/[0.01] hover:bg-purple-500/[0.04] hover:border-purple-500/30 text-neutral-300 hover:text-white px-3.5 py-2.5 rounded-xl flex items-center justify-between text-xs transition-all duration-200 font-medium font-sans shadow-[inset_0_1px_0_rgba(255,255,255,0.01)] hover:shadow-[0_4px_20px_rgba(168,85,247,0.1)]"
+                            >
+                              <span className="flex items-center gap-2.5">
+                                <span className="w-6 h-6 flex items-center justify-center bg-neutral-900/50 border border-white/[0.08] rounded-lg p-1 shrink-0 group-hover:border-purple-500/20 transition-colors">
+                                  <img src="/linear.png" alt="Linear" className="w-full h-full object-contain" />
+                                </span>
+                                <span>Linear</span>
+                              </span>
+                              <ArrowUpRight className="w-3.5 h-3.5 text-neutral-500 group-hover:text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-200" />
+                            </Link>
+
+                            <Link
+                              href="/web/wekraft-vs-jira"
+                              className="group border border-white/[0.05] bg-white/[0.01] hover:bg-blue-500/[0.04] hover:border-blue-500/30 text-neutral-300 hover:text-white px-3.5 py-2.5 rounded-xl flex items-center justify-between text-xs transition-all duration-200 font-medium font-sans shadow-[inset_0_1px_0_rgba(255,255,255,0.01)] hover:shadow-[0_4px_20px_rgba(59,130,246,0.1)]"
+                            >
+                              <span className="flex items-center gap-2.5">
+                                <span className="w-6 h-6 flex items-center justify-center bg-neutral-900/50 border border-white/[0.08] rounded-lg p-1 shrink-0 group-hover:border-blue-500/20 transition-colors">
+                                  <img src="/jira-logo.jpg" alt="Jira" className="w-full h-full object-contain rounded-sm" />
+                                </span>
+                                <span>Jira</span>
+                              </span>
+                              <ArrowUpRight className="w-3.5 h-3.5 text-neutral-500 group-hover:text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-200" />
+                            </Link>
+
+                            <Link
+                              href="/web/wekraft-vs-asana"
+                              className="group border border-white/[0.05] bg-white/[0.01] hover:bg-rose-500/[0.04] hover:border-rose-500/30 text-neutral-300 hover:text-white px-3.5 py-2.5 rounded-xl flex items-center justify-between text-xs transition-all duration-200 font-medium font-sans shadow-[inset_0_1px_0_rgba(255,255,255,0.01)] hover:shadow-[0_4px_20px_rgba(244,63,94,0.1)]"
+                            >
+                              <span className="flex items-center gap-2.5">
+                                <span className="w-6 h-6 flex items-center justify-center bg-neutral-900/50 border border-white/[0.08] rounded-lg p-1 shrink-0 group-hover:border-rose-500/20 transition-colors">
+                                  <img src="/asana-logo.svg" alt="Asana" className="w-full h-full object-contain" />
+                                </span>
+                                <span>Asana</span>
+                              </span>
+                              <ArrowUpRight className="w-3.5 h-3.5 text-neutral-500 group-hover:text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-200" />
+                            </Link>
+
+                            <Link
+                              href="/web/wekraft-vs-notion"
+                              className="group border border-white/[0.05] bg-white/[0.01] hover:bg-neutral-100/[0.03] hover:border-white/20 text-neutral-300 hover:text-white px-3.5 py-2.5 rounded-xl flex items-center justify-between text-xs transition-all duration-200 font-medium font-sans shadow-[inset_0_1px_0_rgba(255,255,255,0.01)] hover:shadow-[0_4px_20px_rgba(255,255,255,0.05)]"
+                            >
+                              <span className="flex items-center gap-2.5">
+                                <span className="w-6 h-6 flex items-center justify-center bg-neutral-900/50 border border-white/[0.08] rounded-lg p-1 shrink-0 group-hover:border-white/20 transition-colors">
+                                  <img src="/Notion-logo.png" alt="Notion" className="w-full h-full object-contain" />
+                                </span>
+                                <span>Notion</span>
+                              </span>
+                              <ArrowUpRight className="w-3.5 h-3.5 text-neutral-500 group-hover:text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-200" />
+                            </Link>
+
+                            <Link
+                              href="/web/wekraft-vs-plane"
+                              className="group border border-white/[0.05] bg-white/[0.01] hover:bg-indigo-500/[0.04] hover:border-indigo-500/30 text-neutral-300 hover:text-white px-3.5 py-2.5 rounded-xl flex items-center justify-between text-xs transition-all duration-200 font-medium font-sans shadow-[inset_0_1px_0_rgba(255,255,255,0.01)] hover:shadow-[0_4px_20px_rgba(99,102,241,0.1)] col-span-2"
+                            >
+                              <span className="flex items-center gap-2.5">
+                                <span className="w-6 h-6 flex items-center justify-center bg-neutral-900/50 border border-white/[0.08] rounded-lg p-1 shrink-0 group-hover:border-indigo-500/20 transition-colors">
+                                  <img src="/plane-so logo.png" alt="Plane" className="w-full h-full object-contain" />
+                                </span>
+                                <span>Plane</span>
+                              </span>
+                              <ArrowUpRight className="w-3.5 h-3.5 text-neutral-500 group-hover:text-white group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all duration-200" />
+                            </Link>
+                          </div>
+                        </div>
+
+                        {/* Right Column: Visual Mockup Image */}
+                        <div className="flex-[0.75] relative rounded-xl border border-white/[0.08] overflow-hidden bg-neutral-900/30 group/img min-h-[190px] flex items-stretch">
+                          <img
+                            src="/why hover.svg"
+                            alt="Why switch to Wekraft"
+                            className="absolute inset-0 w-full h-full object-cover scale-[1.20] transition-transform duration-700 group-hover/img:scale-[1.26]"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-transparent to-transparent pointer-events-none opacity-80" />
+                          <div className="absolute inset-0 bg-gradient-to-tr from-transparent via-transparent to-white/5 pointer-events-none" />
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+              );
+            }
+
+            return (
+              <Link
+                key={label}
+                href={href}
+                className="relative cursor-pointer transition-all duration-300 text-neutral-200 hover:text-white px-4 py-1.5 group"
+              >
+                <span>{label}</span>
+                <span className="absolute bottom-0 left-1/2 w-0 h-[2px] bg-white transition-all duration-300 ease-out -translate-x-1/2 group-hover:w-[calc(100%-2rem)]" />
+              </Link>
+            );
+          })}
         </div>
 
         <div className="flex items-center gap-4 shrink-0">
