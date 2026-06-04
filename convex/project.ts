@@ -1253,6 +1253,7 @@ export const getTeamPageData = query({
     let ownerCount = 0;
     let adminCount = 0;
     let memberCount = 0;
+    let viewerCount = 0;
 
     // 5. Enrich each member
     const enrichedMembers = await Promise.all(
@@ -1263,6 +1264,7 @@ export const getTeamPageData = query({
 
         if (role === "owner") ownerCount++;
         else if (role === "admin") adminCount++;
+        else if (role === "viewer") viewerCount++;
         else memberCount++;
 
         return {
@@ -1296,6 +1298,7 @@ export const getTeamPageData = query({
       ownerCount,
       adminCount,
       memberCount,
+      viewerCount,
       ownerPlan,
       memberLimit,
     };

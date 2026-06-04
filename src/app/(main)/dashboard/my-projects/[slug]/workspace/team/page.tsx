@@ -8,6 +8,7 @@ import {
   CalendarDays,
   CheckSquare,
   Crown,
+  Eye,
   Loader2,
   MessageSquare,
   MoreHorizontal,
@@ -54,6 +55,7 @@ const ROLE_CONFIG: Record<string, { label: string; icon: typeof Crown }> = {
   owner: { label: "Owner", icon: Crown },
   admin: { label: "Admin", icon: Shield },
   member: { label: "Member", icon: User },
+  viewer: { label: "Viewer", icon: Eye },
 };
 
 export default function TeamPage() {
@@ -113,7 +115,7 @@ export default function TeamPage() {
 
   const handleRoleChange = async (
     memberId: Id<"projectMembers">,
-    newRole: "admin" | "member",
+    newRole: "admin" | "member" | "viewer",
     memberName: string,
   ) => {
     if (!project) return;
@@ -217,6 +219,11 @@ export default function TeamPage() {
             icon={<User className="w-3.5 h-3.5" />}
             label="Members"
             value={teamData.memberCount}
+          />
+          <StatPill
+            icon={<Eye className="w-3.5 h-3.5" />}
+            label="Viewers"
+            value={teamData.viewerCount}
           />
         </div>
 
@@ -340,7 +347,7 @@ export default function TeamPage() {
                           Change Role
                         </DropdownMenuSubTrigger>
                         <DropdownMenuSubContent>
-                          {(["admin", "member"] as const).map((role) => (
+                          {(["admin", "member", "viewer"] as const).map((role) => (
                             <DropdownMenuItem
                               key={role}
                               disabled={member.AccessRole === role}
