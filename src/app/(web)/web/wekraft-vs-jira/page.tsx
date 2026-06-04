@@ -71,42 +71,6 @@ const jiraFaqs: FAQItem[] = [
   },
 ];
 
-// Custom visual mockup for Jira vs Wekraft
-function JiraMockup() {
-  return (
-    <div className="flex flex-col h-full w-full bg-neutral-950 p-6 font-mono text-[11px] text-neutral-300">
-      <div className="flex items-center justify-between pb-4 border-b border-white/5">
-        <span className="text-white font-semibold">Workspace Loading Latency</span>
-        <span className="text-neutral-500 font-bold">10,000 Tasks Test</span>
-      </div>
-
-      <div className="flex-1 flex flex-col justify-center gap-6 py-4">
-        {/* Jira slow loading */}
-        <div>
-          <div className="flex justify-between text-neutral-500 mb-1">
-            <span>Jira Cloud Loading...</span>
-            <span>4.8s (Delayed)</span>
-          </div>
-          <div className="w-full bg-neutral-900 h-2 rounded-full overflow-hidden">
-            <div className="bg-rose-500 h-full w-[40%] animate-pulse" />
-          </div>
-        </div>
-
-        {/* Wekraft loading */}
-        <div>
-          <div className="flex justify-between text-blue-400 mb-1">
-            <span className="font-bold">Wekraft Load Time</span>
-            <span className="text-emerald-400">92ms (Instant)</span>
-          </div>
-          <div className="w-full bg-neutral-900 h-2 rounded-full overflow-hidden">
-            <div className="bg-gradient-to-r from-blue-500 to-emerald-400 h-full w-[100%]" />
-          </div>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function JiraComparePage() {
   return (
     <div className="bg-black min-h-screen text-white font-sans selection:bg-blue-500/30 overflow-hidden relative">
@@ -117,10 +81,10 @@ export default function JiraComparePage() {
           competitorName="Jira"
           competitorLogo={<Briefcase className="w-3.5 h-3.5 text-blue-400" />}
           competitorColor="from-blue-600 to-indigo-500"
-          title1="Unbloat your sprint board."
-          title2="Built for high-performance teams."
-          description="Say goodbye to sluggish reload speeds and complicated workflow configurations. Wekraft delivers a snappy, keyboard-first project board with built-in AI dev agents and meeting rooms."
-          visualMockup={<JiraMockup />}
+          title1="Natively track dev time."
+          title2="Eliminate delay debt."
+          description="Stop guessing deadlines. Wekraft automatically logs project time, computes delay debt, and predicts milestone completion dates based on live velocity."
+          visualMockup={<img src="/time.png" alt="Wekraft Time Logs" className="w-full rounded-2xl object-cover border border-white/[0.08]" />}
         />
 
         <div className="w-full max-w-7xl mx-auto px-4 md:px-8">

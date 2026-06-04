@@ -71,49 +71,6 @@ const notionFaqs: FAQItem[] = [
   },
 ];
 
-// Custom visual mockup for Notion vs Wekraft
-function NotionMockup() {
-  return (
-    <div className="flex flex-col h-full w-full bg-neutral-950 p-6 font-mono text-[11px] text-neutral-300">
-      <div className="flex items-center justify-between pb-4 border-b border-white/5">
-        <span className="text-white font-semibold">Notion Database Sprawl</span>
-        <span className="text-rose-400 font-bold bg-rose-500/10 px-2 py-0.5 rounded">Manual Formulas Required</span>
-      </div>
-
-      <div className="flex-1 flex flex-col justify-center gap-4 py-8">
-        {/* Competitor Block */}
-        <div className="p-4 border border-white/5 rounded-xl bg-white/[0.01] flex items-center justify-between">
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded bg-white/10 flex items-center justify-center">📄</div>
-            <div>
-              <div className="text-neutral-400">Notion Workspace</div>
-              <div className="text-[10px] text-neutral-600">Filters: Rollup (Sprint_Date) &gt; Today</div>
-            </div>
-          </div>
-          <span className="text-neutral-600">Broken Link</span>
-        </div>
-
-        <div className="flex justify-center text-neutral-600">
-          <ArrowRight className="w-5 h-5 rotate-90" />
-        </div>
-
-        {/* Wekraft Unified Block */}
-        <div className="p-4 border border-blue-500/20 rounded-xl bg-blue-500/[0.02] flex items-center justify-between relative overflow-hidden">
-          <div className="absolute inset-y-0 left-0 w-1 bg-blue-500" />
-          <div className="flex items-center gap-2.5">
-            <div className="w-7 h-7 rounded bg-blue-500/20 text-blue-400 flex items-center justify-center">⚡</div>
-            <div>
-              <div className="text-white font-bold">Wekraft Unified Engine</div>
-              <div className="text-[10px] text-blue-400/70">Docs, Sprints, & Git synchronized</div>
-            </div>
-          </div>
-          <span className="text-emerald-400 font-bold">Native Syncing</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function NotionComparePage() {
   return (
     <div className="bg-black min-h-screen text-white font-sans selection:bg-blue-500/30 overflow-hidden relative">
@@ -124,10 +81,10 @@ export default function NotionComparePage() {
           competitorName="Notion"
           competitorLogo={<FileText className="w-3.5 h-3.5 text-neutral-300" />}
           competitorColor="from-neutral-100 to-neutral-400"
-          title1="Wikis and Sprints."
-          title2="Natively Connected."
-          description="Notion is excellent for documents, but breaks down as an engineering board. Wekraft unifies markdown documents with velocity charts, VS Code sync, and AI agents."
-          visualMockup={<NotionMockup />}
+          title1="Centralize your issues."
+          title2="Built for shipping code."
+          description="Ditch fragile Notion databases. Wekraft delivers a sub-second, structured kanban board with built-in severity levels and automated sprint syncing."
+          visualMockup={<img src="/issues.png" alt="Wekraft Issues Board" className="w-full rounded-2xl object-cover border border-white/[0.08]" />}
         />
 
         <div className="w-full max-w-7xl mx-auto px-4 md:px-8">

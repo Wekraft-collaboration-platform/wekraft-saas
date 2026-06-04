@@ -4,7 +4,6 @@ import Navbar from "@/modules/web/Navbar";
 import CompareHero from "@/modules/web/compare/CompareHero";
 import CompareTable, { ComparisonFeature } from "@/modules/web/compare/CompareTable";
 import CompareFeatures from "@/modules/web/compare/CompareFeatures";
-import MigrationPath from "@/modules/web/compare/MigrationPath";
 import CompareFAQ, { FAQItem } from "@/modules/web/compare/CompareFAQ";
 import { Compass, ArrowRight } from "lucide-react";
 
@@ -82,10 +81,10 @@ export default function LinearComparePage() {
           competitorName="Linear"
           competitorLogo={<img src="/linear.png" alt="Linear" className="w-3.5 h-3.5 object-contain" />}
           competitorColor="from-purple-600 to-indigo-600"
-          title1="Issue tracking, upgraded."
-          title2="Fast speed meets active collaboration."
-          description="Linear is snappy, but isolates your engineering workspace. Wekraft delivers the same keyboard-first speed but adds built-in video rooms, unified wikis, and autonomous AI agents."
-          visualMockup={<img src="/task.png" alt="Linear vs Wekraft Dashboard" className="w-full h-full object-cover rounded-xl" />}
+          title1="Map codebase stress."
+          title2="Interactive git heatmaps."
+          description="Trace issues directly to repositories. Wekraft's interactive heatmap panel visualizes active branch paths and directory stress points automatically."
+          visualMockup={<img src="/heat.png" alt="Wekraft Codebase Heatmap" className="w-full rounded-2xl object-cover border border-white/[0.08]" />}
         />
 
         <div className="w-full max-w-7xl mx-auto px-4 md:px-8">

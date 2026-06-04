@@ -98,7 +98,7 @@ export default function CompareHero({
               href="/web/contact"
               className="w-full sm:w-auto text-white border border-white/10 hover:border-white/20 bg-white/[0.02] hover:bg-white/[0.06] transition-all inline-flex items-center justify-center gap-2 font-medium px-6 py-3 text-sm rounded-full duration-200"
             >
-              Talk to a migration expert
+              Help and support
             </Link>
           </div>
         </div>

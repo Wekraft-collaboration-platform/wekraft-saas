@@ -126,10 +126,10 @@ const Navbar = () => {
                           <div className="grid grid-cols-2 gap-2 mt-1">
                             <Link
                               href="/web/wekraft-vs-linear"
-                              className="group border border-white/[0.05] bg-white/[0.01] hover:bg-purple-500/[0.04] hover:border-purple-500/30 text-neutral-300 hover:text-white px-3.5 py-2.5 rounded-xl flex items-center justify-between text-xs transition-all duration-200 font-medium font-sans shadow-[inset_0_1px_0_rgba(255,255,255,0.01)] hover:shadow-[0_4px_20px_rgba(168,85,247,0.1)]"
+                              className="group border border-white/[0.05] bg-white/[0.01] hover:bg-white/[0.03] hover:border-white/20 text-neutral-300 hover:text-white px-3.5 py-2.5 rounded-xl flex items-center justify-between text-xs transition-all duration-200 font-medium font-sans shadow-[inset_0_1px_0_rgba(255,255,255,0.01)] hover:shadow-[0_4px_20px_rgba(255,255,255,0.04)]"
                             >
                               <span className="flex items-center gap-2.5">
-                                <span className="w-6 h-6 flex items-center justify-center bg-neutral-900/50 border border-white/[0.08] rounded-lg p-1 shrink-0 group-hover:border-purple-500/20 transition-colors">
+                                <span className="w-6 h-6 flex items-center justify-center bg-neutral-900/50 border border-white/[0.08] rounded-lg p-1 shrink-0 group-hover:border-white/20 transition-colors">
                                   <img src="/linear.png" alt="Linear" className="w-full h-full object-contain" />
                                 </span>
                                 <span>Linear</span>
@@ -139,10 +139,10 @@ const Navbar = () => {
 
                             <Link
                               href="/web/wekraft-vs-jira"
-                              className="group border border-white/[0.05] bg-white/[0.01] hover:bg-blue-500/[0.04] hover:border-blue-500/30 text-neutral-300 hover:text-white px-3.5 py-2.5 rounded-xl flex items-center justify-between text-xs transition-all duration-200 font-medium font-sans shadow-[inset_0_1px_0_rgba(255,255,255,0.01)] hover:shadow-[0_4px_20px_rgba(59,130,246,0.1)]"
+                              className="group border border-white/[0.05] bg-white/[0.01] hover:bg-white/[0.03] hover:border-white/20 text-neutral-300 hover:text-white px-3.5 py-2.5 rounded-xl flex items-center justify-between text-xs transition-all duration-200 font-medium font-sans shadow-[inset_0_1px_0_rgba(255,255,255,0.01)] hover:shadow-[0_4px_20px_rgba(255,255,255,0.04)]"
                             >
                               <span className="flex items-center gap-2.5">
-                                <span className="w-6 h-6 flex items-center justify-center bg-neutral-900/50 border border-white/[0.08] rounded-lg p-1 shrink-0 group-hover:border-blue-500/20 transition-colors">
+                                <span className="w-6 h-6 flex items-center justify-center bg-neutral-900/50 border border-white/[0.08] rounded-lg p-1 shrink-0 group-hover:border-white/20 transition-colors">
                                   <img src="/jira-logo.jpg" alt="Jira" className="w-full h-full object-contain rounded-sm" />
                                 </span>
                                 <span>Jira</span>
@@ -152,10 +152,10 @@ const Navbar = () => {
 
                             <Link
                               href="/web/wekraft-vs-asana"
-                              className="group border border-white/[0.05] bg-white/[0.01] hover:bg-rose-500/[0.04] hover:border-rose-500/30 text-neutral-300 hover:text-white px-3.5 py-2.5 rounded-xl flex items-center justify-between text-xs transition-all duration-200 font-medium font-sans shadow-[inset_0_1px_0_rgba(255,255,255,0.01)] hover:shadow-[0_4px_20px_rgba(244,63,94,0.1)]"
+                              className="group border border-white/[0.05] bg-white/[0.01] hover:bg-white/[0.03] hover:border-white/20 text-neutral-300 hover:text-white px-3.5 py-2.5 rounded-xl flex items-center justify-between text-xs transition-all duration-200 font-medium font-sans shadow-[inset_0_1px_0_rgba(255,255,255,0.01)] hover:shadow-[0_4px_20px_rgba(255,255,255,0.04)]"
                             >
                               <span className="flex items-center gap-2.5">
-                                <span className="w-6 h-6 flex items-center justify-center bg-neutral-900/50 border border-white/[0.08] rounded-lg p-1 shrink-0 group-hover:border-rose-500/20 transition-colors">
+                                <span className="w-6 h-6 flex items-center justify-center bg-neutral-900/50 border border-white/[0.08] rounded-lg p-1 shrink-0 group-hover:border-white/20 transition-colors">
                                   <img src="/asana-logo.svg" alt="Asana" className="w-full h-full object-contain" />
                                 </span>
                                 <span>Asana</span>
@@ -165,7 +165,7 @@ const Navbar = () => {
 
                             <Link
                               href="/web/wekraft-vs-notion"
-                              className="group border border-white/[0.05] bg-white/[0.01] hover:bg-neutral-100/[0.03] hover:border-white/20 text-neutral-300 hover:text-white px-3.5 py-2.5 rounded-xl flex items-center justify-between text-xs transition-all duration-200 font-medium font-sans shadow-[inset_0_1px_0_rgba(255,255,255,0.01)] hover:shadow-[0_4px_20px_rgba(255,255,255,0.05)]"
+                              className="group border border-white/[0.05] bg-white/[0.01] hover:bg-white/[0.03] hover:border-white/20 text-neutral-300 hover:text-white px-3.5 py-2.5 rounded-xl flex items-center justify-between text-xs transition-all duration-200 font-medium font-sans shadow-[inset_0_1px_0_rgba(255,255,255,0.01)] hover:shadow-[0_4px_20px_rgba(255,255,255,0.04)]"
                             >
                               <span className="flex items-center gap-2.5">
                                 <span className="w-6 h-6 flex items-center justify-center bg-neutral-900/50 border border-white/[0.08] rounded-lg p-1 shrink-0 group-hover:border-white/20 transition-colors">
@@ -178,10 +178,10 @@ const Navbar = () => {
 
                             <Link
                               href="/web/wekraft-vs-plane"
-                              className="group border border-white/[0.05] bg-white/[0.01] hover:bg-indigo-500/[0.04] hover:border-indigo-500/30 text-neutral-300 hover:text-white px-3.5 py-2.5 rounded-xl flex items-center justify-between text-xs transition-all duration-200 font-medium font-sans shadow-[inset_0_1px_0_rgba(255,255,255,0.01)] hover:shadow-[0_4px_20px_rgba(99,102,241,0.1)] col-span-2"
+                              className="group border border-white/[0.05] bg-white/[0.01] hover:bg-white/[0.03] hover:border-white/20 text-neutral-300 hover:text-white px-3.5 py-2.5 rounded-xl flex items-center justify-between text-xs transition-all duration-200 font-medium font-sans shadow-[inset_0_1px_0_rgba(255,255,255,0.01)] hover:shadow-[0_4px_20px_rgba(255,255,255,0.04)] col-span-2"
                             >
                               <span className="flex items-center gap-2.5">
-                                <span className="w-6 h-6 flex items-center justify-center bg-neutral-900/50 border border-white/[0.08] rounded-lg p-1 shrink-0 group-hover:border-indigo-500/20 transition-colors">
+                                <span className="w-6 h-6 flex items-center justify-center bg-neutral-900/50 border border-white/[0.08] rounded-lg p-1 shrink-0 group-hover:border-white/20 transition-colors">
                                   <img src="/plane-so logo.png" alt="Plane" className="w-full h-full object-contain" />
                                 </span>
                                 <span>Plane</span>

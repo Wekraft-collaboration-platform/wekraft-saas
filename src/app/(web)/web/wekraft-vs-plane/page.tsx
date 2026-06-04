@@ -71,37 +71,6 @@ const planeFaqs: FAQItem[] = [
   },
 ];
 
-// Custom visual mockup for Plane vs Wekraft
-function PlaneMockup() {
-  return (
-    <div className="flex flex-col h-full w-full bg-neutral-950 p-6 font-mono text-[11px] text-neutral-300">
-      <div className="flex items-center justify-between pb-4 border-b border-white/5">
-        <span className="text-white font-semibold">IDE Handshake Sync Status</span>
-        <span className="text-blue-400 font-bold bg-blue-500/10 px-2 py-0.5 rounded">VS Code Connected</span>
-      </div>
-
-      <div className="flex-1 flex flex-col justify-center gap-4 py-4">
-        {/* IDE Edit */}
-        <div className="p-3 border border-white/5 rounded-xl bg-white/[0.01]">
-          <div className="text-neutral-500 mb-1 text-[10px] uppercase">VS Code Codebase:</div>
-          <div className="text-[10px] text-emerald-400 font-semibold leading-relaxed">
-            <span>$ git commit -m "fix(modules): resolves memory leak issue #104"</span>
-          </div>
-        </div>
-
-        {/* Handshake Indicator */}
-        <div className="p-3 border border-blue-500/20 rounded-xl bg-blue-500/[0.02] flex items-center justify-between">
-          <div>
-            <div className="text-white font-bold">Wekraft Board Synced</div>
-            <div className="text-[10px] text-neutral-400">Issue #104 status updated to:</div>
-          </div>
-          <span className="text-emerald-400 font-bold bg-emerald-500/10 px-2 py-0.5 rounded">Completed</span>
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export default function PlaneComparePage() {
   return (
     <div className="bg-black min-h-screen text-white font-sans selection:bg-blue-500/30 overflow-hidden relative">
@@ -116,10 +85,10 @@ export default function PlaneComparePage() {
             </span>
           }
           competitorColor="from-indigo-500 to-violet-500"
-          title1="Move beyond a Linear clone."
-          title2="Experience an AI-first workspace."
-          description="Plane copies traditional project management layouts. Wekraft unifies issues and cycles with bi-directional VS Code handshake syncs, autonomous coding agents, and codebase stress maps."
-          visualMockup={<PlaneMockup />}
+          title1="Meet Kaya, your AI PM."
+          title2="Collaborate in real time."
+          description="Discuss projects, query sprint workloads, and map out client deliverables by chatting directly with Kaya inside your team spaces."
+          visualMockup={<img src="/kaya-team.png" alt="Wekraft Kaya AI PM Agent" className="w-full rounded-2xl object-cover border border-white/[0.08]" />}
         />
 
         <div className="w-full max-w-7xl mx-auto px-4 md:px-8">
