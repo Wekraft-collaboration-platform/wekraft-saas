@@ -120,8 +120,8 @@ function MeetCard({
       className={cn(
         "group relative flex flex-col gap-3 rounded-xl border p-4 ",
         isActive
-          ? "bg-muted border-accent"
-          : "bg-sidebar border-border"
+          ? "bg-sidebar border-muted"
+          : "bg-muted border-accent"
       )}
     >
       {/* Top row: status + date */}
@@ -306,10 +306,10 @@ export default function MeetPage() {
 
   // ── Project data + permissions ───────────────────────────────────────────
   const project = useQuery(api.project.getProjectBySlug, { slug });
-  const { isOwner, isAdmin, isLoading: permLoading } = useProjectPermissions(
+  const { isOwner, isAdmin, isViewer, isLoading: permLoading } = useProjectPermissions(
     project?._id as Id<"projects"> | undefined
   );
-  const canStart = isOwner || isAdmin;
+  const canStart = !isViewer && (isOwner || isAdmin);
 
   // ── Meeting history ──────────────────────────────────────────────────────
   const meetings = useQuery(
@@ -426,53 +426,74 @@ export default function MeetPage() {
 
   return (
     <TooltipProvider>
-      <div className="w-full h-full p-6 max-w-7xl mx-auto">
+      <div className="w-full h-full">
+        {/* ── Blue Gradient Header ─────────────────────────────────────────── */}
+        <div className="bg-linear-to-br from-blue-500 to-blue-200 p-4 h-44 relative">
+          <header className="flex items-start justify-between gap-4 mb-8 z-20 relative">
+            <div>
+              <h1 className="text-2xl font-semibold flex text-white items-center gap-2">
+                <Video className="w-6 h-6 text-white" />
+                Team Meet
+              </h1>
+              <p className="text-sm text-neutral-100 mt-1">
+                Connect with your teammates in real-time video calls. <br />
+                Schedule for future and plan it well.
+              </p>
+            </div>
 
-        {/* ── Header ─────────────────────────────────────────────────── */}
-        <header className="flex items-center justify-between gap-4 mb-8">
-          <div>
-            <h1 className="text-2xl font-semibold flex items-center gap-2">
-              <Video className="w-6 h-6 text-primary" />
-              Team Meet
-            </h1>
-            <p className="text-sm text-muted-foreground mt-1">
-              Connect with your teammates in real-time video calls.
-            </p>
-          </div>
+            <div className="flex items-center gap-3 z-20">
+              {!isViewer && (
+                <>
+                  <Button
+                    size="sm"
+                    className="text-xs  cursor-pointer"
+                    onClick={() => setJoinDialogOpen(true)}
+                  >
+                    <Link2 className="w-4 h-4 mr-2" />
+                    Join with ID
+                  </Button>
 
-          <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-xs border-zinc-800 hover:bg-zinc-900"
-              onClick={() => setJoinDialogOpen(true)}
-            >
-              <Link2 className="w-4 h-4 mr-2" />
-              Join with ID
-            </Button>
+                  <Button
+                    size="sm"
+                    className="text-xs bg-white hover:bg-white/90 text-zinc-950 font-medium cursor-pointer"
+                    onClick={() => setScheduleDialogOpen(true)}
+                  >
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Schedule Meet
+                  </Button>
 
-            <Button
-              size="sm"
-              className="text-xs bg-zinc-100 hover:bg-zinc-200 text-zinc-950 font-medium"
-              onClick={() => setScheduleDialogOpen(true)}
-            >
-              <Calendar className="w-4 h-4 mr-2" />
-              Schedule Meet
-            </Button>
+                  <Button
+                    size="sm"
+                    className="text-xs bg-white hover:bg-white/90 text-zinc-950 font-medium cursor-pointer"
+                    onClick={handleNewMeeting}
+                  >
+                    <Plus className="w-4 h-4 mr-2" />
+                    Start Instant Meeting
+                  </Button>
+                </>
+              )}
+              {isViewer && (
+                <span className="text-[11px] text-white/80 bg-white/10 border border-white/20 px-3 py-1.5 rounded-md">
+                  View-only access
+                </span>
+              )}
+            </div>
+          </header>
 
-            <Button
-              size="sm"
-              className="text-xs bg-zinc-100 hover:bg-zinc-200 text-zinc-950 font-medium"
-              onClick={handleNewMeeting}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Start Instant Meeting
-            </Button>
-          </div>
-        </header>
+          <Image
+            src="/team.png"
+            alt="Meet"
+            width={180}
+            height={180}
+            className="absolute -bottom-4 -right-2 pointer-events-none"
+          />
+        </div>
 
-        {/* ── Active banner (if any live meet) ───────────────────────── */}
-        {/* {activeCount > 0 && (
+        {/* ── Main Content Area ─────────────────────────────────────────── */}
+        <div className="p-6 max-w-7xl mx-auto">
+
+          {/* ── Active banner (if any live meet) ───────────────────────── */}
+          {/* {activeCount > 0 && (
           <div className="mb-6 flex items-center gap-3 rounded-xl border border-emerald-500/30 bg-emerald-500/5 px-4 py-3 text-sm text-emerald-400">
             <Radio className="w-4 h-4 animate-pulse shrink-0" />
             <span>
@@ -482,231 +503,234 @@ export default function MeetPage() {
           </div>
         )} */}
 
-        {/* ── Tabs ───────────────────────────────────────────────────── */}
-        <div className="flex border-b border-zinc-800/80 mb-6">
-          <button
-            onClick={() => setActiveTab("history")}
-            className={cn(
-              "px-4 py-2 text-sm font-medium border-b-2 transition-all duration-200 -mb-[2px] flex items-center gap-2",
-              activeTab === "history"
-                ? "border-primary text-white"
-                : "border-transparent text-zinc-400 hover:text-white"
-            )}
-          >
-            Meeting History
-            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-zinc-800 text-zinc-100">
-              {meetings?.length ?? 0}
-            </Badge>
-          </button>
-          <button
-            onClick={() => setActiveTab("scheduled")}
-            className={cn(
-              "px-4 py-2 text-sm font-medium border-b-2 transition-all duration-200 -mb-[2px] flex items-center gap-2",
-              activeTab === "scheduled"
-                ? "border-primary text-white"
-                : "border-transparent text-zinc-400 hover:text-white"
-            )}
-          >
-            Scheduled Meets
-            <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-zinc-800 text-zinc-100">
-              {scheduledMeetings.length}
-            </Badge>
-          </button>
-        </div>
+          {/* ── Tabs ───────────────────────────────────────────────────── */}
+          <div className="flex border-b border-zinc-800/80 mb-6">
+            <button
+              onClick={() => setActiveTab("history")}
+              className={cn(
+                "px-4 py-2 text-base font-medium border-b-2 transition-all duration-200 -mb-[2px] flex items-center gap-2",
+                activeTab === "history"
+                  ? "border-primary text-white"
+                  : "border-transparent text-zinc-400 hover:text-white"
+              )}
+            >
+              Meeting History
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-zinc-800 text-zinc-100">
+                {meetings?.length ?? 0}
+              </Badge>
+            </button>
+            <button
+              onClick={() => setActiveTab("scheduled")}
+              className={cn(
+                "px-4 py-2 text-base font-medium border-b-2 transition-all duration-200 -mb-[2px] flex items-center gap-2",
+                activeTab === "scheduled"
+                  ? "border-primary text-white"
+                  : "border-transparent text-zinc-400 hover:text-white"
+              )}
+            >
+              Scheduled Meets
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0 bg-zinc-800 text-zinc-100">
+                {scheduledMeetings.length}
+              </Badge>
+            </button>
+          </div>
 
-        {/* ── Tab Content ────────────────────────────────────────────── */}
-        {activeTab === "history" ? (
-          <>
-            {/* Cards grid */}
-            <div className="grid grid-cols-3 gap-6">
-              {/* Creator Box (Admin/Owner only) */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={handleNewMeeting}
-                    disabled={isCreating || permLoading || !canStart}
-                    className={cn(
-                      "group relative flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed p-6 transition-all duration-200 min-h-[160px]",
-                      canStart
-                        ? "border-zinc-700 bg-sidebar/70 hover:border-zinc-600 hover:bg-zinc-900/70 cursor-pointer"
-                        : "border-zinc-800/40 bg-zinc-950/5 opacity-40 cursor-not-allowed"
+          {/* ── Tab Content ────────────────────────────────────────────── */}
+          {activeTab === "history" ? (
+            <>
+              {/* Cards grid */}
+              <div className="grid grid-cols-3 gap-6">
+                {/* Creator Box (Admin/Owner only — hidden for viewers) */}
+                {!isViewer && (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <button
+                        onClick={handleNewMeeting}
+                        disabled={isCreating || permLoading || !canStart}
+                        className={cn(
+                          "group relative flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed p-6 transition-all duration-200 min-h-[160px]",
+                          canStart
+                            ? "border-zinc-700 bg-sidebar/70 hover:border-zinc-600 hover:bg-zinc-900/70 cursor-pointer"
+                            : "border-zinc-800/40 bg-zinc-950/5 opacity-40 cursor-not-allowed"
+                        )}
+                      >
+                        {isCreating ? (
+                          <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                        ) : (
+                          <Plus className={cn("w-6 h-6 transition-colors text-white")} />
+                        )}
+                        <span className={cn("text-xs font-medium transition-colors text-white")}>
+                          {isCreating ? "Starting..." : "Start Instant Meeting"}
+                        </span>
+                      </button>
+                    </TooltipTrigger>
+                    {!canStart && !permLoading && (
+                      <TooltipContent side="top" className="bg-zinc-900 border border-zinc-800 text-zinc-200">
+                        Only project owners and admins can start instant meetings.
+                      </TooltipContent>
                     )}
-                  >
-                    {isCreating ? (
-                      <Loader2 className="w-6 h-6 text-primary animate-spin" />
-                    ) : (
-                      <Plus className={cn("w-6 h-6 transition-colors text-white")} />
-                    )}
-                    <span className={cn("text-xs font-medium transition-colors text-white")}>
-                      {isCreating ? "Starting..." : "Start Instant Meeting"}
-                    </span>
-                  </button>
-                </TooltipTrigger>
-                {!canStart && !permLoading && (
-                  <TooltipContent side="top" className="bg-zinc-900 border border-zinc-800 text-zinc-200">
-                    Only project owners and admins can start instant meetings.
-                  </TooltipContent>
+                  </Tooltip>
                 )}
-              </Tooltip>
 
-              {meetings?.map((m) => (
-                <MeetCard key={m._id} meet={m} slug={slug} />
-              ))}
-            </div>
-          </>
-        ) : (
-          <>
-            {scheduledMeetings.length === 0 ? (
-              <div className="flex flex-col items-center justify-center h-[40vh] gap-4 text-center">
-                <Calendar className="w-12 h-12 text-zinc-600" />
-                <div className="space-y-1 max-w-sm">
-                  <p className="text-lg font-semibold text-zinc-300">No Scheduled Meetings</p>
-                  <p className="text-xs text-zinc-500">
-                    Plan a future meeting to sync with your team.
-                  </p>
-                </div>
-                <Button
-                  size="sm"
-                  className="mt-2 text-xs bg-zinc-100 hover:bg-zinc-200 text-zinc-950 font-medium"
-                  onClick={() => setScheduleDialogOpen(true)}
-                >
-                  <Calendar className="w-4 h-4 mr-2" />
-                  Schedule a Meet
-                </Button>
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
-                {scheduledMeetings.map((event) => (
-                  <ScheduledMeetCard
-                    key={event._id}
-                    event={event}
-                    onDelete={handleCancelMeeting}
-                    isOwnerOrAdmin={canStart}
-                  />
+                {meetings?.map((m) => (
+                  <MeetCard key={m._id} meet={m} slug={slug} />
                 ))}
               </div>
-            )}
-          </>
-        )}
+            </>
+          ) : (
+            <>
+              {scheduledMeetings.length === 0 ? (
+                <div className="flex flex-col items-center justify-center h-[40vh] gap-4 text-center">
+                  <Calendar className="w-12 h-12 text-zinc-600" />
+                  <div className="space-y-1 max-w-sm">
+                    <p className="text-lg font-semibold text-zinc-300">No Scheduled Meetings</p>
+                    <p className="text-xs text-zinc-500">
+                      Plan a future meeting to sync with your team.
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    className="mt-2 text-xs bg-zinc-100 hover:bg-zinc-200 text-zinc-950 font-medium"
+                    onClick={() => setScheduleDialogOpen(true)}
+                  >
+                    <Calendar className="w-4 h-4 mr-2" />
+                    Schedule a Meet
+                  </Button>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+                  {scheduledMeetings.map((event) => (
+                    <ScheduledMeetCard
+                      key={event._id}
+                      event={event}
+                      onDelete={handleCancelMeeting}
+                      isOwnerOrAdmin={canStart}
+                    />
+                  ))}
+                </div>
+              )}
+            </>
+          )}
 
-        {/* ── Join by ID Dialog ──────────────────────────────────────── */}
-        <Dialog open={joinDialogOpen} onOpenChange={setJoinDialogOpen}>
-          <DialogContent className="sm:max-w-md bg-zinc-950 border border-zinc-800 text-zinc-100">
-            <DialogHeader>
-              <DialogTitle className="text-zinc-100">Join a Meeting</DialogTitle>
-              <DialogDescription className="text-zinc-400">
-                Paste a meeting ID or the full meeting link to join.
-              </DialogDescription>
-            </DialogHeader>
+          {/* ── Join by ID Dialog ──────────────────────────────────────── */}
+          <Dialog open={joinDialogOpen} onOpenChange={setJoinDialogOpen}>
+            <DialogContent className="sm:max-w-md bg-zinc-950 border border-zinc-800 text-zinc-100">
+              <DialogHeader>
+                <DialogTitle className="text-zinc-100">Join a Meeting</DialogTitle>
+                <DialogDescription className="text-zinc-400">
+                  Paste a meeting ID or the full meeting link to join.
+                </DialogDescription>
+              </DialogHeader>
 
-            <div className="space-y-2 py-2">
-              <Label htmlFor="join-id" className="text-zinc-400">Meeting ID or Link</Label>
-              <Input
-                id="join-id"
-                placeholder="e.g. x7k2m-9pqr3"
-                value={joinId}
-                onChange={(e) => setJoinId(e.target.value)}
-                onKeyDown={(e) => e.key === "Enter" && handleJoin()}
-                className="bg-zinc-900 border-zinc-800 text-zinc-100 placeholder:text-zinc-600"
-              />
-            </div>
-
-            <DialogFooter>
-              <Button
-                variant="outline"
-                onClick={() => setJoinDialogOpen(false)}
-                className="border-zinc-800 hover:bg-zinc-900"
-              >
-                Cancel
-              </Button>
-              <Button onClick={handleJoin} disabled={!joinId.trim()}>
-                Join
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
-
-        {/* ── Schedule Meet Dialog ───────────────────────────────────── */}
-        <Dialog open={scheduleDialogOpen} onOpenChange={setScheduleDialogOpen}>
-          <DialogContent className="sm:max-w-md bg-zinc-950 border border-zinc-800 text-zinc-100">
-            <DialogHeader>
-              <DialogTitle className="text-zinc-100">Schedule Team Meeting</DialogTitle>
-              <DialogDescription className="text-zinc-400">
-                Plan a future meeting. It will be added to the project calendar.
-              </DialogDescription>
-            </DialogHeader>
-
-            <form onSubmit={handleScheduleSubmit} className="space-y-4 py-2">
-              <div className="space-y-2">
-                <Label htmlFor="meeting-title" className="text-zinc-400">Title</Label>
+              <div className="space-y-2 py-2">
+                <Label htmlFor="join-id" className="text-zinc-400">Meeting ID or Link</Label>
                 <Input
-                  id="meeting-title"
-                  value="Team Meeting"
-                  disabled
-                  className="bg-zinc-900 border-zinc-800 text-zinc-400 cursor-not-allowed"
+                  id="join-id"
+                  placeholder="e.g. x7k2m-9pqr3"
+                  value={joinId}
+                  onChange={(e) => setJoinId(e.target.value)}
+                  onKeyDown={(e) => e.key === "Enter" && handleJoin()}
+                  className="bg-zinc-900 border-zinc-800 text-zinc-100 placeholder:text-zinc-600"
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-4">
-                <div className="space-y-2">
-                  <Label htmlFor="meeting-date" className="text-zinc-400">Date</Label>
-                  <Input
-                    id="meeting-date"
-                    type="date"
-                    value={scheduleDate}
-                    onChange={(e) => setScheduleDate(e.target.value)}
-                    required
-                    className="bg-zinc-900 border-zinc-800 text-zinc-100 [color-scheme:dark]"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="meeting-time" className="text-zinc-400">Start Time</Label>
-                  <Input
-                    id="meeting-time"
-                    type="time"
-                    value={scheduleTime}
-                    onChange={(e) => setScheduleTime(e.target.value)}
-                    required
-                    className="bg-zinc-900 border-zinc-800 text-zinc-100 [color-scheme:dark]"
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-2">
-                <Label htmlFor="meeting-desc" className="text-zinc-400">Description (Optional)</Label>
-                <Textarea
-                  id="meeting-desc"
-                  placeholder="Agenda, notes, or details..."
-                  value={scheduleDesc}
-                  onChange={(e) => setScheduleDesc(e.target.value)}
-                  className="resize-none h-24 bg-zinc-900 border-zinc-800 text-zinc-100 placeholder:text-zinc-600"
-                />
-              </div>
-
-              <DialogFooter className="pt-2">
+              <DialogFooter>
                 <Button
-                  type="button"
                   variant="outline"
-                  onClick={() => setScheduleDialogOpen(false)}
-                  disabled={isScheduling}
+                  onClick={() => setJoinDialogOpen(false)}
                   className="border-zinc-800 hover:bg-zinc-900"
                 >
                   Cancel
                 </Button>
-                <Button type="submit" disabled={isScheduling}>
-                  {isScheduling ? (
-                    <>
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                      Scheduling...
-                    </>
-                  ) : (
-                    "Schedule"
-                  )}
+                <Button onClick={handleJoin} disabled={!joinId.trim()}>
+                  Join
                 </Button>
               </DialogFooter>
-            </form>
-          </DialogContent>
-        </Dialog>
+            </DialogContent>
+          </Dialog>
+
+          {/* ── Schedule Meet Dialog ───────────────────────────────────── */}
+          <Dialog open={scheduleDialogOpen} onOpenChange={setScheduleDialogOpen}>
+            <DialogContent className="sm:max-w-md bg-zinc-950 border border-zinc-800 text-zinc-100">
+              <DialogHeader>
+                <DialogTitle className="text-zinc-100">Schedule Team Meeting</DialogTitle>
+                <DialogDescription className="text-zinc-400">
+                  Plan a future meeting. It will be added to the project calendar.
+                </DialogDescription>
+              </DialogHeader>
+
+              <form onSubmit={handleScheduleSubmit} className="space-y-4 py-2">
+                <div className="space-y-2">
+                  <Label htmlFor="meeting-title" className="text-zinc-400">Title</Label>
+                  <Input
+                    id="meeting-title"
+                    value="Team Meeting"
+                    disabled
+                    className="bg-zinc-900 border-zinc-800 text-zinc-400 cursor-not-allowed"
+                  />
+                </div>
+
+                <div className="grid grid-cols-2 gap-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="meeting-date" className="text-zinc-400">Date</Label>
+                    <Input
+                      id="meeting-date"
+                      type="date"
+                      value={scheduleDate}
+                      onChange={(e) => setScheduleDate(e.target.value)}
+                      required
+                      className="bg-zinc-900 border-zinc-800 text-zinc-100 [color-scheme:dark]"
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="meeting-time" className="text-zinc-400">Start Time</Label>
+                    <Input
+                      id="meeting-time"
+                      type="time"
+                      value={scheduleTime}
+                      onChange={(e) => setScheduleTime(e.target.value)}
+                      required
+                      className="bg-zinc-900 border-zinc-800 text-zinc-100 [color-scheme:dark]"
+                    />
+                  </div>
+                </div>
+
+                <div className="space-y-2">
+                  <Label htmlFor="meeting-desc" className="text-zinc-400">Description (Optional)</Label>
+                  <Textarea
+                    id="meeting-desc"
+                    placeholder="Agenda, notes, or details..."
+                    value={scheduleDesc}
+                    onChange={(e) => setScheduleDesc(e.target.value)}
+                    className="resize-none h-24 bg-zinc-900 border-zinc-800 text-zinc-100 placeholder:text-zinc-600"
+                  />
+                </div>
+
+                <DialogFooter className="pt-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    onClick={() => setScheduleDialogOpen(false)}
+                    disabled={isScheduling}
+                    className="border-zinc-800 hover:bg-zinc-900"
+                  >
+                    Cancel
+                  </Button>
+                  <Button type="submit" disabled={isScheduling}>
+                    {isScheduling ? (
+                      <>
+                        <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                        Scheduling...
+                      </>
+                    ) : (
+                      "Schedule"
+                    )}
+                  </Button>
+                </DialogFooter>
+              </form>
+            </DialogContent>
+          </Dialog>
+        </div>
       </div>
     </TooltipProvider>
   );

@@ -51,6 +51,12 @@ const SprintPage = () => {
   const user = useQuery(api.user.getCurrentUser);
   const project = useQuery(api.project.getProjectBySlug, { slug });
   const isOwner = !!project && !!user && project.ownerId === user._id;
+  const members = useQuery(
+    api.project.getProjectMembers,
+    project?._id ? { projectId: project._id as Id<"projects"> } : "skip",
+  );
+  const userMember = members?.find((m) => m.userId === user?._id);
+  const isViewer = userMember?.AccessRole === "viewer";
   const sprints = useQuery(
     api.sprint.getSprintsByProject,
     project?._id ? { projectId: project._id as Id<"projects"> } : "skip",
@@ -199,16 +205,18 @@ const SprintPage = () => {
             <Image src="/kaya.svg" alt="Kaya AI" width={18} height={18} />
             Manage Sprints
           </Button>
-          <CreateSprintDialog
-            projectId={project._id as Id<"projects">}
-            projectName={project.projectName || "Project"}
-            trigger={
-              <Button size="sm" className="shadow-sm text-xs">
-                <Plus className="w-4 h-4 mr-2" />
-                New Sprint
-              </Button>
-            }
-          />
+          {!isViewer && (
+            <CreateSprintDialog
+              projectId={project._id as Id<"projects">}
+              projectName={project.projectName || "Project"}
+              trigger={
+                <Button size="sm" className="shadow-sm text-xs">
+                  <Plus className="w-4 h-4 mr-2" />
+                  New Sprint
+                </Button>
+              }
+            />
+          )}
         </div>
       </header>
 
@@ -235,20 +243,22 @@ const SprintPage = () => {
             </div>
 
             <div className="flex  gap-3 mt-4">
-              <CreateSprintDialog
-                projectId={project._id as Id<"projects">}
-                projectName={project.projectName || "Project"}
-                trigger={
-                  <Button
-                    variant="default"
-                    size="sm"
-                    className="rounded-full px-5"
-                  >
-                    <FastForwardIcon className="w-4 h-4 mr-2" />
-                    Create Sprint
-                  </Button>
-                }
-              />
+              {!isViewer && (
+                <CreateSprintDialog
+                  projectId={project._id as Id<"projects">}
+                  projectName={project.projectName || "Project"}
+                  trigger={
+                    <Button
+                      variant="default"
+                      size="sm"
+                      className="rounded-full px-5"
+                    >
+                      <FastForwardIcon className="w-4 h-4 mr-2" />
+                      Create Sprint
+                    </Button>
+                  }
+                />
+              )}
               <Button variant="outline" size="sm" className="rounded-full px-5">
                 Check Docs
                 <FileCodeCorner className="w-4 h-4 ml-2" />

@@ -35,103 +35,55 @@ const initialSteps: ReviewStep[] = [
     id: 1,
     label: "Scanning PR #247",
     icon: <Search className="w-3.5 h-3.5" />,
-    status: "pending",
+    status: "done",
     detail: "feat: add payment gateway integration",
   },
   {
     id: 2,
     label: "Analyzing 12 changed files",
     icon: <FileCode className="w-3.5 h-3.5" />,
-    status: "pending",
+    status: "done",
     detail: "+342 / -89 lines",
   },
   {
     id: 3,
     label: "Security check passed",
     icon: <Shield className="w-3.5 h-3.5" />,
-    status: "pending",
+    status: "done",
     detail: "No vulnerabilities detected",
   },
   {
     id: 4,
     label: "Found 2 potential issues",
     icon: <AlertTriangle className="w-3.5 h-3.5" />,
-    status: "pending",
+    status: "warning",
     detail: "Missing error handling in webhook.ts",
   },
   {
     id: 5,
     label: "Auto-created issue #89",
     icon: <Bug className="w-3.5 h-3.5" />,
-    status: "pending",
+    status: "done",
     detail: "Race condition in payment callback",
   },
   {
     id: 6,
     label: "Review complete",
     icon: <CheckCircle2 className="w-3.5 h-3.5" />,
-    status: "pending",
+    status: "done",
     detail: "Approved with suggestions",
   },
 ];
 
 const HarryPRReview = () => {
-  const ref = useRef<HTMLDivElement>(null);
-  const isInView = useInView(ref, { once: true, margin: "-100px 0px" });
-  const [steps, setSteps] = useState<ReviewStep[]>(initialSteps);
-  const [hasStarted, setHasStarted] = useState(false);
-
-  useEffect(() => {
-    if (!isInView || hasStarted) return;
-    setHasStarted(true);
-
-    const timings = [600, 1800, 3000, 4200, 5600, 7000];
-
-    timings.forEach((delay, i) => {
-      setTimeout(() => {
-        setSteps((prev) =>
-          prev.map((step, idx) => {
-            if (idx === i) return { ...step, status: "running" };
-            if (idx === i - 1) {
-              return {
-                ...step,
-                status: step.id === 4 ? "warning" : "done",
-              };
-            }
-            return step;
-          })
-        );
-      }, delay);
-
-      // Finish last step
-      if (i === timings.length - 1) {
-        setTimeout(() => {
-          setSteps((prev) =>
-            prev.map((step) => ({
-              ...step,
-              status:
-                step.status === "running"
-                  ? "done"
-                  : step.status === "pending"
-                    ? "done"
-                    : step.status,
-            }))
-          );
-        }, delay + 1200);
-      }
-    });
-  }, [isInView, hasStarted]);
-
   const getStatusColor = (status: ReviewStep["status"]) => {
     switch (status) {
       case "done":
         return "text-emerald-400";
-      case "running":
-        return "text-blue-400";
       case "warning":
         return "text-amber-400";
       default:
-        return "text-neutral-600";
+        return "text-neutral-500";
     }
   };
 
@@ -139,8 +91,6 @@ const HarryPRReview = () => {
     switch (status) {
       case "done":
         return "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]";
-      case "running":
-        return "bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)] animate-pulse";
       case "warning":
         return "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]";
       default:
@@ -149,7 +99,7 @@ const HarryPRReview = () => {
   };
 
   return (
-    <div ref={ref} className="relative">
+    <div className="relative">
       {/* PR Header */}
       <div className="flex items-center gap-3 mb-5 px-1">
         <div className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-purple-500/10 border border-purple-500/20">
@@ -167,78 +117,47 @@ const HarryPRReview = () => {
       </div>
 
       {/* Review Steps */}
-      <div className="space-y-0.5">
-        {steps.map((step, i) => (
-          <motion.div
+      <div className="flex flex-col">
+        {initialSteps.map((step, i) => (
+          <div
             key={step.id}
-            initial={{ opacity: 0, x: -10 }}
-            animate={
-              step.status !== "pending"
-                ? { opacity: 1, x: 0 }
-                : { opacity: 0.3, x: 0 }
-            }
-            transition={{
-              duration: 0.4,
-              ease: "easeOut",
-            }}
             className="relative"
           >
             {/* Connector line — centered under the dot */}
-            {i < steps.length - 1 && (
+            {i < initialSteps.length - 1 && (
               <div
-                className={`absolute left-[10px] top-[26px] w-px h-[calc(100%-6px)] transition-colors duration-500 ${
-                  step.status === "done" || step.status === "warning"
-                    ? "bg-neutral-700"
-                    : "bg-neutral-800/50"
-                }`}
+                className="absolute left-[10px] top-[20px] w-px h-full bg-neutral-700/50 z-0"
               />
             )}
 
-            <div className="flex items-center gap-3 py-2 px-1 rounded-lg">
+            <div className="flex items-start gap-3 py-2 px-1 rounded-lg relative z-10">
               {/* Status dot */}
               <div
-                className={`w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 transition-all duration-500 ${
-                  step.status !== "pending"
-                    ? "bg-neutral-800/80 border border-neutral-700/50"
-                    : "bg-neutral-900 border border-neutral-800/30"
-                }`}
+                className="w-5 h-5 rounded-full flex items-center justify-center flex-shrink-0 bg-neutral-800/80 border border-neutral-700/50 mt-0.5"
               >
                 <div
-                  className={`w-2 h-2 rounded-full transition-all duration-500 ${getStatusDot(step.status)}`}
+                  className={`w-2 h-2 rounded-full ${getStatusDot(step.status)}`}
                 />
               </div>
 
               {/* Content */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2">
-                  <span className={`transition-colors duration-300 ${getStatusColor(step.status)}`}>
+                  <span className={getStatusColor(step.status)}>
                     {step.icon}
                   </span>
-                  <span
-                    className={`text-[13px] font-medium transition-colors duration-300 ${
-                      step.status !== "pending"
-                        ? "text-white/90"
-                        : "text-neutral-600"
-                    }`}
-                  >
+                  <span className="text-[13px] font-medium text-white/90">
                     {step.label}
                   </span>
                 </div>
-                <AnimatePresence>
-                  {step.detail && step.status !== "pending" && (
-                    <motion.p
-                      initial={{ opacity: 0, height: 0 }}
-                      animate={{ opacity: 1, height: "auto" }}
-                      exit={{ opacity: 0, height: 0 }}
-                      className="text-[11px] text-neutral-500 mt-1 ml-5.5 leading-relaxed"
-                    >
-                      {step.detail}
-                    </motion.p>
-                  )}
-                </AnimatePresence>
+                {step.detail && (
+                  <p className="text-[11px] text-neutral-500 mt-1 ml-[22px] leading-relaxed">
+                    {step.detail}
+                  </p>
+                )}
               </div>
             </div>
-          </motion.div>
+          </div>
         ))}
       </div>
     </div>
@@ -352,10 +271,13 @@ const AIFirstSection = () => {
             initial={{ opacity: 0, y: 60 }}
             animate={kayaInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 60 }}
             transition={{ duration: 0.9, ease: [0.25, 0.46, 0.45, 0.94] }}
-            className="relative rounded-2xl border border-white/[0.06] bg-neutral-950/80 overflow-hidden group"
+            className="relative rounded-2xl border border-white/10 bg-neutral-950/80 overflow-hidden group"
           >
+            {/* Gradient background overlay */}
+            <div className="absolute inset-0 bg-linear-to-br from-transparent via-indigo-500/10 to-fuchsia-500/20 pointer-events-none" />
+
             {/* Card header */}
-            <div className="p-6 pb-4">
+            <div className="relative z-10 p-6 pb-4">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden">
                   <Image src="/kaya.svg" alt="Kaya" width={32} height={32} />
@@ -381,7 +303,7 @@ const AIFirstSection = () => {
             </div>
 
             {/* Image — edge-to-edge for bigger presence */}
-            <div className="px-2 pb-0 mt-2">
+            <div className="relative z-10 px-2 pb-0 mt-10">
               <div
                 className="relative rounded-t-xl overflow-hidden border border-b-0 border-white/[0.06]"
                 style={{
@@ -398,7 +320,7 @@ const AIFirstSection = () => {
                   height={750}
                   className="w-full h-auto block"
                   quality={90}
-                  sizes="(max-width: 1024px) 100vw, 50vw"
+                  sizes="(max-width: 1080px) 100vw, 50vw"
                 />
               </div>
             </div>
@@ -414,10 +336,13 @@ const AIFirstSection = () => {
               ease: [0.25, 0.46, 0.45, 0.94],
               delay: 0.15,
             }}
-            className="relative rounded-2xl border border-white/[0.06] bg-neutral-950/80 overflow-hidden group"
+            className="relative rounded-2xl border border-white/10 bg-neutral-950/80 overflow-hidden group"
           >
+            {/* Gradient background overlay */}
+            <div className="absolute inset-0 bg-linear-to-br from-transparent via-yellow-500/10 to-orange-500/30 pointer-events-none" />
+
             {/* Card header */}
-            <div className="p-6 pb-4">
+            <div className="relative z-10 p-6 pb-4">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden">
                   <Image src="/harry.svg" alt="Harry" width={32} height={32} />
@@ -442,8 +367,8 @@ const AIFirstSection = () => {
             </div>
 
             {/* Mock PR Review UI */}
-            <div className="px-4 pb-6">
-              <div className="relative rounded-xl overflow-hidden border border-white/[0.06] bg-neutral-900/50 p-5">
+            <div className="relative z-10 px-4 pb-6">
+              <div className="relative rounded-xl overflow-hidden border border-white/10 bg-linear-to-b from-neutral-900 to-neutral-950/60 p-5">
                 {/* Harry review header */}
                 <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-white/[0.05]">
                   <div className="w-6 h-6 rounded-md flex items-center justify-center overflow-hidden">

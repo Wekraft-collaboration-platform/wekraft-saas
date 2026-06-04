@@ -38,7 +38,7 @@ export function InviteDialog({ inviteLink, projectName, trigger, open, onOpenCha
   const [copied, setCopied] = React.useState(false);
   const [email, setEmail] = React.useState("");
   const [inviting, setInviting] = React.useState(false);
-  const [role, setRole] = React.useState<"member" | "admin">("member");
+  const [role, setRole] = React.useState<"member" | "admin" | "viewer">("member");
 
   const fullInviteLink = inviteLink ? `${INVITE_LINK}invite/${inviteLink}?role=${role}` : "";
 
@@ -195,20 +195,36 @@ export function InviteDialog({ inviteLink, projectName, trigger, open, onOpenCha
                     <ChevronDown className="w-3.5 h-3.5 text-zinc-400" />
                   </button>
                 </DropdownMenuTrigger>
-                <DropdownMenuContent align="end" className="bg-sidebar border border-accent text-white p-1 min-w-[5.5rem] rounded-md shadow-2xl">
-                  <DropdownMenuItem
-                    onClick={() => setRole("member")}
-                    className="text-[12px] rounded-sm cursor-pointer px-2 py-1.5 flex items-center justify-between"
-                  >
-                    <span>Member</span>
-                    {role === "member" && <Check className="w-3 h-3 text-zinc-400" />}
-                  </DropdownMenuItem>
+                <DropdownMenuContent align="end" className="bg-sidebar border border-accent text-white p-1.5 min-w-[220px] rounded-lg shadow-2xl">
                   <DropdownMenuItem
                     onClick={() => setRole("admin")}
-                    className="text-[12px] font-normal text-zinc-300 focus:bg-zinc-800 focus:text-white rounded-sm cursor-pointer px-2 py-1.5 flex items-center justify-between"
+                    className="text-[12px] rounded-md cursor-pointer px-3 py-2.5 flex items-start justify-between gap-3"
                   >
-                    <span>Admin</span>
-                    {role === "admin" && <Check className="w-3 h-3 text-zinc-400" />}
+                    <div className="flex flex-col gap-0.5">
+                      <span className="font-medium text-white">Admin</span>
+                      <span className="text-[10px] text-zinc-400 font-normal">Full access after owner</span>
+                    </div>
+                    {role === "admin" && <Check className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setRole("member")}
+                    className="text-[12px] rounded-md cursor-pointer px-3 py-2.5 flex items-start justify-between gap-3"
+                  >
+                    <div className="flex flex-col gap-0.5">
+                      <span className="font-medium text-white">Member</span>
+                      <span className="text-[10px] text-zinc-400 font-normal">Limited access</span>
+                    </div>
+                    {role === "member" && <Check className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />}
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setRole("viewer")}
+                    className="text-[12px] rounded-md cursor-pointer px-3 py-2.5 flex items-start justify-between gap-3"
+                  >
+                    <div className="flex flex-col gap-0.5">
+                      <span className="font-medium text-white">Viewer</span>
+                      <span className="text-[10px] text-zinc-400 font-normal">Read-only — ideal for clients</span>
+                    </div>
+                    {role === "viewer" && <Check className="w-3.5 h-3.5 text-primary shrink-0 mt-0.5" />}
                   </DropdownMenuItem>
                 </DropdownMenuContent>
               </DropdownMenu>

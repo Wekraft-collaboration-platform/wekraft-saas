@@ -38,7 +38,7 @@ export default function InvitePage() {
   const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
 
   const roleParam = searchParams.get("role");
-  const role = (roleParam === "admin" ? "admin" : "member") as "admin" | "member";
+  const role = (roleParam === "admin" ? "admin" : roleParam === "viewer" ? "viewer" : "member") as "admin" | "member" | "viewer";
 
   const project = useQuery(api.project.getProjectByInviteCode, {
     inviteCode,
@@ -205,9 +205,11 @@ export default function InvitePage() {
                         "text-[10px] font-bold px-2.5 py-0.5 rounded-md border",
                         role === "admin" 
                           ? "bg-amber-500/10 text-amber-500 border-amber-500/20"
-                          : "bg-blue-500/10 text-blue-500 border-blue-500/20"
+                          : role === "viewer"
+                            ? "bg-emerald-500/10 text-emerald-500 border-emerald-500/20"
+                            : "bg-blue-500/10 text-blue-500 border-blue-500/20"
                       )}>
-                        Role: {role === "admin" ? "Admin" : "Member"}
+                        Role: {role === "admin" ? "Admin" : role === "viewer" ? "Viewer" : "Member"}
                       </span>
                     </div>
                   </div>
