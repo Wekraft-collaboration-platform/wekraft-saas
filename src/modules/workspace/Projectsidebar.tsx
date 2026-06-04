@@ -964,7 +964,7 @@ export default function ProjectSidebar() {
                             href={`/dashboard/my-projects/${slug}/${item.path}`}
                             className="flex flex-col items-center gap-2 group cursor-pointer"
                           >
-                            <div className="h-9 w-9 rounded flex items-center justify-center bg-muted/40 border border-accent! text-white transition-all duration-300 shadow-sm group-hover:bg-muted/90 group-hover:border-accent-foreground/30">
+                            <div className="h-9 w-9 rounded flex items-center justify-center bg-muted border border-accent! text-white transition-all duration-300 shadow-sm group-hover:bg-muted/90 group-hover:border-accent-foreground/30">
                               <item.icon className="h-4! w-4!" />
                             </div>
                             <span className="text-xs whitespace-nowrap">
