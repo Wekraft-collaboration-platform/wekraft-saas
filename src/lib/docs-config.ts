@@ -205,6 +205,20 @@ export const docsConfig: { [key: string]: DocItem[] } = {
       icon: "CreditCard",
       created: "2026-01-01",
     },
+    {
+      title: "Referral Program",
+      slug: "referrals",
+      description: "Share your unique code to invite users and earn rewards.",
+      icon: "UserPlus",
+      created: "2026-06-03",
+    },
+    {
+      title: "Help & Support",
+      slug: "support",
+      description: "Submit support tickets, track issues, and talk to the AI Support Assistant.",
+      icon: "HelpCircle",
+      created: "2026-06-03",
+    },
   ],
 };
 

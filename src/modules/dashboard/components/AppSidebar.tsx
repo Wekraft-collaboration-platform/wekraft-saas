@@ -452,7 +452,7 @@ export const AppSidebar = () => {
                             </Link>
                           ))}
                         </div>
-                        <Button
+                        {/* <Button
                           size="sm"
                           variant="outline"
                           asChild
@@ -462,7 +462,7 @@ export const AppSidebar = () => {
                             <Layers3 className="h-4 w-4 mr-1" />
                             View All Projects
                           </Link>
-                        </Button>
+                        </Button> */}
                       </>
                     )}
                   </div>

@@ -437,7 +437,7 @@ export default function DashboardPage() {
               >
                 Projects <LucideLayersPlus className="inline ml-1 w-4 h-4" />
               </button>
-              <button
+              {/* <button
                 type="button"
                 onClick={() => setActiveTab("discover")}
                 className={cn(
@@ -448,7 +448,7 @@ export default function DashboardPage() {
                 )}
               >
                 Discover <DraftingCompass className="inline ml-1 w-4 h-4" />
-              </button>
+              </button> */}
             </div>
 
             {/* Tab Content */}

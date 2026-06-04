@@ -58,12 +58,14 @@ interface KanbanTaskProps {
   tasks: Task[];
   projectId: Id<"projects">;
   taskLimit: number;
+  isViewer?: boolean;
 }
 
 export const KanbanTask = ({
   tasks,
   projectId,
   taskLimit,
+  isViewer,
 }: KanbanTaskProps) => {
   const { open: sidebarOpen } = useSidebar();
 
@@ -163,6 +165,13 @@ export const KanbanTask = ({
 
     const task = tasks.find((t) => t._id === activeTaskId);
     if (task && newStatus && task.status !== newStatus) {
+      if (isViewer) {
+        toast.error("Viewer is not allowed to update items.");
+        setActiveId(null);
+        setActiveTask(null);
+        return;
+      }
+
       if (newStatus === "completed" && task.isBlocked) {
         toast.error("task is marked as blocked , kindly fix that");
         setActiveId(null);

@@ -1,32 +1,32 @@
-import React from "react";
 import {
+  AlertCircle,
+  Bell,
   Bug,
   BugPlay,
+  CheckCircle2,
   CircleCheckBig,
+  Clock,
   Ellipsis,
+  Globe,
   Hourglass,
   Kanban,
   List,
   Loader,
+  MailOpen,
+  MessageSquare,
   Minus,
   MoreHorizontal,
   ScanSearch,
   Table,
-  Zap,
-  AlertCircle,
-  Clock,
-  CheckCircle2,
-  Globe,
-  UserPlus,
-  UserMinus,
-  UserX,
-  MailOpen,
   UserCog,
-  MessageSquare,
-  Bell,
-  XCircle,
+  UserMinus,
+  UserPlus,
+  UserX,
   Video,
+  XCircle,
+  Zap,
 } from "lucide-react";
+import type React from "react";
 import {
   Popover,
   PopoverContent,
@@ -234,8 +234,9 @@ export const priorityIcons2: Record<string, React.ReactNode> = {
     </div>
   ),
 };
+
 // =========================ISSSUES STATIC STORE===========================
-import { GoIssueReopened, GoIssueOpened, GoIssueClosed } from "react-icons/go";
+import { GoIssueClosed, GoIssueOpened, GoIssueReopened } from "react-icons/go";
 import { LuEyeClosed } from "react-icons/lu";
 
 export const ISSUE_STATUS_ICONS: Record<string, React.ReactNode> = {
@@ -294,13 +295,13 @@ export const SortPopover = ({
 );
 
 export const INVITE_LINK =
-  (typeof window !== "undefined"
+  typeof window !== "undefined"
     ? `${window.location.origin}/`
     : process.env.NEXT_PUBLIC_APP_URL
       ? process.env.NEXT_PUBLIC_APP_URL.endsWith("/")
         ? process.env.NEXT_PUBLIC_APP_URL
         : `${process.env.NEXT_PUBLIC_APP_URL}/`
-      : "http://localhost:3000/");
+      : "http://localhost:3000/";
 
 export const NOTIFICATION_ICONS: Record<string, React.ComponentType<any>> = {
   member_joined: UserPlus,
@@ -332,7 +333,7 @@ export function getNotificationRedirectUrl(notif: {
   const workspaceBase = `/dashboard/my-projects/${slug}/workspace`;
 
   switch (notif.type) {
-    case "mentioned":
+    case "mentioned": {
       const bodyLower = notif.body.toLowerCase();
       if (
         bodyLower.includes("chat") ||
@@ -349,6 +350,7 @@ export function getNotificationRedirectUrl(notif: {
       } else {
         return `${workspaceBase}/tasks`;
       }
+    }
 
     case "project_alert":
     case "request_accepted":

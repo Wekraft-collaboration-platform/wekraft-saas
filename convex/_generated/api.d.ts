@@ -12,7 +12,7 @@ import type * as agentTools from "../agentTools.js";
 import type * as apiKeys from "../apiKeys.js";
 import type * as calendar from "../calendar.js";
 import type * as crons from "../crons.js";
-import type * as extensionApi from "../extensionApi.js";
+import type * as customerDesk from "../customerDesk.js";
 import type * as http from "../http.js";
 import type * as issue from "../issue.js";
 import type * as lemonsqueezy from "../lemonsqueezy.js";
@@ -42,7 +42,11 @@ declare const fullApi: ApiFromModules<{
   apiKeys: typeof apiKeys;
   calendar: typeof calendar;
   crons: typeof crons;
+<<<<<<< HEAD
   extensionApi: typeof extensionApi;
+=======
+  customerDesk: typeof customerDesk;
+>>>>>>> 936783ec492ee339a3631d0cae11c13faf43148d
   http: typeof http;
   issue: typeof issue;
   lemonsqueezy: typeof lemonsqueezy;

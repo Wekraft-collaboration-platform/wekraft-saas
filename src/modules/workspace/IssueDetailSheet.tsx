@@ -65,7 +65,11 @@ import { Loader2 } from "lucide-react";
 import { EditIssueDialog } from "./EditIssueDialog";
 import { MoveToSprintDialog } from "./MoveToSprintDialog";
 import { StorageLimitDialog } from "./StorageLimitDialog";
-import { ISSUE_STATUS_ICONS } from "@/lib/static-store";
+import {
+  ISSUE_STATUS_ICONS,
+  ISSUE_SEVERITY_ICONS,
+  ISSUE_ENVIRONMENT_ICONS,
+} from "@/lib/static-store";
 import {
   Tooltip,
   TooltipContent,
@@ -450,10 +454,7 @@ export const IssueDetailSheet = ({
                     <Clock size={14} className="text-muted-foreground/80" /> Status
                   </div>
                   <div className="flex items-center">
-                    <span className={cn(
-                      "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] border capitalize",
-                      statusColors[realIssue.status] || "bg-accent border-border text-neutral-400"
-                    )}>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-500/15 text-neutral-800 dark:text-neutral-200 capitalize">
                       {ISSUE_STATUS_ICONS[realIssue.status] || <Circle size={8} className="fill-current" />}
                       {realIssue.status}
                     </span>
@@ -492,7 +493,7 @@ export const IssueDetailSheet = ({
                                   ))}
                                 </TooltipProvider>
                               </div>
-                              <div className="w-6 h-6 rounded-full border border-neutral-200 dark:border-neutral-800 bg-neutral-100/50 dark:bg-neutral-800/30 hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors">
+                              <div className="flex items-center justify-center w-6 h-6 rounded-full border border-neutral-200 dark:border-neutral-800 bg-neutral-100/50 dark:bg-neutral-800/30 hover:bg-neutral-200 dark:hover:bg-neutral-800 text-neutral-500 dark:text-neutral-400 hover:text-neutral-700 dark:hover:text-neutral-200 transition-colors">
                                 <Plus size={10} />
                               </div>
                             </div>
@@ -558,11 +559,12 @@ export const IssueDetailSheet = ({
                     <Zap size={14} className="text-muted-foreground/80" /> Severity
                   </div>
                   <div className="flex items-center">
-                    <span className={cn(
-                      "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] border capitalize",
-                      severity.bg,
-                      severity.color
-                    )}>
+                    <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-500/15 text-neutral-800 dark:text-neutral-200 capitalize">
+                      {realIssue.severity ? (
+                        ISSUE_SEVERITY_ICONS[realIssue.severity]
+                      ) : (
+                        <Zap className="w-3.5 h-3.5" />
+                      )}
                       {realIssue.severity || "No Severity"}
                     </span>
                   </div>
@@ -575,10 +577,8 @@ export const IssueDetailSheet = ({
                   </div>
                   <div className="flex items-center">
                     {realIssue.environment ? (
-                      <span className={cn(
-                        "inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] border capitalize",
-                        envConfig[realIssue.environment] || "bg-accent border-border text-neutral-400"
-                      )}>
+                      <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] border border-neutral-200 dark:border-neutral-800 bg-neutral-100 dark:bg-neutral-500/15 text-neutral-800 dark:text-neutral-200 capitalize">
+                        {ISSUE_ENVIRONMENT_ICONS[realIssue.environment]}
                         {realIssue.environment}
                       </span>
                     ) : (
@@ -884,9 +884,9 @@ export const IssueDetailSheet = ({
           </div>
 
           {activeTab === "comments" && (
-            <div className="px-4 py-5 border-t border-border/50 bg-background/95 backdrop-blur-md sticky bottom-0 z-20 shrink-0">
+            <div className="px-4 py-5 border-t border-border bg-sidebar backdrop-blur-md sticky bottom-0 z-20 shrink-0">
               <div className="relative">
-                <div className="relative flex items-center bg-accent/40 border border-border rounded-xl overflow-hidden focus-within:border-primary/20 transition-all duration-300">
+                <div className="relative flex items-center bg-accent/40 border border-border rounded-sm overflow-hidden focus-within:border-primary/20 transition-all duration-300">
                   <Input
                     placeholder="Drop a comment or update..."
                     value={commentText}
@@ -904,7 +904,7 @@ export const IssueDetailSheet = ({
                       size="icon"
                       onClick={handleSendComment}
                       disabled={!commentText.trim()}
-                      className="h-8 w-8 rounded-lg transition-all duration-300"
+                      className="h-8 w-8 rounded-md transition-all duration-300"
                     >
                       <Send size={14} />
                     </Button>

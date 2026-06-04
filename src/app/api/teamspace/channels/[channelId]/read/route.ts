@@ -2,7 +2,10 @@ import { auth } from "@clerk/nextjs/server";
 import Ably from "ably";
 import { type NextRequest, NextResponse } from "next/server";
 import { initTeamspaceDB, turso } from "@/lib/turso";
-import { verifyProjectAccess } from "@/modules/workspace/teamspace/lib/auth";
+import {
+  verifyProjectAccess,
+  verifyChannelAccess,
+} from "@/modules/workspace/teamspace/lib/auth";
 
 const ably = new Ably.Rest(process.env.ABLY_API_KEY!);
 
@@ -33,13 +36,26 @@ export async function GET(
 
   const projectId = channelRes.rows[0].project_id as string;
 
-  // --- ACCESS CHECK ---
+  // --- PROJECT ACCESS CHECK ---
   const access = await verifyProjectAccess(userId, projectId);
   if ("error" in access)
     return NextResponse.json(
       { error: access.error },
       { status: access.status },
     );
+
+  // --- CHANNEL ACCESS CHECK ---
+  const channelAccess = await verifyChannelAccess(
+    userId,
+    channelId,
+    access.permissions,
+  );
+  if (!channelAccess.allowed) {
+    return NextResponse.json(
+      { error: "Forbidden", code: channelAccess.code },
+      { status: channelAccess.status },
+    );
+  }
 
   // Fetch all reads for this channel
   const readsRes = await turso.execute({
@@ -82,13 +98,26 @@ export async function POST(
 
   const projectId = channelRes.rows[0].project_id as string;
 
-  // --- ACCESS CHECK ---
+  // --- PROJECT ACCESS CHECK ---
   const access = await verifyProjectAccess(userId, projectId);
   if ("error" in access)
     return NextResponse.json(
       { error: access.error },
       { status: access.status },
     );
+
+  // --- CHANNEL ACCESS CHECK ---
+  const channelAccess = await verifyChannelAccess(
+    userId,
+    channelId,
+    access.permissions,
+  );
+  if (!channelAccess.allowed) {
+    return NextResponse.json(
+      { error: "Forbidden", code: channelAccess.code },
+      { status: channelAccess.status },
+    );
+  }
 
   const now = Date.now();
 

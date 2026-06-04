@@ -4,7 +4,10 @@ import { ConvexHttpClient } from "convex/browser";
 import { randomUUID } from "crypto";
 import { type NextRequest, NextResponse } from "next/server";
 import { initTeamspaceDB, turso } from "@/lib/turso";
-import { verifyProjectAccess } from "@/modules/workspace/teamspace/lib/auth";
+import {
+  verifyProjectAccess,
+  verifyChannelAccess,
+} from "@/modules/workspace/teamspace/lib/auth";
 import {
   extractUrls,
   unfurlUrl,
@@ -36,13 +39,26 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  // --- ACCESS CHECK ---
+  // --- PROJECT ACCESS CHECK ---
   const access = await verifyProjectAccess(userId, projectId);
   if ("error" in access)
     return NextResponse.json(
       { error: access.error },
       { status: access.status },
     );
+
+  // --- CHANNEL ACCESS CHECK (blocks non-members from private channels) ---
+  const channelAccess = await verifyChannelAccess(
+    userId,
+    channelId,
+    access.permissions,
+  );
+  if (!channelAccess.allowed) {
+    return NextResponse.json(
+      { error: "Forbidden", code: channelAccess.code },
+      { status: channelAccess.status },
+    );
+  }
 
   await initTeamspaceDB();
 
@@ -188,7 +204,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // --- ACCESS CHECK & SERVER-SIDE PROFILE ---
+  // --- PROJECT ACCESS CHECK & SERVER-SIDE PROFILE ---
   const access = await verifyProjectAccess(userId, projectId);
   if ("error" in access)
     return NextResponse.json(
@@ -199,14 +215,20 @@ export async function POST(req: NextRequest) {
   const { user } = access;
 
   const senderUserId = isAgent && agentName ? agentName.toLowerCase() : userId;
-  const senderUserName = isAgent && agentName ? (agentName.toLowerCase() === "kaya" ? "Kaya" : "Harry") : user.name;
-  const senderUserImage = isAgent && agentName ? `/${agentName.toLowerCase()}.svg` : user.avatarUrl;
+  const senderUserName =
+    isAgent && agentName
+      ? agentName.toLowerCase() === "kaya"
+        ? "Kaya"
+        : "Harry"
+      : user.name;
+  const senderUserImage =
+    isAgent && agentName ? `/${agentName.toLowerCase()}.svg` : user.avatarUrl;
 
   await initTeamspaceDB();
 
   // --- CHANNEL TYPE & PERMISSION VERIFICATION ---
   const channelRes = await turso.execute({
-    sql: `SELECT name, type FROM ts_channels WHERE id = ? AND project_id = ?`,
+    sql: `SELECT name, type, created_by FROM ts_channels WHERE id = ? AND project_id = ?`,
     args: [channelId, projectId],
   });
 
@@ -216,6 +238,21 @@ export async function POST(req: NextRequest) {
 
   const channelName = channelRes.rows[0].name as string;
   const channelType = channelRes.rows[0].type as string;
+  const channelCreatedBy = channelRes.rows[0].created_by as string;
+
+  // Private channel access gate
+  const channelAccess = await verifyChannelAccess(
+    userId,
+    channelId,
+    access.permissions,
+  );
+  if (!channelAccess.allowed) {
+    return NextResponse.json(
+      { error: "Forbidden", code: channelAccess.code },
+      { status: channelAccess.status },
+    );
+  }
+
   if (channelType === "announcement") {
     if (!access.permissions.isOwner && !access.permissions.isAdmin) {
       return NextResponse.json(
@@ -295,11 +332,18 @@ export async function POST(req: NextRequest) {
     reply_count: 0,
   };
 
-  // Publish to Ably in real-time
-  const ablyChannel = ably.channels.get(`teamspace:${channelId}`);
+  // Publish to Ably — private channels use an isolated topic to prevent
+  // non-members from receiving messages even if they somehow subscribe.
+  const ablyTopicName =
+    channelType === "private"
+      ? `private:teamspace:${channelId}`
+      : `teamspace:${channelId}`;
+  const ablyChannel = ably.channels.get(ablyTopicName);
   await ablyChannel.publish("message.new", message);
 
-  // Publish lightweight message metadata to project-wide messages channel for unread count tracking
+  // Publish lightweight metadata to the project-wide channel for unread tracking.
+  // Non-members will receive this event but the frontend guards against bumping
+  // the unread count for channels with has_access=0.
   try {
     const projectMsgsChannel = ably.channels.get(
       `project:${projectId}:messages`,
@@ -307,6 +351,7 @@ export async function POST(req: NextRequest) {
     await projectMsgsChannel.publish("message.new", {
       id,
       channel_id: channelId,
+      channel_type: channelType,
       user_id: userId,
       created_at: now,
     });
@@ -340,13 +385,30 @@ export async function POST(req: NextRequest) {
         });
       };
 
+      // For private channels: restrict eligible recipients to channel members only.
+      // This prevents @everyone from notifying people who can't see the channel.
+      let eligibleMembers = projectMembers;
+      if (channelType === "private") {
+        const memberRes = await turso.execute({
+          sql: "SELECT user_id FROM ts_private_channel_members WHERE channel_id = ?",
+          args: [channelId],
+        });
+        const allowedUserIds = new Set(
+          memberRes.rows.map((r) => r.user_id as string),
+        );
+        allowedUserIds.add(channelCreatedBy);
+        eligibleMembers = projectMembers.filter(
+          (m: any) => m.clerkUserId && allowedUserIds.has(m.clerkUserId),
+        );
+      }
+
       // Collect mentioned members, excluding the sender
       const mentionedMembers = isEveryoneMentioned
-        ? projectMembers.filter((m: any) => m.clerkUserId !== userId)
-        : projectMembers.filter((member: any) => {
-          if (member.clerkUserId === userId) return false;
-          return isMemberMentioned(member, content);
-        });
+        ? eligibleMembers.filter((m: any) => m.clerkUserId !== userId)
+        : eligibleMembers.filter((member: any) => {
+            if (member.clerkUserId === userId) return false;
+            return isMemberMentioned(member, content);
+          });
 
       if (mentionedMembers.length > 0) {
         // Get the Clerk session token to authenticate the Convex mutation
@@ -385,7 +447,8 @@ export async function POST(req: NextRequest) {
                 messageId: id,
                 snippet: (() => {
                   let text = (content ?? "").trim();
-                  const uploadRegex = /!?\[[^\]]+\]\((https?:\/\/[^\s)]+(?:amazonaws\.com|wekraft-saas-upload-s3)[^\s)]*)\)/g;
+                  const uploadRegex =
+                    /!?\[[^\]]+\]\((https?:\/\/[^\s)]+(?:amazonaws\.com|wekraft-saas-upload-s3)[^\s)]*)\)/g;
                   text = text.replace(uploadRegex, "uploaded doc");
                   return text.substring(0, 120);
                 })(),

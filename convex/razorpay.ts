@@ -21,6 +21,7 @@ export const updatePlanServerSideInternal = internalMutation({
       subscriptionProvider: "razorpay",
       currentPeriodEnd: args.currentPeriodEnd,
       cancelAtPeriodEnd: false, // Reset this so the UI doesn't think the new plan is cancelling
+      planExpiry: null, // Clear any old coupon/manual expiry so the new subscription is active
       updatedAt: Date.now(),
     });
 
@@ -57,6 +58,7 @@ export const handleSubscriptionUpdateInternal = internalMutation({
     const patchPayload: any = {
       accountType: newPlan,
       subscriptionStatus: args.status,
+      planExpiry: null, // Clear any old coupon/manual expiry so the new subscription is active
       updatedAt: Date.now(),
     };
 
