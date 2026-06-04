@@ -48,8 +48,14 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
   const [targetMessageId, setTargetMessageId] = useState<string | null>(null);
   const [showMembers, setShowMembers] = useState(false);
 
-  const { channels: channelsList, loading, createChannel, updateChannel, deleteChannel, markChannelAsRead } =
-    useChannels(projectId, clerkUserId, activeChannel?.id);
+  const {
+    channels: channelsList,
+    loading,
+    createChannel,
+    updateChannel,
+    deleteChannel,
+    markChannelAsRead,
+  } = useChannels(projectId, clerkUserId, activeChannel?.id);
 
   // Auto-select default channel once loaded
   const resolvedChannel =
@@ -73,7 +79,13 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
         setTargetMessageId(urlMessageId);
       }
     }
-  }, [urlChannelId, urlMessageId, channelsList, activeChannel?.id, targetMessageId]);
+  }, [
+    urlChannelId,
+    urlMessageId,
+    channelsList,
+    activeChannel?.id,
+    targetMessageId,
+  ]);
 
   // Mark channel as read when channel changes
   useEffect(() => {
@@ -95,6 +107,7 @@ export function TeamspaceView({ projectSlug, projectId }: Props) {
         channels={channelsList}
         loading={loading}
         activeChannelId={resolvedChannel?.id ?? null}
+        currentUserId={currentUserId}
         onSelect={(ch) => {
           setActiveChannel(ch);
         }}
