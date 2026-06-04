@@ -168,7 +168,7 @@ export default defineSchema({
     userImage: v.optional(v.string()),
     message: v.optional(v.string()),
     source: v.union(v.literal("invited"), v.literal("manual")),
-    role: v.optional(v.union(v.literal("admin"), v.literal("member"))),
+    role: v.optional(v.union(v.literal("admin"), v.literal("member"), v.literal("viewer"))),
     status: v.union(
       v.literal("pending"),
       v.literal("accepted"),

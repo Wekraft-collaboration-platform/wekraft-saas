@@ -133,10 +133,11 @@ const TaskPage = () => {
   const isOwner = currentUser?._id === project?.ownerId;
   const userMember = members?.find((m) => m.userId === currentUser?._id);
   const isAdmin = userMember?.AccessRole === "admin";
+  const isViewer = userMember?.AccessRole === "viewer";
 
   const canCreate =
-    isOwner || isAdmin || projectDetails?.memberCanCreate !== false;
-  const canDelete = isOwner || isAdmin;
+    !isViewer && (isOwner || isAdmin || projectDetails?.memberCanCreate !== false);
+  const canDelete = !isViewer && (isOwner || isAdmin);
 
   const deleteTasks = useMutation(api.workspace.deleteTasks);
 
@@ -454,6 +455,7 @@ const TaskPage = () => {
                   tasks={tasks || []}
                   projectId={project._id as Id<"projects">}
                   taskLimit={taskLimit}
+                  isViewer={isViewer}
                 />
               </div>
             )}

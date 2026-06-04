@@ -184,6 +184,7 @@ export const IssueKanbanUI = ({
   onIssueClick,
 }: IssueKanbanUIProps) => {
   const { open: sidebarOpen } = useSidebar();
+  const { isViewer } = useProjectPermissions(projectId);
   const issues = useQuery(api.issue.getIssuesForKanban, { projectId }) ?? [];
 
   const updateIssueStatus = useMutation(
@@ -268,6 +269,13 @@ export const IssueKanbanUI = ({
 
     const issue = issues.find((i) => i._id === activeIssueId);
     if (issue && newStatus && issue.status !== newStatus) {
+      if (isViewer) {
+        toast.error("Viewer is not allowed to update items.");
+        setActiveId(null);
+        setActiveIssue(null);
+        return;
+      }
+
       toast.promise(
         updateIssueStatus({
           issueId: issue._id as Id<"issues">,
@@ -312,6 +320,7 @@ export const IssueKanbanUI = ({
             repoFullName={repoFullName}
             ownerClerkId={ownerClerkId}
             onIssueClick={onIssueClick}
+            isViewer={isViewer}
           />
         ))}
         <DragOverlay>
@@ -338,6 +347,7 @@ interface IssueColumnProps {
   repoFullName?: string;
   ownerClerkId?: string;
   onIssueClick?: (issue: Issue) => void;
+  isViewer?: boolean;
 }
 
 const IssueColumn = ({
@@ -350,6 +360,7 @@ const IssueColumn = ({
   repoFullName,
   ownerClerkId,
   onIssueClick,
+  isViewer,
 }: IssueColumnProps) => {
   const { setNodeRef } = useSortable({
     id: column.id,
@@ -412,7 +423,7 @@ const IssueColumn = ({
         </div>
       </div>
 
-      {!isCollapsed && (
+      {!isCollapsed && !isViewer && (
         <div className="px-3">
           <CreateIssueDialog
             projectId={projectId}
@@ -508,7 +519,7 @@ export const IssueCard = ({
   issue: Issue;
   isOverlay?: boolean;
 }) => {
-  const { isPower } = useProjectPermissions(issue.projectId);
+  const { isPower, isViewer: isViewerCard } = useProjectPermissions(issue.projectId);
   const updateIssueStatus = useMutation(api.issue.updateIssueStatus);
   const deleteIssue = useMutation(api.issue.deleteIssue);
 
@@ -523,6 +534,10 @@ export const IssueCard = ({
 
   const handleMarkAsClosed = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (isViewerCard) {
+      toast.error("Viewer is not allowed to update items.");
+      return;
+    }
     toast.promise(
       updateIssueStatus({
         issueId: issue._id,
@@ -538,6 +553,10 @@ export const IssueCard = ({
 
   const handleMarkAsReopened = async (e: React.MouseEvent) => {
     e.stopPropagation();
+    if (isViewerCard) {
+      toast.error("Viewer is not allowed to update items.");
+      return;
+    }
     toast.promise(
       updateIssueStatus({
         issueId: issue._id,
@@ -553,7 +572,7 @@ export const IssueCard = ({
 
   const handleDelete = async (e: React.MouseEvent) => {
     e.stopPropagation();
-    if (!isPower) return;
+    if (isViewerCard || !isPower) return;
     toast.promise(
       deleteIssue({
         issueId: issue._id,

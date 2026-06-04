@@ -306,10 +306,10 @@ export default function MeetPage() {
 
   // ── Project data + permissions ───────────────────────────────────────────
   const project = useQuery(api.project.getProjectBySlug, { slug });
-  const { isOwner, isAdmin, isLoading: permLoading } = useProjectPermissions(
+  const { isOwner, isAdmin, isViewer, isLoading: permLoading } = useProjectPermissions(
     project?._id as Id<"projects"> | undefined
   );
-  const canStart = isOwner || isAdmin;
+  const canStart = !isViewer && (isOwner || isAdmin);
 
   // ── Meeting history ──────────────────────────────────────────────────────
   const meetings = useQuery(
@@ -441,33 +441,42 @@ export default function MeetPage() {
           </div>
 
           <div className="flex items-center gap-3">
-            <Button
-              variant="outline"
-              size="sm"
-              className="text-xs border-zinc-800 hover:bg-zinc-900"
-              onClick={() => setJoinDialogOpen(true)}
-            >
-              <Link2 className="w-4 h-4 mr-2" />
-              Join with ID
-            </Button>
+            {!isViewer && (
+              <>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs border-zinc-800 hover:bg-zinc-900"
+                  onClick={() => setJoinDialogOpen(true)}
+                >
+                  <Link2 className="w-4 h-4 mr-2" />
+                  Join with ID
+                </Button>
 
-            <Button
-              size="sm"
-              className="text-xs bg-zinc-100 hover:bg-zinc-200 text-zinc-950 font-medium"
-              onClick={() => setScheduleDialogOpen(true)}
-            >
-              <Calendar className="w-4 h-4 mr-2" />
-              Schedule Meet
-            </Button>
+                <Button
+                  size="sm"
+                  className="text-xs bg-zinc-100 hover:bg-zinc-200 text-zinc-950 font-medium"
+                  onClick={() => setScheduleDialogOpen(true)}
+                >
+                  <Calendar className="w-4 h-4 mr-2" />
+                  Schedule Meet
+                </Button>
 
-            <Button
-              size="sm"
-              className="text-xs bg-zinc-100 hover:bg-zinc-200 text-zinc-950 font-medium"
-              onClick={handleNewMeeting}
-            >
-              <Plus className="w-4 h-4 mr-2" />
-              Start Instant Meeting
-            </Button>
+                <Button
+                  size="sm"
+                  className="text-xs bg-zinc-100 hover:bg-zinc-200 text-zinc-950 font-medium"
+                  onClick={handleNewMeeting}
+                >
+                  <Plus className="w-4 h-4 mr-2" />
+                  Start Instant Meeting
+                </Button>
+              </>
+            )}
+            {isViewer && (
+              <span className="text-[11px] text-zinc-500 bg-zinc-800/50 border border-zinc-800 px-3 py-1.5 rounded-md">
+                View-only access
+              </span>
+            )}
           </div>
         </header>
 
@@ -519,35 +528,37 @@ export default function MeetPage() {
           <>
             {/* Cards grid */}
             <div className="grid grid-cols-3 gap-6">
-              {/* Creator Box (Admin/Owner only) */}
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button
-                    onClick={handleNewMeeting}
-                    disabled={isCreating || permLoading || !canStart}
-                    className={cn(
-                      "group relative flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed p-6 transition-all duration-200 min-h-[160px]",
-                      canStart
-                        ? "border-zinc-700 bg-sidebar/70 hover:border-zinc-600 hover:bg-zinc-900/70 cursor-pointer"
-                        : "border-zinc-800/40 bg-zinc-950/5 opacity-40 cursor-not-allowed"
-                    )}
-                  >
-                    {isCreating ? (
-                      <Loader2 className="w-6 h-6 text-primary animate-spin" />
-                    ) : (
-                      <Plus className={cn("w-6 h-6 transition-colors text-white")} />
-                    )}
-                    <span className={cn("text-xs font-medium transition-colors text-white")}>
-                      {isCreating ? "Starting..." : "Start Instant Meeting"}
-                    </span>
-                  </button>
-                </TooltipTrigger>
-                {!canStart && !permLoading && (
-                  <TooltipContent side="top" className="bg-zinc-900 border border-zinc-800 text-zinc-200">
-                    Only project owners and admins can start instant meetings.
-                  </TooltipContent>
-                )}
-              </Tooltip>
+              {/* Creator Box (Admin/Owner only — hidden for viewers) */}
+              {!isViewer && (
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <button
+                      onClick={handleNewMeeting}
+                      disabled={isCreating || permLoading || !canStart}
+                      className={cn(
+                        "group relative flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed p-6 transition-all duration-200 min-h-[160px]",
+                        canStart
+                          ? "border-zinc-700 bg-sidebar/70 hover:border-zinc-600 hover:bg-zinc-900/70 cursor-pointer"
+                          : "border-zinc-800/40 bg-zinc-950/5 opacity-40 cursor-not-allowed"
+                      )}
+                    >
+                      {isCreating ? (
+                        <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                      ) : (
+                        <Plus className={cn("w-6 h-6 transition-colors text-white")} />
+                      )}
+                      <span className={cn("text-xs font-medium transition-colors text-white")}>
+                        {isCreating ? "Starting..." : "Start Instant Meeting"}
+                      </span>
+                    </button>
+                  </TooltipTrigger>
+                  {!canStart && !permLoading && (
+                    <TooltipContent side="top" className="bg-zinc-900 border border-zinc-800 text-zinc-200">
+                      Only project owners and admins can start instant meetings.
+                    </TooltipContent>
+                  )}
+                </Tooltip>
+              )}
 
               {meetings?.map((m) => (
                 <MeetCard key={m._id} meet={m} slug={slug} />

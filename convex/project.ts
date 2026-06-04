@@ -554,7 +554,7 @@ export const createJoinRequest = mutation({
     projectId: v.id("projects"),
     message: v.optional(v.string()),
     source: v.union(v.literal("invited"), v.literal("manual")),
-    role: v.optional(v.union(v.literal("admin"), v.literal("member"))),
+    role: v.optional(v.union(v.literal("admin"), v.literal("member"), v.literal("viewer"))),
   },
   handler: async (ctx, args) => {
     const identity = await ctx.auth.getUserIdentity();
