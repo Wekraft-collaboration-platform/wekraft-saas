@@ -173,6 +173,7 @@ export function MessageFeed({
     messages,
     loading,
     typingUsers,
+    accessDenied,
     sendMessage,
     setTypingStatus,
     editMessage,
@@ -188,6 +189,8 @@ export function MessageFeed({
     projectId,
     currentUserId,
     currentUserName,
+    undefined,
+    channel?.type,
   );
 
   const lastFeedMessage =
@@ -578,8 +581,10 @@ export function MessageFeed({
   };
 
   const isAnnouncement = channel?.type === "announcement";
-  const canSend = !isAnnouncement || isPower;
-
+  const isPrivate = channel?.type === "private";
+  const canSend =
+    (!isAnnouncement && !accessDenied) ||
+    (isAnnouncement && isPower && !accessDenied);
 
   // null = still loading; true/false = owner plan resolved
   const ownerIsPro = project ? project.ownerAccountType === "pro" : null;
@@ -619,7 +624,7 @@ export function MessageFeed({
               <h2 className="font-semibold text-xl leading-tight text-foreground truncate tracking-tight capitalize">
                 {channel.name}
               </h2>
-              {isAnnouncement && (
+              {((isAnnouncement && !isPower) || (isPrivate && channel.has_access === 0)) && (
                 <Lock className="h-4 w-4 text-muted-foreground" />
               )}
             </div>
@@ -1004,296 +1009,320 @@ export function MessageFeed({
         </div>
       </div>
 
-      {/* Messages area */}
-      <div
-        ref={scrollRef}
-        className="flex-1 overflow-y-auto overflow-x-hidden py-4 bg-accent/5"
-        style={{
-          backgroundImage:
-            "radial-gradient(circle at 2px 2px, rgba(0,0,0,0.02) 1px, transparent 0)",
-          backgroundSize: "24px 24px",
-        }}
-        onScroll={handleScroll}
-      >
-        {/* Load more */}
-        {hasMore && (
-          <div className="flex justify-center py-2">
-            <Button
-              size="sm"
-              variant="outline"
-              onClick={loadMore}
-              className="text-xs h-7"
-            >
-              <ChevronUp className="h-3 w-3 mr-1" />
-              Load earlier messages
-            </Button>
+      {channel?.has_access === 0 || accessDenied ? (
+        <div
+          className="flex-1 flex flex-col items-center justify-center h-full gap-3 text-center px-8 bg-accent/5"
+          style={{
+            backgroundImage:
+              "radial-gradient(circle at 2px 2px, rgba(0,0,0,0.02) 1px, transparent 0)",
+            backgroundSize: "24px 24px",
+          }}
+        >
+          <div className="h-12 w-12 rounded-full bg-accent flex items-center justify-center">
+            <Lock className="h-6 w-6 text-muted-foreground" />
           </div>
-        )}
+          <div>
+            <p className="font-semibold text-sm">Access Restricted</p>
+            <p className="text-xs text-muted-foreground mt-1 max-w-sm leading-relaxed">
+              You don't have access to this channel. Please contact admin or
+              owner to add you.
+            </p>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Messages area */}
+          <div
+            ref={scrollRef}
+            className="flex-1 overflow-y-auto overflow-x-hidden py-4 bg-accent/5"
+            style={{
+              backgroundImage:
+                "radial-gradient(circle at 2px 2px, rgba(0,0,0,0.02) 1px, transparent 0)",
+              backgroundSize: "24px 24px",
+            }}
+            onScroll={handleScroll}
+          >
+            {/* Load more */}
+            {hasMore && (
+              <div className="flex justify-center py-2">
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={loadMore}
+                  className="text-xs h-7"
+                >
+                  <ChevronUp className="h-3 w-3 mr-1" />
+                  Load earlier messages
+                </Button>
+              </div>
+            )}
 
-        {loading && messages.length === 0 ? (
-          <div className="px-4 space-y-4 py-4">
-            {[...Array(5)].map((_, i) => (
-              <div key={i} className="flex gap-3">
-                <Skeleton className="h-8 w-8 rounded-full shrink-0" />
-                <div className="flex-1 space-y-2">
-                  <Skeleton className="h-3 w-28" />
-                  <Skeleton className="h-4 w-3/4" />
-                  {i % 2 === 0 && <Skeleton className="h-4 w-1/2" />}
+            {loading && messages.length === 0 ? (
+              <div className="px-4 space-y-4 py-4">
+                {[...Array(5)].map((_, i) => (
+                  <div key={i} className="flex gap-3">
+                    <Skeleton className="h-8 w-8 rounded-full shrink-0" />
+                    <div className="flex-1 space-y-2">
+                      <Skeleton className="h-3 w-28" />
+                      <Skeleton className="h-4 w-3/4" />
+                      {i % 2 === 0 && <Skeleton className="h-4 w-1/2" />}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : messages.length === 0 ? (
+              <div className="flex flex-col items-center justify-center h-full gap-3 text-center px-8">
+                <div className="h-12 w-12 rounded-full bg-accent flex items-center justify-center">
+                  <ChannelIcon className="h-6 w-6 text-muted-foreground" />
+                </div>
+                <div>
+                  <p className="font-semibold text-sm">
+                    Welcome to #{channel.name}!
+                  </p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {channel.description ||
+                      "This is the beginning of this channel."}
+                  </p>
                 </div>
               </div>
-            ))}
-          </div>
-        ) : messages.length === 0 ? (
-          <div className="flex flex-col items-center justify-center h-full gap-3 text-center px-8">
-            <div className="h-12 w-12 rounded-full bg-accent flex items-center justify-center">
-              <ChannelIcon className="h-6 w-6 text-muted-foreground" />
-            </div>
-            <div>
-              <p className="font-semibold text-sm">
-                Welcome to #{channel.name}!
-              </p>
-              <p className="text-xs text-muted-foreground mt-1">
-                {channel.description ||
-                  "This is the beginning of this channel."}
-              </p>
-            </div>
-          </div>
-        ) : (
-          <div className="pb-2">
-            {withDividers.map((item, i) => {
-              if ("type" in item && item.type === "divider") {
-                return (
-                  <DateDivider
-                    key={`divider-${item.date}`}
-                    timestamp={item.date}
+            ) : (
+              <div className="pb-2">
+                {withDividers.map((item, i) => {
+                  if ("type" in item && item.type === "divider") {
+                    return (
+                      <DateDivider
+                        key={`divider-${item.date}`}
+                        timestamp={item.date}
+                      />
+                    );
+                  }
+                  const msg = item as Message;
+                  const prevMsg =
+                    i > 0 ? (withDividers[i - 1] as Message) : null;
+                  const isGrouped =
+                    prevMsg &&
+                    !("type" in prevMsg) &&
+                    prevMsg.user_id === msg.user_id &&
+                    msg.created_at - prevMsg.created_at < 5 * 60 * 1000;
+
+                  return (
+                    <MessageItem
+                      key={msg.id}
+                      message={msg}
+                      isGrouped={!!isGrouped}
+                      currentUserId={currentUserId}
+                      isPinned={msg.is_pinned === 1}
+                      canModerateAll={isPower}
+                      onReply={(m) => {
+                        setReplyingTo(m);
+                      }}
+                      onEdit={editMessage}
+                      onDelete={deleteMessage}
+                      onReact={toggleReaction}
+                      onPin={togglePin}
+                      onPollVote={togglePollVote}
+                      onEditPoll={editPoll}
+                      highlightTerm={searchQuery}
+                      projectMembers={projectMembers}
+                      channelReads={channelReads}
+                      repoFullName={project?.repoFullName}
+                    />
+                  );
+                })}
+
+                {/* Optimistic Media Uploads */}
+                {optimisticUploads.map((upload) => {
+                  const isImage = upload.file.type.startsWith("image/");
+                  const mdLink = isImage
+                    ? `![${upload.file.name}](${upload.previewUrl})`
+                    : `[${upload.file.name}](${upload.previewUrl})`;
+                  const msgContent = upload.caption
+                    ? `${mdLink}\n\n${upload.caption}`
+                    : mdLink;
+
+                  const msg: Message = {
+                    id: upload.id,
+                    channel_id: channel!.id,
+                    project_id: projectId,
+                    user_id: currentUserId,
+                    user_name: currentUserName || "You",
+                    user_image: currentUserImage || null,
+                    content: msgContent,
+                    created_at: Date.now(),
+                    edited_at: null,
+                    reactions: [],
+                    thread_parent_id: replyingTo?.id || null,
+                  };
+
+                  return (
+                    <MessageItem
+                      key={msg.id}
+                      message={msg}
+                      isGrouped={false}
+                      currentUserId={currentUserId}
+                      isPinned={false}
+                      canModerateAll={false}
+                      onReply={() => {}}
+                      onEdit={async () => {}}
+                      onDelete={async () => {}}
+                      onReact={async () => {}}
+                      onPin={async () => {}}
+                      onPollVote={async () => {}}
+                      onEditPoll={async () => {}}
+                      projectMembers={projectMembers}
+                      channelReads={channelReads}
+                      repoFullName={project?.repoFullName}
+                    />
+                  );
+                })}
+
+                {showKayaTemp && (
+                  <MessageItem
+                    key="temp-kaya-streaming"
+                    // @ts-ignore
+                    message={{
+                      id: "temp-kaya-streaming",
+                      channel_id: channel!.id,
+                      project_id: projectId,
+                      user_id: "kaya",
+                      user_name: "Kaya",
+                      user_image: "/kaya.svg",
+                      content: getTempMsgContent(
+                        "kaya",
+                        kayaAssistantMsg,
+                        kayaToolStatus,
+                      ),
+                      created_at: Date.now(),
+                      reactions: [],
+                      thread_parent_id: replyingTo?.id || null,
+                    }}
+                    isGrouped={false}
+                    currentUserId={currentUserId}
+                    isPinned={false}
+                    canModerateAll={false}
+                    onReply={() => {}}
+                    onEdit={async () => {}}
+                    onDelete={async () => {}}
+                    onReact={async () => {}}
+                    onPin={() => {}}
+                    onPollVote={async () => {}}
+                    onEditPoll={async () => {}}
+                    projectMembers={projectMembers}
+                    channelReads={channelReads}
+                    repoFullName={project?.repoFullName}
+                    isShimmering={!kayaAssistantMsg?.text}
                   />
-                );
-              }
-              const msg = item as Message;
-              const prevMsg = i > 0 ? (withDividers[i - 1] as Message) : null;
-              const isGrouped =
-                prevMsg &&
-                !("type" in prevMsg) &&
-                prevMsg.user_id === msg.user_id &&
-                msg.created_at - prevMsg.created_at < 5 * 60 * 1000;
+                )}
 
-              return (
-                <MessageItem
-                  key={msg.id}
-                  message={msg}
-                  isGrouped={!!isGrouped}
-                  currentUserId={currentUserId}
-                  isPinned={msg.is_pinned === 1}
-                  canModerateAll={isPower}
-                  onReply={(m) => {
-                    setReplyingTo(m);
-                  }}
-                  onEdit={editMessage}
-                  onDelete={deleteMessage}
-                  onReact={toggleReaction}
-                  onPin={togglePin}
-                  onPollVote={togglePollVote}
-                  onEditPoll={editPoll}
-                  highlightTerm={searchQuery}
-                  projectMembers={projectMembers}
-                  channelReads={channelReads}
-                  repoFullName={project?.repoFullName}
-                />
-              );
-            })}
+                {showHarryTemp && (
+                  <MessageItem
+                    key="temp-harry-streaming"
+                    // @ts-ignore
+                    message={{
+                      id: "temp-harry-streaming",
+                      channel_id: channel!.id,
+                      project_id: projectId,
+                      user_id: "harry",
+                      user_name: "Harry",
+                      user_image: "/harry.svg",
+                      content: getTempMsgContent(
+                        "harry",
+                        harryAssistantMsg,
+                        harryToolStatus,
+                      ),
+                      created_at: Date.now(),
+                      reactions: [],
+                      thread_parent_id: replyingTo?.id || null,
+                    }}
+                    isGrouped={false}
+                    currentUserId={currentUserId}
+                    isPinned={false}
+                    canModerateAll={false}
+                    onReply={() => {}}
+                    onEdit={async () => {}}
+                    onDelete={async () => {}}
+                    onReact={async () => {}}
+                    onPin={() => {}}
+                    onPollVote={async () => {}}
+                    onEditPoll={async () => {}}
+                    projectMembers={projectMembers}
+                    channelReads={channelReads}
+                    repoFullName={project?.repoFullName}
+                    isShimmering={!harryAssistantMsg?.text}
+                  />
+                )}
 
-            {/* Optimistic Media Uploads */}
-            {optimisticUploads.map((upload) => {
-              const isImage = upload.file.type.startsWith("image/");
-              const mdLink = isImage
-                ? `![${upload.file.name}](${upload.previewUrl})`
-                : `[${upload.file.name}](${upload.previewUrl})`;
-              const msgContent = upload.caption
-                ? `${mdLink}\n\n${upload.caption}`
-                : mdLink;
-
-              const msg: Message = {
-                id: upload.id,
-                channel_id: channel!.id,
-                project_id: projectId,
-                user_id: currentUserId,
-                user_name: currentUserName || "You",
-                user_image: currentUserImage || null,
-                content: msgContent,
-                created_at: Date.now(),
-                edited_at: null,
-                reactions: [],
-                thread_parent_id: replyingTo?.id || null,
-              };
-
-              return (
-                <MessageItem
-                  key={msg.id}
-                  message={msg}
-                  isGrouped={false}
-                  currentUserId={currentUserId}
-                  isPinned={false}
-                  canModerateAll={false}
-                  onReply={() => { }}
-                  onEdit={async () => { }}
-                  onDelete={async () => { }}
-                  onReact={async () => { }}
-                  onPin={async () => { }}
-                  onPollVote={async () => { }}
-                  onEditPoll={async () => { }}
-                  projectMembers={projectMembers}
-                  channelReads={channelReads}
-                  repoFullName={project?.repoFullName}
-                />
-              );
-            })}
-
-            {showKayaTemp && (
-              <MessageItem
-                key="temp-kaya-streaming"
-                // @ts-ignore
-                message={{
-                  id: "temp-kaya-streaming",
-                  channel_id: channel!.id,
-                  project_id: projectId,
-                  user_id: "kaya",
-                  user_name: "Kaya",
-                  user_image: "/kaya.svg",
-                  content: getTempMsgContent(
-                    "kaya",
-                    kayaAssistantMsg,
-                    kayaToolStatus,
-                  ),
-                  created_at: Date.now(),
-                  reactions: [],
-                  thread_parent_id: replyingTo?.id || null,
-                }}
-                isGrouped={false}
-                currentUserId={currentUserId}
-                isPinned={false}
-                canModerateAll={false}
-                onReply={() => { }}
-                onEdit={async () => { }}
-                onDelete={async () => { }}
-                onReact={async () => { }}
-                onPin={() => { }}
-                onPollVote={async () => { }}
-                onEditPoll={async () => { }}
-                projectMembers={projectMembers}
-                channelReads={channelReads}
-                repoFullName={project?.repoFullName}
-                isShimmering={!kayaAssistantMsg?.text}
-              />
-            )}
-
-            {showHarryTemp && (
-              <MessageItem
-                key="temp-harry-streaming"
-                // @ts-ignore
-                message={{
-                  id: "temp-harry-streaming",
-                  channel_id: channel!.id,
-                  project_id: projectId,
-                  user_id: "harry",
-                  user_name: "Harry",
-                  user_image: "/harry.svg",
-                  content: getTempMsgContent(
-                    "harry",
-                    harryAssistantMsg,
-                    harryToolStatus,
-                  ),
-                  created_at: Date.now(),
-                  reactions: [],
-                  thread_parent_id: replyingTo?.id || null,
-                }}
-                isGrouped={false}
-                currentUserId={currentUserId}
-                isPinned={false}
-                canModerateAll={false}
-                onReply={() => { }}
-                onEdit={async () => { }}
-                onDelete={async () => { }}
-                onReact={async () => { }}
-                onPin={() => { }}
-                onPollVote={async () => { }}
-                onEditPoll={async () => { }}
-                projectMembers={projectMembers}
-                channelReads={channelReads}
-                repoFullName={project?.repoFullName}
-                isShimmering={!harryAssistantMsg?.text}
-              />
-            )}
-
-            <div ref={bottomRef} />
-          </div>
-        )}
-      </div>
-
-      {/* Typing indicator */}
-      <div className="h-6 px-6 mb-1">
-        <AnimatePresence>
-          {typingUsers.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: 5 }}
-              animate={{ opacity: 1, y: 0 }}
-              exit={{ opacity: 0, y: 5 }}
-              className="flex items-center gap-2 text-muted-foreground"
-            >
-              <div className="flex gap-1">
-                <span className="h-1 w-1 bg-muted-foreground/50 rounded-full animate-bounce [animation-delay:-0.3s]" />
-                <span className="h-1 w-1 bg-muted-foreground/50 rounded-full animate-bounce [animation-delay:-0.15s]" />
-                <span className="h-1 w-1 bg-muted-foreground/50 rounded-full animate-bounce" />
+                <div ref={bottomRef} />
               </div>
-              <span className="text-[11px] italic font-medium">
-                {typingUsers.length <= 3
-                  ? `${typingUsers.map((u) => u.userName).join(", ")} ${typingUsers.length === 1 ? "is" : "are"} typing...`
-                  : "Several people are typing..."}
-              </span>
-            </motion.div>
-          )}
-        </AnimatePresence>
-      </div>
+            )}
+          </div>
 
-      {/* Composer */}
-      <MessageComposer
-        channelName={channel.name}
-        projectId={projectId}
-        replyingTo={replyingTo}
-        onClearReply={() => setReplyingTo(null)}
-        onSend={handleSend}
-        onUploadMedia={handleUploadMedia}
-        onTyping={setTypingStatus}
-        disabled={!canSend}
-        isAnnouncement={isAnnouncement}
-        currentUserId={currentUserId}
-        projectSlug={projectSlug}
-        ownerIsPro={ownerIsPro}
-      />
+          {/* Typing indicator */}
+          <div className="h-6 px-6 mb-1">
+            <AnimatePresence>
+              {typingUsers.length > 0 && (
+                <motion.div
+                  initial={{ opacity: 0, y: 5 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  exit={{ opacity: 0, y: 5 }}
+                  className="flex items-center gap-2 text-muted-foreground"
+                >
+                  <div className="flex gap-1">
+                    <span className="h-1 w-1 bg-muted-foreground/50 rounded-full animate-bounce [animation-delay:-0.3s]" />
+                    <span className="h-1 w-1 bg-muted-foreground/50 rounded-full animate-bounce [animation-delay:-0.15s]" />
+                    <span className="h-1 w-1 bg-muted-foreground/50 rounded-full animate-bounce" />
+                  </div>
+                  <span className="text-[11px] italic font-medium">
+                    {typingUsers.length <= 3
+                      ? `${typingUsers.map((u) => u.userName).join(", ")} ${typingUsers.length === 1 ? "is" : "are"} typing...`
+                      : "Several people are typing..."}
+                  </span>
+                </motion.div>
+              )}
+            </AnimatePresence>
+          </div>
 
+          {/* Composer */}
+          <MessageComposer
+            channelName={channel.name}
+            projectId={projectId}
+            replyingTo={replyingTo}
+            onClearReply={() => setReplyingTo(null)}
+            onSend={handleSend}
+            onUploadMedia={handleUploadMedia}
+            onTyping={setTypingStatus}
+            disabled={!canSend}
+            isAnnouncement={isAnnouncement}
+            currentUserId={currentUserId}
+            projectSlug={projectSlug}
+            ownerIsPro={ownerIsPro}
+          />
 
-      {/* Jump to bottom FAB */}
-      <AnimatePresence>
-        {!atBottom && messages.length > 0 && (
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, y: 10 }}
-            animate={{ opacity: 1, scale: 1, y: 0 }}
-            exit={{ opacity: 0, scale: 0.9, y: 10 }}
-            className="absolute bottom-[110px] right-6 z-50 pointer-events-none"
-          >
-            <Button
-              size="icon"
-              className="shadow-xl h-10 w-10 rounded-full bg-background/80 backdrop-blur-xl border border-border/50 hover:bg-accent/80 hover:border-border/80 hover:text-foreground text-muted-foreground transition-all pointer-events-auto active:scale-95 group flex items-center justify-center"
-              onClick={() => {
-                bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-                setAtBottom(true);
-              }}
-              aria-label="Jump to bottom"
-            >
-              <ArrowDown className="h-5 w-5 transition-transform group-hover:translate-y-0.5" />
-            </Button>
-          </motion.div>
-        )}
-      </AnimatePresence>
+          {/* Jump to bottom FAB */}
+          <AnimatePresence>
+            {!atBottom && messages.length > 0 && (
+              <motion.div
+                initial={{ opacity: 0, scale: 0.9, y: 10 }}
+                animate={{ opacity: 1, scale: 1, y: 0 }}
+                exit={{ opacity: 0, scale: 0.9, y: 10 }}
+                className="absolute bottom-[110px] right-6 z-50 pointer-events-none"
+              >
+                <Button
+                  size="icon"
+                  className="shadow-xl h-10 w-10 rounded-full bg-background/80 backdrop-blur-xl border border-border/50 hover:bg-accent/80 hover:border-border/80 hover:text-foreground text-muted-foreground transition-all pointer-events-auto active:scale-95 group flex items-center justify-center"
+                  onClick={() => {
+                    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
+                    setAtBottom(true);
+                  }}
+                  aria-label="Jump to bottom"
+                >
+                  <ArrowDown className="h-5 w-5 transition-transform group-hover:translate-y-0.5" />
+                </Button>
+              </motion.div>
+            )}
+          </AnimatePresence>
+        </>
+      )}
 
       <StorageLimitDialog
         isOpen={showStorageLimitDialog}

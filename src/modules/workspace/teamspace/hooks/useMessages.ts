@@ -114,7 +114,14 @@ export async function prefetchMessages(projectId: string, channelId: string, thr
   }
 }
 
-export function useMessages(channelId: string | null, projectId: string, currentUserId: string, currentUserName?: string, threadParentId?: string) {
+export function useMessages(
+  channelId: string | null,
+  projectId: string,
+  currentUserId: string,
+  currentUserName?: string,
+  threadParentId?: string,
+  channelType?: "text" | "announcement" | "private"
+) {
   const [messages, setMessages] = useState<Message[]>(() => {
     if (channelId && memoryCache[channelId] && Date.now() - memoryCache[channelId].timestamp < 60000) {
       return memoryCache[channelId].messages;
@@ -135,6 +142,12 @@ export function useMessages(channelId: string | null, projectId: string, current
     return null;
   });
   const [typingUsers, setTypingUsers] = useState<TypingUser[]>([]);
+  const [accessDenied, setAccessDenied] = useState(false);
+  
+  // Reset accessDenied whenever we switch to a different channel
+  useEffect(() => {
+    setAccessDenied(false);
+  }, [channelId]);
   
   const subscriptionRef = useRef<Ably.RealtimeChannel | null>(null);
   const typingTimerRef = useRef<NodeJS.Timeout | null>(null);
@@ -193,6 +206,13 @@ export function useMessages(channelId: string | null, projectId: string, current
         const res = await fetch(`/api/teamspace/messages?${params}`);
         const data = await res.json();
 
+        // Private channel access denied — show lock screen, not a generic error
+        if (res.status === 403 && data.code === "private_channel_restricted") {
+          setAccessDenied(true);
+          setLoading(false);
+          return;
+        }
+
         if (data.error) throw new Error(data.error);
 
         const incoming: Message[] = data.messages ?? [];
@@ -226,10 +246,16 @@ export function useMessages(channelId: string | null, projectId: string, current
 
   // Ably real-time subscription
   useEffect(() => {
-    if (!channelId) return;
+    // Don't subscribe if access is denied — nothing to listen to
+    if (!channelId || accessDenied) return;
 
     const ably = getAblyClient();
-    const ch = ably.channels.get(`teamspace:${channelId}`);
+    // Private channels use an isolated Ably topic to prevent non-members
+    // from receiving messages even if they accidentally subscribe.
+    const ablyTopicName = channelType === "private"
+      ? `private:teamspace:${channelId}`
+      : `teamspace:${channelId}`;
+    const ch = ably.channels.get(ablyTopicName);
     subscriptionRef.current = ch;
 
     const onNewMsg = (msg: Ably.Message) => {
@@ -633,6 +659,7 @@ export function useMessages(channelId: string | null, projectId: string, current
     loading,
     hasMore: !!nextCursor,
     typingUsers,
+    accessDenied,
     sendMessage,
     setTypingStatus,
     editMessage,

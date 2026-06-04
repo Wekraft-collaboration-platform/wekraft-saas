@@ -1,14 +1,14 @@
 /**
  * ChannelsSidebar.tsx
- * 
+ *
  * Component for displaying and managing the list of channels in a project.
- * 
+ *
  * Functions:
  * - Lists channels categorized by type (Announcements, Community Chat).
  * - Handles channel selection with prefetching of messages for performance.
  * - Provides administrative actions (Create, Edit, Delete) based on project permissions.
  * - Shows visual indicators for the active channel and permissions.
- * 
+ *
  * Integration:
  * - Uses `useChannels` hook for data and mutations.
  * - Uses `useProjectPermissions` to determine user roles.
@@ -57,11 +57,13 @@ interface Props {
   channels: Channel[];
   loading: boolean;
   activeChannelId: string | null;
+  currentUserId?: string;
   onSelect: (channel: Channel) => void;
   onCreate: (
     name: string,
     description: string,
-    type: "text" | "announcement",
+    type: "text" | "announcement" | "private",
+    memberIds?: string[],
   ) => Promise<Channel | undefined>;
   onUpdate: (
     channelId: string,
@@ -84,6 +86,7 @@ export function ChannelsSidebar({
   channels,
   loading,
   activeChannelId,
+  currentUserId,
   onSelect,
   onCreate,
   onUpdate,
@@ -117,7 +120,9 @@ export function ChannelsSidebar({
   const announcementChannels = channels.filter(
     (c) => c.type === "announcement",
   );
-  const chatChannels = channels.filter((c) => c.type !== "announcement");
+  const privateChannels = channels.filter((c) => c.type === "private");
+  const chatChannels = channels.filter((c) => c.type === "text");
+  const [privateExpanded, setPrivateExpanded] = useState(true);
 
   const renderChannel = (channel: Channel) => {
     const isActive = channel.id === activeChannelId;
@@ -128,6 +133,10 @@ export function ChannelsSidebar({
     const unreadCount = Number(channel.unread_count ?? 0);
     const mentionCount = Number(channel.mention_count ?? 0);
 
+    // Private channel: has_access=0 means locked for this user
+    const isPrivate = channel.type === "private";
+    const isAccessible = channel.has_access !== 0; // undefined = public channel, treat as accessible
+
     return (
       <li key={channel.id} className="relative group px-2">
         <div
@@ -135,7 +144,10 @@ export function ChannelsSidebar({
           tabIndex={0}
           id={`channel-${channel.id}`}
           onClick={() => onSelect(channel)}
-          onMouseEnter={() => prefetchMessages(projectId, channel.id)}
+          // Skip prefetch for locked private channels — don't waste a request that will 403
+          onMouseEnter={() =>
+            isAccessible && prefetchMessages(projectId, channel.id)
+          }
           onKeyDown={(e) => {
             if (e.key === "Enter" || e.key === " ") {
               e.preventDefault();
@@ -146,7 +158,9 @@ export function ChannelsSidebar({
             "w-full flex items-center gap-2.5 px-3 py-2 rounded-md text-[14px] font-medium transition-all duration-200 relative cursor-pointer",
             isActive
               ? "bg-accent/70 text-foreground shadow-sm"
-              : "text-muted-foreground hover:bg-accent/40 hover:text-foreground",
+              : isAccessible
+                ? "text-muted-foreground hover:bg-accent/40 hover:text-foreground"
+                : "text-muted-foreground/50 hover:bg-accent/20 hover:text-muted-foreground",
           )}
         >
           {/* Active indicator */}
@@ -161,13 +175,19 @@ export function ChannelsSidebar({
           <Icon
             className={cn(
               "h-[18px] w-[18px] shrink-0 transition-colors duration-300",
-              isActive ? color : "text-muted-foreground group-hover:text-foreground",
+              isActive
+                ? color
+                : "text-muted-foreground group-hover:text-foreground",
             )}
           />
-          <span className={cn(
-            "truncate leading-tight flex-1 min-w-0 max-w-[120px] capitalize transition-all",
-            (unreadCount > 0 || mentionCount > 0) && !isActive && " text-foreground"
-          )}>
+          <span
+            className={cn(
+              "truncate leading-tight flex-1 min-w-0 max-w-[120px] capitalize transition-all",
+              (unreadCount > 0 || mentionCount > 0) &&
+                !isActive &&
+                " text-foreground",
+            )}
+          >
             {channel.name}
           </span>
 
@@ -184,10 +204,12 @@ export function ChannelsSidebar({
 
           {/* Hover actions - 3 dot menu */}
           {(canEdit || (canDelete && !channel.is_default)) && (
-            <div className={cn(
-              "transition-opacity z-20 shrink-0",
-              isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100"
-            )}>
+            <div
+              className={cn(
+                "transition-opacity z-20 shrink-0",
+                isActive ? "opacity-100" : "opacity-0 group-hover:opacity-100",
+              )}
+            >
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <button
@@ -210,7 +232,7 @@ export function ChannelsSidebar({
                       Edit Channel
                     </DropdownMenuItem>
                   )}
-                  {(canDelete && !channel.is_default) && (
+                  {canDelete && !channel.is_default && (
                     <DropdownMenuItem
                       className="text-destructive focus:text-destructive"
                       onClick={(e) => {
@@ -228,8 +250,14 @@ export function ChannelsSidebar({
             </div>
           )}
 
+          {/* Lock icon for private channels */}
+          {isPrivate && !isAccessible && (
+            <Lock className="h-3 w-3 ml-auto shrink-0 text-muted-foreground/40" />
+          )}
+
+          {/* Existing announcement lock (for non-power users) */}
           {channel.type === "announcement" && !isPower && (
-            <Lock className="h-3 w-3 ml-auto shrink-0 " />
+            <Lock className="h-3 w-3 ml-auto shrink-0" />
           )}
         </div>
       </li>
@@ -279,13 +307,17 @@ export function ChannelsSidebar({
                 <div>
                   <div
                     className="flex items-center justify-between px-2 pt-2 pb-1 group cursor-pointer hover:text-foreground transition-colors"
-                    onClick={() => setAnnouncementsExpanded(!announcementsExpanded)}
+                    onClick={() =>
+                      setAnnouncementsExpanded(!announcementsExpanded)
+                    }
                   >
                     <div className="flex items-center gap-1 select-none">
-                      <ChevronDown className={cn(
-                        "h-4 w-4 shrink-0 transition-transform duration-300 text-muted-foreground group-hover:text-foreground",
-                        !announcementsExpanded && "-rotate-90"
-                      )} />
+                      <ChevronDown
+                        className={cn(
+                          "h-4 w-4 shrink-0 transition-transform duration-300 text-muted-foreground group-hover:text-foreground",
+                          !announcementsExpanded && "-rotate-90",
+                        )}
+                      />
                       <h3 className="text-sm text-muted-foreground tracking-wide group-hover:text-foreground">
                         Announcements
                       </h3>
@@ -314,10 +346,12 @@ export function ChannelsSidebar({
                   onClick={() => setChatExpanded(!chatExpanded)}
                 >
                   <div className="flex items-center gap-1 select-none">
-                    <ChevronDown className={cn(
-                      "h-4 w-4 shrink-0 transition-transform duration-200 text-muted-foreground group-hover:text-foreground",
-                      !chatExpanded && "-rotate-90"
-                    )} />
+                    <ChevronDown
+                      className={cn(
+                        "h-4 w-4 shrink-0 transition-transform duration-200 text-muted-foreground group-hover:text-foreground",
+                        !chatExpanded && "-rotate-90",
+                      )}
+                    />
                     <h3 className="text-sm text-muted-foreground group-hover:text-foreground">
                       Community Chat
                     </h3>
@@ -337,6 +371,41 @@ export function ChannelsSidebar({
                   )}
                 </AnimatePresence>
               </div>
+
+              {/* Private Channels Section */}
+              {privateChannels.length > 0 && (
+                <div>
+                  <div
+                    className="flex items-center justify-between px-2 pt-2 pb-1 group cursor-pointer hover:text-foreground transition-colors"
+                    onClick={() => setPrivateExpanded(!privateExpanded)}
+                  >
+                    <div className="flex items-center gap-1 select-none">
+                      <ChevronDown
+                        className={cn(
+                          "h-4 w-4 shrink-0 transition-transform duration-200 text-muted-foreground group-hover:text-foreground",
+                          !privateExpanded && "-rotate-90",
+                        )}
+                      />
+                      <h3 className="text-sm text-muted-foreground group-hover:text-foreground">
+                        Private
+                      </h3>
+                    </div>
+                  </div>
+                  <AnimatePresence initial={false}>
+                    {privateExpanded && (
+                      <motion.ul
+                        initial={{ height: 0, opacity: 0 }}
+                        animate={{ height: "auto", opacity: 1 }}
+                        exit={{ height: 0, opacity: 0 }}
+                        transition={{ duration: 0.2, ease: "easeInOut" }}
+                        className="flex flex-col gap-0.5 mt-1 overflow-hidden"
+                      >
+                        {privateChannels.map(renderChannel)}
+                      </motion.ul>
+                    )}
+                  </AnimatePresence>
+                </div>
+              )}
             </>
           )}
         </div>
@@ -346,8 +415,10 @@ export function ChannelsSidebar({
         <div className="px-3 pb-3 shrink-0">
           <div className="bg-muted/40 border border-accent rounded-lg relative group animate-in fade-in slide-in-from-bottom-2 duration-300">
             <div className="px-3 py-2 border-b border-border/50 flex items-center justify-between">
-              <span className="text-[13px] font-semibold text-foreground">Quick tip:</span>
-              <button 
+              <span className="text-[13px] font-semibold text-foreground">
+                Quick tip:
+              </span>
+              <button
                 onClick={() => setShowHint(false)}
                 className="p-0.5 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent/50 transition-colors cursor-pointer"
               >
@@ -356,10 +427,19 @@ export function ChannelsSidebar({
             </div>
             <div className="p-3 text-[13px] text-muted-foreground leading-tight">
               <ol className="list-decimal list-inside space-y-1 ml-0.5">
-                <li><strong className="text-foreground">@</strong> for mentions</li>
-                <li><strong className="text-foreground">/</strong> for ticket creation</li>
-                <li><strong className="text-foreground">\</strong> for code link</li>
-                <li><strong className="text-foreground">#</strong> for file upload</li>
+                <li>
+                  <strong className="text-foreground">@</strong> for mentions
+                </li>
+                <li>
+                  <strong className="text-foreground">/</strong> for ticket
+                  creation
+                </li>
+                <li>
+                  <strong className="text-foreground">\</strong> for code link
+                </li>
+                <li>
+                  <strong className="text-foreground">#</strong> for file upload
+                </li>
               </ol>
             </div>
           </div>
@@ -396,6 +476,8 @@ export function ChannelsSidebar({
       <CreateChannelDialog
         open={createOpen}
         onOpenChange={setCreateOpen}
+        projectId={projectId}
+        currentUserId={currentUserId}
         onCreate={onCreate}
       />
 
@@ -404,6 +486,9 @@ export function ChannelsSidebar({
         onOpenChange={setEditOpen}
         onUpdate={onUpdate}
         channel={targetChannel}
+        projectId={projectId}
+        currentUserId={currentUserId}
+        isPower={isPower}
       />
 
       <DeleteChannelDialog

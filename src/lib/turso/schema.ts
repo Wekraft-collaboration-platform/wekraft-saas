@@ -197,4 +197,33 @@ async function runMigrations() {
   try {
     await turso.execute("PRAGMA turso_enable_expiry = ON;");
   } catch { /* older libsql versions — safe to ignore */ }
+
+  // ── Private channel membership table ────────────────────────────────────
+  // Tracks which Clerk user IDs are allowed to see a private channel.
+  // ON DELETE CASCADE on channel_id ensures rows are cleaned up when a
+  // private channel is deleted.
+  try {
+    await turso.execute(`
+      CREATE TABLE IF NOT EXISTS ts_private_channel_members (
+        channel_id  TEXT    NOT NULL,
+        user_id     TEXT    NOT NULL,
+        added_by    TEXT    NOT NULL,
+        added_at    INTEGER NOT NULL,
+        PRIMARY KEY (channel_id, user_id),
+        FOREIGN KEY (channel_id) REFERENCES ts_channels(id) ON DELETE CASCADE
+      )
+    `);
+  } catch { /* already exists — safe to ignore */ }
+
+  try {
+    await turso.execute(
+      "CREATE INDEX IF NOT EXISTS idx_pcm_channel ON ts_private_channel_members(channel_id);"
+    );
+  } catch { /* already exists */ }
+
+  try {
+    await turso.execute(
+      "CREATE INDEX IF NOT EXISTS idx_pcm_user ON ts_private_channel_members(user_id);"
+    );
+  } catch { /* already exists */ }
 }

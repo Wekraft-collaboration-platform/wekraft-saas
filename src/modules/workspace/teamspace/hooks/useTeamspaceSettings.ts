@@ -12,8 +12,6 @@ export interface TeamspaceSettings {
   updated_at: number;
 }
 
-
-
 export function useTeamspaceSettings(projectId: string) {
   const [settings, setSettings] = useState<TeamspaceSettings | null>(null);
   const [loading, setLoading] = useState(true);
@@ -37,11 +35,8 @@ export function useTeamspaceSettings(projectId: string) {
   useEffect(() => {
     fetchSettings();
 
-    if (!projectId) return;
-
-    const ably = getAblyClient();
-    const ch = ably.channels.get(`project:settings:${projectId}`);
-
+    let isSubscribed = false;
+    let ch: any = null;
     const onSettingsUpdated = (msg: Ably.Message) => {
       const updates = msg.data;
       if (updates) {
@@ -49,10 +44,23 @@ export function useTeamspaceSettings(projectId: string) {
       }
     };
 
-    ch.subscribe("settings.updated", onSettingsUpdated);
+    try {
+      const ably = getAblyClient();
+      ch = ably.channels.get(`project:settings:${projectId}`);
+      ch.subscribe("settings.updated", onSettingsUpdated);
+      isSubscribed = true;
+    } catch (err) {
+      console.error("Ably settings subscription failed", err);
+    }
 
     return () => {
-      ch.unsubscribe("settings.updated", onSettingsUpdated);
+      if (isSubscribed && ch) {
+        try {
+          ch.unsubscribe("settings.updated", onSettingsUpdated);
+        } catch (err) {
+          console.error("Ably settings unsubscribe failed", err);
+        }
+      }
     };
   }, [fetchSettings, projectId]);
 
@@ -71,7 +79,7 @@ export function useTeamspaceSettings(projectId: string) {
         if (res.ok) {
           const data = await res.json();
           setSettings(data.settings);
-          
+
           // Broadcast update to other connected clients
           const ably = getAblyClient();
           const ch = ably.channels.get(`project:settings:${projectId}`);
@@ -87,7 +95,7 @@ export function useTeamspaceSettings(projectId: string) {
         return false;
       }
     },
-    [projectId, settings]
+    [projectId, settings],
   );
 
   return { settings, loading, updateSettings, refetch: fetchSettings };
