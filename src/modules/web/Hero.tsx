@@ -293,7 +293,7 @@ const Hero = () => {
             {/* Border frame */}
             <div className="rounded-xl overflow-hidden border border-white/10 shadow-[0_0_80px_rgba(59,130,246,0.08)]">
               <Image
-                src="/hero-img-new.png"
+                src="/hero.png"
                 alt="Hero Image"
                 className="w-full h-auto block"
                 width="1920"
