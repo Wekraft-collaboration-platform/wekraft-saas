@@ -55,7 +55,7 @@ const getCleanIcon = (icon: React.ReactNode) => {
     .split(" ")
     .filter((c: string) => !c.startsWith("text-"))
     .join(" ");
-  return React.cloneElement(icon as React.ReactElement, {
+  return React.cloneElement(icon as React.ReactElement<any>, {
     className: cleanClassName,
   });
 };
