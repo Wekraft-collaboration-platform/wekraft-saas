@@ -3,13 +3,19 @@ import { type NextRequest, NextResponse } from "next/server";
 export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
-    const fileUrl = url.searchParams.get("url");
+    let fileUrl = url.searchParams.get("url");
+    const key = url.searchParams.get("key");
     let filename = url.searchParams.get("filename");
     const download = url.searchParams.get("download") !== "false";
 
-    if (!fileUrl) {
+    if (key && key !== "null" && key !== "undefined") {
+      const bucket = "wekraft-saas-upload-s3";
+      fileUrl = `https://${bucket}.s3.ap-south-1.amazonaws.com/${key}`;
+    }
+
+    if (!fileUrl || fileUrl === "null" || fileUrl === "undefined") {
       return NextResponse.json(
-        { error: "Missing url parameter" },
+        { error: "Missing or invalid url/key parameter" },
         { status: 400 },
       );
     }

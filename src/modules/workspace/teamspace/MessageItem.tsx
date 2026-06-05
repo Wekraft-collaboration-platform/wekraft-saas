@@ -81,6 +81,16 @@ import { toast } from "sonner";
 const QUICK_EMOJIS = ["👍", "❤️", "😂", "🎉", "🔥", "✅", "👀", "💪"] as const;
 const MEDIA_REGEX = /^(!?)\[([^\]]+)\]\(((?:blob:)?https?:\/\/[^\s\)]+)\)(?:\s+([\s\S]*))?$/;
 
+const getProxyUrl = (url: string, download = false) => {
+  if (!url) return "";
+  const s3Prefix = "https://wekraft-saas-upload-s3.s3.ap-south-1.amazonaws.com/";
+  if (url.startsWith(s3Prefix)) {
+    const key = url.slice(s3Prefix.length);
+    return `/api/teamspace/download?key=${encodeURIComponent(key)}&download=${download}`;
+  }
+  return `/api/teamspace/download?url=${encodeURIComponent(url)}&download=${download}`;
+};
+
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
 /**
@@ -278,7 +288,8 @@ export function MessageItem({
 
     // Proxy the download through our Next.js API route to bypass CORS 
     // and force the Content-Disposition attachment header natively.
-    const proxyUrl = `/api/teamspace/download?url=${encodeURIComponent(url)}&filename=${encodeURIComponent(filename)}`;
+    const baseProxyUrl = getProxyUrl(url, true);
+    const proxyUrl = `${baseProxyUrl}&filename=${encodeURIComponent(filename)}`;
 
     const link = document.createElement("a");
     link.href = proxyUrl;
@@ -455,7 +466,7 @@ export function MessageItem({
                           return (
                             <span className="flex items-center gap-1.5">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={`/api/teamspace/download?url=${encodeURIComponent(url)}&download=false`} alt={name} className="h-6 w-6 rounded object-cover shrink-0 opacity-80" />
+                              <img src={getProxyUrl(url, false)} alt={name} className="h-6 w-6 rounded object-cover shrink-0 opacity-80" />
                               <span className="truncate">{caption || name}</span>
                             </span>
                           );
@@ -616,7 +627,7 @@ export function MessageItem({
                             }}
                           >
                             <img
-                              src={`/api/teamspace/download?url=${encodeURIComponent(fileUrl)}&download=false`}
+                              src={getProxyUrl(fileUrl, false)}
                               alt={fileName}
                               className="max-h-[140px] max-w-[160px] sm:max-h-[180px] sm:max-w-[220px] w-auto rounded-md object-contain transition-opacity group-hover:opacity-90"
                             />
@@ -1063,26 +1074,26 @@ export function MessageItem({
 
           {/* Content area */}
           <div className="flex-1 flex items-center justify-center overflow-hidden p-4 relative">
-            {previewMediaType === "image" && (
+            {previewMediaType === "image" && previewMediaUrl && (
               <img
-                src={`/api/teamspace/download?url=${encodeURIComponent(previewMediaUrl!)}&download=false`}
+                src={getProxyUrl(previewMediaUrl, false)}
                 alt={previewMediaName}
                 className="max-w-full max-h-full object-contain drop-shadow-2xl"
               />
             )}
-            {previewMediaType === "pdf" && (
+            {previewMediaType === "pdf" && previewMediaUrl && (
               <iframe
-                src={`/api/teamspace/download?url=${encodeURIComponent(previewMediaUrl!)}&download=false`}
+                src={getProxyUrl(previewMediaUrl, false)}
                 title={previewMediaName}
                 className="w-full h-full max-w-5xl rounded-lg bg-white shadow-2xl"
               />
             )}
-            {previewMediaType === "office" && (
+            {previewMediaType === "office" && previewMediaUrl && (
               <iframe
                 src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(
-                  previewMediaUrl!.startsWith("blob:")
-                    ? previewMediaUrl!
-                    : `${window.location.origin}/api/teamspace/download?url=${encodeURIComponent(previewMediaUrl!)}&download=false`
+                  previewMediaUrl.startsWith("blob:")
+                    ? previewMediaUrl
+                    : `${window.location.origin}${getProxyUrl(previewMediaUrl, false)}`
                 )}`}
                 title={previewMediaName}
                 className="w-full h-full max-w-5xl rounded-lg bg-white shadow-2xl"
