@@ -2,7 +2,7 @@
 
 import { motion, useInView } from "framer-motion";
 import Image from "next/image";
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 
 interface FeatureBlock {
   tag: string;
@@ -162,8 +162,49 @@ const WhyWeKraft = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const headerInView = useInView(sectionRef, { once: true, margin: "-60px 0px" });
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("scroll") === "features") {
+      const timer = setTimeout(() => {
+        const element = document.getElementById("features");
+        if (element) {
+          // Immediately scroll to top so we animate down from y=0
+          window.scrollTo(0, 0);
+
+          const targetPosition = element.getBoundingClientRect().top + window.pageYOffset - 90;
+          const startPosition = 0;
+          const distance = targetPosition;
+          const duration = 1200; // Slower duration (1.2 seconds)
+          let start: number | null = null;
+
+          const step = (timestamp: number) => {
+            if (!start) start = timestamp;
+            const progress = timestamp - start;
+            const percentage = Math.min(progress / duration, 1);
+            
+            // Easing function (easeInOutCubic)
+            const easing = percentage < 0.5 
+              ? 4 * percentage * percentage * percentage 
+              : 1 - Math.pow(-2 * percentage + 2, 3) / 2;
+
+            window.scrollTo(0, startPosition + distance * easing);
+
+            if (progress < duration) {
+              window.requestAnimationFrame(step);
+            }
+          };
+
+          window.requestAnimationFrame(step);
+        }
+        // Clean up URL query parameter
+        window.history.replaceState(null, "", window.location.pathname);
+      }, 400); // 400ms delay to let the page mount
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
   return (
-    <section className="bg-black py-20 md:py-32 px-6 md:px-12 font-sans overflow-hidden">
+    <section id="features" className="bg-black py-20 md:py-32 px-6 md:px-12 font-sans overflow-hidden">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <motion.div

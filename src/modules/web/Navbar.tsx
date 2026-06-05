@@ -11,10 +11,11 @@ import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { SignUpButton } from "@clerk/nextjs";
+import { usePathname } from "next/navigation";
 
 const navLinks: { label: string; href: string }[] = [
   { label: "Home", href: "/" },
-  // { label: "Features", href: "#" },
+  { label: "Features", href: "/web?scroll=features" },
   { label: "Pricing", href: "/web/pricing" },
   { label: "Contact", href: "/web/contact" },
   { label: "Why Wekraft?", href: "/web/why-wekraft" },
@@ -22,12 +23,47 @@ const navLinks: { label: string; href: string }[] = [
 ];
 
 const Navbar = () => {
+  const pathname = usePathname();
   const [scrolled, setScrolled] = useState(false);
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const [isLightSection, setIsLightSection] = useState(false);
   const [showDropdown, setShowDropdown] = useState(false);
   const { isAuthenticated, isLoading: isAuthLoading } = useConvexAuth();
   const currentUser = useQuery(api.user.getCurrentUser);
+
+  const handleScrollTo = (e: React.MouseEvent, id: string) => {
+    if (pathname === "/web" || pathname === "/") {
+      e.preventDefault();
+      const element = document.getElementById(id);
+      if (element) {
+        const targetPosition = element.getBoundingClientRect().top + window.pageYOffset - 90;
+        const startPosition = window.pageYOffset;
+        const distance = targetPosition - startPosition;
+        const duration = 1200; // Slower duration (1.2 seconds)
+        let start: number | null = null;
+
+        const step = (timestamp: number) => {
+          if (!start) start = timestamp;
+          const progress = timestamp - start;
+          const percentage = Math.min(progress / duration, 1);
+          
+          // Easing function (easeInOutCubic)
+          const easing = percentage < 0.5 
+            ? 4 * percentage * percentage * percentage 
+            : 1 - Math.pow(-2 * percentage + 2, 3) / 2;
+
+          window.scrollTo(0, startPosition + distance * easing);
+
+          if (progress < duration) {
+            window.requestAnimationFrame(step);
+          }
+        };
+
+        window.requestAnimationFrame(step);
+        window.history.pushState(null, "", `/web#${id}`);
+      }
+    }
+  };
 
   useEffect(() => {
     const handleScroll = () => {
@@ -212,6 +248,11 @@ const Navbar = () => {
               <Link
                 key={label}
                 href={href}
+                onClick={(e) => {
+                  if (label === "Features") {
+                    handleScrollTo(e, "features");
+                  }
+                }}
                 className="relative cursor-pointer transition-all duration-300 text-neutral-200 hover:text-white px-4 py-1.5 group"
               >
                 <span>{label}</span>
@@ -302,7 +343,12 @@ const Navbar = () => {
                 <Link
                   key={link.label}
                   href={link.href}
-                  onClick={() => setIsMenuOpen(false)}
+                  onClick={(e) => {
+                    setIsMenuOpen(false);
+                    if (link.label === "Features") {
+                      handleScrollTo(e, "features");
+                    }
+                  }}
                   className="text-white/70 text-sm font-medium hover:text-white transition-colors"
                 >
                   {link.label}
