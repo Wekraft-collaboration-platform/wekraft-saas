@@ -2,12 +2,14 @@
 
 import React, { useState } from "react";
 import AIChatSimulation from "./AIChatSimulation";
+import { AnimatedListDemo } from "./NotificationList";
 import { StripedPattern } from "@/components/magicui/striped-pattern";
 import { FlickeringGrid } from "@/components/ui/flickering-grid";
 import { HexagonPattern } from "@/components/ui/hexagon-pattern";
 import NotificationCenter from "@/components/forgeui/notification-center";
 import VaultLock from "@/components/forgeui/vault-lock";
 import FrameworkAgnostic from "@/components/forgeui/framework-agnostic";
+import { ProjectProgressChart } from "./ProjectProgressChart";
 
 const Section1 = () => {
   const [isHovered2, setIsHovered2] = useState(false);
@@ -104,7 +106,7 @@ const Section1 = () => {
                   cardTitle="Real-time project health"
                   cardDescription="Get instant updates from Kaya about deadlines, delays, and critical sprint updates."
                   notificationTitle="Kaya PM"
-                  notificationDescription="Deadline Alert: Sprint 4 is at risk of a 2-day delay."
+                  notificationDescription="Sprint 4 is at risk of delay."
                   notificationTime="Just now"
                 />
               </div>
@@ -120,7 +122,7 @@ const Section1 = () => {
             <div
               onMouseEnter={() => setIsHovered3(true)}
               onMouseLeave={() => setIsHovered3(false)}
-              className="relative overflow-hidden border-b md:border-b-0 md:border-r border-white/10 group hover:bg-white/[0.01] transition-colors duration-500 min-h-[500px] flex items-center justify-center"
+              className="relative overflow-hidden border-b md:border-b-0 md:border-r border-white/10 group hover:bg-white/[0.01] transition-colors duration-500 min-h-[500px] flex flex-col items-stretch justify-between"
             >
               <FlickeringGrid
                 className="absolute inset-y-0 left-8 right-8 z-0 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]"
@@ -135,6 +137,20 @@ const Section1 = () => {
               <div className="absolute inset-y-0 left-0 w-8 border-r border-white/10 bg-neutral-900 z-20" />
               <div className="absolute inset-y-0 right-0 w-8 border-l border-white/10 bg-neutral-950 z-20" />
 
+              {/* Content Container */}
+              <div className="px-12 md:px-20 py-12 flex-1 flex flex-col justify-between relative z-10 w-full">
+                <div className="w-full flex items-center justify-center">
+                  <AnimatedListDemo className="h-[320px] w-full" />
+                </div>
+                <div className="mt-8">
+                  <h3 className="text-white text-xl font-semibold mb-2">
+                    Live Collaboration Feed
+                  </h3>
+                  <p className="text-neutral-500 text-sm leading-relaxed max-w-md">
+                    Stay synced on team activity. Get instant updates on messages, status completions, and automatic system upgrades.
+                  </p>
+                </div>
+              </div>
 
               {/* Ticks/Markers */}
               <div className="absolute top-0 left-8 w-px h-5 bg-white/40" />
@@ -144,21 +160,34 @@ const Section1 = () => {
             </div>
 
             {/* Element 4 */}
-            <div className="relative overflow-hidden group hover:bg-white/[0.01] transition-colors duration-500 min-h-[500px] flex items-center justify-center">
+            <div className="relative overflow-hidden group hover:bg-white/[0.01] transition-colors duration-500 min-h-[500px] flex flex-col items-stretch justify-between">
               <FlickeringGrid
                 className="absolute inset-y-0 left-8 right-8 z-0 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]"
                 squareSize={3}
                 gridGap={6}
                 color="#F4F4F6"
-                maxOpacity={0.2}
+                maxOpacity={0.1}
                 flickerChance={0.1}
               />
 
-
               {/* Side Decorations */}
               <div className="absolute inset-y-0 left-0 w-8 border-r border-white/10 bg-neutral-950 z-20" />
-              <div className="absolute inset-y-0 right-0 w-8 border-l  border-white/10 bg-neutral-900 z-20" />
+              <div className="absolute inset-y-0 right-0 w-8 border-l border-white/10 bg-neutral-900 z-20" />
 
+              {/* Content Container */}
+              <div className="px-12 md:px-14 py-12 flex-1 flex flex-col justify-between relative z-10 w-full">
+                <div className="w-full flex items-center justify-center">
+                  <ProjectProgressChart />
+                </div>
+                <div className="mt-8">
+                  <h3 className="text-white text-xl font-semibold mb-2">
+                    Track Progress in Real Time
+                  </h3>
+                  <p className="text-neutral-500 text-sm leading-relaxed max-w-md">
+                    Watch your team's velocity grow sprint-over-sprint. Live charts update as tasks are completed and milestones are hit.
+                  </p>
+                </div>
+              </div>
 
               {/* Ticks/Markers */}
               <div className="absolute top-0 left-8 w-px h-5 bg-white/40" />

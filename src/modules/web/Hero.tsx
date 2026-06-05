@@ -174,6 +174,81 @@ const Hero = () => {
     );
   };
 
+  const CollaboratorOverlay = ({
+    name,
+    avatarUrl,
+    color,
+    borderColor = "border-blue-500",
+    glowColor = "rgba(59, 130, 246, 0.4)",
+    bubbleX,
+    bubbleY,
+    cursorX,
+    cursorY,
+    action,
+    delay = 0,
+  }: {
+    name: string;
+    avatarUrl: string;
+    color: string;
+    borderColor?: string;
+    glowColor?: string;
+    bubbleX: string;
+    bubbleY: string;
+    cursorX: string;
+    cursorY: string;
+    action: string;
+    delay?: number;
+  }) => {
+    return (
+      <>
+        {/* Avatar & Bubble Container */}
+        <motion.div
+          className="absolute z-40 flex items-center gap-2 pointer-events-none"
+          style={{ left: bubbleX, top: bubbleY }}
+          initial={{ opacity: 0, scale: 0.8, y: 10 }}
+          animate={{ opacity: 1, scale: 1, y: 0 }}
+          transition={{ delay: delay + 0.6, type: "spring", stiffness: 80, damping: 15 }}
+        >
+          <div
+            className={`relative w-8 h-8 rounded-full overflow-hidden border-2 ${borderColor} shadow-lg shrink-0`}
+            style={{ boxShadow: `0 0 12px ${glowColor}` }}
+          >
+            <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
+            <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 border border-black animate-pulse" />
+          </div>
+          <div className="bg-neutral-800 backdrop-blur-md border border-white/10 rounded-lg px-2.5 py-1 shadow-[0_8px_30px_rgb(0,0,0,0.5)] flex flex-col justify-center min-w-[125px] max-w-[180px]">
+            <span className="font-semibold text-xs tracking-wide" style={{ color }}>{name}</span>
+            <span className="text-neutral-300 text-base leading-tight mt-0.5">{action}</span>
+          </div>
+        </motion.div>
+
+        {/* Cursor Container */}
+        <motion.div
+          className="absolute z-50 pointer-events-none"
+          style={{ left: cursorX, top: cursorY }}
+          initial={{ opacity: 0, x: 15, y: 15 }}
+          animate={{ opacity: 1, x: 0, y: 0 }}
+          transition={{ delay, type: "spring", stiffness: 70, damping: 15 }}
+        >
+          <svg
+            width="18"
+            height="18"
+            viewBox="0 0 24 24"
+            fill={color}
+            className="drop-shadow-[0_2px_4px_rgba(0,0,0,0.6)]"
+          >
+            <path
+              d="M3 2L21 12L13 14L11 22L3 2Z"
+              stroke="black"
+              strokeWidth="1.2"
+              strokeLinejoin="round"
+            />
+          </svg>
+        </motion.div>
+      </>
+    );
+  };
+
   return (
     <div
       ref={containerRef}
@@ -285,7 +360,7 @@ const Hero = () => {
           style={{ perspective: "1200px" }}
         >
           <motion.div
-            style={{ rotateX, scale, y, opacity: rawOpacity }}
+            style={{ rotateX, scale, y, opacity: rawOpacity, transformStyle: "preserve-3d" }}
             className="relative will-change-transform"
           >
             {/* Top edge glow */}
@@ -303,6 +378,139 @@ const Hero = () => {
                 sizes="(max-width: 768px) 100vw, 1200px"
               />
             </div>
+
+            {/* Collaborator Overlays (Curvy SVG Arrows & Collaborator Info) */}
+            <div className="absolute inset-0 pointer-events-none select-none z-30 overflow-hidden" style={{ transform: "translateZ(20px)" }}>
+              <svg
+                className="absolute inset-0 w-full h-full pointer-events-none select-none z-30"
+                viewBox="0 0 100 100"
+                preserveAspectRatio="none"
+              >
+                <defs>
+                  <marker
+                    id="arrow-yellow"
+                    viewBox="0 0 10 10"
+                    refX="6"
+                    refY="5"
+                    markerWidth="6"
+                    markerHeight="6"
+                    orient="auto-start-reverse"
+                  >
+                    <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#FACC15" />
+                  </marker>
+                  <marker
+                    id="arrow-blue"
+                    viewBox="0 0 10 10"
+                    refX="6"
+                    refY="5"
+                    markerWidth="6"
+                    markerHeight="6"
+                    orient="auto-start-reverse"
+                  >
+                    <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#3B82F6" />
+                  </marker>
+                  <marker
+                    id="arrow-white"
+                    viewBox="0 0 10 10"
+                    refX="6"
+                    refY="5"
+                    markerWidth="6"
+                    markerHeight="6"
+                    orient="auto-start-reverse"
+                  >
+                    <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#FFFFFF" />
+                  </marker>
+                </defs>
+
+                {/* Tania Arrow */}
+                <motion.path
+                  d="M 63.5 14.5 C 63.5 20, 68 23, 73 23"
+                  fill="none"
+                  stroke="#FACC15"
+                  strokeWidth="0.28"
+                  strokeDasharray="1 1"
+                  strokeLinecap="round"
+                  markerEnd="url(#arrow-yellow)"
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  animate={{ pathLength: 1, opacity: 1 }}
+                  transition={{ delay: 0.4, duration: 0.8, ease: "easeOut" }}
+                />
+
+                {/* Claura Arrow */}
+                <motion.path
+                  d="M 84 38 C 88 38, 90.5 31, 90.5 24"
+                  fill="none"
+                  stroke="#3B82F6"
+                  strokeWidth="0.28"
+                  strokeDasharray="1 1"
+                  strokeLinecap="round"
+                  markerEnd="url(#arrow-blue)"
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  animate={{ pathLength: 1, opacity: 1 }}
+                  transition={{ delay: 0.8, duration: 0.8, ease: "easeOut" }}
+                />
+
+                {/* Rox Arrow */}
+                <motion.path
+                  d="M 48 61.5 C 43 61.5, 41 57, 41.5 52.5"
+                  fill="none"
+                  stroke="#FFFFFF"
+                  strokeWidth="0.28"
+                  strokeDasharray="1 1"
+                  strokeLinecap="round"
+                  markerEnd="url(#arrow-white)"
+                  initial={{ pathLength: 0, opacity: 0 }}
+                  animate={{ pathLength: 1, opacity: 1 }}
+                  transition={{ delay: 1.2, duration: 0.8, ease: "easeOut" }}
+                />
+              </svg>
+
+              {/* Tania (Yellow Arrow): Hovering "View Breakdown" */}
+              <CollaboratorOverlay
+                name="Tania"
+                avatarUrl="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&h=150&q=80"
+                color="#FACC15"
+                borderColor="border-yellow-500"
+                glowColor="rgba(250, 204, 21, 0.4)"
+                bubbleX="59%"
+                bubbleY="8%"
+                cursorX="73.5%"
+                cursorY="23.5%"
+                action="checking project status"
+                delay={0.2}
+              />
+
+              {/* Claura (Blue Arrow): Hovering "+ New Task" */}
+              <CollaboratorOverlay
+                name="Claura"
+                avatarUrl="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&h=150&q=80"
+                color="#3B82F6"
+                borderColor="border-blue-500"
+                glowColor="rgba(59, 130, 246, 0.4)"
+                bubbleX="80%"
+                bubbleY="38%"
+                cursorX="90.5%"
+                cursorY="23.5%"
+                action="creating Stripe task"
+                delay={0.6}
+              />
+
+              {/* Rox (White Arrow): Hovering "Reviewing" status on Payment Gateway */}
+              <CollaboratorOverlay
+                name="Rox"
+                avatarUrl="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150&q=80"
+                color="#FFFFFF"
+                borderColor="border-white"
+                glowColor="rgba(255, 255, 255, 0.4)"
+                bubbleX="48%"
+                bubbleY="60%"
+                cursorX="41.5%"
+                cursorY="51.5%"
+                action="reviewing payment module"
+                delay={1.0}
+              />
+            </div>
+
             <div className="pointer-events-none absolute inset-x-0 bottom-0 h-20 md:h-80 bg-linear-to-t from-black via-black/50 to-transparent" />
           </motion.div>
         </div>
