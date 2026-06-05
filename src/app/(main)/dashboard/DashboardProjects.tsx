@@ -10,7 +10,6 @@ import {
   Minus,
   Plus,
   Settings2,
-  MoreVertical,
   Layers3,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -506,80 +505,7 @@ export const DashboardProjects = ({
                 />
               </svg>
 
-              {/* Cutout Dropdown Action Button */}
-              <div className="absolute right-3.5 top-[36%] z-20">
-                <Popover>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      size="icon-xs"
-                      className="size-7 rounded-full bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 text-zinc-700 dark:text-zinc-300 hover:bg-zinc-100 dark:hover:bg-zinc-800 shadow-xs cursor-pointer flex items-center justify-center"
-                    >
-                      <MoreVertical className="size-3.5" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent align="end" className="w-56 p-3 bg-popover border border-border rounded-xl shadow-xl z-50">
-                    <div className="space-y-3.5 text-left">
-                      <div className="space-y-1">
-                        <h4 className="text-xs font-bold text-foreground">Project Details</h4>
-                        <p className="text-[10px] text-muted-foreground leading-normal">
-                          Quick access to repository and workspace.
-                        </p>
-                      </div>
 
-                      {/* Repo Name */}
-                      {project?.repoName && (
-                        <div className="space-y-1">
-                          <span className="text-[9px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
-                            Connected Repository
-                          </span>
-                          <div className="flex items-center gap-2 text-xs text-foreground bg-accent/30 border border-accent/20 rounded-md p-2">
-                            <LuGitBranch className="size-3.5 text-zinc-400 shrink-0" />
-                            <span className="truncate font-mono">{project.repoName}</span>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* Shortcut */}
-                      <div className="space-y-1">
-                        <span className="text-[9px] font-semibold text-zinc-400 dark:text-zinc-500 uppercase tracking-wider">
-                          Keyboard Shortcut
-                        </span>
-                        <div className="flex items-center justify-between">
-                          {project.shortcut ? (
-                            <span className="text-xs font-semibold text-foreground font-mono bg-zinc-900 border border-zinc-800 px-2 py-0.5 rounded">
-                              {project.shortcut}
-                            </span>
-                          ) : (
-                            <span className="text-[10px] text-muted-foreground/60 italic">
-                              No shortcut assigned
-                            </span>
-                          )}
-                        </div>
-                      </div>
-
-                      {/* Workspace Action */}
-                      <div className="pt-1.5 border-t border-border/50 flex flex-col gap-1.5">
-                        <Button
-                          size="sm"
-                          onClick={() => router.push(`/dashboard/my-projects/${project.slug}/workspace`)}
-                          className="w-full text-xs h-7.5 cursor-pointer"
-                        >
-                          <ExternalLink className="size-3 mr-1.5" /> Go to Workspace
-                        </Button>
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => router.push(`/dashboard/my-projects/${project.slug}`)}
-                          className="w-full text-xs h-7.5 cursor-pointer"
-                        >
-                          <Settings2 className="size-3 mr-1.5" /> Edit Settings
-                        </Button>
-                      </div>
-                    </div>
-                  </PopoverContent>
-                </Popover>
-              </div>
 
               {/* Folder Content Overlay */}
               <div className="absolute bottom-0 left-0 w-full h-[70%] z-10 flex flex-col justify-between p-4.5 select-none text-left">

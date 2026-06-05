@@ -1,18 +1,18 @@
-import { useState, useMemo, useEffect } from "react";
 import {
   addDays,
   differenceInDays,
-  startOfDay,
-  endOfDay,
   eachDayOfInterval,
+  endOfDay,
   format,
   getDay,
-  isToday,
   isSameDay,
+  isToday,
+  startOfDay,
 } from "date-fns";
-import { Button } from "@/components/ui/button";
-import { cn } from "@/lib/utils";
 import {
+  AlertCircle,
+  AlertTriangle,
+  Calendar,
   ChartNoAxesGantt,
   ChevronDown,
   ClipboardList,
@@ -20,9 +20,11 @@ import {
   Filter,
   Layers,
   Layers2,
-  AlertCircle,
-  AlertTriangle,
+  User,
 } from "lucide-react";
+import { useEffect, useMemo, useState, ViewTransition } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -31,11 +33,9 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { statusIcons, priorityIcons } from "@/lib/static-store";
-import { Task } from "@/types/types";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { Calendar, User } from "lucide-react";
-import { ViewTransition } from "react";
+import { priorityIcons, statusIcons } from "@/lib/static-store";
+import { cn } from "@/lib/utils";
+import type { Task } from "@/types/types";
 
 /** Major tick + label every N days (all slabs, day view). */
 export const TIMELINE_DAY_TICK_INTERVAL = 3;
@@ -105,8 +105,6 @@ const DAY_COL_MIN_PX = 14;
 const TRACK_MIN_PX = 900;
 const WEEK_COL_MIN_PX = 92;
 
-
-
 // -------------------DAILY FUNCTION--------------------------
 function TimelineDayAxis({
   config,
@@ -141,7 +139,10 @@ function TimelineDayAxis({
     <div className="w-full min-w-0 overflow-auto max-h-[500px] dark:bg-card">
       <div
         className="relative flex min-h-[440px] w-full pl-0.5"
-        style={{ width: `max(${trackWidth}px, 100%)`, height: `${containerHeight}px` }}
+        style={{
+          width: `max(${trackWidth}px, 100%)`,
+          height: `${containerHeight}px`,
+        }}
         aria-label={`Timeline from ${format(days[0]!, "PPP")} to ${format(days[days.length - 1]!, "PPP")}, one column per day`}
       >
         {days.map((day, i) => {
@@ -286,7 +287,7 @@ function TimelineDayAxis({
                 {/* Bar — group is ON the bar itself, not the outer wrapper */}
                 <div
                   className={cn(
-                    "absolute h-8 rounded-l-full rounded-r-xl! border flex items-center pl-1 pr-3 shadow-sm group transition-all hover:shadow-md hover:scale-[1.05] backdrop-blur-sm",
+                    "absolute h-8 rounded-md border flex items-center pl-1 pr-3 shadow-sm group transition-all hover:shadow-md hover:scale-[1.05] backdrop-blur-sm",
                     taskUI.barClass,
                   )}
                   style={{ left, width }}
@@ -423,8 +424,6 @@ export const ProjectTimeline = ({
 
   if (!config) return null;
 
-
-
   // Simple normalization for comparing statuses
   const normalizeStatus = (s: string) =>
     s.toLowerCase().replace(/[^a-z0-9]+/g, "");
@@ -485,9 +484,12 @@ export const ProjectTimeline = ({
               <DropdownMenuSeparator />
               {Object.entries(statusIcons)
                 .filter(([status]) =>
-                  ["not started", "inprogress", "reviewing", "testing"].includes(
-                    status,
-                  ),
+                  [
+                    "not started",
+                    "inprogress",
+                    "reviewing",
+                    "testing",
+                  ].includes(status),
                 )
                 .map(([status, icon]) => (
                   <DropdownMenuItem

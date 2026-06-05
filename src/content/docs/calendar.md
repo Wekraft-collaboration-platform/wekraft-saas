@@ -1,92 +1,43 @@
-# Calendar
+# Project Calendar
 
-The Wekraft Calendar gives your team a shared visual overview of project milestones, sprint timelines, and scheduled events. It helps everyone stay aware of the bigger picture — not just their individual task queue.
-
-## Calendar Overview
-
-The Calendar displays two types of entries:
-
-| Type | Description |
-|---|---|
-| **Events** | Custom scheduled items — meetings, demos, retrospectives, deadlines |
-| **Milestones** | Significant project checkpoints — feature freeze, beta launch, v1.0 release |
-
-Tasks with due dates are also overlaid on the calendar automatically, giving you a unified view of all time-sensitive work.
+The Wekraft Calendar provides a shared timeline of events, scheduled milestones, task deadlines, and sprint scopes across the entire project space.
 
 ---
 
-## Creating a Calendar Entry
+## Calendar Event Properties
 
-Click any day on the calendar to create a new entry, or use the **"+ New Event"** button.
+Every calendar entry is stored in Convex under the `calendarEvents` collection with these schema details:
 
-| Field | Required | Description |
-|---|---|---|
-| **Title** | ✓ | Name of the event or milestone |
-| **Description** | — | Additional context or agenda |
-| **Type** | ✓ | `event` or `milestone` |
-| **Start & End** | ✓ | Date and time range |
-| **All Day** | — | Toggle for full-day events (hides time picker) |
-| **Color** | — | A hex colour for visual distinction on the calendar grid |
-
----
-
-## Calendar Views
-
-The Calendar supports three display modes, accessible from the toolbar:
-
-### Month View
-A full-month grid showing all events and task due dates. Best for planning and spotting conflicts across the whole month. Click any event to see its details.
-
-### Week View
-A detailed week-by-week view showing events on a time grid. Useful for planning meetings and seeing how busy each day is.
-
-### Day View
-A single-day breakdown with hourly slots. Used when you need to schedule something precisely within a packed day.
+- **Title**: The display name of the event or milestone checkpoint.
+- **Description** *(optional)*: Additional context or agenda details.
+- **Event Type**:
+  - `event`: Standard meetings, daily standups, or retrospective sessions.
+  - `milestone`: Critical checkpoints like release freezes, beta releases, or customer deliveries.
+- **All Day Option**: Toggles absolute day views, disabling the hour/minute selection.
+- **Duration**: Defined by Unix millisecond timestamps (`start` -> `end`).
+- **Color Overlay**: Custom hex color code for visual grouping on the calendar grid.
 
 ---
 
-## Task Integration
+## Workspace Integrations
 
-Tasks with `estimation.endDate` set automatically appear on the calendar as task events. The colour reflects the task's status:
+Wekraft merges calendar records with project boards to compile a single dashboard view:
 
-| Status | Colour |
-|---|---|
-| `not started` | Grey |
-| `inprogress` | Blue |
-| `reviewing` | Purple |
-| `testing` | Cyan |
-| `completed` | Green |
+### 1. Task Deadline Overlays
+Any active task with an `estimation.endDate` is automatically plotted on the calendar grid. The visual color corresponds to the task's state:
+- **Grey**: `not started`
+- **Blue**: `inprogress`
+- **Purple**: `reviewing`
+- **Cyan**: `testing`
+- **Green**: `completed`
 
-This gives you a live picture of what's due when, without any extra data entry.
-
----
-
-## Sprint Integration
-
-When a sprint is created, its start and end dates appear as a shaded range on the calendar. You can see at a glance how many tasks fall within the sprint window and whether the workload is well-distributed or back-loaded.
-
----
-
-## Managing Events
-
-- **Edit**: Click any event and select **Edit** from the popup
-- **Delete**: Click any event and select **Delete**
-- **Drag to reschedule**: Drag an event to a new day to reschedule it instantly
-- **Resize to extend**: Drag the bottom edge of an event to extend its duration (Week and Day views only)
-
----
-
-## Team Coordination
-
-All calendar entries are **shared across all project members**. Everyone on the project sees the same calendar. This makes it the single source of truth for:
-- Sprint start and end dates
-- Release dates and deadlines
-- Team events (standups, retros, planning sessions)
+### 2. Sprint Timeline Blocks
+Active and planned sprints display as shaded horizontal bars covering their duration (`duration.startDate` -> `duration.endDate`), making it easy to spot sprint overlaps.
 
 ---
 
 ## Next Steps
 
-- [Manage project milestones with Sprints →](/web/docs/sprints)
-- [View team workload with Heatmaps →](/web/docs/heatmaps)
-- [Check your team's availability in Team Space →](/web/docs/team-space)
+- Track tasks with [Tasks & Backlog](/web/docs/tasks).
+- Organize periods in [Sprints & Planning](/web/docs/sprints).
+- View delivery targets in the [Project Delivery Timeline & Gantt Chart](/web/docs/time-logs).

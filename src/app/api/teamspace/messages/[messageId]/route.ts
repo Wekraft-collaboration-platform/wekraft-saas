@@ -1,4 +1,8 @@
-import { DeleteObjectCommand, HeadObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import {
+  DeleteObjectCommand,
+  HeadObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
 import { auth } from "@clerk/nextjs/server";
 import Ably from "ably";
 import { ConvexHttpClient } from "convex/browser";
@@ -6,7 +10,6 @@ import { type NextRequest, NextResponse } from "next/server";
 import { turso } from "@/lib/turso";
 import { verifyProjectAccess } from "@/modules/workspace/teamspace/lib/auth";
 import { api } from "../../../../../../convex/_generated/api";
-
 
 const ably = new Ably.Rest(process.env.ABLY_API_KEY!);
 
@@ -40,11 +43,13 @@ async function deleteFromS3(keys: string[]): Promise<number> {
       try {
         // Get file size before deletion
         const head = await s3Client.send(
-          new HeadObjectCommand({ Bucket: BUCKET_NAME, Key: key })
+          new HeadObjectCommand({ Bucket: BUCKET_NAME, Key: key }),
         );
         const size = head.ContentLength ?? 0;
         totalFreed += size;
-        await s3Client.send(new DeleteObjectCommand({ Bucket: BUCKET_NAME, Key: key }));
+        await s3Client.send(
+          new DeleteObjectCommand({ Bucket: BUCKET_NAME, Key: key }),
+        );
         console.log(`[Teamspace] S3 deleted: ${key} (${size} bytes)`);
       } catch (err) {
         console.error(`[Teamspace] S3 delete failed for key: ${key}`, err);
@@ -212,7 +217,9 @@ export async function DELETE(
   let totalFreed = 0;
   if (keysToDelete.length > 0) {
     totalFreed = await deleteFromS3(keysToDelete);
-    console.log(`[Teamspace] Freed ${totalFreed} bytes from S3 (${keysToDelete.length} file(s))`);
+    console.log(
+      `[Teamspace] Freed ${totalFreed} bytes from S3 (${keysToDelete.length} file(s))`,
+    );
   }
 
   // Decrement Convex storage counter
@@ -222,7 +229,9 @@ export async function DELETE(
         projectId: projectId as any,
         fileSize: totalFreed,
       });
-      console.log(`[Teamspace] Convex storage decremented by ${totalFreed} bytes`);
+      console.log(
+        `[Teamspace] Convex storage decremented by ${totalFreed} bytes`,
+      );
     } catch (err) {
       console.error("[Teamspace] Failed to decrement Convex storage:", err);
     }

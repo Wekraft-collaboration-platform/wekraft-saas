@@ -4,7 +4,10 @@ import { ConvexHttpClient } from "convex/browser";
 import { randomUUID } from "crypto";
 import { type NextRequest, NextResponse } from "next/server";
 import { initTeamspaceDB, turso } from "@/lib/turso";
-import { verifyProjectAccess } from "@/modules/workspace/teamspace/lib/auth";
+import {
+  verifyProjectAccess,
+  verifyChannelAccess,
+} from "@/modules/workspace/teamspace/lib/auth";
 import {
   extractUrls,
   unfurlUrl,
@@ -36,7 +39,7 @@ export async function GET(req: NextRequest) {
     );
   }
 
-  // --- ACCESS CHECK ---
+  // --- PROJECT ACCESS CHECK ---
   const access = await verifyProjectAccess(userId, projectId);
   if ("error" in access)
     return NextResponse.json(
@@ -44,24 +47,49 @@ export async function GET(req: NextRequest) {
       { status: access.status },
     );
 
+  // --- CHANNEL ACCESS CHECK (blocks non-members from private channels) ---
+  const channelAccess = await verifyChannelAccess(
+    userId,
+    channelId,
+    access.permissions,
+  );
+  if (!channelAccess.allowed) {
+    return NextResponse.json(
+      { error: "Forbidden", code: channelAccess.code },
+      { status: channelAccess.status },
+    );
+  }
+
   await initTeamspaceDB();
+
+  // Fetch made_public_at — channels converted from private to public hide pre-conversion messages
+  const channelMeta = await turso.execute({
+    sql: "SELECT made_public_at FROM ts_channels WHERE id = ? LIMIT 1",
+    args: [channelId],
+  });
+  const madePublicAt = channelMeta.rows.length > 0
+    ? (channelMeta.rows[0].made_public_at as number | null)
+    : null;
 
   // Build query: top-level messages OR thread replies
   let sql: string;
   let args: (string | number | null)[];
 
+  // Extra WHERE clause to hide messages created before the channel was made public
+  const publicSinceFilter = madePublicAt ? `AND m.created_at >= ${madePublicAt}` : "";
+
   if (threadParentId) {
     // Thread replies
     sql = cursor
-      ? `SELECT m.*, 
+      ? `SELECT m.*,
            (SELECT COUNT(*) FROM ts_reactions r WHERE r.message_id = m.id) as reaction_count
          FROM ts_messages m
-         WHERE m.thread_parent_id = ? AND m.created_at < ?
+         WHERE m.thread_parent_id = ? AND m.created_at < ? ${publicSinceFilter}
          ORDER BY m.created_at ASC LIMIT ?`
-      : `SELECT m.*, 
+      : `SELECT m.*,
            (SELECT COUNT(*) FROM ts_reactions r WHERE r.message_id = m.id) as reaction_count
          FROM ts_messages m
-         WHERE m.thread_parent_id = ?
+         WHERE m.thread_parent_id = ? ${publicSinceFilter}
          ORDER BY m.created_at ASC LIMIT ?`;
     args = cursor
       ? [threadParentId, Number(cursor), limit]
@@ -69,21 +97,21 @@ export async function GET(req: NextRequest) {
   } else {
     // Top-level messages (no thread_parent_id filter)
     sql = cursor
-      ? `SELECT m.*, 
+      ? `SELECT m.*,
            (SELECT COUNT(*) FROM ts_reactions r WHERE r.message_id = m.id) as reaction_count,
            (SELECT COUNT(*) FROM ts_messages t WHERE t.thread_parent_id = m.id) as reply_count,
            p.user_name as parent_user_name, p.content as parent_content
          FROM ts_messages m
          LEFT JOIN ts_messages p ON m.thread_parent_id = p.id
-         WHERE m.channel_id = ? AND m.created_at < ?
+         WHERE m.channel_id = ? AND m.created_at < ? ${publicSinceFilter}
          ORDER BY m.created_at DESC LIMIT ?`
-      : `SELECT m.*, 
+      : `SELECT m.*,
            (SELECT COUNT(*) FROM ts_reactions r WHERE r.message_id = m.id) as reaction_count,
            (SELECT COUNT(*) FROM ts_messages t WHERE t.thread_parent_id = m.id) as reply_count,
            p.user_name as parent_user_name, p.content as parent_content
          FROM ts_messages m
          LEFT JOIN ts_messages p ON m.thread_parent_id = p.id
-         WHERE m.channel_id = ?
+         WHERE m.channel_id = ? ${publicSinceFilter}
          ORDER BY m.created_at DESC LIMIT ?`;
     args = cursor ? [channelId, Number(cursor), limit] : [channelId, limit];
   }
@@ -188,7 +216,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  // --- ACCESS CHECK & SERVER-SIDE PROFILE ---
+  // --- PROJECT ACCESS CHECK & SERVER-SIDE PROFILE ---
   const access = await verifyProjectAccess(userId, projectId);
   if ("error" in access)
     return NextResponse.json(
@@ -199,14 +227,20 @@ export async function POST(req: NextRequest) {
   const { user } = access;
 
   const senderUserId = isAgent && agentName ? agentName.toLowerCase() : userId;
-  const senderUserName = isAgent && agentName ? (agentName.toLowerCase() === "kaya" ? "Kaya" : "Harry") : user.name;
-  const senderUserImage = isAgent && agentName ? `/${agentName.toLowerCase()}.svg` : user.avatarUrl;
+  const senderUserName =
+    isAgent && agentName
+      ? agentName.toLowerCase() === "kaya"
+        ? "Kaya"
+        : "Harry"
+      : user.name;
+  const senderUserImage =
+    isAgent && agentName ? `/${agentName.toLowerCase()}.svg` : user.avatarUrl;
 
   await initTeamspaceDB();
 
   // --- CHANNEL TYPE & PERMISSION VERIFICATION ---
   const channelRes = await turso.execute({
-    sql: `SELECT name, type FROM ts_channels WHERE id = ? AND project_id = ?`,
+    sql: `SELECT name, type, created_by FROM ts_channels WHERE id = ? AND project_id = ?`,
     args: [channelId, projectId],
   });
 
@@ -216,6 +250,21 @@ export async function POST(req: NextRequest) {
 
   const channelName = channelRes.rows[0].name as string;
   const channelType = channelRes.rows[0].type as string;
+  const channelCreatedBy = channelRes.rows[0].created_by as string;
+
+  // Private channel access gate
+  const channelAccess = await verifyChannelAccess(
+    userId,
+    channelId,
+    access.permissions,
+  );
+  if (!channelAccess.allowed) {
+    return NextResponse.json(
+      { error: "Forbidden", code: channelAccess.code },
+      { status: channelAccess.status },
+    );
+  }
+
   if (channelType === "announcement") {
     if (!access.permissions.isOwner && !access.permissions.isAdmin) {
       return NextResponse.json(
@@ -295,11 +344,18 @@ export async function POST(req: NextRequest) {
     reply_count: 0,
   };
 
-  // Publish to Ably in real-time
-  const ablyChannel = ably.channels.get(`teamspace:${channelId}`);
+  // Publish to Ably — private channels use an isolated topic to prevent
+  // non-members from receiving messages even if they somehow subscribe.
+  const ablyTopicName =
+    channelType === "private"
+      ? `private:teamspace:${channelId}`
+      : `teamspace:${channelId}`;
+  const ablyChannel = ably.channels.get(ablyTopicName);
   await ablyChannel.publish("message.new", message);
 
-  // Publish lightweight message metadata to project-wide messages channel for unread count tracking
+  // Publish lightweight metadata to the project-wide channel for unread tracking.
+  // Non-members will receive this event but the frontend guards against bumping
+  // the unread count for channels with has_access=0.
   try {
     const projectMsgsChannel = ably.channels.get(
       `project:${projectId}:messages`,
@@ -307,6 +363,7 @@ export async function POST(req: NextRequest) {
     await projectMsgsChannel.publish("message.new", {
       id,
       channel_id: channelId,
+      channel_type: channelType,
       user_id: userId,
       created_at: now,
     });
@@ -340,13 +397,30 @@ export async function POST(req: NextRequest) {
         });
       };
 
+      // For private channels: restrict eligible recipients to channel members only.
+      // This prevents @everyone from notifying people who can't see the channel.
+      let eligibleMembers = projectMembers;
+      if (channelType === "private") {
+        const memberRes = await turso.execute({
+          sql: "SELECT user_id FROM ts_private_channel_members WHERE channel_id = ?",
+          args: [channelId],
+        });
+        const allowedUserIds = new Set(
+          memberRes.rows.map((r) => r.user_id as string),
+        );
+        allowedUserIds.add(channelCreatedBy);
+        eligibleMembers = projectMembers.filter(
+          (m: any) => m.clerkUserId && allowedUserIds.has(m.clerkUserId),
+        );
+      }
+
       // Collect mentioned members, excluding the sender
       const mentionedMembers = isEveryoneMentioned
-        ? projectMembers.filter((m: any) => m.clerkUserId !== userId)
-        : projectMembers.filter((member: any) => {
-          if (member.clerkUserId === userId) return false;
-          return isMemberMentioned(member, content);
-        });
+        ? eligibleMembers.filter((m: any) => m.clerkUserId !== userId)
+        : eligibleMembers.filter((member: any) => {
+            if (member.clerkUserId === userId) return false;
+            return isMemberMentioned(member, content);
+          });
 
       if (mentionedMembers.length > 0) {
         // Get the Clerk session token to authenticate the Convex mutation
@@ -385,7 +459,8 @@ export async function POST(req: NextRequest) {
                 messageId: id,
                 snippet: (() => {
                   let text = (content ?? "").trim();
-                  const uploadRegex = /!?\[[^\]]+\]\((https?:\/\/[^\s)]+(?:amazonaws\.com|wekraft-saas-upload-s3)[^\s)]*)\)/g;
+                  const uploadRegex =
+                    /!?\[[^\]]+\]\((https?:\/\/[^\s)]+(?:amazonaws\.com|wekraft-saas-upload-s3)[^\s)]*)\)/g;
                   text = text.replace(uploadRegex, "uploaded doc");
                   return text.substring(0, 120);
                 })(),

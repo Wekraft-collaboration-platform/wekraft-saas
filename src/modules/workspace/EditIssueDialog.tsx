@@ -1,52 +1,64 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
 import { useMutation, useQuery } from "convex/react";
-import { api } from "../../../convex/_generated/api";
+import { format } from "date-fns";
+import {
+  CalendarIcon,
+  Check,
+  ChevronRight,
+  Globe,
+  Link2,
+  Loader2,
+  LucideSettings2,
+  User,
+  Zap,
+} from "lucide-react";
+import React, { useEffect, useState } from "react";
+import { toast } from "sonner";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
+import { Calendar } from "@/components/ui/calendar";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTrigger,
 } from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
-import {
-  ChevronRight,
-  User,
-  Link2,
-  Loader2,
-  LucideSettings2,
-  CalendarIcon,
-  Globe,
-  Zap,
-  Check,
-} from "lucide-react";
-import { Label } from "@/components/ui/label";
-import { toast } from "sonner";
-import {
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
-} from "@/components/ui/popover";
-import { Calendar } from "@/components/ui/calendar";
-import { format } from "date-fns";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { cn } from "@/lib/utils";
-import { Id } from "../../../convex/_generated/dataModel";
-import { GetRepoStructure } from "./GetRepoStructure";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Textarea } from "@/components/ui/textarea";
 import {
   ISSUE_ENVIRONMENT_ICONS,
   ISSUE_SEVERITY_ICONS,
   ISSUE_STATUS_ICONS,
 } from "@/lib/static-store";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { cn } from "@/lib/utils";
+import { api } from "../../../convex/_generated/api";
+import type { Id } from "../../../convex/_generated/dataModel";
+import { GetRepoStructure } from "./GetRepoStructure";
+
+const getCleanIcon = (icon: React.ReactNode) => {
+  if (!React.isValidElement(icon)) return icon;
+  const currentClassName = (icon.props as any).className || "";
+  const cleanClassName = currentClassName
+    .split(" ")
+    .filter((c: string) => !c.startsWith("text-"))
+    .join(" ");
+  return React.cloneElement(icon as any, {
+    className: cleanClassName,
+  });
+};
 
 interface EditIssueDialogProps {
   projectName: string;
@@ -141,10 +153,10 @@ export const EditIssueDialog = ({
         assignees:
           assignedMembers.length > 0
             ? assignedMembers.map((a) => ({
-              userId: a.userId,
-              name: a.name,
-              avatar: a.avatar,
-            }))
+                userId: a.userId,
+                name: a.name,
+                avatar: a.avatar,
+              }))
             : [],
       });
       toast.success("Issue updated successfully");
@@ -191,12 +203,11 @@ export const EditIssueDialog = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className={cn(
-                    "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
-                    status && "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
-                  )}
+                  className="h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]"
                 >
-                  {ISSUE_STATUS_ICONS[status] || (
+                  {status ? (
+                    getCleanIcon(ISSUE_STATUS_ICONS[status])
+                  ) : (
                     <LucideSettings2 className="w-3.5 h-3.5" />
                   )}
                   <span className="capitalize">{status.replace("-", " ")}</span>
@@ -227,14 +238,10 @@ export const EditIssueDialog = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className={cn(
-                    "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
-                    severity &&
-                    "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
-                  )}
+                  className="h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]"
                 >
                   {severity ? (
-                    ISSUE_SEVERITY_ICONS[severity]
+                    getCleanIcon(ISSUE_SEVERITY_ICONS[severity])
                   ) : (
                     <Zap className="w-3.5 h-3.5" />
                   )}
@@ -264,14 +271,10 @@ export const EditIssueDialog = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className={cn(
-                    "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
-                    environment &&
-                    "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
-                  )}
+                  className="h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]"
                 >
                   {environment ? (
-                    ISSUE_ENVIRONMENT_ICONS[environment]
+                    getCleanIcon(ISSUE_ENVIRONMENT_ICONS[environment])
                   ) : (
                     <Globe className="w-3.5 h-3.5" />
                   )}
@@ -305,11 +308,7 @@ export const EditIssueDialog = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className={cn(
-                    "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
-                    dueDate &&
-                    "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
-                  )}
+                  className="h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]"
                 >
                   <CalendarIcon className="w-3.5 h-3.5" />
                   {dueDate ? (
@@ -349,11 +348,7 @@ export const EditIssueDialog = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className={cn(
-                    "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
-                    selectedPath &&
-                    "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/50 dark:bg-blue-900/10",
-                  )}
+                  className="h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]"
                 >
                   <Link2 className="w-3.5 h-3.5" />
                   {selectedPath ? selectedPath.split("/").pop() : "Link Code"}
@@ -375,11 +370,7 @@ export const EditIssueDialog = ({
                 <Button
                   variant="outline"
                   size="sm"
-                  className={cn(
-                    "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-3 gap-1.5 rounded-full text-[11px]",
-                    assignedMembers.length > 0 &&
-                    "text-blue-600 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
-                  )}
+                  className="h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-3 gap-1.5 rounded-full text-[11px]"
                 >
                   <User className="w-3.5 h-3.5" />
                   {assignedMembers.length > 0

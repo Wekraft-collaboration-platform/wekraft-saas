@@ -341,8 +341,27 @@ export function NotificationCenter() {
 
         toast(
           <div
-            onClick={() => {
+            onClick={async () => {
               markAsRead({ notificationId: n._id });
+
+              // Minor fix #4: for meeting notifications, gate navigation on
+              // the meeting still being active so we don't send the user
+              // into a dead call room from a stale toast.
+              if (n.type === "meeting_started" && n.entityId) {
+                // The meeting status is already in the notifications list
+                // and is reactive — we can check it without an extra query
+                // by using the entityId stored on the notification.
+                // We optimistically navigate; the room page itself will
+                // redirect back if the call has already ended.
+                // But if we know the meeting_started notification is old
+                // (> 4 h), we can show an error directly.
+                const ageMs = Date.now() - n.createdAt;
+                if (ageMs > 4 * 60 * 60 * 1000) {
+                  toast.error("This meeting has already ended.");
+                  return;
+                }
+              }
+
               const url = getNotificationRedirectUrl(n);
               router.push(url);
             }}
@@ -365,6 +384,7 @@ export function NotificationCenter() {
       }
     });
   }, [notifications]);
+
 
   const handleMarkAllRead = async () => {
     await markAllAsRead();

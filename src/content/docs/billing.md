@@ -9,8 +9,9 @@ Wekraft is designed to scale with your team. We offer three distinct plans tailo
 | **Monthly Price** | $0 | $12 / user | $25 / user |
 | **Projects (Owned)** | 2 | 10 | 20 |
 | **Projects (Joined)** | 2 | 10 | 20 |
-| **Members / Project** | 3 | 5 | 15 |
-| **Kaya AI Assistant** | — | — | 50 calls/mo |
+| **Members / Project** | 3 | 6 | 15 |
+| **Cloud Storage** | 2 GB | 15 GB | 30 GB |
+| **Kaya AI PM Agent** | — | — | Full access (360 calls/mo) |
 | **VS Code Extension** | Read-only | Read-only | Full Two-Way Sync |
 | **Advanced Analytics** | — | ✓ | ✓ |
 | **Heatmap Insights** | Basic | Basic | AI-Powered (all members) |
@@ -31,9 +32,10 @@ The Free plan is perfect for individuals and small teams getting started:
 
 - Create up to **2 projects** and join up to **2 projects**
 - Up to **3 members** per project (including the owner)
+- **2 GB** of cloud storage for attachments and teamspace messages
 - Full access to tasks, issues, sprints, calendar, and team space
 - VS Code extension in **read-only mode** (view tasks, but can't update status from IDE)
-- Basic heatmap view
+- Basic codebase map visualization
 - Project Structure for connected GitHub repositories
 - All core features with no time limit
 
@@ -43,7 +45,8 @@ The Plus plan is ideal for growing teams that need more capacity:
 
 - Everything in Free, plus:
 - Create up to **10 projects** and join up to **10 projects**
-- Up to **5 members** per project
+- Up to **6 members** per project
+- **15 GB** of cloud storage
 - **Advanced analytics charts** in the workspace dashboard (team contribution radar, sprint bar chart, severity heatmap, weekly velocity, member workload, weekly engagement)
 - VS Code extension in read-only mode
 
@@ -54,7 +57,8 @@ The Pro plan unlocks the full power of Wekraft:
 - Everything in Plus, plus:
 - Create up to **20 projects** and join up to **20 projects**
 - Up to **15 members** per project
-- **Kaya AI Assistant** — 50 calls per month for AI-powered sprint planning, reports, and insights
+- **30 GB** of cloud storage
+- **Kaya AI Assistant** — 360 calls per month for AI-powered sprint planning, reports, and insights
 - **Full two-way VS Code sync** — update task status, complete tasks, and auto-track time from the IDE
 - **AI-powered heatmap insights** — Kaya analyzes workload data and provides natural-language recommendations
 - **Activity Flow** — visual timeline of team activity patterns
@@ -75,7 +79,7 @@ This is the number of projects you can join that are owned by other users. The l
 Wekraft enforces a cap on how many people can be in a single project based on the **owner's plan**. This includes all roles (Owner, Admin, Member, Viewer). If you've reached the limit, the system prevents new invite links from being sent or join requests from being accepted.
 
 ### Kaya AI Calls
-Kaya AI usage is measured in "calls" — each message sent to Kaya counts as one call. Pro users get **50 calls per month**. If you exceed this limit:
+Kaya AI usage is measured in "calls" — each message sent to Kaya counts as one call. Pro users get **360 calls per month**. If you exceed this limit:
 - Previous conversations remain readable
 - New queries are paused until the next billing cycle
 - The project owner can configure a **Kaya threshold** per project in Project Settings → Configuration to control how many calls each project can use
@@ -128,3 +132,4 @@ No — your plan is tied to your account, not individual projects. All projects 
 - [Check your current usage →](/dashboard/my-profile)
 - [Upgrade your plan →](/dashboard/pricing)
 - [Learn about security →](/web/docs/security)
+- [Learn about the Referral Program →](/web/docs/referrals)

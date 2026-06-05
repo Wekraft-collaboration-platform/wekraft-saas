@@ -47,7 +47,7 @@ export async function initTeamspaceDB() {
       project_id  TEXT NOT NULL,
       name        TEXT NOT NULL,
       description TEXT,
-      type        TEXT NOT NULL DEFAULT 'text',
+      type        TEXT NOT NULL DEFAULT 'community',
       is_default  INTEGER NOT NULL DEFAULT 0,
       created_by  TEXT NOT NULL,
       created_at  INTEGER NOT NULL,
@@ -197,4 +197,39 @@ async function runMigrations() {
   try {
     await turso.execute("PRAGMA turso_enable_expiry = ON;");
   } catch { /* older libsql versions — safe to ignore */ }
+
+  // ── Private channel membership table ────────────────────────────────────
+  // Tracks which Clerk user IDs are allowed to see a private channel.
+  // ON DELETE CASCADE on channel_id ensures rows are cleaned up when a
+  // private channel is deleted.
+  try {
+    await turso.execute(`
+      CREATE TABLE IF NOT EXISTS ts_private_channel_members (
+        channel_id  TEXT    NOT NULL,
+        user_id     TEXT    NOT NULL,
+        added_by    TEXT    NOT NULL,
+        added_at    INTEGER NOT NULL,
+        PRIMARY KEY (channel_id, user_id),
+        FOREIGN KEY (channel_id) REFERENCES ts_channels(id) ON DELETE CASCADE
+      )
+    `);
+  } catch { /* already exists — safe to ignore */ }
+
+  try {
+    await turso.execute(
+      "CREATE INDEX IF NOT EXISTS idx_pcm_channel ON ts_private_channel_members(channel_id);"
+    );
+  } catch { /* already exists */ }
+
+  try {
+    await turso.execute(
+      "CREATE INDEX IF NOT EXISTS idx_pcm_user ON ts_private_channel_members(user_id);"
+    );
+  } catch { /* already exists */ }
+
+  // Add made_public_at column — tracks when a private channel was converted to public.
+  // Messages created before this timestamp are hidden from all users (pre-conversion privacy).
+  try {
+    await turso.execute("ALTER TABLE ts_channels ADD COLUMN made_public_at INTEGER;");
+  } catch { /* already exists — safe to ignore */ }
 }

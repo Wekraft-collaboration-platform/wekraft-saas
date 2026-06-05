@@ -56,7 +56,7 @@ const AIChatSimulation = () => {
             </div>
             <div className="w-8 h-8 rounded-full bg-neutral-800 border border-white/10 flex-shrink-0 overflow-hidden">
               <Image
-                src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=100"
+                src="/riteshdp2.jpg"
                 alt="User"
                 width={32}
                 height={32}
@@ -69,7 +69,7 @@ const AIChatSimulation = () => {
 
       {/* AI Message */}
       <AnimatePresence>
-        {displayStep >= 1 && (
+        {displayStep >= 0 && (
           <motion.div
             initial={{ opacity: 0, y: 10, scale: 0.95 }}
             animate={{ opacity: 1, y: 0, scale: 1 }}
@@ -83,22 +83,9 @@ const AIChatSimulation = () => {
               className="w-7 h-7"
             />
 
-            <div className="bg-neutral-900  border border-white/10 text-white p-4 rounded-2xl rounded-tl-none text-sm max-w-[85%] min-h-[60px] leading-relaxed relative overflow-hidden">
-              {displayStep === 1 ? (
-                <div className="flex gap-1.5 py-1.5">
-                  {[0, 1, 2].map((i) => (
-                    <motion.div
-                      key={i}
-                      animate={{ opacity: [0.3, 1, 0.3] }}
-                      transition={{
-                        duration: 1,
-                        repeat: Infinity,
-                        delay: i * 0.2,
-                      }}
-                      className="w-1.5 h-1.5 bg-neutral-500 rounded-full"
-                    />
-                  ))}
-                </div>
+            <div className="bg-neutral-900 border border-white/10 text-white p-4 rounded-2xl rounded-tl-none text-sm max-w-[85%] min-h-[60px] leading-relaxed relative overflow-hidden">
+              {displayStep === 0 || displayStep === 1 ? (
+                <span className="ai-shimmer-text">Kaya is thinking...</span>
               ) : (
                 <span className="text-neutral-200">
                   {typedText}

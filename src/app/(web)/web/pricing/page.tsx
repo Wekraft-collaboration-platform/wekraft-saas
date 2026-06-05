@@ -5,15 +5,15 @@ import Link from "next/link";
 import React from "react";
 import { Button } from "@/components/ui/button";
 import Pricing from "@/modules/web/Pricing";
+import Footer from "@/modules/web/Footer";
 
 const PricingPage = () => {
   const { isAuthenticated } = useConvexAuth();
 
   return (
     <div className="relative">
-
-
       <Pricing />
+      <Footer />
     </div>
   );
 };

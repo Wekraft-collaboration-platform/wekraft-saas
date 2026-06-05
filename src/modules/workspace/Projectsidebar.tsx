@@ -102,6 +102,11 @@ const workspaceMenu = [
     icon: PlaneTakeoff,
   },
   {
+    label: "Customer Desk",
+    path: "workspace/customer-desk",
+    icon: Inbox,
+  },
+  {
     label: "Calendar",
     path: "workspace/calendar",
     icon: Calendar,
@@ -263,7 +268,13 @@ export default function ProjectSidebar() {
       (labelLower === "heatmap" &&
         ("activity".includes(queryLower) ||
           "network".includes(queryLower) ||
-          "commits".includes(queryLower)))
+          "commits".includes(queryLower))) ||
+      (labelLower === "customer desk" &&
+        ("customer".includes(queryLower) ||
+          "desk".includes(queryLower) ||
+          "feedback".includes(queryLower) ||
+          "requests".includes(queryLower) ||
+          "support".includes(queryLower)))
     );
   });
 
@@ -964,7 +975,7 @@ export default function ProjectSidebar() {
                             href={`/dashboard/my-projects/${slug}/${item.path}`}
                             className="flex flex-col items-center gap-2 group cursor-pointer"
                           >
-                            <div className="h-9 w-9 rounded flex items-center justify-center bg-muted/40 border border-accent! text-white transition-all duration-300 shadow-sm group-hover:bg-muted/90 group-hover:border-accent-foreground/30">
+                            <div className="h-9 w-9 rounded flex items-center justify-center bg-muted border border-accent! text-white transition-all duration-300 shadow-sm group-hover:bg-muted/90 group-hover:border-accent-foreground/30">
                               <item.icon className="h-4! w-4!" />
                             </div>
                             <span className="text-xs whitespace-nowrap">
@@ -1014,7 +1025,7 @@ export default function ProjectSidebar() {
                     className="group relative overflow-hidden cursor-pointer  group-data-[collapsible=icon]:hidden"
                   >
                     <Link
-                      href={`/dashboard/my-projects/${slug}/settings/delete`}
+                      href={`/dashboard/my-projects/${slug}/workspace/delete`}
                       className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
                     >
                       <Trash2 className="h-5 w-5 text-destructive" />

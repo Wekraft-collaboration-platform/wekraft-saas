@@ -19,4 +19,14 @@ crons.daily(
   internal.payments.downgradeExpiredPlans,
 );
 
+// Self-heal: mark any team_meets still "active" after 4 h as inactive.
+// Covers sessions where the host closed the tab without pressing End Meeting.
+crons.daily(
+  "cleanup-stale-meetings",
+  { hourUTC: 3, minuteUTC: 0 }, // 3:00 AM UTC daily
+  internal.notifications.markStaleMeetingsInactive,
+  { maxAgeHours: 4 },
+);
+
 export default crons;
+

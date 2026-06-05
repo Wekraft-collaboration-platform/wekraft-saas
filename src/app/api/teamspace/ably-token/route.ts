@@ -41,16 +41,19 @@ export async function GET() {
       projectCapabilities[`project:${id}:channels`] = ["subscribe"];
       projectCapabilities[`project:${id}:messages`] = ["subscribe"];
       projectCapabilities[`project:${id}:reads`] = ["subscribe"];
+      projectCapabilities[`project:settings:${id}`] = ["subscribe", "publish"];
     }
   } else {
     // Fallback: broad subscribe-only (no publish/presence) if we couldn't fetch IDs
     projectCapabilities["project:*"] = ["subscribe"];
+    projectCapabilities["project:settings:*"] = ["subscribe", "publish"];
   }
 
   const tokenRequest = await ably.auth.createTokenRequest({
     clientId: userId,
     capability: {
       "teamspace:*": ["subscribe", "publish", "presence"],
+      "private:teamspace:*": ["subscribe", "publish", "presence"],
       [`user:notifications:${userId}`]: ["subscribe", "publish"],
       ...projectCapabilities,
     },
