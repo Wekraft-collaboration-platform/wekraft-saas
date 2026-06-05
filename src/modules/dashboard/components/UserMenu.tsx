@@ -65,7 +65,13 @@ export function UserMenu() {
         <DropdownMenuSeparator className="my-2" />
         {/* Github account */}
         <DropdownMenuItem
-          onClick={() => router.push("/dashboard/my-profile")}
+          onClick={() => {
+            if (user?.githubUsername) {
+              window.open(`https://github.com/${user.githubUsername}`, "_blank");
+            } else {
+              router.push("/dashboard/my-profile");
+            }
+          }}
           className="cursor-pointer rounded-md transition-colors"
         >
           <Github className="mr-2 h-4 w-4" />
