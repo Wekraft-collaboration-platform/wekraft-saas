@@ -50,6 +50,15 @@ const features: FeatureBlock[] = [
     imageAlt: "WeKraft advanced team insights and analytics dashboard",
     imagePosition: "left",
   },
+  {
+    tag: "Extension",
+    title: "Bring work directly to your IDE.",
+    description:
+      "Sync your workspace directly with your editor. View tasks, comments, and project status within your development environment for a seamless coding workflow.",
+    image: "/extension.png",
+    imageAlt: "WeKraft IDE extension and developer workspace integration",
+    imagePosition: "right",
+  },
 ];
 
 const FeatureRow = ({ feature, index }: { feature: FeatureBlock; index: number }) => {
@@ -215,14 +224,14 @@ const WhyWeKraft = () => {
           transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
 
-          <div className=" font-semibold text-5xl tracking-tight mb-4 leading-[1.1]! max-w-4xl mx-auto">
+          <div className=" font-semibold text-3xl sm:text-4xl md:text-5xl tracking-tight mb-4 leading-[1.1]! max-w-4xl mx-auto">
             <h2 className="text-white">Built for speed.</h2>
             <h2 className="text-neutral-400  mt-1">
               Designed for simplicity.
             </h2>
           </div>
 
-          <p className="text-neutral-400 text-lg max-w-xl mx-auto leading-relaxed">
+          <p className="text-neutral-400 text-sm sm:text-base md:text-lg max-w-xl mx-auto leading-relaxed">
             Everything you need to plan, track, and ship — in one workspace that actually feels good.
           </p>
         </motion.div>

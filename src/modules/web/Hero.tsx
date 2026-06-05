@@ -288,12 +288,17 @@ const Hero = () => {
           </span>
         </div>
 
-        <div className="flex flex-col items-center justify-center font-pop relative px-4">
-          <h1 className="text-white font-sans tracking-tight text-[62px] font-semibold">
-            Your Project Lives in Github,
+        <div className="flex flex-col items-center justify-center font-pop relative px-4 text-center">
+          <h1 className="text-white font-sans tracking-tight text-[30px] sm:text-[44px] md:text-[62px] font-semibold leading-tight max-w-4xl">
+            <span className="hidden md:block">Your Project Lives in Github,</span>
+            <span className="block md:hidden">
+              Your Project Lives in<br />
+              Github, so should
+            </span>
           </h1>
-          <div className="flex items-center gap-3 text-white tracking-tight text-[62px] font-semibold">
-            <h1 className="mr-2">so should your</h1>
+          <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-white tracking-tight text-[30px] sm:text-[44px] md:text-[62px] font-semibold leading-tight mt-1 md:mt-2">
+            <span className="hidden md:inline">so should your</span>
+            <span className="inline md:hidden">your</span>
             <FlipText className="" duration={3.5}>
               Workspace.
             </FlipText>
@@ -337,17 +342,18 @@ const Hero = () => {
         </div>
 
         {/* CTA  */}
-        <div className="flex flex-col sm:flex-row items-center gap-4 mt-20">
+        <div className="flex flex-row items-center gap-3 sm:gap-4 mt-20">
           <Link href={"/auth"}>
-            <Button className="rounded-md bg-blue-600 hover:bg-blue-700 text-white px-10 py-3 text-sm transition-all hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(37,99,235,0.2)]">
+            <Button className="rounded-md bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-10 py-3 text-xs sm:text-sm transition-all hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(37,99,235,0.2)]">
               Try for Free
             </Button>
           </Link>
           <Button
             variant="outline"
-            className="rounded-md border-white/10 bg-white/5 text-white  px-10 py-3 text-sm "
+            className="rounded-md border-white/10 bg-white/5 text-white px-4 sm:px-10 py-3 text-xs sm:text-sm"
           >
-            Get a demo
+            <span className="hidden sm:inline">Get a demo</span>
+            <span className="inline sm:hidden">Get demo</span>
           </Button>
         </div>
 
