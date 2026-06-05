@@ -818,7 +818,7 @@ http.route({
       const body = await request.json();
       // Explicitly pick only known/safe fields — never spread raw body into a mutation
       // to prevent field-injection attacks (e.g. overwriting createdAt, userId).
-      const taskId = await ctx.runMutation(internal.extensionApi.createTaskInternal, {
+      const created = await ctx.runMutation(internal.extensionApi.createTaskInternal, {
         projectId: body.projectId,
         title: body.title,
         description: body.description,
@@ -833,7 +833,28 @@ http.route({
         isBlocked: body.isBlocked,
         userId: auth.userId as any,
       });
-      return new Response(JSON.stringify({ id: taskId }), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+
+      const mapped = {
+        id: created._id,
+        projectId: created.projectId,
+        sprintId: created.sprintId,
+        title: created.title,
+        description: created.description,
+        status: created.status,
+        type: created.type,
+        priority: created.priority ?? "low",
+        assigneeId: Array.isArray(created.assignedTo) && created.assignedTo[0] ? (typeof created.assignedTo[0] === "object" ? created.assignedTo[0].userId : created.assignedTo[0]) : (typeof created.assignedTo === "string" ? created.assignedTo : undefined),
+        assignee: Array.isArray(created.assignedTo) && created.assignedTo[0] ? (typeof created.assignedTo[0] === "object" ? { id: created.assignedTo[0].userId, name: created.assignedTo[0].name || "Unknown", avatarUrl: created.assignedTo[0].avatar, role: "member" as const, email: "" } : { id: created.assignedTo[0], name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" }) : (typeof created.assignedTo === "string" ? { id: created.assignedTo, name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" } : undefined),
+        assigneeIds: Array.isArray(created.assignedTo) ? created.assignedTo.map((a: any) => typeof a === "object" ? a.userId : a) : (typeof created.assignedTo === "string" ? [created.assignedTo] : []),
+        assignees: Array.isArray(created.assignedTo) ? created.assignedTo.map((a: any) => typeof a === "object" ? { id: a.userId, name: a.name || "Unknown", avatarUrl: a.avatar, role: "member" as const, email: "" } : { id: a, name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" }) : (typeof created.assignedTo === "string" ? [{ id: created.assignedTo, name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" }] : []),
+        reporterId: created.createdByUserId,
+        createdAt: created.createdAt,
+        updatedAt: created.updatedAt,
+        isBlocked: created.isBlocked ?? false,
+        linkWithCodebase: created.linkWithCodebase ?? null,
+        estimation: created.estimation ?? null,
+      };
+      return new Response(JSON.stringify(mapped), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
     } catch (e: any) {
       return new Response(JSON.stringify({ error: e.message }), { status: 403, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
     }

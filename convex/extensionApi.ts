@@ -407,8 +407,12 @@ export const createTaskInternal = internalMutation({
         )
       );
     }
-
-    return taskId;
+    const task = await ctx.db.get(taskId);
+    if (!task) throw new Error("Task not found after creation");
+    return {
+      ...task,
+      assignedTo: resolvedAssignees,
+    };
   },
 });
 
