@@ -232,18 +232,4 @@ async function runMigrations() {
   try {
     await turso.execute("ALTER TABLE ts_channels ADD COLUMN made_public_at INTEGER;");
   } catch { /* already exists — safe to ignore */ }
-
-  // Rename channel type 'text' → 'community' for all existing rows
-  try {
-    await turso.execute(
-      "UPDATE ts_channels SET type = 'community' WHERE type = 'text';"
-    );
-  } catch { /* safe to ignore */ }
-
-  // Rename default channels to 'general' — both community and announcement defaults
-  try {
-    await turso.execute(
-      "UPDATE ts_channels SET name = 'general' WHERE is_default = 1;"
-    );
-  } catch { /* safe to ignore */ }
 }
