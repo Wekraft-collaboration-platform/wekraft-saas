@@ -35,8 +35,6 @@ import {
   Mail,
   Map,
   MessageCircle,
-  Mic,
-  MicOff,
   Repeat,
   Search,
   Settings2,
@@ -314,7 +312,7 @@ const renderCardContent = (card: BigCard) => {
   switch (card.label) {
     case "Deadline Tracking":
       return (
-        <div className="relative w-full h-full flex flex-col justify-between overflow-hidden select-none text-left bg-[#fafafb]">
+        <div className="relative w-full h-full flex flex-col justify-between overflow-hidden select-none text-left bg-neutral-200">
           {/* Subtle grid pattern */}
           <div className="absolute inset-0 bg-[radial-gradient(#00000005_1px,transparent_1px)] [background-size:16px_16px] opacity-60" />
           {/* Top blue gradient light */}
@@ -371,7 +369,7 @@ const renderCardContent = (card: BigCard) => {
           </div>
 
           {/* Fade Overlay */}
-          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#fafafb] via-[#fafafb]/95 to-transparent z-10 pointer-events-none" />
+          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-neutral-200 via-neutral-200/95 to-transparent z-10 pointer-events-none" />
 
           {/* Title centered at bottom */}
           <div className="absolute bottom-3 inset-x-0 z-20 flex items-center justify-center gap-2">
@@ -386,7 +384,7 @@ const renderCardContent = (card: BigCard) => {
       );
     case "Docs & Flow Charts":
       return (
-        <div className="relative w-full h-full flex flex-col justify-between overflow-hidden select-none text-left bg-[#fafafb]">
+        <div className="relative w-full h-full flex flex-col justify-between overflow-hidden select-none text-left bg-neutral-200">
           {/* Subtle grid pattern */}
           <div className="absolute inset-0 bg-[radial-gradient(#00000005_1px,transparent_1px)] [background-size:16px_16px] opacity-60" />
           {/* Top blue gradient light */}
@@ -420,7 +418,7 @@ const renderCardContent = (card: BigCard) => {
           </div>
 
           {/* Fade Overlay */}
-          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#fafafb] via-[#fafafb]/95 to-transparent z-10 pointer-events-none" />
+          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-neutral-200 via-neutral-200/95 to-transparent z-10 pointer-events-none" />
 
           {/* Title centered at bottom */}
           <div className="absolute bottom-3 inset-x-0 z-20 flex items-center justify-center gap-2">
@@ -435,7 +433,7 @@ const renderCardContent = (card: BigCard) => {
       );
     case "Agents":
       return (
-        <div className="relative w-full h-full flex flex-col justify-between overflow-hidden select-none text-left bg-[#fafafb]">
+        <div className="relative w-full h-full flex flex-col justify-between overflow-hidden select-none text-left bg-neutral-200">
           {/* Subtle grid pattern */}
           <div className="absolute inset-0 bg-[radial-gradient(#00000005_1px,transparent_1px)] [background-size:16px_16px] opacity-60" />
           {/* Top blue gradient light */}
@@ -480,7 +478,7 @@ const renderCardContent = (card: BigCard) => {
           </div>
 
           {/* Fade Overlay */}
-          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#fafafb] via-[#fafafb]/95 to-transparent z-10 pointer-events-none" />
+          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-neutral-200 via-neutral-200/95 to-transparent z-10 pointer-events-none" />
 
           {/* Title centered at bottom */}
           <div className="absolute bottom-3 inset-x-0 z-20 flex items-center justify-center gap-2">
@@ -495,7 +493,7 @@ const renderCardContent = (card: BigCard) => {
       );
     case "Meet & Chat":
       return (
-        <div className="relative w-full h-full flex flex-col justify-between overflow-hidden select-none text-left bg-[#fafafb]">
+        <div className="relative w-full h-full flex flex-col justify-between overflow-hidden select-none text-left bg-neutral-200">
           {/* Subtle grid pattern */}
           <div className="absolute inset-0 bg-[radial-gradient(#00000005_1px,transparent_1px)] [background-size:16px_16px] opacity-60" />
           {/* Top blue gradient light */}
@@ -511,7 +509,6 @@ const renderCardContent = (card: BigCard) => {
           <div className="relative pt-12 px-4 flex items-start justify-center w-full h-full">
             {/* The main rectangular box (large video tile for 1st user) */}
             <div className="relative w-full max-w-[210px] h-[92px] bg-neutral-50/50 border border-neutral-200 rounded-xl overflow-hidden shadow-sm flex items-center justify-center">
-              
               {/* First User Content */}
               <div className="flex flex-col items-center justify-center gap-1.5">
                 <div className="w-10 h-10 rounded-full bg-white border border-neutral-200/80 flex items-center justify-center text-xs font-semibold text-neutral-600 shadow-sm">
@@ -529,12 +526,11 @@ const renderCardContent = (card: BigCard) => {
                   <span className="text-[5.5px] text-neutral-400 font-medium leading-none">Rox</span>
                 </div>
               </div>
-
             </div>
           </div>
 
           {/* Fade Overlay */}
-          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#fafafb] via-[#fafafb]/95 to-transparent z-10 pointer-events-none" />
+          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-neutral-200 via-neutral-200/95 to-transparent z-10 pointer-events-none" />
 
           {/* Title centered at bottom */}
           <div className="absolute bottom-3 inset-x-0 z-20 flex items-center justify-center gap-2">
@@ -575,7 +571,7 @@ const BigCardComponent = ({
       ease: [0.25, 0.46, 0.45, 0.94],
       delay: getRadialDelay(card.col + 0.5, card.row + 0.5),
     }}
-    className="rounded-xl border overflow-hidden transition-all duration-400 border-[#e4e4e7] bg-[#fafafb] hover:border-neutral-300 shadow-[0_4px_24px_rgba(0,0,0,0.02)]"
+    className="rounded-xl border overflow-hidden transition-all duration-400 border-neutral-300 bg-neutral-200 hover:border-neutral-400 shadow-[0_4px_24px_rgba(0,0,0,0.02)]"
   >
     {renderCardContent(card)}
   </motion.div>
@@ -593,7 +589,7 @@ const AllInOneSection = () => {
   const gridInView = useInView(gridRef, { once: true, margin: "-80px 0px" });
 
   return (
-    <section className="relative bg-black py-20 md:py-32 px-6 font-sans overflow-hidden">
+    <section className="hidden md:block relative bg-black py-20 md:py-32 px-6 font-sans overflow-hidden">
       <div className="max-w-[1400px] mx-auto relative z-10">
         {/* ── Header ─────────────────────────────────────────── */}
         <motion.div
@@ -662,7 +658,7 @@ const AllInOneSection = () => {
                 headerInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }
               }
               transition={{ duration: 0.5, delay: i * 0.1 }}
-              className="rounded-xl border overflow-hidden h-28 text-left border-neutral-200 bg-white"
+              className="rounded-xl border overflow-hidden h-28 text-left border-neutral-300 bg-neutral-200"
             >
               {renderCardContent(card)}
             </motion.div>

@@ -179,7 +179,7 @@ const InfraSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="bg-gradient-to-b from-white via-white to-neutral-500 bg-clip-text text-5xl font-semibold tracking-tight text-transparent leading-tight max-w-3xl mx-auto"
+          className="bg-gradient-to-b from-white via-white to-neutral-500 bg-clip-text text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-transparent leading-tight max-w-3xl mx-auto"
         >
           Developer infrastructure
           <br />
@@ -191,7 +191,7 @@ const InfraSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="mt-5 text-lg m leading-relaxed text-neutral-400 max-w-2xl mx-auto"
+          className="mt-5 text-sm sm:text-base md:text-lg leading-relaxed text-neutral-400 max-w-2xl mx-auto"
         >
           Wekraft works seamlessly with the technologies you already use, keeping your workflows intact and your tools synced.
         </motion.p>
