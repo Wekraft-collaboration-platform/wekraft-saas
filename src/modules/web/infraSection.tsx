@@ -165,13 +165,13 @@ const features = [
 /* ─── Main Section ─── */
 const InfraSection = () => {
   return (
-    <section className="relative w-full bg-black overflow-hidden pb-20">
+    <section className="relative w-full bg-black overflow-hidden pb-20 pt-20">
       {/* ── Header ── */}
       <div className="relative z-10 text-center mb-24 px-6">
         <motion.div
-          className="mb-6 inline-flex items-center gap-2 rounded-full border border-blue-500/20 bg-blue-500/5 backdrop-blur-md shadow-[0_0_20px_rgba(59,130,246,0.1)] px-4 py-1.5 text-sm font-semibold tracking-wide text-blue-300"
+          className="mb-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-muted/10 backdrop-blur-md shadow-[0_0_20px_rgba(59,130,246,0.1)] px-4 py-1.5 text-sm  tracking-wide text-white"
         >
-          <span className="size-1.5 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.8)] animate-pulse" />
+          <span className="size-1.5 rounded-full bg-white shadow-[0_0_8px_rgba(96,165,250,0.8)] " />
           Seamless integrations
         </motion.div>
         <motion.h2
@@ -179,7 +179,7 @@ const InfraSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.1 }}
-          className="bg-gradient-to-b from-white via-white to-neutral-500 bg-clip-text text-4xl font-bold tracking-tight text-transparent md:text-6xl leading-tight max-w-3xl mx-auto"
+          className="bg-gradient-to-b from-white via-white to-neutral-500 bg-clip-text text-5xl font-semibold tracking-tight text-transparent leading-tight max-w-3xl mx-auto"
         >
           Developer infrastructure
           <br />
@@ -191,13 +191,13 @@ const InfraSection = () => {
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.6, delay: 0.2 }}
-          className="mt-5 text-lg md:text-xl leading-relaxed text-neutral-400 max-w-2xl mx-auto"
+          className="mt-5 text-lg m leading-relaxed text-neutral-400 max-w-2xl mx-auto"
         >
           Wekraft works seamlessly with the technologies you already use, keeping your workflows intact and your tools synced.
         </motion.p>
       </div>
 
-      <div className="relative z-10 max-w-5xl mx-auto px-6 md:px-12 flex flex-col md:flex-row items-center gap-16 md:gap-20">
+      <div className="relative z-10 max-w-6xl mx-auto px-6 md:px-12 flex flex-col md:flex-row items-center justify-center gap-20 md:gap-32">
         {/* Left — floating stacked 3D platforms */}
         <motion.div
           initial={{ opacity: 0, x: -40 }}
@@ -211,7 +211,7 @@ const InfraSection = () => {
 
         {/* Right — text features, vertically aligned with cards */}
         <div className="flex flex-col justify-between text-center md:text-left gap-12 md:gap-16 md:py-0 relative">
-          <div className="hidden md:block absolute left-[-40px] top-[10%] bottom-[10%] w-px bg-gradient-to-b from-transparent via-white/10 to-transparent" />
+          <div className="hidden md:block absolute left-[-56px] top-[10%] bottom-[10%] w-px bg-linear-to-b from-transparent via-white/30 to-transparent" />
           {features.map((f, i) => (
             <motion.div
               key={f.title}
@@ -221,8 +221,8 @@ const InfraSection = () => {
               transition={{ duration: 0.6, delay: 0.1 + 0.15 * i }}
               className="group relative"
             >
-              <div className="hidden md:block absolute left-[-45px] top-[8px] w-[11px] h-[11px] rounded-full border-[2px] border-black bg-white/20 group-hover:bg-blue-400 group-hover:shadow-[0_0_10px_rgba(96,165,250,0.8)] transition-all duration-300" />
-              <h3 className="text-white font-bold text-xl md:text-2xl tracking-tight mb-3 group-hover:text-blue-300 transition-colors duration-300">
+              <div className="hidden md:block absolute left-[-61px] top-[8px] w-[11px] h-[11px] rounded-full border-[2px] border-black bg-blue-400 shadow-[0_0_10px_rgba(96,165,250,0.8)]" />
+              <h3 className="text-white font-bold text-xl md:text-2xl tracking-tight mb-3 transition-colors duration-300">
                 {f.title}
               </h3>
               <p className="text-neutral-400 text-base md:text-[17px] leading-relaxed max-w-md font-sans group-hover:text-neutral-300 transition-colors">

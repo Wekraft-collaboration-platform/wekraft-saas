@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import AIChatSimulation from "./AIChatSimulation";
 import { AnimatedListDemo } from "./NotificationList";
 import { StripedPattern } from "@/components/magicui/striped-pattern";
@@ -20,21 +21,45 @@ const Section1 = () => {
         <div className="border border-b-0 border-white/10 rounded-t-xl overflow-hidden bg-neutral-950 ">
           {/* Main Heading Section */}
           <div className="p-12 md:p-12 text-center border-b border-white/10">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-blue-500/20 backdrop-blur-md bg-blue-500/5 shadow-[0_0_20px_rgba(59,130,246,0.1)] mb-8">
-              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(96,165,250,0.8)] " />
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/20 backdrop-blur-md bg-muted/10 shadow-[0_0_20px_rgba(59,130,246,0.1)] mb-8">
+              <div className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_8px_rgba(96,165,250,0.8)] " />
               <span className="text-sm  text-neutral-200 tracking-wide">
                 Purpose-built for engineering teams
               </span>
             </div>
 
-            <h2 className="text-5xl font-semibold tracking-tight mb-6 leading-tight max-w-4xl mx-auto">
-              <span className="text-white">Built for speed.</span> <br />
-              <span className="text-neutral-400">
-                Designed for simplicity.
+            <h2 className="text-4xl font-semibold tracking-tight mb-6 leading-tight max-w-4xl mx-auto flex flex-wrap items-center justify-center gap-x-2.5 gap-y-2">
+              <span className="text-white">Why Teams</span>
+              <span className="inline-flex items-center -space-x-3.5 mx-1">
+                <span className="relative w-9 h-9 rounded-full border-2 border-purple-500 overflow-hidden bg-neutral-800 shrink-0 shadow-[0_0_10px_rgba(236,72,153,0.3)] transition-transform duration-300 hover:scale-110 hover:z-10 cursor-pointer">
+                  <Image
+                    src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&h=80&q=80"
+                    alt="Team member 1"
+                    fill
+                    className="object-cover"
+                  />
+                </span>
+                <span className="relative w-9 h-9 rounded-full border-2 border-blue-500 overflow-hidden bg-neutral-800 shrink-0 shadow-[0_0_10px_rgba(59,130,246,0.3)] transition-transform duration-300 hover:scale-110 hover:z-10 cursor-pointer">
+                  <Image
+                    src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&h=80&q=80"
+                    alt="Team member 2"
+                    fill
+                    className="object-cover"
+                  />
+                </span>
+                <span className="relative w-9 h-9 rounded-full border-2 border-indigo-500 overflow-hidden bg-neutral-800 shrink-0 shadow-[0_0_10px_rgba(245,158,11,0.3)] transition-transform duration-300 hover:scale-110 hover:z-10 cursor-pointer">
+                  <Image
+                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&h=80&q=80"
+                    alt="Team member 3"
+                    fill
+                    className="object-cover"
+                  />
+                </span>
               </span>
+              <span className="text-white">Prefer WeKraft over others</span>
             </h2>
 
-            <p className="text-neutral-400 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
+            <p className="text-neutral-400 text-lg max-w-xl mx-auto leading-relaxed">
               The cleanest way to manage ambitious projects. WeKraft combines
               intelligent PM with real-time collaboration.
             </p>
@@ -50,7 +75,7 @@ const Section1 = () => {
                 squareSize={3}
                 gridGap={6}
                 color="#F4F4F6"
-                maxOpacity={0.2}
+                maxOpacity={0.1}
                 flickerChance={0.1}
               />
               {/* Side Decorations */}
@@ -92,7 +117,7 @@ const Section1 = () => {
                 squareSize={3}
                 gridGap={6}
                 color="#F4F4F6"
-                maxOpacity={0.2}
+                maxOpacity={0.1}
                 flickerChance={0.1}
               />
 
@@ -129,7 +154,7 @@ const Section1 = () => {
                 squareSize={3}
                 gridGap={6}
                 color="#F4F4F6"
-                maxOpacity={0.2}
+                maxOpacity={0.1}
                 flickerChance={0.1}
               />
 

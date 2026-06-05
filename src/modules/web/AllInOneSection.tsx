@@ -50,7 +50,6 @@ import {
   Users,
   Zap,
 } from "lucide-react";
-import Image from "next/image";
 import type React from "react";
 import { useRef } from "react";
 
@@ -276,6 +275,16 @@ const getCellBg = (col: number, row: number) => {
   return "bg-muted/20";
 };
 
+const getIconColorClass = (col: number, row: number) => {
+  const dist = Math.sqrt((col - centerCol) ** 2 + (row - centerRow) ** 2);
+  const ratio = dist / maxDist; // 0 = center, 1 = corner
+
+  if (ratio < 0.45) return "text-white";
+  if (ratio < 0.65) return "text-neutral-200";
+  if (ratio < 0.85) return "text-neutral-400";
+  return "text-neutral-500";
+};
+
 /* ─── Components ─────────────────────────────────────────────────── */
 
 const SmallCellComponent = ({
@@ -296,8 +305,10 @@ const SmallCellComponent = ({
     }}
     className={`rounded-xl border border-white/[0.03] ${getCellBg(cell.col, cell.row)} flex flex-col items-center justify-center gap-2.5 hover:bg-neutral-800/60 hover:border-white/[0.06] transition-all duration-300 cursor-default`}
   >
-    <div className="text-neutral-500">{cell.icon}</div>
-    <span className="text-[11px] text-neutral-500 font-medium tracking-wide leading-none">
+    <div className={getIconColorClass(cell.col, cell.row)}>{cell.icon}</div>
+    <span
+      className={`text-[11px] font-medium tracking-wide leading-none ${getIconColorClass(cell.col, cell.row)}`}
+    >
       {cell.label}
     </span>
   </motion.div>
@@ -352,15 +363,15 @@ const AllInOneSection = () => {
           animate={headerInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
           transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-blue-500/20 backdrop-blur-md bg-blue-500/5 shadow-[0_0_20px_rgba(59,130,246,0.1)] mb-6">
-            <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(96,165,250,0.8)]" />
-            <span className="text-sm text-neutral-200 tracking-wide">
+          <div className="inline-flex items-center gap-2 px-6 py-1.5 rounded-full border border-white/20 backdrop-blur-md bg-muted/10 shadow-[0_0_20px_rgba(59,130,246,0.1)] mb-6">
+            <div className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_8px_rgba(96,165,250,0.8)]" />
+            <span className="text-sm text-neutral-100 tracking-wide">
               Core Platform
             </span>
           </div>
 
           <h2 className="text-4xl md:text-5xl font-semibold tracking-tight text-white leading-[1.15] mb-5">
-            All apps, all intelligence.
+            All apps, all Intelligence.
             <br />
             <span className="text-neutral-400">One workspace.</span>
           </h2>
@@ -386,8 +397,6 @@ const AllInOneSection = () => {
               "linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)",
           }}
         >
-
-
           {/* Small cells */}
           {smallCells.map((cell, i) => (
             <SmallCellComponent key={i} cell={cell} isInView={gridInView} />
@@ -405,7 +414,7 @@ const AllInOneSection = () => {
 
         {/* ── Mobile Grid (simplified) ───────────────────────── */}
         <div className="lg:hidden grid grid-cols-2 gap-3">
-          {bigCards.map((card, i) => (
+          {bigCards.map((_card, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 20 }}
