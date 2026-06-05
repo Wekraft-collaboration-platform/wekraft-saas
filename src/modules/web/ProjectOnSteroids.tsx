@@ -11,7 +11,7 @@ import { toast } from "sonner";
 
 const ProjectOnSteroids = () => {
   const { isAuthenticated, isLoading } = useConvexAuth();
-  
+
   // Modal states for Get a Demo
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
   const [demoName, setDemoName] = useState("");
@@ -27,15 +27,15 @@ const ProjectOnSteroids = () => {
       toast.error("Please enter both your name and email.");
       return;
     }
-    
+
     setIsSubmitting(true);
-    
+
     // Simulate API request
     setTimeout(() => {
       setIsSubmitting(false);
       setSubmitSuccess(true);
       toast.success("Request received! Our team will contact you shortly.");
-      
+
       // Auto-close modal after success message animation
       setTimeout(() => {
         setIsDemoModalOpen(false);
@@ -52,13 +52,13 @@ const ProjectOnSteroids = () => {
   return (
     <section className="relative overflow-hidden w-full pt-20 md:pt-32 pb-0 bg-gradient-to-b from-[#2A3DF4] via-[#60A5FA] to-black">
       <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-16 relative z-10">
-        
+
         {/* Top Header Row */}
         <div className="flex flex-col lg:flex-row justify-between items-start gap-10 lg:gap-16 mb-16 md:mb-24">
           <h2 className="text-4xl md:text-5xl lg:text-[64px] font-bold leading-[1.1] max-w-[700px] tracking-tight text-white">
             Go-to platform for effortlessly managing engineering projects
           </h2>
-          
+
           <div className="flex flex-col gap-6 lg:max-w-[450px] pt-2">
             <p className="text-lg md:text-xl text-blue-50/90 leading-relaxed font-medium">
               Wekraft makes it easy to build workflows, track issues, and ship software. Unify your entire development lifecycle in minutes, not months.
@@ -74,8 +74,8 @@ const ProjectOnSteroids = () => {
                 </button>
               ) : isAuthenticated ? (
                 <Link href="/dashboard">
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="bg-white text-blue-600 font-bold px-8 py-3.5 rounded-full hover:bg-neutral-50 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg cursor-pointer"
                   >
                     Go to Dashboard
@@ -83,17 +83,17 @@ const ProjectOnSteroids = () => {
                 </Link>
               ) : (
                 <SignUpButton>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="bg-white text-blue-600 font-bold px-8 py-3.5 rounded-full hover:bg-neutral-50 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg cursor-pointer"
                   >
                     Try Wekraft for free
                   </button>
                 </SignUpButton>
               )}
-              
-              <button 
-                type="button" 
+
+              <button
+                type="button"
                 onClick={() => setIsDemoModalOpen(true)}
                 className="border border-white/40 text-white font-bold px-8 py-3.5 rounded-full hover:bg-white/10 hover:scale-[1.02] active:scale-[0.98] transition-all backdrop-blur-sm cursor-pointer"
               >
@@ -104,11 +104,11 @@ const ProjectOnSteroids = () => {
         </div>
 
         {/* Dashboard Image with 3D Tilt */}
-        <div 
+        <div
           className="relative w-full h-[400px] md:h-[550px] flex justify-center items-start mt-8 pointer-events-none"
           style={{ perspective: "2000px" }}
         >
-          <div 
+          <div
             className="absolute top-0 w-[95%] md:w-[85%] max-w-[1100px]"
             style={{
               transform: "rotateX(15deg) rotateY(12deg) rotateZ(-4deg) translateX(5%) translateY(5%)",
@@ -167,10 +167,10 @@ const ProjectOnSteroids = () => {
 
               {/* === SCREEN AREA === */}
               <div className="relative rounded-[10px] md:rounded-[20px] overflow-hidden">
-                <Image 
-                  src="/dash.png" 
-                  alt="Wekraft Dashboard" 
-                  width={1920} 
+                <Image
+                  src="/dash.png"
+                  alt="Wekraft Dashboard"
+                  width={1920}
                   height={1080}
                   className="w-full h-auto object-cover object-top block"
                   priority
@@ -187,8 +187,8 @@ const ProjectOnSteroids = () => {
 
                 {/* Play Button Overlay */}
                 <div className="absolute inset-0 flex items-center justify-center bg-black/5 pointer-events-auto z-20">
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="w-20 h-20 md:w-28 md:h-28 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-black/60 hover:scale-105 transition-all duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.3)] group"
                     aria-label="Play video"
                   >
@@ -214,7 +214,7 @@ const ProjectOnSteroids = () => {
               onClick={() => !isSubmitting && setIsDemoModalOpen(false)}
               className="absolute inset-0 bg-black/70 backdrop-blur-xs"
             />
-            
+
             {/* Modal Box */}
             <motion.div
               initial={{ opacity: 0, scale: 0.95, y: 15 }}
@@ -236,7 +236,7 @@ const ProjectOnSteroids = () => {
 
               {submitSuccess ? (
                 /* Success View */
-                <motion.div 
+                <motion.div
                   initial={{ opacity: 0 }}
                   animate={{ opacity: 1 }}
                   className="flex flex-col items-center justify-center py-10 text-center"

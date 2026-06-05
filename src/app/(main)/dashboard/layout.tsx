@@ -112,7 +112,7 @@ export default function Layout({
     if (user === undefined) return;
 
     if (user && !user.hasCompletedOnboarding) {
-      router.push(`/onboard/${user._id}`);
+      router.push("/onboard/user");
     }
   }, [isStoreLoading, user, router]);
 

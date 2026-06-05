@@ -46,10 +46,10 @@ const Navbar = () => {
           if (!start) start = timestamp;
           const progress = timestamp - start;
           const percentage = Math.min(progress / duration, 1);
-          
+
           // Easing function (easeInOutCubic)
-          const easing = percentage < 0.5 
-            ? 4 * percentage * percentage * percentage 
+          const easing = percentage < 0.5
+            ? 4 * percentage * percentage * percentage
             : 1 - Math.pow(-2 * percentage + 2, 3) / 2;
 
           window.scrollTo(0, startPosition + distance * easing);
@@ -273,7 +273,7 @@ const Navbar = () => {
                       {currentUser?.name?.charAt(0) || "U"}
                     </AvatarFallback>
                   </Avatar>
-                  <Link href="/dashboard">
+                  <Link href="/auth/callback">
                     <Button
                       size="sm"
                       className={clsx(

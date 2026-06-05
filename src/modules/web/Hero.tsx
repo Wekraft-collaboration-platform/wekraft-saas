@@ -297,9 +297,9 @@ const Hero = () => {
             </span>
           </h1>
           <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-white tracking-tight text-[30px] sm:text-[44px] md:text-[62px] font-semibold leading-tight mt-1 md:mt-2">
-            <span className="hidden md:inline">so should your</span>
-            <span className="inline md:hidden">your</span>
-            <FlipText className="" duration={3.5}>
+            <span className="hidden md:inline">so should your {" "}</span>
+            <span className="inline md:hidden">your {""}</span>
+            <FlipText className="md:ml-2" duration={3.5}>
               Workspace.
             </FlipText>
           </div>
