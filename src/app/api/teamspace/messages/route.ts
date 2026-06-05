@@ -62,22 +62,34 @@ export async function GET(req: NextRequest) {
 
   await initTeamspaceDB();
 
+  // Fetch made_public_at — channels converted from private to public hide pre-conversion messages
+  const channelMeta = await turso.execute({
+    sql: "SELECT made_public_at FROM ts_channels WHERE id = ? LIMIT 1",
+    args: [channelId],
+  });
+  const madePublicAt = channelMeta.rows.length > 0
+    ? (channelMeta.rows[0].made_public_at as number | null)
+    : null;
+
   // Build query: top-level messages OR thread replies
   let sql: string;
   let args: (string | number | null)[];
 
+  // Extra WHERE clause to hide messages created before the channel was made public
+  const publicSinceFilter = madePublicAt ? `AND m.created_at >= ${madePublicAt}` : "";
+
   if (threadParentId) {
     // Thread replies
     sql = cursor
-      ? `SELECT m.*, 
+      ? `SELECT m.*,
            (SELECT COUNT(*) FROM ts_reactions r WHERE r.message_id = m.id) as reaction_count
          FROM ts_messages m
-         WHERE m.thread_parent_id = ? AND m.created_at < ?
+         WHERE m.thread_parent_id = ? AND m.created_at < ? ${publicSinceFilter}
          ORDER BY m.created_at ASC LIMIT ?`
-      : `SELECT m.*, 
+      : `SELECT m.*,
            (SELECT COUNT(*) FROM ts_reactions r WHERE r.message_id = m.id) as reaction_count
          FROM ts_messages m
-         WHERE m.thread_parent_id = ?
+         WHERE m.thread_parent_id = ? ${publicSinceFilter}
          ORDER BY m.created_at ASC LIMIT ?`;
     args = cursor
       ? [threadParentId, Number(cursor), limit]
@@ -85,21 +97,21 @@ export async function GET(req: NextRequest) {
   } else {
     // Top-level messages (no thread_parent_id filter)
     sql = cursor
-      ? `SELECT m.*, 
+      ? `SELECT m.*,
            (SELECT COUNT(*) FROM ts_reactions r WHERE r.message_id = m.id) as reaction_count,
            (SELECT COUNT(*) FROM ts_messages t WHERE t.thread_parent_id = m.id) as reply_count,
            p.user_name as parent_user_name, p.content as parent_content
          FROM ts_messages m
          LEFT JOIN ts_messages p ON m.thread_parent_id = p.id
-         WHERE m.channel_id = ? AND m.created_at < ?
+         WHERE m.channel_id = ? AND m.created_at < ? ${publicSinceFilter}
          ORDER BY m.created_at DESC LIMIT ?`
-      : `SELECT m.*, 
+      : `SELECT m.*,
            (SELECT COUNT(*) FROM ts_reactions r WHERE r.message_id = m.id) as reaction_count,
            (SELECT COUNT(*) FROM ts_messages t WHERE t.thread_parent_id = m.id) as reply_count,
            p.user_name as parent_user_name, p.content as parent_content
          FROM ts_messages m
          LEFT JOIN ts_messages p ON m.thread_parent_id = p.id
-         WHERE m.channel_id = ?
+         WHERE m.channel_id = ? ${publicSinceFilter}
          ORDER BY m.created_at DESC LIMIT ?`;
     args = cursor ? [channelId, Number(cursor), limit] : [channelId, limit];
   }
