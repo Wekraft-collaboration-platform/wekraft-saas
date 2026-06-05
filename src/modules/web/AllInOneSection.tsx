@@ -501,49 +501,35 @@ const renderCardContent = (card: BigCard) => {
           {/* Top blue gradient light */}
           <div className="absolute top-0 inset-x-0 h-24 bg-gradient-to-b from-blue-50/50 to-transparent pointer-events-none" />
 
-          <div className="relative pt-5 px-6 w-full h-full">
-            <div className="space-y-2.5 w-full max-w-[220px] mx-auto">
-              <div className="text-[8px] font-bold text-zinc-400 uppercase tracking-widest mb-1 block">Active Call</div>
+          {/* 10+ Messages Badge at top right corner */}
+          <div className="absolute top-4 right-4 z-20 flex items-center gap-1 bg-blue-50 border border-blue-100 rounded-full px-2 py-0.5 text-[8.5px] text-blue-600 font-semibold shadow-sm">
+            <MessageCircle className="w-3 h-3 text-blue-500" />
+            <span>10+ messages</span>
+          </div>
+
+          {/* Content area aligned to top to match other cards */}
+          <div className="relative pt-12 px-4 flex items-start justify-center w-full h-full">
+            {/* The main rectangular box (large video tile for 1st user) */}
+            <div className="relative w-full max-w-[210px] h-[92px] bg-neutral-50/50 border border-neutral-200 rounded-xl overflow-hidden shadow-sm flex items-center justify-center">
               
-              {/* Google Meet Mockup */}
-              <div className="relative w-full h-[120px] bg-neutral-900 rounded-2xl overflow-hidden border border-neutral-200/50 shadow-inner flex items-center justify-center">
-                
-                {/* Big Screen: Mila Davis (Speaking) */}
-                <div className="flex flex-col items-center justify-center gap-2">
-                  <div className="w-12 h-12 rounded-full bg-white/[0.04] border border-white/10 flex items-center justify-center text-sm font-semibold text-white shadow-md">
-                    M
-                  </div>
-                  {/* Name overlay */}
-                  <div className="absolute bottom-2 left-2 bg-black/50 backdrop-blur-md px-2 py-0.5 rounded-lg text-[8px] text-white font-medium flex items-center gap-1">
-                    <Mic className="w-2.5 h-2.5 text-white" />
-                    <span>Mila Davis</span>
-                  </div>
+              {/* First User Content */}
+              <div className="flex flex-col items-center justify-center gap-1.5">
+                <div className="w-10 h-10 rounded-full bg-white border border-neutral-200/80 flex items-center justify-center text-xs font-semibold text-neutral-600 shadow-sm">
+                  R
                 </div>
+                <span className="text-[8px] text-neutral-500 font-medium">Ritesh</span>
+              </div>
 
-                {/* Small Screen: Elena R. (Muted) */}
-                <div className="absolute top-2 right-2 w-16 h-12 bg-neutral-800 border border-white/10 shadow-lg rounded-xl flex items-center justify-center overflow-hidden">
-                  <div className="w-6 h-6 rounded-full bg-white/[0.04] border border-white/10 flex items-center justify-center text-[9px] font-semibold text-white/90">
-                    E
+              {/* Second User floating screen at the bottom-right (lower right side) */}
+              <div className="absolute bottom-1.5 right-1.5 w-14 h-10 bg-white border border-neutral-200 shadow-[0_2px_8px_rgba(0,0,0,0.06)] rounded-lg flex items-center justify-center overflow-hidden">
+                <div className="flex flex-col items-center justify-center gap-0.5">
+                  <div className="w-5 h-5 rounded-full bg-neutral-50 border border-neutral-150 flex items-center justify-center text-[7px] font-semibold text-neutral-500">
+                    R
                   </div>
-                  {/* Small Name overlay */}
-                  <div className="absolute bottom-1 left-1 bg-black/60 px-1 py-0.5 rounded text-[5px] text-white/90 font-medium flex items-center gap-0.5">
-                    <MicOff className="w-1.5 h-1.5 text-neutral-450" />
-                    <span>Elena</span>
-                  </div>
+                  <span className="text-[5.5px] text-neutral-400 font-medium leading-none">Rox</span>
                 </div>
               </div>
 
-              {/* Badges */}
-              <div className="flex gap-2 pl-0.5 origin-left">
-                <div className="flex items-center gap-1 bg-blue-50 border border-blue-100 shadow-xs rounded-full px-2 py-0.5 text-[8.5px] text-blue-600 font-medium">
-                  <MessageCircle className="w-3 h-3 text-blue-600" />
-                  <span>16 new</span>
-                </div>
-                <div className="flex items-center gap-1 bg-neutral-50 border border-neutral-250 shadow-xs rounded-full px-2 py-0.5 text-[8.5px] text-neutral-500 font-medium">
-                  <Bot className="w-3 h-3 text-neutral-400" />
-                  <span>5 online</span>
-                </div>
-              </div>
             </div>
           </div>
 
@@ -552,7 +538,7 @@ const renderCardContent = (card: BigCard) => {
 
           {/* Title centered at bottom */}
           <div className="absolute bottom-3 inset-x-0 z-20 flex items-center justify-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-blue-600 flex items-center justify-center shrink-0 shadow-lg shadow-blue-600/20">
+            <div className="w-6 h-6 rounded-md bg-blue-500 flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/20">
               <MessageCircle className="w-3.5 h-3.5 text-white" />
             </div>
             <span className="text-zinc-950 font-semibold text-sm tracking-tight">
