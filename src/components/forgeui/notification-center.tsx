@@ -1,14 +1,14 @@
 "use client";
 import { motion, Variants } from "motion/react";
 import React, { useState } from "react";
-import { 
-  Phone, 
-  Music, 
-  Headphones, 
-  Mail, 
-  Video, 
-  Calendar, 
-  MessageSquare, 
+import {
+  Phone,
+  Music,
+  Headphones,
+  Mail,
+  Video,
+  Calendar,
+  MessageSquare,
   Camera,
   Layout,
   Globe,
@@ -178,7 +178,7 @@ const NotificationCenter = ({
             className="absolute left-[5%] z-10 h-14 w-[90%] overflow-hidden rounded-md bg-neutral-300 shadow-lg dark:bg-neutral-800"
           >
             <div className="flex h-full items-center gap-3 px-2">
-              <div className="flex h-10 w-10 flex-shrink-0 items-center justify-center rounded-lg bg-neutral-200 overflow-hidden shadow-lg dark:bg-neutral-700">
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-neutral-200 overflow-hidden shadow-lg dark:bg-neutral-700">
                 <Image
                   src="/kaya.svg"
                   alt="Kaya"
@@ -199,7 +199,7 @@ const NotificationCenter = ({
                       {notificationTime}
                     </span>
                   </div>
-                  <p className="w-[95%] truncate text-start text-[11px] text-neutral-600 dark:text-neutral-400">
+                  <p className="w-full text-start text-[11px] text-neutral-200 dark:text-neutral-100">
                     {notificationDescription}
                   </p>
                 </div>
@@ -209,56 +209,56 @@ const NotificationCenter = ({
           <div className="absolute top-10 flex h-full w-full flex-col items-center gap-3 px-4 pt-4">
             <div className="flex w-full items-center gap-5">
               <IconWrapper>
-                <Phone className="size-5 text-neutral-500" />
+                <Phone className="size-5 text-neutral-200" />
               </IconWrapper>
               <IconWrapper>
-                <Layout className="size-5 text-neutral-500" />
+                <Layout className="size-5 text-neutral-200" />
               </IconWrapper>
               <IconWrapper>
-                <Music className="size-5 text-neutral-500" />
+                <Music className="size-5 text-neutral-200" />
               </IconWrapper>
               <IconWrapper>
-                <Headphones className="size-5 text-neutral-500" />
+                <Headphones className="size-5 text-neutral-200" />
               </IconWrapper>
             </div>
             <div className="flex w-full items-center gap-5">
               <IconWrapper>
-                <Video className="size-5 text-neutral-500" />
+                <Video className="size-5 text-neutral-200" />
               </IconWrapper>
               <IconWrapper>
-                <Mail className="size-5 text-neutral-500" />
+                <Mail className="size-5 text-neutral-200" />
                 <motion.div
                   variants={lockVariant}
-                  className="absolute -left-1 -top-1 hidden h-3.5 w-3.5 items-center justify-center rounded-full text-[9px] text-neutral-500 dark:flex"
+                  className="absolute -left-1 -top-1 hidden h-3.5 w-3.5 items-center justify-center rounded-full text-[9px] text-neutral-100 dark:flex"
                 >
                   1
                 </motion.div>
                 <motion.div
                   variants={lockLightVariant}
-                  className="absolute -left-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full text-[9px] text-neutral-700 dark:hidden"
+                  className="absolute -left-1 -top-1 flex h-3.5 w-3.5 items-center justify-center rounded-full text-[9px] text-neutral-400 dark:hidden"
                 >
                   1
                 </motion.div>
               </IconWrapper>
               <IconWrapper>
-                <MessageSquare className="size-5 text-neutral-500" />
+                <MessageSquare className="size-5 text-neutral-200" />
               </IconWrapper>
               <IconWrapper>
-                <Camera className="size-5 text-neutral-500" />
+                <Camera className="size-5 text-neutral-200" />
               </IconWrapper>
             </div>
             <div className="flex w-full items-center gap-5">
               <IconWrapper>
-                <Globe className="size-5 text-neutral-500" />
+                <Globe className="size-5 text-neutral-200" />
               </IconWrapper>
               <IconWrapper>
-                <Calendar className="size-5 text-neutral-500" />
+                <Calendar className="size-5 text-neutral-200" />
               </IconWrapper>
               <IconWrapper>
-                <Users className="size-5 text-neutral-500" />
+                <Users className="size-5 text-neutral-200" />
               </IconWrapper>
               <IconWrapper>
-                <Settings className="size-5 text-neutral-500" />
+                <Settings className="size-5 text-neutral-200" />
               </IconWrapper>
             </div>
           </div>

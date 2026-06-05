@@ -1,13 +1,16 @@
 "use client";
 
 import React, { useState } from "react";
+import Image from "next/image";
 import AIChatSimulation from "./AIChatSimulation";
+import { AnimatedListDemo } from "./NotificationList";
 import { StripedPattern } from "@/components/magicui/striped-pattern";
 import { FlickeringGrid } from "@/components/ui/flickering-grid";
 import { HexagonPattern } from "@/components/ui/hexagon-pattern";
 import NotificationCenter from "@/components/forgeui/notification-center";
 import VaultLock from "@/components/forgeui/vault-lock";
 import FrameworkAgnostic from "@/components/forgeui/framework-agnostic";
+import { ProjectProgressChart } from "./ProjectProgressChart";
 
 const Section1 = () => {
   const [isHovered2, setIsHovered2] = useState(false);
@@ -18,21 +21,53 @@ const Section1 = () => {
         <div className="border border-b-0 border-white/10 rounded-t-xl overflow-hidden bg-neutral-950 ">
           {/* Main Heading Section */}
           <div className="p-12 md:p-12 text-center border-b border-white/10">
-            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-blue-500/20 backdrop-blur-md bg-blue-500/5 shadow-[0_0_20px_rgba(59,130,246,0.1)] mb-8">
-              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(96,165,250,0.8)] " />
+            <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/20 backdrop-blur-md bg-muted/10 shadow-[0_0_20px_rgba(59,130,246,0.1)] mb-8">
+              <div className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_8px_rgba(96,165,250,0.8)] " />
               <span className="text-sm  text-neutral-200 tracking-wide">
                 Purpose-built for engineering teams
               </span>
             </div>
 
-            <h2 className="text-5xl font-semibold tracking-tight mb-6 leading-tight max-w-4xl mx-auto">
-              <span className="text-white">Built for speed.</span> <br />
-              <span className="text-neutral-400">
-                Designed for simplicity.
+            <h2 className="text-4xl font-semibold tracking-tight mb-6 leading-tight max-w-4xl mx-auto flex flex-wrap items-center justify-center gap-x-2.5 gap-y-2">
+              <span className="text-white">Why Teams</span>
+              <span className="inline-flex items-center -space-x-3.5 mx-1">
+                <span className="relative w-9 h-9 rounded-full border-2 border-black overflow-hidden bg-neutral-800 shrink-0 transition-transform duration-300 hover:scale-110 hover:z-10 cursor-pointer">
+                  <Image
+                    src="/riteshdp2.jpg"
+                    alt="Team member 1"
+                    fill
+                    className="object-cover"
+                  />
+                </span>
+                <span className="relative w-9 h-9 rounded-full border-2 border-black overflow-hidden bg-neutral-800 shrink-0 transition-transform duration-300 hover:scale-110 hover:z-10 cursor-pointer">
+                  <Image
+                    src="/aashi.jpg"
+                    alt="Team member 2"
+                    fill
+                    className="object-cover"
+                  />
+                </span>
+                <span className="relative w-9 h-9 rounded-full border-2 border-black overflow-hidden bg-neutral-800 shrink-0 transition-transform duration-300 hover:scale-110 hover:z-10 cursor-pointer">
+                  <Image
+                    src="/roxdp.jpg"
+                    alt="Team member 3"
+                    fill
+                    className="object-cover"
+                  />
+                </span>
+                <span className="relative w-9 h-9 rounded-full border-2 border-black overflow-hidden bg-neutral-800 shrink-0 transition-transform duration-300 hover:scale-110 hover:z-10 cursor-pointer">
+                  <Image
+                    src="/bhanu.png"
+                    alt="Bhanu"
+                    fill
+                    className="object-cover"
+                  />
+                </span>
               </span>
+              <span className="text-white">Prefer WeKraft over others</span>
             </h2>
 
-            <p className="text-neutral-400 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
+            <p className="text-neutral-400 text-lg max-w-xl mx-auto leading-relaxed">
               The cleanest way to manage ambitious projects. WeKraft combines
               intelligent PM with real-time collaboration.
             </p>
@@ -48,7 +83,7 @@ const Section1 = () => {
                 squareSize={3}
                 gridGap={6}
                 color="#F4F4F6"
-                maxOpacity={0.2}
+                maxOpacity={0.1}
                 flickerChance={0.1}
               />
               {/* Side Decorations */}
@@ -90,7 +125,7 @@ const Section1 = () => {
                 squareSize={3}
                 gridGap={6}
                 color="#F4F4F6"
-                maxOpacity={0.2}
+                maxOpacity={0.1}
                 flickerChance={0.1}
               />
 
@@ -104,7 +139,7 @@ const Section1 = () => {
                   cardTitle="Real-time project health"
                   cardDescription="Get instant updates from Kaya about deadlines, delays, and critical sprint updates."
                   notificationTitle="Kaya PM"
-                  notificationDescription="Deadline Alert: Sprint 4 is at risk of a 2-day delay."
+                  notificationDescription="Sprint 4 is at risk of delay."
                   notificationTime="Just now"
                 />
               </div>
@@ -120,14 +155,14 @@ const Section1 = () => {
             <div
               onMouseEnter={() => setIsHovered3(true)}
               onMouseLeave={() => setIsHovered3(false)}
-              className="relative overflow-hidden border-b md:border-b-0 md:border-r border-white/10 group hover:bg-white/[0.01] transition-colors duration-500 min-h-[500px] flex items-center justify-center"
+              className="relative overflow-hidden border-b md:border-b-0 md:border-r border-white/10 group hover:bg-white/[0.01] transition-colors duration-500 min-h-[500px] flex flex-col items-stretch justify-between"
             >
               <FlickeringGrid
                 className="absolute inset-y-0 left-8 right-8 z-0 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]"
                 squareSize={3}
                 gridGap={6}
                 color="#F4F4F6"
-                maxOpacity={0.2}
+                maxOpacity={0.1}
                 flickerChance={0.1}
               />
 
@@ -135,6 +170,20 @@ const Section1 = () => {
               <div className="absolute inset-y-0 left-0 w-8 border-r border-white/10 bg-neutral-900 z-20" />
               <div className="absolute inset-y-0 right-0 w-8 border-l border-white/10 bg-neutral-950 z-20" />
 
+              {/* Content Container */}
+              <div className="px-12 md:px-20 py-12 flex-1 flex flex-col justify-between relative z-10 w-full">
+                <div className="w-full flex items-center justify-center">
+                  <AnimatedListDemo className="h-[320px] w-full" />
+                </div>
+                <div className="mt-8">
+                  <h3 className="text-white text-xl font-semibold mb-2">
+                    Live Collaboration Feed
+                  </h3>
+                  <p className="text-neutral-500 text-sm leading-relaxed max-w-md">
+                    Stay synced on team activity. Get instant updates on messages, status completions, and automatic system upgrades.
+                  </p>
+                </div>
+              </div>
 
               {/* Ticks/Markers */}
               <div className="absolute top-0 left-8 w-px h-5 bg-white/40" />
@@ -144,21 +193,34 @@ const Section1 = () => {
             </div>
 
             {/* Element 4 */}
-            <div className="relative overflow-hidden group hover:bg-white/[0.01] transition-colors duration-500 min-h-[500px] flex items-center justify-center">
+            <div className="relative overflow-hidden group hover:bg-white/[0.01] transition-colors duration-500 min-h-[500px] flex flex-col items-stretch justify-between">
               <FlickeringGrid
                 className="absolute inset-y-0 left-8 right-8 z-0 [mask-image:radial-gradient(ellipse_at_center,white,transparent)]"
                 squareSize={3}
                 gridGap={6}
                 color="#F4F4F6"
-                maxOpacity={0.2}
+                maxOpacity={0.1}
                 flickerChance={0.1}
               />
 
-
               {/* Side Decorations */}
               <div className="absolute inset-y-0 left-0 w-8 border-r border-white/10 bg-neutral-950 z-20" />
-              <div className="absolute inset-y-0 right-0 w-8 border-l  border-white/10 bg-neutral-900 z-20" />
+              <div className="absolute inset-y-0 right-0 w-8 border-l border-white/10 bg-neutral-900 z-20" />
 
+              {/* Content Container */}
+              <div className="px-12 md:px-14 py-12 flex-1 flex flex-col justify-between relative z-10 w-full">
+                <div className="w-full flex items-center justify-center">
+                  <ProjectProgressChart />
+                </div>
+                <div className="mt-8">
+                  <h3 className="text-white text-xl font-semibold mb-2">
+                    Track Progress in Real Time
+                  </h3>
+                  <p className="text-neutral-500 text-sm leading-relaxed max-w-md">
+                    Watch your team's velocity grow sprint-over-sprint. Live charts update as tasks are completed and milestones are hit.
+                  </p>
+                </div>
+              </div>
 
               {/* Ticks/Markers */}
               <div className="absolute top-0 left-8 w-px h-5 bg-white/40" />
@@ -178,7 +240,7 @@ const Section1 = () => {
 
           <div className="relative z-10 flex  gap-4">
             <img
-              src="/me3.jpg"
+              src="/roxdp.jpg"
               alt="rox"
               className="w-14 h-14 rounded-full object-cover border border-white/20"
             />

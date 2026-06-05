@@ -1,7 +1,6 @@
 import React from "react";
 import { Metadata } from "next";
 import Navbar from "@/modules/web/Navbar";
-import CompareHero from "@/modules/web/compare/CompareHero";
 import CompareTable, { ComparisonFeature } from "@/modules/web/compare/CompareTable";
 import CompareFeatures from "@/modules/web/compare/CompareFeatures";
 import CompareFAQ, { FAQItem } from "@/modules/web/compare/CompareFAQ";
@@ -77,20 +76,10 @@ export default function LinearComparePage() {
       <Navbar />
 
       <main className="flex flex-col items-center pt-32 pb-16 px-4 md:px-8 text-center w-full mx-auto relative z-10">
-        <CompareHero
-          competitorName="Linear"
-          competitorLogo={<img src="/linear.png" alt="Linear" className="w-3.5 h-3.5 object-contain" />}
-          competitorColor="from-purple-600 to-indigo-600"
-          title1="Map codebase stress."
-          title2="Interactive git heatmaps."
-          description="Trace issues directly to repositories. Wekraft's interactive heatmap panel visualizes active branch paths and directory stress points automatically."
-          visualMockup={<img src="/heat.png" alt="Wekraft Codebase Heatmap" className="w-full rounded-2xl object-cover border border-white/[0.08]" />}
-        />
-
         <div className="w-full max-w-7xl mx-auto px-4 md:px-8">
           <CompareTable
             competitorName="Linear"
-            competitorLogo={<img src="/linear.png" alt="Linear" className="w-4 h-4 object-contain" />}
+            competitorLogo={<img src="/linear.png" alt="Linear" className="w-5 h-5 object-contain" />}
             features={linearFeatures}
           />
 

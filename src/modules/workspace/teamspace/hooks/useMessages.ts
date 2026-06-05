@@ -120,7 +120,7 @@ export function useMessages(
   currentUserId: string,
   currentUserName?: string,
   threadParentId?: string,
-  channelType?: "text" | "announcement" | "private"
+  channelType?: "community" | "announcement" | "private"
 ) {
   const [messages, setMessages] = useState<Message[]>(() => {
     if (channelId && memoryCache[channelId] && Date.now() - memoryCache[channelId].timestamp < 60000) {

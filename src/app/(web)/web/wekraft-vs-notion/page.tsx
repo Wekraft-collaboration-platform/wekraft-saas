@@ -1,7 +1,6 @@
 import React from "react";
 import { Metadata } from "next";
 import Navbar from "@/modules/web/Navbar";
-import CompareHero from "@/modules/web/compare/CompareHero";
 import CompareTable, { ComparisonFeature } from "@/modules/web/compare/CompareTable";
 import CompareFeatures from "@/modules/web/compare/CompareFeatures";
 
@@ -77,20 +76,10 @@ export default function NotionComparePage() {
       <Navbar />
 
       <main className="flex flex-col items-center pt-32 pb-16 px-4 md:px-8 text-center w-full mx-auto relative z-10">
-        <CompareHero
-          competitorName="Notion"
-          competitorLogo={<FileText className="w-3.5 h-3.5 text-neutral-300" />}
-          competitorColor="from-neutral-100 to-neutral-400"
-          title1="Centralize your issues."
-          title2="Built for shipping code."
-          description="Ditch fragile Notion databases. Wekraft delivers a sub-second, structured kanban board with built-in severity levels and automated sprint syncing."
-          visualMockup={<img src="/issues.png" alt="Wekraft Issues Board" className="w-full rounded-2xl object-cover border border-white/[0.08]" />}
-        />
-
         <div className="w-full max-w-7xl mx-auto px-4 md:px-8">
           <CompareTable
             competitorName="Notion"
-            competitorLogo={<FileText className="w-3.5 h-3.5 text-neutral-400" />}
+            competitorLogo={<img src="/Notion-logo.png" alt="Notion" className="w-5 h-5 object-contain" />}
             features={notionFeatures}
           />
 

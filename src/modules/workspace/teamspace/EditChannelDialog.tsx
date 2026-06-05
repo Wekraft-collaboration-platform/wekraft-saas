@@ -25,6 +25,7 @@ import {
   FormLabel,
   FormMessage,
 } from "@/components/ui/form";
+import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
@@ -53,6 +54,7 @@ interface Props {
     channelId: string,
     name: string,
     description: string,
+    type?: "community" | "announcement" | "private",
     memberIds?: string[],
   ) => Promise<boolean>;
   channel: Channel | null;
@@ -73,6 +75,11 @@ export function EditChannelDialog({
   const [loading, setLoading] = useState(false);
   const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([]);
   const [fetchingMembers, setFetchingMembers] = useState(false);
+  const [isPrivate, setIsPrivate] = useState(false);
+
+  // Creator, admin, or owner can toggle a private channel back to public
+  const isCreator = channel?.created_by === currentUserId;
+  const canTogglePublic = isCreator || isPower;
 
   const form = useForm<FormValues>({
     // @ts-ignore
@@ -80,22 +87,28 @@ export function EditChannelDialog({
     defaultValues: { name: "", description: "" },
   });
 
+  // Fetch project members when channel is private (existing) OR when user toggles private ON
+  const shouldFetchMembers = (isPrivate || channel?.type === "private") && isPower && projectId;
   const projectMembers = useQuery(
     api.project.getProjectMembers,
-    channel?.type === "private" && isPower && projectId
+    shouldFetchMembers
       ? { projectId: projectId as Id<"projects"> }
       : "skip",
   );
 
+  // Sync form values when the target channel changes
   useEffect(() => {
     if (channel) {
       form.reset({
         name: channel.name,
         description: channel.description ?? "",
       });
+      // Sync private toggle state from channel type
+      setIsPrivate(channel.type === "private");
     }
   }, [channel, form]);
 
+  // Pre-load existing private channel members when opening
   useEffect(() => {
     if (channel && channel.type === "private" && open) {
       setFetchingMembers(true);
@@ -110,7 +123,7 @@ export function EditChannelDialog({
           console.error("Failed to fetch private channel members", err),
         )
         .finally(() => setFetchingMembers(false));
-    } else {
+    } else if (channel?.type !== "private") {
       setSelectedMemberIds([]);
     }
   }, [channel, open]);
@@ -127,11 +140,25 @@ export function EditChannelDialog({
     if (!channel) return;
     setLoading(true);
     try {
+      const wasAlreadyPrivate = channel.type === "private";
+
+      // Converting private → public: send type="community" to revert
+      const newType: "community" | "private" | undefined =
+        isPrivate && !wasAlreadyPrivate
+          ? "private"
+          : !isPrivate && wasAlreadyPrivate
+          ? "community"
+          : undefined;
+
+      // Pass memberIds when managing private channel members
+      const memberIdsToSend = isPrivate && isPower ? selectedMemberIds : undefined;
+
       const success = await onUpdate(
         channel.id,
         values.name,
         values.description ?? "",
-        channel.type === "private" && isPower ? selectedMemberIds : undefined,
+        newType,
+        memberIdsToSend,
       );
       if (success) {
         onOpenChange(false);
@@ -148,7 +175,9 @@ export function EditChannelDialog({
     viewer: "Viewer",
   };
 
-  const isPrivate = channel?.type === "private";
+  const isAlreadyPrivate = channel?.type === "private";
+  const isDefault = channel?.is_default === 1;
+  const showMemberPicker = isPrivate && isPower && !isDefault;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -183,7 +212,8 @@ export function EditChannelDialog({
                       <Input
                         {...field}
                         placeholder="e.g. dev-chat"
-                        className="border-0 p-0 h-9 shadow-none focus-visible:ring-0 bg-transparent!"
+                        disabled={isDefault}
+                        className="border-0 p-0 h-9 shadow-none focus-visible:ring-0 bg-transparent! disabled:cursor-not-allowed disabled:opacity-60"
                         onChange={(e) =>
                           field.onChange(
                             e.target.value.toLowerCase().replace(/\s+/g, "-"),
@@ -192,6 +222,11 @@ export function EditChannelDialog({
                       />
                     </div>
                   </FormControl>
+                  {isDefault && (
+                    <p className="text-[10px] text-muted-foreground">
+                      Default channel names cannot be changed.
+                    </p>
+                  )}
                   <FormMessage />
                 </FormItem>
               )}
@@ -219,12 +254,55 @@ export function EditChannelDialog({
               )}
             />
 
-            {/* Member Picker (only shown for private channels and user is owner/admin) */}
-            {isPrivate && isPower && (
+            {/* ── Private Toggle (hidden for default channels) ── */}
+            {!isDefault && (
+            <div
+              className={cn(
+                "flex items-center justify-between rounded-lg border px-3 py-2.5",
+                isPrivate
+                  ? "border-primary/20 bg-primary/5"
+                  : "border-border bg-muted/30",
+              )}
+            >
+              <div className="flex items-center gap-2.5">
+                <Lock
+                  className={cn(
+                    "h-3.5 w-3.5 shrink-0",
+                    isPrivate ? "text-primary" : "text-muted-foreground",
+                  )}
+                />
+                <div>
+                  <p className="text-xs font-medium leading-tight">
+                    Private Channel
+                  </p>
+                  <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
+                    {isAlreadyPrivate
+                      ? canTogglePublic
+                        ? "Toggle off to make this channel public"
+                        : "This channel is already private"
+                      : "Only selected members can access"}
+                  </p>
+                </div>
+              </div>
+              <Switch
+                id="edit-private-toggle"
+                checked={isPrivate}
+                disabled={isAlreadyPrivate && !canTogglePublic}
+                onCheckedChange={(v) => {
+                  setIsPrivate(v);
+                  if (!v) setSelectedMemberIds([]);
+                }}
+                size="sm"
+              />
+            </div>
+            )}
+
+            {/* Member Picker (shown when private toggle is on and user is owner/admin) */}
+            {showMemberPicker && (
               <div className="space-y-1.5 pt-1">
                 <div className="flex items-center justify-between">
                   <FormLabel className="text-xs font-semibold">
-                    Manage Members
+                    {isAlreadyPrivate ? "Manage Members" : "Add Members"}
                   </FormLabel>
                   {selectedMemberIds.length > 0 && (
                     <span className="text-[11px] text-muted-foreground">
@@ -233,8 +311,9 @@ export function EditChannelDialog({
                   )}
                 </div>
                 <p className="text-[10px] text-muted-foreground leading-snug">
-                  Admins &amp; owners can add or remove members from this
-                  private channel.
+                  {isAlreadyPrivate
+                    ? "Admins & owners can add or remove members from this private channel."
+                    : "You're always included. Admins & owners can view all private channels."}
                 </p>
                 <ScrollArea className="h-[110px] rounded-md border bg-background/50">
                   <div className="p-2 space-y-1">

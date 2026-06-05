@@ -79,7 +79,7 @@ const HarryPRReview = () => {
   const getStatusColor = (status: ReviewStep["status"]) => {
     switch (status) {
       case "done":
-        return "text-emerald-400";
+        return "text-white";
       case "warning":
         return "text-amber-400";
       default:
@@ -90,7 +90,7 @@ const HarryPRReview = () => {
   const getStatusDot = (status: ReviewStep["status"]) => {
     switch (status) {
       case "done":
-        return "bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]";
+        return "bg-white shadow-[0_0_8px_rgba(255,255,255,0.4)]";
       case "warning":
         return "bg-amber-500 shadow-[0_0_8px_rgba(245,158,11,0.6)]";
       default:
@@ -102,9 +102,9 @@ const HarryPRReview = () => {
     <div className="relative">
       {/* PR Header */}
       <div className="flex items-center gap-3 mb-5 px-1">
-        <div className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-purple-500/10 border border-purple-500/20">
-          <GitPullRequest className="w-3.5 h-3.5 text-purple-400" />
-          <span className="text-xs font-medium text-purple-300">#247</span>
+        <div className="flex items-center gap-2 px-2.5 py-1 rounded-md bg-white/5 border border-white/10">
+          <GitPullRequest className="w-3.5 h-3.5 text-white/90" />
+          <span className="text-xs font-medium text-white">#247</span>
         </div>
         <div className="flex-1 min-w-0">
           <p className="text-[13px] text-white/80 font-medium truncate">
@@ -241,9 +241,9 @@ const AIFirstSection = () => {
         >
           <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
             <div>
-              <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-blue-500/20 backdrop-blur-md bg-blue-500/5 shadow-[0_0_20px_rgba(59,130,246,0.1)] mb-6">
-                <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(96,165,250,0.8)]" />
-                <span className="text-sm text-neutral-200 tracking-wide">
+              <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/10 bg-neutral-900/50 backdrop-blur-sm mb-6">
+                <div className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
+                <span className="text-[13px] font-medium text-white tracking-wide">
                   AI-First Approach
                 </span>
               </div>
@@ -303,9 +303,9 @@ const AIFirstSection = () => {
             </div>
 
             {/* Image — edge-to-edge for bigger presence */}
-            <div className="relative z-10 px-2 pb-0 mt-10">
+            <div className="relative z-10 mt-10 h-[240px] md:h-[360px] overflow-hidden">
               <div
-                className="relative rounded-t-xl overflow-hidden border border-b-0 border-white/[0.06]"
+                className="relative w-full h-full border border-b-0 border-white/[0.06] rounded-t-xl overflow-hidden"
                 style={{
                   maskImage:
                     "linear-gradient(to bottom, black 60%, transparent 100%)",
@@ -316,10 +316,8 @@ const AIFirstSection = () => {
                 <Image
                   src="/kaya-team.png"
                   alt="Kaya AI PM Agent managing team in WeKraft teamspace"
-                  width={1200}
-                  height={750}
-                  className="w-full h-auto block"
-                  quality={90}
+                  fill
+                  className="object-cover object-top scale-125 origin-top transition-transform duration-500 group-hover:scale-130"
                   sizes="(max-width: 1080px) 100vw, 50vw"
                 />
               </div>
@@ -383,8 +381,8 @@ const AIFirstSection = () => {
                     Harry is reviewing...
                   </span>
                   <div className="ml-auto flex items-center gap-1.5">
-                    <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_6px_rgba(16,185,129,0.5)]" />
-                    <span className="text-[10px] text-emerald-400/80">Live</span>
+                    <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse shadow-[0_0_6px_rgba(255,255,255,0.5)]" />
+                    <span className="text-[10px] text-white/80">Live</span>
                   </div>
                 </div>
 
@@ -408,9 +406,9 @@ const AIFirstSection = () => {
             {kayaFeatures.map((feat, i) => (
               <div
                 key={i}
-                className="rounded-xl border border-white/[0.06] bg-neutral-900 p-4 hover:bg-neutral-800/60 transition-colors duration-300"
+                className="rounded-xl border border-white/[0.08] bg-[#121316]/90 p-4 hover:bg-[#1a1b1e]/90 hover:border-white/[0.15] transition-all duration-300"
               >
-                <div className="w-8 h-8 rounded-lg bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-neutral-300 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-[#1a1b1e] border border-white/[0.06] flex items-center justify-center text-neutral-300 mb-3">
                   {feat.icon}
                 </div>
                 <h4 className="text-white text-sm font-semibold mb-1">
@@ -438,9 +436,9 @@ const AIFirstSection = () => {
             {harryFeatures.map((feat, i) => (
               <div
                 key={i}
-                className="rounded-xl border border-white/[0.06] bg-neutral-900 p-4 hover:bg-neutral-800/60 transition-colors duration-300"
+                className="rounded-xl border border-white/[0.08] bg-[#121316]/90 p-4 hover:bg-[#1a1b1e]/90 hover:border-white/[0.15] transition-all duration-300"
               >
-                <div className="w-8 h-8 rounded-lg bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-neutral-300 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-[#1a1b1e] border border-white/[0.06] flex items-center justify-center text-neutral-300 mb-3">
                   {feat.icon}
                 </div>
                 <h4 className="text-white text-sm font-semibold mb-1">

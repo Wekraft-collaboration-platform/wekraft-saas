@@ -2,7 +2,7 @@
 
 import { motion, useInView } from "framer-motion";
 import Image from "next/image";
-import React, { useRef } from "react";
+import React, { useRef, useEffect } from "react";
 
 interface FeatureBlock {
   tag: string;
@@ -61,7 +61,7 @@ const FeatureRow = ({ feature, index }: { feature: FeatureBlock; index: number }
   return (
     <div
       ref={ref}
-      className={`grid grid-cols-1 lg:grid-cols-5 gap-10 lg:gap-16 items-center py-20 md:py-28 ${index !== features.length - 1 ? "border-b border-white/[0.06]" : ""
+      className={`grid grid-cols-1 lg:grid-cols-5 gap-10 lg:gap-16 items-center py-20 ${index !== features.length - 1 ? "border-b border-white/[0.06]" : ""
         }`}
     >
       {/* Text Block */}
@@ -73,16 +73,16 @@ const FeatureRow = ({ feature, index }: { feature: FeatureBlock; index: number }
       >
         {/* Tag pill */}
         <div className="flex items-center gap-2">
-          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-blue-500/20 bg-blue-500/[0.06] backdrop-blur-sm">
-            <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
-            <span className="text-[13px] font-medium text-blue-300/90 tracking-wide">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/15! bg-muted backdrop-blur-sm">
+            <div className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
+            <span className="text-[13px] font-medium text-white tracking-wide">
               {feature.tag}
             </span>
           </div>
         </div>
 
         {/* Title */}
-        <h3 className="text-2xl md:text-[32px] font-semibold text-white tracking-tight leading-[1.2]">
+        <h3 className="text-2xl font-semibold text-white tracking-tight leading-[1.2]">
           {feature.title}
         </h3>
 
@@ -129,12 +129,12 @@ const FeatureRow = ({ feature, index }: { feature: FeatureBlock; index: number }
           delay: 0.3,
         }}
       >
-        {/* Glow behind image */}
-        <div className="absolute -inset-4 bg-blue-500/[0.04] rounded-2xl blur-2xl pointer-events-none" />
 
-        {/* Image container — mask fades the entire box including border */}
+        <div className="absolute -inset-x-4 -top-4 bottom-1/4 bg-linear-to-b from-neutral-800/90 to-transparent rounded-t-2xl blur-2xl pointer-events-none" />
+
+
         <div
-          className="relative rounded-xl overflow-hidden border border-white/[0.08] shadow-[0_8px_60px_rgba(0,0,0,0.5)] group"
+          className="relative rounded-xl overflow-hidden border border-white/10 shadow-[0_8px_60px_rgba(0,0,0,0.5)] group"
           style={{
             maskImage: "linear-gradient(to bottom, black 50%, transparent 100%)",
             WebkitMaskImage: "linear-gradient(to bottom, black 50%, transparent 100%)",
@@ -162,8 +162,49 @@ const WhyWeKraft = () => {
   const sectionRef = useRef<HTMLDivElement>(null);
   const headerInView = useInView(sectionRef, { once: true, margin: "-60px 0px" });
 
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("scroll") === "features") {
+      const timer = setTimeout(() => {
+        const element = document.getElementById("features");
+        if (element) {
+          // Immediately scroll to top so we animate down from y=0
+          window.scrollTo(0, 0);
+
+          const targetPosition = element.getBoundingClientRect().top + window.pageYOffset - 90;
+          const startPosition = 0;
+          const distance = targetPosition;
+          const duration = 1200; // Slower duration (1.2 seconds)
+          let start: number | null = null;
+
+          const step = (timestamp: number) => {
+            if (!start) start = timestamp;
+            const progress = timestamp - start;
+            const percentage = Math.min(progress / duration, 1);
+            
+            // Easing function (easeInOutCubic)
+            const easing = percentage < 0.5 
+              ? 4 * percentage * percentage * percentage 
+              : 1 - Math.pow(-2 * percentage + 2, 3) / 2;
+
+            window.scrollTo(0, startPosition + distance * easing);
+
+            if (progress < duration) {
+              window.requestAnimationFrame(step);
+            }
+          };
+
+          window.requestAnimationFrame(step);
+        }
+        // Clean up URL query parameter
+        window.history.replaceState(null, "", window.location.pathname);
+      }, 400); // 400ms delay to let the page mount
+      return () => clearTimeout(timer);
+    }
+  }, []);
+
   return (
-    <section className="bg-black py-20 md:py-32 px-6 md:px-12 font-sans overflow-hidden">
+    <section id="features" className="bg-black py-20 md:py-32 px-6 md:px-12 font-sans overflow-hidden">
       <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <motion.div
@@ -173,13 +214,15 @@ const WhyWeKraft = () => {
           animate={headerInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 24 }}
           transition={{ duration: 0.6, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
-          <h2 className="text-4xl md:text-5xl font-semibold tracking-tight text-white mb-5">
-            Why teams choose{" "}
-            <span className="bg-gradient-to-r from-blue-400 to-blue-600 bg-clip-text text-transparent">
-              WeKraft
-            </span>
-          </h2>
-          <p className="text-neutral-400 text-lg md:text-xl max-w-2xl mx-auto leading-relaxed">
+
+          <div className=" font-semibold text-5xl tracking-tight mb-4 leading-[1.1]! max-w-4xl mx-auto">
+            <h2 className="text-white">Built for speed.</h2>
+            <h2 className="text-neutral-400  mt-1">
+              Designed for simplicity.
+            </h2>
+          </div>
+
+          <p className="text-neutral-400 text-lg max-w-xl mx-auto leading-relaxed">
             Everything you need to plan, track, and ship — in one workspace that actually feels good.
           </p>
         </motion.div>

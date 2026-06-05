@@ -92,6 +92,12 @@ export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDi
   const scrollContainerRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
+    if (isOpen) {
+      setActiveTab("ai");
+    }
+  }, [isOpen]);
+
+  useEffect(() => {
     if (scrollContainerRef.current) {
       scrollContainerRef.current.scrollTo({
         top: scrollContainerRef.current.scrollHeight,
@@ -101,7 +107,7 @@ export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDi
   }, [messages, toolStatus, isStreaming]);
 
   // Form State
-  const [activeTab, setActiveTab] = useState<"contact" | "ai">("contact");
+  const [activeTab, setActiveTab] = useState<"contact" | "ai">("ai");
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [selectedTag, setSelectedTag] = useState<"found bug" | "help needed" | "query" | "payment issue" | "others">("found bug");
@@ -207,18 +213,18 @@ export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDi
 
             <div className="flex items-center rounded! gap-2 bg-zinc-900">
               <Button
-                variant={activeTab === "contact" ? "default" : "outline"}
-                className="text-[10px] h-7!"
-                onClick={() => setActiveTab("contact")}
-              >
-                Contact support
-              </Button>
-              <Button
                 variant={activeTab === "ai" ? "default" : "outline"}
                 className="text-[10px] h-7!"
                 onClick={() => setActiveTab("ai")}
               >
                 Talk to AI
+              </Button>
+              <Button
+                variant={activeTab === "contact" ? "default" : "outline"}
+                className="text-[10px] h-7!"
+                onClick={() => setActiveTab("contact")}
+              >
+                Contact support
               </Button>
             </div>
           </div>

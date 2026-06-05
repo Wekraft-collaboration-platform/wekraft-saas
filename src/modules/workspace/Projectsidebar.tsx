@@ -1025,7 +1025,7 @@ export default function ProjectSidebar() {
                     className="group relative overflow-hidden cursor-pointer  group-data-[collapsible=icon]:hidden"
                   >
                     <Link
-                      href={`/dashboard/my-projects/${slug}/settings/delete`}
+                      href={`/dashboard/my-projects/${slug}/workspace/delete`}
                       className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
                     >
                       <Trash2 className="h-5 w-5 text-destructive" />

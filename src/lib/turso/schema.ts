@@ -47,7 +47,7 @@ export async function initTeamspaceDB() {
       project_id  TEXT NOT NULL,
       name        TEXT NOT NULL,
       description TEXT,
-      type        TEXT NOT NULL DEFAULT 'text',
+      type        TEXT NOT NULL DEFAULT 'community',
       is_default  INTEGER NOT NULL DEFAULT 0,
       created_by  TEXT NOT NULL,
       created_at  INTEGER NOT NULL,
@@ -226,4 +226,10 @@ async function runMigrations() {
       "CREATE INDEX IF NOT EXISTS idx_pcm_user ON ts_private_channel_members(user_id);"
     );
   } catch { /* already exists */ }
+
+  // Add made_public_at column — tracks when a private channel was converted to public.
+  // Messages created before this timestamp are hidden from all users (pre-conversion privacy).
+  try {
+    await turso.execute("ALTER TABLE ts_channels ADD COLUMN made_public_at INTEGER;");
+  } catch { /* already exists — safe to ignore */ }
 }
