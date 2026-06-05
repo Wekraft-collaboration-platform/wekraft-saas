@@ -239,15 +239,15 @@ const AIFirstSection = () => {
           animate={headerInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
           transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
-          <div className="flex flex-col lg:flex-row lg:items-end lg:justify-between gap-8">
-            <div>
+          <div className="flex flex-col items-center text-center lg:items-end lg:justify-between lg:flex-row lg:text-left gap-8">
+            <div className="flex flex-col items-center lg:items-start">
               <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/10 bg-neutral-900/50 backdrop-blur-sm mb-6">
                 <div className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
                 <span className="text-[13px] font-medium text-white tracking-wide">
                   AI-First Approach
                 </span>
               </div>
-              <h2 className="text-4xl md:text-5xl font-semibold tracking-tight text-white leading-[1.15]">
+              <h2 className="text-3xl sm:text-4xl md:text-5xl font-semibold tracking-tight text-white leading-[1.15] text-center lg:text-left">
                 Meet your AI team.{" "}
                 <br className="hidden md:block" />
                 <span className="text-neutral-400">
@@ -255,7 +255,7 @@ const AIFirstSection = () => {
                 </span>
               </h2>
             </div>
-            <p className="text-neutral-400 text-base md:text-lg max-w-md leading-relaxed lg:text-right">
+            <p className="text-neutral-400 text-sm sm:text-base md:text-lg max-w-md leading-relaxed text-center lg:text-right">
               Two AI agents that live inside your workspace — one manages your
               project, the other guards your code. Together, they handle the
               work nobody wants to do.

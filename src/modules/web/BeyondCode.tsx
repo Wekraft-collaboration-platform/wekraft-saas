@@ -68,12 +68,12 @@ const BeyondCode = () => {
             </span>
           </div>
 
-          <div className="font-semibold text-5xl tracking-tight mb-4 leading-[1.1] max-w-4xl mx-auto">
+          <div className="font-semibold text-3xl sm:text-4xl md:text-5xl tracking-tight mb-4 leading-[1.1] max-w-4xl mx-auto">
             <h2 className="text-white">Your entire team workflow.</h2>
             <h2 className="text-neutral-400 mt-1">One connected space.</h2>
           </div>
 
-          <p className="text-neutral-400 text-lg max-w-xl mx-auto leading-relaxed">
+          <p className="text-neutral-400 text-sm sm:text-base md:text-lg max-w-xl mx-auto leading-relaxed">
             From daily standups to customer support — every tool your team
             needs, already built in.
           </p>
