@@ -854,4 +854,56 @@ http.route({
   }),
 });
 
+// ── GET /ext/tickets?projectId=… — list my tickets (authorized) ───────────
+http.route({
+  path: "/ext/tickets",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const auth = await authenticateRequest(ctx, request);
+    if (!auth.ok) return auth.response;
+    const url = new URL(request.url);
+    const projectId = url.searchParams.get("projectId");
+    if (!projectId) return new Response(JSON.stringify({ error: "projectId required" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+
+    try {
+      const tickets = await ctx.runQuery(internal.extensionApi.getMyTicketsFull, {
+        projectId: projectId as any,
+        userId: auth.userId as any,
+      });
+      return new Response(JSON.stringify(tickets), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    } catch (e: any) {
+      return new Response(JSON.stringify({ error: e.message }), { status: 403, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    }
+  }),
+});
+
+// ── PATCH /ext/tickets/:id — close or reopen a ticket (authorized) ─────────
+http.route({
+  pathPrefix: "/ext/tickets/",
+  method: "PATCH",
+  handler: httpAction(async (ctx, request) => {
+    const auth = await authenticateRequest(ctx, request);
+    if (!auth.ok) return auth.response;
+    const url = new URL(request.url);
+    const ticketId = url.pathname.replace(/^\/ext\/tickets\//, "").split("/")[0];
+    if (!ticketId) return new Response(JSON.stringify({ error: "Missing ticketId" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+
+    try {
+      const body = await request.json();
+      if (body.status !== "open" && body.status !== "closed") {
+        return new Response(JSON.stringify({ error: "status must be 'open' or 'closed'" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      }
+      const updated = await ctx.runMutation(internal.extensionApi.updateTicketStatusInternal, {
+        ticketId: ticketId as any,
+        userId: auth.userId as any,
+        status: body.status,
+      });
+      return new Response(JSON.stringify(updated), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    } catch (e: any) {
+      return new Response(JSON.stringify({ error: e.message }), { status: 403, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    }
+  }),
+});
+
 export default http;
+
