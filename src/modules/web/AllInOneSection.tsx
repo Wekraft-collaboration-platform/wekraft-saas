@@ -11,7 +11,6 @@ import {
   Briefcase,
   Calendar,
   CalendarCheck,
-  CheckSquare,
   CircleDot,
   ClipboardList,
   Clock,
@@ -19,6 +18,7 @@ import {
   Copy,
   FileText,
   Flag,
+  FolderClosed,
   Gauge,
   GitBranch,
   Globe,
@@ -45,9 +45,7 @@ import {
   Tag,
   Target,
   Timer,
-  TrendingUp,
   UserPlus,
-  Users,
   Zap,
 } from "lucide-react";
 import type React from "react";
@@ -230,28 +228,24 @@ const smallCells: SmallCell[] = [
 
 const bigCards: BigCard[] = [
   {
-    label: "Tasks",
+    label: "Deadline Tracking",
     col: 4,
     row: 2,
-    lucideIcon: <CheckSquare className="w-5 h-5" />,
   },
   {
-    label: "Teamspace",
+    label: "Docs & Flow Charts",
     col: 6,
     row: 2,
-    lucideIcon: <Users className="w-5 h-5" />,
   },
   {
-    label: "Kaya AI",
+    label: "Agents",
     col: 4,
     row: 4,
-    svgIcon: "/kaya.svg",
   },
   {
-    label: "Insights",
+    label: "Meet & Chat",
     col: 6,
     row: 4,
-    lucideIcon: <TrendingUp className="w-5 h-5" />,
   },
 ];
 
@@ -314,6 +308,249 @@ const SmallCellComponent = ({
   </motion.div>
 );
 
+const renderCardContent = (card: BigCard) => {
+  switch (card.label) {
+    case "Deadline Tracking":
+      return (
+        <div className="relative w-full h-full flex flex-col justify-between overflow-hidden select-none text-left bg-[#fafafb]">
+          {/* Subtle grid pattern */}
+          <div className="absolute inset-0 bg-[radial-gradient(#00000005_1px,transparent_1px)] [background-size:16px_16px] opacity-60" />
+          {/* Top blue gradient light */}
+          <div className="absolute top-0 inset-x-0 h-24 bg-gradient-to-b from-blue-50/50 to-transparent pointer-events-none" />
+
+          <div className="relative pt-5 px-4 flex flex-col gap-3 w-full h-full">
+            {/* Visual project columns */}
+            <div className="flex gap-3 justify-center w-full mt-2">
+              {/* Needs Updates Column */}
+              <div className="flex-1 flex flex-col gap-2 max-w-[110px]">
+                <div className="flex items-center gap-1.5 bg-blue-50 border border-blue-100 px-2 py-0.5 rounded text-[9px] text-blue-600 w-fit font-semibold shadow-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-blue-500" />
+                  <span>Needs Updates</span>
+                  <span className="opacity-70 ml-0.5">5</span>
+                </div>
+                <div className="bg-white border border-neutral-200/80 rounded-lg p-2.5 flex flex-col gap-2 shadow-[0_4px_12px_rgba(0,0,0,0.04)]">
+                  <div className="space-y-1">
+                    <span className="text-[9.5px] font-bold text-zinc-900 leading-tight block">UI Polish</span>
+                    <span className="text-[7.5px] text-neutral-400 block">High Priority</span>
+                  </div>
+                  <div className="flex items-center justify-between mt-1 border-t border-neutral-100 pt-1.5">
+                    <div className="flex -space-x-1.5">
+                      <div className="w-4 h-4 rounded-full bg-blue-50 border-2 border-white flex items-center justify-center text-[7px] font-bold text-blue-600">K</div>
+                      <div className="w-4 h-4 rounded-full bg-neutral-100 border-2 border-white flex items-center justify-center text-[7px] font-bold text-neutral-500">H</div>
+                    </div>
+                    <div className="text-neutral-450">
+                      <Calendar className="w-3 h-3 text-neutral-400" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+
+              {/* Closed Column */}
+              <div className="flex-1 flex flex-col gap-2 max-w-[110px]">
+                <div className="flex items-center gap-1.5 bg-neutral-50 border border-neutral-200 px-2 py-0.5 rounded text-[9px] text-neutral-600 w-fit font-semibold shadow-sm">
+                  <span className="w-1.5 h-1.5 rounded-full bg-neutral-400" />
+                  <span>Closed</span>
+                  <span className="opacity-70 ml-0.5">3</span>
+                </div>
+                <div className="bg-white border border-neutral-200/80 rounded-lg p-2.5 flex flex-col gap-2 shadow-[0_4px_12px_rgba(0,0,0,0.04)]">
+                  <div className="space-y-1">
+                    <span className="text-[9.5px] font-bold text-zinc-800 leading-tight block">Auth Setup</span>
+                    <span className="text-[7.5px] text-neutral-400 block">Completed</span>
+                  </div>
+                  <div className="flex items-center justify-between mt-1 border-t border-neutral-100 pt-1.5">
+                    <div className="w-4 h-4 rounded-full bg-blue-50 border-2 border-white flex items-center justify-center text-[7px] font-bold text-blue-500">S</div>
+                    <div className="text-neutral-450">
+                      <Calendar className="w-3 h-3 text-neutral-400" />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Fade Overlay */}
+          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#fafafb] via-[#fafafb]/95 to-transparent z-10 pointer-events-none" />
+
+          {/* Title centered at bottom */}
+          <div className="absolute bottom-3 inset-x-0 z-20 flex items-center justify-center gap-2">
+            <div className="w-6 h-6 rounded-md bg-blue-600 flex items-center justify-center shrink-0 shadow-lg shadow-blue-600/20">
+              <FolderClosed className="w-3.5 h-3.5 text-white" />
+            </div>
+            <span className="text-zinc-950 font-semibold text-sm tracking-tight">
+              Deadline Tracking
+            </span>
+          </div>
+        </div>
+      );
+    case "Docs & Flow Charts":
+      return (
+        <div className="relative w-full h-full flex flex-col justify-between overflow-hidden select-none text-left bg-[#fafafb]">
+          {/* Subtle grid pattern */}
+          <div className="absolute inset-0 bg-[radial-gradient(#00000005_1px,transparent_1px)] [background-size:16px_16px] opacity-60" />
+          {/* Top blue gradient light */}
+          <div className="absolute top-0 inset-x-0 h-24 bg-gradient-to-b from-blue-50/50 to-transparent pointer-events-none" />
+
+          <div className="relative pt-8 px-4 flex items-start justify-center w-full h-full">
+            {/* Stained stacked docs */}
+            <div className="relative w-full max-w-[200px] h-24 flex items-center justify-center">
+              <div className="absolute left-[10%] top-[10%] w-[60%] h-[90%] rounded-lg border border-neutral-200/60 bg-[#fbfbfb]/80 -rotate-6 transform origin-bottom-left shadow-sm" />
+              <div className="absolute right-[10%] top-[10%] w-[60%] h-[90%] rounded-lg border border-neutral-200/60 bg-[#fbfbfb]/80 rotate-6 transform origin-bottom-right shadow-sm" />
+              <div className="absolute z-10 w-[70%] h-full rounded-lg border border-neutral-200 bg-white p-3 flex flex-col gap-2 shadow-xl shadow-neutral-200/40">
+                <div className="flex items-center justify-between gap-1">
+                  <span className="text-[10px] text-zinc-900 font-bold truncate leading-none">
+                    Convergence Brief
+                  </span>
+                  <div className="flex -space-x-1">
+                    <div className="w-3.5 h-3.5 rounded-full bg-blue-50 border-[1.5px] border-white flex items-center justify-center text-[7px] font-bold text-blue-600">G</div>
+                    <div className="w-3.5 h-3.5 rounded-full bg-neutral-100 border-[1.5px] border-white flex items-center justify-center text-[7px] font-bold text-neutral-500">R</div>
+                  </div>
+                </div>
+                <div className="flex items-center gap-1.5 leading-none mt-1">
+                  <span className="text-[8px] text-blue-500">★</span>
+                  <div className="h-1 bg-neutral-200 rounded-full w-12" />
+                </div>
+                <div className="flex items-center gap-1 mt-1 text-[8px] font-semibold text-neutral-500 bg-neutral-50 border border-neutral-150 rounded px-1.5 py-0.5 w-fit scale-95 origin-left">
+                  <span>Flow Chart</span>
+                  <span className="text-blue-500 font-bold">→</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Fade Overlay */}
+          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#fafafb] via-[#fafafb]/95 to-transparent z-10 pointer-events-none" />
+
+          {/* Title centered at bottom */}
+          <div className="absolute bottom-3 inset-x-0 z-20 flex items-center justify-center gap-2">
+            <div className="w-6 h-6 rounded-md bg-blue-500 flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/20">
+              <FileText className="w-3.5 h-3.5 text-white" />
+            </div>
+            <span className="text-zinc-950 font-semibold text-sm tracking-tight">
+              Docs & Flow Charts
+            </span>
+          </div>
+        </div>
+      );
+    case "Agents":
+      return (
+        <div className="relative w-full h-full flex flex-col justify-between overflow-hidden select-none text-left bg-blue-600">
+          {/* Subtle grid pattern */}
+          <div className="absolute inset-0 bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:16px_16px] opacity-60" />
+          {/* Top blue gradient light */}
+          <div className="absolute top-0 inset-x-0 h-24 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
+
+          <div className="relative pt-6 px-5 w-full h-full font-sans">
+            <div className="space-y-3 w-full max-w-[220px] mx-auto">
+              {/* User message */}
+              <div className="ml-auto bg-blue-500 border border-blue-400/55 rounded-2xl rounded-tr-sm px-3 py-1.5 text-[10px] text-white w-fit max-w-[85%] text-right leading-tight shadow-sm font-medium">
+                Draft post for product launch
+              </div>
+              {/* Search Box */}
+              <div className="flex items-center gap-2">
+                <div className="w-6 h-6 rounded-md bg-blue-500/50 border border-white/20 flex items-center justify-center shrink-0">
+                  <Bot className="w-3.5 h-3.5 text-white" />
+                </div>
+                <div className="flex-1 bg-blue-700/80 border border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.15)] rounded-md px-2.5 py-1.5 flex items-center justify-between text-[9px] text-blue-100">
+                  <span>Search</span>
+                  <span className="text-[8px] text-blue-200 bg-blue-800 px-1 py-0.5 rounded font-mono">
+                    ⌘K
+                  </span>
+                </div>
+              </div>
+              {/* Checkbox item */}
+              <div className="flex items-center justify-between bg-blue-700/80 border border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.15)] rounded-md px-2.5 py-1.5 mt-1">
+                <div className="flex items-center gap-1.5">
+                  <div className="w-3.5 h-3.5 rounded border border-white/20 flex items-center justify-center bg-white">
+                    <span className="text-[8px] text-blue-600 font-bold">✓</span>
+                  </div>
+                  <span className="text-[10px] text-white font-medium">
+                    AI Writer Draft
+                  </span>
+                </div>
+                <div className="flex items-center gap-1.5 scale-90 origin-right">
+                  <span className="text-[7px] bg-white/25 text-white border border-white/10 px-1 py-0.5 rounded font-semibold tracking-wider">
+                    IN PROGRESS
+                  </span>
+                  <div className="w-3 h-3 rounded-full bg-white border border-blue-500 shadow-sm shrink-0" />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Fade Overlay */}
+          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-blue-600 via-blue-600/95 to-transparent z-10 pointer-events-none" />
+
+          {/* Title centered at bottom */}
+          <div className="absolute bottom-3 inset-x-0 z-20 flex items-center justify-center gap-2">
+            <div className="w-6 h-6 rounded-md bg-white flex items-center justify-center shrink-0 shadow-lg shadow-white/10">
+              <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+            </div>
+            <span className="text-white font-semibold text-sm tracking-tight">
+              Agents
+            </span>
+          </div>
+        </div>
+      );
+    case "Meet & Chat":
+      return (
+        <div className="relative w-full h-full flex flex-col justify-between overflow-hidden select-none text-left bg-[#fafafb]">
+          {/* Subtle grid pattern */}
+          <div className="absolute inset-0 bg-[radial-gradient(#00000005_1px,transparent_1px)] [background-size:16px_16px] opacity-60" />
+          {/* Top blue gradient light */}
+          <div className="absolute top-0 inset-x-0 h-24 bg-gradient-to-b from-blue-50/50 to-transparent pointer-events-none" />
+
+          <div className="relative pt-6 px-6 w-full h-full">
+            <div className="space-y-3.5 w-full max-w-[220px] mx-auto">
+              <div className="text-[8px] font-bold text-zinc-400 uppercase tracking-wider -mb-1 block">Active Call</div>
+              <div className="flex items-center gap-3">
+                <div className="w-7 h-7 rounded-full bg-blue-50 border-[1.5px] border-white shadow-sm shrink-0 flex items-center justify-center text-[10px] font-bold text-blue-600">M</div>
+                <div className="space-y-1.5 flex-1">
+                  <div className="h-2 bg-neutral-200 rounded-full w-[50%]" />
+                  <div className="h-1.5 bg-neutral-100 rounded-full w-[85%]" />
+                </div>
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="w-7 h-7 rounded-full bg-neutral-100 border-[1.5px] border-white shadow-sm shrink-0 flex items-center justify-center text-[10px] font-bold text-neutral-600 relative">
+                  E
+                  <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-blue-500 border-2 border-white rounded-full" />
+                </div>
+                <div className="space-y-1.5 flex-1">
+                  <div className="h-2 bg-neutral-200 rounded-full w-[35%]" />
+                  <div className="h-1.5 bg-neutral-100 rounded-full w-[60%]" />
+                </div>
+              </div>
+              <div className="flex gap-2.5 pl-10 origin-left">
+                <div className="flex items-center gap-1.5 bg-blue-50/50 border border-blue-100/50 shadow-sm rounded-full px-2.5 py-0.5 text-[9px] text-blue-600 font-medium">
+                  <MessageCircle className="w-3 h-3 text-blue-600" />
+                  <span>16</span>
+                </div>
+                <div className="flex items-center gap-1.5 bg-neutral-50 border border-neutral-200 shadow-sm rounded-full px-2.5 py-0.5 text-[9px] text-neutral-500 font-medium">
+                  <Bot className="w-3 h-3 text-neutral-550" />
+                  <span>5</span>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Fade Overlay */}
+          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#fafafb] via-[#fafafb]/95 to-transparent z-10 pointer-events-none" />
+
+          {/* Title centered at bottom */}
+          <div className="absolute bottom-3 inset-x-0 z-20 flex items-center justify-center gap-2">
+            <div className="w-6 h-6 rounded-md bg-blue-600 flex items-center justify-center shrink-0 shadow-lg shadow-blue-600/20">
+              <MessageCircle className="w-3.5 h-3.5 text-white" />
+            </div>
+            <span className="text-zinc-950 font-semibold text-sm tracking-tight">
+              Meet & Chat
+            </span>
+          </div>
+        </div>
+      );
+    default:
+      return null;
+  }
+};
+
 const BigCardComponent = ({
   card,
   isInView,
@@ -337,8 +574,13 @@ const BigCardComponent = ({
       ease: [0.25, 0.46, 0.45, 0.94],
       delay: getRadialDelay(card.col + 0.5, card.row + 0.5),
     }}
-    className="rounded-xl border border-white/[0.04] bg-muted overflow-hidden hover:border-white/[0.08] transition-colors duration-400"
-  />
+    className={`rounded-xl border overflow-hidden transition-all duration-400 ${card.label === "Agents"
+        ? "border-blue-500 bg-blue-600 hover:border-blue-400"
+        : "border-[#e4e4e7] bg-[#fafafb] hover:border-neutral-300 shadow-[0_4px_24px_rgba(0,0,0,0.02)]"
+      }`}
+  >
+    {renderCardContent(card)}
+  </motion.div>
 );
 
 /* ─── Main Section ───────────────────────────────────────────────── */
@@ -353,8 +595,11 @@ const AllInOneSection = () => {
   const gridInView = useInView(gridRef, { once: true, margin: "-80px 0px" });
 
   return (
-    <section className="bg-black py-20 md:py-32 px-6 font-sans overflow-hidden">
-      <div className="max-w-[1400px] mx-auto">
+    <section className="relative bg-black py-20 md:py-32 px-6 font-sans overflow-hidden">
+      {/* Top blue light gradient glow */}
+      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-blue-500/10 blur-[100px] rounded-full pointer-events-none" />
+
+      <div className="max-w-[1400px] mx-auto relative z-10">
         {/* ── Header ─────────────────────────────────────────── */}
         <motion.div
           ref={sectionRef}
@@ -389,7 +634,7 @@ const AllInOneSection = () => {
           className="hidden lg:grid relative"
           style={{
             gridTemplateColumns: "repeat(10, 1fr)",
-            gridAutoRows: "110px",
+            gridAutoRows: "98px",
             gap: "8px",
             maskImage:
               "linear-gradient(to right, transparent 0%, black 6%, black 94%, transparent 100%)",
@@ -414,7 +659,7 @@ const AllInOneSection = () => {
 
         {/* ── Mobile Grid (simplified) ───────────────────────── */}
         <div className="lg:hidden grid grid-cols-2 gap-3">
-          {bigCards.map((_card, i) => (
+          {bigCards.map((card, i) => (
             <motion.div
               key={i}
               initial={{ opacity: 0, y: 20 }}
@@ -422,8 +667,13 @@ const AllInOneSection = () => {
                 headerInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }
               }
               transition={{ duration: 0.5, delay: i * 0.1 }}
-              className="rounded-xl border border-white/[0.04] bg-muted overflow-hidden h-28"
-            />
+              className={`rounded-xl border overflow-hidden h-28 text-left ${card.label === "Agents"
+                  ? "border-blue-500 bg-blue-600"
+                  : "border-neutral-200 bg-white"
+                }`}
+            >
+              {renderCardContent(card)}
+            </motion.div>
           ))}
         </div>
       </div>

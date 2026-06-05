@@ -548,19 +548,20 @@ export default function MeetPage() {
                         onClick={handleNewMeeting}
                         disabled={isCreating || permLoading || !canStart}
                         className={cn(
-                          "group relative flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed p-6 transition-all duration-200 min-h-[160px]",
+                          "group relative flex flex-col items-center justify-center gap-3 rounded-xl border border-dashed p-6 transition-all duration-200 min-h-[160px] w-full",
                           canStart
                             ? "border-zinc-700 bg-sidebar/70 hover:border-zinc-600 hover:bg-zinc-900/70 cursor-pointer"
-                            : "border-zinc-800/40 bg-zinc-950/5 opacity-40 cursor-not-allowed"
+                            : "border-zinc-850/40 bg-zinc-900 opacity-40 cursor-not-allowed"
                         )}
                       >
                         {isCreating ? (
-                          <Loader2 className="w-6 h-6 text-primary animate-spin" />
+                          <Loader2 className="w-5 h-5 text-primary animate-spin" />
                         ) : (
-                          <Plus className={cn("w-6 h-6 transition-colors text-white")} />
+                          <Video className="w-5 h-5 text-white" />
                         )}
-                        <span className={cn("text-xs font-medium transition-colors text-white")}>
+                        <span className="text-base text-zinc-300 group-hover:text-white transition-colors flex items-center gap-1">
                           {isCreating ? "Starting..." : "Start Instant Meeting"}
+                          {!isCreating && <Plus className="w-3.5 h-3.5 text-zinc-100 group-hover:text-white" />}
                         </span>
                       </button>
                     </TooltipTrigger>
