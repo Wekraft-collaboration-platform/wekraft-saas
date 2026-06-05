@@ -463,17 +463,17 @@ const FeatureValue = ({ value }: { value: string | boolean }) => {
   if (value === true)
     return (
       <span className="flex justify-center">
-        <Check className="h-4 w-4 text-blue-400 transition-all duration-300 group-hover/row:text-blue-300 group-hover/row:scale-110" />
+        <Check className="h-4 w-4 text-neutral-300 transition-all duration-300 group-hover/row:text-white" />
       </span>
     );
   if (value === false)
     return (
       <span className="flex justify-center">
-        <Minus className="h-3.5 w-3.5 text-white/15 transition-all duration-300 group-hover/row:text-white/40 group-hover/row:scale-110" />
+        <Minus className="h-3.5 w-3.5 text-white/10 transition-all duration-300 group-hover/row:text-white/30" />
       </span>
     );
   return (
-    <span className="text-xs text-white/60 text-center block transition-colors duration-300 group-hover/row:text-white font-medium">{value}</span>
+    <span className="text-xs text-neutral-400 text-center block transition-colors duration-300 group-hover/row:text-white font-medium">{value}</span>
   );
 };
 
@@ -564,8 +564,8 @@ const Pricing = () => {
       </section>
 
       {/* ── Pricing Cards ── */}
-      <section className="max-w-7xl mx-auto px-4 pb-12 relative z-10">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5 max-w-7xl mx-auto">
+      <section className="max-w-[1440px] mx-auto px-4 md:px-8 pb-12 relative z-10">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 w-full">
           {plans.map((plan, idx) => {
             const displayPriceLabel = isIndia
               ? plan.key === "free"
@@ -594,7 +594,7 @@ const Pricing = () => {
                 viewport={{ once: true }}
                 transition={{ duration: 0.2 }}
                 className={cn(
-                  "relative p-6 md:p-7 rounded-[32px] backdrop-blur-xl flex flex-col group transition-all duration-500",
+                  "relative p-8 rounded-[32px] backdrop-blur-xl flex flex-col group transition-all duration-500 h-full",
                   "bg-[#0a0a0a]/90 hover:bg-[#0a0a0a]/70 border border-white/10 shadow-2xl transition-all",
                   "hover:shadow-[0_0_24px_-10px_rgba(255,255,255,0.15)] hover:z-40 hover:border-white/40",
                   plan.highlighted ? "z-10" : "z-0",
@@ -720,7 +720,7 @@ const Pricing = () => {
                         "w-full py-2 px-4 rounded-full font-medium text-sm transition-all duration-300 shadow-sm flex items-center justify-center gap-2",
                         plan.key !== "custom" &&
                           plan.key === (user?.accountType || "free")
-                          ? "bg-blue-500/10 border border-blue-500/35 text-blue-400 cursor-default font-semibold"
+                          ? "bg-neutral-200 text-black border border-neutral-200 cursor-default font-semibold"
                           : "bg-[#1c1c1c] border border-white/10 text-gray-100 shadow-[inset_0_1px_0_rgba(255,255,255,0.05)] hover:bg-white hover:text-black cursor-pointer",
                         plan.key !== "custom" &&
                           (loadingRazorpay !== null ||
@@ -732,7 +732,7 @@ const Pricing = () => {
                       plan.key === (user?.accountType || "free") ? (
                         <div className="flex items-center justify-center gap-1.5">
                           <Check
-                            className="w-4 h-4 text-blue-400"
+                            className="w-4 h-4 text-black"
                             strokeWidth={3}
                           />
                           <span>Current Plan</span>
@@ -855,95 +855,73 @@ const Pricing = () => {
       </section>
 
       {/* ── Feature Table ── */}
-      <section className="max-w-6xl mx-auto px-4 pt-20 pb-10 relative z-10">
+      <section className="max-w-[1440px] mx-auto px-4 md:px-8 pt-20 pb-20 relative z-10">
         <motion.div
           initial={{ opacity: 0, y: 16 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
-          className="text-center mb-12"
+          className="text-left mb-12"
         >
-          <p className="text-[10px] font-bold uppercase tracking-widest text-[#A0A5B5] mb-3">
-            Compare Plans
-          </p>
-          <h2 className="text-2xl md:text-3xl font-semibold text-white tracking-tight mb-20">
-            Everything, side by side
+          <h2 className="text-2xl md:text-3xl font-bold text-white tracking-tight">
+            Compare features
           </h2>
         </motion.div>
 
-        <div className="rounded-[32px] border border-white/20 overflow-hidden bg-[#0a0a0a]/70 backdrop-blur-3xl shadow-[0_20px_100px_-10px_rgba(255,255,255,0.18)] relative">
-          <div className="absolute inset-0 bg-gradient-to-b from-white/[0.08] to-transparent pointer-events-none" />
-
-          <div className="relative z-10 overflow-x-auto scrollbar-hide">
-            <div className="min-w-[650px] md:min-w-full">
-              {/* Table header - Sticky */}
-              <div className="grid grid-cols-[1.8fr_1fr_1fr_1fr_1fr] border-b border-white/[0.08] bg-[#0a0a0a]/90 backdrop-blur-md sticky top-0 z-20">
-                <div className="py-2 px-5 text-[10px] font-bold uppercase tracking-[0.2em] text-gray-500 flex items-center">
-                  Comparison
-                </div>
-                {plans.map((p) => (
-                  <div
-                    key={p.key}
-                    className={cn(
-                      "py-2 px-5 text-center text-sm font-semibold tracking-tight",
-                      p.highlighted ? "text-white" : "text-gray-400",
-                    )}
-                  >
-                    {p.name}
-                  </div>
-                ))}
+        <div className="w-full overflow-x-auto scrollbar-hide">
+          <div className="min-w-[650px] md:min-w-full">
+            {/* Table header - Sticky */}
+            <div className="grid grid-cols-[1.8fr_1fr_1fr_1fr_1fr] border-b border-white/10 bg-black/90 backdrop-blur-md sticky top-0 z-20">
+              <div className="py-4 text-[10px] font-semibold uppercase tracking-[0.2em] text-neutral-500 flex items-center">
+                Features
               </div>
-
-              {/* Table body */}
-              {featureCategories.map((cat, catIdx) => (
-                <div key={catIdx}>
-                  {/* Category Header */}
-                  <div className="grid grid-cols-[1.8fr_1fr_1fr_1fr_1fr] border-b border-white/[0.06] bg-[#050505]">
-                    <div className="col-span-5 px-6 py-1.5 flex items-center gap-3">
-                      <div className="p-1.5 rounded-lg bg-white/5 border border-white/10 text-white">
-                        {cat.icon}
-                      </div>
-                      <span className="text-[10px] font-bold uppercase tracking-[0.15em] text-white/90">
-                        {cat.title}
-                      </span>
-                    </div>
-                  </div>
-
-                  {cat.rows.map((row, rowIdx) => (
-                    <div
-                      key={rowIdx}
-                      className="grid grid-cols-[1.8fr_1fr_1fr_1fr_1fr] border-b border-white/[0.03] last:border-0 hover:bg-white/[0.06] transition-all duration-300 group/row relative overflow-hidden cursor-pointer"
-                    >
-                      <div className="flex items-center gap-4 px-6 py-1.5 text-[13px] text-gray-400 transition-colors duration-300 z-10">
-                        <div className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 border border-white/5 group-hover/row:bg-white group-hover/row:text-black transition-all duration-300">
-                          {React.isValidElement(row.icon) &&
-                            React.cloneElement(
-                              row.icon as React.ReactElement<any>,
-                              {
-                                className: "h-3.5 w-3.5 transition-transform duration-300 group-hover/row:scale-110",
-                              },
-                            )}
-                        </div>
-                        <span className="font-normal tracking-wide transition-all duration-300 group-hover/row:text-white group-hover/row:translate-x-1">
-                          {row.label}
-                        </span>
-                      </div>
-                      <div className="flex items-center justify-center px-6 py-1.5 border-l border-white/[0.03] z-10">
-                        <FeatureValue value={row.free} />
-                      </div>
-                      <div className="flex items-center justify-center px-6 py-1.5 border-l border-white/[0.03] bg-white/[0.01] z-10">
-                        <FeatureValue value={row.plus} />
-                      </div>
-                      <div className="flex items-center justify-center px-6 py-1.5 border-l border-white/[0.03] z-10">
-                        <FeatureValue value={row.pro} />
-                      </div>
-                      <div className="flex items-center justify-center px-6 py-1.5 border-l border-white/[0.03] bg-white/[0.01] z-10">
-                        <FeatureValue value={row.custom} />
-                      </div>
-                    </div>
-                  ))}
+              {plans.map((p) => (
+                <div
+                  key={p.key}
+                  className="py-4 text-center text-sm font-semibold tracking-tight flex items-center justify-center text-neutral-400"
+                >
+                  {p.name}
                 </div>
               ))}
             </div>
+
+            {/* Table body */}
+            {featureCategories.map((cat, catIdx) => (
+              <div key={catIdx} className="mt-8">
+                {/* Category Header */}
+                <div className="grid grid-cols-[1.8fr_1fr_1fr_1fr_1fr] border-b border-white/10 pb-3">
+                  <div className="col-span-5 flex items-center gap-2">
+                    <span className="text-[11px] font-semibold uppercase tracking-[0.2em] text-neutral-400">
+                      {cat.title}
+                    </span>
+                  </div>
+                </div>
+
+                {cat.rows.map((row, rowIdx) => (
+                  <div
+                    key={rowIdx}
+                    className="grid grid-cols-[1.8fr_1fr_1fr_1fr_1fr] border-b border-white/[0.05] hover:bg-white/[0.02] transition-all duration-200 group/row relative overflow-hidden"
+                  >
+                    <div className="flex items-center px-2 py-4 text-[13px] text-neutral-300 transition-colors duration-200 z-10">
+                      <span className="font-normal tracking-wide transition-all duration-200 group-hover/row:text-white">
+                        {row.label}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-center py-4 z-10">
+                      <FeatureValue value={row.free} />
+                    </div>
+                    <div className="flex items-center justify-center py-4 z-10">
+                      <FeatureValue value={row.plus} />
+                    </div>
+                    <div className="flex items-center justify-center py-4 z-10">
+                      <FeatureValue value={row.pro} />
+                    </div>
+                    <div className="flex items-center justify-center py-4 z-10">
+                      <FeatureValue value={row.custom} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ))}
           </div>
         </div>
       </section>

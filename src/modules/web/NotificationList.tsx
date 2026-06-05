@@ -18,40 +18,38 @@ interface Item {
 
 const notifications: Item[] = [
     {
-        name: "Sarah (Teamspace)",
+        name: "Bhanu (Teamspace)",
         description: "@rox -> i have added new reported bugs from client",
         time: "Just now",
-        avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=100&h=100&q=80",
+        avatar: "/bhanu.png",
         hasButton: true,
         buttonText: "View Bugs",
     },
     {
-        name: "John (AI SAAS)",
-        description: "John accepted your joining request in project AI SAAS.",
+        name: "Rox (AI SAAS)",
+        description: "Rox accepted your joining request in project AI SAAS.",
         time: "10m ago",
-        avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=100&h=100&q=80",
+        avatar: "/roxdp.jpg",
     },
     {
         name: "Kaya PM Agent",
         description: "Alert - project duration is about to end...",
         time: "25m ago",
-        icon: Bot,
-        color: "#EF4444", // red
+        avatar: "/kaya.svg",
     },
     {
         name: "Ritesh (Team Meet)",
         description: "Ritesh has started team meet, join now • ID: rite67-yduj",
         time: "40m ago",
-        avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=100&h=100&q=80",
+        avatar: "/riteshdp2.jpg",
         hasButton: true,
         buttonText: "Join Meet",
     },
     {
-        name: "System Update",
+        name: "Plan Upgradation",
         description: "You have successfully upgraded to Pro plan >",
         time: "1h ago",
-        icon: Clover,
-        color: "#8B5CF6", // purple
+        avatar: "/logo.svg",
     },
 ];
 
@@ -78,8 +76,18 @@ const Notification = ({
         >
             <div className="flex flex-row items-start gap-3">
                 {avatar ? (
-                    <div className="relative w-10 h-10 rounded-xl overflow-hidden shrink-0 border border-white/10 bg-neutral-800 shadow-md">
-                        <img src={avatar} alt={name} className="w-full h-full object-cover" />
+                    <div className={cn(
+                        "relative w-10 h-10 rounded-xl overflow-hidden shrink-0 border border-white/10 bg-neutral-800 shadow-md",
+                        (avatar.endsWith(".svg") && avatar !== "/logo.svg") && "p-2"
+                    )}>
+                        <img 
+                            src={avatar} 
+                            alt={name} 
+                            className={cn(
+                                "w-full h-full",
+                                (avatar.endsWith(".svg") && avatar !== "/logo.svg") ? "object-contain" : "object-cover"
+                            )} 
+                        />
                     </div>
                 ) : (
                     <div

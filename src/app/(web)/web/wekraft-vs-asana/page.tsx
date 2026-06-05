@@ -1,7 +1,6 @@
 import React from "react";
 import { Metadata } from "next";
 import Navbar from "@/modules/web/Navbar";
-import CompareHero from "@/modules/web/compare/CompareHero";
 import CompareTable, { ComparisonFeature } from "@/modules/web/compare/CompareTable";
 import CompareFeatures from "@/modules/web/compare/CompareFeatures";
 
@@ -77,20 +76,10 @@ export default function AsanaComparePage() {
       <Navbar />
 
       <main className="flex flex-col items-center pt-32 pb-16 px-4 md:px-8 text-center w-full mx-auto relative z-10">
-        <CompareHero
-          competitorName="Asana"
-          competitorLogo={<CheckCircle2 className="w-3.5 h-3.5 text-rose-400" />}
-          competitorColor="from-rose-500 to-orange-400"
-          title1="Real-time project pulse."
-          title2="Consolidated analytics."
-          description="Monitor days remaining, active tasks, and team radar charts in one unified dashboard. Stop paying for fragmented status tracking apps."
-          visualMockup={<img src="/ins.png" alt="Wekraft Project Dashboard" className="w-full rounded-2xl object-cover border border-white/[0.08]" />}
-        />
-
         <div className="w-full max-w-7xl mx-auto px-4 md:px-8">
           <CompareTable
             competitorName="Asana"
-            competitorLogo={<CheckCircle2 className="w-3.5 h-3.5 text-neutral-400" />}
+            competitorLogo={<img src="/asana-logo.svg" alt="Asana" className="w-5 h-5 object-contain" />}
             features={asanaFeatures}
           />
 

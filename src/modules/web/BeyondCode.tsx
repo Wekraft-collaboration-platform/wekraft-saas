@@ -61,9 +61,9 @@ const BeyondCode = () => {
           animate={headerInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
           transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
         >
-          <div className="inline-flex items-center gap-2 px-4 py-1.5 rounded-full border border-white/15 backdrop-blur-md bg-white/5 mb-6">
-            <div className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.5)]" />
-            <span className="text-sm text-neutral-200 tracking-wide">
+          <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/10 bg-neutral-900/50 backdrop-blur-sm mb-6">
+            <div className="w-1.5 h-1.5 rounded-full bg-white shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
+            <span className="text-[13px] font-medium text-white tracking-wide">
               Beyond Project Management
             </span>
           </div>
@@ -94,23 +94,23 @@ const BeyondCode = () => {
                 ease: [0.25, 0.46, 0.45, 0.94],
                 delay: 0.08 * i,
               }}
-              className="group relative rounded-xl border border-white/10 bg-neutral-800/60 overflow-hidden flex flex-col justify-between h-[380px] lg:h-[460px] hover:border-white/15 transition-all duration-300"
+              className="group relative rounded-xl border border-white/[0.08] bg-[#121316]/90 overflow-hidden flex flex-col justify-between h-[380px] lg:h-[460px] hover:border-white/[0.15] transition-all duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
             >
               {/* Text Content */}
               <div className="relative z-10 p-6 md:p-8">
-                <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-5 border border-white/[0.08] bg-white/[0.02] text-neutral-400 group-hover:text-white transition-colors">
+                <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-5 bg-[#1a1b1e] border border-white/[0.06] text-neutral-400 transition-colors">
                   {card.icon}
                 </div>
-                <h3 className="text-white font-semibold text-xl tracking-tight mb-2">
+                <h3 className="text-white font-medium text-lg tracking-tight mb-2">
                   {card.title}
                 </h3>
-                <p className="text-neutral-400 text-[13px] leading-relaxed max-w-[90%]">
+                <p className="text-neutral-400 text-sm leading-relaxed max-w-[90%]">
                   {card.description}
                 </p>
               </div>
 
               {/* Image Container: bottom-right zoomed & half-cut */}
-              <div className="absolute bottom-0 right-0 w-[82%] h-[54%] lg:h-[56%] rounded border-t border-l border-white/30 overflow-hidden bg-neutral-950 shadow-2xl">
+              <div className="absolute bottom-0 right-0 w-[82%] h-[54%] lg:h-[56%] rounded-tl-xl border-t border-l border-white/[0.08] overflow-hidden bg-neutral-950">
                 <div className="relative w-full h-full">
                   <Image
                     src={card.image}
@@ -133,24 +133,24 @@ const BeyondCode = () => {
               ease: [0.25, 0.46, 0.45, 0.94],
               delay: 0.24,
             }}
-            className="group lg:col-span-3 relative rounded-xl border border-white/10 bg-neutral-800/70 overflow-hidden flex flex-col justify-between md:justify-center h-[320px] md:h-[300px] lg:h-[360px] p-6 md:p-8 lg:p-10 hover:border-white/15 transition-all duration-300"
+            className="group lg:col-span-3 relative rounded-xl border border-white/[0.08] bg-[#121316]/90 overflow-hidden flex flex-col justify-between md:justify-center h-[320px] md:h-[300px] lg:h-[360px] p-6 md:p-8 lg:p-10 hover:border-white/[0.15] transition-all duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
           >
             {/* Text Content */}
             <div className="max-w-full md:max-w-[45%] relative z-10">
-              <div className="w-10 h-10 rounded-xl flex items-center justify-center mb-5 border border-white/[0.08] bg-white/[0.02] text-neutral-400 group-hover:text-white transition-colors">
+              <div className="w-10 h-10 rounded-lg flex items-center justify-center mb-5 bg-[#1a1b1e] border border-white/[0.06] text-neutral-400 transition-colors">
                 <GitGraph className="w-5 h-5" />
               </div>
-              <h3 className="text-white font-semibold text-xl tracking-tight mb-2">
+              <h3 className="text-white font-medium text-lg tracking-tight mb-2">
                 Repo Heatmaps
               </h3>
-              <p className="text-neutral-400 text-[13px] leading-relaxed">
+              <p className="text-neutral-400 text-sm leading-relaxed">
                 Visualize commit activity, hotspots, and contributor load across
                 your entire codebase at a glance.
               </p>
             </div>
 
             {/* Image Container: bottom-right zoomed & half-cut */}
-            <div className="absolute bottom-0 right-0 w-[80%] h-[50%] md:w-[50%] md:h-[90%] rounded-tl-2xl border-t border-l border-white/30 overflow-hidden bg-neutral-950 shadow-2xl">
+            <div className="absolute bottom-0 right-0 w-[80%] h-[50%] md:w-[50%] md:h-[90%] rounded-tl-xl border-t border-l border-white/[0.08] overflow-hidden bg-neutral-950">
               <div className="relative w-full h-full">
                 <Image
                   src="/heat.png"

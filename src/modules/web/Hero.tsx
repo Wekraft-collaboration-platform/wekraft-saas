@@ -422,7 +422,7 @@ const Hero = () => {
                   </marker>
                 </defs>
 
-                {/* Tania Arrow */}
+                {/* Aashi Arrow */}
                 <motion.path
                   d="M 63.5 14.5 C 63.5 20, 68 23, 73 23"
                   fill="none"
@@ -436,7 +436,7 @@ const Hero = () => {
                   transition={{ delay: 0.4, duration: 0.8, ease: "easeOut" }}
                 />
 
-                {/* Claura Arrow */}
+                {/* Ritesh Arrow */}
                 <motion.path
                   d="M 84 38 C 88 38, 90.5 31, 90.5 24"
                   fill="none"
@@ -465,10 +465,10 @@ const Hero = () => {
                 />
               </svg>
 
-              {/* Tania (Yellow Arrow): Hovering "View Breakdown" */}
+              {/* Aashi (Yellow Arrow): Hovering "View Breakdown" */}
               <CollaboratorOverlay
-                name="Tania"
-                avatarUrl="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&h=150&q=80"
+                name="Aashi"
+                avatarUrl="/aashi.jpg"
                 color="#FACC15"
                 borderColor="border-yellow-500"
                 glowColor="rgba(250, 204, 21, 0.4)"
@@ -480,10 +480,10 @@ const Hero = () => {
                 delay={0.2}
               />
 
-              {/* Claura (Blue Arrow): Hovering "+ New Task" */}
+              {/* Ritesh (Blue Arrow): Hovering "+ New Task" */}
               <CollaboratorOverlay
-                name="Claura"
-                avatarUrl="https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&h=150&q=80"
+                name="Ritesh"
+                avatarUrl="/riteshdp2.jpg"
                 color="#3B82F6"
                 borderColor="border-blue-500"
                 glowColor="rgba(59, 130, 246, 0.4)"
@@ -498,7 +498,7 @@ const Hero = () => {
               {/* Rox (White Arrow): Hovering "Reviewing" status on Payment Gateway */}
               <CollaboratorOverlay
                 name="Rox"
-                avatarUrl="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150&q=80"
+                avatarUrl="/roxdp.jpg"
                 color="#FFFFFF"
                 borderColor="border-white"
                 glowColor="rgba(255, 255, 255, 0.4)"

@@ -31,26 +31,34 @@ const Section1 = () => {
             <h2 className="text-4xl font-semibold tracking-tight mb-6 leading-tight max-w-4xl mx-auto flex flex-wrap items-center justify-center gap-x-2.5 gap-y-2">
               <span className="text-white">Why Teams</span>
               <span className="inline-flex items-center -space-x-3.5 mx-1">
-                <span className="relative w-9 h-9 rounded-full border-2 border-purple-500 overflow-hidden bg-neutral-800 shrink-0 shadow-[0_0_10px_rgba(236,72,153,0.3)] transition-transform duration-300 hover:scale-110 hover:z-10 cursor-pointer">
+                <span className="relative w-9 h-9 rounded-full border-2 border-black overflow-hidden bg-neutral-800 shrink-0 transition-transform duration-300 hover:scale-110 hover:z-10 cursor-pointer">
                   <Image
-                    src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=80&h=80&q=80"
+                    src="/riteshdp2.jpg"
                     alt="Team member 1"
                     fill
                     className="object-cover"
                   />
                 </span>
-                <span className="relative w-9 h-9 rounded-full border-2 border-blue-500 overflow-hidden bg-neutral-800 shrink-0 shadow-[0_0_10px_rgba(59,130,246,0.3)] transition-transform duration-300 hover:scale-110 hover:z-10 cursor-pointer">
+                <span className="relative w-9 h-9 rounded-full border-2 border-black overflow-hidden bg-neutral-800 shrink-0 transition-transform duration-300 hover:scale-110 hover:z-10 cursor-pointer">
                   <Image
-                    src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=80&h=80&q=80"
+                    src="/aashi.jpg"
                     alt="Team member 2"
                     fill
                     className="object-cover"
                   />
                 </span>
-                <span className="relative w-9 h-9 rounded-full border-2 border-indigo-500 overflow-hidden bg-neutral-800 shrink-0 shadow-[0_0_10px_rgba(245,158,11,0.3)] transition-transform duration-300 hover:scale-110 hover:z-10 cursor-pointer">
+                <span className="relative w-9 h-9 rounded-full border-2 border-black overflow-hidden bg-neutral-800 shrink-0 transition-transform duration-300 hover:scale-110 hover:z-10 cursor-pointer">
                   <Image
-                    src="https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=80&h=80&q=80"
+                    src="/roxdp.jpg"
                     alt="Team member 3"
+                    fill
+                    className="object-cover"
+                  />
+                </span>
+                <span className="relative w-9 h-9 rounded-full border-2 border-black overflow-hidden bg-neutral-800 shrink-0 transition-transform duration-300 hover:scale-110 hover:z-10 cursor-pointer">
+                  <Image
+                    src="/bhanu.png"
+                    alt="Bhanu"
                     fill
                     className="object-cover"
                   />
@@ -232,7 +240,7 @@ const Section1 = () => {
 
           <div className="relative z-10 flex  gap-4">
             <img
-              src="/me3.jpg"
+              src="/roxdp.jpg"
               alt="rox"
               className="w-14 h-14 rounded-full object-cover border border-white/20"
             />

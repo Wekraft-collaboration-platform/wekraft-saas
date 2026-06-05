@@ -56,7 +56,7 @@ const AIChatSimulation = () => {
             </div>
             <div className="w-8 h-8 rounded-full bg-neutral-800 border border-white/10 flex-shrink-0 overflow-hidden">
               <Image
-                src="https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&q=80&w=100"
+                src="/riteshdp2.jpg"
                 alt="User"
                 width={32}
                 height={32}

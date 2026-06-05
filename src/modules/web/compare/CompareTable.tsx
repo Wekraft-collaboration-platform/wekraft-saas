@@ -62,7 +62,7 @@ export default function CompareTable({ competitorName, competitorLogo, features 
               </th>
               <th className="py-8 px-6 w-[35%] text-left">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 flex items-center justify-center bg-white/[0.03] border border-white/[0.08] rounded-xl p-1.5 shrink-0">
+                  <div className="w-8 h-8 flex items-center justify-center rounded-xl p-1.5 shrink-0">
                     <img src="/logo.svg" alt="WeKraft" className="w-5 h-5" />
                   </div>
                   <span className="text-lg md:text-xl font-bold text-white tracking-tight">WeKraft</span>
@@ -70,7 +70,7 @@ export default function CompareTable({ competitorName, competitorLogo, features 
               </th>
               <th className="py-8 px-6 w-[35%] text-left">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 flex items-center justify-center bg-white/[0.03] border border-white/[0.08] rounded-xl p-1.5 text-neutral-300 shrink-0">
+                  <div className="w-8 h-8 flex items-center justify-center rounded-xl p-1.5 text-neutral-300 shrink-0">
                     {React.isValidElement(competitorLogo) ? (
                       React.cloneElement(competitorLogo as React.ReactElement<any>, { className: "w-5 h-5 object-contain" })
                     ) : (
@@ -98,7 +98,7 @@ export default function CompareTable({ competitorName, competitorLogo, features 
                     <span className="text-[10px] text-neutral-500 font-mono tracking-widest uppercase mb-1.5 block">
                       {feature.category}
                     </span>
-                    <span className="text-white font-semibold text-[15px] leading-snug group-hover:text-blue-400 transition-colors">
+                    <span className="text-neutral-300 font-semibold text-[15px] leading-snug group-hover:text-white transition-colors">
                       {feature.name}
                     </span>
                   </div>

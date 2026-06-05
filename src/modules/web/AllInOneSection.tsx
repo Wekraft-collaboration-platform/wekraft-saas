@@ -35,6 +35,8 @@ import {
   Mail,
   Map,
   MessageCircle,
+  Mic,
+  MicOff,
   Repeat,
   Search,
   Settings2,
@@ -433,59 +435,59 @@ const renderCardContent = (card: BigCard) => {
       );
     case "Agents":
       return (
-        <div className="relative w-full h-full flex flex-col justify-between overflow-hidden select-none text-left bg-blue-600">
+        <div className="relative w-full h-full flex flex-col justify-between overflow-hidden select-none text-left bg-[#fafafb]">
           {/* Subtle grid pattern */}
-          <div className="absolute inset-0 bg-[radial-gradient(#ffffff08_1px,transparent_1px)] [background-size:16px_16px] opacity-60" />
+          <div className="absolute inset-0 bg-[radial-gradient(#00000005_1px,transparent_1px)] [background-size:16px_16px] opacity-60" />
           {/* Top blue gradient light */}
-          <div className="absolute top-0 inset-x-0 h-24 bg-gradient-to-b from-white/10 to-transparent pointer-events-none" />
+          <div className="absolute top-0 inset-x-0 h-24 bg-gradient-to-b from-blue-50/50 to-transparent pointer-events-none" />
 
           <div className="relative pt-6 px-5 w-full h-full font-sans">
             <div className="space-y-3 w-full max-w-[220px] mx-auto">
               {/* User message */}
-              <div className="ml-auto bg-blue-500 border border-blue-400/55 rounded-2xl rounded-tr-sm px-3 py-1.5 text-[10px] text-white w-fit max-w-[85%] text-right leading-tight shadow-sm font-medium">
+              <div className="ml-auto bg-blue-600 border border-blue-500 rounded-2xl rounded-tr-sm px-3 py-1.5 text-[10px] text-white w-fit max-w-[85%] text-right leading-tight shadow-sm font-medium">
                 Draft post for product launch
               </div>
               {/* Search Box */}
               <div className="flex items-center gap-2">
-                <div className="w-6 h-6 rounded-md bg-blue-500/50 border border-white/20 flex items-center justify-center shrink-0">
-                  <Bot className="w-3.5 h-3.5 text-white" />
+                <div className="w-6 h-6 rounded-md bg-neutral-100 border border-neutral-200/60 flex items-center justify-center shrink-0">
+                  <Bot className="w-3.5 h-3.5 text-neutral-500" />
                 </div>
-                <div className="flex-1 bg-blue-700/80 border border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.15)] rounded-md px-2.5 py-1.5 flex items-center justify-between text-[9px] text-blue-100">
-                  <span>Search</span>
-                  <span className="text-[8px] text-blue-200 bg-blue-800 px-1 py-0.5 rounded font-mono">
+                <div className="flex-1 bg-white border border-neutral-200 shadow-sm rounded-md px-2.5 py-1.5 flex items-center justify-between text-[9px] text-neutral-800">
+                  <span className="font-medium text-neutral-500">Search</span>
+                  <span className="text-[8px] text-neutral-400 bg-neutral-100 border border-neutral-200 px-1 py-0.5 rounded font-mono">
                     ⌘K
                   </span>
                 </div>
               </div>
               {/* Checkbox item */}
-              <div className="flex items-center justify-between bg-blue-700/80 border border-white/10 shadow-[0_4px_12px_rgba(0,0,0,0.15)] rounded-md px-2.5 py-1.5 mt-1">
+              <div className="flex items-center justify-between bg-white border border-neutral-200 shadow-sm rounded-md px-2.5 py-1.5 mt-1">
                 <div className="flex items-center gap-1.5">
-                  <div className="w-3.5 h-3.5 rounded border border-white/20 flex items-center justify-center bg-white">
+                  <div className="w-3.5 h-3.5 rounded border border-blue-200 flex items-center justify-center bg-blue-50">
                     <span className="text-[8px] text-blue-600 font-bold">✓</span>
                   </div>
-                  <span className="text-[10px] text-white font-medium">
+                  <span className="text-[10px] text-zinc-800 font-medium">
                     AI Writer Draft
                   </span>
                 </div>
                 <div className="flex items-center gap-1.5 scale-90 origin-right">
-                  <span className="text-[7px] bg-white/25 text-white border border-white/10 px-1 py-0.5 rounded font-semibold tracking-wider">
+                  <span className="text-[7px] bg-amber-50 text-amber-700 border border-amber-100 px-1 py-0.5 rounded font-semibold tracking-wider">
                     IN PROGRESS
                   </span>
-                  <div className="w-3 h-3 rounded-full bg-white border border-blue-500 shadow-sm shrink-0" />
+                  <div className="w-2.5 h-2.5 rounded-full bg-amber-500 border border-amber-400 shadow-sm shrink-0" />
                 </div>
               </div>
             </div>
           </div>
 
           {/* Fade Overlay */}
-          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-blue-600 via-blue-600/95 to-transparent z-10 pointer-events-none" />
+          <div className="absolute inset-x-0 bottom-0 h-20 bg-gradient-to-t from-[#fafafb] via-[#fafafb]/95 to-transparent z-10 pointer-events-none" />
 
           {/* Title centered at bottom */}
           <div className="absolute bottom-3 inset-x-0 z-20 flex items-center justify-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-white flex items-center justify-center shrink-0 shadow-lg shadow-white/10">
-              <Sparkles className="w-3.5 h-3.5 text-blue-600" />
+            <div className="w-6 h-6 rounded-md bg-blue-600 flex items-center justify-center shrink-0 shadow-lg shadow-blue-600/20">
+              <Sparkles className="w-3.5 h-3.5 text-white" />
             </div>
-            <span className="text-white font-semibold text-sm tracking-tight">
+            <span className="text-zinc-950 font-semibold text-sm tracking-tight">
               Agents
             </span>
           </div>
@@ -499,36 +501,35 @@ const renderCardContent = (card: BigCard) => {
           {/* Top blue gradient light */}
           <div className="absolute top-0 inset-x-0 h-24 bg-gradient-to-b from-blue-50/50 to-transparent pointer-events-none" />
 
-          <div className="relative pt-6 px-6 w-full h-full">
-            <div className="space-y-3.5 w-full max-w-[220px] mx-auto">
-              <div className="text-[8px] font-bold text-zinc-400 uppercase tracking-wider -mb-1 block">Active Call</div>
-              <div className="flex items-center gap-3">
-                <div className="w-7 h-7 rounded-full bg-blue-50 border-[1.5px] border-white shadow-sm shrink-0 flex items-center justify-center text-[10px] font-bold text-blue-600">M</div>
-                <div className="space-y-1.5 flex-1">
-                  <div className="h-2 bg-neutral-200 rounded-full w-[50%]" />
-                  <div className="h-1.5 bg-neutral-100 rounded-full w-[85%]" />
+          {/* 10+ Messages Badge at top right corner */}
+          <div className="absolute top-4 right-4 z-20 flex items-center gap-1 bg-blue-50 border border-blue-100 rounded-full px-2 py-0.5 text-[8.5px] text-blue-600 font-semibold shadow-sm">
+            <MessageCircle className="w-3 h-3 text-blue-500" />
+            <span>10+ messages</span>
+          </div>
+
+          {/* Content area aligned to top to match other cards */}
+          <div className="relative pt-12 px-4 flex items-start justify-center w-full h-full">
+            {/* The main rectangular box (large video tile for 1st user) */}
+            <div className="relative w-full max-w-[210px] h-[92px] bg-neutral-50/50 border border-neutral-200 rounded-xl overflow-hidden shadow-sm flex items-center justify-center">
+              
+              {/* First User Content */}
+              <div className="flex flex-col items-center justify-center gap-1.5">
+                <div className="w-10 h-10 rounded-full bg-white border border-neutral-200/80 flex items-center justify-center text-xs font-semibold text-neutral-600 shadow-sm">
+                  R
+                </div>
+                <span className="text-[8px] text-neutral-500 font-medium">Ritesh</span>
+              </div>
+
+              {/* Second User floating screen at the bottom-right (lower right side) */}
+              <div className="absolute bottom-1.5 right-1.5 w-14 h-10 bg-white border border-neutral-200 shadow-[0_2px_8px_rgba(0,0,0,0.06)] rounded-lg flex items-center justify-center overflow-hidden">
+                <div className="flex flex-col items-center justify-center gap-0.5">
+                  <div className="w-5 h-5 rounded-full bg-neutral-50 border border-neutral-150 flex items-center justify-center text-[7px] font-semibold text-neutral-500">
+                    R
+                  </div>
+                  <span className="text-[5.5px] text-neutral-400 font-medium leading-none">Rox</span>
                 </div>
               </div>
-              <div className="flex items-center gap-3">
-                <div className="w-7 h-7 rounded-full bg-neutral-100 border-[1.5px] border-white shadow-sm shrink-0 flex items-center justify-center text-[10px] font-bold text-neutral-600 relative">
-                  E
-                  <div className="absolute -bottom-0.5 -right-0.5 w-2.5 h-2.5 bg-blue-500 border-2 border-white rounded-full" />
-                </div>
-                <div className="space-y-1.5 flex-1">
-                  <div className="h-2 bg-neutral-200 rounded-full w-[35%]" />
-                  <div className="h-1.5 bg-neutral-100 rounded-full w-[60%]" />
-                </div>
-              </div>
-              <div className="flex gap-2.5 pl-10 origin-left">
-                <div className="flex items-center gap-1.5 bg-blue-50/50 border border-blue-100/50 shadow-sm rounded-full px-2.5 py-0.5 text-[9px] text-blue-600 font-medium">
-                  <MessageCircle className="w-3 h-3 text-blue-600" />
-                  <span>16</span>
-                </div>
-                <div className="flex items-center gap-1.5 bg-neutral-50 border border-neutral-200 shadow-sm rounded-full px-2.5 py-0.5 text-[9px] text-neutral-500 font-medium">
-                  <Bot className="w-3 h-3 text-neutral-550" />
-                  <span>5</span>
-                </div>
-              </div>
+
             </div>
           </div>
 
@@ -537,7 +538,7 @@ const renderCardContent = (card: BigCard) => {
 
           {/* Title centered at bottom */}
           <div className="absolute bottom-3 inset-x-0 z-20 flex items-center justify-center gap-2">
-            <div className="w-6 h-6 rounded-md bg-blue-600 flex items-center justify-center shrink-0 shadow-lg shadow-blue-600/20">
+            <div className="w-6 h-6 rounded-md bg-blue-500 flex items-center justify-center shrink-0 shadow-lg shadow-blue-500/20">
               <MessageCircle className="w-3.5 h-3.5 text-white" />
             </div>
             <span className="text-zinc-950 font-semibold text-sm tracking-tight">
@@ -574,10 +575,7 @@ const BigCardComponent = ({
       ease: [0.25, 0.46, 0.45, 0.94],
       delay: getRadialDelay(card.col + 0.5, card.row + 0.5),
     }}
-    className={`rounded-xl border overflow-hidden transition-all duration-400 ${card.label === "Agents"
-        ? "border-blue-500 bg-blue-600 hover:border-blue-400"
-        : "border-[#e4e4e7] bg-[#fafafb] hover:border-neutral-300 shadow-[0_4px_24px_rgba(0,0,0,0.02)]"
-      }`}
+    className="rounded-xl border overflow-hidden transition-all duration-400 border-[#e4e4e7] bg-[#fafafb] hover:border-neutral-300 shadow-[0_4px_24px_rgba(0,0,0,0.02)]"
   >
     {renderCardContent(card)}
   </motion.div>
@@ -596,9 +594,6 @@ const AllInOneSection = () => {
 
   return (
     <section className="relative bg-black py-20 md:py-32 px-6 font-sans overflow-hidden">
-      {/* Top blue light gradient glow */}
-      <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[600px] h-[300px] bg-blue-500/10 blur-[100px] rounded-full pointer-events-none" />
-
       <div className="max-w-[1400px] mx-auto relative z-10">
         {/* ── Header ─────────────────────────────────────────── */}
         <motion.div
@@ -667,10 +662,7 @@ const AllInOneSection = () => {
                 headerInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 20 }
               }
               transition={{ duration: 0.5, delay: i * 0.1 }}
-              className={`rounded-xl border overflow-hidden h-28 text-left ${card.label === "Agents"
-                  ? "border-blue-500 bg-blue-600"
-                  : "border-neutral-200 bg-white"
-                }`}
+              className="rounded-xl border overflow-hidden h-28 text-left border-neutral-200 bg-white"
             >
               {renderCardContent(card)}
             </motion.div>
