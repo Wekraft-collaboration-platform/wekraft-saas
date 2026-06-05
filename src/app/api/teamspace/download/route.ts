@@ -5,6 +5,7 @@ export async function GET(req: NextRequest) {
     const url = new URL(req.url);
     const fileUrl = url.searchParams.get("url");
     let filename = url.searchParams.get("filename");
+    const download = url.searchParams.get("download") !== "false";
 
     if (!fileUrl) {
       return NextResponse.json(
@@ -31,13 +32,17 @@ export async function GET(req: NextRequest) {
     // Stream the body directly to the client
     const body = response.body;
 
-    return new NextResponse(body, {
-      headers: {
-        "Content-Type": contentType,
-        // The attachment directive forces the browser to download the file natively
-        "Content-Disposition": `attachment; filename="${filename}"`,
-      },
-    });
+    const headers: Record<string, string> = {
+      "Content-Type": contentType,
+    };
+
+    if (download) {
+      headers["Content-Disposition"] = `attachment; filename="${filename}"`;
+    } else {
+      headers["Content-Disposition"] = "inline";
+    }
+
+    return new NextResponse(body, { headers });
   } catch (error) {
     console.error("Download proxy error:", error);
     return NextResponse.json(

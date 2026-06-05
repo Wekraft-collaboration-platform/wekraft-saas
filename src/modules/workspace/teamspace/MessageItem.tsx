@@ -79,6 +79,7 @@ import { toast } from "sonner";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 const QUICK_EMOJIS = ["👍", "❤️", "😂", "🎉", "🔥", "✅", "👀", "💪"] as const;
+const MEDIA_REGEX = /^(!?)\[([^\]]+)\]\(((?:blob:)?https?:\/\/[^\s\)]+)\)(?:\s+([\s\S]*))?$/;
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -189,6 +190,8 @@ export function MessageItem({
   const [previewMediaUrl, setPreviewMediaUrl] = useState<string | null>(null);
   const [previewMediaType, setPreviewMediaType] = useState<"image" | "pdf" | "office" | null>(null);
   const [previewMediaName, setPreviewMediaName] = useState<string>("");
+
+  const isMedia = message.content ? MEDIA_REGEX.test(message.content) : false;
 
   // FIX: Sync edit buffer when the message is updated externally (e.g. real-time
   // collaboration) while the user is NOT actively editing.
@@ -452,7 +455,7 @@ export function MessageItem({
                           return (
                             <span className="flex items-center gap-1.5">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={url} alt={name} className="h-6 w-6 rounded object-cover shrink-0 opacity-80" />
+                              <img src={`/api/teamspace/download?url=${encodeURIComponent(url)}&download=false`} alt={name} className="h-6 w-6 rounded object-cover shrink-0 opacity-80" />
                               <span className="truncate">{caption || name}</span>
                             </span>
                           );
@@ -517,8 +520,7 @@ export function MessageItem({
             ) : (
               <div className="relative flex flex-col">
                 {message.content && (() => {
-                  const s3Regex = /^(!?)\[([^\]]+)\]\(((?:blob:)?https?:\/\/[^\s\)]+)\)(?:\s+([\s\S]*))?$/;
-                  const match = message.content.match(s3Regex);
+                  const match = message.content.match(MEDIA_REGEX);
 
                   let isMedia = false;
                   let isImage = false;
@@ -614,7 +616,7 @@ export function MessageItem({
                             }}
                           >
                             <img
-                              src={fileUrl}
+                              src={`/api/teamspace/download?url=${encodeURIComponent(fileUrl)}&download=false`}
                               alt={fileName}
                               className="max-h-[140px] max-w-[160px] sm:max-h-[180px] sm:max-w-[220px] w-auto rounded-md object-contain transition-opacity group-hover:opacity-90"
                             />
@@ -791,8 +793,7 @@ export function MessageItem({
                       Reply
                     </DropdownMenuItem>
                     {(() => {
-                      const s3Regex = /^(!?)\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)(?:\s+([\s\S]*))?$/;
-                      const match = message.content?.match(s3Regex);
+                      const match = message.content?.match(MEDIA_REGEX);
                       if (match) {
                         return (
                           <DropdownMenuItem
@@ -806,7 +807,7 @@ export function MessageItem({
                       }
                       return null;
                     })()}
-                    {message.content?.trim() ? (
+                    {message.content?.trim() && !isMedia ? (
                       <DropdownMenuItem onClick={handleCopy} className="rounded-lg">
                         <Copy className="h-4 w-4 mr-2 text-muted-foreground" aria-hidden="true" />
                         Copy Text
@@ -821,7 +822,7 @@ export function MessageItem({
                         {isPinned ? "Unpin" : "Pin"}
                       </DropdownMenuItem>
                     )}
-                    {isOwn && (
+                    {isOwn && !isMedia && (
                       <DropdownMenuItem
                         onClick={() => {
                           if (message.poll) {
@@ -1064,21 +1065,25 @@ export function MessageItem({
           <div className="flex-1 flex items-center justify-center overflow-hidden p-4 relative">
             {previewMediaType === "image" && (
               <img
-                src={previewMediaUrl!}
+                src={`/api/teamspace/download?url=${encodeURIComponent(previewMediaUrl!)}&download=false`}
                 alt={previewMediaName}
                 className="max-w-full max-h-full object-contain drop-shadow-2xl"
               />
             )}
             {previewMediaType === "pdf" && (
               <iframe
-                src={previewMediaUrl!}
+                src={`/api/teamspace/download?url=${encodeURIComponent(previewMediaUrl!)}&download=false`}
                 title={previewMediaName}
                 className="w-full h-full max-w-5xl rounded-lg bg-white shadow-2xl"
               />
             )}
             {previewMediaType === "office" && (
               <iframe
-                src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(previewMediaUrl!)}`}
+                src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(
+                  previewMediaUrl!.startsWith("blob:")
+                    ? previewMediaUrl!
+                    : `${window.location.origin}/api/teamspace/download?url=${encodeURIComponent(previewMediaUrl!)}&download=false`
+                )}`}
                 title={previewMediaName}
                 className="w-full h-full max-w-5xl rounded-lg bg-white shadow-2xl"
               />
