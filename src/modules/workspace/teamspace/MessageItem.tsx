@@ -439,9 +439,35 @@ export function MessageItem({
                   <div className="text-muted-foreground/80 line-clamp-2 leading-snug overflow-hidden text-ellipsis mt-0.5">
                     {message.parent_content === "$__DELETED__$" ? (
                       <span className="italic flex items-center gap-1"><Ban className="h-2.5 w-2.5" /> This message was deleted</span>
-                    ) : (
-                      message.parent_content ?? "Message not found"
-                    )}
+                    ) : (() => {
+                      const pc = message.parent_content ?? "";
+                      // Detect markdown media/file: ![name](url) or [name](url)
+                      const mediaMatch = pc.match(/^(!?)\[([^\]]+)\]\(((?:blob:)?https?:\/\/[^\s\)]+)\)(?:\s+([\s\S]*))?$/);
+                      if (mediaMatch) {
+                        const isImg = mediaMatch[1] === "!";
+                        const name = mediaMatch[2];
+                        const url = mediaMatch[3];
+                        const caption = (mediaMatch[4] ?? "").trim();
+                        if (isImg) {
+                          return (
+                            <span className="flex items-center gap-1.5">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={url} alt={name} className="h-6 w-6 rounded object-cover shrink-0 opacity-80" />
+                              <span className="truncate">{caption || name}</span>
+                            </span>
+                          );
+                        }
+                        // File attachment
+                        return (
+                          <span className="flex items-center gap-1.5">
+                            <Paperclip className="h-3 w-3 shrink-0 opacity-70" />
+                            <span className="truncate">{caption || name}</span>
+                          </span>
+                        );
+                      }
+                      // Plain text — render as-is (truncated by line-clamp)
+                      return pc || "Message not found";
+                    })()}
                   </div>
                 </div>
               )}
