@@ -79,6 +79,17 @@ import { toast } from "sonner";
 
 // ── Constants ──────────────────────────────────────────────────────────────────
 const QUICK_EMOJIS = ["👍", "❤️", "😂", "🎉", "🔥", "✅", "👀", "💪"] as const;
+const MEDIA_REGEX = /^(!?)\[([^\]]+)\]\(((?:blob:)?https?:\/\/[^\s\)]+)\)(?:\s+([\s\S]*))?$/;
+
+const getProxyUrl = (url: string, download = false) => {
+  if (!url) return "";
+  const s3Prefix = "https://wekraft-saas-upload-s3.s3.ap-south-1.amazonaws.com/";
+  if (url.startsWith(s3Prefix)) {
+    const key = url.slice(s3Prefix.length);
+    return `/api/teamspace/download?key=${encodeURIComponent(key)}&download=${download}`;
+  }
+  return `/api/teamspace/download?url=${encodeURIComponent(url)}&download=${download}`;
+};
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
 
@@ -190,6 +201,8 @@ export function MessageItem({
   const [previewMediaType, setPreviewMediaType] = useState<"image" | "pdf" | "office" | null>(null);
   const [previewMediaName, setPreviewMediaName] = useState<string>("");
 
+  const isMedia = message.content ? MEDIA_REGEX.test(message.content) : false;
+
   // FIX: Sync edit buffer when the message is updated externally (e.g. real-time
   // collaboration) while the user is NOT actively editing.
   useEffect(() => {
@@ -275,7 +288,8 @@ export function MessageItem({
 
     // Proxy the download through our Next.js API route to bypass CORS 
     // and force the Content-Disposition attachment header natively.
-    const proxyUrl = `/api/teamspace/download?url=${encodeURIComponent(url)}&filename=${encodeURIComponent(filename)}`;
+    const baseProxyUrl = getProxyUrl(url, true);
+    const proxyUrl = `${baseProxyUrl}&filename=${encodeURIComponent(filename)}`;
 
     const link = document.createElement("a");
     link.href = proxyUrl;
@@ -452,7 +466,7 @@ export function MessageItem({
                           return (
                             <span className="flex items-center gap-1.5">
                               {/* eslint-disable-next-line @next/next/no-img-element */}
-                              <img src={url} alt={name} className="h-6 w-6 rounded object-cover shrink-0 opacity-80" />
+                              <img src={getProxyUrl(url, false)} alt={name} className="h-6 w-6 rounded object-cover shrink-0 opacity-80" />
                               <span className="truncate">{caption || name}</span>
                             </span>
                           );
@@ -517,8 +531,7 @@ export function MessageItem({
             ) : (
               <div className="relative flex flex-col">
                 {message.content && (() => {
-                  const s3Regex = /^(!?)\[([^\]]+)\]\(((?:blob:)?https?:\/\/[^\s\)]+)\)(?:\s+([\s\S]*))?$/;
-                  const match = message.content.match(s3Regex);
+                  const match = message.content.match(MEDIA_REGEX);
 
                   let isMedia = false;
                   let isImage = false;
@@ -614,7 +627,7 @@ export function MessageItem({
                             }}
                           >
                             <img
-                              src={fileUrl}
+                              src={getProxyUrl(fileUrl, false)}
                               alt={fileName}
                               className="max-h-[140px] max-w-[160px] sm:max-h-[180px] sm:max-w-[220px] w-auto rounded-md object-contain transition-opacity group-hover:opacity-90"
                             />
@@ -791,8 +804,7 @@ export function MessageItem({
                       Reply
                     </DropdownMenuItem>
                     {(() => {
-                      const s3Regex = /^(!?)\[([^\]]+)\]\((https?:\/\/[^\s\)]+)\)(?:\s+([\s\S]*))?$/;
-                      const match = message.content?.match(s3Regex);
+                      const match = message.content?.match(MEDIA_REGEX);
                       if (match) {
                         return (
                           <DropdownMenuItem
@@ -806,7 +818,7 @@ export function MessageItem({
                       }
                       return null;
                     })()}
-                    {message.content?.trim() ? (
+                    {message.content?.trim() && !isMedia ? (
                       <DropdownMenuItem onClick={handleCopy} className="rounded-lg">
                         <Copy className="h-4 w-4 mr-2 text-muted-foreground" aria-hidden="true" />
                         Copy Text
@@ -821,7 +833,7 @@ export function MessageItem({
                         {isPinned ? "Unpin" : "Pin"}
                       </DropdownMenuItem>
                     )}
-                    {isOwn && (
+                    {isOwn && !isMedia && (
                       <DropdownMenuItem
                         onClick={() => {
                           if (message.poll) {
@@ -1062,23 +1074,27 @@ export function MessageItem({
 
           {/* Content area */}
           <div className="flex-1 flex items-center justify-center overflow-hidden p-4 relative">
-            {previewMediaType === "image" && (
+            {previewMediaType === "image" && previewMediaUrl && (
               <img
-                src={previewMediaUrl!}
+                src={getProxyUrl(previewMediaUrl, false)}
                 alt={previewMediaName}
                 className="max-w-full max-h-full object-contain drop-shadow-2xl"
               />
             )}
-            {previewMediaType === "pdf" && (
+            {previewMediaType === "pdf" && previewMediaUrl && (
               <iframe
-                src={previewMediaUrl!}
+                src={getProxyUrl(previewMediaUrl, false)}
                 title={previewMediaName}
                 className="w-full h-full max-w-5xl rounded-lg bg-white shadow-2xl"
               />
             )}
-            {previewMediaType === "office" && (
+            {previewMediaType === "office" && previewMediaUrl && (
               <iframe
-                src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(previewMediaUrl!)}`}
+                src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(
+                  previewMediaUrl.startsWith("blob:")
+                    ? previewMediaUrl
+                    : `${window.location.origin}${getProxyUrl(previewMediaUrl, false)}`
+                )}`}
                 title={previewMediaName}
                 className="w-full h-full max-w-5xl rounded-lg bg-white shadow-2xl"
               />

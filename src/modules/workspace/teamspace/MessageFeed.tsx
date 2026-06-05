@@ -128,6 +128,8 @@ const getTempMsgContent = (
   return `${agent === "kaya" ? "Kaya" : "Harry"} is thinking...`;
 };
 
+const MEDIA_REGEX = /^(!?)\[([^\]]+)\]\(((?:blob:)?https?:\/\/[^\s\)]+)\)(?:\s+([\s\S]*))?$/;
+
 export function MessageFeed({
   channel,
   currentUserId,
@@ -897,7 +899,21 @@ export function MessageFeed({
                                     </span>
                                   </div>
                                   <p className="text-[11px] text-foreground leading-relaxed antialiased line-clamp-3">
-                                    {msg.content}
+                                    {(() => {
+                                      const match = msg.content?.match(MEDIA_REGEX);
+                                      if (match) {
+                                        const isImage = match[1] === "!";
+                                        const fileName = match[2];
+                                        const captionText = (match[4] || "").trim();
+
+                                        if (isImage) {
+                                          return captionText ? `📷 Photo: ${captionText}` : `📷 Photo: ${fileName}`;
+                                        } else {
+                                          return captionText ? `📎 File: ${captionText}` : `📎 File: ${fileName}`;
+                                        }
+                                      }
+                                      return msg.content;
+                                    })()}
                                   </p>
                                 </div>
                               </div>
