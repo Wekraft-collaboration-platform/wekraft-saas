@@ -78,14 +78,14 @@ const Notification = ({
                 {avatar ? (
                     <div className={cn(
                         "relative w-10 h-10 rounded-xl overflow-hidden shrink-0 border border-white/10 bg-neutral-800 shadow-md",
-                        avatar.endsWith(".svg") && "p-2"
+                        (avatar.endsWith(".svg") && avatar !== "/logo.svg") && "p-2"
                     )}>
                         <img 
                             src={avatar} 
                             alt={name} 
                             className={cn(
                                 "w-full h-full",
-                                avatar.endsWith(".svg") ? "object-contain" : "object-cover"
+                                (avatar.endsWith(".svg") && avatar !== "/logo.svg") ? "object-contain" : "object-cover"
                             )} 
                         />
                     </div>

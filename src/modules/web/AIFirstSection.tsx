@@ -406,9 +406,9 @@ const AIFirstSection = () => {
             {kayaFeatures.map((feat, i) => (
               <div
                 key={i}
-                className="rounded-xl border border-white/[0.06] bg-neutral-900 p-4 hover:bg-neutral-800/60 transition-colors duration-300"
+                className="rounded-xl border border-white/[0.08] bg-[#121316]/90 p-4 hover:bg-[#1a1b1e]/90 hover:border-white/[0.15] transition-all duration-300"
               >
-                <div className="w-8 h-8 rounded-lg bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-neutral-300 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-[#1a1b1e] border border-white/[0.06] flex items-center justify-center text-neutral-300 mb-3">
                   {feat.icon}
                 </div>
                 <h4 className="text-white text-sm font-semibold mb-1">
@@ -436,9 +436,9 @@ const AIFirstSection = () => {
             {harryFeatures.map((feat, i) => (
               <div
                 key={i}
-                className="rounded-xl border border-white/[0.06] bg-neutral-900 p-4 hover:bg-neutral-800/60 transition-colors duration-300"
+                className="rounded-xl border border-white/[0.08] bg-[#121316]/90 p-4 hover:bg-[#1a1b1e]/90 hover:border-white/[0.15] transition-all duration-300"
               >
-                <div className="w-8 h-8 rounded-lg bg-white/[0.05] border border-white/[0.08] flex items-center justify-center text-neutral-300 mb-3">
+                <div className="w-8 h-8 rounded-lg bg-[#1a1b1e] border border-white/[0.06] flex items-center justify-center text-neutral-300 mb-3">
                   {feat.icon}
                 </div>
                 <h4 className="text-white text-sm font-semibold mb-1">

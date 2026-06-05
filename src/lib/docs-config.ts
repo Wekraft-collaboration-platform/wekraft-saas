@@ -219,6 +219,20 @@ export const docsConfig: { [key: string]: DocItem[] } = {
       icon: "HelpCircle",
       created: "2026-06-03",
     },
+    {
+      title: "Terms of Service",
+      slug: "terms",
+      description: "Terms and conditions for utilizing the WeKraft platform and AI agents.",
+      icon: "FileText",
+      created: "2026-06-05",
+    },
+    {
+      title: "Privacy Policy",
+      slug: "privacy",
+      description: "Privacy practices detailing WeKraft data collection, repository safety, and cookies.",
+      icon: "ShieldCheck",
+      created: "2026-06-05",
+    },
   ],
 };
 
