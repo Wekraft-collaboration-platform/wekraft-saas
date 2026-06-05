@@ -103,7 +103,7 @@ const plusFeatures: FeatureItem[] = [
   { label: "10 Project Joining", icon: <GitBranch className="h-3.5 w-3.5" /> },
   { label: "Up to 6 team members", icon: <UserPlus className="h-3.5 w-3.5" /> },
   {
-    label: "Full Team & Community Insights",
+    label: "Full Team Insights",
     icon: <BarChart3 className="h-3.5 w-3.5" />,
   },
   { label: "15 GB Cloud Storage", icon: <Cpu className="h-3.5 w-3.5" /> },
@@ -120,9 +120,9 @@ const proFeatures: FeatureItem[] = [
     label: "Up to 15 team members",
     icon: <UserPlus className="h-3.5 w-3.5" />,
   },
-  { label: "Kaya PM Agent (AI PM)", icon: <Bot className="h-3.5 w-3.5" /> },
+  { label: "Kaya PM Agent", icon: <Bot className="h-3.5 w-3.5" /> },
   {
-    label: "Harry DEV Agent (AI Dev - Coming Soon)",
+    label: "Harry DEV Agent (Coming Soon)",
     icon: <Sparkles className="h-3.5 w-3.5" />,
   },
   {
@@ -148,10 +148,9 @@ const customFeatures: FeatureItem[] = [
   },
   { label: "Dedicated Kaya PM Agent", icon: <Bot className="h-3.5 w-3.5" /> },
   {
-    label: "Dedicated Harry DEV Agent (Priority Access)",
+    label: "Dedicated Harry DEV Agent (Coming Soon)",
     icon: <Sparkles className="h-3.5 w-3.5" />,
   },
-  { label: "SSO & Advanced Security", icon: <Lock className="h-3.5 w-3.5" /> },
   { label: "Custom Cloud Storage", icon: <Cpu className="h-3.5 w-3.5" /> },
   {
     label: "24/7 Dedicated Support",
@@ -464,17 +463,17 @@ const FeatureValue = ({ value }: { value: string | boolean }) => {
   if (value === true)
     return (
       <span className="flex justify-center">
-        <Check className="h-4 w-4 text-blue-400" />
+        <Check className="h-4 w-4 text-blue-400 transition-all duration-300 group-hover/row:text-blue-300 group-hover/row:scale-110" />
       </span>
     );
   if (value === false)
     return (
       <span className="flex justify-center">
-        <Minus className="h-3.5 w-3.5 text-white/15" />
+        <Minus className="h-3.5 w-3.5 text-white/15 transition-all duration-300 group-hover/row:text-white/40 group-hover/row:scale-110" />
       </span>
     );
   return (
-    <span className="text-xs text-white/60 text-center block">{value}</span>
+    <span className="text-xs text-white/60 text-center block transition-colors duration-300 group-hover/row:text-white font-medium">{value}</span>
   );
 };
 
@@ -537,7 +536,7 @@ const Pricing = () => {
             <Button
               onClick={handleBack}
               variant="outline"
-              className="gap-2 bg-[#0a0a0a]/90 text-white border-white/10 hover:bg-white hover:text-black rounded-full shadow-[0_0_15px_-3px_rgba(255,255,255,0.1)] transition-all cursor-pointer"
+              className="gap-2 bg-[#0a0a0a]/90 text-white border-white/10 hover:bg-white! hover:text-black! rounded-full shadow-[0_0_15px_-3px_rgba(255,255,255,0.1)] transition-all cursor-pointer"
             >
               <ArrowLeft className="h-4 w-4" />
               Back
@@ -912,32 +911,32 @@ const Pricing = () => {
                   {cat.rows.map((row, rowIdx) => (
                     <div
                       key={rowIdx}
-                      className="grid grid-cols-[1.8fr_1fr_1fr_1fr_1fr] border-b border-white/[0.03] last:border-0 hover:bg-white/[0.03] transition-all duration-300 group/row"
+                      className="grid grid-cols-[1.8fr_1fr_1fr_1fr_1fr] border-b border-white/[0.03] last:border-0 hover:bg-white/[0.06] transition-all duration-300 group/row relative overflow-hidden cursor-pointer"
                     >
-                      <div className="flex items-center gap-4 px-6 py-1.5 text-[13px] text-gray-400 group-hover/row:text-gray-200 transition-colors">
-                        <div className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 border border-white/5 group-hover/row:bg-white group-hover/row:text-black transition-all">
+                      <div className="flex items-center gap-4 px-6 py-1.5 text-[13px] text-gray-400 transition-colors duration-300 z-10">
+                        <div className="flex-shrink-0 flex items-center justify-center w-8 h-8 rounded-lg bg-white/5 border border-white/5 group-hover/row:bg-white group-hover/row:text-black transition-all duration-300">
                           {React.isValidElement(row.icon) &&
                             React.cloneElement(
                               row.icon as React.ReactElement<any>,
                               {
-                                className: "h-3.5 w-3.5",
+                                className: "h-3.5 w-3.5 transition-transform duration-300 group-hover/row:scale-110",
                               },
                             )}
                         </div>
-                        <span className="font-normal tracking-wide">
+                        <span className="font-normal tracking-wide transition-all duration-300 group-hover/row:text-white group-hover/row:translate-x-1">
                           {row.label}
                         </span>
                       </div>
-                      <div className="flex items-center justify-center px-6 py-1.5 border-l border-white/[0.03]">
+                      <div className="flex items-center justify-center px-6 py-1.5 border-l border-white/[0.03] z-10">
                         <FeatureValue value={row.free} />
                       </div>
-                      <div className="flex items-center justify-center px-6 py-1.5 border-l border-white/[0.03] bg-white/[0.01]">
+                      <div className="flex items-center justify-center px-6 py-1.5 border-l border-white/[0.03] bg-white/[0.01] z-10">
                         <FeatureValue value={row.plus} />
                       </div>
-                      <div className="flex items-center justify-center px-6 py-1.5 border-l border-white/[0.03]">
+                      <div className="flex items-center justify-center px-6 py-1.5 border-l border-white/[0.03] z-10">
                         <FeatureValue value={row.pro} />
                       </div>
-                      <div className="flex items-center justify-center px-6 py-1.5 border-l border-white/[0.03] bg-white/[0.01]">
+                      <div className="flex items-center justify-center px-6 py-1.5 border-l border-white/[0.03] bg-white/[0.01] z-10">
                         <FeatureValue value={row.custom} />
                       </div>
                     </div>
