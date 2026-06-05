@@ -297,7 +297,7 @@ const Navbar = () => {
                         ?.scrollIntoView({ behavior: "smooth" })
                     }
                   >
-                    Book a demo
+                    Get a demo
                   </Button>
                   <SignUpButton>
                     <Button
@@ -395,7 +395,7 @@ const Navbar = () => {
                             ?.scrollIntoView({ behavior: "smooth" });
                         }}
                       >
-                        Book a demo
+                        Get a demo
                       </Button>
                     </div>
                   )}
