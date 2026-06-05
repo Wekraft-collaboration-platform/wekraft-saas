@@ -669,3 +669,114 @@ export const updateIssueInternal = internalMutation({
     return { ...updated, IssueAssignee: issueAssignees };
   },
 });
+
+// ─────────────────────────────────────────────────────────────
+// TICKETS (Extension — my tickets for a project)
+// ─────────────────────────────────────────────────────────────
+
+/**
+ * Returns all tickets in a project where the caller is the assignee OR creator.
+ * Enriches each ticket with assignee and creator user data (name, avatarUrl).
+ */
+export const getMyTicketsFull = internalQuery({
+  args: { projectId: v.id("projects"), userId: v.id("users") },
+  handler: async (ctx, args) => {
+    const isMember = await isProjectMemberHelper(ctx, args.userId, args.projectId);
+    if (!isMember) throw new Error("Forbidden: you are not a member of this project");
+
+    // Fetch tickets assigned to OR created by this user
+    const [assignedTickets, createdTickets] = await Promise.all([
+      ctx.db
+        .query("tickets")
+        .withIndex("by_assignee", (q) => q.eq("assignedTo", args.userId))
+        .filter((q) => q.eq(q.field("projectId"), args.projectId))
+        .collect(),
+      ctx.db
+        .query("tickets")
+        .withIndex("by_creator", (q) => q.eq("createdBy", args.userId))
+        .filter((q) => q.eq(q.field("projectId"), args.projectId))
+        .collect(),
+    ]);
+
+    // Merge and deduplicate by _id
+    const seen = new Set<string>();
+    const tickets = [...assignedTickets, ...createdTickets].filter((t) => {
+      if (seen.has(t._id)) return false;
+      seen.add(t._id);
+      return true;
+    });
+
+    // Sort newest first
+    tickets.sort((a, b) => b.createdAt - a.createdAt);
+
+    // Enrich with user data in one pass
+    const userIds = [...new Set([
+      ...tickets.map((t) => t.assignedTo),
+      ...tickets.map((t) => t.createdBy),
+    ])];
+    const users = await Promise.all(userIds.map((id) => ctx.db.get(id)));
+    const userMap = new Map(
+      users
+        .filter(Boolean)
+        .map((u) => [u!._id, { id: u!._id, name: u!.name ?? "Unknown", avatarUrl: u!.avatarUrl }])
+    );
+
+    return tickets.map((t) => ({
+      id: t._id,
+      projectId: t.projectId,
+      body: t.body,
+      status: t.status,
+      createdAt: t.createdAt,
+      updatedAt: t.updatedAt,
+      createdBy: t.createdBy,
+      assignedTo: t.assignedTo,
+      assignee: userMap.get(t.assignedTo) ?? null,
+      creator: userMap.get(t.createdBy) ?? null,
+    }));
+  },
+});
+
+/**
+ * Close or reopen a ticket. Only the assignee or creator may do this.
+ */
+export const updateTicketStatusInternal = internalMutation({
+  args: {
+    ticketId: v.id("tickets"),
+    userId: v.id("users"),
+    status: v.union(v.literal("open"), v.literal("closed")),
+  },
+  handler: async (ctx, args) => {
+    const ticket = await ctx.db.get(args.ticketId);
+    if (!ticket) throw new Error("Ticket not found");
+
+    const isAssignee = ticket.assignedTo === args.userId;
+    const isCreator  = ticket.createdBy  === args.userId;
+    if (!isAssignee && !isCreator) {
+      throw new Error("Forbidden: only the assignee or creator can change this ticket");
+    }
+
+    await ctx.db.patch(args.ticketId, { status: args.status, updatedAt: Date.now() });
+
+    const updated = await ctx.db.get(args.ticketId);
+    if (!updated) throw new Error("Ticket not found after update");
+
+    const [assigneeUser, creatorUser] = await Promise.all([
+      ctx.db.get(updated.assignedTo),
+      ctx.db.get(updated.createdBy),
+    ]);
+
+    return {
+      id: updated._id,
+      projectId: updated.projectId,
+      body: updated.body,
+      status: updated.status,
+      createdAt: updated.createdAt,
+      updatedAt: updated.updatedAt,
+      createdBy: updated.createdBy,
+      assignedTo: updated.assignedTo,
+      assignee: assigneeUser ? { id: assigneeUser._id, name: assigneeUser.name ?? "Unknown", avatarUrl: assigneeUser.avatarUrl } : null,
+      creator: creatorUser ? { id: creatorUser._id, name: creatorUser.name ?? "Unknown", avatarUrl: creatorUser.avatarUrl } : null,
+    };
+  },
+});
+
