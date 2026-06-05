@@ -105,7 +105,7 @@ const TestimonialCard = ({ item }: { item: Testimonial }) => {
           {item.tags.map((tag) => (
             <span
               key={tag}
-              className="text-xs font-semibold text-blue-400 hover:underline cursor-pointer"
+              className="text-xs font-semibold text-neutral-500 hover:text-neutral-300 transition-colors duration-200 cursor-pointer"
             >
               {tag}
             </span>
@@ -121,19 +121,19 @@ const Testimonials = () => {
   const isInView = useInView(containerRef, { once: true, margin: "-80px 0px" });
 
   return (
-    <section className="bg-black py-20 px-4 md:px-8 font-sans overflow-hidden">
+    <section className="bg-black py-20 px-4 md:px-8 font-sans overflow-hidden min-h-screen flex items-center justify-center w-full">
       <motion.div
         ref={containerRef}
         initial={{ opacity: 0, y: 40 }}
         animate={isInView ? { opacity: 1, y: 0 } : { opacity: 0, y: 40 }}
         transition={{ duration: 0.8, ease: [0.25, 0.46, 0.45, 0.94] }}
-        className="max-w-7xl mx-auto "
+        className="max-w-7xl mx-auto w-full"
       >
         <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-12 lg:gap-16 items-center">
 
           {/* Left Column: Heading & Stats */}
           <div className="flex flex-col text-left">
-            <span className="text-xs font-bold uppercase tracking-widest text-blue-400 mb-4">
+            <span className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-4">
               TESTIMONIALS
             </span>
             <h2 className="text-4xl md:text-5xl lg:text-[54px] font-bold tracking-tight text-white leading-[1.1] mb-6">

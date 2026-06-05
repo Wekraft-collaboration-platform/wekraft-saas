@@ -1,5 +1,6 @@
 import AIFirstSection from "@/modules/web/AIFirstSection";
 import AllInOneSection from "@/modules/web/AllInOneSection";
+import BeyondCode from "@/modules/web/BeyondCode";
 import CustomerStories from "@/modules/web/CustomerStories";
 
 import Hero from "@/modules/web/Hero";
@@ -23,6 +24,7 @@ const WebPage = () => {
       <TrustedBy />
       <Section1 />
       <WhyWeKraft />
+      <BeyondCode />
       <AIFirstSection />
       <AllInOneSection />
       <InfraSection />
