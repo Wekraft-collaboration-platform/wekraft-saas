@@ -93,12 +93,12 @@ export function ProjectProgressChart() {
             />
             <XAxis
               dataKey="sprint"
-              tick={{ fill: "#404040", fontSize: 9 }}
+              tick={{ fill: "#fff", fontSize: 9 }}
               axisLine={false}
               tickLine={false}
             />
             <YAxis
-              tick={{ fill: "#404040", fontSize: 9 }}
+              tick={{ fill: "#fff", fontSize: 9 }}
               axisLine={false}
               tickLine={false}
             />
@@ -145,11 +145,11 @@ export function ProjectProgressChart() {
       <div className="flex items-center gap-5 px-1">
         <div className="flex items-center gap-2">
           <div className="w-4 h-0.5 rounded-full bg-blue-500" />
-          <span className="text-neutral-500 text-[10px] font-medium tracking-wide">Team Velocity</span>
+          <span className="text-neutral-100 text-xs font-medium tracking-wide">Team Velocity</span>
         </div>
         <div className="flex items-center gap-2">
           <div className="w-4 h-0.5 rounded-full bg-white/50" />
-          <span className="text-neutral-500 text-[10px] font-medium tracking-wide">Tasks Completed</span>
+          <span className="text-neutral-100 text-xs font-medium tracking-wide">Tasks Completed</span>
         </div>
       </div>
     </div>
