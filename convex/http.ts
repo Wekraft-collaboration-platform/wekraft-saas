@@ -4,6 +4,7 @@ import { internal } from "./_generated/api";
 
 const http = httpRouter();
 
+
 // create calendar event (Kaya AI Agent tool)
 http.route({
   path: "/createCalendarEvent",
@@ -416,10 +417,10 @@ async function authenticateRequest(
     return { ok: false, response: new Response(JSON.stringify({ error: "Missing or invalid Authorization header" }), { status: 401, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }) };
   }
   const apiKey = authHeader.slice(7);
-  
+
   // Unified authentication + rate limiting + last used touch mutation in exactly 1 round-trip!
   const authResult = await ctx.runMutation(internal.extensionApi.authenticateKeyInternal, { apiKey });
-  
+
   if (!authResult.ok) {
     if (authResult.error === "rate_limit_exceeded") {
       return { ok: false, response: new Response(JSON.stringify({ error: "Rate limit exceeded. Max 60 requests per minute." }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": "60", ...CORS_HEADERS } }) };
@@ -450,6 +451,13 @@ http.route({
   handler: httpAction(async () => new Response(null, { status: 204, headers: CORS_HEADERS })),
 });
 
+// Covers PATCH /ext/tickets/:id cross-origin preflight
+http.route({
+  pathPrefix: "/ext/tickets/",
+  method: "OPTIONS",
+  handler: httpAction(async () => new Response(null, { status: 204, headers: CORS_HEADERS })),
+});
+
 // ── GET /ext/me — returns display-safe authenticated user ───────────────────
 http.route({
   path: "/ext/me",
@@ -461,24 +469,28 @@ http.route({
   }),
 });
 
-// ── GET /ext/projects — list projects (inherently authorized) ───────────────
+// ── GET /ext/projects — list projects (inherently authorized) ──────────────────
 http.route({
   path: "/ext/projects",
   method: "GET",
   handler: httpAction(async (ctx, request) => {
     const auth = await authenticateRequest(ctx, request);
     if (!auth.ok) return auth.response;
-    const projects = await ctx.runQuery(internal.extensionApi.getUserProjectsFull, { userId: auth.userId as any });
-    const mapped = (projects ?? []).map((p: any) => ({
-      id: p._id,
-      name: p.projectName,
-      ownerId: p.ownerId,
-      description: p.description,
-      status: p.projectWorkStatus,
-      repoFullName: p.repoFullName,
-      projectDeadline: p.projectDeadline ?? null,
-    }));
-    return new Response(JSON.stringify(mapped), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    try {
+      const projects = await ctx.runQuery(internal.extensionApi.getUserProjectsFull, { userId: auth.userId as any });
+      const mapped = (projects ?? []).map((p: any) => ({
+        id: p._id,
+        name: p.projectName,
+        ownerId: p.ownerId,
+        description: p.description,
+        status: p.projectWorkStatus,
+        repoFullName: p.repoFullName,
+        projectDeadline: p.projectDeadline ?? null,
+      }));
+      return new Response(JSON.stringify(mapped), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    } catch (e: any) {
+      return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    }
   }),
 });
 
@@ -492,23 +504,23 @@ http.route({
     const url = new URL(request.url);
     const projectId = url.searchParams.get("projectId");
     if (!projectId) return new Response(JSON.stringify({ error: "projectId required" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
-    
+
     try {
       const sprints = await ctx.runQuery(internal.extensionApi.getProjectSprintsFull, {
         projectId: projectId as any,
         userId: auth.userId as any
       });
       const mapped = (sprints ?? []).map((s: any) => ({
-        id:        s._id,
+        id: s._id,
         sprintName: s.sprintName,
-        status:    s.status,
-        duration:  s.duration,
+        status: s.status,
+        duration: s.duration,
         startDate: s.duration?.startDate,
-        endDate:   s.duration?.endDate,
+        endDate: s.duration?.endDate,
       }));
       return new Response(JSON.stringify(mapped), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
     } catch (e: any) {
-      return new Response(JSON.stringify({ error: e.message }), { status: 403, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
     }
   }),
 });
@@ -524,7 +536,7 @@ http.route({
     const projectId = url.searchParams.get("projectId");
     if (!projectId) return new Response(JSON.stringify({ error: "projectId required" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
     const sprintId = url.searchParams.get("sprintId") || undefined;
-    
+
     try {
       const [sprints, tasks, issues, teamMembers] = await Promise.all([
         ctx.runQuery(internal.extensionApi.getProjectSprintsFull, { projectId: projectId as any, userId: auth.userId as any }),
@@ -532,16 +544,16 @@ http.route({
         ctx.runQuery(internal.extensionApi.getProjectIssuesFull, { projectId: projectId as any, userId: auth.userId as any }),
         ctx.runQuery(internal.extensionApi.getProjectMembersFull, { projectId: projectId as any, userId: auth.userId as any }),
       ]);
-      
+
       const priorityMap: Record<string, string> = { critical: "critical", medium: "medium", low: "low" };
 
       const mappedSprints = (sprints ?? []).map((s: any) => ({
-        id:        s._id,
+        id: s._id,
         sprintName: s.sprintName,
-        status:    s.status,
-        duration:  s.duration,
+        status: s.status,
+        duration: s.duration,
         startDate: s.duration?.startDate,
-        endDate:   s.duration?.endDate,
+        endDate: s.duration?.endDate,
       }));
 
       const mappedTasks = (tasks ?? []).map((t: any) => ({
@@ -618,7 +630,7 @@ http.route({
     const projectId = url.searchParams.get("projectId");
     if (!projectId) return new Response(JSON.stringify({ error: "projectId required" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
     const sprintId = url.searchParams.get("sprintId") || undefined;
-    
+
     try {
       const tasks = await ctx.runQuery(internal.extensionApi.getProjectTasksFull, {
         projectId: projectId as any,
@@ -647,7 +659,7 @@ http.route({
       }));
       return new Response(JSON.stringify(mapped), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
     } catch (e: any) {
-      return new Response(JSON.stringify({ error: e.message }), { status: 403, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
     }
   }),
 });
@@ -662,7 +674,7 @@ http.route({
     const url = new URL(request.url);
     const projectId = url.searchParams.get("projectId");
     if (!projectId) return new Response(JSON.stringify({ error: "projectId required" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
-    
+
     try {
       const issues = await ctx.runQuery(internal.extensionApi.getProjectIssuesFull, {
         projectId: projectId as any,
@@ -692,7 +704,7 @@ http.route({
       }));
       return new Response(JSON.stringify(mapped), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
     } catch (e: any) {
-      return new Response(JSON.stringify({ error: e.message }), { status: 403, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
     }
   }),
 });
@@ -707,7 +719,7 @@ http.route({
     const url = new URL(request.url);
     const projectId = url.searchParams.get("projectId");
     if (!projectId) return new Response(JSON.stringify({ error: "projectId required" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
-    
+
     try {
       const members = await ctx.runQuery(internal.extensionApi.getProjectMembersFull, {
         projectId: projectId as any,
@@ -721,7 +733,7 @@ http.route({
       }));
       return new Response(JSON.stringify(mapped), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
     } catch (e: any) {
-      return new Response(JSON.stringify({ error: e.message }), { status: 403, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
     }
   }),
 });
@@ -804,9 +816,22 @@ http.route({
     if (!auth.ok) return auth.response;
     try {
       const body = await request.json();
+      // Explicitly pick only known/safe fields — never spread raw body into a mutation
+      // to prevent field-injection attacks (e.g. overwriting createdAt, userId).
       const taskId = await ctx.runMutation(internal.extensionApi.createTaskInternal, {
-        ...body,
-        userId: auth.userId as any
+        projectId: body.projectId,
+        title: body.title,
+        description: body.description,
+        status: body.status,
+        priority: body.priority,
+        sprintId: body.sprintId,
+        estimation: body.estimation,
+        type: body.type,
+        linkWithCodebase: body.linkWithCodebase,
+        assigneeId: body.assigneeId,
+        assigneeIds: body.assigneeIds,
+        isBlocked: body.isBlocked,
+        userId: auth.userId as any,
       });
       return new Response(JSON.stringify({ id: taskId }), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
     } catch (e: any) {
@@ -868,11 +893,24 @@ http.route({
     if (!auth.ok) return auth.response;
     try {
       const body = await request.json();
+      // Explicitly pick only known/safe fields — never spread raw body into a mutation
+      // to prevent field-injection attacks (e.g. overwriting createdAt or userId).
       const created = await ctx.runMutation(internal.extensionApi.createIssueInternal, {
-        ...body,
-        userId: auth.userId as any
+        title: body.title,
+        description: body.description,
+        environment: body.environment,
+        severity: body.severity,
+        due_date: body.due_date,
+        status: body.status ?? "not opened",
+        type: body.type ?? "manual",
+        githubIssueUrl: body.githubIssueUrl,
+        fileLinked: body.fileLinked,
+        taskId: body.taskId,
+        projectId: body.projectId,
+        assignees: body.assignees,
+        userId: auth.userId as any,
       });
-      
+
       const priorityMap: Record<string, string> = { critical: "critical", medium: "medium", low: "low" };
       const mapped = {
         id: created._id,
