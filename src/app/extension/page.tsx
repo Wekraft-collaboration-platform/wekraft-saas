@@ -13,7 +13,7 @@ type State = "idle" | "loading" | "success" | "error";
 function ExtensionPageInner() {
   const { isLoaded, isSignedIn, user } = useUser();
   const searchParams = useSearchParams();
-  const callbackUrl = searchParams.get("callback_url"); // e.g. vscode://wekraft.wekraft-vscode/auth
+  const callbackUrl = searchParams.get("callback_url"); // e.g. vscode://wekraft.wekraft/auth
 
   const createHandshakeToken = useMutation(api.apiKeys.createHandshakeToken);
 

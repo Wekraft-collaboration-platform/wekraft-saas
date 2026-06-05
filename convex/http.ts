@@ -430,7 +430,7 @@ async function authenticateRequest(
   return { ok: true, userId: authResult.userId, user: authResult.safeUser };
 }
 
-["/ext/projects", "/ext/tasks", "/ext/sprints", "/ext/issues", "/ext/team", "/ext/me"].forEach((path) => {
+["/ext/projects", "/ext/project-data", "/ext/tasks", "/ext/sprints", "/ext/issues", "/ext/team", "/ext/me"].forEach((path) => {
   http.route({
     path,
     method: "OPTIONS",
@@ -507,6 +507,100 @@ http.route({
         endDate:   s.duration?.endDate,
       }));
       return new Response(JSON.stringify(mapped), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    } catch (e: any) {
+      return new Response(JSON.stringify({ error: e.message }), { status: 403, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    }
+  }),
+});
+
+// ── GET /ext/project-data?projectId=…[&sprintId=…] — list all project data ──
+http.route({
+  path: "/ext/project-data",
+  method: "GET",
+  handler: httpAction(async (ctx, request) => {
+    const auth = await authenticateRequest(ctx, request);
+    if (!auth.ok) return auth.response;
+    const url = new URL(request.url);
+    const projectId = url.searchParams.get("projectId");
+    if (!projectId) return new Response(JSON.stringify({ error: "projectId required" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    const sprintId = url.searchParams.get("sprintId") || undefined;
+    
+    try {
+      const [sprints, tasks, issues, teamMembers] = await Promise.all([
+        ctx.runQuery(internal.extensionApi.getProjectSprintsFull, { projectId: projectId as any, userId: auth.userId as any }),
+        ctx.runQuery(internal.extensionApi.getProjectTasksFull, { projectId: projectId as any, userId: auth.userId as any, sprintId: sprintId as any }),
+        ctx.runQuery(internal.extensionApi.getProjectIssuesFull, { projectId: projectId as any, userId: auth.userId as any }),
+        ctx.runQuery(internal.extensionApi.getProjectMembersFull, { projectId: projectId as any, userId: auth.userId as any }),
+      ]);
+      
+      const priorityMap: Record<string, string> = { critical: "critical", medium: "medium", low: "low" };
+
+      const mappedSprints = (sprints ?? []).map((s: any) => ({
+        id:        s._id,
+        sprintName: s.sprintName,
+        status:    s.status,
+        duration:  s.duration,
+        startDate: s.duration?.startDate,
+        endDate:   s.duration?.endDate,
+      }));
+
+      const mappedTasks = (tasks ?? []).map((t: any) => ({
+        id: t._id,
+        projectId: t.projectId,
+        sprintId: t.sprintId,
+        title: t.title,
+        description: t.description,
+        status: t.status,
+        type: t.type,
+        priority: t.priority ?? "low",
+        assigneeId: Array.isArray(t.assignedTo) && t.assignedTo[0] ? (typeof t.assignedTo[0] === "object" ? t.assignedTo[0].userId : t.assignedTo[0]) : (typeof t.assignedTo === "string" ? t.assignedTo : undefined),
+        assignee: Array.isArray(t.assignedTo) && t.assignedTo[0] ? (typeof t.assignedTo[0] === "object" ? { id: t.assignedTo[0].userId, name: t.assignedTo[0].name || "Unknown", avatarUrl: t.assignedTo[0].avatar, role: "member" as const, email: "" } : { id: t.assignedTo[0], name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" }) : (typeof t.assignedTo === "string" ? { id: t.assignedTo, name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" } : undefined),
+        assigneeIds: Array.isArray(t.assignedTo) ? t.assignedTo.map((a: any) => typeof a === "object" ? a.userId : a) : (typeof t.assignedTo === "string" ? [t.assignedTo] : []),
+        assignees: Array.isArray(t.assignedTo) ? t.assignedTo.map((a: any) => typeof a === "object" ? { id: a.userId, name: a.name || "Unknown", avatarUrl: a.avatar, role: "member" as const, email: "" } : { id: a, name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" }) : (typeof t.assignedTo === "string" ? [{ id: t.assignedTo, name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" }] : []),
+        reporterId: t.createdByUserId,
+        createdAt: t.createdAt,
+        updatedAt: t.updatedAt,
+        isBlocked: t.isBlocked ?? false,
+        linkWithCodebase: t.linkWithCodebase ?? null,
+        estimation: t.estimation ?? null,
+      }));
+
+      const mappedIssues = (issues ?? []).map((i: any) => ({
+        id: i._id,
+        projectId: i.projectId,
+        title: i.title,
+        description: i.description,
+        status: i.status,
+        taskId: i.taskId,
+        priority: priorityMap[i.severity || ""] ?? "medium",
+        severity: i.severity ?? "medium",
+        environment: i.environment ?? "local",
+        due_date: i.due_date,
+        fileLinked: i.fileLinked ?? null,
+        linkWithCodebase: i.fileLinked ?? null,
+        assigneeId: i.IssueAssignee?.[0]?.userId,
+        assignee: i.IssueAssignee?.[0] ? { id: i.IssueAssignee[0].userId, name: i.IssueAssignee[0].name, avatarUrl: i.IssueAssignee[0].avatar, role: "member" as const, email: "" } : undefined,
+        assigneeIds: Array.isArray(i.IssueAssignee) ? i.IssueAssignee.map((a: any) => a.userId) : [],
+        assignees: Array.isArray(i.IssueAssignee) ? i.IssueAssignee.map((a: any) => ({ id: a.userId, name: a.name || "Unknown", avatarUrl: a.avatar, role: "member" as const, email: "" })) : [],
+        reporterId: i.createdByUserId,
+        createdAt: i.createdAt,
+        updatedAt: i.updatedAt,
+      }));
+
+      const mappedTeam = (teamMembers ?? []).map((m: any) => ({
+        id: m._id,
+        userId: m.userId,
+        user: { id: m.userId, name: m.userName ?? "Unknown", avatarUrl: m.userImage, role: m.AccessRole ?? "member", email: "" },
+        role: m.AccessRole ?? "member",
+      }));
+
+      return new Response(JSON.stringify({
+        sprints: mappedSprints,
+        tasks: mappedTasks,
+        issues: mappedIssues,
+        teamMembers: mappedTeam,
+        tickets: []
+      }), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
     } catch (e: any) {
       return new Response(JSON.stringify({ error: e.message }), { status: 403, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
     }

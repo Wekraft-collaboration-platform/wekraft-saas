@@ -750,7 +750,7 @@ export const updateTicketStatusInternal = internalMutation({
     if (!ticket) throw new Error("Ticket not found");
 
     const isAssignee = ticket.assignedTo === args.userId;
-    const isCreator  = ticket.createdBy  === args.userId;
+    const isCreator = ticket.createdBy === args.userId;
     if (!isAssignee && !isCreator) {
       throw new Error("Forbidden: only the assignee or creator can change this ticket");
     }
