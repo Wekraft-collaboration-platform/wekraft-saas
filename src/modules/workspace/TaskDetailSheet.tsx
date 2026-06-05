@@ -44,6 +44,17 @@ const getFileIcon = (fileName: string) => {
   };
   return map[ext] ?? "/file.svg";
 };
+
+const getProxyUrl = (url: string, download = false) => {
+  if (!url) return "";
+  const s3Prefix = "https://wekraft-saas-upload-s3.s3.ap-south-1.amazonaws.com/";
+  if (url.startsWith(s3Prefix)) {
+    const key = url.slice(s3Prefix.length);
+    return `/api/teamspace/download?key=${encodeURIComponent(key)}&download=${download}`;
+  }
+  return `/api/teamspace/download?url=${encodeURIComponent(url)}&download=${download}`;
+};
+
 import { format } from "date-fns";
 import { cn } from "@/lib/utils";
 import { Separator } from "@/components/ui/separator";
@@ -669,7 +680,7 @@ export const TaskDetailSheet = ({
                                 variant="ghost"
                                 size="icon"
                                 className="h-8 w-8 text-muted-foreground hover:text-primary hover:bg-primary/10"
-                                onClick={() => window.open(file.url, "_blank")}
+                                onClick={() => window.open(getProxyUrl(file.url, false), "_blank")}
                               >
                                 <ExternalLink size={14} />
                               </Button>

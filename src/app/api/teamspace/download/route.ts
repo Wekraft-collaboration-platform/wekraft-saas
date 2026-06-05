@@ -3,12 +3,19 @@ import { type NextRequest, NextResponse } from "next/server";
 export async function GET(req: NextRequest) {
   try {
     const url = new URL(req.url);
-    const fileUrl = url.searchParams.get("url");
+    let fileUrl = url.searchParams.get("url");
+    const key = url.searchParams.get("key");
     let filename = url.searchParams.get("filename");
+    const download = url.searchParams.get("download") !== "false";
 
-    if (!fileUrl) {
+    if (key && key !== "null" && key !== "undefined") {
+      const bucket = "wekraft-saas-upload-s3";
+      fileUrl = `https://${bucket}.s3.ap-south-1.amazonaws.com/${key}`;
+    }
+
+    if (!fileUrl || fileUrl === "null" || fileUrl === "undefined") {
       return NextResponse.json(
-        { error: "Missing url parameter" },
+        { error: "Missing or invalid url/key parameter" },
         { status: 400 },
       );
     }
@@ -31,13 +38,17 @@ export async function GET(req: NextRequest) {
     // Stream the body directly to the client
     const body = response.body;
 
-    return new NextResponse(body, {
-      headers: {
-        "Content-Type": contentType,
-        // The attachment directive forces the browser to download the file natively
-        "Content-Disposition": `attachment; filename="${filename}"`,
-      },
-    });
+    const headers: Record<string, string> = {
+      "Content-Type": contentType,
+    };
+
+    if (download) {
+      headers["Content-Disposition"] = `attachment; filename="${filename}"`;
+    } else {
+      headers["Content-Disposition"] = "inline";
+    }
+
+    return new NextResponse(body, { headers });
   } catch (error) {
     console.error("Download proxy error:", error);
     return NextResponse.json(
