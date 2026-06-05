@@ -101,6 +101,20 @@ export function MultiStepOnboarding() {
   const [heardFrom, setHeardFrom] = useState("");
   const [referralCode, setReferralCode] = useState("");
 
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      try {
+        const storedCode = localStorage.getItem("wekraft_referral_code") || sessionStorage.getItem("wekraft_referral_code");
+        if (storedCode) {
+          setReferralCode(storedCode);
+          setHeardFrom("referral");
+        }
+      } catch (err) {
+        console.error("Failed to load stored referral code:", err);
+      }
+    }
+  }, []);
+
   const parts = referralCode.trim().split("-");
   const suffix = parts.length >= 2 ? parts[parts.length - 1] : "";
   const isReferralCodeReady = parts.length >= 2 && suffix.length >= 5;

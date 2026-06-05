@@ -43,9 +43,10 @@ export function ReferralDialog({ open: propOpen, onClose }: ReferralDialogProps)
 
   const handleCopyReferral = () => {
     if (userDetails?.referalCreated) {
-      navigator.clipboard.writeText(userDetails.referalCreated);
+      const referralLink = `${window.location.origin}/?ref=${userDetails.referalCreated}`;
+      navigator.clipboard.writeText(referralLink);
       setCopied(true);
-      toast.success("Referral code copied to clipboard!");
+      toast.success("Referral link copied to clipboard!");
       setTimeout(() => setCopied(false), 2000);
     }
   };

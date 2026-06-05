@@ -9,6 +9,7 @@ import { Toaster } from "@/components/ui/sonner";
 import { ConvexClientProvider } from "@/providers/ConvexClientProvider";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { ThemeProvider } from "@/providers/ThemeProvider";
+import { ReferralTracker } from "@/providers/ReferralTracker";
 
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://wekraft.xyz"),
@@ -107,7 +108,10 @@ export default function RootLayout({
             >
               <ConvexClientProvider>
                 <main>
-                  <ViewTransition>{children}</ViewTransition>
+                  <ViewTransition>
+                    <ReferralTracker />
+                    {children}
+                  </ViewTransition>
                 </main>
               </ConvexClientProvider>
 
