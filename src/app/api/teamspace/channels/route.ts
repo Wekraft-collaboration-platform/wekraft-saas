@@ -94,7 +94,7 @@ export async function GET(req: NextRequest) {
 
   // Seed default channels if missing (first visit to this teamspace)
   const hasDefaultText = channels.some(
-    (c) => c.is_default === 1 && c.type === "text",
+    (c) => c.is_default === 1 && c.type === "community",
   );
   const hasDefaultAnnouncement = channels.some(
     (c) => c.is_default === 1 && c.type === "announcement",
@@ -107,7 +107,7 @@ export async function GET(req: NextRequest) {
     if (!hasDefaultText) {
       await turso.execute({
         sql: `INSERT INTO ts_channels (id, project_id, name, description, type, is_default, created_by, created_at, updated_at)
-              VALUES (?, ?, 'general', 'General discussion for the whole team', 'text', 1, ?, ?, ?)`,
+              VALUES (?, ?, 'general', 'General discussion for the whole team', 'community', 1, ?, ?, ?)`,
         args: [randomUUID(), projectId, userId, now, now],
       });
       madeChanges = true;
@@ -116,7 +116,7 @@ export async function GET(req: NextRequest) {
     if (!hasDefaultAnnouncement) {
       await turso.execute({
         sql: `INSERT INTO ts_channels (id, project_id, name, description, type, is_default, created_by, created_at, updated_at)
-              VALUES (?, ?, 'announcements', 'Important updates and announcements', 'announcement', 1, ?, ?, ?)`,
+              VALUES (?, ?, 'general', 'Important updates and announcements', 'announcement', 1, ?, ?, ?)`,
         args: [randomUUID(), projectId, userId, now, now],
       });
       madeChanges = true;
@@ -142,7 +142,7 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
 
   const body = await req.json();
-  const { projectId, name, description, type = "text", memberIds } = body;
+  const { projectId, name, description, type = "community", memberIds } = body;
 
   if (!projectId || !name)
     return NextResponse.json(
@@ -150,7 +150,7 @@ export async function POST(req: NextRequest) {
       { status: 400 },
     );
 
-  if (!["text", "announcement", "private"].includes(type))
+  if (!["community", "announcement", "private"].includes(type))
     return NextResponse.json(
       { error: "Invalid channel type" },
       { status: 400 },

@@ -24,7 +24,7 @@ export interface Channel {
   project_id: string;
   name: string;
   description: string | null;
-  type: "text" | "announcement" | "private";
+  type: "community" | "announcement" | "private";
   is_default: number;
   created_by: string;
   created_at: number;
@@ -92,17 +92,28 @@ export function useChannels(
     };
 
     const onChannelUpdated = (msg: Ably.Message) => {
-      const { id, name, description } = msg.data;
+      const { id, name, description, type, memberIds } = msg.data;
       setChannels((prev) =>
-        prev.map((c) =>
-          c.id === id
-            ? {
-                ...c,
-                name: name ?? c.name,
-                description: description ?? c.description,
-              }
-            : c,
-        ),
+        prev.map((c) => {
+          if (c.id !== id) return c;
+          let has_access = c.has_access;
+          if (type !== undefined) {
+            if (type !== "private") {
+              has_access = 1;
+            } else if (memberIds) {
+              const isMember = memberIds.includes(currentUserId || "");
+              const isCreator = c.created_by === currentUserId;
+              has_access = (isMember || isCreator) ? 1 : 0;
+            }
+          }
+          return {
+            ...c,
+            name: name ?? c.name,
+            description: description ?? c.description,
+            type: type ?? c.type,
+            has_access,
+          };
+        }),
       );
     };
 
@@ -239,7 +250,7 @@ export function useChannels(
     async (
       name: string,
       description: string,
-      type: "text" | "announcement" | "private" = "text",
+      type: "community" | "announcement" | "private" = "community",
       memberIds?: string[],
     ) => {
       const res = await fetch("/api/teamspace/channels", {
@@ -264,17 +275,25 @@ export function useChannels(
       channelId: string,
       name: string,
       description: string,
+      type?: "community" | "announcement" | "private",
       memberIds?: string[],
     ) => {
       const res = await fetch(`/api/teamspace/channels/${channelId}`, {
         method: "PATCH",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, description, memberIds }),
+        body: JSON.stringify({ name, description, type, memberIds }),
       });
       if (res.ok) {
         setChannels((prev) =>
           prev.map((c) =>
-            c.id === channelId ? { ...c, name, description } : c,
+            c.id === channelId
+              ? {
+                  ...c,
+                  name,
+                  description,
+                  type: type ?? c.type,
+                }
+              : c,
           ),
         );
         return true;

@@ -2,10 +2,13 @@
  * CreateChannelDialog.tsx
  *
  * Dialog for creating a new channel in the teamspace.
- * Supports three channel types:
- *   - text       → General chat (default)
+ * Supports two channel types:
+ *   - community    → General chat (stored as type='text' in DB)
  *   - announcement → Read-only for non-admin members
- *   - private    → Only visible to explicitly selected members
+ *
+ * A "Private Channel" toggle controls visibility:
+ *   - When OFF: channel is public (text or announcement)
+ *   - When ON:  channel is private — only visible to explicitly selected members
  *
  * For private channels, fetches project members from Convex and renders
  * a scrollable multi-select member picker.
@@ -38,6 +41,7 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Switch } from "@/components/ui/switch";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Badge } from "@/components/ui/badge";
@@ -55,7 +59,7 @@ const schema = z.object({
       "Only lowercase letters, numbers, spaces and hyphens",
     ),
   description: z.string().max(120).optional(),
-  type: z.enum(["text", "announcement", "private"]),
+  type: z.enum(["community", "announcement"]),
 });
 
 type FormValues = z.infer<typeof schema>;
@@ -70,7 +74,7 @@ interface Props {
   onCreate: (
     name: string,
     description: string,
-    type: "text" | "announcement" | "private",
+    type: "community" | "announcement" | "private",
     memberIds?: string[],
   ) => Promise<Channel | undefined>;
 }
@@ -83,20 +87,21 @@ export function CreateChannelDialog({
   onCreate,
 }: Props) {
   const [loading, setLoading] = useState(false);
+  const [isPrivate, setIsPrivate] = useState(false);
   const [selectedMemberIds, setSelectedMemberIds] = useState<string[]>([]);
 
   const form = useForm<FormValues>({
     // @ts-ignore
     resolver: zodResolver(schema),
-    defaultValues: { name: "", description: "", type: "text" },
+    defaultValues: { name: "", description: "", type: "community" },
   });
 
   const watchedType = form.watch("type");
 
-  // Lazily fetch project members — only when the "private" type is selected
+  // Lazily fetch project members — only when the private toggle is on
   const projectMembers = useQuery(
     api.project.getProjectMembers,
-    watchedType === "private" && projectId
+    isPrivate && projectId
       ? { projectId: projectId as Id<"projects"> }
       : "skip",
   );
@@ -112,13 +117,15 @@ export function CreateChannelDialog({
   async function onSubmit(values: FormValues) {
     setLoading(true);
     try {
+      const channelType = isPrivate ? "private" : values.type;
       await onCreate(
         values.name,
         values.description ?? "",
-        values.type,
-        values.type === "private" ? selectedMemberIds : undefined,
+        channelType,
+        isPrivate ? selectedMemberIds : undefined,
       );
       form.reset();
+      setIsPrivate(false);
       setSelectedMemberIds([]);
       onOpenChange(false);
     } finally {
@@ -128,7 +135,8 @@ export function CreateChannelDialog({
 
   function handleOpenChange(v: boolean) {
     if (!v && open) {
-      form.reset({ name: "", description: "", type: "text" });
+      form.reset({ name: "", description: "", type: "community" });
+      setIsPrivate(false);
       setSelectedMemberIds([]);
     }
     onOpenChange(v);
@@ -146,7 +154,11 @@ export function CreateChannelDialog({
       <DialogContent className="sm:max-w-md bg-card rounded-lg!">
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
-            <Hash className="h-4 w-4" />
+            {isPrivate ? (
+              <Lock className="h-4 w-4 text-primary" />
+            ) : (
+              <Hash className="h-4 w-4" />
+            )}
             Create Channel
           </DialogTitle>
         </DialogHeader>
@@ -165,29 +177,32 @@ export function CreateChannelDialog({
                       value={field.value}
                       onValueChange={(v) => {
                         field.onChange(v);
-                        // Clear member selection when switching away from private
-                        if (v !== "private") setSelectedMemberIds([]);
+                        // Announcement channels cannot be private
+                        if (v === "announcement") {
+                          setIsPrivate(false);
+                          setSelectedMemberIds([]);
+                        }
                       }}
-                      className="grid grid-cols-3 gap-1.5"
+                      className="grid grid-cols-2 gap-1.5"
                     >
                       {/* Text */}
                       <label
-                        htmlFor="type-text"
+                        htmlFor="type-community"
                         className={cn(
                           "flex flex-col items-center gap-1 p-2 rounded-lg border cursor-pointer transition-colors text-center",
-                          field.value === "text"
+                          field.value === "community"
                             ? "border-primary/40 bg-accent/40"
                             : "border-border hover:bg-accent/20",
                         )}
                       >
                         <RadioGroupItem
-                          value="text"
-                          id="type-text"
+                          value="community"
+                          id="type-community"
                           className="sr-only"
                         />
                         <Hash className="h-3.5 w-3.5 shrink-0" />
                         <p className="text-[11px] font-medium leading-tight">
-                          Text
+                          Community
                         </p>
                         <p className="text-[9px] text-muted-foreground leading-tight">
                           General chat
@@ -217,30 +232,6 @@ export function CreateChannelDialog({
                           Read-only
                         </p>
                       </label>
-
-                      {/* Private */}
-                      <label
-                        htmlFor="type-private"
-                        className={cn(
-                          "flex flex-col items-center gap-1 p-2 rounded-lg border cursor-pointer transition-colors text-center",
-                          field.value === "private"
-                            ? "border-primary/40 bg-accent/40"
-                            : "border-border hover:bg-accent/20",
-                        )}
-                      >
-                        <RadioGroupItem
-                          value="private"
-                          id="type-private"
-                          className="sr-only"
-                        />
-                        <Lock className="h-3.5 w-3.5 shrink-0" />
-                        <p className="text-[11px] font-medium leading-tight">
-                          Private
-                        </p>
-                        <p className="text-[9px] text-muted-foreground leading-tight">
-                          Members only
-                        </p>
-                      </label>
                     </RadioGroup>
                   </FormControl>
                   <FormMessage />
@@ -248,8 +239,32 @@ export function CreateChannelDialog({
               )}
             />
 
-            {/* ── Member Picker (only shown for private channels) ── */}
-            {watchedType === "private" && (
+            {/* ── Private Toggle (only for community channels) ── */}
+            {watchedType === "community" && (
+            <div className="flex items-center justify-between rounded-lg border border-border px-3 py-2.5 bg-muted/30">
+              <div className="flex items-center gap-2.5">
+                <Lock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                <div>
+                  <p className="text-xs font-medium leading-tight">Private Channel</p>
+                  <p className="text-[10px] text-muted-foreground leading-tight mt-0.5">
+                    Only selected members can access
+                  </p>
+                </div>
+              </div>
+              <Switch
+                id="create-private-toggle"
+                checked={isPrivate}
+                onCheckedChange={(v) => {
+                  setIsPrivate(v);
+                  if (!v) setSelectedMemberIds([]);
+                }}
+                size="sm"
+              />
+            </div>
+            )}
+
+            {/* ── Member Picker (only shown for private community channels) ── */}
+            {watchedType === "community" && isPrivate && (
               <div className="space-y-1.5">
                 <div className="flex items-center justify-between">
                   <FormLabel className="text-xs">Add Members</FormLabel>
@@ -381,7 +396,7 @@ export function CreateChannelDialog({
                   <FormLabel>Channel Name</FormLabel>
                   <FormControl>
                     <div className="flex items-center gap-1 border rounded-md px-3 bg-transparent! focus-within:ring-1 focus-within:ring-ring">
-                      {watchedType === "private" ? (
+                      {isPrivate ? (
                         <Lock className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
                       ) : (
                         <Hash className="h-3.5 w-3.5 text-muted-foreground shrink-0" />

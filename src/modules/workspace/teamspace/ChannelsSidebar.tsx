@@ -62,13 +62,15 @@ interface Props {
   onCreate: (
     name: string,
     description: string,
-    type: "text" | "announcement" | "private",
+    type: "community" | "announcement" | "private",
     memberIds?: string[],
   ) => Promise<Channel | undefined>;
   onUpdate: (
     channelId: string,
     name: string,
     description: string,
+    type?: "community" | "announcement" | "private",
+    memberIds?: string[],
   ) => Promise<boolean>;
   onDelete: (channelId: string) => Promise<boolean>;
 }
@@ -118,11 +120,12 @@ export function ChannelsSidebar({
   };
 
   const announcementChannels = channels.filter(
-    (c) => c.type === "announcement",
+    (c) => c.type === "announcement" && c.has_access !== 0,
   );
-  const privateChannels = channels.filter((c) => c.type === "private");
-  const chatChannels = channels.filter((c) => c.type === "text");
-  const [privateExpanded, setPrivateExpanded] = useState(true);
+  // Community = all text + private channels the user can access
+  const communityChannels = channels.filter(
+    (c) => (c.type === "community" || c.type === "private") && c.has_access !== 0,
+  );
 
   const renderChannel = (channel: Channel) => {
     const isActive = channel.id === activeChannelId;
@@ -251,8 +254,8 @@ export function ChannelsSidebar({
           )}
 
           {/* Lock icon for private channels */}
-          {isPrivate && !isAccessible && (
-            <Lock className="h-3 w-3 ml-auto shrink-0 text-muted-foreground/40" />
+          {isPrivate && isAccessible && (
+            <Lock className="h-3 w-3 ml-auto shrink-0 text-muted-foreground/60" />
           )}
 
           {/* Existing announcement lock (for non-power users) */}
@@ -339,7 +342,7 @@ export function ChannelsSidebar({
                 </div>
               )}
 
-              {/* Community Chat Section */}
+              {/* Community Section — text + private channels the user can see */}
               <div>
                 <div
                   className="flex items-center justify-between px-2 pt-2 pb-1 group cursor-pointer hover:text-foreground transition-colors"
@@ -353,7 +356,7 @@ export function ChannelsSidebar({
                       )}
                     />
                     <h3 className="text-sm text-muted-foreground group-hover:text-foreground">
-                      Community Chat
+                      Community
                     </h3>
                   </div>
                 </div>
@@ -366,46 +369,11 @@ export function ChannelsSidebar({
                       transition={{ duration: 0.2, ease: "easeInOut" }}
                       className="flex flex-col gap-0.5 mt-1 overflow-hidden"
                     >
-                      {chatChannels.map(renderChannel)}
+                      {communityChannels.map(renderChannel)}
                     </motion.ul>
                   )}
                 </AnimatePresence>
               </div>
-
-              {/* Private Channels Section */}
-              {privateChannels.length > 0 && (
-                <div>
-                  <div
-                    className="flex items-center justify-between px-2 pt-2 pb-1 group cursor-pointer hover:text-foreground transition-colors"
-                    onClick={() => setPrivateExpanded(!privateExpanded)}
-                  >
-                    <div className="flex items-center gap-1 select-none">
-                      <ChevronDown
-                        className={cn(
-                          "h-4 w-4 shrink-0 transition-transform duration-200 text-muted-foreground group-hover:text-foreground",
-                          !privateExpanded && "-rotate-90",
-                        )}
-                      />
-                      <h3 className="text-sm text-muted-foreground group-hover:text-foreground">
-                        Private
-                      </h3>
-                    </div>
-                  </div>
-                  <AnimatePresence initial={false}>
-                    {privateExpanded && (
-                      <motion.ul
-                        initial={{ height: 0, opacity: 0 }}
-                        animate={{ height: "auto", opacity: 1 }}
-                        exit={{ height: 0, opacity: 0 }}
-                        transition={{ duration: 0.2, ease: "easeInOut" }}
-                        className="flex flex-col gap-0.5 mt-1 overflow-hidden"
-                      >
-                        {privateChannels.map(renderChannel)}
-                      </motion.ul>
-                    )}
-                  </AnimatePresence>
-                </div>
-              )}
             </>
           )}
         </div>
