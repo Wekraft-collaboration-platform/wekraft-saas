@@ -110,7 +110,7 @@ const Navbar = () => {
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 12, scale: 0.96 }}
                         transition={{ duration: 0.2, ease: "easeOut" }}
-                        className="absolute top-full right-[-140px] mt-3.5 w-[630px] bg-neutral-950/95 border border-white/[0.08] rounded-2xl p-6 shadow-[0_30px_70px_-15px_rgba(0,0,0,0.9),inset_0_1px_1px_rgba(255,255,255,0.06)] backdrop-blur-3xl text-left z-50 flex flex-row gap-6 origin-top-right"
+                        className="absolute top-full right-[-140px] mt-3.5 w-[630px] bg-neutral-950 border border-white/[0.08] rounded-2xl p-6 shadow-[0_30px_70px_-15px_rgba(0,0,0,0.9),inset_0_1px_1px_rgba(255,255,255,0.06)] backdrop-blur-3xl text-left z-50 flex flex-row gap-6 origin-top-right"
                       >
                         {/* Left Column: Info and Links */}
                         <div className="flex-[1.25] flex flex-col gap-4">

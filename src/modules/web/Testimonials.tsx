@@ -14,63 +14,56 @@ interface Testimonial {
 
 const column1: Testimonial[] = [
   {
-    name: "Guy Hawkins",
-    handle: "@leslie",
-    avatar: "https://images.unsplash.com/photo-1535713875002-d1d0cf377fde?auto=format&fit=crop&w=150&h=150&q=80",
-    text: "Simply the best. Better than all the rest. I'd recommend this product to beginners and advanced users. #webflow_development",
-    tags: ["#webflow_development"],
+    name: "Akash Singh",
+    handle: "@nniceguy0",
+    avatar: "/akash.jpg",
+    text: "The platform has a clean interface, modern design, and promising project management workflow. Improving session handling and access-state detection would further enhance usability and create a more seamless user experience.",
+    tags: ["#dx", "#pm"],
   },
   {
-    name: "Eleanor Pena",
-    handle: "@eleanor",
-    avatar: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?auto=format&fit=crop&w=150&h=150&q=80",
-    text: "The speed is absolutely incredible. Moving from Jira to Wekraft felt like upgrading from a tricycle to a rocket ship. The Git integration just works flawlessly.",
-    tags: ["#dev", "#tools"],
+    name: "Palak Sharma",
+    handle: "@palaksharma_",
+    avatar: "/palakdp.jpg",
+    text: "The dashboard is beautiful and extremely fast. Integrating time-tracking directly with git branches is absolute genius. After using this, going back to Jira would feel like a chore. Wekraft is where we are staying.",
+    tags: ["#git", "#speed"],
   },
   {
-    name: "Alex Rivera",
-    handle: "@arivera",
-    avatar: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=150&h=150&q=80",
-    text: "It's quicker with the customer, the customer is more ensured of getting exactly what they ordered, and I'm all for the efficiency.",
-    tags: ["#dev", "#tools"],
+    name: "Ishaan Verma",
+    handle: "@ishaan.v_",
+    avatar: "/testuser.jpg",
+    text: "A beautifully polished dev workspace. The GitHub issue sync is near real-time and works without any friction. Grateful for the automation features Kaya provides for tracking PR blocker risks.",
+    tags: ["#sync", "#automation"],
   },
   {
-    name: "Jane Cooper",
-    handle: "@jane_c",
-    avatar: "https://images.unsplash.com/photo-1438761681033-6461ffad8d80?auto=format&fit=crop&w=150&h=150&q=80",
-    text: "Tested by senior devs and early testers. The Git branch auto-sync is hands-down the best feature. We save hours of manual status updates every single sprint.",
-    tags: ["#git", "#productivity"],
+    name: "Shubham Choudhary",
+    handle: "@_shubham_18",
+    avatar: "/shubhamdp.jpg",
+    text: "The task view switching feels extremely robust. Kanban drag-and-drop is highly responsive. I had a few workspace invite bugs early on, but the core developer cycle is so cohesive I can't imagine migrating back to our old tool.",
+    tags: ["#dx", "#kanban"],
   },
 ];
 
 const column2: Testimonial[] = [
   {
-    name: "Courtney Henry",
-    handle: "@courtney",
-    avatar: "https://images.unsplash.com/photo-1544005313-94ddf0286df2?auto=format&fit=crop&w=150&h=150&q=80",
-    text: "This is a top quality product. No need to think twice before making it live on web.",
-    tags: ["#quality", "#web"],
+    name: "Siddharth Mehta",
+    handle: "@siddharth.m",
+    avatar: "/testuser2.jpeg",
+    text: "Managing engineering tasks directly connected to our repos is a game changer. It saves us so much status-update overhead that the whole team agreed we can never switch back. Wekraft keeps us in our flow.",
+    tags: ["#scrum", "#dx"],
   },
   {
-    name: "Dianne Russell",
-    handle: "@dianne_r",
-    avatar: "https://images.unsplash.com/photo-1517841905240-472988babdf9?auto=format&fit=crop&w=150&h=150&q=80",
-    text: "Finally, I've found a service that covers all bases for a bootstrap startup. The UI is clean, interactions are fast, and their customer support is super responsive.",
-    tags: ["#startup", "#launch"],
+    name: "Rakesh Sinha",
+    handle: "@iamrakesh",
+    avatar: "/testuser3.jpeg",
+    text: "Love the Slack-style team channels combined with project management. Lightweight and keeps the team focused. Once auth session persistence is refined, the communication loop here will be top-tier.",
+    tags: ["#chat", "#auth"],
   },
   {
-    name: "Albert Flores",
-    handle: "@albert_f",
-    avatar: "https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=150&h=150&q=80",
-    text: "Simply the best execution loop. Planning, grooming, and follow-up work collapse into one calm loop. Recommended to all senior engineers.",
-    tags: ["#engineering", "#scrum"],
-  },
-  {
-    name: "Leslie Alexander",
-    handle: "@leslie_alex",
-    avatar: "https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=150&h=150&q=80",
-    text: "Our team shipped 2.4x faster in our first month. The context stays attached to the codebase, so new joiners get up to speed in minutes.",
-    tags: ["#velocity", "#dev"],
+    name: "Kabir Sen",
+    handle: "@kabirsen99",
+    avatar: "/testuser4.png",
+    text: "Kaya PM summaries are a great way to start the morning. It keeps the whole team aligned on priorities without annoying standup meetings. The roadmap visualization is very promising.",
+    tags: ["#kaya", "#meetings"],
   },
 ];
 
@@ -131,40 +124,25 @@ const Testimonials = () => {
       >
         <div className="grid grid-cols-1 lg:grid-cols-[1.1fr_0.9fr] gap-12 lg:gap-16 items-center">
 
-          {/* Left Column: Heading & Stats */}
+          {/* Left Column: Heading & Sub-copy */}
           <div className="flex flex-col text-left">
-            <span className="text-xs font-bold uppercase tracking-widest text-neutral-400 mb-4">
-              TESTIMONIALS
-            </span>
+            <div className="inline-flex items-center gap-2 px-3.5 py-1.5 rounded-full border border-white/10 bg-neutral-900/50 backdrop-blur-sm mb-6 self-start">
+              <div className="w-1.5 h-1.5 rounded-full bg-blue-500 shadow-[0_0_8px_rgba(59,130,246,0.6)]" />
+              <span className="text-[13px] font-medium text-white tracking-wide">
+                Testimonials
+              </span>
+            </div>
+            
             <h2 className="text-4xl md:text-5xl lg:text-[54px] font-bold tracking-tight text-white leading-[1.1] mb-6">
-              Don't just take our word for it.
+              Designed for flow.<br />
+              Loved by creators.
             </h2>
             <p className="text-neutral-300 text-lg md:text-xl font-medium mb-5 max-w-xl leading-snug">
-              Tested by senior devs and early testers.
+              Why fast-moving engineering teams are migrating to Wekraft.
             </p>
-            <p className="text-neutral-400 text-sm md:text-base leading-relaxed mb-12 md:mb-16 max-w-md">
-              We've built Wekraft to enable clean, lightning-fast cycles. Here is how teams and developers are scaling their workflow without tracking overhead.
+            <p className="text-neutral-400 text-sm md:text-base leading-relaxed mb-8 max-w-md">
+              From real-time issue sync to git-integrated time tracking and autonomous AI agents. See how software creators are shipping faster and staying focused.
             </p>
-
-            {/* Bottom Stats */}
-            <div className="grid grid-cols-2 gap-8 pt-8 border-t border-white/[0.08] max-w-sm mt-auto">
-              <div>
-                <span className="block text-4xl md:text-5xl font-extrabold text-white tracking-tight">
-                  52+
-                </span>
-                <span className="block text-[11px] font-bold tracking-wider text-neutral-500 uppercase mt-2">
-                  Early Testers
-                </span>
-              </div>
-              <div>
-                <span className="block text-4xl md:text-5xl font-extrabold text-white tracking-tight">
-                  2M+
-                </span>
-                <span className="block text-[11px] font-bold tracking-wider text-neutral-500 uppercase mt-2">
-                  Tasks Shipped
-                </span>
-              </div>
-            </div>
           </div>
 
           {/* Right Column: Vertically Scrolling Columns */}
