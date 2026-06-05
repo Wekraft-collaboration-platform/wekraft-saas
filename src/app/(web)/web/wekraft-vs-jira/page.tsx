@@ -1,7 +1,6 @@
 import React from "react";
 import { Metadata } from "next";
 import Navbar from "@/modules/web/Navbar";
-import CompareHero from "@/modules/web/compare/CompareHero";
 import CompareTable, { ComparisonFeature } from "@/modules/web/compare/CompareTable";
 import CompareFeatures from "@/modules/web/compare/CompareFeatures";
 
@@ -77,20 +76,10 @@ export default function JiraComparePage() {
       <Navbar />
 
       <main className="flex flex-col items-center pt-32 pb-16 px-4 md:px-8 text-center w-full mx-auto relative z-10">
-        <CompareHero
-          competitorName="Jira"
-          competitorLogo={<Briefcase className="w-3.5 h-3.5 text-blue-400" />}
-          competitorColor="from-blue-600 to-indigo-500"
-          title1="Natively track dev time."
-          title2="Eliminate delay debt."
-          description="Stop guessing deadlines. Wekraft automatically logs project time, computes delay debt, and predicts milestone completion dates based on live velocity."
-          visualMockup={<img src="/time.png" alt="Wekraft Time Logs" className="w-full rounded-2xl object-cover border border-white/[0.08]" />}
-        />
-
         <div className="w-full max-w-7xl mx-auto px-4 md:px-8">
           <CompareTable
             competitorName="Jira"
-            competitorLogo={<Briefcase className="w-3.5 h-3.5 text-neutral-400" />}
+            competitorLogo={<img src="/jira-logo.jpg" alt="Jira" className="w-5 h-5 object-contain rounded-sm" />}
             features={jiraFeatures}
           />
 
