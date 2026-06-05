@@ -30,6 +30,8 @@ const ALLOWED_CALLBACK_SCHEMES = [
   "windsurf://",
   "zed://",
   "jetbrains://",
+  "antigravity://",
+  "antigravity-ide://",
 ];
 
 function isCallbackUrlSafe(url: string | null): url is string {
