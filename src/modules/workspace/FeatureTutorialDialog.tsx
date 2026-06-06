@@ -28,6 +28,13 @@ import { api } from "../../../convex/_generated/api";
 
 type FeatureKey = "task" | "issue" | "sprint" | "timeLogs";
 
+const DOCS_MAPPING: Record<FeatureKey, string> = {
+  task: "/web/docs/tasks",
+  issue: "/web/docs/issues",
+  sprint: "/web/docs/sprints",
+  timeLogs: "/web/docs/time-logs",
+};
+
 interface Step {
   icon: React.ElementType;
   title: string;
@@ -293,7 +300,7 @@ export function FeatureTutorialDialog({ feature }: { feature: FeatureKey }) {
           {/* ── Footer ───────────────────────────────────────── */}
           <div className="flex items-center justify-between gap-4 pt-4 border-t border-white/[0.07] mt-2">
             <Link
-              href="/docs"
+              href={DOCS_MAPPING[feature]}
               className="flex items-center border rounded-sm px-3 py-1 bg-neutral-900 gap-1 text-[12px] text-neutral-400 hover:text-neutral-200 transition-colors"
             >
               Learn more <ArrowRight className="w-3 h-3" />

@@ -98,7 +98,7 @@ export const EditIssueDialog = ({
   const [assignedMembers, setAssignedMembers] = useState<
     { userId: Id<"users">; name: string; avatar?: string }[]
   >(
-    issue.assignedTo?.map((a: any) => ({
+    (issue.assignedTo || issue.assignees)?.map((a: any) => ({
       userId: a.userId,
       name: a.name,
       avatar: a.avatar,
@@ -124,7 +124,7 @@ export const EditIssueDialog = ({
       setDueDate(issue.due_date ? new Date(issue.due_date) : undefined);
       setSelectedPath(issue.fileLinked || null);
       setAssignedMembers(
-        issue.assignedTo?.map((a: any) => ({
+        (issue.assignedTo || issue.assignees)?.map((a: any) => ({
           userId: a.userId,
           name: a.name,
           avatar: a.avatar,

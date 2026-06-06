@@ -100,7 +100,13 @@ export const EditTaskDialog = ({
   );
   const [assignedMembers, setAssignedMembers] = useState<
     { userId: Id<"users">; name: string; avatar?: string }[]
-  >(task.assignees || []);
+  >(
+    (task.assignees || task.assignedTo)?.map((a: any) => ({
+      userId: a.userId,
+      name: a.name,
+      avatar: a.avatar,
+    })) || [],
+  );
   const [attachments, setAttachments] = useState<
     { name: string; url: string }[]
   >(task.attachments || []);
@@ -148,7 +154,13 @@ export const EditTaskDialog = ({
       });
       setTag(task.type || null);
       setSelectedPath(task.linkWithCodebase || null);
-      setAssignedMembers(task.assignees || []);
+      setAssignedMembers(
+        (task.assignees || task.assignedTo)?.map((a: any) => ({
+          userId: a.userId,
+          name: a.name,
+          avatar: a.avatar,
+        })) || [],
+      );
       setAttachments(task.attachments || []);
     }
   }, [task, open]);
@@ -177,14 +189,11 @@ export const EditTaskDialog = ({
         },
         type: tag ? tag : undefined,
         linkWithCodebase: selectedPath || undefined,
-        assignees:
-          assignedMembers.length > 0
-            ? assignedMembers.map((a) => ({
-              userId: a.userId,
-              name: a.name,
-              avatar: a.avatar,
-            }))
-            : undefined,
+        assignees: assignedMembers.map((a) => ({
+          userId: a.userId,
+          name: a.name,
+          avatar: a.avatar,
+        })),
         attachments: attachments.length > 0 ? attachments : undefined,
       });
       toast.success("Task updated successfully");
