@@ -30,6 +30,7 @@ import {
   AlertCircle,
 } from "lucide-react";
 import Image from "next/image";
+import { motion } from "framer-motion";
 
 const getFileIcon = (fileName: string) => {
   const ext = fileName.split(".").pop()?.toLowerCase() ?? "";
@@ -217,7 +218,10 @@ export const CreateTaskDialog = ({
       const data = await response.json();
       if (data.error) throw new Error(data.error);
 
-      setAttachments((prev) => [...prev, { name: data.name, url: data.url, size: file.size }]);
+      setAttachments((prev) => [
+        ...prev,
+        { name: data.name, url: data.url, size: file.size },
+      ]);
       toast.success("File uploaded successfully", { id: toastId });
     } catch (error: any) {
       const msg = error.message || "";
@@ -256,12 +260,54 @@ export const CreateTaskDialog = ({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="w-full max-w-[800px] h-[560px] bg-card dark:bg-[#1c1c1c] border-neutral-300 dark:border-[#2b2b2b] p-0 overflow-hidden text-foreground dark:text-neutral-200">
-        <DialogHeader className="p-4 flex flex-row items-center gap-2 border-b border-neutral-200 dark:border-[#2b2b2b]">
+        <DialogHeader className="p-4 flex flex-row items-center justify-between gap-2 border-b border-neutral-200 dark:border-[#2b2b2b]">
           <div className="flex items-center gap-1.5 text-xs text-neutral-400 font-medium">
             <div className="w-3 h-3 rounded-full bg-blue-600 flex items-center justify-center text-[10px] text-white"></div>
             <span className="text-sm">{projectName}</span>
             <ChevronRight className="w-3 h-3" />
-            <span className="text-xs">New task</span>
+            <span className="text-xs">New Task</span>
+          </div>
+
+          <div className="pr-10">
+            <TooltipProvider>
+              <Tooltip delayDuration={200}>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="bg-linear-to-t from-indigo-600/30 via-purple-600/10 to-transparent text-[10px] cursor-pointer px-4! flex items-center gap-1.5 overflow-hidden"
+                  >
+                    <motion.div
+                      initial={{ x: 55, scale: 0.9 }}
+                      animate={{ x: 0, scale: 1 }}
+                      transition={{ duration: 0.5, ease: "easeOut" }}
+                      className="flex items-center shrink-0"
+                    >
+                      <Image
+                        src="/kaya.svg"
+                        alt="Kaya AI"
+                        width={18}
+                        height={18}
+                      />
+                    </motion.div>
+                    <motion.span
+                      initial={{ width: 0, opacity: 0 }}
+                      animate={{ width: "auto", opacity: 1 }}
+                      transition={{
+                        duration: 0.4,
+                        delay: 0.4,
+                        ease: "easeOut",
+                      }}
+                      className="whitespace-nowrap overflow-hidden"
+                    >
+                      Auto Create with Kaya
+                    </motion.span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className="bg-neutral-900 border border-neutral-800 text-neutral-200 py-1.5 px-3 rounded text-xs shadow-lg">
+                  <p>Create a bunch of tasks in 1 go with Kaya.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </DialogHeader>
 
@@ -349,7 +395,7 @@ export const CreateTaskDialog = ({
                   className={cn(
                     "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-3 gap-1.5 rounded-full text-[11px]",
                     assignedMembers.length > 0 &&
-                    "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
+                      "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
                   )}
                 >
                   <User className="w-3.5 h-3.5" />
@@ -436,7 +482,7 @@ export const CreateTaskDialog = ({
                   className={cn(
                     "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
                     date?.from &&
-                    "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
+                      "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
                   )}
                 >
                   <Clock className="w-3.5 h-3.5" />
@@ -492,10 +538,14 @@ export const CreateTaskDialog = ({
                         className={cn(
                           "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
                           attachments.length > 0 &&
-                          "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
+                            "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
                         )}
-                        disabled={isUploading || project?.ownerAccountType === "free"}
-                        onClick={() => document.getElementById("file-upload")?.click()}
+                        disabled={
+                          isUploading || project?.ownerAccountType === "free"
+                        }
+                        onClick={() =>
+                          document.getElementById("file-upload")?.click()
+                        }
                       >
                         {isUploading ? (
                           <Loader2 className="w-3.5 h-3.5 animate-spin" />
@@ -531,7 +581,8 @@ export const CreateTaskDialog = ({
                   size="sm"
                   className={cn(
                     "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
-                    tag && "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
+                    tag &&
+                      "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/40 dark:bg-blue-900/10",
                   )}
                 >
                   <Tag className="w-3.5 h-3.5" />
@@ -557,14 +608,14 @@ export const CreateTaskDialog = ({
                             ? "ring-1 ring-white/50"
                             : "opacity-70 hover:opacity-100",
                           t.color === "green" &&
-                          "bg-emerald-500/20 text-emerald-400",
+                            "bg-emerald-500/20 text-emerald-400",
                           t.color === "yellow" &&
-                          "bg-yellow-500/20 text-yellow-400",
+                            "bg-yellow-500/20 text-yellow-400",
                           t.color === "purple" &&
-                          "bg-purple-500/20 text-purple-400",
+                            "bg-purple-500/20 text-purple-400",
                           t.color === "blue" && "bg-blue-500/20 text-blue-400",
                           t.color === "grey" &&
-                          "bg-neutral-500/20 text-neutral-400",
+                            "bg-neutral-500/20 text-neutral-400",
                         )}
                       >
                         {t.label}
@@ -586,15 +637,15 @@ export const CreateTaskDialog = ({
                         className={cn(
                           "text-[10px] py-0 px-2 h-5 gap-1 border-none font-medium capitalize",
                           tag.color === "green" &&
-                          "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30",
+                            "bg-emerald-500/20 text-emerald-400 hover:bg-emerald-500/30",
                           tag.color === "yellow" &&
-                          "bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30",
+                            "bg-yellow-500/20 text-yellow-400 hover:bg-yellow-500/30",
                           tag.color === "purple" &&
-                          "bg-purple-500/20 text-purple-400 hover:bg-purple-500/30",
+                            "bg-purple-500/20 text-purple-400 hover:bg-purple-500/30",
                           tag.color === "blue" &&
-                          "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30",
+                            "bg-blue-500/20 text-blue-400 hover:bg-blue-500/30",
                           tag.color === "grey" &&
-                          "bg-neutral-500/20 text-neutral-400 hover:bg-neutral-500/30",
+                            "bg-neutral-500/20 text-neutral-400 hover:bg-neutral-500/30",
                         )}
                       >
                         {tag.label}
@@ -707,7 +758,7 @@ export const CreateTaskDialog = ({
                   className={cn(
                     "h-7 bg-neutral-100 hover:bg-neutral-200 border-neutral-300 dark:bg-[#252525] dark:border-[#333] dark:hover:bg-[#2b2b2b] text-foreground dark:text-primary/80 px-2 gap-1.5 rounded-full text-[11px]",
                     selectedPath &&
-                    "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/50 dark:bg-blue-900/10",
+                      "text-blue-500 border-blue-200 bg-blue-50 dark:text-blue-400 dark:border-blue-900/50 dark:bg-blue-900/10",
                   )}
                 >
                   <Link2 className="w-3.5 h-3.5" />

@@ -37,10 +37,10 @@ interface Step {
 interface FeatureConfig {
   feature: FeatureKey;
   seenKey:
-    | "taskTutorialSeen"
-    | "issueTutorialSeen"
-    | "sprintTutorialSeen"
-    | "timeLogsTutorialSeen";
+  | "taskTutorialSeen"
+  | "issueTutorialSeen"
+  | "sprintTutorialSeen"
+  | "timeLogsTutorialSeen";
   title: string;
   subtitle: string;
   headerImage: string;
@@ -102,7 +102,7 @@ const FEATURES: FeatureConfig[] = [
       {
         icon: Github,
         title: "Import GitHub",
-        desc: "Connect your repository to import and sync issues bi-directionally between GitHub and WeKraft.",
+        desc: "Connect your repository to import and sync issues.",
       },
     ],
   },
@@ -212,7 +212,7 @@ export function FeatureTutorialDialog({ feature }: { feature: FeatureKey }) {
       />
 
       {/* Card */}
-      <div className="relative z-10 w-full max-w-[440px] mx-4 rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-black animate-in fade-in zoom-in-95 duration-200">
+      <div className="relative z-10 w-full max-w-[500px] mx-4 rounded-xl overflow-hidden shadow-2xl border border-white/10 bg-black animate-in fade-in zoom-in-95 duration-200">
         {/* ── Full-bleed image header ───────────────────────────── */}
         <div
           className={`relative w-full overflow-hidden ${feature !== "sprint" ? "bg-blue-500 h-48" : "h-44"}`}
