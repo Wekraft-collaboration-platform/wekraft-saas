@@ -18,7 +18,7 @@ import Footer from "@/modules/web/Footer";
 
 const WebPage = () => {
   return (
-    <div className="bg-black scroll-smooth selection:bg-blue-500/30 min-h-screen">
+    <div className="bg-black scroll-smooth selection:bg-blue-500/30 min-h-screen relative">
       <Navbar />
       <Hero />
       <TrustedBy />

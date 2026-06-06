@@ -253,6 +253,7 @@ const Hero = () => {
     <div
       ref={containerRef}
       className="min-h-screen w-full bg-black relative overflow-hidden flex flex-col"
+      style={{ position: "relative" }}
     >
       <div className="hidden sm:block">
         <Spotlight
