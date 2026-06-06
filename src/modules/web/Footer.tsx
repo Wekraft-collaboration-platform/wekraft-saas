@@ -1,15 +1,16 @@
 "use client";
 
-import Link from "next/link";
 import Image from "next/image";
+import Link from "next/link";
 import { useState } from "react";
 import {
-  FaGithub,
-  FaLinkedin,
   FaDiscord,
+  FaGithub,
   FaInstagram,
+  FaLinkedin,
   FaWhatsapp,
   FaXTwitter,
+  FaYoutube,
 } from "react-icons/fa6";
 import { InstallExtensionModal } from "./InstallExtensionModal";
 
@@ -20,7 +21,13 @@ interface FooterLinkItem {
   onClick?: (e: React.MouseEvent) => void;
 }
 
-const FooterColumn = ({ title, links }: { title: string; links: FooterLinkItem[] }) => (
+const FooterColumn = ({
+  title,
+  links,
+}: {
+  title: string;
+  links: FooterLinkItem[];
+}) => (
   <div className="flex flex-col gap-3">
     <h4 className="text-neutral-200 font-semibold text-xs uppercase tracking-wider mb-1">
       {title}
@@ -53,7 +60,7 @@ const FooterColumn = ({ title, links }: { title: string; links: FooterLinkItem[]
           >
             {link.label}
           </Link>
-        )
+        ),
       )}
     </div>
   </div>
@@ -68,31 +75,65 @@ const Footer = () => {
       className="bg-[#050505] pt-20 pb-12 px-6 md:px-12 lg:px-16 border-t border-white/[0.03] font-sans relative"
     >
       <div className="max-w-7xl mx-auto">
-        
         {/* Top Section: Branding + Links Grid */}
         <div className="grid grid-cols-1 lg:grid-cols-7 gap-12 lg:gap-8 mb-20">
-          
           {/* Brand Column (Spans 2 columns on lg screens) */}
           <div className="lg:col-span-2 flex flex-col gap-5 text-left">
             <div className="flex items-center gap-2.5">
-              <Image src="/logo.svg" alt="WeKraft Logo" width={28} height={28} />
+              <Image
+                src="/logo.svg"
+                alt="WeKraft Logo"
+                width={28}
+                height={28}
+              />
               <span className="font-semibold font-pop text-white text-lg tracking-tight">
                 WeKraft
               </span>
             </div>
             <p className="text-neutral-400 text-[13px] leading-relaxed max-w-sm">
-              Find teams, match skills, launch products, and avoid deadlines. Wekraft brings your team space, code cycles, issues, and AI agents into a single, cohesive interface.
+              Find teams, match skills, launch products, and avoid deadlines.
+              Wekraft brings your team space, code cycles, issues, and AI agents
+              into a single, cohesive interface.
             </p>
-            
+
             {/* Social Icons inside brand column */}
             <div className="flex items-center gap-2 mt-2">
               {[
-                { icon: <FaLinkedin className="w-4 h-4" />, name: "LinkedIn", href: "https://www.linkedin.com/company/we-kraft/" },
-                { icon: <FaGithub className="w-4 h-4" />, name: "GitHub", href: "https://github.com/Wekraft-collaboration-platform" },
-                { icon: <FaXTwitter className="w-4 h-4" />, name: "X", href: "https://x.com/wekraftt" },
-                { icon: <FaDiscord className="w-4 h-4" />, name: "Discord", href: "https://discord.gg/V7EHK6uuwZ" },
-                { icon: <FaInstagram className="w-4 h-4" />, name: "Instagram", href: "https://www.instagram.com/wekraft.xyz/" },
-                { icon: <FaWhatsapp className="w-4 h-4" />, name: "WhatsApp", href: "https://chat.whatsapp.com/K0aokYtMGOqHWNFZYlfqb5?s=cl&p=a&ilr=1" },
+                {
+                  icon: <FaLinkedin className="w-4 h-4" />,
+                  name: "LinkedIn",
+                  href: "https://www.linkedin.com/company/we-kraft/",
+                },
+                {
+                  icon: <FaGithub className="w-4 h-4" />,
+                  name: "GitHub",
+                  href: "https://github.com/Wekraft-collaboration-platform",
+                },
+                {
+                  icon: <FaXTwitter className="w-4 h-4" />,
+                  name: "X",
+                  href: "https://x.com/wekraftt",
+                },
+                {
+                  icon: <FaDiscord className="w-4 h-4" />,
+                  name: "Discord",
+                  href: "https://discord.gg/V7EHK6uuwZ",
+                },
+                {
+                  icon: <FaInstagram className="w-4 h-4" />,
+                  name: "Instagram",
+                  href: "https://www.instagram.com/wekraft.xyz/",
+                },
+                {
+                  icon: <FaYoutube className="w-4 h-4" />,
+                  name: "YouTube",
+                  href: "https://www.youtube.com/@wekraft.xyz_official",
+                },
+                {
+                  icon: <FaWhatsapp className="w-4 h-4" />,
+                  name: "WhatsApp",
+                  href: "https://chat.whatsapp.com/K0aokYtMGOqHWNFZYlfqb5?s=cl&p=a&ilr=1",
+                },
               ].map((social) => (
                 <a
                   key={social.name}
@@ -188,7 +229,6 @@ const Footer = () => {
               ]}
             />
           </div>
-
         </div>
 
         {/* Bottom Section: Copyright */}
