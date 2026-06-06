@@ -85,7 +85,7 @@ export function HarryAssistantSheet() {
           <div className="flex items-center justify-between pr-10 gap-5">
             <div className="flex flex-col items-start">
               <SheetTitle className="flex items-center gap-2 text-lg font-pop font-semibold mb-1">
-                <Image src="/harry.svg" alt="Harry AI" width={28} height={28} />
+                <img src="/harry.svg" alt="Harry AI" width={28} height={28} />
                 <span className="text-xl font-semibold tracking-tight ">
                   Harry
                 </span>
@@ -109,7 +109,7 @@ export function HarryAssistantSheet() {
                   }
                 }}
               >
-                <Image src="/kaya.svg" alt="kaya" width={24} height={24} />
+                <img src="/kaya.svg" alt="kaya" width={24} height={24} />
                 Open Kaya
               </Button>
               <Button onClick={() => router.replace(`/dashboard/my-projects/${slug}/workspace/ai?harry=true`)} size="sm" variant="default" className="text-[10px]">
@@ -128,7 +128,7 @@ export function HarryAssistantSheet() {
                 animate={{ opacity: 1, scale: 1 }}
                 className="flex flex-col items-center justify-center p-8 text-center"
               >
-                <Image
+                <img
                   src="/harry.svg"
                   alt="Harry AI"
                   width={60}

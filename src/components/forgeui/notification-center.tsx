@@ -179,7 +179,7 @@ const NotificationCenter = ({
           >
             <div className="flex h-full items-center gap-3 px-2">
               <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-neutral-200 overflow-hidden shadow-lg dark:bg-neutral-700">
-                <Image
+                <img
                   src="/kaya.svg"
                   alt="Kaya"
                   width={32}

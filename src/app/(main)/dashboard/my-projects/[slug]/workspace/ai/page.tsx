@@ -313,10 +313,11 @@ const AIWorkspace = () => {
                       transition={{ duration: 0.2 }}
                       className="relative w-[50px] h-[50px]"
                     >
-                      <Image
+                      <img
                         src={isHarry ? "/harry.svg" : "/kaya.svg"}
                         alt={isHarry ? "Harry AI" : "Kaya AI"}
-                        fill
+                        width={50}
+                        height={50}
                         className="object-contain"
                       />
                     </motion.div>
@@ -349,7 +350,7 @@ const AIWorkspace = () => {
                       )}
                       style={!isHarry ? { background: "linear-gradient(135deg, #f9a8d4 0%, #93c5fd 40%, #c4b5fd 70%, #fda4af 100%)" } : undefined}
                     >
-                      <Image src="/kaya.svg" alt="" width={20} height={20} className="shrink-0" />
+                      <img src="/kaya.svg" alt="" width={20} height={20} className="shrink-0" />
                       <span>Ask Kaya</span>
                     </button>
 
@@ -363,7 +364,7 @@ const AIWorkspace = () => {
                       )}
                       style={isHarry ? { background: "linear-gradient(135deg, #fcd34d 0%, #f97316 50%, #ef4444 100%)" } : undefined}
                     >
-                      <Image src="/harry.svg" alt="" width={20} height={20} className="shrink-0" />
+                      <img src="/harry.svg" alt="" width={20} height={20} className="shrink-0" />
                       <span>Ask Harry</span>
                     </button>
                   </div>

@@ -532,7 +532,6 @@ const Hero = () => {
                 className="w-full h-auto block"
                 width={1920}
                 height={1080}
-                priority
                 quality={85}
                 sizes="(max-width: 768px) 100vw, 500px"
               />

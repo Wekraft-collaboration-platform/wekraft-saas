@@ -293,7 +293,7 @@ export async function POST(req: NextRequest) {
   const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
 
   await turso.execute({
-    sql: `INSERT INTO ts_messages (id, channel_id, project_id, user_id, user_name, user_image, content, link_preview, poll, thread_parent_id, created_at, expires_at)
+    sql: `INSERT OR IGNORE INTO ts_messages (id, channel_id, project_id, user_id, user_name, user_image, content, link_preview, poll, thread_parent_id, created_at, expires_at)
           VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
     args: [
       id,

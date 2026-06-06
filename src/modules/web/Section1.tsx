@@ -32,6 +32,7 @@ const Section1 = () => {
                     src="/riteshdp2.jpg"
                     alt="Team member 1"
                     fill
+                    sizes="36px"
                     className="object-cover"
                   />
                 </span>
@@ -40,6 +41,7 @@ const Section1 = () => {
                     src="/bhanudp1.jpg"
                     alt="Bhanu"
                     fill
+                    sizes="36px"
                     className="object-cover"
                   />
                 </span>
@@ -48,6 +50,7 @@ const Section1 = () => {
                     src="/roxdp.jpg"
                     alt="Team member 3"
                     fill
+                    sizes="36px"
                     className="object-cover"
                   />
                 </span>
@@ -56,6 +59,7 @@ const Section1 = () => {
                     src="/sahildp.jpeg"
                     alt="Sahil"
                     fill
+                    sizes="36px"
                     className="object-cover"
                   />
                 </span>
