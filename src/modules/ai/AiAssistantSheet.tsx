@@ -402,7 +402,7 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
           <div className="flex items-center justify-between pr-10 gap-5">
             <div className="flex flex-col items-start">
               <SheetTitle className="flex items-center gap-2 text-lg font-pop font-semibold mb-1">
-                <Image src="/kaya.svg" alt="Kaya AI" width={24} height={24} />
+                <img src="/kaya.svg" alt="Kaya AI" width={24} height={24} />
                 <span className="text-xl font-semibold tracking-tight text-primary font-pop">
                   Kaya
                 </span>
@@ -440,7 +440,7 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
                     }
                   }}
                 >
-                  <Image src="/harry.svg" alt="Harry" width={24} height={24} />
+                  <img src="/harry.svg" alt="Harry" width={24} height={24} />
                   Open Harry
                 </Button>
               )}
@@ -469,7 +469,7 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
                     className="h-full flex flex-col items-center justify-center p-8 text-center"
                   >
                     <div className="relative mb-6">
-                      <Image
+                      <img
                         src="/kaya.svg"
                         alt="Kaya AI"
                         width={60}

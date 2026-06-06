@@ -882,7 +882,7 @@ export function MessageComposer({
               )}
               title={ownerIsPro === false ? "Upgrade to Pro to use AI agents" : undefined}
             >
-              <Image
+              <img
                 src={activeAgent === "kaya" ? "/kaya.svg" : "/harry.svg"}
                 alt={activeAgent === "kaya" ? "Kaya" : "Harry"}
                 width={20}
@@ -927,7 +927,7 @@ export function MessageComposer({
                   (agent as any).comingSoon && "opacity-60 cursor-not-allowed",
                 )}
               >
-                <Image src={agent.svg} alt={agent.label} width={16} height={16} className="shrink-0" />
+                <img src={agent.svg} alt={agent.label} width={16} height={16} className="shrink-0" />
                 <div className="flex flex-col space-y-0.5">
                   <span className="text-[12px] font-medium leading-tight text-foreground">{agent.label}</span>
                   <span className="text-[10px] text-muted-foreground leading-tight">

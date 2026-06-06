@@ -280,7 +280,7 @@ const AIFirstSection = () => {
             <div className="relative z-10 p-6 pb-4">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden">
-                  <Image src="/kaya.svg" alt="Kaya" width={32} height={32} />
+                  <img src="/kaya.svg" alt="Kaya" width={32} height={32} />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
@@ -317,6 +317,7 @@ const AIFirstSection = () => {
                   src="/kaya-team.png"
                   alt="Kaya AI PM Agent managing team in WeKraft teamspace"
                   fill
+                  priority
                   className="object-cover object-top scale-125 origin-top transition-transform duration-500 group-hover:scale-130"
                   sizes="(max-width: 1080px) 100vw, 50vw"
                 />
@@ -343,7 +344,7 @@ const AIFirstSection = () => {
             <div className="relative z-10 p-6 pb-4">
               <div className="flex items-center gap-3 mb-4">
                 <div className="w-10 h-10 rounded-xl flex items-center justify-center overflow-hidden">
-                  <Image src="/harry.svg" alt="Harry" width={32} height={32} />
+                  <img src="/harry.svg" alt="Harry" width={32} height={32} />
                 </div>
                 <div>
                   <div className="flex items-center gap-2">
@@ -370,7 +371,7 @@ const AIFirstSection = () => {
                 {/* Harry review header */}
                 <div className="flex items-center gap-2.5 mb-4 pb-3 border-b border-white/[0.05]">
                   <div className="w-6 h-6 rounded-md flex items-center justify-center overflow-hidden">
-                    <Image
+                    <img
                       src="/harry.svg"
                       alt="Harry"
                       width={18}

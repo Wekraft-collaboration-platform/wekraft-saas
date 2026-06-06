@@ -253,6 +253,7 @@ const Hero = () => {
     <div
       ref={containerRef}
       className="min-h-screen w-full bg-black relative overflow-hidden flex flex-col"
+      style={{ position: "relative" }}
     >
       <div className="hidden sm:block">
         <Spotlight
@@ -394,7 +395,7 @@ const Hero = () => {
               >
                 <defs>
                   <marker
-                    id="arrow-yellow"
+                    id="arrow-purple"
                     viewBox="0 0 10 10"
                     refX="6"
                     refY="5"
@@ -402,7 +403,7 @@ const Hero = () => {
                     markerHeight="6"
                     orient="auto-start-reverse"
                   >
-                    <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#FACC15" />
+                    <path d="M 0 1.5 L 8 5 L 0 8.5 z" fill="#C084FC" />
                   </marker>
                   <marker
                     id="arrow-blue"
@@ -428,15 +429,15 @@ const Hero = () => {
                   </marker>
                 </defs>
 
-                {/* Aashi Arrow */}
+                {/* Bhanu Arrow */}
                 <motion.path
                   d="M 63.5 14.5 C 63.5 20, 68 23, 73 23"
                   fill="none"
-                  stroke="#FACC15"
+                  stroke="#C084FC"
                   strokeWidth="0.28"
                   strokeDasharray="1 1"
                   strokeLinecap="round"
-                  markerEnd="url(#arrow-yellow)"
+                  markerEnd="url(#arrow-purple)"
                   initial={{ pathLength: 0, opacity: 0 }}
                   animate={{ pathLength: 1, opacity: 1 }}
                   transition={{ delay: 0.4, duration: 0.8, ease: "easeOut" }}
@@ -471,13 +472,13 @@ const Hero = () => {
                 />
               </svg>
 
-              {/* Aashi (Yellow Arrow): Hovering "View Breakdown" */}
+              {/* Bhanu (Purple Arrow): Hovering "View Breakdown" */}
               <CollaboratorOverlay
-                name="Aashi"
-                avatarUrl="/aashi.jpg"
-                color="#FACC15"
-                borderColor="border-yellow-500"
-                glowColor="rgba(250, 204, 21, 0.4)"
+                name="Bhanu"
+                avatarUrl="/bhanudp1.jpg"
+                color="#C084FC"
+                borderColor="border-purple-400"
+                glowColor="rgba(192, 132, 252, 0.4)"
                 bubbleX="59%"
                 bubbleY="8%"
                 cursorX="73.5%"
@@ -532,7 +533,6 @@ const Hero = () => {
                 className="w-full h-auto block"
                 width={1920}
                 height={1080}
-                priority
                 quality={85}
                 sizes="(max-width: 768px) 100vw, 500px"
               />

@@ -14,20 +14,25 @@
 const DB_NAME = "wekraft_chat_cache";
 const STORE_NAME = "messages";
 const DB_VERSION = 1;
-
-// How long before a cached channel is considered stale and re-fetched
-const CACHE_TTL_MS = 60 * 60 * 1000; // 1 hour
-
+ 
+// How long before a cached channel is considered completely stale (hard miss)
+const CACHE_TTL_MS = 24 * 60 * 60 * 1000; // 24 hours
+ 
+// How long before we attempt a background refresh (soft miss)
+const CACHE_SOFT_TTL_MS = 55 * 60 * 1000; // 55 minutes
+ 
 // Mirrors the server-side 30-day message retention policy
 const MESSAGE_MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000; // 30 days
-
+ 
 export interface CachedChat {
   channelId: string;
   messages: any[];
   nextCursor: string | null;
   lastAccessed: number;
+  softExpiry?: number;
+  __stale?: boolean;
 }
-
+ 
 export const chatDb = {
   async open(): Promise<IDBDatabase> {
     return new Promise((resolve, reject) => {
@@ -43,12 +48,11 @@ export const chatDb = {
       };
     });
   },
-
+ 
   /**
    * Retrieves a cached channel's messages.
-   * Returns null if the cache is stale (older than CACHE_TTL_MS), forcing a
-   * fresh fetch from the server. Also strips out any messages older than 30 days
-   * to stay consistent with the server retention policy.
+   * Returns null if the cache is older than CACHE_TTL_MS (hard miss).
+   * If it's between CACHE_SOFT_TTL_MS and CACHE_TTL_MS, returns with __stale: true.
    */
   async get(channelId: string): Promise<CachedChat | null> {
     const db = await this.open();
@@ -59,46 +63,56 @@ export const chatDb = {
       request.onerror = () => reject(request.error);
       request.onsuccess = () => resolve(request.result || null);
     });
-
+ 
     if (!result) return null;
-
-    // TTL check: treat cache as miss if it's older than 1 hour
-    if (Date.now() - result.lastAccessed > CACHE_TTL_MS) {
+ 
+    const now = Date.now();
+ 
+    // Hard TTL check: treat cache as miss if it's older than 24 hours
+    if (now - result.lastAccessed > CACHE_TTL_MS) {
       return null;
     }
-
+ 
     // Strip messages older than 30 days to stay consistent with server retention
-    const cutoff = Date.now() - MESSAGE_MAX_AGE_MS;
+    const cutoff = now - MESSAGE_MAX_AGE_MS;
     const filteredMessages = result.messages.filter(
       (m: any) => (m.created_at ?? 0) >= cutoff
     );
-
+ 
     // If we filtered some out, persist the cleaner list back
     if (filteredMessages.length !== result.messages.length) {
       this.set(channelId, filteredMessages, result.nextCursor).catch(() => {});
     }
-
-    return { ...result, messages: filteredMessages };
+ 
+    const isStale = now > (result.softExpiry ?? (result.lastAccessed + CACHE_SOFT_TTL_MS));
+ 
+    return { 
+      ...result, 
+      messages: filteredMessages,
+      __stale: isStale
+    };
   },
-
+ 
   /**
    * Persists a channel's messages to IndexedDB.
    * Automatically strips messages older than 30 days before saving.
    */
   async set(channelId: string, messages: any[], nextCursor: string | null) {
     const db = await this.open();
-
+ 
     // Never cache messages older than 30 days
     const cutoff = Date.now() - MESSAGE_MAX_AGE_MS;
     const freshMessages = messages.filter((m: any) => (m.created_at ?? 0) >= cutoff);
-
+    const now = Date.now();
+ 
     const chat: CachedChat = {
       channelId,
       messages: freshMessages,
       nextCursor,
-      lastAccessed: Date.now(),
+      lastAccessed: now,
+      softExpiry: now + CACHE_SOFT_TTL_MS,
     };
-
+ 
     return new Promise<void>((resolve, reject) => {
       const transaction = db.transaction(STORE_NAME, "readwrite");
       const store = transaction.objectStore(STORE_NAME);

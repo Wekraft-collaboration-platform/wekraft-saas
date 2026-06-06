@@ -1,18 +1,52 @@
 import { ConvexHttpClient } from "convex/browser";
 import { type NextRequest, NextResponse } from "next/server";
 import { ratelimit } from "@/lib/rate-limit";
+import { redis } from "@/lib/redis";
 import { api } from "../../../../convex/_generated/api";
+import type { Id } from "../../../../convex/_generated/dataModel";
 
 const AGENT_URL = process.env.NEXT_PUBLIC_AGENT_URL;
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+
+async function getCachedUser(userId: string) {
+  const cacheKey = `user:${userId}`;
+  try {
+    const cached = await redis.get(cacheKey);
+    if (cached) {
+      if (cached === "__NULL__") return null;
+      return JSON.parse(cached as string);
+    }
+  } catch (e) {
+    console.error("Redis error in getCachedUser:", e);
+  }
+
+  const user = await convex.query(api.user.getUserById, { userId: userId as Id<"users"> });
+  
+  try {
+    if (user) {
+      await redis.set(cacheKey, JSON.stringify(user), { ex: 60 });
+    } else {
+      await redis.set(cacheKey, "__NULL__", { ex: 60 });
+    }
+  } catch (e) {
+    console.error("Redis write error in getCachedUser:", e);
+  }
+
+  return user;
+}
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
   const userId = body.state?.user_id;
 
   // 1. Rate Limiting (Fastest check)
-  const identifier =
-    userId || request.headers.get("x-forwarded-for") || "anonymous";
+  // Identify anonymous users by IP to prevent global rate-limit starvation
+  const ip =
+    request.headers.get("x-real-ip") ||
+    request.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
+    "anonymous";
+  const identifier = userId || ip;
+  
   const { success, limit, reset, remaining } =
     await ratelimit.limit(identifier);
 
@@ -47,8 +81,8 @@ export async function POST(request: NextRequest) {
     });
 
     const proCheckPromise = userId
-      ? convex.query(api.user.getUserById, { userId })
-      : Promise.resolve({ accountType: "pro" }); // Fallback
+      ? getCachedUser(userId)
+      : Promise.resolve(null); // No bypass fallback for missing userId
 
     // 3. Setup the stream and return IMMEDIATELY
     const stream = new TransformStream();
@@ -62,7 +96,7 @@ export async function POST(request: NextRequest) {
           aiResponsePromise,
         ]);
 
-        if (userId && (!user || user.accountType !== "pro")) {
+        if (!user || user.accountType !== "pro") {
           const errorData = JSON.stringify({
             error: "Upgrade to Pro to use Kaya AI",
           });
