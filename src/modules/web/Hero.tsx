@@ -304,7 +304,9 @@ const Hero = () => {
               <span className="text-sm font-medium text-white leading-none">Extension</span>
             </div>
             <span className="text-blue-50 text-xs font-medium ml-3 flex items-center gap-1">
-              Bring WeKraft to your IDE <ArrowRight className="w-4 h-4 inline" />
+              <span className="hidden sm:inline">Bring WeKraft to your IDE</span>
+              <span className="inline sm:hidden">available!</span>
+              <ArrowRight className="w-4 h-4 inline" />
             </span>
           </button>
 

@@ -7,7 +7,11 @@ import { Compass, Briefcase, CheckCircle2, FileText, ArrowRight, ExternalLink } 
 export const metadata: Metadata = {
   title: "Why WeKraft | Compare Project Management Platforms",
   description: "See how Wekraft stacks up against Jira, Linear, Asana, Notion, and Plane. Discover the AI-first engineering workspace.",
+  alternates: {
+    canonical: "https://wekraft.xyz/web/why-wekraft",
+  },
 };
+
 
 const competitors = [
   {

@@ -8,3 +8,17 @@ export const ratelimit = new Ratelimit({
   analytics: true,
   prefix: "agent_rl",
 });
+
+export const chatbotRatelimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(3, "1 m"),
+  analytics: true,
+  prefix: "chatbot_rl",
+});
+
+export const chatbotGlobalRatelimit = new Ratelimit({
+  redis: Redis.fromEnv(),
+  limiter: Ratelimit.slidingWindow(10, "1 m"),
+  analytics: true,
+  prefix: "chatbot_global_rl",
+});

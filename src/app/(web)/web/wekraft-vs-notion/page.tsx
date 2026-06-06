@@ -10,7 +10,11 @@ import { FileText, ArrowRight } from "lucide-react";
 export const metadata: Metadata = {
   title: "Wekraft vs Notion | Structured PM and Docs in One Workspace",
   description: "Notion is great for documents, but fails as a software engineering hub. Compare Notion with Wekraft's native developer cycles, VS Code sync, and AI agents.",
+  alternates: {
+    canonical: "https://wekraft.xyz/web/wekraft-vs-notion",
+  },
 };
+
 
 const notionFeatures: ComparisonFeature[] = [
   {

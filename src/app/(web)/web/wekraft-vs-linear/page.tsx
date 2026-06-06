@@ -9,7 +9,11 @@ import { Compass, ArrowRight } from "lucide-react";
 export const metadata: Metadata = {
   title: "Wekraft vs Linear | Collaborative, AI-First Issue Tracking",
   description: "Linear is fast, but it excludes collaboration. Compare Linear with Wekraft's native AI agents, integrated video rooms, and built-in team Wikis.",
+  alternates: {
+    canonical: "https://wekraft.xyz/web/wekraft-vs-linear",
+  },
 };
+
 
 const linearFeatures: ComparisonFeature[] = [
   {

@@ -33,6 +33,15 @@ import {
 import Link from "next/link";
 import { docsConfig, getDocBadge } from "@/lib/docs-config";
 import { TableOfContents } from "@/components/TableOfContents";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: "Documentation Hub | Wekraft",
+  description: "Explore the Wekraft documentation. Learn how to plan sprints, manage tasks, coordinate with AI PM agents (Kaya), install the VS Code extension, and integrate with Git.",
+  alternates: {
+    canonical: "https://wekraft.xyz/web/docs",
+  },
+};
 
 const iconMap: { [key: string]: any } = {
   BookOpen,
