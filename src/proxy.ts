@@ -13,6 +13,7 @@ const isPublicRoute = createRouteMatcher([
   "/projects(.*)",
   "/api/public/(.*)",
   "/api/payments/(.*)",
+  "/api/teamspace/download(.*)",
   // "/api/chatbot(.*)",  // temperory
   "/invite(.*)",
   "/",

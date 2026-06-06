@@ -200,6 +200,7 @@ export function MessageItem({
   const [previewMediaUrl, setPreviewMediaUrl] = useState<string | null>(null);
   const [previewMediaType, setPreviewMediaType] = useState<"image" | "pdf" | "office" | null>(null);
   const [previewMediaName, setPreviewMediaName] = useState<string>("");
+  const [previewLoading, setPreviewLoading] = useState(false);
 
   const isMedia = message.content ? MEDIA_REGEX.test(message.content) : false;
 
@@ -637,14 +638,45 @@ export function MessageItem({
                           </div>
                         ) : (
                           <div
-                            onClick={(e) => {
+                            onClick={async (e) => {
                               const isPdf = fileName.toLowerCase().endsWith('.pdf');
                               const isOffice = fileName.toLowerCase().match(/\.(doc|docx|ppt|pptx|xls|xlsx)$/);
                               if (isPdf || isOffice) {
                                 e.preventDefault();
-                                setPreviewMediaUrl(fileUrl);
-                                setPreviewMediaType(isPdf ? "pdf" : "office");
-                                setPreviewMediaName(fileName);
+                                if (previewLoading) return;
+
+                                if (isOffice) {
+                                  setPreviewLoading(true);
+                                  const toastId = toast.loading("Preparing document preview...");
+                                  try {
+                                    const params = new URLSearchParams();
+                                    const s3Prefix = "https://wekraft-saas-upload-s3.s3.ap-south-1.amazonaws.com/";
+                                    if (fileUrl.startsWith(s3Prefix)) {
+                                      params.set("key", fileUrl.slice(s3Prefix.length));
+                                    } else {
+                                      params.set("url", fileUrl);
+                                    }
+
+                                    const res = await fetch(`/api/teamspace/presign?${params.toString()}`);
+                                    if (!res.ok) throw new Error("Failed to sign URL");
+                                    const data = await res.json();
+                                    
+                                    setPreviewMediaUrl(data.signedUrl);
+                                    setPreviewMediaType("office");
+                                    setPreviewMediaName(fileName);
+                                    toast.dismiss(toastId);
+                                  } catch (err) {
+                                    console.error("Preview error:", err);
+                                    toast.error("Failed to load preview. Downloading file instead.", { id: toastId });
+                                    handleDownload(e, fileUrl, fileName);
+                                  } finally {
+                                    setPreviewLoading(false);
+                                  }
+                                } else {
+                                  setPreviewMediaUrl(fileUrl);
+                                  setPreviewMediaType("pdf");
+                                  setPreviewMediaName(fileName);
+                                }
                               } else {
                                 handleDownload(e, fileUrl, fileName);
                               }
@@ -1093,6 +1125,8 @@ export function MessageItem({
                 src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(
                   previewMediaUrl.startsWith("blob:")
                     ? previewMediaUrl
+                    : previewMediaUrl.startsWith("/")
+                    ? `${window.location.origin}${previewMediaUrl}`
                     : `${window.location.origin}${getProxyUrl(previewMediaUrl, false)}`
                 )}`}
                 title={previewMediaName}
