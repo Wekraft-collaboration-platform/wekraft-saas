@@ -160,6 +160,6 @@ Track your team's support performance from **Project Dashboard → Customer Desk
 ---
 
 ## Related Pages
-- [Customer Desk Overview](/web/docs/customer-desk) — full desk setup and permissions.
+- [Customer Desk](/web/docs/customer-desk) — full desk setup and permissions.
 - [Issues & Bug Tracking](/web/docs/issues) — managing internal engineering issues.
 - [Help & Support](/web/docs/support) — for Wekraft platform support queries.

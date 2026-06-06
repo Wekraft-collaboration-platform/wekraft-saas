@@ -109,6 +109,13 @@ export const docsConfig: { [key: string]: DocItem[] } = {
       created: "2026-01-01",
     },
     {
+      title: "Tickets",
+      slug: "tickets",
+      description: "Create, assign, prioritize, and resolve support tickets with SLA tracking and status workflows.",
+      icon: "Ticket",
+      created: "2026-06-06",
+    },
+    {
       title: "Issues & Bug Tracking",
       slug: "issues",
       description: "Track bugs, incidents, and reactive work from three different sources.",
@@ -160,19 +167,12 @@ export const docsConfig: { [key: string]: DocItem[] } = {
       created: "2026-01-01",
     },
   ],
-  "Customer Desk & Tickets": [
+  "Customer Desk": [
     {
-      title: "Customer Desk Overview",
+      title: "Customer Desk",
       slug: "customer-desk",
       description: "Manage inbound customer requests, service tickets, and client support workflows from a unified desk.",
       icon: "LifeBuoy",
-      created: "2026-06-06",
-    },
-    {
-      title: "Tickets Management",
-      slug: "tickets",
-      description: "Create, assign, prioritize, and resolve support tickets with SLA tracking and status workflows.",
-      icon: "Ticket",
       created: "2026-06-06",
     },
   ],

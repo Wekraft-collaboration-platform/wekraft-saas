@@ -99,6 +99,6 @@ Submitted → Triaged → In Progress → Pending Client → Resolved → Closed
 ---
 
 ## Related Pages
-- [Tickets Management](/web/docs/tickets) — full guide to creating and resolving tickets.
+- [Tickets](/web/docs/tickets) — full guide to creating and resolving tickets.
 - [Issues & Bug Tracking](/web/docs/issues) — for internal engineering bugs.
 - [Help & Support](/web/docs/support) — for Wekraft platform support queries.

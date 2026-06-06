@@ -1,5 +1,8 @@
+"use client";
+
 import Link from "next/link";
 import Image from "next/image";
+import { useState } from "react";
 import {
   FaGithub,
   FaLinkedin,
@@ -8,11 +11,13 @@ import {
   FaWhatsapp,
   FaXTwitter,
 } from "react-icons/fa6";
+import { InstallExtensionModal } from "./InstallExtensionModal";
 
 interface FooterLinkItem {
   label: string;
   href: string;
   external?: boolean;
+  onClick?: (e: React.MouseEvent) => void;
 }
 
 const FooterColumn = ({ title, links }: { title: string; links: FooterLinkItem[] }) => (
@@ -22,7 +27,15 @@ const FooterColumn = ({ title, links }: { title: string; links: FooterLinkItem[]
     </h4>
     <div className="flex flex-col gap-2.5">
       {links.map((link) =>
-        link.external ? (
+        link.onClick ? (
+          <button
+            key={link.label}
+            onClick={link.onClick}
+            className="text-neutral-400 hover:text-white text-[13px] font-medium transition-colors text-left bg-transparent border-none p-0 cursor-pointer"
+          >
+            {link.label}
+          </button>
+        ) : link.external ? (
           <a
             key={link.label}
             href={link.href}
@@ -47,6 +60,8 @@ const FooterColumn = ({ title, links }: { title: string; links: FooterLinkItem[]
 );
 
 const Footer = () => {
+  const [idePickerOpen, setIdePickerOpen] = useState(false);
+
   return (
     <footer
       id="footer"
@@ -102,6 +117,14 @@ const Footer = () => {
                 { label: "Pricing", href: "/web/pricing" },
                 { label: "Why Wekraft?", href: "/web/why-wekraft" },
                 { label: "Dashboard", href: "/dashboard" },
+                {
+                  label: "Download Extension",
+                  href: "#",
+                  onClick: (e) => {
+                    e.preventDefault();
+                    setIdePickerOpen(true);
+                  },
+                },
               ]}
             />
           </div>
@@ -142,7 +165,6 @@ const Footer = () => {
             <FooterColumn
               title="Resources"
               links={[
-                { label: "⬇ Download Extension", href: "https://open-vsx.org/vscode/item?itemName=WeKraft.wekraft", external: true },
                 { label: "Docs Index", href: "/web/docs" },
                 { label: "Help & Support", href: "/web/docs/support" },
                 { label: "Referral Program", href: "/web/docs/referrals" },
@@ -179,6 +201,12 @@ const Footer = () => {
           </span>
         </div>
       </div>
+
+      <InstallExtensionModal
+        isOpen={idePickerOpen}
+        onClose={() => setIdePickerOpen(false)}
+        mode="modal"
+      />
     </footer>
   );
 };
