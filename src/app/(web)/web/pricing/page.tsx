@@ -5,7 +5,7 @@ import type { Metadata } from "next";
 import StructuredData from "@/components/StructuredData";
 
 export const metadata: Metadata = {
-  title: "Pricing Plans | Wekraft",
+  title: "Pricing Plans",
   description: "Simple, transparent pricing for Wekraft. Choose the plan that fits your team: Free, Plus ($9/mo), or Pro ($20/mo) with full AI PM agents and developer features.",
   alternates: {
     canonical: "https://wekraft.xyz/web/pricing",

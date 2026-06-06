@@ -8,7 +8,9 @@ import CompareFAQ, { FAQItem } from "@/modules/web/compare/CompareFAQ";
 import { FileText, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Wekraft vs Notion | Structured PM and Docs in One Workspace",
+  title: {
+    absolute: "Wekraft vs Notion",
+  },
   description: "Notion is great for documents, but fails as a software engineering hub. Compare Notion with Wekraft's native developer cycles, VS Code sync, and AI agents.",
   alternates: {
     canonical: "https://wekraft.xyz/web/wekraft-vs-notion",

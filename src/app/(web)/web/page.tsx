@@ -16,7 +16,9 @@ import type { Metadata } from "next";
 import StructuredData from "@/components/StructuredData";
 
 export const metadata: Metadata = {
-  title: "Wekraft | AI-Powered Project Management Platform & Collaborative Workspace",
+  title: {
+    absolute: "Wekraft | AI-Powered Project Management Platform & Collaborative Workspace"
+  },
   description: "Wekraft is the next-generation AI project management platform that helps software teams plan, track, and execute sprints with an AI PM agent, developer workspace, and seamless issue tracking.",
   alternates: {
     canonical: "https://wekraft.xyz/web",

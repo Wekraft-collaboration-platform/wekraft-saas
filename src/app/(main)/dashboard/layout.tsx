@@ -109,6 +109,98 @@ export default function Layout({
   }, []);
 
   useEffect(() => {
+    if (typeof window === "undefined" || !pathname) return;
+
+    const suffix = "Wekraft";
+
+    // 1. Workspace specific pages (/dashboard/my-projects/[slug]/workspace/[subpage])
+    if (pathname.includes("/workspace/")) {
+      const parts = pathname.split("/workspace/");
+      const subPath = parts[1] || "";
+      const subSegments = subPath.split("/");
+      const section = subSegments[0];
+
+      let pageTitle = "Project Workspace";
+      switch (section) {
+        case "sprint":
+          pageTitle = subSegments[1] ? "Sprint Details" : "Sprints";
+          break;
+        case "tasks":
+          pageTitle = "Tasks";
+          break;
+        case "issues":
+          pageTitle = "Issues";
+          break;
+        case "time-logs":
+          pageTitle = "Time Logs";
+          break;
+        case "team":
+          pageTitle = "Team";
+          break;
+        case "teamspace":
+          pageTitle = "Teamspace";
+          break;
+        case "meet":
+          pageTitle = "Meeting Room";
+          break;
+        case "docs":
+          pageTitle = "Documents";
+          break;
+        case "calendar":
+          pageTitle = "Calendar";
+          break;
+        case "customer-desk":
+          pageTitle = "Customer Desk";
+          break;
+        case "ai":
+          pageTitle = "AI Workspace";
+          break;
+        case "heatmap":
+          pageTitle = "Code Heatmap";
+          break;
+        case "flow-charts":
+          pageTitle = "Flowcharts";
+          break;
+        case "whiteboard":
+          pageTitle = "Whiteboard";
+          break;
+        case "delete":
+          pageTitle = "Delete Project";
+          break;
+      }
+      document.title = `${pageTitle} | ${suffix}`;
+      return;
+    }
+
+    // 2. Main Project Detail page (/dashboard/my-projects/[slug])
+    if (pathname.includes("/dashboard/my-projects/")) {
+      document.title = `Project Hub | ${suffix}`;
+      return;
+    }
+
+    // 3. Other dashboard pages (/dashboard/[page])
+    if (pathname.startsWith("/dashboard")) {
+      const parts = pathname.split("/dashboard");
+      const subPath = parts[1] || "";
+      const section = subPath.replace(/^\//, "").split("/")[0] || "";
+
+      let pageTitle = "Dashboard";
+      switch (section) {
+        case "repositories":
+          pageTitle = "Repositories";
+          break;
+        case "pricing":
+          pageTitle = "Upgrade Plan";
+          break;
+        case "my-profile":
+          pageTitle = "My Profile";
+          break;
+      }
+      document.title = `${pageTitle} | ${suffix}`;
+    }
+  }, [pathname]);
+
+  useEffect(() => {
     if (isStoreLoading) return;
     if (user === undefined) return;
 

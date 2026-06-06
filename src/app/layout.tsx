@@ -97,8 +97,8 @@ export const metadata: Metadata = {
     icon: "/logo.svg",
   },
   other: {
-    "geo.region": "INDIA",
-    "geo.placename": "Gujurat",
+    "geo.region": "IN",
+    "geo.placename": "India",
     "geo.position": "22.309417;72.136230",
     ICBM: "22.309417, 72.136230",
   },

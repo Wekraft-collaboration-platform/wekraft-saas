@@ -4,7 +4,7 @@ import ContactContent from "./ContactContent";
 import StructuredData from "@/components/StructuredData";
 
 export const metadata: Metadata = {
-  title: "Contact Us | Wekraft",
+  title: "Contact Us",
   description: "Have questions about Wekraft, custom plans, enterprise deployment, or billing support? Fill out the contact form and our team will get back to you within 24 hours.",
   alternates: {
     canonical: "https://wekraft.xyz/web/contact",
