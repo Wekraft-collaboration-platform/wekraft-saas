@@ -94,13 +94,20 @@ const ProjectOnSteroids = () => {
                 </SignUpButton>
               )}
 
-              <button
-                type="button"
-                onClick={() => setIsDemoModalOpen(true)}
-                className="border border-white/40 text-white px-8 py-3.5 rounded-md hover:bg-white/10 hover:scale-[1.02] active:scale-[0.98] transition-all backdrop-blur-sm cursor-pointer"
+              <a
+                href="https://youtu.be/31xHoT9QJP0"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="no-underline"
+                id="project-on-steroids-get-demo"
               >
-                Get a demo
-              </button>
+                <button
+                  type="button"
+                  className="border border-white/40 text-white px-8 py-3.5 rounded-md hover:bg-white/10 hover:scale-[1.02] active:scale-[0.98] transition-all backdrop-blur-sm cursor-pointer"
+                >
+                  Get a demo
+                </button>
+              </a>
 
               <button
                 type="button"

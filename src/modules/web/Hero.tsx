@@ -301,10 +301,14 @@ const Hero = () => {
           >
             <div className="bg-blue-600 px-5 py-1 rounded-full flex items-center gap-1.5">
               <Code2 className="w-4 h-4 text-white" />
-              <span className="text-sm font-medium text-white leading-none">Extension</span>
+              <span className="text-sm font-medium text-white leading-none">
+                Extension
+              </span>
             </div>
             <span className="text-blue-50 text-xs font-medium ml-3 flex items-center gap-1">
-              <span className="hidden sm:inline">Bring WeKraft to your IDE</span>
+              <span className="hidden sm:inline">
+                Bring WeKraft to your IDE
+              </span>
               <span className="inline sm:hidden">available!</span>
               <ArrowRight className="w-4 h-4 inline" />
             </span>
@@ -315,7 +319,6 @@ const Hero = () => {
             onClose={() => setIdePickerOpen(false)}
             mode="dropdown"
           />
-
         </div>
 
         <div className="flex flex-col items-center justify-center font-pop relative px-4 text-center">
@@ -382,17 +385,27 @@ const Hero = () => {
               Try for Free
             </Button>
           </Link>
-          <Button
-            variant="outline"
-            className="rounded-md border-white/10 bg-white/5 text-white px-4 sm:px-10 py-3 text-xs sm:text-sm"
+          <a
+            href="https://youtu.be/31xHoT9QJP0"
+            target="_blank"
+            rel="noopener noreferrer"
+            className="no-underline"
+            id="hero-get-demo"
           >
-            <span className="hidden sm:inline">Get a demo</span>
-            <span className="inline sm:hidden">Get demo</span>
-          </Button>
+            <Button
+              variant="outline"
+              className="rounded-md border-white/10 bg-white/5 text-white px-4 sm:px-10 py-3 text-xs sm:text-sm"
+            >
+              <span className="hidden sm:inline">Get a demo</span>
+              <span className="inline sm:hidden">Get demo</span>
+            </Button>
+          </a>
         </div>
 
         <p className="mt-6 text-sm font-medium text-white/60 tracking-tight">
-          Built for <span className="text-white font-semibold">developers</span> · loved by <span className="text-white font-semibold">product managers</span>
+          Built for <span className="text-white font-semibold">developers</span>{" "}
+          · loved by{" "}
+          <span className="text-white font-semibold">product managers</span>
         </p>
         <p className="mt-2 text-neutral-500 text-xs font-medium flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />

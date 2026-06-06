@@ -5,7 +5,19 @@ import clsx from "clsx";
 import { Button } from "@/components/ui/button";
 import Image from "next/image";
 import Link from "next/link";
-import { Menu, TimerIcon, TimerReset, X, ArrowRight, Compass, Layers, CheckCircle2, FileText, Send, ArrowUpRight } from "lucide-react";
+import {
+  Menu,
+  TimerIcon,
+  TimerReset,
+  X,
+  ArrowRight,
+  Compass,
+  Layers,
+  CheckCircle2,
+  FileText,
+  Send,
+  ArrowUpRight,
+} from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { useConvexAuth, useQuery } from "convex/react";
 import { api } from "../../../convex/_generated/api";
@@ -36,7 +48,8 @@ const Navbar = () => {
       e.preventDefault();
       const element = document.getElementById(id);
       if (element) {
-        const targetPosition = element.getBoundingClientRect().top + window.pageYOffset - 90;
+        const targetPosition =
+          element.getBoundingClientRect().top + window.pageYOffset - 90;
         const startPosition = window.pageYOffset;
         const distance = targetPosition - startPosition;
         const duration = 1200; // Slower duration (1.2 seconds)
@@ -48,9 +61,10 @@ const Navbar = () => {
           const percentage = Math.min(progress / duration, 1);
 
           // Easing function (easeInOutCubic)
-          const easing = percentage < 0.5
-            ? 4 * percentage * percentage * percentage
-            : 1 - Math.pow(-2 * percentage + 2, 3) / 2;
+          const easing =
+            percentage < 0.5
+              ? 4 * percentage * percentage * percentage
+              : 1 - Math.pow(-2 * percentage + 2, 3) / 2;
 
           window.scrollTo(0, startPosition + distance * easing);
 
@@ -93,11 +107,11 @@ const Navbar = () => {
         "fixed left-1/2 -translate-x-1/2 z-50 transition-all duration-500 ease-out",
         scrolled || isMenuOpen || isLightSection
           ? clsx(
-            "top-4 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] max-w-4xl w-[95%] md:w-full rounded-2xl border",
-            isLightSection
-              ? "bg-neutral-950/80 border-white/10"
-              : "bg-neutral-900/50 border-white/10",
-          )
+              "top-4 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] max-w-4xl w-[95%] md:w-full rounded-2xl border",
+              isLightSection
+                ? "bg-neutral-950/80 border-white/10"
+                : "bg-neutral-900/50 border-white/10",
+            )
           : "top-0 bg-transparent w-full border-none shadow-none",
       )}
     >
@@ -117,10 +131,12 @@ const Navbar = () => {
         </div>
 
         {/* Desktop Links */}
-        <div className={clsx(
-          "hidden md:flex text-sm font-medium shrink-0 items-center ",
-          scrolled || isLightSection ? "gap-1" : "gap-2"
-        )}>
+        <div
+          className={clsx(
+            "hidden md:flex text-sm font-medium shrink-0 items-center ",
+            scrolled || isLightSection ? "gap-1" : "gap-2",
+          )}
+        >
           {navLinks.map(({ label, href }) => {
             if (label === "Why Wekraft?") {
               return (
@@ -155,7 +171,8 @@ const Navbar = () => {
                               Discover why teams switch to Wekraft
                             </h4>
                             <p className="text-neutral-400 text-[11px] mt-1 font-normal font-sans leading-relaxed">
-                              See how Wekraft stacks up against the tools you know. Select a platform to view feature matrices.
+                              See how Wekraft stacks up against the tools you
+                              know. Select a platform to view feature matrices.
                             </p>
                           </div>
 
@@ -166,7 +183,11 @@ const Navbar = () => {
                             >
                               <span className="flex items-center gap-2.5">
                                 <span className="w-6 h-6 flex items-center justify-center bg-neutral-900/50 rounded-lg p-1 shrink-0 transition-colors">
-                                  <img src="/linear.png" alt="Linear" className="w-full h-full object-contain" />
+                                  <img
+                                    src="/linear.png"
+                                    alt="Linear"
+                                    className="w-full h-full object-contain"
+                                  />
                                 </span>
                                 <span>Linear</span>
                               </span>
@@ -179,7 +200,11 @@ const Navbar = () => {
                             >
                               <span className="flex items-center gap-2.5">
                                 <span className="w-6 h-6 flex items-center justify-center bg-neutral-900/50 rounded-lg p-1 shrink-0 transition-colors">
-                                  <img src="/jira-logo.jpg" alt="Jira" className="w-full h-full object-contain rounded-sm" />
+                                  <img
+                                    src="/jira-logo.jpg"
+                                    alt="Jira"
+                                    className="w-full h-full object-contain rounded-sm"
+                                  />
                                 </span>
                                 <span>Jira</span>
                               </span>
@@ -192,7 +217,11 @@ const Navbar = () => {
                             >
                               <span className="flex items-center gap-2.5">
                                 <span className="w-6 h-6 flex items-center justify-center bg-neutral-900/50 rounded-lg p-1 shrink-0 transition-colors">
-                                  <img src="/asana-logo.svg" alt="Asana" className="w-full h-full object-contain" />
+                                  <img
+                                    src="/asana-logo.svg"
+                                    alt="Asana"
+                                    className="w-full h-full object-contain"
+                                  />
                                 </span>
                                 <span>Asana</span>
                               </span>
@@ -205,7 +234,11 @@ const Navbar = () => {
                             >
                               <span className="flex items-center gap-2.5">
                                 <span className="w-6 h-6 flex items-center justify-center bg-neutral-900/50 rounded-lg p-1 shrink-0 transition-colors">
-                                  <img src="/Notion-logo.png" alt="Notion" className="w-full h-full object-contain" />
+                                  <img
+                                    src="/Notion-logo.png"
+                                    alt="Notion"
+                                    className="w-full h-full object-contain"
+                                  />
                                 </span>
                                 <span>Notion</span>
                               </span>
@@ -218,7 +251,11 @@ const Navbar = () => {
                             >
                               <span className="flex items-center gap-2.5">
                                 <span className="w-6 h-6 flex items-center justify-center bg-neutral-900/50 rounded-lg p-1 shrink-0 transition-colors">
-                                  <img src="/plane-so logo.png" alt="Plane" className="w-full h-full object-contain" />
+                                  <img
+                                    src="/plane-so logo.png"
+                                    alt="Plane"
+                                    className="w-full h-full object-contain"
+                                  />
                                 </span>
                                 <span>Plane</span>
                               </span>
@@ -278,7 +315,9 @@ const Navbar = () => {
                       size="sm"
                       className={clsx(
                         "duration-300 hover:scale-105 transition-all cursor-pointer font-medium text-white bg-gradient-to-r from-blue-600 to-blue-500 hover:from-blue-500 hover:to-blue-400 border-none shadow-[0_0_20px_rgba(37,99,235,0.4)] rounded-full",
-                        (scrolled || isLightSection) ? "px-4 py-1.5 text-xs" : "px-5 py-2 text-sm",
+                        scrolled || isLightSection
+                          ? "px-4 py-1.5 text-xs"
+                          : "px-5 py-2 text-sm",
                       )}
                     >
                       Dashboard <ArrowRight className="ml-2 w-4 h-4" />
@@ -287,24 +326,29 @@ const Navbar = () => {
                 </div>
               ) : (
                 <div className="hidden md:flex items-center gap-3">
-                  <Button
-                    size="sm"
-                    variant="ghost"
-                    className="text-neutral-300 hover:text-white hover:bg-white/10 text-sm font-medium rounded-full px-4"
-                    onClick={() =>
-                      document
-                        .getElementById("footer")
-                        ?.scrollIntoView({ behavior: "smooth" })
-                    }
+                  <a
+                    href="https://youtu.be/31xHoT9QJP0"
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="no-underline"
+                    id="navbar-get-demo-desktop"
                   >
-                    Get a demo
-                  </Button>
+                    <Button
+                      size="sm"
+                      variant="ghost"
+                      className="text-neutral-300 hover:text-white hover:bg-white/10 text-sm font-medium rounded-full px-4"
+                    >
+                      Get a demo
+                    </Button>
+                  </a>
                   <SignUpButton>
                     <Button
                       size="sm"
                       className={clsx(
                         "duration-300 hover:scale-105 transition-all cursor-pointer font-medium text-white bg-blue-600 hover:bg-blue-500",
-                        (scrolled || isLightSection) ? "px-4 py-1.5 text-xs" : "px-5 py-2 text-sm",
+                        scrolled || isLightSection
+                          ? "px-4 py-1.5 text-xs"
+                          : "px-5 py-2 text-sm",
                       )}
                     >
                       Sign-up
@@ -385,18 +429,21 @@ const Navbar = () => {
                           Sign-up
                         </Button>
                       </SignUpButton>
-                      <Button
-                        variant="outline"
-                        className="w-full bg-transparent border-white/30 text-white hover:bg-white/10"
-                        onClick={() => {
-                          setIsMenuOpen(false);
-                          document
-                            .getElementById("footer")
-                            ?.scrollIntoView({ behavior: "smooth" });
-                        }}
+                      <a
+                        href="https://youtu.be/31xHoT9QJP0"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="w-full no-underline"
+                        id="navbar-get-demo-mobile"
+                        onClick={() => setIsMenuOpen(false)}
                       >
-                        Get a demo
-                      </Button>
+                        <Button
+                          variant="outline"
+                          className="w-full bg-transparent border-white/30 text-white hover:bg-white/10"
+                        >
+                          Get a demo
+                        </Button>
+                      </a>
                     </div>
                   )}
                 </>
