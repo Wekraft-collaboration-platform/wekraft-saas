@@ -27,6 +27,7 @@ const Hero = () => {
   // ── Waitlist ──────────────────────────────────────────────
   const [_email, _setEmail] = useState("");
   const [_loading, _setLoading] = useState(false);
+  const [idePickerOpen, setIdePickerOpen] = useState(false);
 
   // ── Floating Cursor ──────────────────────────────────────────────
   const FloatingCursor = ({
@@ -291,18 +292,104 @@ const Hero = () => {
       </div>
 
       <main className="relative z-10 flex flex-col items-center pt-28 md:pt-40 pb-20 w-full">
-        <div className="inline-flex items-center p-1 pr-4 border border-neutral-400/30 rounded-full cursor-pointer transition-colors duration-200 mb-18 bg-blue-500/5 hover:bg-blue-500/10">
-          <div className="bg-blue-600 px-5 py-1 rounded-full flex items-center gap-1.5">
-            <span className="text-[12px]">
-              <Code2 className="w-4 h-4 inline" />
+        {/* IDE Picker */}
+        <div className="relative mb-18">
+          <button
+            onClick={() => setIdePickerOpen((v) => !v)}
+            className="inline-flex items-center p-1 pr-4 border border-neutral-400/30 rounded-full cursor-pointer transition-colors duration-200 bg-blue-500/5 hover:bg-blue-500/10"
+          >
+            <div className="bg-blue-600 px-5 py-1 rounded-full flex items-center gap-1.5">
+              <Code2 className="w-4 h-4 text-white" />
+              <span className="text-sm font-medium text-white leading-none">Extension</span>
+            </div>
+            <span className="text-blue-50 text-xs font-medium ml-3 flex items-center gap-1">
+              Bring WeKraft to your IDE <ArrowRight className="w-4 h-4 inline" />
             </span>
-            <span className="text-sm font-medium text-white leading-none">
-              Extension
-            </span>
-          </div>
-          <span className="text-blue-50 text-xs font-medium ml-3 flex items-center gap-1">
-            Bring WeKraft to your IDE <ArrowRight className="w-4 h-4 inline" />
-          </span>
+          </button>
+
+          {idePickerOpen && (
+            <>
+              {/* backdrop */}
+              <div className="fixed inset-0 z-40" onClick={() => setIdePickerOpen(false)} />
+
+              {/* dropdown — Vercel/Linear style */}
+              <div className="absolute left-1/2 -translate-x-1/2 top-full mt-3 z-50 w-[320px] rounded-2xl border border-white/[0.08] bg-[#111111] shadow-[0_0_0_1px_rgba(255,255,255,0.04),0_32px_64px_rgba(0,0,0,0.9)] overflow-hidden">
+
+                {/* header */}
+                <div className="px-4 pt-4 pb-3 flex items-center justify-between border-b border-white/[0.06]">
+                  <span className="text-[10px] font-medium text-white/30 uppercase tracking-[0.12em]">Install extension</span>
+                  <button onClick={() => setIdePickerOpen(false)} className="text-white/20 hover:text-white/60 transition-colors text-xs leading-none cursor-pointer">✕</button>
+                </div>
+
+                {/* rows */}
+                <div className="p-1.5 flex flex-col">
+                  {[
+                    {
+                      name: "VS Code",
+                      desc: "marketplace.visualstudio.com",
+                      logo: "/vs-code.png",
+                      href: "vscode:extension/wekraft.wekraft",
+                      logoSize: 20,
+                      imgClass: "object-contain",
+                    },
+                    {
+                      name: "Cursor",
+                      desc: "open-vsx.org",
+                      logo: "/cursor.png",
+                      href: "cursor:extension/wekraft.wekraft",
+                      logoSize: 36,
+                      imgClass: "object-cover w-full h-full",
+                    },
+                    {
+                      name: "Antigravity IDE",
+                      desc: "open-vsx.org",
+                      logo: "/antigravity-color.svg",
+                      href: "https://open-vsx.org/vscode/item?itemName=WeKraft.wekraft",
+                      newTab: true,
+                      logoSize: 20,
+                      imgClass: "object-contain",
+                    },
+                  ].map((ide) => (
+                    <a
+                      key={ide.name}
+                      href={ide.href}
+                      {...(ide.newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+                      onClick={() => setIdePickerOpen(false)}
+                      className="group flex items-center gap-3 px-3 py-2.5 rounded-xl hover:bg-white/[0.05] transition-colors duration-150 cursor-pointer"
+                    >
+                      {/* logo */}
+                      <div className="w-8 h-8 rounded-lg bg-white/[0.04] flex items-center justify-center shrink-0 overflow-hidden group-hover:bg-white/[0.07] transition-colors">
+                        <Image
+                          src={ide.logo}
+                          alt={ide.name}
+                          width={ide.logoSize}
+                          height={ide.logoSize}
+                          className={ide.imgClass}
+                        />
+                      </div>
+
+                      {/* text */}
+                      <div className="flex-1 min-w-0">
+                        <p className="text-[13px] font-medium text-white/90 leading-none group-hover:text-white transition-colors">{ide.name}</p>
+                        <p className="text-[11px] text-white/25 leading-none mt-1 font-mono">{ide.desc}</p>
+                      </div>
+
+                      {/* install badge */}
+                      <span className="text-[10px] font-medium text-white/30 group-hover:text-black group-hover:bg-white border border-white/[0.08] group-hover:border-white rounded-md px-2 py-0.5 transition-all shrink-0">
+                        Install
+                      </span>
+                    </a>
+                  ))}
+                </div>
+
+                {/* footer */}
+                <div className="px-4 py-3 border-t border-white/[0.06]">
+                  <p className="text-[10px] text-white/15 text-center font-mono">Your backlog. Your IDE. Zero context switching.</p>
+                </div>
+              </div>
+            </>
+          )}
+
         </div>
 
         <div className="flex flex-col items-center justify-center font-pop relative px-4 text-center">
@@ -378,7 +465,10 @@ const Hero = () => {
           </Button>
         </div>
 
-        <p className="mt-5 text-neutral-400 text-sm font-medium flex items-center gap-2">
+        <p className="mt-6 text-sm font-medium text-white/60 tracking-tight">
+          Built for <span className="text-white font-semibold">developers</span> · loved by <span className="text-white font-semibold">product managers</span>
+        </p>
+        <p className="mt-2 text-neutral-500 text-xs font-medium flex items-center gap-2">
           <span className="w-1.5 h-1.5 rounded-full bg-blue-500 animate-pulse" />
           No credit card required • Start shipping today
         </p>

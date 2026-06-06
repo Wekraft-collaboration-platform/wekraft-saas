@@ -1,38 +1,79 @@
-# Editor Extension
+# Wekraft Extension
 
-The **Wekraft Editor Extension** is the center of our developer-first workspace experience. By embedding backlog tracking, ticket management, and active time logging directly inside your editor, Wekraft reduces the need for developers to switch context between the code editor and web dashboards.
+The **Wekraft Extension** is the heart of our developer-first workspace experience. It brings your entire Wekraft workspace — backlogs, tasks, sprints, tickets, and time logs — directly into your code editor, so you never have to break your flow or switch context to a browser.
+
+> **Free for Everyone** — The Wekraft Extension is completely free for all users, no plan restrictions. Every Wekraft user gets full extension access.
 
 ---
 
-## Plan Capabilities & Permissions
+## What You Can Do
 
-Wekraft enforces server-side plan boundaries on all IDE API requests:
+### ✅ Project & Sprint Management
+- View all your **projects** and their active **sprints** directly in the editor sidebar.
+- See sprint progress, start/end dates, and sprint status at a glance.
+- Switch between projects without leaving the editor.
 
-- **Free & Plus Tiers (Read-Only Mode)**:
-  - Browse projects, active sprints, and assigned tasks in the editor sidebar.
-  - View task details, checklists, priorities, and descriptions.
-  - Click codebase paths to automatically open target files.
-  - *Restricted*: Status updates, task assignments, and time logs must be submitted through the web dashboard.
-- **Pro Tier (Full Two-Way Sync)**:
-  - Update task and issue statuses directly from the editor sidebar (e.g., transition a task from `Not Started` to `In Progress` or `Completed`).
-  - Automatically track active file-focus sessions and sync them to the **Time Logs** timeline.
-  - Submit, view, and close service desk tickets directly within the editor.
+### ✅ Task & Issue Tracking
+- Browse the full **task and issue backlog** for any project.
+- View complete task details including title, description, priority, status, checklists, assignees, labels, and due dates.
+- **Update task statuses** directly from the editor (e.g., move a task from `Not Started` → `In Progress` → `Completed`).
+- Assign tasks to teammates and update assignees.
+- Mark checklist items as complete without opening the browser.
+
+### ✅ Codebase File Navigation
+- Tasks and issues linked to specific files (e.g., `src/components/Navbar.tsx`) render as **clickable file links** inside the extension.
+- Click a file link to instantly open that file in your active editor workspace — no manual searching.
+
+### ✅ Time Logging
+- Log time against tasks and issues directly from the extension.
+- View your active and past time log entries per task.
+- Track file-focus sessions automatically — when you're actively editing a file linked to a task, the extension aggregates your focus time and syncs it back to Wekraft's **Time Logs** timeline.
+
+### ✅ Service Desk & Ticket Management
+- Access your full **service desk ticket backlog** within the editor.
+- View open, in-progress, and resolved tickets.
+- Update ticket statuses and add notes/responses to client tickets without leaving the development workspace.
+
+### ✅ Notifications & Activity Feed
+- Receive real-time updates when tasks are assigned to you or when ticket statuses change.
+
+---
+
+## What You Cannot Do
+
+### ❌ Create New Projects or Sprints
+- Project and sprint creation must be done through the **Wekraft web dashboard**. The extension is scoped to viewing and acting on existing work.
+
+### ❌ Manage Workspace Members or Roles
+- Inviting members, changing roles, or managing workspace permissions is only available in the **web dashboard settings**.
+
+### ❌ Create New Service Desk Tickets
+- Submitting new client support tickets is handled through the web dashboard or client-facing portal. The extension is for managing and resolving existing tickets.
+
+### ❌ Billing & Plan Management
+- Subscription, billing, and plan upgrades are accessible only through the **Wekraft web dashboard**.
+
+### ❌ Repository Settings & Integrations
+- Connecting or configuring repository integrations (GitHub, GitLab, etc.) is done through the web dashboard. The extension consumes the configured data but cannot modify integration settings.
+
+### ❌ Dashboard Analytics & Reports
+- Full analytics dashboards, burndown charts, velocity reports, and team performance insights are available only on the **Wekraft web dashboard**.
 
 ---
 
 ## Handshake Authentication Flow
 
-Wekraft authenticates editor clients securely using a deep-linked handshake protocol that generates a cryptographically signed API key without requiring password exposure:
+Wekraft authenticates extension clients securely using a deep-linked handshake protocol that generates a cryptographically signed API key without requiring password exposure:
 
 ```mermaid
 sequenceDiagram
-    participant Editor as Editor Extension
+    participant Editor as Wekraft Extension
     participant Browser as Web Browser
     participant WekraftWeb as Wekraft Web App
     participant Backend as Reactive Backend DB
 
     Editor->>Browser: 1. Launch extension auth url
-    Browser->>WekraftWeb: 2. User logs in & clicks "Grant Access to IDE"
+    Browser->>WekraftWeb: 2. User logs in & clicks "Grant Access to Extension"
     WekraftWeb->>Backend: 3. Invoke handshake token creation
     Backend-->>WekraftWeb: 4. Returns 5-Min Temp Token
     WekraftWeb->>Browser: 5. Redirect browser using editor scheme url
@@ -43,35 +84,23 @@ sequenceDiagram
     Editor->>Editor: 9. Securely stores API Key locally
 ```
 
-### Authentication Lifecycle Details:
-1. **Initiate**: Select **"Login with Wekraft"** in the editor Activity Bar. This launches the default system browser with the callback redirect parameters.
-2. **Authorize**: Authenticated users click **"Grant Access to IDE"** in the browser.
+### Authentication Lifecycle Details
+1. **Initiate**: Select **"Login with Wekraft"** in the extension Activity Bar. This launches your default browser with the callback redirect parameters.
+2. **Authorize**: Authenticated users click **"Grant Access to Extension"** in the browser.
 3. **Generate Token**: The web app invokes a database mutation to insert a handshake record with a **5-minute Time-To-Live (TTL)**.
 4. **Deep-Link Redirection**: The browser redirects to the custom editor URI scheme.
-5. **Exchange**: The editor catches the deep-link parameters and calls the backend endpoint to exchange the token. On success, this generates a permanent key in the api keys table, revokes the handshake token, and returns `{ userId, apiKey }`.
+5. **Exchange**: The extension catches the deep-link parameters and calls the backend endpoint to exchange the token. On success, this generates a permanent key in the API keys table, revokes the handshake token, and returns `{ userId, apiKey }`.
 
 ---
 
 ## API Security, Rate Limiting & Touch Tracking
 
-Every request issued by the editor extension must authenticate against the internal gateway mutation.
+Every request issued by the Wekraft Extension is authenticated against the internal gateway mutation.
 
 - **Sliding-Window Rate Limiter**:
   - The API key checks usage counts within a sliding **1-minute (60,000ms) window**.
   - **Limit**: Max **60 requests per minute**.
   - Exceeding the threshold returns a rate limit exceeded error, causing the extension to temporarily queue non-critical events.
 - **Activity Tracking**:
-  - Valid requests touch the database API key record, writing the current epoch time to the last used field for developer security auditing.
-
----
-
-## Workspace Features in the Editor
-
-### 1. Codebase Navigation
-Files linked to tasks or issues via relative paths (e.g. `src/components/Navbar.tsx`) are rendered as active links. Clicking the file link inside the editor instructs it to look up the file in your active workspace directories and open it immediately.
-
-### 2. Time Tracking Sync
-If the user belongs to a Pro tier, the extension tracks which files are actively focused in the editor. Focus durations are aggregated and synced periodically back to Wekraft's time tracking metrics.
-
-### 3. Ticket Management
-The extension provides access to the service desk backlog, querying tickets and invoking status updates to resolve client requests without leaving the development workspace.
+  - Valid requests touch the database API key record, writing the current epoch time to the `lastUsed` field for developer security auditing.
+  - You can view and revoke active extension API keys from **Account Settings → API Keys** in the web dashboard.

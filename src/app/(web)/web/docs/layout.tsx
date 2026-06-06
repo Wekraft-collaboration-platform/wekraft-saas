@@ -208,28 +208,33 @@ function SidebarCategory({
                   href={`/web/docs/${item.slug}`}
                   onClick={onNavClick}
                   className={cn(
-                    "group relative flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[0.825rem] transition-all duration-150 min-w-0 select-none",
+                    "group relative flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[0.825rem] transition-all duration-150 min-w-0 select-none overflow-hidden",
                     isActive
-                      ? "text-white font-medium bg-white/4"
+                      ? "text-white font-medium"
                       : "text-[#8a8b92] hover:bg-white/[0.02] hover:text-[#e5e5e5]",
                   )}
                 >
                   <Icon
                     className={cn(
-                      "h-3.5 w-3.5 shrink-0 transition-colors",
+                      "h-3.5 w-3.5 shrink-0 transition-colors relative z-10",
                       isActive ? "text-white" : "text-[#525252] group-hover:text-[#8a8b92]"
                     )}
                   />
-                  <SidebarItemText title={item.title} isActive={isActive} />
+                  <span className="relative z-10 flex-1 min-w-0">
+                    <SidebarItemText title={item.title} isActive={isActive} />
+                  </span>
                   {badge && !isActive && (
                     <span
                       className={cn(
-                        "text-[9px] font-semibold rounded px-1.5 py-0.5 leading-none shrink-0 ml-2",
+                        "text-[9px] font-semibold rounded px-1.5 py-0.5 leading-none shrink-0 ml-2 relative z-10",
                         badgeColors[badge],
                       )}
                     >
                       {badge}
                     </span>
+                  )}
+                  {isActive && (
+                    <span className="pointer-events-none absolute inset-0 -z-0 bg-linear-to-l from-blue-600/80 dark:from-blue-600/50 via-blue-600/10 to-transparent" />
                   )}
                 </Link>
               </li>
