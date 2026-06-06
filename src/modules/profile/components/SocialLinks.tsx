@@ -25,6 +25,7 @@ interface PlatformInfo {
 }
 
 function getPlatformInfo(url: string): PlatformInfo | null {
+  if (!url || typeof url !== "string") return null;
   const lower = url.toLowerCase();
   if (lower.includes("github.com")) {
     return {
@@ -69,11 +70,13 @@ function getPlatformInfo(url: string): PlatformInfo | null {
   return null;
 }
 
-export const SocialLinks = ({ socialLinks = [] }: SocialLinksProps) => {
+const EMPTY_ARRAY: string[] = [];
+
+export const SocialLinks = ({ socialLinks = EMPTY_ARRAY }: SocialLinksProps) => {
   const [isEditing, setIsEditing] = useState(false);
 
   // Filter links to only keep the 5 supported platforms
-  const activeLinks = (socialLinks?.filter(Boolean) || []).filter((link) => {
+  const activeLinks = (Array.isArray(socialLinks) ? socialLinks.filter(Boolean) : []).filter((link) => {
     const info = getPlatformInfo(link);
     return info !== null;
   });
