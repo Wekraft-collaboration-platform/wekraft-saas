@@ -10,26 +10,7 @@ export interface DocItem {
 }
 
 export function getDocBadge(item: DocItem): "New" | "Updated" | "Beta" | undefined {
-  if (item.badge === "Beta") return "Beta";
-  if (!item.created) return undefined;
-
-  const now = Date.now();
-  const createdTime = new Date(item.created).getTime();
-  const thirtyDaysMs = 30 * 24 * 60 * 60 * 1000;
-
-  if (now - createdTime < thirtyDaysMs) {
-    return "New";
-  }
-
-  if (item.updated) {
-    const updatedTime = new Date(item.updated).getTime();
-    const sevenDaysMs = 7 * 24 * 60 * 60 * 1000;
-    if (now - updatedTime < sevenDaysMs && updatedTime > createdTime) {
-      return "Updated";
-    }
-  }
-
-  return undefined;
+  return item.badge;
 }
 
 export const docsConfig: { [key: string]: DocItem[] } = {

@@ -6,16 +6,16 @@ The Wekraft Calendar provides a shared timeline of events, scheduled milestones,
 
 ## Calendar Event Properties
 
-Every calendar entry is stored in Convex under the `calendarEvents` collection with these schema details:
+Every calendar entry has the following properties:
 
 - **Title**: The display name of the event or milestone checkpoint.
 - **Description** *(optional)*: Additional context or agenda details.
 - **Event Type**:
-  - `event`: Standard meetings, daily standups, or retrospective sessions.
-  - `milestone`: Critical checkpoints like release freezes, beta releases, or customer deliveries.
+  - Event: Standard meetings, daily standups, or retrospective sessions.
+  - Milestone: Critical checkpoints like release freezes, beta releases, or customer deliveries.
 - **All Day Option**: Toggles absolute day views, disabling the hour/minute selection.
-- **Duration**: Defined by Unix millisecond timestamps (`start` -> `end`).
-- **Color Overlay**: Custom hex color code for visual grouping on the calendar grid.
+- **Duration**: The time range representing when the event occurs.
+- **Color Overlay**: Custom color for visual grouping on the calendar grid.
 
 ---
 

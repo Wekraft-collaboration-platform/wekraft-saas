@@ -4,27 +4,17 @@ Issues represent reactive or unplanned work in Wekraft, such as application bugs
 
 ---
 
-## Issue Document Schema & Properties
+## Issue Properties
 
-Every issue document inside the backend database is defined with the following fields:
+Every issue contains the following fields:
 
-- **Title (`title`)**: String detailing the bug report or incident summary.
-- **Description (`description`)**: Optional text body containing steps to reproduce, logs, or system specs.
-- **Impact Environment (`environment`)**: Indicates where the issue was detected:
-  - `local`: Developer workspace error.
-  - `dev`: Development build / sandbox server crash.
-  - `staging`: Quality assurance / integration testing environment bug.
-  - `production`: Incident on the live production build affecting active users.
-- **Severity (`severity`)**: Dictates the urgency and response priority:
-  - `critical`: Blockers, security vulnerabilities, or database downtime.
-  - `medium`: Degraded performance, broken non-critical features.
-  - `low`: Minor visual glitches, cosmetic issues, or spelling errors.
-- **File Linked (`fileLinked`)**: Path relative to the repository root pointing to the buggy component.
-- **Due Date (`due_date`)**: Target resolution deadline. Overdue issues increment the project's **Delay Debt** metric.
-- **Source Type (`type`)**: Identifies how the issue was ingested into Wekraft:
-  - `manual`: Created through the Wekraft UI.
-  - `task-issue`: Created via task escalation.
-  - `github`: Synchronized via linked code hosting provider.
+- **Title**: A summary detailing the bug report or incident.
+- **Description**: Optional details containing steps to reproduce, logs, or system specs.
+- **Impact Environment**: Indicates where the issue was detected (such as local, development, staging, or production).
+- **Severity**: Dictates the urgency and response priority (Critical, Medium, or Low).
+- **File Linked**: Path pointing to the buggy component.
+- **Due Date**: Target resolution deadline.
+- **Source Type**: Identifies how the issue was ingested (Manual, Task-Issue, or GitHub).
 
 ---
 
@@ -68,56 +58,3 @@ stateDiagram-v2
 - **Opened (`opened`)**: Assigned developer is debugging and testing a resolution.
 - **Reopened (`reopened`)**: The patch failed staging tests, or the bug recurred in production, reopening the incident.
 - **Closed (`closed`)**: The bug is resolved. Closing the issue records the completion timestamp and user ID.
-
----
-
-## Database API Reference (Developer Guide)
-
-Issues are managed via the following backend API endpoints:
-
-### Create Issue
-Registers an issue and records assignees in the issue assignees join table.
-```typescript
-args: {
-  title: string,
-  description?: string,
-  environment?: "local" | "dev" | "staging" | "production",
-  severity?: "critical" | "medium" | "low",
-  due_date?: number,
-  status: "not opened" | "opened" | "reopened" | "closed",
-  type: "manual" | "task-issue" | "github",
-  githubIssueUrl?: string,
-  fileLinked?: string,
-  taskId?: Id,
-  projectId: Id,
-  userId: Id,
-  assignees?: Array<{ userId: Id, name: string, avatar?: string }>
-}
-```
-
-### Update Issue
-Updates issue parameters and handles closed status triggers.
-```typescript
-args: {
-  issueId: Id,
-  title?: string,
-  description?: string,
-  status?: "not opened" | "opened" | "reopened" | "closed",
-  severity?: "critical" | "medium" | "low",
-  environment?: "local" | "dev" | "staging" | "production",
-  due_date?: number,
-  fileLinked?: string,
-  assignees?: Array<{ userId: Id, name: string, avatar?: string }>,
-  userId: Id
-}
-```
-*Note: Setting status to `closed` automatically writes completion stats and unblocks any linked task.*
-
-### Delete Issue
-Removes the issue document and performs cascading cleanups on assignees and comments.
-```typescript
-args: {
-  issueId: Id,
-  userId: Id
-}
-```

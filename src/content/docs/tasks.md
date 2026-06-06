@@ -4,21 +4,19 @@ Tasks in Wekraft are the primary planning units used to organize product backlog
 
 ---
 
-## Task Schema & Properties
+## Task Properties
 
-Every task document in the datastore contains the following attributes:
+Every task contains the following properties:
 
-- **Title (`title`)**: String representing the work description.
-- **Description (`description`)**: Optional text content detailing requirements or checklist items.
-- **Priority (`priority`)**: Urgent classifications set as `high`, `medium`, or `low`.
-- **Status (`status`)**: The workflow state representing the phase of execution (see Lifecycle).
-- **Estimation (`estimation`)**: Object containing unix timestamps in milliseconds representing the planned window:
-  - `startDate`: Simple timestamp when work should begin.
-  - `endDate`: Target delivery timestamp.
-- **Is Blocked (`isBlocked`)**: A boolean flag indicating whether the task is blocked by an open issue. While blocked, status updates are restricted.
-- **Codebase Link (`linkWithCodebase`)**: Optional relative path to a repository file (e.g., `src/components/Button.tsx`).
-- **Sprint Association (`sprintId`)**: Optional reference pointing to a time-boxed sprint. Unassigned tasks reside in the Project Backlog pool.
-- **Attachments (`attachments`)**: Optional array of uploaded assets. Each asset records a name, URL, and size in bytes.
+- **Title**: A description of the work to be done.
+- **Description**: Optional details about the requirements or checklist items.
+- **Priority**: Urgency classifications set as High, Medium, or Low.
+- **Status**: The workflow state representing the phase of execution (see Lifecycle).
+- **Estimation**: The planned start and end dates for the task.
+- **Is Blocked**: An indicator showing whether the task is blocked by an open issue.
+- **Codebase Link**: Optional reference to a repository file.
+- **Sprint Association**: Optional reference pointing to a time-boxed sprint.
+- **Attachments**: Optional files or assets uploaded to the task.
 
 ---
 
@@ -71,53 +69,3 @@ When a task encounters an unexpected barrier (such as a dependency block or crit
 - **Trigger**: Click the **"Escalate to Issue"** action on the task details sheet.
 - **Behavior**: This initiates a blockage escalation mutation. It sets `isBlocked` to `true` on the task and inserts a new incident in the issues database linked back to the task.
 - **Resolution**: The task is locked in a read-only state. Once the linked issue is fixed and marked as `closed`, a database mutation automatically resets `isBlocked` to `false`, freeing the task for completion.
-
----
-
-## Database API Reference (Developer Guide)
-
-For editor extension sync and custom automations, tasks are managed via the following backend API endpoints:
-
-### Create Task
-Creates a task and records assignees in the task assignees join table.
-```typescript
-args: {
-  projectId: Id,
-  title: string,
-  description?: string,
-  status?: "not started" | "inprogress" | "reviewing" | "testing" | "completed",
-  priority?: "high" | "medium" | "low",
-  sprintId?: Id,
-  estimation?: { startDate: number, endDate: number },
-  linkWithCodebase?: string,
-  assigneeIds?: Array<Id>,
-  userId: Id
-}
-```
-
-### Update Task
-Updates fields and automatically syncs the task assignees join table.
-```typescript
-args: {
-  taskId: Id,
-  title?: string,
-  description?: string,
-  status?: string,
-  priority?: string,
-  estimation?: any,
-  linkWithCodebase?: string,
-  assigneeIds?: Array<Id>,
-  isBlocked?: boolean,
-  sprintId?: Id,
-  userId: Id
-}
-```
-
-### Delete Task
-Deletes the task and performs cascading deletions on related comments, assignees, and linked blocking issues.
-```typescript
-args: {
-  taskId: Id,
-  userId: Id
-}
-```

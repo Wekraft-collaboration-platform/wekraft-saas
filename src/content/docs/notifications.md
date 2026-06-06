@@ -25,37 +25,37 @@ Each notification row contains:
 
 ## Core Notification Events
 
-The backend tracks exactly ten (10) notification types in the database schema:
+The backend tracks exactly ten (10) notification types for various user and system actions:
 
 ### Project Access & Requests
 
-| Event Type | DB Literal | Triggered When... | Recipients |
-| :--- | :--- | :--- | :--- |
-| **Join Request** | `join_request` | A user requests to join your project. | Project Owner & Admins |
-| **Request Approved** | `request_accepted` | Your join request is accepted by an administrator. | The requesting user |
-| **Request Declined** | `request_rejected` | Your join request is declined. | The requesting user |
+| Event Type | Triggered When... | Recipients |
+| :--- | :--- | :--- |
+| **Join Request** | A user requests to join your project. | Project Owner & Admins |
+| **Request Approved** | Your join request is accepted by an administrator. | The requesting user |
+| **Request Declined** | Your join request is declined. | The requesting user |
 
 ### Project Member Changes
 
-| Event Type | DB Literal | Triggered When... | Recipients |
-| :--- | :--- | :--- | :--- |
-| **Member Joined** | `member_joined` | A new member joins the project (either via request acceptance or direct link). | All Owner/Admin members |
-| **Member Left** | `member_left` | A user leaves the project workspace. | All Owner/Admin members |
-| **Member Removed** | `member_removed` | An owner/admin removes a user from the team grid. | The removed user only |
-| **Role Changed** | `role_changed` | An owner or admin updates a member's workspace role. | The affected user only |
+| Event Type | Triggered When... | Recipients |
+| :--- | :--- | :--- |
+| **Member Joined** | A new member joins the project (either via request acceptance or direct link). | All Owner/Admin members |
+| **Member Left** | A user leaves the project workspace. | All Owner/Admin members |
+| **Member Removed** | An owner/admin removes a user from the team grid. | The removed user only |
+| **Role Changed** | An owner or admin updates a member's workspace role. | The affected user only |
 
 ### Collaboration & Mentions
 
-| Event Type | DB Literal | Triggered When... | Recipients |
-| :--- | :--- | :--- | :--- |
-| **User Mentioned** | `mentioned` | Another team member tags you using `@username` in task comments, issue comments, or Teamspace channel messages. | The tagged user(s) (excludes self-mentions) |
+| Event Type | Triggered When... | Recipients |
+| :--- | :--- | :--- |
+| **User Mentioned** | Another team member tags you using `@username` in task comments, issue comments, or Teamspace channel messages. | The tagged user(s) (excludes self-mentions) |
 
 ### System Alerts & Meets
 
-| Event Type | DB Literal | Triggered When... | Recipients |
-| :--- | :--- | :--- | :--- |
-| **Project Alert** | `project_alert` | Project timeline reaches duration milestones (25%, 50%, 75%, or 90% target date). | All project members |
-| **Meeting Started** | `meeting_started` | A team video meet is launched (initiating a Stream room). | All project members (except the host) |
+| Event Type | Triggered When... | Recipients |
+| :--- | :--- | :--- |
+| **Project Alert** | Project timeline reaches duration milestones (25%, 50%, 75%, or 90% target date). | All project members |
+| **Meeting Started** | A team video meet is launched (initiating a Stream room). | All project members (except the host) |
 
 ---
 

@@ -56,32 +56,11 @@ graph TD
 
 ---
 
-## 3. Database Schema Design (Hybrid DB Approach)
+## 3. Storage Architecture (Hybrid Approach)
 
-Wekraft utilizes a **hybrid database model** to optimize performance:
-1. **Convex** acts as the primary transactional relational database, relying on reactive queries for state (Sprints, Tasks, Onboarding).
-2. **Turso (libSQL)** acts as the edge-distributed chat store to absorb heavy write loads from chat streams.
-
-### A. Primary Convex Schema (Operational State)
-Defined in [schema.ts](file:///r:/wekraft-saas/convex/schema.ts):
-- **`users` / `userDetails`**: Clerk identity tokens, bio, skill arrays, and active payment statuses (Stripe Customer ID, Razorpay Subscription ID, expiration timestamps).
-- **`projects` / `projectMembers` / `projectJoinRequests`**: Projects mapped to slugs, ownership, and user role levels (`owner`, `admin`, `member`, `viewer`).
-- **`tasks` / `taskAssignees` / `taskComments`**: Sprint-associated tasks, estimation dates, attachments, and assignments mapped via join tables.
-- **`issues` / `issueAssignees` / `issueComments`**: Bug reporting system. Supports task blocking (`isBlocked` flag) and GitHub issue references.
-- **`sprints`**: Sprint duration, goals, statuses (`planned`, `active`, `completed`), and completed work history.
-- **`notifications`**: User-centric notification inbox containing deep-link metadata (e.g., channel IDs, Stream Meet IDs).
-- **`team_meets`**: Live Stream call logs, status tracking, and participant lists.
-- **`userApiKeys` / `apiKeyRateLimits`**: VS Code/IDE extension integration credentials and rate limits.
-
-### B. Secondary Turso SQLite Schema (Chat & Messaging)
-Initialized dynamically in [schema.ts](file:///r:/wekraft-saas/src/lib/turso/schema.ts):
-- **`ts_channels`**: Chat channels (public, private, announcements).
-- **`ts_messages`**: High-performance messaging table. Features:
-  - `expires_at` column for a 30-day message retention policy.
-  - SQLite full-text search (`ts_messages_fts`) utilizing `fts5` and automatic insert/delete triggers.
-- **`ts_private_channel_members`**: Restricts access to private channels at the DB layer.
-- **`ts_reactions`**: message reactions utilizing compound unique constraints.
-- **`ts_poll_votes`**: Poll options and votes.
+Wekraft utilizes a hybrid storage model to optimize performance:
+1. **Primary Operational Storage (Convex)**: Serves as the transactional store for application state (Sprints, Tasks, Onboarding, and user metadata).
+2. **High-Throughput Chat Messaging (Turso)**: Edge-distributed database dedicated to absorbing chat traffic, reactions, and real-time messaging histories.
 
 ---
 

@@ -421,12 +421,14 @@ export default async function DocPage({
   params: { slug: string };
 }) {
   const { slug } = await params;
+  const docInfo = allDocs.find((d) => d.slug === slug);
+  if (!docInfo) notFound();
+
   const filePath = path.join(process.cwd(), "src/content/docs", `${slug}.md`);
 
   if (!fs.existsSync(filePath)) notFound();
 
   const content = fs.readFileSync(filePath, "utf8");
-  const docInfo = allDocs.find((d) => d.slug === slug);
   const headings = extractHeadings(content);
   const readingTime = calculateReadingTime(content);
 

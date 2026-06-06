@@ -215,6 +215,10 @@ const allTools = {
 
         execute: async ({ slug }: { slug: string }) => {
             console.log("-------- getDocumentationPage called for slug --------", slug);
+            const docInfo = allDocs.find((d) => d.slug === slug);
+            if (!docInfo) {
+                return { error: `Documentation page with slug '${slug}' not found.` };
+            }
             try {
                 const filePath = path.join(process.cwd(), "src/content/docs", `${slug}.md`);
                 if (fs.existsSync(filePath)) {
