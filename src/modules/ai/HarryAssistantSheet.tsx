@@ -32,6 +32,7 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 import { useHarryStore } from "@/store/useHarryStore";
 import { useKayaStore } from "@/store/useKayaStore";
+import { useUpgradeModalStore } from "@/store/useUpgradeModalStore";
 
 
 export function HarryAssistantSheet() {
@@ -139,7 +140,9 @@ export function HarryAssistantSheet() {
                   Hey, I&apos;m Harry
                 </h3>
                 <p className="text-sm text-muted-foreground max-w-[280px] leading-relaxed">
-                  Harry is under heavy development and will come soon.
+                  {project && (project as any).ownerAccountType !== "pro"
+                    ? "Harry is under heavy development and will come soon for Pro projects."
+                    : "Harry is under heavy development and will come soon."}
                 </p>
               </motion.div>
             </AnimatePresence>
@@ -148,80 +151,73 @@ export function HarryAssistantSheet() {
 
         {/* FOOTER */}
         <div className="px-4 py-6 bg-linear-to-b from-transparent via-amber-200/10 to-orange-500/20">
-          {project && (project as any).ownerAccountType !== "pro" ? (
-            <div className="flex flex-col items-center justify-center p-4 bg-card backdrop-blur-md rounded-xl border border-accent shadow-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <Clover className="w-5 h-5 " />
-                <h4 className="text-sm font-semibold ">
-                  Pro Feature
-                </h4>
-              </div>
-              <p className="text-[11px] text-muted-foreground text-center mb-3 px-6">
-                Harry is available for Pro Plan Owner projects. Get codebase review,
-                pull requests support, and architecture analysis.
-              </p>
-              <Button size="sm" className="w-full text-sm " onClick={() => router.push("/web/pricing")}>
-                Upgrade to Pro <LayersPlus />
+          <div className="relative">
+            {!!(project && (project as any).ownerAccountType !== "pro") && (
+              <div
+                className="absolute inset-0 z-30 cursor-pointer"
+                onClick={() => useUpgradeModalStore.getState().openModal()}
+              />
+            )}
+            <Input
+              placeholder="Harry is under development..."
+              value=""
+              disabled={true}
+              className="h-12 rounded-xl bg-sidebar pr-36"
+            />
+            <div className="flex items-center gap-2 absolute right-2 top-2">
+              <Button
+                size="icon"
+                variant="outline"
+                className="h-8 w-8 cursor-not-allowed"
+                disabled={true}
+              >
+                <Send className="h-3 w-3!" />
               </Button>
-            </div>
-          ) : (
-            <>
-              <div className="relative">
-                <Input
-                  placeholder="Harry is under development..."
-                  value=""
-                  disabled={true}
-                  className="h-12 rounded-xl bg-sidebar pr-36"
-                />
-                <div className="flex items-center gap-2 absolute right-2 top-2">
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
                   <Button
-                    size="icon"
+                    size="sm"
                     variant="outline"
-                    className="h-8 w-8 cursor-not-allowed"
+                    className="h-8 px-2 flex items-center gap-1.5 text-[10px] capitalize font-medium cursor-not-allowed"
                     disabled={true}
+                    onClick={(e) => {
+                      if (!!(project && (project as any).ownerAccountType !== "pro")) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        useUpgradeModalStore.getState().openModal();
+                      }
+                    }}
                   >
-                    <Send className="h-3 w-3!" />
+                    {selectedModel}
+                    <Settings2 className="h-3 w-3!" />
                   </Button>
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className="h-8 px-2 flex items-center gap-1.5 text-[10px] capitalize font-medium cursor-not-allowed"
-                        disabled={true}
-                      >
-                        {selectedModel}
-                        <Settings2 className="h-3 w-3!" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <div className="text-xs p-2 items-center border-b border-accent">
-                        Select Model
-                      </div>
-                      <DropdownMenuItem
-                        onClick={() => setSelectedModel("fast")}
-                        className="text-[10px]"
-                      >
-                        Harry Fast
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => setSelectedModel("deep")}
-                        className="text-[10px]"
-                      >
-                        Harry Deep
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
-              <p className="text-[10px] text-center text-muted-foreground mt-2">
-                Harry is your senior developer agent.{" "}
-                <span className="text-orange-500 cursor-pointer font-medium">
-                  Click to configure
-                </span>
-              </p>
-            </>
-          )}
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <div className="text-xs p-2 items-center border-b border-accent">
+                    Select Model
+                  </div>
+                  <DropdownMenuItem
+                    onClick={() => setSelectedModel("fast")}
+                    className="text-[10px]"
+                  >
+                    Harry Fast
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setSelectedModel("deep")}
+                    className="text-[10px]"
+                  >
+                    Harry Deep
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+          <p className="text-[10px] text-center text-muted-foreground mt-2">
+            Harry is your senior developer agent.{" "}
+            <span className="text-orange-500 cursor-pointer font-medium">
+              Click to configure
+            </span>
+          </p>
         </div>
       </SheetContent>
     </Sheet>

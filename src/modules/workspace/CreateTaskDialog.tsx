@@ -79,6 +79,7 @@ import {
 import { priorityIcons, statusIcons } from "@/lib/static-store";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { StorageLimitDialog } from "./StorageLimitDialog";
+import { useKayaStore } from "@/store/useKayaStore";
 
 interface CreateTaskDialogProps {
   projectName: string;
@@ -275,6 +276,10 @@ export const CreateTaskDialog = ({
                   <Button
                     variant="outline"
                     className="bg-linear-to-t from-indigo-600/30 via-purple-600/10 to-transparent text-[10px] cursor-pointer px-4! flex items-center gap-1.5 overflow-hidden"
+                    onClick={() => {
+                      useKayaStore.getState().setIsOpen(true);
+                      setOpen(false);
+                    }}
                   >
                     <motion.div
                       initial={{ x: 55, scale: 0.9 }}

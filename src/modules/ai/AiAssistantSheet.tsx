@@ -19,7 +19,14 @@ import {
   Sparkles,
   Clover,
   LayersPlus,
+  Paperclip,
 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
@@ -52,6 +59,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import { useKayaStore } from "@/store/useKayaStore";
 import { useHarryStore } from "@/store/useHarryStore";
+import { useUpgradeModalStore } from "@/store/useUpgradeModalStore";
 
 interface AiAssistantSheetProps { }
 
@@ -130,6 +138,7 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const [inputValue, setInputValue] = useState("");
   const [showScrollButton, setShowScrollButton] = useState(false);
@@ -233,6 +242,10 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
   }, [appCheckpoints, status]);
 
   const sendMessage = (content: string) => {
+    if (!!(project && (project as any).ownerAccountType !== "pro")) {
+      useUpgradeModalStore.getState().openModal();
+      return;
+    }
     if (!content.trim() || status === "running" || restoring) return;
     setRestoreError(false);
     run({
@@ -248,6 +261,15 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
       },
     });
     setInputValue("");
+  };
+
+  const handleSuggestionClick = (suggestion: string) => {
+    if (!!(project && (project as any).ownerAccountType !== "pro")) {
+      useUpgradeModalStore.getState().openModal();
+    } else {
+      setInputValue(suggestion);
+      inputRef.current?.focus();
+    }
   };
 
   // ── Resume handler ──
@@ -477,15 +499,24 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
                         className="relative drop-shadow-2xl"
                       />
                     </div>
-                    <h3 className="text-lg font-pop font-semibold text-primary mb-1 tracking-tight">
-                      Hello, I&apos;m Kaya
+                    <h3 className="text-lg font-pop font-semibold text-primary tracking-tight">
+                      Hello, I&apos;m Kaya <br /><span className="font-medium text-sm text-neutral-200">Start by asking</span>
                     </h3>
-                    <p className="text-sm text-muted-foreground max-w-[240px] leading-relaxed">
-                      Start with asking ,{" "}
-                      <span className="font-pop text-primary">
-                        &quot;What's happening in my project&quot;
-                      </span>
-                    </p>
+                    <div className="flex flex-col gap-2 w-full max-w-[320px] mt-4">
+                      {[
+                        "What's happening in my project",
+                        "Automate bulk creation of tasks/issues",
+                        "Get mine todays standup and work",
+                      ].map((suggestion) => (
+                        <button
+                          key={suggestion}
+                          onClick={() => handleSuggestionClick(suggestion)}
+                          className="w-full text-center px-4 py-2.5 rounded-xl border border-border bg-muted hover:bg-muted/80 transition-colors cursor-pointer text-xs font-medium text-foreground/80 hover:text-foreground shadow-xs"
+                        >
+                          {suggestion}
+                        </button>
+                      ))}
+                    </div>
                   </motion.div>
                 )}
             </AnimatePresence>
@@ -595,96 +626,127 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
 
         {/* FOOTER */}
         <div className="px-4 py-6 bg-linear-to-b from-transparent via-indigo-200/10 to-purple-400/30">
-          {project && (project as any).ownerAccountType !== "pro" ? (
-            <div className="flex flex-col items-center justify-center p-4 bg-card backdrop-blur-md rounded-xl border border-primary/20 shadow-lg">
-              <div className="flex items-center gap-2 mb-2">
-                <Clover className="w-5 h-5 text-primary" />
-                <h4 className="text-sm font-semibold text-primary">
-                  Pro Feature
-                </h4>
-              </div>
-              <p className="text-[11px] text-muted-foreground text-center mb-3 px-6">
-                Kaya is available for Pro Plan Owner projects. Get advanced project analysis,
-                automated reporting, and more.
-              </p>
-              <Button size="sm" className="w-full text-sm" onClick={() => router.push("/web/pricing")}>
-                Upgrade to Pro <LayersPlus />
-              </Button>
-            </div>
-          ) : (
-            <>
-              <div className="relative">
-                <Input
-                  ref={inputRef}
-                  placeholder="Ask anything..."
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter") sendMessage(inputValue);
-                  }}
-                  disabled={isDisabled}
-                  className="h-12 rounded-xl bg-sidebar pr-36"
-                />
-                <div className="flex items-center gap-2 absolute right-2 top-2">
-                  {status === "running" ? (
+          <div className="relative">
+            {!!(project && (project as any).ownerAccountType !== "pro") && (
+              <div
+                className="absolute inset-0 z-30 cursor-pointer"
+                onClick={() => useUpgradeModalStore.getState().openModal()}
+              />
+            )}
+            <input
+              type="file"
+              ref={fileInputRef}
+              className="hidden"
+              accept=".pdf,.doc,.docx"
+              onChange={(e) => {
+                const file = e.target.files?.[0];
+                if (file) {
+                  console.log("Selected file for upload:", file);
+                }
+              }}
+            />
+            <div className="absolute left-2 top-1/2 -translate-y-1/2 z-10">
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
                     <Button
-                      size="icon"
-                      variant="destructive"
-                      className=" h-8 w-8"
-                      onClick={() => stop(threadId)}
-                    >
-                      <Square className="h-3 w-3!" />
-                    </Button>
-                  ) : (
-                    <Button
-                      size="icon"
+                      type="button"
                       variant="outline"
-                      className=" h-8 w-8"
-                      onClick={() => sendMessage(inputValue)}
-                      disabled={!inputValue.trim() || restoring}
+                      size="icon"
+                      disabled={isDisabled}
+                      className="h-8 w-8 text-white rounded-lg cursor-pointer"
+                      onClick={() => {
+                        if (!!(project && (project as any).ownerAccountType !== "pro")) {
+                          useUpgradeModalStore.getState().openModal();
+                        } else {
+                          fileInputRef.current?.click();
+                        }
+                      }}
                     >
-                      <Send className="h-3 w-3!" />
+                      <Paperclip className="h-4 w-4" />
                     </Button>
-                  )}
-                  <DropdownMenu>
-                    <DropdownMenuTrigger asChild>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        className=" h-8 px-2 flex items-center gap-1.5 text-[10px] capitalize font-medium"
-                      >
-                        {selectedModel}
-                        <Settings2 className="h-3 w-3!" />
-                      </Button>
-                    </DropdownMenuTrigger>
-                    <DropdownMenuContent align="end">
-                      <div className="text-xs p-2 items-center border-b border-accent">
-                        Select Model
-                      </div>
-                      <DropdownMenuItem
-                        onClick={() => setSelectedModel("fast")}
-                        className="text-[10px]"
-                      >
-                        Kaya Fast
-                      </DropdownMenuItem>
-                      <DropdownMenuItem
-                        onClick={() => setSelectedModel("deep")}
-                        className="text-[10px]"
-                      >
-                        Kaya Deep
-                      </DropdownMenuItem>
-                    </DropdownMenuContent>
-                  </DropdownMenu>
-                </div>
-              </div>
-              <p className="text-[10px] text-center text-muted-foreground mt-2">
-                Kaya is personal PM agent.{" "}
-                <span className="text-blue-500 cursor-pointer">
-                  Click to configure
-                </span>
-              </p>
-            </>
-          )}
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="bg-popover text-popover-foreground border border-border">
+                    <p className="text-xs">you can upload PRD/SRS etc pdf/doc upto 5mb limit.</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+            <Input
+              ref={inputRef}
+              placeholder="Ask anything..."
+              value={inputValue}
+              onChange={(e) => setInputValue(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === "Enter") sendMessage(inputValue);
+              }}
+              disabled={isDisabled}
+              className="h-12 rounded-xl bg-sidebar pr-36 pl-11"
+            />
+            <div className="flex items-center gap-2 absolute right-2 top-2">
+              {status === "running" ? (
+                <Button
+                  size="icon"
+                  variant="destructive"
+                  className=" h-8 w-8"
+                  onClick={() => stop(threadId)}
+                >
+                  <Square className="h-3 w-3!" />
+                </Button>
+              ) : (
+                <Button
+                  size="icon"
+                  variant="outline"
+                  className=" h-8 w-8"
+                  onClick={() => sendMessage(inputValue)}
+                  disabled={!inputValue.trim() || restoring}
+                >
+                  <Send className="h-3 w-3!" />
+                </Button>
+              )}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button
+                    size="sm"
+                    variant="outline"
+                    onClick={(e) => {
+                      if (!!(project && (project as any).ownerAccountType !== "pro")) {
+                        e.preventDefault();
+                        e.stopPropagation();
+                        useUpgradeModalStore.getState().openModal();
+                      }
+                    }}
+                  >
+                    {selectedModel}
+                    <Settings2 className="h-3 w-3!" />
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent align="end">
+                  <div className="text-xs p-2 items-center border-b border-accent">
+                    Select Model
+                  </div>
+                  <DropdownMenuItem
+                    onClick={() => setSelectedModel("fast")}
+                    className="text-[10px]"
+                  >
+                    Kaya Fast
+                  </DropdownMenuItem>
+                  <DropdownMenuItem
+                    onClick={() => setSelectedModel("deep")}
+                    className="text-[10px]"
+                  >
+                    Kaya Deep
+                  </DropdownMenuItem>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
+          <p className="text-[10px] text-center text-muted-foreground mt-2">
+            Kaya is personal PM agent.{" "}
+            <span className="text-blue-500 cursor-pointer">
+              Click to configure
+            </span>
+          </p>
         </div>
       </SheetContent>
     </Sheet>
