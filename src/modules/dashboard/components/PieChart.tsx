@@ -18,7 +18,7 @@ import {
 } from "@/components/ui/dialog";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { Label as LabelUI } from "@/components/ui/label";
 import { calculateImpactScore } from "./impactScore";
 import { GitHubStats } from "./StaticContent";
@@ -36,8 +36,8 @@ interface ImpactScoreDisplayProps {
 }
 
 export function PieChartVariant1({ stats }: ImpactScoreDisplayProps) {
-  const data = calculateImpactScore(stats);
-  const chartData = [
+  const data = useMemo(() => calculateImpactScore(stats), [stats]);
+  const chartData = useMemo(() => [
     {
       name: "Commits",
       value: data.breakdown.commits,
@@ -68,15 +68,15 @@ export function PieChartVariant1({ stats }: ImpactScoreDisplayProps) {
       raw: stats.totalReviews,
       fill: COLORS[3],
     },
-  ];
+  ], [data.breakdown, stats]);
 
-  const chartConfig = {
+  const chartConfig = useMemo(() => ({
     Commits: { label: "Commits", color: "hsl(var(--chart-1))" },
     PRs: { label: "PRs", color: "hsl(var(--chart-2))" },
     "Merged PRs": { label: "Merged PRs", color: "hsl(var(--chart-5))" },
     Issues: { label: "Issues", color: "hsl(var(--chart-3))" },
     Reviews: { label: "Reviews", color: "hsl(var(--chart-4))" },
-  };
+  }), []);
 
   return (
     <>
@@ -159,7 +159,7 @@ export function ScoreDetailsDialog({
   stats,
   children,
 }: ImpactScoreDisplayProps & { children?: React.ReactNode }) {
-  const data = calculateImpactScore(stats);
+  const data = useMemo(() => calculateImpactScore(stats), [stats]);
   return (
     <Dialog>
       <DialogTrigger asChild>

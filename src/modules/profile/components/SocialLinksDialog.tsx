@@ -96,7 +96,7 @@ export const SocialLinksDialog = ({
   useEffect(() => {
     if (open) {
       const initialData: Record<string, string> = {};
-      const remainingLinks = [...currentLinks];
+      const remainingLinks = Array.isArray(currentLinks) ? [...currentLinks] : [];
 
       PLATFORMS.forEach((platform) => {
         const matchingIndex = remainingLinks.findIndex((link) =>
