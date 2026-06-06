@@ -18,7 +18,14 @@ import {
   Sparkles,
   X,
   Clover,
+  Paperclip,
 } from "lucide-react";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 import Image from "next/image";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import type React from "react";
@@ -116,6 +123,7 @@ const AIWorkspace = () => {
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   const {
     status,
@@ -281,6 +289,18 @@ const AIWorkspace = () => {
 
   return (
     <div className="h-[calc(100vh-80px)] w-full bg-background relative overflow-hidden flex flex-col">
+      <input
+        type="file"
+        ref={fileInputRef}
+        className="hidden"
+        accept=".pdf,.doc,.docx"
+        onChange={(e) => {
+          const file = e.target.files?.[0];
+          if (file) {
+            console.log("Selected file for upload:", file);
+          }
+        }}
+      />
       {/* Top Config Setting */}
       <div className="absolute top-4 right-4 flex items-center gap-4 z-20">
         <Button variant="outline" size="icon-sm" className="cursor-pointer">
@@ -405,7 +425,7 @@ const AIWorkspace = () => {
                         <div className="flex items-center gap-2">
                           <Select defaultValue="auto">
                             <SelectTrigger disabled={!isPro} className="h-7! px-3 rounded-full border border-border bg-accent text-xs text-primary font-medium shadow-none focus:ring-0 gap-1.5 min-w-[110px]">
-                              <Brain size={15} />
+                              <Brain size={15} className="text-white" />
                               <SelectValue placeholder="Auto" />
                             </SelectTrigger>
                             <SelectContent>
@@ -430,6 +450,29 @@ const AIWorkspace = () => {
                         </div>
 
                         <div className="flex items-center gap-2">
+                          {!isHarry && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <span className="inline-block">
+                                    <Button
+                                      type="button"
+                                      variant="outline"
+                                      size="icon"
+                                      disabled={!isPro}
+                                      className="h-8 w-8 text-white rounded-full cursor-pointer shrink-0"
+                                      onClick={() => fileInputRef.current?.click()}
+                                    >
+                                      <Paperclip className="h-4 w-4" />
+                                    </Button>
+                                  </span>
+                                </TooltipTrigger>
+                                <TooltipContent side="top" className="bg-popover text-popover-foreground border border-border">
+                                  <p className="text-xs">you can upload PRD/SRS etc pdf/doc upto 5mb limit.</p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )}
                           {!isPro ? (
                             <Link href="/web/pricing">
                               <Button
@@ -457,8 +500,8 @@ const AIWorkspace = () => {
                                   : "bg-muted text-muted-foreground",
                               )}
                             >
-                            <ArrowRight size={15} />
-                          </button>
+                              <ArrowRight size={15} />
+                            </button>
                           )}
                         </div>
                       </div>
@@ -561,6 +604,29 @@ const AIWorkspace = () => {
                 placeholder={!isPro ? "Upgrade to Pro to send follow up messages..." : "Ask follow up..."}
                 className="flex-1 bg-transparent border-none outline-none text-[14px] text-primary placeholder:text-muted-foreground py-2"
               />
+              {!isHarry && (
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <span className="inline-block">
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          disabled={!isPro}
+                          className="h-8 w-8 text-muted-foreground hover:text-foreground rounded-full cursor-pointer shrink-0"
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          <Paperclip className="h-4 w-4" />
+                        </Button>
+                      </span>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="bg-popover text-popover-foreground border border-border">
+                      <p className="text-xs">you can upload PRD/SRS etc pdf/doc upto 5mb limit.</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              )}
               {!isPro ? (
                 <Link href="/web/pricing">
                   <Button
@@ -581,12 +647,12 @@ const AIWorkspace = () => {
                       : "bg-muted text-muted-foreground",
                   )}
                 >
-                {status === "running" ? (
-                  <Spinner className="w-4 h-4 text-primary-foreground" />
-                ) : (
-                  <ArrowRight size={16} />
-                )}
-              </button>
+                  {status === "running" ? (
+                    <Spinner className="w-4 h-4 text-primary-foreground" />
+                  ) : (
+                    <ArrowRight size={16} />
+                  )}
+                </button>
               )}
             </div>
           </motion.div>

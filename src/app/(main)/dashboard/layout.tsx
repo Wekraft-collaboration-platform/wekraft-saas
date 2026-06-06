@@ -20,6 +20,7 @@ import { NotificationCenter } from "@/modules/dashboard/components/NotificationC
 import { ShareProjectDialog } from "@/modules/dashboard/components/ShareProjectDialog";
 import { UserMenu } from "@/modules/dashboard/components/UserMenu";
 import { HelpSupportDialog } from "@/modules/dashboard/components/HelpSupportDialog";
+import { UpgradeProDialog } from "@/components/UpgradeProDialog";
 import { api } from "../../../../convex/_generated/api";
 import {
   Tooltip,
@@ -300,6 +301,7 @@ export default function Layout({
             />
           )}
           <HelpSupportDialog open={isHelpOpen} onOpenChange={setIsHelpOpen} />
+          <UpgradeProDialog />
           {isWorkspaceRoute && <MyWorkSheet />}
         </SidebarProvider>
       </Authenticated>
