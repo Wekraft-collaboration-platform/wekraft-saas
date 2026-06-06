@@ -9,9 +9,11 @@ import Link from "next/link";
 import type React from "react";
 import { useState } from "react";
 import { toast } from "sonner";
+import { InstallExtensionModal } from "./InstallExtensionModal";
 
 const ProjectOnSteroids = () => {
   const { isAuthenticated, isLoading } = useConvexAuth();
+  const [idePickerOpen, setIdePickerOpen] = useState(false);
 
   // Modal states for Get a Demo
   const [isDemoModalOpen, setIsDemoModalOpen] = useState(false);
@@ -111,6 +113,7 @@ const ProjectOnSteroids = () => {
 
               <button
                 type="button"
+                onClick={() => setIdePickerOpen(true)}
                 className="bg-blue-600 text-white px-8 py-3.5 rounded-md hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-sm cursor-pointer"
               >
                 Download Extension
@@ -418,6 +421,12 @@ const ProjectOnSteroids = () => {
           </div>
         )}
       </AnimatePresence>
+
+      <InstallExtensionModal
+        isOpen={idePickerOpen}
+        onClose={() => setIdePickerOpen(false)}
+        mode="modal"
+      />
     </section>
   );
 };
