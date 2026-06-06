@@ -511,12 +511,36 @@ export const getUnlinkedProjects = query({
 
     if (!user) return [];
 
-    const projects = await ctx.db
+    // Projects owned by the user
+    const ownedProjects = await ctx.db
       .query("projects")
       .withIndex("by_owner", (q) => q.eq("ownerId", user._id))
       .collect();
 
-    return projects.filter((p) => !p.repositoryId && !p.repoName);
+    // Projects where the user is a member with owner or admin role
+    const memberships = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    const memberProjects = [];
+    for (const membership of memberships) {
+      if (membership.AccessRole === "owner" || membership.AccessRole === "admin") {
+        const p = await ctx.db.get(membership.projectId);
+        if (p) memberProjects.push(p);
+      }
+    }
+
+    // Combine uniquely
+    const allProjects = [...ownedProjects];
+    const ownedIds = new Set(ownedProjects.map((p) => p._id));
+    for (const p of memberProjects) {
+      if (!ownedIds.has(p._id)) {
+        allProjects.push(p);
+      }
+    }
+
+    return allProjects.filter((p) => !p.repositoryId && !p.repoName);
   },
 });
 

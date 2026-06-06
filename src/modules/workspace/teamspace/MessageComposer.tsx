@@ -397,6 +397,7 @@ export function MessageComposer({
               ownerClerkId={project?.ownerClerkId}
               selectedPath={selectedPath}
               onClose={() => setShowCodeLinker(false)}
+              projectName={project?.projectName}
               onSelect={(path) => {
                 if (path) {
                   const before = content.substring(

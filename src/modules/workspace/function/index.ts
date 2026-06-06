@@ -74,24 +74,55 @@ export const getRepoTree = async (
   const cacheKey = `wekraft:repo-tree:v2:${owner}:${repo}:${dirPath || "root"}`;
 
   try {
-    //  Check cache first
+    // Check cache first
     const cached = await redis.get(cacheKey);
     if (cached) {
       console.log("----CAHED GITHUB FOLDER TREE HIT-----");
       return { success: true, data: cached as TreeNode[] };
     }
 
-    const token = await getGithubAccessToken(ownerClerkId);
-    const octokit = new Octokit({ auth: token });
+    let data;
 
-    // const { data: repoData } = await octokit.rest.repos.get({ owner, repo });
-    // const branch = repoData.default_branch;
+    // 1. Try with current user's token first (for privacy-enabled collaborator repos)
+    try {
+      const token = await getGithubAccessToken();
+      if (token) {
+        const octokit = new Octokit({ auth: token });
+        const res = await octokit.rest.git.getTree({
+          owner,
+          repo,
+          tree_sha: dirPath ? `${BRANCH}:${dirPath}` : BRANCH,
+        });
+        data = res.data;
+      }
+    } catch (currentUserError) {
+      console.log("Failed to fetch tree with current user token, trying owner token...", currentUserError);
+    }
 
-    const { data } = await octokit.rest.git.getTree({
-      owner,
-      repo,
-      tree_sha: dirPath ? `${BRANCH}:${dirPath}` : BRANCH,
-    });
+    // 2. Fall back to owner's token if current user is not connected or unauthorized
+    if (!data && ownerClerkId) {
+      try {
+        const token = await getGithubAccessToken(ownerClerkId);
+        if (token) {
+          const octokit = new Octokit({ auth: token });
+          const res = await octokit.rest.git.getTree({
+            owner,
+            repo,
+            tree_sha: dirPath ? `${BRANCH}:${dirPath}` : BRANCH,
+          });
+          data = res.data;
+        }
+      } catch (ownerError) {
+        console.error("Failed to fetch tree with owner token", ownerError);
+      }
+    }
+
+    if (!data) {
+      return {
+        success: false,
+        error: "Failed to fetch repository codebase structure. Please ensure your GitHub account is connected and has access to this repository.",
+      };
+    }
 
     const nodes: TreeNode[] = (data.tree ?? [])
       .filter((item) => {

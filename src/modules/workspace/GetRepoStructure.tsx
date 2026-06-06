@@ -33,6 +33,7 @@ interface GetRepoStructureProps {
   selectedPath: string | null;
   ownerClerkId?: string;
   onClose?: () => void;
+  projectName?: string;
 }
 
 export const GetRepoStructure = ({
@@ -41,6 +42,7 @@ export const GetRepoStructure = ({
   selectedPath,
   ownerClerkId,
   onClose,
+  projectName,
 }: GetRepoStructureProps) => {
   const [elements, setElements] = useState<TreeViewElement[]>([]);
   const [loadingMap, setLoadingMap] = useState<Record<string, boolean>>({});
@@ -69,6 +71,8 @@ export const GetRepoStructure = ({
       const result = await getRepoTree(owner, repo, "", ownerClerkId);
       if (result.success) {
         setElements(result.data.map(mapToTreeElement));
+      } else {
+        toast.error(result.error);
       }
       setLoadingMap({});
     };
@@ -222,24 +226,41 @@ export const GetRepoStructure = ({
       </div>
 
       <div className="flex-1 min-h-0">
-        <Tree
-          elements={elements}
-          initialSelectedId={selectedPath || undefined}
-          className="p-2 h-full"
-        >
-          {elements.length > 0
-            ? renderTree(elements)
-            : !loadingMap.root && (
-                <div className="h-full flex flex-col gap-4 items-center justify-center text-xs text-neutral-500 py-20">
-                  <p>
-                    <GitBranch className="w-4 h-4 inline" /> No items found
-                  </p>
-                  <Link href="/dashboard/repositories">
-                  <Button className="text-[10px] rounded" size={'xs'}>Link Repo now <ExternalLink className="h-3 w-3 ml-2"/></Button>
-                  </Link>
-                </div>
-              )}
-        </Tree>
+        {!repoFullName ? (
+          <div className="h-full flex flex-col gap-3.5 items-center justify-center text-xs text-neutral-400 p-6 text-center">
+            <GitBranch className="w-8 h-8 text-neutral-500 animate-pulse" />
+            <p className="font-semibold text-neutral-200">
+              No Repository Connected
+            </p>
+            <p className="text-[11px] text-neutral-500 max-w-[240px] leading-relaxed">
+              The project <span className="font-semibold text-amber-500 capitalize">{projectName || "this project"}</span> has no repository connected.
+            </p>
+            <Link href="/dashboard/repositories">
+              <Button className="text-[10px] rounded mt-2 px-4 cursor-pointer" size="sm">
+                Connect Repo Now <ExternalLink className="h-3 w-3 ml-1.5" />
+              </Button>
+            </Link>
+          </div>
+        ) : (
+          <Tree
+            elements={elements}
+            initialSelectedId={selectedPath || undefined}
+            className="p-2 h-full"
+          >
+            {elements.length > 0
+              ? renderTree(elements)
+              : !loadingMap.root && (
+                  <div className="h-full flex flex-col gap-4 items-center justify-center text-xs text-neutral-500 py-20">
+                    <p>
+                      <GitBranch className="w-4 h-4 inline" /> No items found
+                    </p>
+                    <Link href="/dashboard/repositories">
+                    <Button className="text-[10px] rounded" size={'xs'}>Link Repo now <ExternalLink className="h-3 w-3 ml-2"/></Button>
+                    </Link>
+                  </div>
+                )}
+          </Tree>
+        )}
       </div>
 
       {selectedPath && (
