@@ -14,7 +14,7 @@ Every project has a visibility setting that determines who can find and join it:
 You can change visibility at any time from **Project Settings → General**.
 
 > [!IMPORTANT]
-> Changing a project from Private to Public makes it discoverable immediately. Any Wekraft user can then see the project overview and submit a join request.
+> Changing a project from Private to Public makes it discoverable immediately. Any user can then see the project overview and submit a join request.
 
 ---
 
@@ -59,22 +59,22 @@ Wekraft uses a four-tier role system. Every project member is assigned exactly o
 
 Wekraft uses secure **single sign-on (SSO)** providers:
 
-- **GitHub** — recommended for developers; also enables repository linking and commit tracking
-- **Google** — quick sign-in for non-developers
+- **Version Control Provider** — recommended for developers; also enables repository linking and commit tracking
+- **Third-Party Identity Provider** — quick sign-in for non-developers
 
-We **never** store your passwords. Authentication is handled entirely by the provider (GitHub or Google), and Wekraft receives only the minimum profile information needed (name, email, avatar).
+We **never** store your passwords. Authentication is handled entirely by the provider, and Wekraft receives only the minimum profile information needed (name, email, avatar).
 
-### VS Code Extension Authentication
+### Editor Extension Authentication
 
-The VS Code extension uses a secure **one-time handshake token** system:
+The editor extension uses a secure **one-time handshake token** system:
 
 1. The extension opens your browser to the Wekraft web app
 2. You click **"Grant Access to IDE"** — a single-use token is generated (5-minute expiry)
-3. The token is exchanged for a permanent API key stored in VS Code's encrypted secret storage
+3. The token is exchanged for a permanent API key stored in the editor's encrypted secret storage
 4. The handshake token is **deleted immediately** after exchange — it cannot be reused
 
 > [!TIP]
-> No manual API key copying is required. The entire flow is automated. See [VS Code Extension](/web/docs/extension) for full setup details.
+> No manual API key copying is required. The entire flow is automated. See the [Editor Extension guide](/web/docs/extension) for full setup details.
 
 ---
 
@@ -86,19 +86,19 @@ All data is encrypted at rest and in transit using industry-standard encryption 
 
 ### Real-Time Sync
 
-Wekraft uses a real-time backend infrastructure. All data changes sync instantly across all connected clients without page refreshes, with built-in data validation, access control, and transactional guarantees.
+Wekraft uses a real-time backend database infrastructure. All data changes sync instantly across all connected clients without page refreshes, with built-in data validation, access control, and transactional guarantees.
 
-### Repository Integration Access (GitHub)
+### Repository Integration Access
 
-When you connect a GitHub repository, Wekraft only requests the minimum permissions required to:
+When you connect a code repository, Wekraft only requests the minimum permissions required to:
 
 1. **Read repository metadata** — name, default branch, stars, forks, language breakdown
-2. **Sync Issues** — import GitHub Issues into Wekraft for tracking
+2. **Sync Issues** — import issues into Wekraft for tracking
 3. **Read commit metadata** — link commits to tasks for traceability
 4. **Fetch file tree** — display the repository file structure in the File Explorer
 
 > [!IMPORTANT]
-> We do **not** store your source code on our servers. The File Explorer fetches repository tree data via the GitHub API on demand and caches the structure temporarily for performance.
+> We do **not** store your source code on our servers. The File Explorer fetches repository tree data via the hosting provider API on demand and caches the structure temporarily for performance.
 
 ---
 
@@ -108,10 +108,10 @@ When you connect a GitHub repository, Wekraft only requests the minimum permissi
 | ------------------------------------------------------- | -------------------------------------------------------------------- |
 | **Email address**                                       | Never shared publicly — only visible to you                          |
 | **Profile info** (name, avatar, bio, skills)            | Visible to teammates in shared projects                              |
-| **Social links** (GitHub, LinkedIn, Twitter, portfolio) | Visible only when someone views your full profile                    |
+| **Social links** (profiles, LinkedIn, Twitter, portfolio) | Visible only when someone views your full profile                  |
 | **Tasks & Issues**                                      | Visible only to project members                                      |
 | **Time logs**                                           | Visible only to project members                                      |
-| **Kaya AI conversations**                               | Scoped to the project; Kaya only sees data within its active project |
+| **AI Assistant conversations**                          | Scoped to the project; the agent only sees data within its active project |
 
 ---
 
@@ -121,7 +121,7 @@ When you connect a GitHub repository, Wekraft only requests the minimum permissi
 2. **Limit Admin roles** to 1–2 trusted team members to prevent accidental configuration changes
 3. **Review Join Requests regularly** in the Manage Team settings to ensure only authorized users have access
 4. **Keep projects Private** unless you intentionally want public discoverability
-5. **Connect GitHub through the dashboard** rather than personal access tokens for better security
+5. **Connect your repository account through the dashboard** rather than personal access tokens for better security
 
 ---
 

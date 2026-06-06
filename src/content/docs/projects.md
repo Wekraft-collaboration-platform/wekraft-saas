@@ -9,7 +9,7 @@ Projects are the top-level boundary in Wekraft. Every sprint, task, issue, team 
 Wekraft separates project configuration into two distinct areas depending on whether you are editing public profile attributes or configuring member permission policies:
 
 ### 1. Project Home Settings (`SettingsTab.tsx`)
-Accessed via the **Settings** tab on the Project Home page (`/dashboard/my-projects/[slug]`). These settings manage the project's public profile and metadata.
+Accessed via the **Settings** tab on the Project Home page. These settings manage the project's public profile and metadata.
 - **Project Title**: The display name of your project.
 - **Description**: Detailed overview explaining the project's purpose.
 - **Public Visibility Toggle**:
@@ -19,9 +19,9 @@ Accessed via the **Settings** tab on the Project Home page (`/dashboard/my-proje
 - **Thumbnail Upload**: Upload a project banner (1280x300 recommended, max 1MB) which renders at the top of the project dashboard.
 
 ### 2. Workspace Config (`ProjectConfigTab.tsx`)
-Accessed via the **Config** sub-tab inside the Project Workspace page (`/dashboard/my-projects/[slug]/workspace`). These settings govern member privileges and AI capabilities:
+Accessed via the **Config** sub-tab inside the Project Workspace page. These settings govern member privileges and AI capabilities:
 - **Member Task Creation**: Toggle whether regular team members can create new tasks and issues. If disabled, only the Owner and Admins can create tasks.
-- **Member AI Access (Kaya)**: Toggle whether team members can use Kaya AI for sprint planning and insights.
+- **Member AI Access**: Toggle whether team members can use the AI assistant for sprint planning and insights.
 - **AI in Teamspace**: Enable or disable AI assistant replies and summary generation tools inside the chat channels.
 
 *Note: Both settings screens are restricted; only the **Project Owner** can modify details or policies. Other users will see a "Settings Restricted" warning.*
@@ -45,5 +45,5 @@ If you exceed these limits, you must archive/delete existing projects or upgrade
 ## Next Steps
 
 - Explore the [Workspace Dashboard layout](/web/docs/project-workspace).
-- Integrate your source code with [GitHub Repositories](/web/docs/repositories).
+- Integrate your source code with [Git Repositories](/web/docs/repositories).
 - Learn about the [Project Delivery Timeline & Gantt Chart](/web/docs/time-logs).

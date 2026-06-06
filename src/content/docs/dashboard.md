@@ -1,6 +1,6 @@
 # Dashboard & Navigation
 
-The Wekraft Dashboard is your command center — the first screen you see after logging in. It gives you a bird's-eye view of all your projects, GitHub activity, notifications, and quick access to every feature.
+The Wekraft Dashboard is your command center — the first screen you see after logging in. It gives you a bird's-eye view of all your projects, repository activity, notifications, and quick access to every feature.
 
 ## Main Dashboard
 
@@ -12,12 +12,12 @@ At the top of the dashboard, three metric cards give you a snapshot of your acti
 
 | Card | What it shows |
 |---|---|
-| **Commits** | Your total GitHub commits from the past year. Click "Connect Now" if GitHub isn't linked yet. |
+| **Commits** | Your total repository commits from the past year. Click "Connect Now" if your version control account isn't linked yet. |
 | **Pull Requests / Merged PRs** | Total pull requests and how many have been merged — split into two columns. |
 | **Projects Created / Joined** | How many projects you own vs. how many you've joined, with plan limits shown (e.g., `2/20`). |
 
 > [!TIP]
-> If you see `....` in the PR cards, it means your GitHub account isn't connected yet. Click the "Connect Now" button on the Commits card to link your GitHub.
+> If you see `....` in the PR cards, it means your code hosting account isn't connected yet. Click the "Connect Now" button on the Commits card to link your account.
 
 ### Dashboard Tabs
 
@@ -27,11 +27,11 @@ Below the metric cards, you'll find three tabs:
 |---|---|
 | **Stats** | Getting Started Checklist (for new users), notifications feed, upcoming deadlines, and upcoming calendar events |
 | **Projects** | A grid of all your projects (owned + joined) with status, visibility, and member count |
-| **Discover** | Community exploration (coming soon) — find public projects and collaborate |
+| **Discover** | Community exploration — find public projects and collaborate |
 
 ### Getting Started Checklist
 
-New users see a **Getting Started Checklist** at the top of the Stats tab. It tracks your progress through key setup steps like creating a project, inviting members, and installing the VS Code extension. Complete all steps to unlock the full experience.
+New users see a **Getting Started Checklist** at the top of the Stats tab. It tracks your progress through key setup steps like creating a project, inviting members, and installing the editor extension. Complete all steps to unlock the full experience.
 
 Once completed, the checklist is replaced by the **Notifications** panel.
 
@@ -45,12 +45,13 @@ The left sidebar is your primary navigation tool. It's present on every dashboar
 
 | Section | What it contains |
 |---|---|
-| **Logo & Home** | Click the Wekraft logo to return to the dashboard |
+| **Logo & Home** | Click the logo to return to the dashboard |
 | **Projects List** | All your projects — click any to open its workspace |
 | **Quick Actions** | New Project, Join Project shortcuts |
-| **User Menu** | Profile, GitHub, Documentation, Log out |
+| **User Menu** | Profile, Code Repositories, Documentation, Log out |
 
 ### Collapsing the Sidebar
+
 Press `Ctrl+B` (or `Cmd+B` on Mac) to toggle sidebar visibility. This gives you more screen real estate when working on tasks.
 
 ---
@@ -79,7 +80,7 @@ Below these cards, three sub-tabs provide deeper analytics:
 
 | Sub-Tab | Description |
 |---|---|
-| **Advance Charts** | Team contribution radar, sprint bar chart, severity heatmap, weekly velocity, member workload, and weekly engagement (Plus/Pro only) |
+| **Advanced Charts** | Team contribution radar, sprint bar chart, severity heatmap, weekly velocity, member workload, and weekly engagement (Plus/Pro only) |
 | **My Work** | A personal table showing tasks and issues assigned to you |
 | **Config** | Project configuration settings (owner only) |
 
@@ -100,8 +101,8 @@ The project sidebar provides access to all project features:
 | **Time Logs** | Time tracking records for all project members |
 | **Team Space** | View all team members, their roles, and current workload |
 | **Heatmaps** | AI-powered workload analysis and activity trends |
-| **AI Workspace** | Kaya AI assistant for reports, planning, and insights (Pro) |
-| **Code** | GitHub file explorer — browse your repository directly |
+| **AI Workspace** | AI assistant for reports, planning, and insights (Pro) |
+| **Code** | File explorer — browse your repository directly |
 
 ---
 
@@ -122,7 +123,7 @@ Click any breadcrumb segment to jump back to that level. This makes deep navigat
 Click your avatar in the sidebar footer to access:
 
 - **Profile** — view and edit your profile on the My Profile page
-- **GitHub** — quick link to your connected GitHub account
+- **Repositories** — quick link to your connected code repository accounts
 - **Documentation** — opens this documentation site
 - **Log Out** — sign out of your account
 
@@ -151,7 +152,7 @@ Wekraft supports keyboard shortcuts for power users:
 
 | Shortcut | Action |
 |---|---|
-| `Ctrl+K` / `Cmd+K` | Open Kaya AI Assistant |
+| `Ctrl+K` / `Cmd+K` | Open AI Assistant |
 | `Ctrl+B` / `Cmd+B` | Toggle sidebar |
 | `Esc` | Close any open dialog or sheet |
 

@@ -1,28 +1,42 @@
 # Privacy Policy
 
-Last Modified: June 5, 2026
-
-WeKraft takes user privacy, repository security, and personal data protection very seriously. This policy details how we gather, store, and process metadata for your connected developer workspaces.
+Your privacy is important to Wekraft. This Privacy Policy describes how we collect, use, and handle your data when you use our platform, services, and integrations.
 
 ---
 
-## 1. Information We Collect
-We collect information required to deliver project coordination, time tracking, and chat features. This includes: (a) Profile information supplied via Clerk during sign-up (e.g. name, work email, profile picture URL); (b) GitHub account information provided during OAuth registration; and (c) Metadata from your linked software repositories (e.g. branch names, commit hashes, pull request descriptions, and commit timestamps). We do not clone or cache your actual codebase scripts.
+## 1. Data Collection
 
-## 2. How We Use Your Information
-Your data is used to maintain workspace integrity, support dashboard analytics, sync code actions to Kanban boards, and run our AI assistants. The Kaya PM agent reads task progress to summarize sprints. The Harry Dev agent reviews pull request differences to auto-detect bugs and verify checklist items. We do not use your proprietary codebase files to train open-source public models.
+We collect information required to deliver project coordination, time tracking, and chat features. This includes:
+- **Profile details** supplied during registration (e.g., name, work email, and avatar picture).
+- **Code hosting account details** authorized during registration.
+- **Repository metadata** from your linked code hosting repositories (e.g., branch names, commit hashes, pull request descriptions, and commit timestamps).
+- **Interactive inputs** like team chats, tasks, issues, and calendar events.
 
-## 3. Third-Party Services and Sub-Processors
-We share necessary details with key providers to deliver WeKraft: (a) Clerk manages authentication and account state; (b) Convex hosts databases and manages reactive socket connections; (c) Razorpay processes billing details (we do not store credit card credentials on our servers); and (d) GitHub API allows project boards and issues sync. We do not sell, rent, or trade your personal information to marketing companies.
+> [!IMPORTANT]
+> **No Code Storage**: We do not clone, pull, or cache your raw codebase scripts. Wekraft only reads file structures, names, and commit history necessary to populate the visual map and Git metrics.
 
-## 4. Code Security and Access Tokens
-We treat your software projects with strict security. GitHub authentication tokens are transmitted securely and stored encrypted inside the Convex database. WeKraft utilizes fine-grained scope permissions to ensure agents only access the specific repositories authorized by workspace owners. Team chats and workspace threads are isolated per organization workspace.
+---
 
-## 5. Cookies and Web Analytics
-We use standard browser cookies and local storage tokens to preserve your active login session (managed via Clerk). These cookies are essential for workspace navigation. We may gather non-identifying telemetry (such as screen resolution, page loading performance, and navigation paths) to improve developer experience.
+## 2. How We Share Data
 
-## 6. User Rights & Data Deletion
-You can request to delete your WeKraft account, connected repositories, or workspace histories at any time. When an organization owner deletes a project, all synchronized metadata, time logs, and chat records associated with that project are permanently removed from our active database. To request complete user data deletion, contact support.
+We share necessary data with our infrastructure sub-processors to run the platform services:
+- **Authentication Service**: Manages secure logins and session tokens.
+- **Reactive Database Backend**: Hosts and caches reactive document records and web sockets.
+- **Billing Gateway**: Securely processes paid subscription invoices and renewals (we do not store or transmit credit card details on our own servers).
+- **Repository Hosting API**: Synchronizes active project tasks, commits, and pull requests.
 
-## 7. Modifications to this Policy
-We may update this Privacy Policy to reflect modifications in our software integration patterns or regulatory requirements. Material updates will be announced via this page, alongside an updated "Last Modified" timestamp.
+We do not sell, rent, or trade your personal information to third parties for marketing purposes.
+
+---
+
+## 3. Data Safety & Authentication Tokens
+
+Your software projects are treated with strict confidentiality:
+- **API Keys & Handshake Tokens** are stored encrypted using database protection mechanisms.
+- **Scope Isolation**: Permissions are isolated per project workspace. The AI agents and external integrations can only query metadata within the repositories explicitly linked by the project owners.
+
+---
+
+## 4. Cookies & Telemetry
+
+We use standard cookies and local storage to preserve active authentication sessions. These cookies are essential for navigating the workspace. We may also gather non-identifying telemetry (e.g., screen resolution, page load times, and navigation paths) to improve performance and usability.

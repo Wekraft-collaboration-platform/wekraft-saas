@@ -16,7 +16,7 @@ The profile view compiles your professional metadata into four structured areas:
 ### 2. About Me (Bio Editor)
 
 - Located in the left column.
-- Contains the **Bio Editor** (`BioEditor.tsx`) to compose your professional description.
+- Contains the **Bio Editor** to compose your professional description.
 - _Plan limits_: Free tier users use a plain text input area. Upgraded users (Plus or Pro active) unlock the rich Markdown editor supporting icons, tables, formatting syntax, and live side-by-side previews.
 
 ### 3. Skills & Social Connections (Right Column)
@@ -24,21 +24,21 @@ The profile view compiles your professional metadata into four structured areas:
 - **Profile Skills**: Technical tag cloud displaying your skills (e.g., `React`, `Golang`, `PostgreSQL`). Press Enter inside the input to append new tags.
 - **Social Links**: Lists linked URLs for developer profiles (X/Twitter, LinkedIn, Discord, Instagram, and personal portfolios).
 
-### 4. GitHub Stats (`GithubStats.tsx`)
+### 4. Repository Activity Stats
 
 - Plotted at the bottom of the profile.
-- Renders your commit history metrics, contribution calendar, and streak counters synced from your linked GitHub developer account.
+- Renders your commit history metrics, contribution calendar, and streak counters synced from your linked repository hosting account.
 
 ---
 
-## Profile Settings Configuration (`ProfileSettings.tsx`)
+## Profile Settings Configuration
 
 Clicking the gear icon in the header switches the viewport to the profile settings tab:
 
 - **Display Name**: Update your visible screen name.
 - **Occupation Title**: Set your role description.
-- **Social URLs**: Configure up to **5 external social links** (GitHub, LinkedIn, X/Twitter, Discord, Instagram) using the dialog popup.
-- **Handshake Connect**: Manage your synced GitHub account connections.
+- **Social URLs**: Configure up to **5 external social links** using the dialog popup.
+- **Handshake Connect**: Manage your synced repository account connections.
 
 ---
 

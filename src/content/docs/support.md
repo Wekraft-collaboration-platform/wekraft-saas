@@ -45,15 +45,15 @@ When you open the AI tab, you can select one of four standard starter queries:
 ### Tool Integrations & Capabilities
 The Support Assistant is not just a text chatbot — it has access to specific backend tools to retrieve info and perform actions for you:
 
-#### A. Document Search (`searchDocumentation` & `getDocumentationPage`)
-- **How it works**: The AI can query all documentation pages by keyword or title matching. It can also pull the raw markdown of specific pages (e.g., `sprints`, `extension`, `kaya-pm`) to provide direct, context-rich answers.
+#### A. Document Search
+- **How it works**: The AI can query all documentation pages by keyword or title matching. It can also pull the raw markdown of specific pages to provide direct, context-rich answers.
 - **Benefit**: You get immediate answers on plan limits, keybindings, or repository sync flows.
 
-#### B. Fetch Past Tickets (`getSupportQueries`)
+#### B. Fetch Past Tickets
 - **How it works**: The assistant can read the database table (`supportQueries`) to retrieve all tickets previously submitted by your authenticated user ID.
 - **Benefit**: You can ask, *"What is the status of my open bug reports?"* or *"Show me my tickets,"* and the AI will list them with category badges.
 
-#### C. Create Ticket on Your Behalf (`createSupportQuery`)
+#### C. Create Ticket on Your Behalf
 - **How it works**: If you describe a bug or ask the AI to contact support (e.g. *"I'm hitting a billing error, please open a ticket"*), the assistant will dynamically compose a title and description, select the correct category tag, and submit a ticket to the database on your behalf.
 - **Benefit**: Zero-form support. The AI handles the data entry and submits the ticket directly from the chat feed.
 
@@ -67,5 +67,5 @@ The Support Assistant is not just a text chatbot — it has access to specific b
 
 To help Wekraft engineers resolve issues quickly, please follow these tips:
 1. **Provide Clear Repos**: For bugs, detail what you did, what you expected, and what actually happened.
-2. **Include Error traces**: Copy/paste console errors or terminal logs from the VS Code extension when reporting connection issues.
+2. **Include Error traces**: Copy/paste console errors or terminal logs from the editor extension when reporting connection issues.
 3. **Use the AI first**: The AI assistant can answer 95% of questions about settings, routing, pricing caps, and shortcut commands instantly.
