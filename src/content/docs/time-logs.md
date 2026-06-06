@@ -1,69 +1,73 @@
 # Project Timeline & Gantt Chart
 
-The **Time Logs** page (accessed via the `Time Logs` workspace sidebar tab) functions as Wekraft's **Project Delivery Timeline & Gantt Chart**. Rather than tracking billable hours or stopwatch timers, this page serves as an automated delivery calibration tool that visualizes your sprint tasks against the project's target deadline.
+The **Time Logs** module (accessed via the workspace sidebar) acts as Wekraft's project delivery calibrator. Combining Gantt chart visualizations with delivery metrics, this page tracks schedule variance, accumulated delay debt, and task progress relative to your target deadline.
 
 ---
 
-## Workspace Prerequisites
+## Technical Prerequisites & Configuration
 
-For Wekraft to track and render project timeline metrics:
-1. The **Project Owner** must set a target delivery date (deadline) for the project.
-2. If no deadline is set, the timeline will show a *"Deadline not set"* screen, prompting you to set one using the **"set Deadline"** dialog.
-
----
-
-## Top Dashboard Metrics
-
-Once the deadline is set, Wekraft calculates three performance cards at the top of the timeline:
-
-### 1. Milestone Trajectory
-- **Purpose**: Evaluates whether current task velocities align with your final deadline.
-- **Inputs**: Analyzes sprint completion logs, start dates, and time elapsed.
-
-### 2. Delay Debt
-- **Purpose**: Highlights tasks and issues that have slipped past their due dates.
-- **Overdue Threshold**: Requires **more than 5 tasks** with set due dates in your project to establish a tracking baseline. If you have fewer than 5 tasks, it displays a helper prompt.
-- **Details**:
-  - Displays total accumulated **Days Overdue**.
-  - Renders a **"Worst Offenders"** list sorting overdue tasks and issues by severity.
-
-### 3. Pace Tracker
-- **Purpose**: Calculates the team's output rate.
-- **Goal**: Helps project managers determine if scope expansion or scheduling delays are threatening the target delivery window.
+Timeline tracking requires a project deadline to establish a calendar baseline:
+1. **Target Date Storage**: The target deadline is stored in the project details document under the target date field (as a Unix millisecond timestamp).
+2. **Setup Prompt**: If the target date is undefined, the workspace rendering halts and displays the date setup dialog, prompting the project owner to specify a delivery date.
+3. **Calculation Epoch**: Once set, the system calculates duration deltas between the project's inception timestamp and the target date to calibrate progress charts.
 
 ---
 
-## The Gantt Chart Timeline Grid (`ProjectTimeline.tsx`)
+## Top Dashboard Metrics (Calculation Specifications)
 
-Below the metric cards sits the interactive Gantt chart:
+Wekraft computes three real-time schedule analytics cards at the top of the Time Logs panel:
 
 ```mermaid
 graph TD
-    Timeline[Gantt Chart Timeline Grid] -->|Horizontal Bars| TaskBars[Tasks mapped on a Daily Grid]
-    TaskBars -->|Color: Red| Overdue[Overdue - end date passed, not completed]
-    TaskBars -->|Color: Orange| AtRisk[At Risk - ending in next 1-2 days]
-    TaskBars -->|Color: Blue/Gray| Stable[Standard Progress]
-    Timeline -->|Filter Controls| Filters[Filter by Status & Adjust Grid Tick Intervals]
+    Data[Tasks & Issues Datastore] --> TrajectoryCalc[Milestone Trajectory Node]
+    Data --> DebtCalc[Delay Debt Node]
+    Data --> PaceCalc[Pace Tracker Node]
+    TrajectoryCalc -->|Compare Completion vs Deadline| TrajCard[Milestone Trajectory: Ahead/Behind]
+    DebtCalc -->|Sum Overdue Days | DebtCard[Delay Debt: Cumulative Days & Worst Offenders]
+    PaceCalc -->|Completed Items / Days| PaceCard[Pace Tracker: Velocity & Burn Rate]
 ```
 
-### Visual Task Bars
-Each task is rendered on a daily timeline grid based on its `estimation` window:
-- **Red Bar**: Overdue task (estimated end date is in the past, and status is not `completed`).
-- **Amber / Orange Bar**: At-risk task (estimated end date is approaching in the next 48 hours).
-- **Blue / Dark Bar**: Stable task progress.
-- **Duration Badge**: Shows the task's span (e.g., `5d` for five days).
-- **Teammate Avatars**: Renders stacked avatar icons of all assigned developers directly on the Gantt bar.
+### 1. Milestone Trajectory
+- **Logic**: Compares your task completion rate against the timeline slope to the target date.
+- **Output**: Returns a status (e.g., `Ahead of Schedule`, `On Track`, or `Behind Schedule`) based on the remaining backlog volume divided by the team's historical sprint velocity.
 
-### Grid Controls
-The Gantt header includes tools to filter and focus your view:
-- **Filter by Status**: Toggle dropdown to display only `not started`, `inprogress`, `reviewing`, or `testing` tasks.
-- **Grid Intervals**: Switch tick intervals (e.g., `2 Days`, `3 Days`, `5 Days` or `10 Days` ticks) to compress or expand the horizontal layout.
-- **Hover Tooltips**: Hovering over any task bar reveals its full title, dates, and a list of all assigned team members.
+### 2. Delay Debt
+- **Logic**: Measures the schedule slippage of uncompleted items.
+- **Threshold**: Activates when **5 or more tasks** have defined end dates. If the task count is below this threshold, the dashboard prompts the team to populate task estimation dates.
+- **Calculations**:
+  - **Cumulative Delay**: Sum of `(CurrentDate - Task.estimation.endDate)` for all active tasks where `status !== "completed"` and `endDate < CurrentDate`.
+  - **Worst Offenders**: Evaluates and lists active tasks and issues with past-due dates, sorted by severity/priority (`critical` and `high` priority items first) to highlight bottlenecks.
+
+### 3. Pace Tracker
+- **Logic**: Measures the average time elapsed per completed task (`finalCompletedAt` - `createdAt`).
+- **Purpose**: Provides managers with early warnings regarding scope expansion, indicating if the current task output velocity is sufficient to meet the final deadline.
 
 ---
 
-## Next Steps
+## The Gantt Chart Timeline Grid
 
-- Check the codebase overlays in [Repository Heatmaps](/web/docs/heatmaps).
-- Plan task dates in [Tasks & Backlog](/web/docs/tasks).
-- Organize sprint dates in [Sprints & Planning](/web/docs/sprints).
+Wekraft provides a horizontal Gantt chart built on a reactive timeline grid.
+
+### 1. Daily Grid Rendering
+Tasks with defined start and end dates are projected horizontally across a calendar grid. 
+
+### 2. Reactive Color Indicators
+Gantt bars dynamically update colors based on deadline compliance:
+- **Red Bar (Overdue)**: Estimated end date is in the past, and task status is not completed.
+- **Amber Bar (At Risk)**: Estimated end date falls within the next 48 hours, and task status is not completed.
+- **Blue Bar (Stable)**: Standard progress within the estimation window.
+- **Avatar Stacking**: Stacked avatar circles represent the assigned developers fetched from the task assignees join table.
+
+### 3. Interactive Toolbar Controls
+- **Status Filtering**: Filter the timeline view to hide completed tasks, focusing only on active bottlenecks (`not started`, `inprogress`, `reviewing`, `testing`).
+- **Interval Compression**: Adjust grid ticks (e.g., `2 Days`, `3 Days`, `5 Days`, or `10 Days` columns) to customize the horizontal calendar zoom level.
+- **Detail Tooltips**: Hovering over a Gantt bar fetches full titles, assignee lists, and status metadata without leaving the view.
+
+---
+
+## Active Editor Focus Logs (Pro Plan)
+
+Under the **Pro Plan**, Time Logs integrate with editor telemetry:
+- **Focus heartbeats**: The editor extension monitors active file-focus events in the workspace directory.
+- **Telemetry Sync**: Periodic heartbeats are sent to the backend database, tracking focus duration per file.
+- **Visual Overlays**: These logs are rendered as indicators beneath Gantt bars, showing the actual developer hours focused on files linked to the task.

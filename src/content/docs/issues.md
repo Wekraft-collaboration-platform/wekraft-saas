@@ -1,54 +1,123 @@
 # Issues & Bug Tracking
 
-Issues in Wekraft represent unplanned or reactive work, such as bugs found in production, environment failures, or hotfixes. They operate on a distinct lifecycle separate from your planned sprint backlog.
+Issues represent reactive or unplanned work in Wekraft, such as application bugs, server crashes, environment failures, or security hotfixes. They operate outside the planned sprint backlog but can be allocated to sprints for tracking alongside planned tasks.
 
 ---
 
-## Issue Properties & Categorization
+## Issue Document Schema & Properties
 
-Unlike tasks that focus on priority, issues are categorized by severity and impact environment:
+Every issue document inside the backend database is defined with the following fields:
 
-- **Impact Environment**: Specifies where the issue occurred:
-  - `local` (Local environment)
-  - `dev` (Development server)
-  - `staging` (Staging/QA build)
-  - `production` (Live environment)
-- **Severity**: Determines urgency:
-  - `critical` (Blocker / downtime)
-  - `medium` (Feature degraded)
-  - `low` (Cosmetic / minor annoyance)
-- **File Linked (`fileLinked`)**: Path to the problematic file in your GitHub repository. Linking a file enables visualization in [Repository Heatmaps](/web/docs/heatmaps) and direct link navigation.
-- **Due Date (`due_date`)**: The deadline to resolve the issue. If an issue passes this date without being closed, it accumulates toward the project's **Delay Debt**.
+- **Title (`title`)**: String detailing the bug report or incident summary.
+- **Description (`description`)**: Optional text body containing steps to reproduce, logs, or system specs.
+- **Impact Environment (`environment`)**: Indicates where the issue was detected:
+  - `local`: Developer workspace error.
+  - `dev`: Development build / sandbox server crash.
+  - `staging`: Quality assurance / integration testing environment bug.
+  - `production`: Incident on the live production build affecting active users.
+- **Severity (`severity`)**: Dictates the urgency and response priority:
+  - `critical`: Blockers, security vulnerabilities, or database downtime.
+  - `medium`: Degraded performance, broken non-critical features.
+  - `low`: Minor visual glitches, cosmetic issues, or spelling errors.
+- **File Linked (`fileLinked`)**: Path relative to the repository root pointing to the buggy component.
+- **Due Date (`due_date`)**: Target resolution deadline. Overdue issues increment the project's **Delay Debt** metric.
+- **Source Type (`type`)**: Identifies how the issue was ingested into Wekraft:
+  - `manual`: Created through the Wekraft UI.
+  - `task-issue`: Created via task escalation.
+  - `github`: Synchronized via linked code hosting provider.
 
 ---
 
-## Issue Sources (Origins)
+## Issue Ingestion Sources (Origins)
 
-An issue in Wekraft can originate from three distinct entry points:
+Wekraft supports automated and manual issue generation streams:
 
-1. **Manual (`manual`)**: Created directly from the **Issues** workspace dashboard by clicking **"New Issue"**.
-2. **Task Escalation (`task-issue`)**: Created when a developer flags an active task as blocked.
-   - *Behavior*: Escalating a task blocks the parent task. The task remains in a read-only blocked state until the newly created issue is set to `closed`, which automatically unblocks the parent task.
-3. **GitHub Sync (`github`)**: Syncs issues directly from your linked GitHub repository.
-   - *Behavior*: Syncs description, labels, and URL links. Resolving the issue on GitHub closes the issue in Wekraft during periodic caching.
+### 1. Manual Creation
+Team members can log bugs at any time by clicking **"New Issue"** inside the workspace issues tab. This prompts a dialog to set the title, description, severity, environment, and due date.
+
+### 2. Task-Issue Blockage Escalation
+When a planned backlog task is blocked by a code bug:
+- **Trigger**: Click **"Escalate to Issue"** on the task dashboard.
+- **Backend Mutation**: This invokes a blockage escalation mutation, setting `isBlocked = true` on the task and creating an issue with `type = "task-issue"`.
+- **Assignee Sync**: The new issue automatically inherits all developers assigned to the blocked parent task.
+- **Unblocking Flow**: Once the issue status is set to `closed`, a database trigger immediately sets `isBlocked = false` on the parent task, releasing it back to the active workflow.
+
+### 3. Git hosting webhook Synchronisation
+If a project is linked to a code repository, issues can be synced automatically:
+- **Webhook Endpoint**: Wekraft exposes API routes to catch repository webhook events.
+- **Events Tracked**: When an issue is opened, edited, closed, or reopened on the repository hosting provider, the webhook route matches the repository ID to the linked project and mutates Wekraft's datastore.
+- **PR Code Integration**: Code pushes and PR merges parse commit messages (e.g., resolving issues by ID) to auto-close corresponding Wekraft issues.
 
 ---
 
 ## The Issue Lifecycle
 
-Issues transition through four states:
+Issues transition through the following states:
 
-| Status Badge | Technical Value | Description |
-| :--- | :--- | :--- |
-| **Not Opened** | `not opened` | Logged in backlog, investigation has not begun |
-| **Opened** | `opened` | Assignee is actively debugging the issue |
-| **Reopened** | `reopened` | The fix failed validation, and the bug has recurred |
-| **Closed** | `closed` | The bug is successfully resolved |
+```mermaid
+stateDiagram-v2
+    [*] --> NotOpened : Issue Logged
+    NotOpened --> Opened : Assigned & Investigating
+    Opened --> Reopened : Fix Failed Validation
+    Opened --> Closed : Resolved & Verified
+    Reopened --> Opened : Re-investigating
+    Closed --> [*]
+```
+
+- **Not Opened (`not opened`)**: Logged in backlog, investigation has not begun.
+- **Opened (`opened`)**: Assigned developer is debugging and testing a resolution.
+- **Reopened (`reopened`)**: The patch failed staging tests, or the bug recurred in production, reopening the incident.
+- **Closed (`closed`)**: The bug is resolved. Closing the issue records the completion timestamp and user ID.
 
 ---
 
-## Next Steps
+## Database API Reference (Developer Guide)
 
-- Drag issues into an active plan in [Sprints & Planning](/web/docs/sprints).
-- View codebase issues on the [React Flow Codebase Map](/web/docs/heatmaps).
-- Review project-wide delays under the [Project Delivery Timeline & Gantt Chart](/web/docs/time-logs).
+Issues are managed via the following backend API endpoints:
+
+### Create Issue
+Registers an issue and records assignees in the issue assignees join table.
+```typescript
+args: {
+  title: string,
+  description?: string,
+  environment?: "local" | "dev" | "staging" | "production",
+  severity?: "critical" | "medium" | "low",
+  due_date?: number,
+  status: "not opened" | "opened" | "reopened" | "closed",
+  type: "manual" | "task-issue" | "github",
+  githubIssueUrl?: string,
+  fileLinked?: string,
+  taskId?: Id,
+  projectId: Id,
+  userId: Id,
+  assignees?: Array<{ userId: Id, name: string, avatar?: string }>
+}
+```
+
+### Update Issue
+Updates issue parameters and handles closed status triggers.
+```typescript
+args: {
+  issueId: Id,
+  title?: string,
+  description?: string,
+  status?: "not opened" | "opened" | "reopened" | "closed",
+  severity?: "critical" | "medium" | "low",
+  environment?: "local" | "dev" | "staging" | "production",
+  due_date?: number,
+  fileLinked?: string,
+  assignees?: Array<{ userId: Id, name: string, avatar?: string }>,
+  userId: Id
+}
+```
+*Note: Setting status to `closed` automatically writes completion stats and unblocks any linked task.*
+
+### Delete Issue
+Removes the issue document and performs cascading cleanups on assignees and comments.
+```typescript
+args: {
+  issueId: Id,
+  userId: Id
+}
+```

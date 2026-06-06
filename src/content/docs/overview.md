@@ -1,65 +1,80 @@
 # Wekraft Platform Overview
 
-Welcome to **Wekraft** — the unified software engineering and collaboration platform. Wekraft bridges the gap between where your work is planned and where it is built. By bringing **project planning**, **real-time team communication**, **git metrics**, and **editor-level integrations** into one unified, real-time environment, Wekraft eliminates traditional context-switching.
+Welcome to the Wekraft Platform Documentation. Wekraft is a unified software engineering management and real-time collaboration workspace designed to eliminate context-switching. By consolidating **agile project planning**, **team communication**, **git metrics**, and **editor-level integrations** into a single reactive environment, Wekraft provides engineering teams with a single source of truth.
 
 ---
 
-## Technical Architecture & Flow
+## Technical Architecture & Core Technologies
 
-Wekraft operates in a hierarchical model designed to mirror standard engineering team organizations:
+Wekraft's application stack is designed for low-latency updates, high-throughput database interactions, and persistent real-time states:
 
 ```mermaid
 graph TD
-    User[User Profile & Subscription] -->|Belongs to| Project[Projects max 2 Free / 10 Plus / 20 Pro]
-    Project -->|Timeboxed by| Sprint[Sprints one active at a time]
-    Project -->|Linked to| Repo[GitHub Repositories]
-    Project -->|Configured by| Policies[Project Config/Policies]
-    Sprint -->|Contains| Task[Tasks Planned Backlog]
-    Project -->|Handles| Issues[Issues Reactive Bugs/Incidents]
-    Repo -->|Syncs Code to| Heatmap[React Flow Codebase Map]
+    Client[Next.js App Router Client] <-->|Reactive WebSockets| Backend[Serverless Reactive Backend]
+    Client -->|Authentication| Auth[Identity Provider Service]
+    Backend <-->|Database Actions| DB[(Document Datastore)]
+    Backend -->|Queue Background Jobs| QueueEngine[Background Queue Engine]
+    GitRepo[Git Hosting Provider Webhook] -->|HTTP POST| WebhookRoute[API Webhook Handler]
+    WebhookRoute -->|Client Mutate| Backend
+    Payment[Billing Gateway Webhook] -->|HTTP POST| WebhookHTTP[HTTP Action Router]
+    WebhookHTTP -->|Mutate Tier| Backend
 ```
 
-1. **User Accounts & Billing**: Every user belongs to a plan tier (**Free**, **Plus**, or **Pro**) which governs limits across all projects they own or join.
-2. **Projects**: The top-level workspace container. Each project can link to a GitHub repository, invite members, and toggle governance settings.
-3. **Sprints & Backlog**: Time-boxed execution periods. Tasks are planned within sprints.
-4. **Tasks & Issues**: Tasks represent planned milestones; Issues represent reactive bugs or incidents.
-5. **Team Communication**: Embedded chat channels and real-time video meetings inside the workspace.
+### 1. Real-time Reactivity (Serverless Reactive Backend)
+At the core of Wekraft is a **Serverless Reactive Backend**, a platform providing reactive datastore caching. Unlike traditional REST or polling setups, backend queries are reactive: when a database document changes (such as a task being dragged on the Kanban board), the backend automatically pushes the new dataset to all connected clients over a persistent WebSocket connection. This ensures instant dashboard synchronisation across the entire engineering team.
+
+### 2. Authentication & Identity (Identity Provider)
+User authentication is managed via a dedicated **Identity Provider**. The identity service provides session tokens which are validated server-side by the backend. Onboarding steps, workspace permissions, and profile configurations (`users` table) are keyed off the authenticated user's unique token ID.
+
+### 3. Background Processing & Schedules (Background Queue Engine & Server Crons)
+- **Background Queue Engine** is used to orchestrate complex event-driven workflows, such as multi-step repository scans and codebase analysis.
+- **Server Crons** run recurring server-side jobs, such as scanning user subscription expiration timestamps and performing database maintenance (e.g., checking for overdue tasks and calculating delay debts).
+
+### 4. Third-Party Webhook Sync
+- **Version Control Integrations**: Connected code repositories issue webhook events (commits, issue status changes, pull request creation) directly to Wekraft's API routes, which trigger database mutations to align Wekraft's issue boards and heatmaps with git activity.
+- **Payment Gateways**: Subscriptions are managed via integrated **Billing Processors**. Webhooks processed through the backend's HTTP action routes update user subscription statuses (`active`, `past_due`, `cancelled`) in real-time.
 
 ---
 
-## Subscription Plans & Feature Support
+## Workspace Structure & Data Model
 
-All usage limits are enforced both server-side via Convex and client-side in the dashboard:
+Wekraft follows a hierarchical project model structured to match modern software team setups:
 
-| Feature / Limit | Free Plan | Plus Plan | Pro Plan |
+- **Users & Tiers**: Every user profile is assigned a plan tier (`free`, `plus`, or `pro`) which governs limits across all projects they own or join.
+- **Projects**: The top-level workspace container. Each project can connect to a single git repository, manage separate team memberships, and toggle compliance/security policies.
+- **Sprints**: Time-boxed execution periods. Only one sprint may be marked `active` per project at any given time.
+- **Tasks**: Planned product items forming the backlog.
+- **Issues**: Reactive incident or bug tracking. Issues can be manual, synced from the git provider, or block-escalated directly from a planned task.
+- **Teamspace Channels & Meets**: Chat communication rooms and video call rooms integrated directly into the workspace layout.
+
+---
+
+## Subscription Plans & Limits Matrix
+
+Features and API limits are enforced server-side. When a limit is breached, database queries return structured restriction states, and the frontend renders interactive upgrade sheets.
+
+| Feature / Limit | Free Tier | Plus Tier | Pro Tier |
 | :--- | :--- | :--- | :--- |
-| **Created Projects Limit** | 2 projects | 10 projects | 20 projects |
-| **Joined Projects Limit** | 2 projects | 10 projects | 20 projects |
+| **Project Creation Limit** | Max 2 projects | Max 10 projects | Max 20 projects |
+| **Project Joining Limit** | Max 2 projects | Max 10 projects | Max 20 projects |
 | **Members Per Project** | Max 3 members | Max 6 members | Max 15 members |
-| **Kaya AI PM Agent** | Not available | Not available | Full access (360 calls/mo) |
-| **Harry AI Dev Agent** | Not available | Not available | Beta Access (Coming Soon) |
-| **Interactive Heatmaps** | Read-only structure | Full Structure & Git activity | Full structures & issue overlay |
-| **VS Code Sync** | Read-only extension | Read-only extension | Full Two-way editor sync |
-| **Cloud Storage** | 2 GB | 15 GB | 30 GB |
-| **Support SLA** | Basic | Basic | Priority 24/7 |
+| **Kaya AI PM Agent** | Disabled | Disabled | Full access (360 queries/month) |
+| **Harry AI Dev Agent** | Disabled | Disabled | Beta Access (Coming Soon) |
+| **VS Code Sync Mode** | Read-Only | Read-Only | Full Two-Way Sync |
+| **Interactive Heatmaps** | Read-Only structure | Git activity view | Git activity & issue overlay |
+| **Cloud Storage Limit** | 2 GB | 15 GB | 30 GB |
+| **Dedicated Support** | Basic Support | Basic Support | Priority 24/7 Support |
+| **Automated Reports** | No | No | Yes |
 
 ---
 
 ## Frequently Asked Questions
 
-### What happens when I hit my member limit?
-If you hit your project's member limit (e.g., 3 members on the Free plan), any incoming join requests will show as pending but cannot be approved until you either remove an existing member or upgrade your subscription plan.
+### What happens to my data if my subscription expires?
+If your subscription expires or is downgraded to the Free tier, your account is immediately subjected to Free tier limits. Projects exceeding the limit of 2 will remain in the database but are locked in a read-only state. You will not be able to invite new team members or run active sprints until you delete excess projects or renew your tier.
 
-### Can team members configure project settings?
-Wekraft maintains a strict distinction:
-- **Project Settings** (names, public/private visibility, descriptive tags) are managed on the Project Home page and restricted to the **Project Owner**.
-- **Workspace Configs** (Member task creation, Member AI access policies) are configured in the Workspace sub-tab.
+### How are members counted against the project limit?
+Members are counted when their join request is approved by the project owner or administrator. Pending requests do not count toward your limit. If a project reaches its member limit (e.g., 3 members on the Free plan), the administrator must remove an existing member or upgrade the owner's plan before a new member can join.
 
----
-
-## Next Steps
-
-- Get started in 5 minutes with the [Getting Started Tutorial](/web/docs/getting-started).
-- Learn about the [Project Home Settings & Configs](/web/docs/projects).
-- Explore interactive code tracking in [Repository Heatmaps](/web/docs/heatmaps).
-- Review [VS Code Extension Setup](/web/docs/extension).
+### Is my code uploaded to Wekraft servers?
+No. Wekraft only maps repository structures (directories and filenames) to display git metrics and heatmaps. Your source code files are never persisted on Wekraft's database. Code analysis is executed temporarily in memory or inside your local code editor.

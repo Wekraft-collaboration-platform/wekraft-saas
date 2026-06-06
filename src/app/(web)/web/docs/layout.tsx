@@ -174,17 +174,17 @@ function SidebarCategory({
   }, [isSearching]);
 
   return (
-    <div>
+    <div className="mb-1">
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="w-full flex items-center justify-between px-3 py-1.5 group cursor-pointer"
+        className="w-full flex items-center justify-between px-3 py-1.5 group cursor-pointer text-left transition-colors"
       >
-        <h3 className="text-[10px] font-semibold uppercase tracking-widest text-[#525252] group-hover:text-[#a3a3a3] transition-colors">
+        <span className="text-xs font-semibold text-[#8a8b92] group-hover:text-[#e5e5e5] transition-colors tracking-tight select-none">
           {category}
-        </h3>
+        </span>
         <ChevronDown
           className={cn(
-            "h-3 w-3 text-white/20 group-hover:text-white/40 transition-all duration-200",
+            "h-3.5 w-3.5 text-[#525252] group-hover:text-[#a3a3a3] transition-all duration-200",
             !isOpen && "-rotate-90",
           )}
         />
@@ -195,7 +195,7 @@ function SidebarCategory({
           isOpen ? "max-h-[800px] opacity-100" : "max-h-0 opacity-0",
         )}
       >
-        <ul className="space-y-1 pb-1">
+        <ul className="pl-3.5 space-y-1 mt-0.5 border-l border-white/4 ml-4">
           {items.map((item) => {
             const Icon = iconMap[item.icon ?? ""] || BookOpen;
             const badge = getDocBadge(item);
@@ -208,33 +208,23 @@ function SidebarCategory({
                   href={`/web/docs/${item.slug}`}
                   onClick={onNavClick}
                   className={cn(
-                    "group relative overflow-hidden flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all duration-150 min-w-0",
+                    "group relative flex items-center gap-2 rounded-md px-2.5 py-1.5 text-[0.825rem] transition-all duration-150 min-w-0 select-none",
                     isActive
-                      ? "text-white font-medium"
-                      : "text-[#a3a3a3] hover:bg-white/4 hover:text-[#e5e5e5]",
+                      ? "text-white font-medium bg-white/4"
+                      : "text-[#8a8b92] hover:bg-white/[0.02] hover:text-[#e5e5e5]",
                   )}
                 >
-                  <span
-                    className={cn(
-                      "pointer-events-none absolute inset-0 -z-10 transition-opacity",
-                      isActive
-                        ? "opacity-100 bg-linear-to-l from-blue-600 dark:from-blue-600/70 via-blue-600/20 to-transparent!"
-                        : "opacity-0"
-                    )}
-                  />
                   <Icon
                     className={cn(
                       "h-3.5 w-3.5 shrink-0 transition-colors",
-                      isActive
-                        ? "text-white"
-                        : "text-[#525252] group-hover:text-[#a3a3a3]",
+                      isActive ? "text-white" : "text-[#525252] group-hover:text-[#8a8b92]"
                     )}
                   />
                   <SidebarItemText title={item.title} isActive={isActive} />
                   {badge && !isActive && (
                     <span
                       className={cn(
-                        "text-[9px] font-semibold rounded px-1.5 py-0.5 leading-none",
+                        "text-[9px] font-semibold rounded px-1.5 py-0.5 leading-none shrink-0 ml-2",
                         badgeColors[badge],
                       )}
                     >
@@ -453,7 +443,7 @@ export default function DocsLayout({
 
       <div className="flex">
         {/* Desktop Sidebar */}
-        <aside className="fixed left-0 top-0 hidden h-full w-72 border-r border-white/6 bg-[#080808] lg:flex flex-col z-20">
+        <aside className="fixed left-0 top-0 hidden h-full w-72 border-r border-white/[0.06] bg-[#08090a] lg:flex flex-col z-20">
           <SidebarContent
             pathname={pathname}
           />

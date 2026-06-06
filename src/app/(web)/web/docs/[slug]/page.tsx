@@ -23,6 +23,7 @@ import { CopyButton } from "../../../../../components/CopyButton";
 import { FeedbackWidget } from "../../../../../components/FeedbackWidget";
 import { TableOfContents } from "../../../../../components/TableOfContents";
 import { allDocs, docsConfig } from "@/lib/docs-config";
+import Mermaid from "@/components/Mermaid";
 
 export async function generateStaticParams() {
   return allDocs.map((doc) => ({ slug: doc.slug }));
@@ -144,61 +145,71 @@ const calloutStyles: Record<
   { bg: string; border: string; icon: any; text: string; label: string }
 > = {
   NOTE: {
-    bg: "bg-zinc-900/40",
+    bg: "bg-zinc-900/30",
     border: "border-zinc-700/50",
     icon: Info,
     text: "text-zinc-300",
     label: "Note",
   },
   TIP: {
-    bg: "bg-zinc-900/40",
+    bg: "bg-zinc-900/30",
     border: "border-zinc-700/50",
     icon: Lightbulb,
     text: "text-zinc-300",
     label: "Tip",
   },
   IMPORTANT: {
-    bg: "bg-zinc-900/40",
+    bg: "bg-zinc-900/30",
     border: "border-zinc-700/50",
     icon: Info,
     text: "text-zinc-300",
     label: "Important",
   },
   WARNING: {
-    bg: "bg-amber-950/30",
+    bg: "bg-amber-950/20",
     border: "border-amber-500/30",
     icon: AlertTriangle,
-    text: "text-amber-300/80",
+    text: "text-amber-200/80",
     label: "Warning",
   },
   CAUTION: {
-    bg: "bg-red-950/30",
+    bg: "bg-red-950/20",
     border: "border-red-500/30",
     icon: OctagonX,
-    text: "text-red-300/80",
+    text: "text-red-200/80",
     label: "Caution",
   },
 };
 
-function parseLineBreaks(node: React.ReactNode): React.ReactNode {
+function parseHtmlTags(node: React.ReactNode): React.ReactNode {
+  if (!node) return node;
   if (typeof node === "string") {
-    const parts = node.split(/<br\s*\/?>/i);
+    const regex = /(<br\s*\/?>|<kbd>.*?<\/kbd>)/gi;
+    const parts = node.split(regex);
     if (parts.length === 1) return node;
 
-    return parts.reduce((acc: React.ReactNode[], part, index) => {
-      if (index > 0) {
-        acc.push(<br key={`br-${index}`} />);
+    return parts.map((part, index) => {
+      if (part.toLowerCase().startsWith("<br")) {
+        return <br key={`br-${index}`} />;
       }
-      if (part) {
-        acc.push(part);
+      if (part.toLowerCase().startsWith("<kbd>")) {
+        const innerText = part.substring(5, part.length - 6);
+        return (
+          <kbd
+            key={`kbd-${index}`}
+            className="inline-block px-1.5 py-0.5 font-mono text-[11px] font-medium leading-none text-[#e5e5e5] bg-[#1c1c1e] border border-white/10 rounded shadow-[0_1.5px_0_0.5px_rgba(255,255,255,0.08)] mx-0.5 select-none align-middle"
+          >
+            {innerText}
+          </kbd>
+        );
       }
-      return acc;
-    }, []);
+      return part;
+    });
   }
 
   if (Array.isArray(node)) {
     return node.map((child, idx) => (
-      <React.Fragment key={idx}>{parseLineBreaks(child)}</React.Fragment>
+      <React.Fragment key={idx}>{parseHtmlTags(child)}</React.Fragment>
     ));
   }
 
@@ -208,7 +219,7 @@ function parseLineBreaks(node: React.ReactNode): React.ReactNode {
     if (props && props.children) {
       return React.cloneElement(element, {
         ...props,
-        children: parseLineBreaks(props.children),
+        children: parseHtmlTags(props.children),
       });
     }
   }
@@ -220,20 +231,20 @@ function parseLineBreaks(node: React.ReactNode): React.ReactNode {
 const markdownComponents: Components = {
   h1: ({ children }) => (
     <>
-      <h1 className="text-[2.2rem] font-bold text-white tracking-tight mt-0 mb-4 leading-snug">
-        {children}
+      <h1 className="text-[2rem] font-bold text-white tracking-tight mt-0 mb-4 leading-tight">
+        {parseHtmlTags(children)}
       </h1>
-      <div className="flex items-center gap-6 text-[0.9rem] text-[#a3a3a3] mb-8 border-b border-white/8 pb-8">
+      <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-[0.8rem] sm:text-[0.9rem] text-[#8a8b92] mb-8 border-b border-white/8 pb-8">
         <div className="flex items-center gap-2">
-          <Clock className="h-4 w-4" />
+          <Clock className="h-4 w-4 text-white/30" />
           <span data-reading-time>5 min read</span>
         </div>
         <div className="flex items-center gap-2">
-          <Calendar className="h-4 w-4" />
+          <Calendar className="h-4 w-4 text-white/30" />
           <span>Updated May 2026</span>
         </div>
         <div className="flex items-center gap-2">
-          <User className="h-4 w-4" />
+          <User className="h-4 w-4 text-white/30" />
           <span>Wekraft Team</span>
         </div>
       </div>
@@ -244,9 +255,9 @@ const markdownComponents: Components = {
     return (
       <h2
         id={id}
-        className="text-[1.2rem] font-semibold text-[#e5e5e5] mt-12 mb-4 pb-3 scroll-mt-24 border-b border-white/8"
+        className="text-[1.25rem] font-semibold text-[#f5f5f7] mt-12 mb-4 scroll-mt-24 tracking-tight"
       >
-        {children}
+        {parseHtmlTags(children)}
       </h2>
     );
   },
@@ -255,35 +266,34 @@ const markdownComponents: Components = {
     return (
       <h3
         id={id}
-        className="text-[0.95rem] font-semibold text-[#e5e5e5] mt-8 mb-3 scroll-mt-24"
+        className="text-[1.05rem] font-semibold text-[#f5f5f7] mt-8 mb-3 scroll-mt-24 tracking-tight"
       >
-        {children}
+        {parseHtmlTags(children)}
       </h3>
     );
   },
   p: ({ children }) => (
-    <p className="text-[0.925rem] text-[#a3a3a3] leading-[1.8] mb-5">
-      {children}
+    <p className="text-[15px] text-[#8a8b92] leading-7 mb-5 tracking-[-0.01em] font-normal">
+      {parseHtmlTags(children)}
     </p>
   ),
   a: ({ href, children }) => (
     <a
       href={href}
-      className="text-blue-400 hover:text-blue-300 underline underline-offset-2 decoration-blue-500/40 hover:decoration-blue-400/70 transition-colors"
+      className="text-blue-400 hover:text-blue-300 underline underline-offset-2 decoration-blue-500/30 hover:decoration-blue-400/50 transition-colors font-medium"
     >
-      {children}
+      {parseHtmlTags(children)}
     </a>
   ),
-  ul: ({ children }) => <ul className="my-5 space-y-2.5">{children}</ul>,
+  ul: ({ children }) => <ul className="my-5 pl-5 list-disc space-y-2 mb-5 text-[15px] text-[#8a8b92] leading-7">{children}</ul>,
   ol: ({ children }) => (
-    <ol className="my-5 space-y-2.5 list-none counter-reset-item">
+    <ol className="my-5 pl-5 list-decimal space-y-2 mb-5 text-[15px] text-[#8a8b92] leading-7">
       {children}
     </ol>
   ),
   li: ({ children }) => (
-    <li className="flex items-start gap-3 text-[0.925rem] text-[#a3a3a3] leading-[1.7]">
-      <span className="mt-[0.55rem] h-[5px] w-[5px] rounded-full bg-white/20 shrink-0" />
-      <span className="flex-1">{children}</span>
+    <li className="pl-1">
+      {parseHtmlTags(children)}
     </li>
   ),
   blockquote: ({ children }) => {
@@ -296,7 +306,7 @@ const markdownComponents: Components = {
 
       return (
         <div
-          className={`my-6 rounded-lg border-l-[3px] ${style.border} ${style.bg} py-3 px-4`}
+          className={`my-6 rounded-lg border-l-[3px] ${style.border} ${style.bg} py-3.5 px-4`}
         >
           <div className={`flex items-center gap-2 mb-2 ${style.text}`}>
             <IconComp className="h-4 w-4 shrink-0" />
@@ -305,7 +315,7 @@ const markdownComponents: Components = {
             </span>
           </div>
           <div
-            className={`text-[0.875rem] ${style.text} leading-[1.7] [&>p]:mb-0 [&>p]:${style.text}`}
+            className={`text-[14px] ${style.text} leading-6 [&>p]:mb-0 [&>p]:${style.text}`}
           >
             {callout.content}
           </div>
@@ -315,8 +325,8 @@ const markdownComponents: Components = {
 
     // Default blockquote
     return (
-      <blockquote className="my-6 pl-4 border-l-2 border-zinc-700/50 bg-zinc-900/30 rounded-r-lg py-3 pr-4">
-        <div className="text-[0.875rem] text-zinc-400 leading-[1.7] [&>p]:mb-0 [&>p]:text-zinc-400">
+      <blockquote className="my-6 pl-4 border-l-2 border-zinc-700 bg-zinc-900/10 rounded-r-lg py-3.5 pr-4">
+        <div className="text-[14px] text-zinc-400 leading-6 [&>p]:mb-0 [&>p]:text-zinc-400">
           {children}
         </div>
       </blockquote>
@@ -326,14 +336,14 @@ const markdownComponents: Components = {
     const isInline = !className;
     if (isInline) {
       return (
-        <code className="text-[0.8rem] font-mono text-zinc-200 bg-zinc-900/50 border border-zinc-700/40 rounded-md px-1.5 py-0.5 whitespace-nowrap">
-          {children}
+        <code className="text-[13.5px] font-mono text-[#e5e5e5] bg-white/[0.06] border border-white/8 rounded-md px-1.5 py-0.5 whitespace-nowrap font-medium">
+          {parseHtmlTags(children)}
         </code>
       );
     }
     return (
       <code
-        className="text-[0.8rem] font-mono text-white/75 leading-6"
+        className="text-[13px] font-mono text-white/75 leading-6"
         {...props}
       >
         {children}
@@ -341,7 +351,12 @@ const markdownComponents: Components = {
     );
   },
   pre: ({ children }) => {
-    // Extract text content for copy button
+    // Check if first child is a code block containing language-mermaid
+    const codeElement = React.Children.toArray(children)[0] as React.ReactElement<any>;
+    const isMermaid = codeElement?.props?.className === "language-mermaid" || 
+                      (codeElement?.props?.className && codeElement.props.className.includes("language-mermaid"));
+
+    // Extract text content for copy button or chart input
     const extractText = (node: any): string => {
       if (typeof node === "string") return node;
       if (Array.isArray(node)) return node.map(extractText).join("");
@@ -351,9 +366,13 @@ const markdownComponents: Components = {
 
     const codeText = extractText(children);
 
+    if (isMermaid) {
+      return <Mermaid chart={codeText.trim()} />;
+    }
+
     return (
       <div className="relative group my-6">
-        <pre className="overflow-x-auto rounded-xl bg-[#0c0c0c] border border-white/8 px-5 py-4 text-[0.8rem] font-mono leading-6 shadow-inner">
+        <pre className="overflow-x-auto rounded-xl bg-[#0c0c0c] border border-white/8 px-5 py-4 text-[13px] font-mono leading-6 shadow-inner">
           {children}
         </pre>
         <CopyButton text={codeText} />
@@ -362,17 +381,17 @@ const markdownComponents: Components = {
   },
   table: ({ children }) => (
     <div className="my-6 overflow-x-auto rounded-xl border border-white/8 shadow-sm">
-      <table className="w-full text-[0.875rem] border-collapse">
+      <table className="w-full text-[14px] border-collapse">
         {children}
       </table>
     </div>
   ),
   thead: ({ children }) => (
-    <thead className="bg-white/[0.04]">{children}</thead>
+    <thead className="bg-white/[0.02] border-b border-white/8">{children}</thead>
   ),
   th: ({ children }) => (
-    <th className="px-5 py-3 text-left text-[0.7rem] font-semibold text-white/35 uppercase tracking-widest border-b border-white/8 border-r border-white/8 last:border-r-0 first:whitespace-nowrap">
-      {parseLineBreaks(children)}
+    <th className="px-4 py-2.5 text-left text-[11px] font-medium text-white/40 uppercase tracking-wider border-r border-white/8 last:border-r-0 first:whitespace-nowrap">
+      {parseHtmlTags(children)}
     </th>
   ),
   tr: ({ children }) => (
@@ -381,15 +400,15 @@ const markdownComponents: Components = {
     </tr>
   ),
   td: ({ children }) => (
-    <td className="px-5 py-3 text-[#a3a3a3] text-[0.875rem] leading-relaxed align-top border-r border-white/5 last:border-r-0 first:whitespace-nowrap first:font-medium">
-      {parseLineBreaks(children)}
+    <td className="px-4 py-2.5 text-[#8a8b92] text-[14px] leading-relaxed align-top border-r border-white/5 last:border-r-0 first:whitespace-nowrap first:font-medium">
+      {parseHtmlTags(children)}
     </td>
   ),
   hr: () => <hr className="my-10 border-white/8" />,
   strong: ({ children }) => (
-    <strong className="font-semibold text-[#e5e5e5]">{children}</strong>
+    <strong className="font-semibold text-white/90">{parseHtmlTags(children)}</strong>
   ),
-  em: ({ children }) => <em className="italic text-[#a3a3a3]">{children}</em>,
+  em: ({ children }) => <em className="italic text-[#8a8b92]">{parseHtmlTags(children)}</em>,
 };
 
 export default async function DocPage({
@@ -459,20 +478,20 @@ export default async function DocPage({
               ...markdownComponents,
               h1: ({ children }) => (
                 <>
-                  <h1 className="text-[2.2rem] font-bold text-white tracking-tight mt-0 mb-4 leading-snug">
-                    {children}
+                  <h1 className="text-[2rem] font-bold text-white tracking-tight mt-0 mb-4 leading-tight">
+                    {parseHtmlTags(children)}
                   </h1>
-                  <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-[0.8rem] sm:text-[0.9rem] text-[#a3a3a3] mb-8 border-b border-white/8 pb-8">
+                  <div className="flex flex-wrap items-center gap-4 sm:gap-6 text-[0.8rem] sm:text-[0.9rem] text-[#8a8b92] mb-8 border-b border-white/8 pb-8">
                     <div className="flex items-center gap-2">
-                      <Clock className="h-4 w-4" />
+                      <Clock className="h-4 w-4 text-white/30" />
                       <span>{readingTime} min read</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <Calendar className="h-4 w-4" />
+                      <Calendar className="h-4 w-4 text-white/30" />
                       <span>Updated May 2026</span>
                     </div>
                     <div className="flex items-center gap-2">
-                      <User className="h-4 w-4" />
+                      <User className="h-4 w-4 text-white/30" />
                       <span>Wekraft Team</span>
                     </div>
                   </div>
