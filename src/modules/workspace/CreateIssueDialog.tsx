@@ -1,13 +1,11 @@
 "use client";
 
 import { useMutation, useQuery } from "convex/react";
+import { motion } from "framer-motion";
 import {
-  AlertCircle,
   CalendarIcon,
   Check,
-  CheckCircle2,
   ChevronRight,
-  Clock,
   Globe,
   Link2,
   ListFilter,
@@ -16,7 +14,6 @@ import {
   Paperclip,
   Trash2,
   User,
-  X,
   Zap,
 } from "lucide-react";
 import Image from "next/image";
@@ -250,12 +247,54 @@ export const CreateIssueDialog = ({
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>{trigger}</DialogTrigger>
       <DialogContent className="w-full max-w-[800px] h-full max-h-[560px] flex flex-col bg-card dark:bg-[#1c1c1c] border-neutral-300 dark:border-[#2b2b2b] p-0 overflow-hidden text-foreground dark:text-neutral-200">
-        <DialogHeader className="p-4 flex flex-row items-center gap-2 border-b border-neutral-200 dark:border-[#2b2b2b] shrink-0">
+        <DialogHeader className="p-4 flex flex-row items-center justify-between gap-2 border-b border-neutral-200 dark:border-[#2b2b2b] shrink-0">
           <div className="flex items-center gap-1.5 text-xs text-neutral-400 font-medium">
             <div className="w-3 h-3 rounded-full bg-blue-600 flex items-center justify-center text-[10px] text-white"></div>
             <span className="text-sm">{projectName}</span>
             <ChevronRight className="w-3 h-3" />
-            <span className="text-xs">New issue</span>
+            <span className="text-xs">New Issue</span>
+          </div>
+
+          <div className="pr-10">
+            <TooltipProvider>
+              <Tooltip delayDuration={200}>
+                <TooltipTrigger asChild>
+                  <Button
+                    variant="outline"
+                    className="bg-linear-to-t from-indigo-600/30 via-purple-600/10 to-transparent text-[10px] cursor-pointer px-4! flex items-center gap-1.5 overflow-hidden"
+                  >
+                    <motion.div
+                      initial={{ x: 55, scale: 0.9 }}
+                      animate={{ x: 0, scale: 1 }}
+                      transition={{ duration: 0.5, ease: "easeOut" }}
+                      className="flex items-center shrink-0"
+                    >
+                      <Image
+                        src="/kaya.svg"
+                        alt="Kaya AI"
+                        width={18}
+                        height={18}
+                      />
+                    </motion.div>
+                    <motion.span
+                      initial={{ width: 0, opacity: 0 }}
+                      animate={{ width: "auto", opacity: 1 }}
+                      transition={{
+                        duration: 0.4,
+                        delay: 0.4,
+                        ease: "easeOut",
+                      }}
+                      className="whitespace-nowrap overflow-hidden"
+                    >
+                      Auto Create with Kaya
+                    </motion.span>
+                  </Button>
+                </TooltipTrigger>
+                <TooltipContent className="bg-neutral-900 border border-neutral-800 text-neutral-200 py-1.5 px-3 rounded text-xs shadow-lg">
+                  <p>Create a bunch of issues in 1 go with Kaya.</p>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
           </div>
         </DialogHeader>
 
