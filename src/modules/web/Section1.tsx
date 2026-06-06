@@ -37,8 +37,8 @@ const Section1 = () => {
                 </span>
                 <span className="relative w-9 h-9 rounded-full border-2 border-black overflow-hidden bg-neutral-800 shrink-0 transition-transform duration-300 hover:scale-110 hover:z-10 cursor-pointer">
                   <Image
-                    src="/aashi.jpg"
-                    alt="Team member 2"
+                    src="/bhanudp1.jpg"
+                    alt="Bhanu"
                     fill
                     className="object-cover"
                   />
@@ -53,8 +53,8 @@ const Section1 = () => {
                 </span>
                 <span className="relative w-9 h-9 rounded-full border-2 border-black overflow-hidden bg-neutral-800 shrink-0 transition-transform duration-300 hover:scale-110 hover:z-10 cursor-pointer">
                   <Image
-                    src="/bhanu.png"
-                    alt="Bhanu"
+                    src="/sahildp.jpeg"
+                    alt="Sahil"
                     fill
                     className="object-cover"
                   />

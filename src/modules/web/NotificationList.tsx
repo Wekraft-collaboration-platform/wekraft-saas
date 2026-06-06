@@ -21,7 +21,7 @@ const notifications: Item[] = [
         name: "Bhanu (Teamspace)",
         description: "@rox -> i have added new reported bugs from client",
         time: "Just now",
-        avatar: "/bhanu.png",
+        avatar: "/bhanudp1.jpg",
         hasButton: true,
         buttonText: "View Bugs",
     },

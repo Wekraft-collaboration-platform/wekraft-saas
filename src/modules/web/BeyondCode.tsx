@@ -94,7 +94,7 @@ const BeyondCode = () => {
                 ease: [0.25, 0.46, 0.45, 0.94],
                 delay: 0.08 * i,
               }}
-              className="group relative rounded-xl border border-white/[0.08] bg-[#121316]/90 overflow-hidden flex flex-col justify-between h-[380px] lg:h-[460px] hover:border-white/[0.15] transition-all duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
+              className="group relative rounded-xl border border-white/[0.08] bg-[#121316]/90 overflow-hidden flex flex-col justify-between h-[420px] sm:h-[380px] lg:h-[460px] hover:border-white/[0.15] transition-all duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
             >
               {/* Text Content */}
               <div className="relative z-10 p-6 md:p-8">
@@ -110,7 +110,7 @@ const BeyondCode = () => {
               </div>
 
               {/* Image Container: bottom-right zoomed & half-cut */}
-              <div className="absolute bottom-0 right-0 w-[82%] h-[54%] lg:h-[56%] rounded-tl-xl border-t border-l border-white/[0.08] overflow-hidden bg-neutral-950">
+              <div className="absolute bottom-0 right-0 w-[82%] h-[46%] sm:h-[54%] lg:h-[56%] rounded-tl-xl border-t border-l border-white/[0.08] overflow-hidden bg-neutral-950">
                 <div className="relative w-full h-full">
                   <Image
                     src={card.image}
@@ -133,7 +133,7 @@ const BeyondCode = () => {
               ease: [0.25, 0.46, 0.45, 0.94],
               delay: 0.24,
             }}
-            className="group lg:col-span-3 relative rounded-xl border border-white/[0.08] bg-[#121316]/90 overflow-hidden flex flex-col justify-between md:justify-center h-[320px] md:h-[300px] lg:h-[360px] p-6 md:p-8 lg:p-10 hover:border-white/[0.15] transition-all duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
+            className="group lg:col-span-3 relative rounded-xl border border-white/[0.08] bg-[#121316]/90 overflow-hidden flex flex-col justify-between md:justify-center h-[380px] md:h-[300px] lg:h-[360px] p-6 md:p-8 lg:p-10 hover:border-white/[0.15] transition-all duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.5)]"
           >
             {/* Text Content */}
             <div className="max-w-full md:max-w-[45%] relative z-10">
@@ -150,7 +150,7 @@ const BeyondCode = () => {
             </div>
 
             {/* Image Container: bottom-right zoomed & half-cut */}
-            <div className="absolute bottom-0 right-0 w-[80%] h-[50%] md:w-[50%] md:h-[90%] rounded-tl-xl border-t border-l border-white/[0.08] overflow-hidden bg-neutral-950">
+            <div className="absolute bottom-0 right-0 w-[80%] h-[45%] md:w-[50%] md:h-[90%] rounded-tl-xl border-t border-l border-white/[0.08] overflow-hidden bg-neutral-950">
               <div className="relative w-full h-full">
                 <Image
                   src="/heat.png"
