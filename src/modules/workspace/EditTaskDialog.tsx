@@ -730,6 +730,7 @@ export const EditTaskDialog = ({
                   onSelect={setSelectedPath}
                   selectedPath={selectedPath}
                   ownerClerkId={ownerClerkId}
+                  projectName={projectName}
                 />
               </PopoverContent>
             </Popover>

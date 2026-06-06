@@ -84,24 +84,49 @@ export const getConnectedRepos = query({
 
     if (!user) return [];
 
-    const repos = await ctx.db
-      .query("repositories")
-      .withIndex("by_user", (q) => q.eq("userId", user._id))
-      .collect();
-
-    const projects = await ctx.db
+    // Get all projects where the user is either the owner or a member
+    const ownedProjects = await ctx.db
       .query("projects")
       .withIndex("by_owner", (q) => q.eq("ownerId", user._id))
       .collect();
 
-    return repos.map((repo) => {
-      const project = projects.find((p) => p.repositoryId === repo._id);
-      return {
-        ...repo,
-        projectName: project?.projectName,
-        projectId: project?._id,
-      };
-    });
+    const memberships = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    const memberProjects = [];
+    for (const membership of memberships) {
+      const p = await ctx.db.get(membership.projectId);
+      if (p) memberProjects.push(p);
+    }
+
+    // Combine projects uniquely
+    const allProjects = [...ownedProjects];
+    const ownedIds = new Set(ownedProjects.map((p) => p._id));
+    for (const p of memberProjects) {
+      if (!ownedIds.has(p._id)) {
+        allProjects.push(p);
+      }
+    }
+
+    // Gather all linked repositories for these projects
+    const linkedRepos = [];
+    for (const project of allProjects) {
+      if (project.repositoryId) {
+        const repo = await ctx.db.get(project.repositoryId);
+        if (repo) {
+          linkedRepos.push({
+            ...repo,
+            projectName: project.projectName,
+            projectId: project._id,
+            projectSlug: project.slug,
+          });
+        }
+      }
+    }
+
+    return linkedRepos;
   },
 });
 

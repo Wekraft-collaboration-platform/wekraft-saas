@@ -125,7 +125,7 @@ const RepositoriesPage = () => {
                               </div>
                             </div>
                             <Link
-                              href={`/dashboard/my-projects/${repo.projectId}`}
+                              href={`/dashboard/my-projects/${repo.projectSlug}`}
                               className=" cursor-pointer"
                             >
                               <Button

@@ -294,7 +294,7 @@ const ShowRepo = ({
           ) : (
             filteredRepos.map((repo: Repository) => {
               const isConnected = connectedRepos?.some(
-                (cr) => cr.githubId === BigInt(repo.id),
+                (cr) => String(cr.githubId) === String(repo.id),
               );
 
               return (

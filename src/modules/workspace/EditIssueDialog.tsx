@@ -360,6 +360,7 @@ export const EditIssueDialog = ({
                   onSelect={setSelectedPath}
                   selectedPath={selectedPath}
                   ownerClerkId={ownerClerkId}
+                  projectName={projectName}
                 />
               </PopoverContent>
             </Popover>
