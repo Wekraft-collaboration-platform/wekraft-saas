@@ -24,6 +24,7 @@ import { FeedbackWidget } from "../../../../../components/FeedbackWidget";
 import { TableOfContents } from "../../../../../components/TableOfContents";
 import { allDocs, docsConfig } from "@/lib/docs-config";
 import Mermaid from "@/components/Mermaid";
+import StructuredData from "@/components/StructuredData";
 
 export async function generateStaticParams() {
   return allDocs.map((doc) => ({ slug: doc.slug }));
@@ -46,6 +47,9 @@ export async function generateMetadata({
   return {
     title: doc.title,
     description: doc.description,
+    alternates: {
+      canonical: `https://wekraft.xyz/web/docs/${slug}`,
+    },
     openGraph: {
       title: `${doc.title} | Wekraft Documentation`,
       description: doc.description,
@@ -443,8 +447,46 @@ export default async function DocPage({
     (match) => match,
   );
 
+  const breadcrumbItems = [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://wekraft.xyz/web"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Docs",
+      "item": "https://wekraft.xyz/web/docs"
+    }
+  ];
+
+  if (category) {
+    breadcrumbItems.push({
+      "@type": "ListItem",
+      "position": 3,
+      "name": category,
+      "item": `https://wekraft.xyz/web/docs#${category.toLowerCase().replace(/\s+/g, "-")}`
+    });
+  }
+
+  breadcrumbItems.push({
+    "@type": "ListItem",
+    "position": category ? 4 : 3,
+    "name": docInfo?.title || "Article",
+    "item": `https://wekraft.xyz/web/docs/${slug}`
+  });
+
+  const breadcrumbSchema = {
+    "@context": "https://schema.org",
+    "@type": "BreadcrumbList",
+    "itemListElement": breadcrumbItems
+  };
+
   return (
     <div className="flex gap-12 xl:gap-16 w-full">
+      <StructuredData data={breadcrumbSchema} />
       {/* Main article */}
       <div className="min-w-0 flex-1 pb-16">
         {/* Breadcrumb */}

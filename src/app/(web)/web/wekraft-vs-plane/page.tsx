@@ -10,7 +10,11 @@ import { Compass, ArrowRight } from "lucide-react";
 export const metadata: Metadata = {
   title: "Wekraft vs Plane | AI-First Software Engineering Hub",
   description: "Plane is an open-source clone, but it lacks developer integration. Compare Plane with Wekraft's VS Code sync, codebase heatmaps, and autonomous dev agents.",
+  alternates: {
+    canonical: "https://wekraft.xyz/web/wekraft-vs-plane",
+  },
 };
+
 
 const planeFeatures: ComparisonFeature[] = [
   {

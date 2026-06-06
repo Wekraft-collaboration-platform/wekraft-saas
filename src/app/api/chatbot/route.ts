@@ -26,7 +26,7 @@ import { z } from "zod";
 import { api } from "../../../../convex/_generated/api";
 import type { Id } from "../../../../convex/_generated/dataModel";
 import { wekraftGuardrailMiddleware } from "@/lib/middleware/wekraft-guardrail";
-import { ratelimit } from "@/lib/rate-limit";
+import { chatbotRatelimit, chatbotGlobalRatelimit } from "@/lib/rate-limit";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
@@ -298,6 +298,12 @@ Link a repo to sync GitHub Issues as Wekraft Issues. Commits/PRs visible in task
 - If a user asks questions about Wekraft's features, agents (like Kaya PM or Harry Dev), setup guides, navigation, options, billing, or pricing, use the searchDocumentation tool to find the relevant page slug, or call getDocumentationPage directly if you know the exact slug (e.g. 'getting-started', 'sprints', 'extension', 'kaya-pm', 'harry-dev'). Always read the documentation page to get accurate context before answering.
 - The current user's ID is: ${userId}
 - If you are unsure about something, direct the user to the docs or support@wekraft.xyz.
+
+## Strict Guardrails & Restrictions (VERY CRITICAL)
+- You are ONLY allowed to answer questions and resolve queries directly related to Wekraft.
+- You CANNOT write code or provide programming assistance in any language (e.g., Python, JavaScript, etc.). If a user asks you to write code, design an algorithm, write scripts, or explain programming concepts, you MUST strictly decline and say No.
+- You CANNOT answer questions about unrelated topics (such as general knowledge, history, math, science, etc.). If asked, you MUST strictly decline and say No.
+- Under all circumstances, if the request is not related to Wekraft or asks you to write code, say: "No, I am only programmed to assist with Wekraft support queries."
 `.trim();
 
 // -----------------------------------
@@ -317,10 +323,19 @@ export async function POST(req: Request) {
         console.log("Chatbot route hit — userId:", userId);
 
         // Strict rate limiting
+        // 1. Global Route Rate Limiting (Max 10 req/min across all users combined)
+        const { success: globalSuccess } = await chatbotGlobalRatelimit.limit("chatbot_global_limit");
+        if (!globalSuccess) {
+            return new Response("Service is busy. Please try again later.", {
+                status: 429,
+            });
+        }
+
+        // 2. Per-User Rate Limiting (Max 2 req/min per user/IP)
         const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";
         const limitKey = userId ? `chatbot_rl_${userId}` : `chatbot_rl_ip_${ip}`;
 
-        const { success, limit, reset, remaining } = await ratelimit.limit(limitKey);
+        const { success, limit, reset, remaining } = await chatbotRatelimit.limit(limitKey);
         if (!success) {
             return new Response("Too many requests. Please try again later.", {
                 status: 429,
