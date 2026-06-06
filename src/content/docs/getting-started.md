@@ -8,25 +8,25 @@ Welcome to Wekraft! This quickstart guide is structured directly around the **Ge
 
 Your dashboard tracks 7 key onboarding steps. Here is how to complete each one:
 
-### Step 1: Connect your GitHub Account
-- **Objective**: Link your developer profile to GitHub to enable sync features.
-- **Action**: From the dashboard checklist, click **"Connect GitHub account"**. This opens the Clerk/GitHub OAuth dialog. Once authenticated, your commits and pull requests can sync with Wekraft.
+### Step 1: Connect your Version Control Account
+- **Objective**: Link your developer profile to your code repository account to enable sync features.
+- **Action**: From the dashboard checklist, click **"Connect Account"**. This opens the OAuth dialog. Once authenticated, your commits and pull requests can sync with the platform.
 
 ### Step 2: Link Repository to your Project
-- **Objective**: Attach a repository to synchronize file trees and code changes.
-- **Action**: Go to **Repositories** in the sidebar. Select a connected GitHub repository and link it to your active project workspace.
+- **Objective**: Attach a code repository to synchronize file trees and code changes.
+- **Action**: Go to **Repositories** in the sidebar. Select a connected code repository and link it to your active project workspace.
 
 ### Step 3: Visit your Project Workspace
 - **Objective**: Tour the project layout.
-- **Action**: From the home page of your project (`/dashboard/my-projects/[slug]`), click **"Visit workspace"** to enter the main developer dashboard.
+- **Action**: From the home page of your project, click **"Visit workspace"** to enter the main developer dashboard.
 
 ### Step 4: Create your First Task
 - **Objective**: Populate the task list or backlog.
-- **Action**: Navigate to **Tasks** inside your workspace and click **"New Task"** (or use the `/` shortcut in the Message Composer). Add a title, priority level, estimation window, and assign it to yourself.
+- **Action**: Navigate to **Tasks** inside your workspace and click **"New Task"** (or use the slash command in the Message Composer). Add a title, priority level, estimation window, and assign it to yourself.
 
 ### Step 5: Set a Project Deadline to Track
 - **Objective**: Establish the delivery target date.
-- **Action**: Go to the **Project Settings** or the **Time Logs** timeline page. Click **"set Deadline"** and pick the final delivery date. This activates metrics tracking such as Milestone Trajectory and Delay Debt.
+- **Action**: Go to the **Project Settings** or the **Time Logs** timeline page. Click **"Set Deadline"** and pick the final delivery date. This activates metrics tracking such as Milestone Trajectory and Delay Debt.
 
 ### Step 6: Invite Teammates to Collaborate
 - **Objective**: Add team members up to your plan limit.
@@ -41,9 +41,9 @@ Your dashboard tracks 7 key onboarding steps. Here is how to complete each one:
 ## Frequently Asked Questions
 
 **Q: Do I have to complete Step 7 (Free Trial) to finish the onboarding?**
-A: No. Step 7 is optional. Steps 1-6 are the required core steps. Once you finish steps 1-6, your checklist is officially marked complete, which triggers any referral credits if you were referred by another user.
+A: No. Step 7 is optional. Steps 1-6 are the required core steps. Once you finish steps 1-6, your checklist is officially marked complete.
 
-**Q: Can I change my linked GitHub repository later?**
+**Q: Can I change my linked repository later?**
 A: Yes, you can unlink and link a new repository from the **Repositories** dashboard view at any time.
 
 ---

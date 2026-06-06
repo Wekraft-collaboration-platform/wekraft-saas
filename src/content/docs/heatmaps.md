@@ -1,66 +1,64 @@
-# React Flow Codebase Map
+# Codebase Map
 
-The **Heatmaps** page (accessed via the `Heatmap` workspace sidebar tab) renders an interactive, codebase-aware **React Flow Map** of your linked GitHub repository. This view visualizes files, directory hierarchies, commits, and active bug reports in a unified graphical node tree.
-
----
-
-## The Interactive Node Graph (`HeatmapFlow.tsx`)
-
-The main viewport displays your directory hierarchy as an expandable node tree where folders are connected by branch lines:
-
-- **Collapse & Expand**: Clicking a folder node expands its child folders on the canvas, dynamically updating the React Flow layout.
-- **Node Data Popover (Code Ownership)**: Clicking the arrow on any folder node opens a popover detailing:
-  - **Assigned Tasks**: List of active tasks linked to that folder and the assigned team members.
-  - **Completed Tasks**: Historically resolved tasks linked to that folder.
-  - **Files & Subfolders**: Counts of files and directories within.
-
-### Directory Heatmap Highlights
-Folders on the graph are color-coded based on live development activity and outstanding bug reports (Premium features):
-
-| Node Color | Meaning | Description |
-| :--- | :--- | :--- |
-| **Red Node** | `Active Issues` | The folder or its sub-directories contain open Wekraft issues / bug tickets. |
-| **Yellow Node** | `Recent Modifications` | Code files inside this folder have been changed or committed within the last 7 days. |
-| **Blue/Gray Node**| `Stable Node` | No active bugs or recent modifications. |
+The **Heatmaps** module displays an interactive, codebase-aware visual map of your repository. Built on an interactive **node graph library**, it translates directory trees, file structures, git commits, and outstanding bug tickets into a node graph, providing visual codebase metrics.
 
 ---
 
-## Heatmap Control Panel (`HeatmapPanel.tsx`)
+## Codebase Tree Parsing & Canvas Rendering
 
-The collapsible left panel coordinates your repository connections and lists outstanding git metadata:
+Wekraft converts repository file systems into interactive canvas nodes:
 
-### 1. Repository Connection Link
-- Renders the linked GitHub repository path (e.g. `owner/repo-name`). Clicking the card opens your repository directly on GitHub in a new tab.
+```mermaid
+graph TD
+    Repo[Git Hosting API] -->|Parse Directory Structure| FileTree[Recursive Tree Object]
+    FileTree -->|Generate Canvas Layout| NodeGenerator[Node & Edge Generator]
+    NodeGenerator -->|Render| Canvas[Interactive Node Canvas]
+    Backend[Backend Database Queries] -->|Merge Active Issues & Commits| NodeGenerator
+```
 
-### 2. Issues Directory
-- Lists all active, non-closed project issues linked to codebase files (`fileLinked`).
-- Displays assignee avatars and filenames.
-
-### 3. Project Structure Tree
-- Renders a collapsible file tree of the repository.
-- **Direct Code Link**: Clicking on any file inside the tree opens that exact file's blob page on GitHub in a new tab.
-
-### 4. Latest Commits
-- Lists the most recent repository commits fetched from the GitHub API.
+1. **Structure Parsing**: The repository file tree is fetched via the hosting provider's API and parsed recursively into a nested JSON structure.
+2. **Layout Calculation**: Nodes represent directories and files. Edges represent path linkages (parent-to-child directory branches). The coordinate placement is calculated dynamically to avoid overlapping.
+3. **Interactive Navigation**: Users can scroll to zoom, drag the canvas to pan, and click a zoom-to-fit trigger to center the codebase tree. Folder nodes support collapse and expand triggers; collapsing a parent folder temporarily hides child branches and recalculates canvas layout.
 
 ---
 
-## Plan Limits & Free Tier Restrictions
+## Directory Activity & Heatmap Color Rules
 
-The codebase mapping capabilities are restricted by account tier:
+Folder and file nodes are colored dynamically based on live database metrics:
 
-- **Free Tier**:
-  - Browse basic repository structure.
-  - Node color highlights (Red/Yellow alert highlights for bugs and modifications) are **disabled**.
-  - Displays a premium upgrade dialog prompting you to upgrade to Plus/Pro.
-- **Plus & Pro Tiers**:
-  - Full codebase map access with active color alerts and git activity overlays.
-  - Progressive tree rendering and structure caching enabled.
+| Node Color | State Class | Condition | Rationale |
+| :--- | :--- | :--- | :--- |
+| **Red** | `Active Issues` | Outstanding issues exist where the linked file matches the folder path or prefix, and status is not closed. | Alerts developers to buggy codebase modules, preventing further task additions to unstable components. |
+| **Yellow** | `Recent Commits` | Commit records indicate changes in files under this directory tree within the last 7 calendar days. | Identifies active work zones, helping team members track where code changes are compounding. |
+| **Blue / Gray**| `Stable / Idle` | No active issues or commits recorded within the 7-day window. | Represents stable, verified modules that are idle. |
 
 ---
 
-## Next Steps
+## The Heatmap Dashboard Panel
 
-- Link files to tasks in [Tasks & Backlog](/web/docs/tasks).
-- Sync repository integrations in [Git Repositories](/web/docs/repositories).
-- Connect editor-level workflows in [VS Code Extension](/web/docs/extension).
+A side dashboard panel anchors Git actions and lists file metrics:
+
+- **Repository Card**: Renders the repository path. Clicking the card launches the linked repository on the hosting provider in a new tab.
+- **Issues Directory**: Aggregates all open issues, displaying assignee avatars and the path of the linked file.
+- **Interactive File Tree**: A collapsible directory tree in list form. Selecting a file node from this tree highlights its corresponding node on the interactive canvas. Clicking a file icon navigates to the file view on the hosting provider.
+- **Commit History**: Renders a scrollable list of recent repository commits, showing commit hashes, author names, and messages.
+
+---
+
+## Plan Limits & Tier Enforcements
+
+Database structures and highlight overlays are gated by user subscription tiers:
+
+### 1. Free Tier
+- Maps the repository layout structure but collapses sub-directories beyond a depth of 2 levels.
+- **Overlays Disabled**: All nodes render in a uniform neutral gray. Git commit history lists and active issue color highlights (Red/Yellow alert status) are locked.
+- Clicking locked panels displays a subscription upgrade modal.
+
+### 2. Plus Tier
+- Full directory depth rendering and canvas expansion.
+- Yellow node highlights (recent commits within 7 days) and commit lists are active.
+- Red node highlights (issue alerts) are disabled.
+
+### 3. Pro Tier
+- Complete map features enabled, including full codebase structure depth, yellow commit alerts, and red issue overlay tags.
+- Enables two-way navigation: clicking a canvas node launches the local editor directly to that file path if the editor handshake is active.

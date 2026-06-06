@@ -1,46 +1,77 @@
-# VS Code Extension
+# Editor Extension
 
-The **Wekraft VS Code Extension** is the center of our developer-first planning workflow. It brings your tasks and issue boards directly into your code editor, allowing developers to execute sprints without shifting focus to a browser.
+The **Wekraft Editor Extension** is the center of our developer-first workspace experience. By embedding backlog tracking, ticket management, and active time logging directly inside your editor, Wekraft reduces the need for developers to switch context between the code editor and web dashboards.
 
 ---
 
-## Capabilities & Plan Support
+## Plan Capabilities & Permissions
 
-The extension is available to all users, but write access is governed by your subscription plan:
+Wekraft enforces server-side plan boundaries on all IDE API requests:
 
-- **Free / Plus Plans (Read-Only Mode)**:
-  - Browse your assigned tasks, descriptions, and estimation windows directly from the VS Code Activity Bar.
-  - Navigate to codebase links.
-  - Status updates and task movements must be done on the Wekraft web dashboard.
-- **Pro Plan (Full Two-Way Sync)**:
-  - Update task status (e.g. from `Not Started` to `In Progress` or `Completed`) directly from your editor.
-  - Syncs code focus timelines automatically based on active workspace directories.
+- **Free & Plus Tiers (Read-Only Mode)**:
+  - Browse projects, active sprints, and assigned tasks in the editor sidebar.
+  - View task details, checklists, priorities, and descriptions.
+  - Click codebase paths to automatically open target files.
+  - *Restricted*: Status updates, task assignments, and time logs must be submitted through the web dashboard.
+- **Pro Tier (Full Two-Way Sync)**:
+  - Update task and issue statuses directly from the editor sidebar (e.g., transition a task from `Not Started` to `In Progress` or `Completed`).
+  - Automatically track active file-focus sessions and sync them to the **Time Logs** timeline.
+  - Submit, view, and close service desk tickets directly within the editor.
 
 ---
 
 ## Handshake Authentication Flow
 
-Wekraft authenticates VS Code securely without exposing sensitive password tokens:
+Wekraft authenticates editor clients securely using a deep-linked handshake protocol that generates a cryptographically signed API key without requiring password exposure:
 
-1. **Initiate Handshake**: Click the **Wekraft icon** in the VS Code Activity Bar and select **"Login with Wekraft"**.
-2. **Browser Authentication**: This launches your default browser, prompting you to log in to Wekraft.
-3. **Grant Access**: Click **"Grant Access to IDE"**. The page will securely pass a temp token back to VS Code via deep-linking protocols.
-4. **Active Project Selection**: Select your target project from the dropdown inside the VS Code sidebar. Your backlog tasks populate immediately.
+```mermaid
+sequenceDiagram
+    participant Editor as Editor Extension
+    participant Browser as Web Browser
+    participant WekraftWeb as Wekraft Web App
+    participant Backend as Reactive Backend DB
 
-> [!WARNING]
-> **Token Expiry**: The browser authentication handshake token expires after exactly **5 minutes** for security. If authentication fails, restart the login process from VS Code.
+    Editor->>Browser: 1. Launch extension auth url
+    Browser->>WekraftWeb: 2. User logs in & clicks "Grant Access to IDE"
+    WekraftWeb->>Backend: 3. Invoke handshake token creation
+    Backend-->>WekraftWeb: 4. Returns 5-Min Temp Token
+    WekraftWeb->>Browser: 5. Redirect browser using editor scheme url
+    Browser->>Editor: 6. Handshake Token Intercepted
+    Editor->>Backend: 7. Call handshake verification mutation
+    Note over Backend: Validates token & deletes it.<br/>Inserts new API Key in database.
+    Backend-->>Editor: 8. Returns { userId, apiKey }
+    Editor->>Editor: 9. Securely stores API Key locally
+```
+
+### Authentication Lifecycle Details:
+1. **Initiate**: Select **"Login with Wekraft"** in the editor Activity Bar. This launches the default system browser with the callback redirect parameters.
+2. **Authorize**: Authenticated users click **"Grant Access to IDE"** in the browser.
+3. **Generate Token**: The web app invokes a database mutation to insert a handshake record with a **5-minute Time-To-Live (TTL)**.
+4. **Deep-Link Redirection**: The browser redirects to the custom editor URI scheme.
+5. **Exchange**: The editor catches the deep-link parameters and calls the backend endpoint to exchange the token. On success, this generates a permanent key in the api keys table, revokes the handshake token, and returns `{ userId, apiKey }`.
 
 ---
 
-## IDE Workspace Integration Features
+## API Security, Rate Limiting & Touch Tracking
 
-- **Codebase Links**: Tasks in Wekraft can specify a file path relative to your repository root (e.g., `src/App.tsx`). If configured, the extension allows you to open that exact file in your active workspace with one click.
-- **Backlog Scope**: Sprints and tasks cannot be created inside the IDE extension. This maintains a clean boundary: planning is handled on the web dashboard, while execution happens inside your code editor.
+Every request issued by the editor extension must authenticate against the internal gateway mutation.
+
+- **Sliding-Window Rate Limiter**:
+  - The API key checks usage counts within a sliding **1-minute (60,000ms) window**.
+  - **Limit**: Max **60 requests per minute**.
+  - Exceeding the threshold returns a rate limit exceeded error, causing the extension to temporarily queue non-critical events.
+- **Activity Tracking**:
+  - Valid requests touch the database API key record, writing the current epoch time to the last used field for developer security auditing.
 
 ---
 
-## Next Steps
+## Workspace Features in the Editor
 
-- Learn about task properties in [Tasks & Backlog](/web/docs/tasks).
-- View how code branches sync in [Git Repositories](/web/docs/repositories).
-- Learn about the [Project Delivery Timeline & Gantt Chart](/web/docs/time-logs).
+### 1. Codebase Navigation
+Files linked to tasks or issues via relative paths (e.g. `src/components/Navbar.tsx`) are rendered as active links. Clicking the file link inside the editor instructs it to look up the file in your active workspace directories and open it immediately.
+
+### 2. Time Tracking Sync
+If the user belongs to a Pro tier, the extension tracks which files are actively focused in the editor. Focus durations are aggregated and synced periodically back to Wekraft's time tracking metrics.
+
+### 3. Ticket Management
+The extension provides access to the service desk backlog, querying tickets and invoking status updates to resolve client requests without leaving the development workspace.

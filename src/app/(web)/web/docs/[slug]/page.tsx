@@ -23,6 +23,7 @@ import { CopyButton } from "../../../../../components/CopyButton";
 import { FeedbackWidget } from "../../../../../components/FeedbackWidget";
 import { TableOfContents } from "../../../../../components/TableOfContents";
 import { allDocs, docsConfig } from "@/lib/docs-config";
+import Mermaid from "@/components/Mermaid";
 
 export async function generateStaticParams() {
   return allDocs.map((doc) => ({ slug: doc.slug }));
@@ -341,7 +342,12 @@ const markdownComponents: Components = {
     );
   },
   pre: ({ children }) => {
-    // Extract text content for copy button
+    // Check if first child is a code block containing language-mermaid
+    const codeElement = React.Children.toArray(children)[0] as React.ReactElement<any>;
+    const isMermaid = codeElement?.props?.className === "language-mermaid" || 
+                      (codeElement?.props?.className && codeElement.props.className.includes("language-mermaid"));
+
+    // Extract text content for copy button or chart input
     const extractText = (node: any): string => {
       if (typeof node === "string") return node;
       if (Array.isArray(node)) return node.map(extractText).join("");
@@ -350,6 +356,10 @@ const markdownComponents: Components = {
     };
 
     const codeText = extractText(children);
+
+    if (isMermaid) {
+      return <Mermaid chart={codeText.trim()} />;
+    }
 
     return (
       <div className="relative group my-6">
