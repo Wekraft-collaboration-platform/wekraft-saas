@@ -30,7 +30,7 @@ const navLinks: { label: string; href: string }[] = [
   { label: "Features", href: "/web?scroll=features" },
   { label: "Pricing", href: "/web/pricing" },
   { label: "Contact", href: "/web/contact" },
-  { label: "Why Wekraft?", href: "/web/why-wekraft" },
+  { label: "Why WeKraft?", href: "/web/why-wekraft" },
   { label: "Docs", href: "/web/docs" },
 ];
 
@@ -138,7 +138,7 @@ const Navbar = () => {
           )}
         >
           {navLinks.map(({ label, href }) => {
-            if (label === "Why Wekraft?") {
+            if (label === "Why WeKraft?") {
               return (
                 <div
                   key={label}
@@ -168,10 +168,10 @@ const Navbar = () => {
                         <div className="flex-[1.25] flex flex-col gap-4">
                           <div>
                             <h4 className="font-semibold font-pop text-sm tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white via-white to-neutral-400">
-                              Discover why teams switch to Wekraft
+                              Discover why teams switch to WeKraft
                             </h4>
                             <p className="text-neutral-400 text-[11px] mt-1 font-normal font-sans leading-relaxed">
-                              See how Wekraft stacks up against the tools you
+                              See how WeKraft stacks up against the tools you
                               know. Select a platform to view feature matrices.
                             </p>
                           </div>
@@ -268,7 +268,7 @@ const Navbar = () => {
                         <div className="flex-[0.75] relative rounded-xl border border-white/[0.08] overflow-hidden bg-neutral-900/30 group/img min-h-[190px] flex items-stretch">
                           <img
                             src="/why hover.svg"
-                            alt="Why switch to Wekraft"
+                            alt="Why switch to WeKraft"
                             className="absolute inset-0 w-full h-full object-cover scale-[1.20] transition-transform duration-700 group-hover/img:scale-[1.26]"
                           />
                           <div className="absolute inset-0 bg-gradient-to-t from-neutral-950 via-transparent to-transparent pointer-events-none opacity-80" />

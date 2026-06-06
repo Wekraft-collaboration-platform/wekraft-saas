@@ -1,6 +1,6 @@
 # Dashboard & Navigation
 
-The Wekraft Dashboard is your command center — the first screen you see after logging in. It gives you a bird's-eye view of all your projects, repository activity, notifications, and quick access to every feature.
+The WeKraft Dashboard is your command center — the first screen you see after logging in. It gives you a bird's-eye view of all your projects, repository activity, notifications, and quick access to every feature.
 
 ## Main Dashboard
 
@@ -131,7 +131,7 @@ Click your avatar in the sidebar footer to access:
 
 ## Notifications
 
-The **bell icon** in the dashboard shows your notification count in the Stats tab. Wekraft sends notifications for:
+The **bell icon** in the dashboard shows your notification count in the Stats tab. WeKraft sends notifications for:
 
 - Join requests on your projects
 - Task assignments and status changes
@@ -148,7 +148,7 @@ Click any notification to navigate directly to the relevant item. Hover over a n
 
 ## Keyboard Shortcuts
 
-Wekraft supports keyboard shortcuts for power users:
+WeKraft supports keyboard shortcuts for power users:
 
 | Shortcut | Action |
 |---|---|

@@ -427,13 +427,13 @@ export function WelcomeDialog() {
               className="absolute -right-10 top-5 w-42 h-42 object-cover pointer-events-none select-none"
             />
             <h2 className="relative z-10 text-lg font-semibold text-white leading-snug">
-              Welcome to Wekraft! Let&apos;s start your journey.
+              Welcome to WeKraft! Let&apos;s start your journey.
             </h2>
           </div>
 
           {/* Description list (outside inner box, below it) */}
           <div className="mt-2 flex flex-col gap-3 px-1">
-            <h3 className="text-sm text-center underline underline-offset-4 font-semibold text-white">How to use Wekraft</h3>
+            <h3 className="text-sm text-center underline underline-offset-4 font-semibold text-white">How to use WeKraft</h3>
             <ul className="flex flex-col gap-2.5 text-sm text-neutral-400 px-5">
               <li className="flex items-center gap-2">
                 <GitBranch className="w-3.5 h-3.5 text-white shrink-0" />

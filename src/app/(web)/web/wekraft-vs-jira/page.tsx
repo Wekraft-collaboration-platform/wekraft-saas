@@ -9,9 +9,9 @@ import { Briefcase, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
   title: {
-    absolute: "Wekraft vs Jira",
+    absolute: "WeKraft vs Jira",
   },
-  description: "Ditch the slow loading screens and configuration bloat. Compare Jira with Wekraft's sub-second performance, native AI agents, and built-in meetings.",
+  description: "Ditch the slow loading screens and configuration bloat. Compare Jira with WeKraft's sub-second performance, native AI agents, and built-in meetings.",
   alternates: {
     canonical: "https://wekraft.xyz/web/wekraft-vs-jira",
   },
@@ -63,16 +63,16 @@ const jiraFeatures: ComparisonFeature[] = [
 
 const jiraFaqs: FAQItem[] = [
   {
-    question: "Is Wekraft secure enough to replace Jira?",
-    answer: "Absolutely. Wekraft features advanced workspace membership controls, secure data storage via Convex, and complies with modern security protocols. Wekraft's architecture keeps your codebase keys and project descriptions fully isolated.",
+    question: "Is WeKraft secure enough to replace Jira?",
+    answer: "Absolutely. WeKraft features advanced workspace membership controls, secure data storage via Convex, and complies with modern security protocols. WeKraft's architecture keeps your codebase keys and project descriptions fully isolated.",
   },
   {
-    question: "How much faster is Wekraft compared to Jira?",
-    answer: "Wekraft is designed to load in under 100ms, even on workspaces with thousands of active tasks. Jira often takes several seconds to switch between backlogs, sprint boards, and timeline roadmaps.",
+    question: "How much faster is WeKraft compared to Jira?",
+    answer: "WeKraft is designed to load in under 100ms, even on workspaces with thousands of active tasks. Jira often takes several seconds to switch between backlogs, sprint boards, and timeline roadmaps.",
   },
   {
-    question: "Can Wekraft import our sprint cycles and subtasks from Jira?",
-    answer: "Yes. Using Wekraft's Jira Importer, you can import XML or CSV dumps from Jira. The importer automatically parses issues, epic links, sprint dates, assignees, and attachments to make transition seamless.",
+    question: "Can WeKraft import our sprint cycles and subtasks from Jira?",
+    answer: "Yes. Using WeKraft's Jira Importer, you can import XML or CSV dumps from Jira. The importer automatically parses issues, epic links, sprint dates, assignees, and attachments to make transition seamless.",
   },
 ];
 

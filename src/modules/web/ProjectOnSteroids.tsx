@@ -63,7 +63,7 @@ const ProjectOnSteroids = () => {
 
           <div className="flex flex-col gap-6 lg:max-w-[450px] pt-2">
             <p className="text-lg md:text-xl text-blue-50/90 leading-relaxed font-medium">
-              Wekraft makes it easy to build workflows, track issues, and ship
+              WeKraft makes it easy to build workflows, track issues, and ship
               software. Unify your entire development lifecycle in minutes, not
               months.
             </p>
@@ -91,7 +91,7 @@ const ProjectOnSteroids = () => {
                     type="button"
                     className="bg-white text-blue-600 px-8 py-3.5 rounded-md hover:bg-neutral-50 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-sm cursor-pointer"
                   >
-                    Try Wekraft for free
+                    Try WeKraft for free
                   </button>
                 </SignUpButton>
               )}
@@ -189,7 +189,7 @@ const ProjectOnSteroids = () => {
               <div className="relative rounded-[10px] md:rounded-[20px] overflow-hidden">
                 <Image
                   src="/dash.png"
-                  alt="Wekraft Dashboard"
+                  alt="WeKraft Dashboard"
                   width={1920}
                   height={1080}
                   className="w-full h-auto object-cover object-top block"

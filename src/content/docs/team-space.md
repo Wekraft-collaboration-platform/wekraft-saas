@@ -1,6 +1,6 @@
 # Teamspace Chat & Channels
 
-Wekraft **Teamspace** (accessed via the `Teamspace` workspace sidebar tab) is a real-time, channel-based chat application built directly into your workspace. It enables instant team communication, poll creations, file attachments, and direct mentions of colleagues or AI agents.
+WeKraft **Teamspace** (accessed via the `Teamspace` workspace sidebar tab) is a real-time, channel-based chat application built directly into your workspace. It enables instant team communication, poll creations, file attachments, and direct mentions of colleagues or AI agents.
 
 ---
 

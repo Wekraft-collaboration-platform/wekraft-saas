@@ -1,6 +1,6 @@
 # Referral Program
 
-The **Referral Program** allows you to earn rewards by inviting other users to join and onboard onto Wekraft. You can share your unique referral code and earn cash rewards or commissions.
+The **Referral Program** allows you to earn rewards by inviting other users to join and onboard onto WeKraft. You can share your unique referral code and earn cash rewards or commissions.
 
 ---
 

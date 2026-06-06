@@ -120,7 +120,7 @@ const WallOfLove = () => {
         >
           <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 via-transparent to-transparent pointer-events-none" />
           <p className="relative z-10 text-2xl md:text-[28px] font-medium leading-relaxed tracking-tight text-neutral-100">
-            "Wekraft gives our engineering team the rare feeling that project
+            "WeKraft gives our engineering team the rare feeling that project
             management is helping the work instead of hovering above it."
           </p>
           <div className="relative z-10 flex items-end justify-between gap-6 md:justify-end">

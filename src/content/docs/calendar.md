@@ -1,6 +1,6 @@
 # Project Calendar
 
-The Wekraft Calendar provides a shared timeline of events, scheduled milestones, task deadlines, and sprint scopes across the entire project space.
+The WeKraft Calendar provides a shared timeline of events, scheduled milestones, task deadlines, and sprint scopes across the entire project space.
 
 ---
 
@@ -21,7 +21,7 @@ Every calendar entry has the following properties:
 
 ## Workspace Integrations
 
-Wekraft merges calendar records with project boards to compile a single dashboard view:
+WeKraft merges calendar records with project boards to compile a single dashboard view:
 
 ### 1. Task Deadline Overlays
 Any active task with an `estimation.endDate` is automatically plotted on the calendar grid. The visual color corresponds to the task's state:

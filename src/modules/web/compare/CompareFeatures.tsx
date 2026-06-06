@@ -19,17 +19,17 @@ const wekraftFeatures: FeatureCard[] = [
   {
     icon: <Terminal className="w-5 h-5 text-neutral-400 transition-colors group-hover:text-white" />,
     title: "Harry Dev Agent (AI Dev)",
-    description: "An autonomous developer agent in your workspace. Assign tasks to Harry directly inside Wekraft, and watch him analyze codebases, run tests, and open PRs.",
+    description: "An autonomous developer agent in your workspace. Assign tasks to Harry directly inside WeKraft, and watch him analyze codebases, run tests, and open PRs.",
   },
   {
     icon: <Code className="w-5 h-5 text-neutral-400 transition-colors group-hover:text-white" />,
     title: "VS Code Handshake Sync",
-    description: "Updates tasks in real-time as you code. Complete a checkmark in your IDE, and Wekraft synchronizes issue logs, estimate changes, and task statuses instantly.",
+    description: "Updates tasks in real-time as you code. Complete a checkmark in your IDE, and WeKraft synchronizes issue logs, estimate changes, and task statuses instantly.",
   },
   {
     icon: <Video className="w-5 h-5 text-neutral-400 transition-colors group-hover:text-white" />,
     title: "Team Meet (Video Rooms)",
-    description: "No more external link scheduling. Wekraft's built-in video rooms let engineers jump on quick voice/video calls directly from the issue cards or sprint boards.",
+    description: "No more external link scheduling. WeKraft's built-in video rooms let engineers jump on quick voice/video calls directly from the issue cards or sprint boards.",
   },
   {
     icon: <BarChart3 className="w-5 h-5 text-neutral-400 transition-colors group-hover:text-white" />,
@@ -39,7 +39,7 @@ const wekraftFeatures: FeatureCard[] = [
   {
     icon: <Database className="w-5 h-5 text-neutral-400 transition-colors group-hover:text-white" />,
     title: "Long-Term Memory Layer",
-    description: "Unlike generic chat assistants, Wekraft's memory layer persists context across sprints, storing architecture decisions, team roles, and coding patterns.",
+    description: "Unlike generic chat assistants, WeKraft's memory layer persists context across sprints, storing architecture decisions, team roles, and coding patterns.",
   },
 ];
 
@@ -51,7 +51,7 @@ export default function CompareFeatures() {
           An Engineering Workspace Reimagined
         </h2>
         <p className="text-neutral-400 text-sm max-w-[600px] mx-auto">
-          Wekraft is not just a digital board. It is an AI-first collaborative workspace designed from the ground up for software shipping.
+          WeKraft is not just a digital board. It is an AI-first collaborative workspace designed from the ground up for software shipping.
         </p>
       </div>
 

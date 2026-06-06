@@ -1,6 +1,6 @@
 # User Profile
 
-Your Wekraft profile (`/dashboard/my-profile`) represents your identity and professional skillset across the platform. It is visible to team members in Teamspace chats, project member grids, and task comments.
+Your WeKraft profile (`/dashboard/my-profile`) represents your identity and professional skillset across the platform. It is visible to team members in Teamspace chats, project member grids, and task comments.
 
 ---
 

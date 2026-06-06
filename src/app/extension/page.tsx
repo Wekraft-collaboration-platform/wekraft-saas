@@ -115,13 +115,13 @@ function ExtensionPageInner() {
         <Link href="/" className="flex items-center gap-2 group">
           <Image
             src="/logo.svg"
-            alt="Wekraft logo"
+            alt="WeKraft logo"
             width={22}
             height={22}
             className="rounded-sm"
           />
           <span className="text-base font-bold tracking-tight text-primary">
-            Wekraft
+            WeKraft
           </span>
         </Link>
       </header>
@@ -161,7 +161,7 @@ function ExtensionPageInner() {
                     Connect your IDE
                   </h2>
                   <p className="text-muted-foreground text-xs leading-relaxed px-2">
-                    Sign in to your Wekraft account to grant your IDE extension
+                    Sign in to your WeKraft account to grant your IDE extension
                     secure access to your projects and tasks.
                   </p>
                 </div>
@@ -172,7 +172,7 @@ function ExtensionPageInner() {
                     className="w-full h-10 rounded-xl bg-primary text-primary-foreground text-sm font-semibold flex items-center justify-center gap-2 transition-opacity hover:opacity-90 active:scale-[.98]"
                   >
                     <LogIn className="w-4 h-4" />
-                    Sign in to Wekraft
+                    Sign in to WeKraft
                   </button>
                 </SignInButton>
               </div>
@@ -219,7 +219,7 @@ function ExtensionPageInner() {
                       IDE Extension Access
                     </h2>
                     <p className="text-muted-foreground text-xs leading-relaxed">
-                      Your IDE extension is requesting access to Wekraft. Grant
+                      Your IDE extension is requesting access to WeKraft. Grant
                       it a secure, one-time token to link your workspace.
                     </p>
                   </div>

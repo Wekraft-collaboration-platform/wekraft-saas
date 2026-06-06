@@ -9,9 +9,9 @@ import { FileText, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
   title: {
-    absolute: "Wekraft vs Notion",
+    absolute: "WeKraft vs Notion",
   },
-  description: "Notion is great for documents, but fails as a software engineering hub. Compare Notion with Wekraft's native developer cycles, VS Code sync, and AI agents.",
+  description: "Notion is great for documents, but fails as a software engineering hub. Compare Notion with WeKraft's native developer cycles, VS Code sync, and AI agents.",
   alternates: {
     canonical: "https://wekraft.xyz/web/wekraft-vs-notion",
   },
@@ -63,16 +63,16 @@ const notionFeatures: ComparisonFeature[] = [
 
 const notionFaqs: FAQItem[] = [
   {
-    question: "Why should we switch from Notion to Wekraft?",
-    answer: "While Notion is a powerful note-taking app, engineering teams quickly run into limits. Notion requires manual setup for database sprints, doesn't track burn-downs or cycle velocity out of the box, and lacks integrations with git and IDEs. Wekraft gives you the clean document interface of Notion but links it natively to high-performance sprint tools, VS Code, and autonomous AI agents.",
+    question: "Why should we switch from Notion to WeKraft?",
+    answer: "While Notion is a powerful note-taking app, engineering teams quickly run into limits. Notion requires manual setup for database sprints, doesn't track burn-downs or cycle velocity out of the box, and lacks integrations with git and IDEs. WeKraft gives you the clean document interface of Notion but links it natively to high-performance sprint tools, VS Code, and autonomous AI agents.",
   },
   {
     question: "Can we import our existing Notion wikis and databases?",
-    answer: "Yes! Wekraft features a dedicated import utility. You can upload Notion CSV exports or connect via Notion API to map databases, pages, tasks, and users to Wekraft modules in minutes.",
+    answer: "Yes! WeKraft features a dedicated import utility. You can upload Notion CSV exports or connect via Notion API to map databases, pages, tasks, and users to WeKraft modules in minutes.",
   },
   {
-    question: "How does Wekraft keep docs and code connected?",
-    answer: "With our VS Code Handshake Sync and bi-directional Git linkage, files mentioned in Wekraft Docs automatically sync with your codebase. Changes to code comments can update Wekraft tasks, and referencing a ticket in a commit updates the Wekraft board state.",
+    question: "How does WeKraft keep docs and code connected?",
+    answer: "With our VS Code Handshake Sync and bi-directional Git linkage, files mentioned in WeKraft Docs automatically sync with your codebase. Changes to code comments can update WeKraft tasks, and referencing a ticket in a commit updates the WeKraft board state.",
   },
 ];
 

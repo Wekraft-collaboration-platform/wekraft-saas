@@ -17,28 +17,28 @@ const column1: Testimonial[] = [
     name: "Arjun Kotha",
     handle: "@arjun.kotha_",
     avatar: "/testuser4.png",
-    text: "Wekraft feels like a complete workspace for development teams - combining messaging, meetings, task management, GitHub, and a project-aware AI agent in one clean interface. It reduces the need for disconnected tools.",
+    text: "WeKraft feels like a complete workspace for development teams - combining messaging, meetings, task management, GitHub, and a project-aware AI agent in one clean interface. It reduces the need for disconnected tools.",
     tags: ["#workspace", "#dx"],
   },
   {
     name: "Somesh",
     handle: "@someshh_01",
     avatar: "/testuser2.jpeg",
-    text: "Wekraft combines a clean dashboard, excellent documentation, and a user-friendly experience. It simplifies project management while maintaining a modern and professional feel. I'm excited to see how it evolves.",
+    text: "WeKraft combines a clean dashboard, excellent documentation, and a user-friendly experience. It simplifies project management while maintaining a modern and professional feel. I'm excited to see how it evolves.",
     tags: ["#ux", "#docs"],
   },
   {
     name: "Tanya Garg",
     handle: "@tanya.gargg",
     avatar: "/palakdp.jpg",
-    text: "Wekraft offers an innovative AI-powered approach to project management. The platform is intuitive, well-designed, and has the potential to simplify complex workflows for teams. I'm excited to see how it evolves.",
+    text: "WeKraft offers an innovative AI-powered approach to project management. The platform is intuitive, well-designed, and has the potential to simplify complex workflows for teams. I'm excited to see how it evolves.",
     tags: ["#ai", "#workflow"],
   },
   {
     name: "Apurve Karanwal",
     handle: "@karanwal_apurve",
     avatar: "/testuser3.jpeg",
-    text: "Wekraft is an excellent platform, if you do not like platforms like Linear, Jira, or Asana, give Wekraft a chance, you will definitely love it. The UI is just too good, easy to navigate, and very descriptive.",
+    text: "WeKraft is an excellent platform, if you do not like platforms like Linear, Jira, or Asana, give WeKraft a chance, you will definitely love it. The UI is just too good, easy to navigate, and very descriptive.",
     tags: ["#ui", "#alternative"],
   },
 ];
@@ -48,21 +48,21 @@ const column2: Testimonial[] = [
     name: "Shaurya Hindocha",
     handle: "@shaurya_17",
     avatar: "/testuser.jpg",
-    text: "My overall experience with Wekraft has been very positive. The platform provides a great opportunity to collaborate on projects, connect with like-minded individuals, and gain practical industry exposure.",
+    text: "My overall experience with WeKraft has been very positive. The platform provides a great opportunity to collaborate on projects, connect with like-minded individuals, and gain practical industry exposure.",
     tags: ["#learning", "#community"],
   },
   {
     name: "Akash Singh",
     handle: "@akash.singh_",
     avatar: "/akash.jpg",
-    text: "I really like the Wekraft UI. It's clean, modern, and intuitive. It shows strong potential for managing complex projects while reducing manual effort.",
+    text: "I really like the WeKraft UI. It's clean, modern, and intuitive. It shows strong potential for managing complex projects while reducing manual effort.",
     tags: ["#ui", "#ux"],
   },
   {
     name: "Shubham Choudhary",
     handle: "@_shubham_18",
     avatar: "/shubhamdp.jpg",
-    text: "Wekraft is really good and impressive. I liked the modern interface, AI-driven approach to project management, and the way tasks and collaboration are organized in a single workspace.",
+    text: "WeKraft is really good and impressive. I liked the modern interface, AI-driven approach to project management, and the way tasks and collaboration are organized in a single workspace.",
     tags: ["#impressive", "#workspace"],
   },
   {
@@ -145,7 +145,7 @@ const Testimonials = () => {
               Loved by creators.
             </h2>
             <p className="text-neutral-300 text-lg md:text-xl font-medium mb-5 max-w-xl leading-snug">
-              Why fast-moving engineering teams are migrating to Wekraft.
+              Why fast-moving engineering teams are migrating to WeKraft.
             </p>
             <p className="text-neutral-400 text-sm md:text-base leading-relaxed mb-8 max-w-md">
               From real-time issue sync to git-integrated time tracking and autonomous AI agents. See how software creators are shipping faster and staying focused.

@@ -5,7 +5,7 @@ import StructuredData from "@/components/StructuredData";
 
 export const metadata: Metadata = {
   title: "Contact Us",
-  description: "Have questions about Wekraft, custom plans, enterprise deployment, or billing support? Fill out the contact form and our team will get back to you within 24 hours.",
+  description: "Have questions about WeKraft, custom plans, enterprise deployment, or billing support? Fill out the contact form and our team will get back to you within 24 hours.",
   alternates: {
     canonical: "https://wekraft.xyz/web/contact",
   },
@@ -16,11 +16,11 @@ const contactSchema = {
   "@type": "ContactPage",
   "@id": "https://wekraft.xyz/web/contact/#contactpage",
   "url": "https://wekraft.xyz/web/contact",
-  "name": "Contact Wekraft Support & Sales",
-  "description": "Get in touch with Wekraft's technical support, customer success, or enterprise sales team. We respond within 24 hours.",
+  "name": "Contact WeKraft Support & Sales",
+  "description": "Get in touch with WeKraft's technical support, customer success, or enterprise sales team. We respond within 24 hours.",
   "mainEntity": {
     "@type": "Organization",
-    "name": "Wekraft",
+    "name": "WeKraft",
     "email": "support@wekraft.xyz"
   }
 };

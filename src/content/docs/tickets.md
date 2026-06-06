@@ -1,6 +1,6 @@
 # Tickets
 
-The **Tickets** system in Wekraft provides a full-lifecycle support ticket workflow for managing client-facing requests, internal escalations, and service-level commitments. Tickets live inside the **Customer Desk** and are tightly coupled to your project's tasks and issues.
+The **Tickets** system in WeKraft provides a full-lifecycle support ticket workflow for managing client-facing requests, internal escalations, and service-level commitments. Tickets live inside the **Customer Desk** and are tightly coupled to your project's tasks and issues.
 
 > **Tip** — Tickets are distinct from internal **Issues**. Issues track engineering bugs; Tickets track client-reported problems and service requests.
 
@@ -21,8 +21,8 @@ The **Tickets** system in Wekraft provides a full-lifecycle support ticket workf
 5. Click **Create Ticket**.
 
 ### From the IDE Extension
-Team members can also create tickets directly from the Wekraft **IDE Extension**:
-1. Open the Wekraft panel in your editor.
+Team members can also create tickets directly from the WeKraft **IDE Extension**:
+1. Open the WeKraft panel in your editor.
 2. Navigate to **Customer Desk → Tickets**.
 3. Click **+ New** and fill in the form inline.
 
@@ -162,4 +162,4 @@ Track your team's support performance from **Project Dashboard → Customer Desk
 ## Related Pages
 - [Customer Desk](/web/docs/customer-desk) — full desk setup and permissions.
 - [Issues & Bug Tracking](/web/docs/issues) — managing internal engineering issues.
-- [Help & Support](/web/docs/support) — for Wekraft platform support queries.
+- [Help & Support](/web/docs/support) — for WeKraft platform support queries.

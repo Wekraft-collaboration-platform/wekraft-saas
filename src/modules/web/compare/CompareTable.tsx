@@ -46,10 +46,10 @@ export default function CompareTable({ competitorName, competitorLogo, features 
     <div className="w-full font-sans text-neutral-100 py-16 relative z-10">
       <div className="text-center mb-12">
         <h2 className="text-3xl sm:text-4xl font-bold tracking-tight text-white mb-3">
-          Why do {competitorName} users migrate to Wekraft?
+          Why do {competitorName} users migrate to WeKraft?
         </h2>
         <p className="text-neutral-400 text-sm sm:text-base max-w-[600px] mx-auto">
-          An honest, feature-by-feature comparison of where Wekraft is built differently.
+          An honest, feature-by-feature comparison of where WeKraft is built differently.
         </p>
       </div>
 
@@ -104,7 +104,7 @@ export default function CompareTable({ competitorName, competitorLogo, features 
                   </div>
                 </td>
 
-                {/* Wekraft Column */}
+                {/* WeKraft Column */}
                 <td className="py-6 px-6 text-left align-top">
                   <div className="flex items-start gap-3.5 text-left h-full">
                     {renderStatusIcon(feature.wekraftStatus)}

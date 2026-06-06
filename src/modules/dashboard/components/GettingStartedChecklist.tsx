@@ -58,7 +58,7 @@ export const STEPS: StepConfig[] = [
     label: "Link repository to your Project",
     hint: "Connect GitHub repo to your project",
     description:
-      "Connect a GitHub repository to your project so Wekraft can sync commits, pull requests, and branches automatically.",
+      "Connect a GitHub repository to your project so WeKraft can sync commits, pull requests, and branches automatically.",
     cta: "Link a repository",
     action: (router) => {
       router.push("/dashboard/repositories");
@@ -104,7 +104,7 @@ export const STEPS: StepConfig[] = [
     label: "Set a project deadline to Track",
     hint: "Keeps the team focused",
     description:
-      "Define a target delivery date for your project. Wekraft will track your time-to-deadline and alert you as it approaches.",
+      "Define a target delivery date for your project. WeKraft will track your time-to-deadline and alert you as it approaches.",
     cta: "Open workspace overview",
     action: (router) => {
       router.push("/dashboard");

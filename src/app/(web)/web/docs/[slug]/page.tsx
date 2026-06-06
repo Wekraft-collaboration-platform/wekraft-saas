@@ -51,13 +51,13 @@ export async function generateMetadata({
       canonical: `https://wekraft.xyz/web/docs/${slug}`,
     },
     openGraph: {
-      title: `${doc.title} | Wekraft Documentation`,
+      title: `${doc.title} | WeKraft Documentation`,
       description: doc.description,
       type: "article",
     },
     twitter: {
       card: "summary_large_image",
-      title: `${doc.title} | Wekraft Documentation`,
+      title: `${doc.title} | WeKraft Documentation`,
       description: doc.description,
     },
   };
@@ -249,7 +249,7 @@ const markdownComponents: Components = {
         </div>
         <div className="flex items-center gap-2">
           <User className="h-4 w-4 text-white/30" />
-          <span>Wekraft Team</span>
+          <span>WeKraft Team</span>
         </div>
       </div>
     </>
@@ -536,7 +536,7 @@ export default async function DocPage({
                     </div>
                     <div className="flex items-center gap-2">
                       <User className="h-4 w-4 text-white/30" />
-                      <span>Wekraft Team</span>
+                      <span>WeKraft Team</span>
                     </div>
                   </div>
                 </>

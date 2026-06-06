@@ -29,7 +29,7 @@ export default function CompareFAQ({ competitorName, faqs }: CompareFAQProps) {
           Frequently Asked Questions
         </h2>
         <p className="text-neutral-400 text-sm">
-          Everything you need to know about switching from {competitorName} to Wekraft.
+          Everything you need to know about switching from {competitorName} to WeKraft.
         </p>
       </div>
 

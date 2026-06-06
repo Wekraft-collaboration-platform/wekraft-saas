@@ -111,7 +111,7 @@ export default function Layout({
   useEffect(() => {
     if (typeof window === "undefined" || !pathname) return;
 
-    const suffix = "Wekraft";
+    const suffix = "WeKraft";
 
     // 1. Workspace specific pages (/dashboard/my-projects/[slug]/workspace/[subpage])
     if (pathname.includes("/workspace/")) {

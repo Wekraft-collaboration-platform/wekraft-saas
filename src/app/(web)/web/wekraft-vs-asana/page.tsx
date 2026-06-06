@@ -9,9 +9,9 @@ import { CheckCircle2, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
   title: {
-    absolute: "Wekraft vs Asana",
+    absolute: "WeKraft vs Asana",
   },
-  description: "Asana is good for general task templates, but lacks developer workflows. Compare Asana with Wekraft's VS Code sync, unified docs, and AI PM agents.",
+  description: "Asana is good for general task templates, but lacks developer workflows. Compare Asana with WeKraft's VS Code sync, unified docs, and AI PM agents.",
   alternates: {
     canonical: "https://wekraft.xyz/web/wekraft-vs-asana",
   },
@@ -63,16 +63,16 @@ const asanaFeatures: ComparisonFeature[] = [
 
 const asanaFaqs: FAQItem[] = [
   {
-    question: "Why is Wekraft better for engineering teams than Asana?",
-    answer: "Asana is built for general task coordination across marketing, ops, and HR, which means it lacks specialized developer features. Wekraft is designed exclusively for software shipping. It provides VS Code handshake integrations, Git linkage, commit activity heatmaps, and native AI PM/Dev agents that automate ticketing and code editing.",
+    question: "Why is WeKraft better for engineering teams than Asana?",
+    answer: "Asana is built for general task coordination across marketing, ops, and HR, which means it lacks specialized developer features. WeKraft is designed exclusively for software shipping. It provides VS Code handshake integrations, Git linkage, commit activity heatmaps, and native AI PM/Dev agents that automate ticketing and code editing.",
   },
   {
     question: "Can we import our projects and task dependencies from Asana?",
-    answer: "Yes, Wekraft has an Asana Importer. Simply upload your Asana project JSON/CSV export, and our importer maps your task boards, cycles, milestones, dependencies, assignees, and descriptions automatically.",
+    answer: "Yes, WeKraft has an Asana Importer. Simply upload your Asana project JSON/CSV export, and our importer maps your task boards, cycles, milestones, dependencies, assignees, and descriptions automatically.",
   },
   {
-    question: "Is there a free tier for small teams starting with Wekraft?",
-    answer: "Yes! Wekraft offers a free tier for up to 10 users with unlimited tasks and projects, whereas Asana restricts most advanced views and dashboards behind premium tiers.",
+    question: "Is there a free tier for small teams starting with WeKraft?",
+    answer: "Yes! WeKraft offers a free tier for up to 10 users with unlimited tasks and projects, whereas Asana restricts most advanced views and dashboards behind premium tiers.",
   },
 ];
 

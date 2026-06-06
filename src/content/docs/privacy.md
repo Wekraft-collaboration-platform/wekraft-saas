@@ -1,6 +1,6 @@
 # Privacy Policy
 
-Your privacy is important to Wekraft. This Privacy Policy describes how we collect, use, and handle your data when you use our platform, services, and integrations.
+Your privacy is important to WeKraft. This Privacy Policy describes how we collect, use, and handle your data when you use our platform, services, and integrations.
 
 ---
 
@@ -13,7 +13,7 @@ We collect information required to deliver project coordination, time tracking, 
 - **Interactive inputs** like team chats, tasks, issues, and calendar events.
 
 > [!IMPORTANT]
-> **No Code Storage**: We do not clone, pull, or cache your raw codebase scripts. Wekraft only reads file structures, names, and commit history necessary to populate the visual map and Git metrics.
+> **No Code Storage**: We do not clone, pull, or cache your raw codebase scripts. WeKraft only reads file structures, names, and commit history necessary to populate the visual map and Git metrics.
 
 ---
 

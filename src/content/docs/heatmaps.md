@@ -6,7 +6,7 @@ The **Heatmaps** module displays an interactive, codebase-aware visual map of yo
 
 ## Codebase Tree Parsing & Canvas Rendering
 
-Wekraft converts repository file systems into interactive canvas nodes:
+WeKraft converts repository file systems into interactive canvas nodes:
 
 ```mermaid
 graph TD

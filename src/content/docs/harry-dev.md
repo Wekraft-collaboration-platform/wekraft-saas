@@ -1,6 +1,6 @@
 # Harry Dev Agent (Beta / Coming Soon)
 
-**Harry** is Wekraft's autonomous AI senior developer agent. Harry is designed to index codebases, debug syntax or dependency issues, and suggest pull request reviews.
+**Harry** is WeKraft's autonomous AI senior developer agent. Harry is designed to index codebases, debug syntax or dependency issues, and suggest pull request reviews.
 
 > [!NOTE]
 > **Active Beta Development**: The Harry Dev Agent features are currently under active development. The assistant sheet and dedicated workspace inputs are disabled, displaying a *"heavy development / coming soon"* notice.
@@ -17,7 +17,7 @@ Once released, Harry will be accessible in two primary spaces:
 
 ## Planned Capabilities & Model Tiers
 
-Wekraft will offer two model presets for codebase resolution:
+WeKraft will offer two model presets for codebase resolution:
 - **Harry Fast**: Optimised for rapid syntax reviews, regex formatting, and single-file diagnostics.
 - **Harry Deep**: Leverages deeper reasoning paths to solve multi-file refactoring tasks, index directories, and review complex pull requests.
 

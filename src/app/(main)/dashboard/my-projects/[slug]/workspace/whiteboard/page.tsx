@@ -52,7 +52,7 @@ export default function WhiteboardPage() {
               </p>
               <p className="text-muted-foreground text-sm lg:text-[15px] leading-relaxed">
                 Real-time canvas brainstorming is coming soon! Sketch user flows,
-                wireframes, and mind maps directly within your Wekraft project.
+                wireframes, and mind maps directly within your WeKraft project.
               </p>
             </div>
 

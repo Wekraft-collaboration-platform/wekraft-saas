@@ -275,13 +275,13 @@ function SidebarContent({
         <Link href="/" className="flex items-center gap-3 group">
           <Image
             src="/logo.svg"
-            alt="Wekraft"
+            alt="WeKraft"
             width={32}
             height={32}
             className="shrink-0"
           />
           <span className="text-base font-semibold text-white tracking-tight leading-none mt-0.5">
-            Wekraft
+            WeKraft
           </span>
         </Link>
         <div className="flex items-center justify-center text-[10px] font-mono text-white/20 border border-white/10 rounded px-2 py-0.5 leading-none">
@@ -333,7 +333,7 @@ function SidebarContent({
 
       {/* Footer */}
       <div className="p-3 border-t border-white/6">
-        {/* Back to Wekraft — premium card */}
+        {/* Back to WeKraft — premium card */}
         <Link
           href="/web"
           className="group relative flex items-center gap-3 w-full px-3.5 py-3 rounded-xl bg-gradient-to-r from-white/6 via-white/3 to-transparent border border-white/8 hover:border-white/15 hover:from-white/8 hover:via-white/4 transition-all duration-200 mb-2.5 overflow-hidden"
@@ -344,7 +344,7 @@ function SidebarContent({
             </svg>
           </div>
           <div className="min-w-0">
-            <p className="text-xs font-semibold text-white/60 group-hover:text-white/90 transition-colors leading-none">Back to Wekraft</p>
+            <p className="text-xs font-semibold text-white/60 group-hover:text-white/90 transition-colors leading-none">Back to WeKraft</p>
           </div>
         </Link>
 
@@ -361,7 +361,7 @@ function SidebarContent({
           </a>
           <div className="w-px h-4 bg-white/6 shrink-0" />
           <a
-            href="https://github.com/Wekraft-collaboration-platform"
+            href="https://github.com/WeKraft-collaboration-platform"
             target="_blank"
             rel="noopener noreferrer"
             className="flex-1 flex items-center justify-center gap-1.5 py-2 rounded-lg text-[10px] font-medium text-white/30 hover:text-white/60 hover:bg-white/4 border border-transparent hover:border-white/6 transition-all duration-150"
@@ -412,7 +412,7 @@ export default function DocsLayout({
           <Menu className="h-5 w-5" />
         </button>
         <div className="flex items-center gap-2">
-          <Image src="/logo.svg" alt="Wekraft" width={20} height={20} />
+          <Image src="/logo.svg" alt="WeKraft" width={20} height={20} />
           <span className="text-sm font-semibold text-white/80">Docs</span>
         </div>
         <button

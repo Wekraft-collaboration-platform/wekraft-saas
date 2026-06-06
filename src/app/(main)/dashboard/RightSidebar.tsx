@@ -215,7 +215,7 @@ export default function RightSidebar({
 
                     <div className="space-y-1 mt-2.5">
                       <h4 className="text-xs font-bold text-foreground tracking-tight">Unlock Plus Plan</h4>
-                      <p className="text-[10px] text-muted-foreground leading-normal font-normal">Try Wekraft Plus absolutely free for 1 week! No charges upfront.</p>
+                      <p className="text-[10px] text-muted-foreground leading-normal font-normal">Try WeKraft Plus absolutely free for 1 week! No charges upfront.</p>
                     </div>
 
                     <ul className="space-y-1 mt-2.5 text-[10px] text-muted-foreground font-normal">

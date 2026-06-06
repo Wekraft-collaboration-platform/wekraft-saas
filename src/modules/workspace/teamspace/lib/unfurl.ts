@@ -21,7 +21,7 @@ export async function unfurlUrl(url: string): Promise<LinkPreviewData | null> {
       // @ts-ignore - signal timeout is supported in modern fetch
       signal: AbortSignal.timeout(2500), 
       headers: {
-        "User-Agent": "WekraftBot/1.0 (Link Unfurling Service)",
+        "User-Agent": "WeKraftBot/1.0 (Link Unfurling Service)",
         "Accept": "text/html",
       },
     });

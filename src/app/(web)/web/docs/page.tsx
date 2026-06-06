@@ -37,7 +37,7 @@ import type { Metadata } from "next";
 
 export const metadata: Metadata = {
   title: "Documentation Hub",
-  description: "Explore the Wekraft documentation. Learn how to plan sprints, manage tasks, coordinate with AI PM agents (Kaya), install the VS Code extension, and integrate with Git.",
+  description: "Explore the WeKraft documentation. Learn how to plan sprints, manage tasks, coordinate with AI PM agents (Kaya), install the VS Code extension, and integrate with Git.",
   alternates: {
     canonical: "https://wekraft.xyz/web/docs",
   },
@@ -119,7 +119,7 @@ export default function DocsIndexPage() {
           Documentation
         </div>
         <h1 className="text-4xl sm:text-5xl font-bold text-white tracking-tight leading-tight mb-4">
-          Wekraft Docs
+          WeKraft Docs
         </h1>
         <p className="text-lg text-white/45 leading-relaxed max-w-xl">
           Everything you need to build, ship, and manage projects with your
@@ -136,7 +136,7 @@ export default function DocsIndexPage() {
         <div className="min-w-0 flex-1">
           <div className="flex items-center gap-2.5">
             <span className="text-sm font-semibold text-white tracking-tight">
-              New to Wekraft?
+              New to WeKraft?
             </span>
             <span className="text-[9px] font-medium rounded-sm px-1.5 py-0.5 leading-none bg-blue-500/15 text-blue-400 border border-blue-500/30">
               5 min
@@ -241,7 +241,7 @@ export default function DocsIndexPage() {
 
       {/* Footer hint */}
       <div className="mt-16 pt-8 border-t border-white/6 flex items-center justify-between text-xs text-white/20">
-        <span>Wekraft Documentation — {allItems.length} articles</span>
+        <span>WeKraft Documentation — {allItems.length} articles</span>
         <Link
           href="/web/docs/getting-started"
           className="hover:text-white/40 transition-colors flex items-center gap-1"

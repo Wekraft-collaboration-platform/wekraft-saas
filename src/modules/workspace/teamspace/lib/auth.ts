@@ -16,7 +16,7 @@ export async function verifyProjectAccess(clerkUserId: string, projectId: string
   try {
     // 1. Fetch user from Convex
     const user = await convex.query(api.user.getUserByClerkToken, { clerkToken: clerkUserId });
-    if (!user) return { error: "User not found in Wekraft database", status: 404 };
+    if (!user) return { error: "User not found in WeKraft database", status: 404 };
 
     // 2. Fetch project membership/ownership using the fetched user's ID
     const permissions = await convex.query(api.project.getProjectPermissionsById, { 

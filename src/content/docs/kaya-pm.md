@@ -1,6 +1,6 @@
 # Kaya PM Agent
 
-**Kaya** is Wekraft's autonomous AI Product Manager agent. Deeply integrated with the backend database, project channel histories, and developer tool chains, Kaya acts as a virtual project manager. She assists teams with sprint planning, calendar coordination, reporting automation, and backlog grooming.
+**Kaya** is WeKraft's autonomous AI Product Manager agent. Deeply integrated with the backend database, project channel histories, and developer tool chains, Kaya acts as a virtual project manager. She assists teams with sprint planning, calendar coordination, reporting automation, and backlog grooming.
 
 ---
 

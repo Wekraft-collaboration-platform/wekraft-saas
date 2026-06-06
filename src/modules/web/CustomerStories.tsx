@@ -6,7 +6,7 @@ import { ArrowUpRight, Quote } from "lucide-react";
 const stories = [
   {
     quote:
-      "Wekraft turned our weekly planning from scattered updates into one reliable execution loop.",
+      "WeKraft turned our weekly planning from scattered updates into one reliable execution loop.",
     name: "Alex Rivera",
     role: "CTO at Quantum Dynamics",
     metric: "40%",
@@ -22,7 +22,7 @@ const stories = [
   },
   {
     quote:
-      "We reduced status meetings without losing the signal. Wekraft catches project drift early.",
+      "We reduced status meetings without losing the signal. WeKraft catches project drift early.",
     name: "James Wilson",
     role: "Project Director at Vertex Systems",
     metric: "60%",
@@ -71,7 +71,7 @@ const CustomerStories = () => {
             Customer signal
           </div>
           <h2 className="bg-gradient-to-b from-white via-white to-neutral-500 bg-clip-text text-4xl font-bold tracking-tight text-transparent md:text-6xl leading-tight">
-            What teams say after shipping with Wekraft
+            What teams say after shipping with WeKraft
           </h2>
           <p className="mt-5 text-lg md:text-xl leading-relaxed text-neutral-400 max-w-2xl mx-auto">
             Real execution stories from product and engineering teams that care

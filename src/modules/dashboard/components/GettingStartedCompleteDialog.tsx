@@ -46,7 +46,7 @@ export function GettingStartedCompleteDialog() {
               className="absolute -right-10 top-2 w-42 h-42 object-cover pointer-events-none select-none"
             />
             <h2 className="relative z-10 text-lg font-semibold text-white leading-snug">
-              Seems Like You're Liking Wekraft!
+              Seems Like You're Liking WeKraft!
             </h2>
           </div>
 

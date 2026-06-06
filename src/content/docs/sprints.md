@@ -1,6 +1,6 @@
 # Sprints & Planning
 
-Sprints in Wekraft are time-boxed execution periods—typically spanning 1 to 2 weeks—during which your team commits to delivering a set of planned tasks and resolving open issues.
+Sprints in WeKraft are time-boxed execution periods—typically spanning 1 to 2 weeks—during which your team commits to delivering a set of planned tasks and resolving open issues.
 
 ---
 
@@ -17,8 +17,8 @@ stateDiagram-v2
 ```
 
 1. **Planned**: Sprints are created from the Sprints dashboard. Developers can drag tasks from the backlog list into the sprint scope.
-2. **Active**: Work begins. Wekraft monitors task movements. **Only one sprint can be active per project.**
-3. **Completed**: The sprint is closed by the owner or administrator. Wekraft automatically performs cleanups:
+2. **Active**: Work begins. WeKraft monitors task movements. **Only one sprint can be active per project.**
+3. **Completed**: The sprint is closed by the owner or administrator. WeKraft automatically performs cleanups:
    - Freezes the completion rates for velocity analytics.
    - Automatically returns any incomplete tasks or open issues back to the project **Backlog**.
 

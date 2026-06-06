@@ -1,6 +1,6 @@
 # Billing & Subscriptions
 
-Wekraft uses a multi-tier SaaS subscription model governed by server-side limit verifications. Features and resources are scaled across three plans: **Free**, **Plus**, and **Pro**.
+WeKraft uses a multi-tier SaaS subscription model governed by server-side limit verifications. Features and resources are scaled across three plans: **Free**, **Plus**, and **Pro**.
 
 ---
 
@@ -52,7 +52,7 @@ The system evaluates plan states at runtime rather than relying on static flags:
 
 ## Webhook Sync Architectures
 
-Wekraft maintains billing state consistency by processing webhook events emitted from payment gateways via the backend HTTP routers:
+WeKraft maintains billing state consistency by processing webhook events emitted from payment gateways via the backend HTTP routers:
 
 ```mermaid
 sequenceDiagram
@@ -73,5 +73,5 @@ sequenceDiagram
 ### Webhook Event Processing Map:
 - **`subscription.created` / `subscription.activated`**: Upgrades the user's account type, sets the billing gateway details, maps the unique subscription reference, and computes the billing period end timestamp.
 - **`subscription.cancelled` / `subscription.deleted`**: Triggers a downgrade. If cancelled, it flags cancel-at-period-end status and allows access to continue until the paid period terminates.
-- **`subscription.charge.failed`**: If a renewal payment fails, the subscription moves to past due or unpaid status. Wekraft initiates a 3-day grace period, after which a background job automatically downgrades the user to the Free plan.
+- **`subscription.charge.failed`**: If a renewal payment fails, the subscription moves to past due or unpaid status. WeKraft initiates a 3-day grace period, after which a background job automatically downgrades the user to the Free plan.
 - **Cron Re-verification Safety**: A recurring server cron scans users with active subscriptions. If a subscription period is in the past and no payment webhook has arrived, it automatically verifies the status with the gateway API and synchronizes the account.

@@ -1,6 +1,6 @@
 # Getting Started
 
-Welcome to Wekraft! This quickstart guide is structured directly around the **Getting Started Checklist** on your dashboard. Completing these 7 steps will take you from a fresh sign-up to a fully configured, collaborative, and AI-enabled workspace.
+Welcome to WeKraft! This quickstart guide is structured directly around the **Getting Started Checklist** on your dashboard. Completing these 7 steps will take you from a fresh sign-up to a fully configured, collaborative, and AI-enabled workspace.
 
 ---
 

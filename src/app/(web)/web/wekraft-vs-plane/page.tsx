@@ -9,9 +9,9 @@ import { Compass, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
   title: {
-    absolute: "Wekraft vs Plane",
+    absolute: "WeKraft vs Plane",
   },
-  description: "Plane is an open-source clone, but it lacks developer integration. Compare Plane with Wekraft's VS Code sync, codebase heatmaps, and autonomous dev agents.",
+  description: "Plane is an open-source clone, but it lacks developer integration. Compare Plane with WeKraft's VS Code sync, codebase heatmaps, and autonomous dev agents.",
   alternates: {
     canonical: "https://wekraft.xyz/web/wekraft-vs-plane",
   },
@@ -63,16 +63,16 @@ const planeFeatures: ComparisonFeature[] = [
 
 const planeFaqs: FAQItem[] = [
   {
-    question: "How is Wekraft different from Plane?",
-    answer: "Plane is built as an open-source alternative to Jira and Linear, adopting their core designs. Wekraft goes a step further by being an AI-First Developer Ecosystem. It features native VS Code editor syncing, autonomous PM/Dev agents (Kaya & Harry) that have long-term workspace memory, built-in video rooms, and commit stress heatmaps.",
+    question: "How is WeKraft different from Plane?",
+    answer: "Plane is built as an open-source alternative to Jira and Linear, adopting their core designs. WeKraft goes a step further by being an AI-First Developer Ecosystem. It features native VS Code editor syncing, autonomous PM/Dev agents (Kaya & Harry) that have long-term workspace memory, built-in video rooms, and commit stress heatmaps.",
   },
   {
-    question: "Can we self-host Wekraft like we can Plane?",
-    answer: "Yes, Wekraft is built with modern web technologies and supports Docker-based self-hosting deployments. You can deploy Wekraft inside your private cloud environment to keep database files secure.",
+    question: "Can we self-host WeKraft like we can Plane?",
+    answer: "Yes, WeKraft is built with modern web technologies and supports Docker-based self-hosting deployments. You can deploy WeKraft inside your private cloud environment to keep database files secure.",
   },
   {
     question: "Does the Plane importer support migrating cycles and comments?",
-    answer: "Yes. Our custom Plane Importer tool connects securely to your Plane workspace API to pull down active projects, modules, cycle dates, issue logs, assignees, comments, and attachments directly into Wekraft.",
+    answer: "Yes. Our custom Plane Importer tool connects securely to your Plane workspace API to pull down active projects, modules, cycle dates, issue logs, assignees, comments, and attachments directly into WeKraft.",
   },
 ];
 

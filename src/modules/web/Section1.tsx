@@ -235,7 +235,7 @@ const Section1 = () => {
         {/* FOUNDER THOUGHT */}
         <div className="relative border-b border-white/10 md:border md:border-t-0 rounded-b-2xl bg-neutral-900 py-10 px-6 md:p-16 flex flex-col items-center text-center overflow-hidden">
           <p className="relative z-10 text-white/90 text-lg sm:text-xl md:text-2xl font-medium max-w-3xl mb-6 md:mb-12 leading-relaxed tracking-tight">
-            "Wekraft transformed the way our team executes projects. What once
+            "WeKraft transformed the way our team executes projects. What once
             felt chaotic is now automated, and AI-driven — helping us move
             faster, and ship without missing deadlines."
           </p>

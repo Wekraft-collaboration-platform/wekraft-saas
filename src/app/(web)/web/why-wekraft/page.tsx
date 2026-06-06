@@ -6,7 +6,7 @@ import { Compass, Briefcase, CheckCircle2, FileText, ArrowRight, ExternalLink } 
 
 export const metadata: Metadata = {
   title: "Why WeKraft",
-  description: "See how Wekraft stacks up against Jira, Linear, Asana, Notion, and Plane. Discover the AI-first engineering workspace.",
+  description: "See how WeKraft stacks up against Jira, Linear, Asana, Notion, and Plane. Discover the AI-first engineering workspace.",
   alternates: {
     canonical: "https://wekraft.xyz/web/why-wekraft",
   },
@@ -19,39 +19,39 @@ const competitors = [
     href: "/web/wekraft-vs-linear",
     icon: <img src="/linear.png" alt="Linear" className="w-5 h-5 object-contain" />,
     tagline: "Speed meets collaboration",
-    description: "Leave behind isolated issue tracking. Wekraft delivers lightning-fast performance while integrating native AI agents, video rooms, and deep memory layers directly into your workflow.",
+    description: "Leave behind isolated issue tracking. WeKraft delivers lightning-fast performance while integrating native AI agents, video rooms, and deep memory layers directly into your workflow.",
   },
   {
     name: "Jira",
     href: "/web/wekraft-vs-jira",
     icon: <img src="/jira-logo.jpg" alt="Jira" className="w-5 h-5 object-contain rounded-sm" />,
     tagline: "Unbloat your engineering boards",
-    description: "Escape endless configuration and sluggish boards. Wekraft provides a blazing-fast, zero-setup environment that keeps your engineering team focused on shipping, not managing tickets.",
+    description: "Escape endless configuration and sluggish boards. WeKraft provides a blazing-fast, zero-setup environment that keeps your engineering team focused on shipping, not managing tickets.",
   },
   {
     name: "Asana",
     href: "/web/wekraft-vs-asana",
     icon: <img src="/asana-logo.svg" alt="Asana" className="w-5 h-5 object-contain" />,
     tagline: "Built for builders, not theater",
-    description: "Stop paying for fragmented tools. Wekraft combines your task management, documentation, and team collaboration into one unified platform built specifically for developers.",
+    description: "Stop paying for fragmented tools. WeKraft combines your task management, documentation, and team collaboration into one unified platform built specifically for developers.",
   },
   {
     name: "Notion",
     href: "/web/wekraft-vs-notion",
     icon: <img src="/Notion-logo.png" alt="Notion" className="w-5 h-5 object-contain" />,
     tagline: "Sprints connected to docs",
-    description: "Move beyond disconnected wikis. Wekraft natively connects your documentation to your codebase and branch commits, ensuring your knowledge base is always in sync with your product.",
+    description: "Move beyond disconnected wikis. WeKraft natively connects your documentation to your codebase and branch commits, ensuring your knowledge base is always in sync with your product.",
   },
   {
     name: "Plane",
     href: "/web/wekraft-vs-plane",
     icon: <img src="/plane-so logo.png" alt="Plane" className="w-5 h-5 object-contain" />,
     tagline: "AI-first developer workspace",
-    description: "Upgrade to an AI-native workspace. While others just copy basic UI, Wekraft deeply integrates your projects with VS Code, autonomous coding agents, and your actual codebase.",
+    description: "Upgrade to an AI-native workspace. While others just copy basic UI, WeKraft deeply integrates your projects with VS Code, autonomous coding agents, and your actual codebase.",
   },
 ];
 
-export default function WhyWekraftPage() {
+export default function WhyWeKraftPage() {
   return (
     <div className="bg-black min-h-screen text-white font-sans selection:bg-blue-500/30 overflow-hidden relative">
       <Navbar />
@@ -68,10 +68,10 @@ export default function WhyWekraftPage() {
             Product Comparison
           </div>
           <h1 className="text-4xl sm:text-5xl font-bold tracking-tight mb-4 text-white font-pop">
-            Discover why teams switch to Wekraft
+            Discover why teams switch to WeKraft
           </h1>
           <p className="text-neutral-400 text-sm sm:text-base leading-relaxed font-normal">
-            See how Wekraft stacks up against the tools you know. Click any card to read the complete feature comparisons and migration paths.
+            See how WeKraft stacks up against the tools you know. Click any card to read the complete feature comparisons and migration paths.
           </p>
         </div>
 
@@ -109,7 +109,7 @@ export default function WhyWekraftPage() {
               </div>
 
               <div className="text-[11px] font-semibold text-neutral-400 group-hover:text-white flex items-center gap-1.5 transition-colors">
-                Wekraft vs {comp.name} <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                WeKraft vs {comp.name} <ArrowRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
               </div>
             </Link>
           ))}

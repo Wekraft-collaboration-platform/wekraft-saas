@@ -1734,7 +1734,7 @@ export function OnboardingRightSide({
       >
         <div className="flex items-center gap-1.5 text-zinc-300 font-normal">
           <Activity className="w-3.5 h-3.5 shrink-0 text-zinc-300" />
-          <span>Wekraft // Product Delivery Workspace</span>
+          <span>WeKraft // Product Delivery Workspace</span>
         </div>
         <div className="text-[10px] text-zinc-300  ml-5 mt-0.5">
           Launch At the speed of Light

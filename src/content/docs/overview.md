@@ -1,12 +1,12 @@
-# Wekraft Platform Overview
+# WeKraft Platform Overview
 
-Welcome to the Wekraft Platform Documentation. Wekraft is a unified software engineering management and real-time collaboration workspace designed to eliminate context-switching. By consolidating **agile project planning**, **team communication**, **git metrics**, and **editor-level integrations** into a single reactive environment, Wekraft provides engineering teams with a single source of truth.
+Welcome to the WeKraft Platform Documentation. WeKraft is a unified software engineering management and real-time collaboration workspace designed to eliminate context-switching. By consolidating **agile project planning**, **team communication**, **git metrics**, and **editor-level integrations** into a single reactive environment, WeKraft provides engineering teams with a single source of truth.
 
 ---
 
 ## Technical Architecture & Core Technologies
 
-Wekraft's application stack is designed for low-latency updates, high-throughput database interactions, and persistent real-time states:
+WeKraft's application stack is designed for low-latency updates, high-throughput database interactions, and persistent real-time states:
 
 ```mermaid
 graph TD
@@ -21,7 +21,7 @@ graph TD
 ```
 
 ### 1. Real-time Reactivity (Serverless Reactive Backend)
-At the core of Wekraft is a **Serverless Reactive Backend**, a platform providing reactive datastore caching. Unlike traditional REST or polling setups, backend queries are reactive: when a database document changes (such as a task being dragged on the Kanban board), the backend automatically pushes the new dataset to all connected clients over a persistent WebSocket connection. This ensures instant dashboard synchronisation across the entire engineering team.
+At the core of WeKraft is a **Serverless Reactive Backend**, a platform providing reactive datastore caching. Unlike traditional REST or polling setups, backend queries are reactive: when a database document changes (such as a task being dragged on the Kanban board), the backend automatically pushes the new dataset to all connected clients over a persistent WebSocket connection. This ensures instant dashboard synchronisation across the entire engineering team.
 
 ### 2. Authentication & Identity (Identity Provider)
 User authentication is managed via a dedicated **Identity Provider**. The identity service provides session tokens which are validated server-side by the backend. Onboarding steps, workspace permissions, and profile configurations (`users` table) are keyed off the authenticated user's unique token ID.
@@ -31,14 +31,14 @@ User authentication is managed via a dedicated **Identity Provider**. The identi
 - **Server Crons** run recurring server-side jobs, such as scanning user subscription expiration timestamps and performing database maintenance (e.g., checking for overdue tasks and calculating delay debts).
 
 ### 4. Third-Party Webhook Sync
-- **Version Control Integrations**: Connected code repositories issue webhook events (commits, issue status changes, pull request creation) directly to Wekraft's API routes, which trigger database mutations to align Wekraft's issue boards and heatmaps with git activity.
+- **Version Control Integrations**: Connected code repositories issue webhook events (commits, issue status changes, pull request creation) directly to WeKraft's API routes, which trigger database mutations to align WeKraft's issue boards and heatmaps with git activity.
 - **Payment Gateways**: Subscriptions are managed via integrated **Billing Processors**. Webhooks processed through the backend's HTTP action routes update user subscription statuses (`active`, `past_due`, `cancelled`) in real-time.
 
 ---
 
 ## Workspace Structure & Data Model
 
-Wekraft follows a hierarchical project model structured to match modern software team setups:
+WeKraft follows a hierarchical project model structured to match modern software team setups:
 
 - **Users & Tiers**: Every user profile is assigned a plan tier (`free`, `plus`, or `pro`) which governs limits across all projects they own or join.
 - **Projects**: The top-level workspace container. Each project can connect to a single git repository, manage separate team memberships, and toggle compliance/security policies.
@@ -76,5 +76,5 @@ If your subscription expires or is downgraded to the Free tier, your account is 
 ### How are members counted against the project limit?
 Members are counted when their join request is approved by the project owner or administrator. Pending requests do not count toward your limit. If a project reaches its member limit (e.g., 3 members on the Free plan), the administrator must remove an existing member or upgrade the owner's plan before a new member can join.
 
-### Is my code uploaded to Wekraft servers?
-No. Wekraft only maps repository structures (directories and filenames) to display git metrics and heatmaps. Your source code files are never persisted on Wekraft's database. Code analysis is executed temporarily in memory or inside your local code editor.
+### Is my code uploaded to WeKraft servers?
+No. WeKraft only maps repository structures (directories and filenames) to display git metrics and heatmaps. Your source code files are never persisted on WeKraft's database. Code analysis is executed temporarily in memory or inside your local code editor.

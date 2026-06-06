@@ -106,11 +106,11 @@ const GlassPlatform = ({
 const FloatingCards = () => {
   return (
     <div className="relative flex flex-col items-center" style={{ gap: "0px" }}>
-      {/* Top platform — Wekraft icon */}
+      {/* Top platform — WeKraft icon */}
       <GlassPlatform index={0} delay={0}>
         <Image
           src="/logo.svg"
-          alt="Wekraft Logo"
+          alt="WeKraft Logo"
           width={72}
           height={72}
           className="w-14 h-14 md:w-[80px] md:h-[80px] drop-shadow-[0_0_20px_rgba(59,130,246,0.3)] opacity-90"
@@ -148,7 +148,7 @@ const features = [
   {
     title: "Where change happens",
     description:
-      "Teams that adopt Wekraft ship more code with smaller PRs and faster review cycles.",
+      "Teams that adopt WeKraft ship more code with smaller PRs and faster review cycles.",
   },
   {
     title: "Synced with GitHub",
@@ -158,7 +158,7 @@ const features = [
   {
     title: "Built on top of Git",
     description:
-      "Wekraft is integrated with all your git scripts, aliases, and workflows.",
+      "WeKraft is integrated with all your git scripts, aliases, and workflows.",
   },
 ];
 
@@ -193,7 +193,7 @@ const InfraSection = () => {
           transition={{ duration: 0.6, delay: 0.2 }}
           className="mt-5 text-sm sm:text-base md:text-lg leading-relaxed text-neutral-400 max-w-2xl mx-auto"
         >
-          Wekraft works seamlessly with the technologies you already use, keeping your workflows intact and your tools synced.
+          WeKraft works seamlessly with the technologies you already use, keeping your workflows intact and your tools synced.
         </motion.p>
       </div>
 

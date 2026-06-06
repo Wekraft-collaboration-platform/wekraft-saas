@@ -134,7 +134,7 @@ export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDi
     },
     "query": {
       title: "e.g., Custom webhook payloads support on Plus plan",
-      desc: "Ask us anything about Wekraft features, integrations, or settings...",
+      desc: "Ask us anything about WeKraft features, integrations, or settings...",
     },
     "payment issue": {
       title: "e.g., Invoice details updated for subscription renewal",
@@ -360,14 +360,14 @@ export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDi
                 <div className="flex flex-col items-center justify-center h-full text-center p-4 space-y-4 select-none">
                   <AIAssistantIcon className="h-9 w-9" />
                   <div className="space-y-1">
-                    <h4 className="text-base font-medium text-white">Wekraft AI Assistant</h4>
+                    <h4 className="text-base font-medium text-white">WeKraft AI Assistant</h4>
                   </div>
                   <div className="flex flex-col gap-2 w-full max-w-[400px] pt-1">
                     {[
-                      { label: "Ask anything about Wekraft", query: "Help me get started with Wekraft and explain what I can do here." },
+                      { label: "Ask anything about WeKraft", query: "Help me get started with WeKraft and explain what I can do here." },
                       { label: "Raise queries", query: "I have a query regarding my account or project settings." },
                       { label: "Report bugs", query: "I found a bug in the app. Can you help me report it?" },
-                      { label: "Know more features", query: "Tell me more about Wekraft and what makes it unique." }
+                      { label: "Know more features", query: "Tell me more about WeKraft and what makes it unique." }
                     ].map((item, idx) => (
                       <button
                         key={idx}
@@ -419,7 +419,7 @@ export function HelpSupportDialog({ trigger, open, onOpenChange }: HelpSupportDi
                                     : msg.toolName === "getSupportQueries"
                                       ? (isRunning ? "Fetching support queries..." : "Fetched support queries")
                                       : msg.toolName === "searchDocumentation"
-                                        ? (isRunning ? "Searching Wekraft docs..." : "Searched docs")
+                                        ? (isRunning ? "Searching WeKraft docs..." : "Searched docs")
                                         : msg.toolName === "getDocumentationPage"
                                           ? (isRunning ? "Reading documentation..." : "Read documentation")
                                           : (isRunning ? `Running: ${msg.toolName}...` : `Executed: ${msg.toolName}`)

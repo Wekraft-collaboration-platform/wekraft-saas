@@ -1,12 +1,12 @@
 # Community Hub
 
-The **Community Hub** is Wekraft's discovery space, designed to encourage collaboration and project sharing across public workspaces. While some advanced global matchmaking features are under active development, you can share your projects with the community today.
+The **Community Hub** is WeKraft's discovery space, designed to encourage collaboration and project sharing across public workspaces. While some advanced global matchmaking features are under active development, you can share your projects with the community today.
 
 ---
 
 ## Accessing the Community Space
 
-Wekraft projects have visibility toggles managed on the Project Home page:
+WeKraft projects have visibility toggles managed on the Project Home page:
 
 - **Visibility Toggles**: The project owner can toggle **Public Visibility** in the settings tab (`SettingsTab.tsx`).
 - **Community Tab**: Every project home page (`/dashboard/my-projects/[slug]`) includes a **Community** tab.
@@ -19,7 +19,7 @@ Wekraft projects have visibility toggles managed on the Project Home page:
 
 | Capability | Public Project | Private Project |
 | :--- | :--- | :--- |
-| **Visibility** | Visible to all Wekraft users | Invisible to non-members |
+| **Visibility** | Visible to all WeKraft users | Invisible to non-members |
 | **Join Requests** | Anyone can send a request to join | Invite-only via direct link |
 | **GitHub Repository Sync** | Syncs commit metrics publicly | Syncs only for authenticated members |
 | **Join Approval** | Owner must approve requests under "Requests" | Pre-authorized via direct invite link |

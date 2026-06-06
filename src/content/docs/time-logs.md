@@ -1,6 +1,6 @@
 # Project Timeline & Gantt Chart
 
-The **Time Logs** module (accessed via the workspace sidebar) acts as Wekraft's project delivery calibrator. Combining Gantt chart visualizations with delivery metrics, this page tracks schedule variance, accumulated delay debt, and task progress relative to your target deadline.
+The **Time Logs** module (accessed via the workspace sidebar) acts as WeKraft's project delivery calibrator. Combining Gantt chart visualizations with delivery metrics, this page tracks schedule variance, accumulated delay debt, and task progress relative to your target deadline.
 
 ---
 
@@ -15,7 +15,7 @@ Timeline tracking requires a project deadline to establish a calendar baseline:
 
 ## Top Dashboard Metrics (Calculation Specifications)
 
-Wekraft computes three real-time schedule analytics cards at the top of the Time Logs panel:
+WeKraft computes three real-time schedule analytics cards at the top of the Time Logs panel:
 
 ```mermaid
 graph TD
@@ -46,7 +46,7 @@ graph TD
 
 ## The Gantt Chart Timeline Grid
 
-Wekraft provides a horizontal Gantt chart built on a reactive timeline grid.
+WeKraft provides a horizontal Gantt chart built on a reactive timeline grid.
 
 ### 1. Daily Grid Rendering
 Tasks with defined start and end dates are projected horizontally across a calendar grid. 

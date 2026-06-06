@@ -1,6 +1,6 @@
 # Issues & Bug Tracking
 
-Issues represent reactive or unplanned work in Wekraft, such as application bugs, server crashes, environment failures, or security hotfixes. They operate outside the planned sprint backlog but can be allocated to sprints for tracking alongside planned tasks.
+Issues represent reactive or unplanned work in WeKraft, such as application bugs, server crashes, environment failures, or security hotfixes. They operate outside the planned sprint backlog but can be allocated to sprints for tracking alongside planned tasks.
 
 ---
 
@@ -20,7 +20,7 @@ Every issue contains the following fields:
 
 ## Issue Ingestion Sources (Origins)
 
-Wekraft supports automated and manual issue generation streams:
+WeKraft supports automated and manual issue generation streams:
 
 ### 1. Manual Creation
 Team members can log bugs at any time by clicking **"New Issue"** inside the workspace issues tab. This prompts a dialog to set the title, description, severity, environment, and due date.
@@ -34,9 +34,9 @@ When a planned backlog task is blocked by a code bug:
 
 ### 3. Git hosting webhook Synchronisation
 If a project is linked to a code repository, issues can be synced automatically:
-- **Webhook Endpoint**: Wekraft exposes API routes to catch repository webhook events.
-- **Events Tracked**: When an issue is opened, edited, closed, or reopened on the repository hosting provider, the webhook route matches the repository ID to the linked project and mutates Wekraft's datastore.
-- **PR Code Integration**: Code pushes and PR merges parse commit messages (e.g., resolving issues by ID) to auto-close corresponding Wekraft issues.
+- **Webhook Endpoint**: WeKraft exposes API routes to catch repository webhook events.
+- **Events Tracked**: When an issue is opened, edited, closed, or reopened on the repository hosting provider, the webhook route matches the repository ID to the linked project and mutates WeKraft's datastore.
+- **PR Code Integration**: Code pushes and PR merges parse commit messages (e.g., resolving issues by ID) to auto-close corresponding WeKraft issues.
 
 ---
 

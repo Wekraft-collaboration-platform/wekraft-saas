@@ -1,6 +1,6 @@
 # Security & Permissions
 
-Wekraft takes your data security seriously. This page covers how access control works, how your data is protected, and best practices for keeping your projects secure.
+WeKraft takes your data security seriously. This page covers how access control works, how your data is protected, and best practices for keeping your projects secure.
 
 ## Project Visibility
 
@@ -20,7 +20,7 @@ You can change visibility at any time from **Project Settings → General**.
 
 ## Role-Based Access Control (RBAC)
 
-Wekraft uses a four-tier role system. Every project member is assigned exactly one role, and roles are hierarchical — each includes all permissions of the roles below it.
+WeKraft uses a four-tier role system. Every project member is assigned exactly one role, and roles are hierarchical — each includes all permissions of the roles below it.
 
 ### Role Overview
 
@@ -57,18 +57,18 @@ Wekraft uses a four-tier role system. Every project member is assigned exactly o
 
 ## Authentication
 
-Wekraft uses secure **single sign-on (SSO)** providers:
+WeKraft uses secure **single sign-on (SSO)** providers:
 
 - **Version Control Provider** — recommended for developers; also enables repository linking and commit tracking
 - **Third-Party Identity Provider** — quick sign-in for non-developers
 
-We **never** store your passwords. Authentication is handled entirely by the provider, and Wekraft receives only the minimum profile information needed (name, email, avatar).
+We **never** store your passwords. Authentication is handled entirely by the provider, and WeKraft receives only the minimum profile information needed (name, email, avatar).
 
 ### Editor Extension Authentication
 
 The editor extension uses a secure **one-time handshake token** system:
 
-1. The extension opens your browser to the Wekraft web app
+1. The extension opens your browser to the WeKraft web app
 2. You click **"Grant Access to IDE"** — a single-use token is generated (5-minute expiry)
 3. The token is exchanged for a permanent API key stored in the editor's encrypted secret storage
 4. The handshake token is **deleted immediately** after exchange — it cannot be reused
@@ -86,14 +86,14 @@ All data is encrypted at rest and in transit using industry-standard encryption 
 
 ### Real-Time Sync
 
-Wekraft uses a real-time backend database infrastructure. All data changes sync instantly across all connected clients without page refreshes, with built-in data validation, access control, and transactional guarantees.
+WeKraft uses a real-time backend database infrastructure. All data changes sync instantly across all connected clients without page refreshes, with built-in data validation, access control, and transactional guarantees.
 
 ### Repository Integration Access
 
-When you connect a code repository, Wekraft only requests the minimum permissions required to:
+When you connect a code repository, WeKraft only requests the minimum permissions required to:
 
 1. **Read repository metadata** — name, default branch, stars, forks, language breakdown
-2. **Sync Issues** — import issues into Wekraft for tracking
+2. **Sync Issues** — import issues into WeKraft for tracking
 3. **Read commit metadata** — link commits to tasks for traceability
 4. **Fetch file tree** — display the repository file structure in the File Explorer
 

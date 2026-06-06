@@ -1,6 +1,6 @@
 # Notifications & Alerts
 
-Wekraft's real-time notification system keeps you informed of critical events across your projects — from access requests to comment mentions — fanned out instantly without requiring manual page refreshes.
+WeKraft's real-time notification system keeps you informed of critical events across your projects — from access requests to comment mentions — fanned out instantly without requiring manual page refreshes.
 
 ---
 
@@ -70,7 +70,7 @@ The backend tracks exactly ten (10) notification types for various user and syst
 
 - **Individual Delete**: Hover over any notification and click the trash icon (**🗑**).
 - **Clear All**: Click the **"Clear all"** button in the header to purge all notifications.
-- **Automatic Cron Cleanup**: Wekraft schedules a nightly database cron cleanup (`cleanup-old-notifications`) that deletes all notifications older than **30 days** to maintain index performance.
+- **Automatic Cron Cleanup**: WeKraft schedules a nightly database cron cleanup (`cleanup-old-notifications`) that deletes all notifications older than **30 days** to maintain index performance.
 
 ---
 

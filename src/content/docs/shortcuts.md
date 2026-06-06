@@ -1,12 +1,12 @@
 # Keyboard Shortcuts
 
-Speed up your development and management workflows with Wekraft's keyboard shortcuts. These commands work globally across the dashboard, project workspaces, and team space shortcuts.
+Speed up your development and management workflows with WeKraft's keyboard shortcuts. These commands work globally across the dashboard, project workspaces, and team space shortcuts.
 
 ---
 
 ## Global Navigation Keybinds
 
-These shortcuts are active from anywhere inside the Wekraft application to streamline navigation and control:
+These shortcuts are active from anywhere inside the WeKraft application to streamline navigation and control:
 
 | Keybind | Action / Description | Where Used | Why It Is Used |
 | :--- | :--- | :--- | :--- |

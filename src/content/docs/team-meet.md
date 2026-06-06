@@ -1,12 +1,12 @@
 # Team Meet Video Rooms
 
-The **Team Meet** tab (accessed via the `Meet` workspace sidebar option) is Wekraft's native, real-time video conferencing portal. It allows developers and managers to initialize video calls, share screens, and coordinate live code reviews without relying on external calendars or link directories.
+The **Team Meet** tab (accessed via the `Meet` workspace sidebar option) is WeKraft's native, real-time video conferencing portal. It allows developers and managers to initialize video calls, share screens, and coordinate live code reviews without relying on external calendars or link directories.
 
 ---
 
 ## Room Controls & Access
 
-Wekraft enforces strict meeting management controls based on team roles:
+WeKraft enforces strict meeting management controls based on team roles:
 - **Starting a Meeting**: Starting a new call is restricted to the **Project Owner** and **Project Admins**. Clicking the **"New Meeting"** button triggers an ad-hoc room.
 - **Joining a Meeting**: Any active team member (including viewers) can click to join ongoing calls.
 - **Invitation Protocol**: If a call is already active, members can join by pasting a specific Meeting ID or URL in the **"Join Call"** dialog.
@@ -24,7 +24,7 @@ Meetings transition through two active states tracked in the database:
 
 ### 2. Completed Call (`Ended`)
 - When participants disconnect, the call is marked **Ended**.
-- Wekraft registers the final disconnect timestamp, computes the total elapsed **Duration** (e.g. `24m 15s`), and displays it on the meeting timeline list.
+- WeKraft registers the final disconnect timestamp, computes the total elapsed **Duration** (e.g. `24m 15s`), and displays it on the meeting timeline list.
 
 ---
 

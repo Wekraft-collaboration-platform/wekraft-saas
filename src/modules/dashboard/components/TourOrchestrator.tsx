@@ -49,7 +49,7 @@ export function TourOrchestrator() {
 
   if (completedTask !== null) {
     if (completedTask === 2) {
-      const projectName = (userProjects && userProjects.length > 0) ? userProjects[0].projectName : "Wekraft Platform";
+      const projectName = (userProjects && userProjects.length > 0) ? userProjects[0].projectName : "WeKraft Platform";
 
       return (
         <LinkedRepoDialog

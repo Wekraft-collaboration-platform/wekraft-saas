@@ -1,12 +1,12 @@
 # Manage Teams & Roles
 
-Wekraft projects support role-based member governance, allowing you to regulate workspace access, assign execution responsibilities, and control AI usage policies.
+WeKraft projects support role-based member governance, allowing you to regulate workspace access, assign execution responsibilities, and control AI usage policies.
 
 ---
 
 ## Workspace Access Roles
 
-Wekraft structures project roles into four hierarchical levels:
+WeKraft structures project roles into four hierarchical levels:
 
 ### 1. Owner
 - **Scope**: The creator of the project.

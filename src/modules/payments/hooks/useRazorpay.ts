@@ -105,7 +105,7 @@ export const useRazorpay = () => {
       const options: RazorpayCheckoutOptions = {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         subscription_id: orderData.subscriptionId,
-        name: "Wekraft",
+        name: "WeKraft",
         description: `Upgrade to ${plan.name}`,
         handler: async (response: RazorpayPaymentResponse) => {
           try {

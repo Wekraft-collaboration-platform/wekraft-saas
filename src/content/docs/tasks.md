@@ -1,6 +1,6 @@
 # Tasks & Backlog
 
-Tasks in Wekraft are the primary planning units used to organize product backlogs, map engineering work, and execute sprint goals. This document provides a detailed reference of task properties, lifecycles, and database integration rules.
+Tasks in WeKraft are the primary planning units used to organize product backlogs, map engineering work, and execute sprint goals. This document provides a detailed reference of task properties, lifecycles, and database integration rules.
 
 ---
 
@@ -44,7 +44,7 @@ stateDiagram-v2
 
 ## Workspace Layout Views
 
-Wekraft renders the active sprint board and project backlog across three distinct layouts:
+WeKraft renders the active sprint board and project backlog across three distinct layouts:
 
 - **List View**: A dense spreadsheet-style table. Designed for project managers to quickly scan, bulk-edit priority labels, edit dates, and drag items directly into active sprints.
 - **Board View (Kanban)**: A column-based visual layout mapped to task status. Team members can drag-and-drop cards between columns to mutate task status instantly. Dragging cards triggers real-time backend mutations that update all viewing clients.

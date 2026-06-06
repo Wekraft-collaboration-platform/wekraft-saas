@@ -27,13 +27,13 @@ import StructuredData from "@/components/StructuredData";
 export const metadata: Metadata = {
   metadataBase: new URL(process.env.NEXT_PUBLIC_APP_URL || "https://wekraft.xyz"),
   title: {
-    template: "%s | Wekraft",
-    default: "Wekraft | AI-Powered Project Management & Workspace for Modern Software Teams",
+    template: "%s | WeKraft",
+    default: "WeKraft | AI-Powered Project Management & Workspace for Modern Software Teams",
   },
   description:
-    "Wekraft is the ultimate AI-powered project management platform and collaborative workspace built for modern software teams. Plan sprints, track to-do lists, manage developer capacity, and coordinate complex projects with ease.",
+    "WeKraft is the ultimate AI-powered project management platform and collaborative workspace built for modern software teams. Plan sprints, track to-do lists, manage developer capacity, and coordinate complex projects with ease.",
   keywords: [
-    "Wekraft",
+    "WeKraft",
     "project management",
     "project management platform",
     "PM platform",
@@ -54,9 +54,9 @@ export const metadata: Metadata = {
     "VS Code sync",
     "sprints",
   ],
-  authors: [{ name: "Wekraft Team" }],
-  creator: "Wekraft",
-  publisher: "Wekraft",
+  authors: [{ name: "WeKraft Team" }],
+  creator: "WeKraft",
+  publisher: "WeKraft",
   alternates: {
     canonical: "https://wekraft.xyz",
   },
@@ -72,16 +72,16 @@ export const metadata: Metadata = {
     },
   },
   openGraph: {
-    title: "Wekraft | AI-Powered Project Management & Workspace for Modern Software Teams",
+    title: "WeKraft | AI-Powered Project Management & Workspace for Modern Software Teams",
     description: "The ultimate AI-powered project management platform and collaborative workspace built for modern software teams. Plan sprints, track to-dos, and manage developer capacity.",
     url: "https://wekraft.xyz",
-    siteName: "Wekraft",
+    siteName: "WeKraft",
     images: [
       {
         url: "/hero.png",
         width: 1200,
         height: 630,
-        alt: "Wekraft - Unified Software Team Collaboration Platform",
+        alt: "WeKraft - Unified Software Team Collaboration Platform",
       },
     ],
     locale: "en_IN",
@@ -89,7 +89,7 @@ export const metadata: Metadata = {
   },
   twitter: {
     card: "summary_large_image",
-    title: "Wekraft | AI-Powered Project Management & Workspace for Modern Software Teams",
+    title: "WeKraft | AI-Powered Project Management & Workspace for Modern Software Teams",
     description: "The ultimate AI-powered project management platform and collaborative workspace built for modern software teams. Plan sprints, track to-dos, and manage developer capacity.",
     images: ["/hero.png"],
   },
@@ -108,7 +108,7 @@ const orgSchema = {
   "@context": "https://schema.org",
   "@type": "Organization",
   "@id": "https://wekraft.xyz/#organization",
-  "name": "Wekraft",
+  "name": "WeKraft",
   "url": "https://wekraft.xyz",
   "logo": "https://wekraft.xyz/logo.svg",
   "sameAs": [
@@ -127,7 +127,7 @@ const websiteSchema = {
   "@type": "WebSite",
   "@id": "https://wekraft.xyz/#website",
   "url": "https://wekraft.xyz",
-  "name": "Wekraft",
+  "name": "WeKraft",
   "description": "AI-Powered Project Management & Workspace for Modern Software Teams",
   "potentialAction": {
     "@type": "SearchAction",

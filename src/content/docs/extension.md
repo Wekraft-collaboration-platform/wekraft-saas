@@ -1,8 +1,8 @@
 # IDE Extension
 
-The **Wekraft IDE Extension** is the heart of our developer-first workspace experience. It brings your entire Wekraft workspace — backlogs, tasks, sprints, tickets, and time logs — directly into your code editor, so you never have to break your flow or switch context to a browser.
+The **WeKraft IDE Extension** is the heart of our developer-first workspace experience. It brings your entire WeKraft workspace — backlogs, tasks, sprints, tickets, and time logs — directly into your code editor, so you never have to break your flow or switch context to a browser.
 
-> **Free for Everyone** — The Wekraft Extension is completely free for all users, no plan restrictions. Every Wekraft user gets full extension access.
+> **Free for Everyone** — The WeKraft Extension is completely free for all users, no plan restrictions. Every WeKraft user gets full extension access.
 
 ---
 
@@ -27,7 +27,7 @@ The **Wekraft IDE Extension** is the heart of our developer-first workspace expe
 ### ✅ Time Logging
 - Log time against tasks and issues directly from the extension.
 - View your active and past time log entries per task.
-- Track file-focus sessions automatically — when you're actively editing a file linked to a task, the extension aggregates your focus time and syncs it back to Wekraft's **Time Logs** timeline.
+- Track file-focus sessions automatically — when you're actively editing a file linked to a task, the extension aggregates your focus time and syncs it back to WeKraft's **Time Logs** timeline.
 
 ### ✅ Service Desk & Ticket Management
 - Access your full **service desk ticket backlog** within the editor.
@@ -42,7 +42,7 @@ The **Wekraft IDE Extension** is the heart of our developer-first workspace expe
 ## What You Cannot Do
 
 ### ❌ Create New Projects or Sprints
-- Project and sprint creation must be done through the **Wekraft web dashboard**. The extension is scoped to viewing and acting on existing work.
+- Project and sprint creation must be done through the **WeKraft web dashboard**. The extension is scoped to viewing and acting on existing work.
 
 ### ❌ Manage Workspace Members or Roles
 - Inviting members, changing roles, or managing workspace permissions is only available in the **web dashboard settings**.
@@ -51,25 +51,25 @@ The **Wekraft IDE Extension** is the heart of our developer-first workspace expe
 - Submitting new client support tickets is handled through the web dashboard or client-facing portal. The extension is for managing and resolving existing tickets.
 
 ### ❌ Billing & Plan Management
-- Subscription, billing, and plan upgrades are accessible only through the **Wekraft web dashboard**.
+- Subscription, billing, and plan upgrades are accessible only through the **WeKraft web dashboard**.
 
 ### ❌ Repository Settings & Integrations
 - Connecting or configuring repository integrations (GitHub, GitLab, etc.) is done through the web dashboard. The extension consumes the configured data but cannot modify integration settings.
 
 ### ❌ Dashboard Analytics & Reports
-- Full analytics dashboards, burndown charts, velocity reports, and team performance insights are available only on the **Wekraft web dashboard**.
+- Full analytics dashboards, burndown charts, velocity reports, and team performance insights are available only on the **WeKraft web dashboard**.
 
 ---
 
 ## Handshake Authentication Flow
 
-Wekraft authenticates extension clients securely using a deep-linked handshake protocol that generates a cryptographically signed API key without requiring password exposure:
+WeKraft authenticates extension clients securely using a deep-linked handshake protocol that generates a cryptographically signed API key without requiring password exposure:
 
 ```mermaid
 sequenceDiagram
-    participant Editor as Wekraft Extension
+    participant Editor as WeKraft Extension
     participant Browser as Web Browser
-    participant WekraftWeb as Wekraft Web App
+    participant WekraftWeb as WeKraft Web App
     participant Backend as Reactive Backend DB
 
     Editor->>Browser: 1. Launch extension auth url
@@ -85,7 +85,7 @@ sequenceDiagram
 ```
 
 ### Authentication Lifecycle Details
-1. **Initiate**: Select **"Login with Wekraft"** in the extension Activity Bar. This launches your default browser with the callback redirect parameters.
+1. **Initiate**: Select **"Login with WeKraft"** in the extension Activity Bar. This launches your default browser with the callback redirect parameters.
 2. **Authorize**: Authenticated users click **"Grant Access to Extension"** in the browser.
 3. **Generate Token**: The web app invokes a database mutation to insert a handshake record with a **5-minute Time-To-Live (TTL)**.
 4. **Deep-Link Redirection**: The browser redirects to the custom editor URI scheme.

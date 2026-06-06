@@ -54,7 +54,7 @@ export function ShareProjectDialog({
 
   const handleShare = (platform: "twitter" | "linkedin" | "whatsapp") => {
     let url = "";
-    const text = `Check out my project on Wekraft! 🚀\n`;
+    const text = `Check out my project on WeKraft! 🚀\n`;
 
     if (platform === "twitter") {
       url = `https://twitter.com/intent/tweet?url=${encodeURIComponent(shareUrl)}&text=${encodeURIComponent(text)}`;

@@ -79,7 +79,7 @@ export default function NotFound() {
       {/* Minimal Footer */}
       <div className="absolute bottom-8 left-0 right-0 text-center pointer-events-none z-10">
         <span className="text-[10px] tracking-[0.25em] uppercase text-zinc-600 font-mono">
-          Wekraft Systems
+          WeKraft Systems
         </span>
       </div>
     </div>

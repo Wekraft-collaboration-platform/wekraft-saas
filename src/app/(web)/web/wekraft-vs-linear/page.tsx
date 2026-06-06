@@ -8,9 +8,9 @@ import { Compass, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
   title: {
-    absolute: "Wekraft vs Linear",
+    absolute: "WeKraft vs Linear",
   },
-  description: "Linear is fast, but it excludes collaboration. Compare Linear with Wekraft's native AI agents, integrated video rooms, and built-in team Wikis.",
+  description: "Linear is fast, but it excludes collaboration. Compare Linear with WeKraft's native AI agents, integrated video rooms, and built-in team Wikis.",
   alternates: {
     canonical: "https://wekraft.xyz/web/wekraft-vs-linear",
   },
@@ -62,16 +62,16 @@ const linearFeatures: ComparisonFeature[] = [
 
 const linearFaqs: FAQItem[] = [
   {
-    question: "How does Wekraft compare to Linear in terms of speed?",
-    answer: "Linear is widely praised for its performance, and Wekraft matches it. We use Convex and Next.js to deliver sub-100ms updates. The difference is Wekraft adds collaborative video rooms, standalone wiki documentation, and autonomous AI agents directly into the same fast workspace.",
+    question: "How does WeKraft compare to Linear in terms of speed?",
+    answer: "Linear is widely praised for its performance, and WeKraft matches it. We use Convex and Next.js to deliver sub-100ms updates. The difference is WeKraft adds collaborative video rooms, standalone wiki documentation, and autonomous AI agents directly into the same fast workspace.",
   },
   {
-    question: "Can our product managers write specifications inside Wekraft?",
-    answer: "Yes! Wekraft includes full-featured markdown wiki spaces in each project. Product managers can write specs, mock-up charts, and link them directly to engineering issues. Even better, Kaya (our AI PM) can automatically parse these spec files to draft task sub-lists.",
+    question: "Can our product managers write specifications inside WeKraft?",
+    answer: "Yes! WeKraft includes full-featured markdown wiki spaces in each project. Product managers can write specs, mock-up charts, and link them directly to engineering issues. Even better, Kaya (our AI PM) can automatically parse these spec files to draft task sub-lists.",
   },
   {
     question: "What importer options are available for moving from Linear?",
-    answer: "We offer a direct importer that uses your Linear Personal Access Token. It fetches all active teams, issues, cycles, custom labels, and comments, mapping them into your Wekraft project in less than five minutes.",
+    answer: "We offer a direct importer that uses your Linear Personal Access Token. It fetches all active teams, issues, cycles, custom labels, and comments, mapping them into your WeKraft project in less than five minutes.",
   },
 ];
 

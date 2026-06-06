@@ -1,6 +1,6 @@
 # Customer Desk
 
-The **Wekraft Customer Desk** is a centralized hub for managing all inbound customer requests, service tickets, and client support workflows — directly inside your project workspace. It bridges the gap between your development team and your clients, ensuring no request falls through the cracks.
+The **WeKraft Customer Desk** is a centralized hub for managing all inbound customer requests, service tickets, and client support workflows — directly inside your project workspace. It bridges the gap between your development team and your clients, ensuring no request falls through the cracks.
 
 > **Available on Plus & Pro Plans** — The Customer Desk is available to Plus and Pro plan users. Free plan users can view desk tickets but cannot create or manage them.
 
@@ -8,7 +8,7 @@ The **Wekraft Customer Desk** is a centralized hub for managing all inbound cust
 
 ## What Is the Customer Desk?
 
-The Customer Desk is Wekraft's built-in service management layer, purpose-built for software teams that manage client-facing work alongside their internal development sprints. It gives you:
+The Customer Desk is WeKraft's built-in service management layer, purpose-built for software teams that manage client-facing work alongside their internal development sprints. It gives you:
 
 - A **unified inbox** for all client-submitted requests and bug reports.
 - A **ticket lifecycle system** with configurable statuses and SLA tracking.
@@ -51,7 +51,7 @@ SLA timers are visible on each ticket card and turn red when approaching breach.
 
 ### 💬 Client Communication Thread
 Each ticket includes a **threaded response panel**:
-- Respond directly to the client from within Wekraft — no need to switch to email.
+- Respond directly to the client from within WeKraft — no need to switch to email.
 - Attach screenshots, log excerpts, or documentation links.
 - Internal notes (visible only to your team) can be added alongside client-visible replies.
 
@@ -72,7 +72,7 @@ Submitted → Triaged → In Progress → Pending Client → Resolved → Closed
 | **Submitted**      | Ticket has been created and is awaiting triage.                             |
 | **Triaged**        | Ticket has been reviewed, categorized, and assigned to a team member.       |
 | **In Progress**    | Active work is underway to resolve the ticket.                              |
-| **Pending Client** | Wekraft team is waiting for additional information from the client.         |
+| **Pending Client** | WeKraft team is waiting for additional information from the client.         |
 | **Resolved**       | The issue has been fixed or the request has been fulfilled.                 |
 | **Closed**         | The ticket has been acknowledged as resolved by the client or auto-closed.  |
 
@@ -101,4 +101,4 @@ Submitted → Triaged → In Progress → Pending Client → Resolved → Closed
 ## Related Pages
 - [Tickets](/web/docs/tickets) — full guide to creating and resolving tickets.
 - [Issues & Bug Tracking](/web/docs/issues) — for internal engineering bugs.
-- [Help & Support](/web/docs/support) — for Wekraft platform support queries.
+- [Help & Support](/web/docs/support) — for WeKraft platform support queries.

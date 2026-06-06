@@ -92,7 +92,7 @@ const Footer = () => {
             </div>
             <p className="text-neutral-400 text-[13px] leading-relaxed max-w-sm">
               Find teams, match skills, launch products, and avoid deadlines.
-              Wekraft brings your team space, code cycles, issues, and AI agents
+              WeKraft brings your team space, code cycles, issues, and AI agents
               into a single, cohesive interface.
             </p>
 
@@ -107,7 +107,7 @@ const Footer = () => {
                 {
                   icon: <FaGithub className="w-4 h-4" />,
                   name: "GitHub",
-                  href: "https://github.com/Wekraft-collaboration-platform",
+                  href: "https://github.com/WeKraft-collaboration-platform",
                 },
                 {
                   icon: <FaXTwitter className="w-4 h-4" />,
@@ -156,7 +156,7 @@ const Footer = () => {
               links={[
                 { label: "Overview", href: "/web" },
                 { label: "Pricing", href: "/web/pricing" },
-                { label: "Why Wekraft?", href: "/web/why-wekraft" },
+                { label: "Why WeKraft?", href: "/web/why-wekraft" },
                 { label: "Dashboard", href: "/dashboard" },
                 {
                   label: "Download Extension",

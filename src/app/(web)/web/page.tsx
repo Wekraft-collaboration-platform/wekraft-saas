@@ -17,9 +17,9 @@ import StructuredData from "@/components/StructuredData";
 
 export const metadata: Metadata = {
   title: {
-    absolute: "Wekraft | AI-Powered Project Management Platform & Collaborative Workspace"
+    absolute: "WeKraft | AI-Powered Project Management Platform & Collaborative Workspace"
   },
-  description: "Wekraft is the next-generation AI project management platform that helps software teams plan, track, and execute sprints with an AI PM agent, developer workspace, and seamless issue tracking.",
+  description: "WeKraft is the next-generation AI project management platform that helps software teams plan, track, and execute sprints with an AI PM agent, developer workspace, and seamless issue tracking.",
   alternates: {
     canonical: "https://wekraft.xyz/web",
   },
@@ -29,7 +29,7 @@ const softwareAppSchema = {
   "@context": "https://schema.org",
   "@type": "SoftwareApplication",
   "@id": "https://wekraft.xyz/web/#softwareapp",
-  "name": "Wekraft",
+  "name": "WeKraft",
   "operatingSystem": "All",
   "applicationCategory": "BusinessApplication",
   "description": "Next-generation AI project management platform and collaborative workspace built for software teams. Integrated with VS Code, Git, and custom PM agents.",

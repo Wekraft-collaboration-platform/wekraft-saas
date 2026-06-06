@@ -1,6 +1,6 @@
 # Help & Support
 
-Wekraft provides a unified, real-time **Help & Support** module directly inside the platform. You can access it from the sidebar navigation link in either the main Dashboard sidebar or the Project Workspace sidebar.
+WeKraft provides a unified, real-time **Help & Support** module directly inside the platform. You can access it from the sidebar navigation link in either the main Dashboard sidebar or the Project Workspace sidebar.
 
 The support center is divided into two operational channels: manual **Contact Support** ticket submissions and the real-time **Talk to AI** assistant.
 
@@ -31,16 +31,16 @@ Response times are determined dynamically based on the project owner's subscript
 
 ---
 
-## 2. Talk to AI (Wekraft Support Assistant)
+## 2. Talk to AI (WeKraft Support Assistant)
 
-The AI Support Assistant provides real-time help, documentation searches, and ticket automation. It is powered by a custom LLM runtime integrated directly with Wekraft's documentation and support systems.
+The AI Support Assistant provides real-time help, documentation searches, and ticket automation. It is powered by a custom LLM runtime integrated directly with WeKraft's documentation and support systems.
 
 ### Interactive Quick Starts
 When you open the AI tab, you can select one of four standard starter queries:
-- *"Help me get started with Wekraft and explain what I can do here."*
+- *"Help me get started with WeKraft and explain what I can do here."*
 - *"I have a query regarding my account or project settings."*
 - *"I found a bug in the app. Can you help me report it?"*
-- *"Tell me more about Wekraft and what makes it unique."*
+- *"Tell me more about WeKraft and what makes it unique."*
 
 ### Tool Integrations & Capabilities
 The Support Assistant is not just a text chatbot — it has access to specific backend tools to retrieve info and perform actions for you:
@@ -65,7 +65,7 @@ The Support Assistant is not just a text chatbot — it has access to specific b
 
 ## Best Practices for Submitting Tickets
 
-To help Wekraft engineers resolve issues quickly, please follow these tips:
+To help WeKraft engineers resolve issues quickly, please follow these tips:
 1. **Provide Clear Repos**: For bugs, detail what you did, what you expected, and what actually happened.
 2. **Include Error traces**: Copy/paste console errors or terminal logs from the editor extension when reporting connection issues.
 3. **Use the AI first**: The AI assistant can answer 95% of questions about settings, routing, pricing caps, and shortcut commands instantly.
