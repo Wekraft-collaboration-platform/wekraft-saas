@@ -234,7 +234,7 @@ const ProjectPage = () => {
           >
             <Button size="sm" className="px-6! text-xs" variant={"default"}
               onClick={async () => {
-                try { await markWorkspaceVisited(); } catch {}
+                try { await markWorkspaceVisited(); } catch { }
               }}
             >
               Visit workspace{" "}
@@ -256,9 +256,12 @@ const ProjectPage = () => {
             unoptimized
           />
         ) : (
-          <div className="flex flex-col items-center justify-center h-full text-muted-foreground">
+          <div className="flex flex-col items-center justify-center h-full text-muted-foreground p-4">
             <ImageIcon className="w-10 h-10 mb-2 opacity-50" />
-            <p>No thumbnail uploaded</p>
+            <p className="font-semibold text-sm">No thumbnail uploaded</p>
+            <p className="text-xs text-muted-foreground/70 mt-1 max-w-sm text-center">
+              Note: This thumbnail is useful for project in community for others to preview project.
+            </p>
           </div>
         )}
 
@@ -274,11 +277,14 @@ const ProjectPage = () => {
                 <p>Uploading...</p>
               </div>
             ) : (
-              <label className="cursor-pointer flex flex-col items-center justify-center w-full h-full text-white">
+              <label className="cursor-pointer flex flex-col items-center justify-center w-full h-full text-white p-4">
                 <UploadCloud className="w-10 h-10 mb-2" />
                 <span className="font-semibold">Click to Upload Thumbnail</span>
                 <span className="text-xs text-white/70 mt-1">
                   1280 x 300 Recommended (Max 1MB)
+                </span>
+                <span className="text-[10px] text-white/50 mt-1.5 max-w-xs text-center">
+                  Note: This thumbnail is useful for project in community for others to preview project.
                 </span>
                 <input
                   type="file"
@@ -307,7 +313,7 @@ const ProjectPage = () => {
               router.push(`/dashboard/my-projects/${project?.slug}/workspace/tasks?tour=create-task`);
             }}
             onVisit={async () => {
-              try { await markWorkspaceVisited(); } catch {}
+              try { await markWorkspaceVisited(); } catch { }
               setShowWorkspaceTour(false);
               router.push(`/dashboard/my-projects/${project?.slug}/workspace`);
             }}
@@ -326,12 +332,12 @@ const ProjectPage = () => {
           <InviteTourTooltip
             targetId="copy-invite-link-btn"
             onDismiss={async () => {
-              try { await markInviteStepCompleted(); } catch {}
+              try { await markInviteStepCompleted(); } catch { }
               setShowInviteTour(false);
               setInviteOpen(false);
             }}
             onNext={async () => {
-              try { await markInviteStepCompleted(); } catch {}
+              try { await markInviteStepCompleted(); } catch { }
               // Resume tour for Step 7 (Install extension) on dashboard
               router.push("/dashboard?tour=resume&resumeAfter=6");
             }}
@@ -350,12 +356,12 @@ const ProjectPage = () => {
             View Public Page <Globe className="ml-2 w-3.5 h-3.5" />
           </Button> */}
 
-          <Link href={`/dashboard/my-projects/${project?.slug}/workspace`}>
+          {/* <Link href={`/dashboard/my-projects/${project?.slug}/workspace`}>
             <Button size="sm" className=" px-4! text-xs" variant={"outline"}>
               Share Project
               <LucideExternalLink className="ml-2 w-3.5 h-3.5" />
             </Button>
-          </Link>
+          </Link> */}
 
           <InviteDialog
             inviteLink={projectInviteLink}
@@ -366,11 +372,11 @@ const ProjectPage = () => {
             preventCloseOutside={showInviteTour}
             trigger={
               <Button
-                className="px-5! h-7! rounded-md text-xs cursor-pointer bg-blue-500 text-white hover:bg-blue-600"
+                className="px-5! h-8! rounded-md text-xs cursor-pointer bg-blue-500 text-white hover:bg-blue-600"
                 size="sm"
                 onClick={() => setInviteOpen(true)}
               >
-                Invite <CopyPlus className="ml-2 w-3.5 h-3.5" />
+                Invite Teammates<CopyPlus className="ml-2 w-3.5 h-3.5" />
               </Button>
             }
           />
@@ -557,7 +563,7 @@ function WorkspaceTourTooltip({
       onClick={(e) => e.stopPropagation()}
     >
       {/* Curvy arrow pointing up */}
-      <div 
+      <div
         className="mb-1 -mt-5"
         style={{ transform: `translateX(${pos.arrowOffset ? pos.arrowOffset - 160 : 0}px)` }}
       >
