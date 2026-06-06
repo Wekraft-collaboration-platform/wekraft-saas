@@ -1,65 +1,33 @@
-# Shortcuts & Quick Access Guide
+# Keyboard Shortcuts
 
-Speed up your development and management workflows with Wekraft's keyboard shortcuts. These commands work globally across the dashboard, project workspaces, and team space composers.
+Speed up your development and management workflows with Wekraft's keyboard shortcuts. These commands work globally across the dashboard, project workspaces, and team space shortcuts.
 
 ---
 
 ## Global Navigation Keybinds
 
-These shortcuts are active from anywhere inside the Wekraft application:
+These shortcuts are active from anywhere inside the Wekraft application to streamline navigation and control:
 
-| Keybind | Action | Platform |
-| :--- | :--- | :--- |
-| `Ctrl + B` or `Cmd + B` | Toggle left sidebar collapse / expand | Web Client |
-| `Ctrl + K` or `Cmd + K` | Toggle AI Assistant Sheet (AI PM or Developer Agent) | Web Workspace |
-| `Escape` | Close active dialogs, side sheets, search popovers, or AI panels | Web Client |
-| `Enter` | Submit dialog forms, save inline edits, or confirm actions | Web Client |
+| Keybind | Action / Description | Where Used | Why It Is Used |
+| :--- | :--- | :--- | :--- |
+| `Ctrl + B` or `Cmd + B` | **Toggle left sidebar** collapse / expand | Globally across the Web Client | To quickly maximize screen space when viewing task boards, dashboards, or timelines. |
+| `Ctrl + K` or `Cmd + K` | **Toggle AI Assistant Sheet** (AI PM / Dev) | Within any Web Workspace | To instantly converse with Kaya PM or Harry Dev and request assistance without manual clicking. |
+| `Escape` | **Dismiss active overlays** or panels | Globally on the Web Client | To quickly close side sheets, dialog popups, search overlays, or AI sidebars. |
+| `Enter` | **Submit forms or confirm** actions | Within active dialogs / text boxes | To save inline edits or submit forms rapidly without moving your hand to the mouse. |
 
 ---
 
-## Message Composer Autocomplete Triggers
+## Team Space Shortcuts
 
-The Message Composer input field supports autocomplete hotkeys to summon workflows, attach codebase paths, and upload media instantly:
-
-```mermaid
-graph LR
-    Slash["/ (Slash)"] -->|Triggers| CreateTicket["Create Ticket Popover Dialog"]
-    AtSign["@ (At-Sign)"] -->|Triggers| Mentions["Mention Teammates or AI Agents"]
-    Backslash["\ (Backslash)"] -->|Triggers| CodeLinker["Code Linker (Collapsible directory file structure)"]
-    Hash["# (Hash)"] -->|Triggers| MediaUpload["Opens System File Selector immediately"]
-```
+These autocomplete triggers are used exclusively inside the **Team Space input field**. They help you reference resources, invoke workflows, and attach files inline without leaving the keyboard.
 
 ### Autocomplete Actions Detailed
 
-1. **`/` (Slash)**:
-   - **Trigger**: Type `/` as the first character of your message input.
-   - **Behavior**: Instantly clears input and opens the **Create Ticket Popover**. Here, you can type a task description, select an assignee, and click save to create a task in the backlog.
-2. **`@` (At-Sign)**:
-   - **Trigger**: Type `@` followed by characters.
-   - **Behavior**: Opens the **Mentions Dropdown**.
-     - Type `@everyone` to notify all members.
-     - Type the agent name to set the active chat agent.
-3. **`\` (Backslash)**:
-   - **Trigger**: Type `\` followed by characters.
-   - **Behavior**: Opens the **Code Linker Popover**. This queries and renders your linked repository's folder structures. Selecting a path inserts the path formatted as a codebase link into your composer.
-4. **`#` (Hash)**:
-   - **Trigger**: Type `#` as the first character of your message input.
-   - **Behavior**: Instantly opens your local device's file selector to upload media up to 10MB (images, archives, logs).
+| Trigger | Action / Description | Where / When Triggered | Why It Is Used |
+| :--- | :--- | :--- | :--- |
+| `/` (Slash) | **Open Create Ticket** | Typed as the first character of your message input | To instantly open the Create Ticket Popover and log bugs or backlog tickets directly from the chat flow. |
+| `@` (At-Sign) | **Open Mentions Dropdown** | Typed anywhere in the message input | To tag teammates or summon/switch specific AI agents (e.g., `@everyone`, `@Kaya`, `@Harry`). |
+| `\` (Backslash) | **Open Code Linker** | Typed anywhere in the message input | To query and embed connected repository folder/file paths as direct links in the message. |
+| `#` (Hash) | **Open File Selector** | Typed as the first character of your message input | To instantly open your local device's file selector and upload media/logs up to 10MB to the chat. |
 
 ---
-
-## Editor Extension Shortcuts
-
-When working in the Wekraft editor extension (available for Pro users with two-way sync, and read-only for Free/Plus), the following command palette hotkeys apply:
-
-- **Open Task in Web**: Open the currently active task in Wekraft Web.
-- **Mark Task Completed**: Mark your current in-editor task as completed, syncing immediately to the backend database.
-- **Task Tracking Focus**: The extension automatically monitors active editor focus while a task is set to "In Progress" in the workspace. No manual timer buttons are required.
-
----
-
-## Next Steps
-
-- Understand how AI uses these shortcuts in [Kaya PM Agent](/web/docs/kaya-pm).
-- Check how files link to tasks in [Repository Heatmaps](/web/docs/heatmaps).
-- Review [Editor Extension Setup](/web/docs/extension).

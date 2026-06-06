@@ -12,6 +12,7 @@ import {
 interface FooterLinkItem {
   label: string;
   href: string;
+  external?: boolean;
 }
 
 const FooterColumn = ({ title, links }: { title: string; links: FooterLinkItem[] }) => (
@@ -20,15 +21,27 @@ const FooterColumn = ({ title, links }: { title: string; links: FooterLinkItem[]
       {title}
     </h4>
     <div className="flex flex-col gap-2.5">
-      {links.map((link) => (
-        <Link
-          key={link.label}
-          href={link.href}
-          className="text-neutral-400 hover:text-white text-[13px] font-medium transition-colors"
-        >
-          {link.label}
-        </Link>
-      ))}
+      {links.map((link) =>
+        link.external ? (
+          <a
+            key={link.label}
+            href={link.href}
+            target="_blank"
+            rel="noopener noreferrer"
+            className="text-neutral-400 hover:text-white text-[13px] font-medium transition-colors"
+          >
+            {link.label}
+          </a>
+        ) : (
+          <Link
+            key={link.label}
+            href={link.href}
+            className="text-neutral-400 hover:text-white text-[13px] font-medium transition-colors"
+          >
+            {link.label}
+          </Link>
+        )
+      )}
     </div>
   </div>
 );
@@ -129,13 +142,14 @@ const Footer = () => {
             <FooterColumn
               title="Resources"
               links={[
+                { label: "⬇ Download Extension", href: "https://open-vsx.org/vscode/item?itemName=WeKraft.wekraft", external: true },
                 { label: "Docs Index", href: "/web/docs" },
                 { label: "Help & Support", href: "/web/docs/support" },
                 { label: "Referral Program", href: "/web/docs/referrals" },
                 { label: "Billing & Plans", href: "/web/docs/billing" },
                 { label: "Shortcuts", href: "/web/docs/shortcuts" },
                 { label: "Community Hub", href: "/web/docs/community" },
-                { label: "VS Code Extension", href: "/web/docs/extension" },
+                { label: "IDE Extension", href: "/web/docs/extension" },
                 { label: "Notifications", href: "/web/docs/notifications" },
               ]}
             />

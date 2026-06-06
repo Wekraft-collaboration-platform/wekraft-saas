@@ -34,4 +34,4 @@ Wekraft will offer two model presets for codebase resolution:
 
 - Leverage the active PM agent in [Kaya PM Agent](/web/docs/kaya-pm).
 - Configure repository syncs in [Git Repositories](/web/docs/repositories).
-- Connect editor-level workflows in [VS Code Extension](/web/docs/extension).
+- Connect editor-level workflows in [IDE Extension](/web/docs/extension).

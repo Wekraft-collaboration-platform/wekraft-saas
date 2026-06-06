@@ -1,6 +1,6 @@
-# Wekraft Extension
+# IDE Extension
 
-The **Wekraft Extension** is the heart of our developer-first workspace experience. It brings your entire Wekraft workspace — backlogs, tasks, sprints, tickets, and time logs — directly into your code editor, so you never have to break your flow or switch context to a browser.
+The **Wekraft IDE Extension** is the heart of our developer-first workspace experience. It brings your entire Wekraft workspace — backlogs, tasks, sprints, tickets, and time logs — directly into your code editor, so you never have to break your flow or switch context to a browser.
 
 > **Free for Everyone** — The Wekraft Extension is completely free for all users, no plan restrictions. Every Wekraft user gets full extension access.
 
@@ -92,15 +92,3 @@ sequenceDiagram
 5. **Exchange**: The extension catches the deep-link parameters and calls the backend endpoint to exchange the token. On success, this generates a permanent key in the API keys table, revokes the handshake token, and returns `{ userId, apiKey }`.
 
 ---
-
-## API Security, Rate Limiting & Touch Tracking
-
-Every request issued by the Wekraft Extension is authenticated against the internal gateway mutation.
-
-- **Sliding-Window Rate Limiter**:
-  - The API key checks usage counts within a sliding **1-minute (60,000ms) window**.
-  - **Limit**: Max **60 requests per minute**.
-  - Exceeding the threshold returns a rate limit exceeded error, causing the extension to temporarily queue non-critical events.
-- **Activity Tracking**:
-  - Valid requests touch the database API key record, writing the current epoch time to the `lastUsed` field for developer security auditing.
-  - You can view and revoke active extension API keys from **Account Settings → API Keys** in the web dashboard.

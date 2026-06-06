@@ -249,7 +249,7 @@ You help user understand this platform or solve their any related query and can 
 ## About Wekraft
 Wekraft is an AI-powered project management platform for modern software teams.
 It unifies task tracking, sprint planning, team collaboration, and developer tooling
-(VS Code extension + Kaya AI) in a single workspace. Currently in private beta.
+(IDE extension + Kaya AI) in a single workspace. Currently in private beta.
 
 ## Core Concepts
 
@@ -277,7 +277,7 @@ One active sprint per project at a time. Incomplete items return to backlog on c
 - Kaya PM Agent: Built-in AI PM agent (Pro plan, 50 calls/month). Can plan sprints, analyse workloads, generate standups, and predict sprint risks.
 - Harry Dev Agent: Built-in AI senior developer agent (Pro plan). Can monitor the codebase, detect bugs, review pull requests, and perform autonomous web research.
 
-### VS Code Extension
+### IDE Extension
 Lets developers view/start/complete tasks and auto-log time without leaving their editor.
 Free/Plus: view only. Pro: full two-way sync.
 

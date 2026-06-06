@@ -46,7 +46,7 @@ export const metadata: Metadata = {
     "collaboration",
     "sprints",
     "AI project manager",
-    "VS Code extension",
+    "IDE extension",
     "sprint planning",
     "team collaboration",
     "developer workspace",
