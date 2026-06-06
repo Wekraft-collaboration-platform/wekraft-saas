@@ -8,7 +8,9 @@ import CompareFAQ, { FAQItem } from "@/modules/web/compare/CompareFAQ";
 import { Briefcase, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Wekraft vs Jira | Clean, High-Speed Project Management",
+  title: {
+    absolute: "Wekraft vs Jira",
+  },
   description: "Ditch the slow loading screens and configuration bloat. Compare Jira with Wekraft's sub-second performance, native AI agents, and built-in meetings.",
   alternates: {
     canonical: "https://wekraft.xyz/web/wekraft-vs-jira",

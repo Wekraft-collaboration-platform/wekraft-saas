@@ -8,7 +8,9 @@ import CompareFAQ, { FAQItem } from "@/modules/web/compare/CompareFAQ";
 import { CheckCircle2, ArrowRight } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Wekraft vs Asana | Built for Software Teams",
+  title: {
+    absolute: "Wekraft vs Asana",
+  },
   description: "Asana is good for general task templates, but lacks developer workflows. Compare Asana with Wekraft's VS Code sync, unified docs, and AI PM agents.",
   alternates: {
     canonical: "https://wekraft.xyz/web/wekraft-vs-asana",

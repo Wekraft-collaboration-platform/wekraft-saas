@@ -15,49 +15,55 @@
  */
 "use client";
 
-import { useState, useRef, useCallback, KeyboardEvent, useEffect } from "react";
-import Image from "next/image";
-import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { useMutation, useQuery } from "convex/react";
+import { AnimatePresence, motion } from "framer-motion";
 import {
-  SmilePlus,
-  Plus,
-  X,
-  SendHorizontal,
-  BarChart2,
-  Code,
   AtSign,
-  Paperclip,
-  Loader2,
-  FileIcon,
-  TicketSlash,
-  Save,
+  BarChart2,
   ChevronDown,
+  Code,
+  FileIcon,
+  Loader2,
+  Paperclip,
+  Plus,
+  Save,
+  SendHorizontal,
+  SmilePlus,
+  TicketSlash,
+  X,
 } from "lucide-react";
+import Image from "next/image";
+import {
+  type KeyboardEvent,
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+} from "react";
 import { toast } from "sonner";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Button } from "@/components/ui/button";
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
+  DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogFooter,
-  DialogDescription,
 } from "@/components/ui/dialog";
-import { motion, AnimatePresence } from "framer-motion";
 import {
   Popover,
   PopoverContent,
   PopoverTrigger,
 } from "@/components/ui/popover";
+import { Textarea } from "@/components/ui/textarea";
 import { cn } from "@/lib/utils";
-import { getUserColor, getFileIconPath } from "./lib/utils";
-import { Message } from "./hooks/useMessages";
-import { CreatePollDialog } from "./CreatePollDialog";
-import { GetRepoStructure } from "../GetRepoStructure";
-import { useQuery, useMutation } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
-import { Id } from "../../../../convex/_generated/dataModel";
-import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import type { Id } from "../../../../convex/_generated/dataModel";
+import { GetRepoStructure } from "../GetRepoStructure";
+import { CreatePollDialog } from "./CreatePollDialog";
+import type { Message } from "./hooks/useMessages";
+import { getFileIconPath, getUserColor } from "./lib/utils";
 
 const EMOJI_GROUPS = [
   { label: "React", emojis: ["👍", "❤️", "😂", "😮", "😢", "🙏", "🎉", "🔥"] },
@@ -67,6 +73,26 @@ const EMOJI_GROUPS = [
     emojis: ["👀", "🤔", "💯", "🔗", "📝", "🎯", "⚡", "🌟"],
   },
 ];
+
+const MEDIA_REGEX =
+  /^(!?)\[([^\]]+)\]\(((?:blob:)?https?:\/\/[^\s)]+)\)(?:\s+([\s\S]*))?$/;
+
+function getReplyPreviewText(content: string): string {
+  if (content === "$__DELETED__$") {
+    return "This message was deleted";
+  }
+  const match = content.match(MEDIA_REGEX);
+  if (match) {
+    const isImg = match[1] === "!";
+    const name = match[2];
+    const caption = (match[4] ?? "").trim();
+    if (isImg) {
+      return caption ? `📷 ${caption}` : `📷 Photo: ${name}`;
+    }
+    return caption ? `📎 ${caption}` : `📎 File: ${name}`;
+  }
+  return content;
+}
 
 interface Props {
   channelName: string;
@@ -192,27 +218,43 @@ export function MessageComposer({
   // AI agents shown at top of mention dropdown
   const agentEntries = [
     ...("kaya".includes(mentionQuery.toLowerCase())
-      ? [{ _id: "kaya-bot", userName: "kaya", AccessRole: "AI PM Agent", userImage: "/kaya.svg", role: "ai" }]
+      ? [
+          {
+            _id: "kaya-bot",
+            userName: "kaya",
+            AccessRole: "AI PM Agent",
+            userImage: "/kaya.svg",
+            role: "ai",
+          },
+        ]
       : []),
     ...("harry".includes(mentionQuery.toLowerCase())
-      ? [{ _id: "harry-bot", userName: "harry", AccessRole: "AI Dev Agent", userImage: "/harry.svg", role: "ai" }]
+      ? [
+          {
+            _id: "harry-bot",
+            userName: "harry",
+            AccessRole: "AI Dev Agent",
+            userImage: "/harry.svg",
+            role: "ai",
+          },
+        ]
       : []),
   ];
 
   const filteredMembers = [
     ...agentEntries,
     ...(mentionQuery.toLowerCase() === "e" ||
-      mentionQuery.toLowerCase() === "ev" ||
-      "everyone".includes(mentionQuery.toLowerCase())
+    mentionQuery.toLowerCase() === "ev" ||
+    "everyone".includes(mentionQuery.toLowerCase())
       ? [
-        {
-          _id: "everyone",
-          userName: "everyone",
-          AccessRole: "Notify everyone in project",
-          userImage: undefined,
-          role: "system",
-        },
-      ]
+          {
+            _id: "everyone",
+            userName: "everyone",
+            AccessRole: "Notify everyone in project",
+            userImage: undefined,
+            role: "system",
+          },
+        ]
       : []),
     ...(members?.filter(
       (m) =>
@@ -356,8 +398,12 @@ export function MessageComposer({
             </strong>
             :{" "}
             <span className="opacity-70">
-              {replyingTo.content.slice(0, 60)}
-              {replyingTo.content.length > 60 ? "…" : ""}
+              {(() => {
+                const preview = getReplyPreviewText(replyingTo.content);
+                return preview.length > 60
+                  ? preview.slice(0, 60) + "…"
+                  : preview;
+              })()}
             </span>
           </span>
           <button
@@ -635,16 +681,16 @@ export function MessageComposer({
                         "h-10 w-10 rounded-full flex items-center justify-center shadow-sm transition-transform duration-200 group-hover:scale-110 group-active:scale-95",
                         item.color,
                         uploadingMedia &&
-                        item.label === "Media (Max 10MB)" &&
-                        "opacity-70 cursor-not-allowed",
+                          item.label === "Media (Max 10MB)" &&
+                          "opacity-70 cursor-not-allowed",
                       )}
                     >
                       <item.icon
                         className={cn(
                           "h-[18px] w-[18px]",
                           uploadingMedia &&
-                          item.label === "Media (Max 10MB)" &&
-                          "animate-spin",
+                            item.label === "Media (Max 10MB)" &&
+                            "animate-spin",
                         )}
                       />
                     </div>
@@ -847,9 +893,19 @@ export function MessageComposer({
                             <span
                               className={cn(
                                 "text-[13px] font-semibold truncate leading-tight",
-                                (member as any).role === "ai" ? "text-white" : "",
+                                (member as any).role === "ai"
+                                  ? "text-white"
+                                  : "",
                               )}
-                              style={(member as any).role !== "ai" ? { color: getUserColor(member.userName || "") } : undefined}
+                              style={
+                                (member as any).role !== "ai"
+                                  ? {
+                                      color: getUserColor(
+                                        member.userName || "",
+                                      ),
+                                    }
+                                  : undefined
+                              }
                             >
                               {member.userName}
                             </span>
@@ -879,9 +935,14 @@ export function MessageComposer({
               disabled={disabled || ownerIsPro === false}
               className={cn(
                 "flex items-center gap-1.5 px-4 py-2 rounded-full text-[11px] font-medium transition-all duration-200 border select-none shrink-0 text-foreground border-border bg-accent! hover:bg-muted/60",
-                (disabled || ownerIsPro === false) && "opacity-70 cursor-not-allowed",
+                (disabled || ownerIsPro === false) &&
+                  "opacity-70 cursor-not-allowed",
               )}
-              title={ownerIsPro === false ? "Upgrade to Pro to use AI agents" : undefined}
+              title={
+                ownerIsPro === false
+                  ? "Upgrade to Pro to use AI agents"
+                  : undefined
+              }
             >
               <img
                 src={activeAgent === "kaya" ? "/kaya.svg" : "/harry.svg"}
@@ -900,24 +961,43 @@ export function MessageComposer({
             sideOffset={8}
             className="w-44 p-1.5 bg-card backdrop-blur-xl border-border space-y-3 shadow-2xl rounded-xl"
           >
-            <p className="text-sm text-center border-b border-accent mb-2 text-muted-foreground px-2 py-1">AI Assistant</p>
-            {([
-              { id: "kaya", label: "Kaya", svg: "/kaya.svg", desc: "AI PM Agent" },
-              { id: "harry", label: "Harry", svg: "/harry.svg", desc: "AI Dev Agent", comingSoon: true },
-            ] as const).map((agent) => (
+            <p className="text-sm text-center border-b border-accent mb-2 text-muted-foreground px-2 py-1">
+              AI Assistant
+            </p>
+            {(
+              [
+                {
+                  id: "kaya",
+                  label: "Kaya",
+                  svg: "/kaya.svg",
+                  desc: "AI PM Agent",
+                },
+                {
+                  id: "harry",
+                  label: "Harry",
+                  svg: "/harry.svg",
+                  desc: "AI Dev Agent",
+                  comingSoon: true,
+                },
+              ] as const
+            ).map((agent) => (
               <button
                 key={agent.id}
                 type="button"
                 onClick={() => {
                   if ((agent as any).comingSoon) {
-                    toast.info("Harry is coming soon! Stay tuned.", { duration: 3000 });
+                    toast.info("Harry is coming soon! Stay tuned.", {
+                      duration: 3000,
+                    });
                     setAgentDropdownOpen(false);
                     return;
                   }
                   setActiveAgent(agent.id as "kaya" | "harry");
                   setAgentDropdownOpen(false);
                   setContent((c) => {
-                    const stripped = c.replace(/^@kaya\s*/i, "").replace(/^@harry\s*/i, "");
+                    const stripped = c
+                      .replace(/^@kaya\s*/i, "")
+                      .replace(/^@harry\s*/i, "");
                     return `@${agent.id} ${stripped}`;
                   });
                   setTimeout(() => textareaRef.current?.focus(), 10);
@@ -928,15 +1008,25 @@ export function MessageComposer({
                   (agent as any).comingSoon && "opacity-60 cursor-not-allowed",
                 )}
               >
-                <img src={agent.svg} alt={agent.label} width={16} height={16} className="shrink-0" />
+                <img
+                  src={agent.svg}
+                  alt={agent.label}
+                  width={16}
+                  height={16}
+                  className="shrink-0"
+                />
                 <div className="flex flex-col space-y-0.5">
-                  <span className="text-[12px] font-medium leading-tight text-foreground">{agent.label}</span>
+                  <span className="text-[12px] font-medium leading-tight text-foreground">
+                    {agent.label}
+                  </span>
                   <span className="text-[10px] text-muted-foreground leading-tight">
                     {(agent as any).comingSoon ? "Coming soon" : agent.desc}
                   </span>
                 </div>
-                {activeAgent === agent.id && !((agent as any).comingSoon) && (
-                  <span className="ml-auto text-[9px] text-muted-foreground">✓</span>
+                {activeAgent === agent.id && !(agent as any).comingSoon && (
+                  <span className="ml-auto text-[9px] text-muted-foreground">
+                    ✓
+                  </span>
                 )}
               </button>
             ))}

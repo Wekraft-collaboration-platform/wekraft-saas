@@ -5,7 +5,7 @@ import Link from "next/link";
 import { Compass, Briefcase, CheckCircle2, FileText, ArrowRight, ExternalLink } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Why WeKraft | Compare Project Management Platforms",
+  title: "Why WeKraft",
   description: "See how Wekraft stacks up against Jira, Linear, Asana, Notion, and Plane. Discover the AI-first engineering workspace.",
   alternates: {
     canonical: "https://wekraft.xyz/web/why-wekraft",
