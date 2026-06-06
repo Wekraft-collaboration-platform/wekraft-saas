@@ -86,7 +86,7 @@ export const docsConfig: { [key: string]: DocItem[] } = {
       created: "2026-01-01",
     },
     {
-      title: "VS Code Extension",
+      title: "IDE Extension",
       slug: "extension",
       description: "Install, authenticate, and manage tasks without leaving your editor.",
       icon: "Terminal",
@@ -107,6 +107,13 @@ export const docsConfig: { [key: string]: DocItem[] } = {
       description: "Create, assign, and track work items across List, Board, and Table views.",
       icon: "CheckSquare",
       created: "2026-01-01",
+    },
+    {
+      title: "Tickets",
+      slug: "tickets",
+      description: "Create, assign, prioritize, and resolve support tickets with SLA tracking and status workflows.",
+      icon: "Ticket",
+      created: "2026-06-06",
     },
     {
       title: "Issues & Bug Tracking",
@@ -158,6 +165,15 @@ export const docsConfig: { [key: string]: DocItem[] } = {
       description: "Invite members, set roles, handle join requests, and configure permissions.",
       icon: "Settings",
       created: "2026-01-01",
+    },
+  ],
+  "Customer Desk": [
+    {
+      title: "Customer Desk",
+      slug: "customer-desk",
+      description: "Manage inbound customer requests, service tickets, and client support workflows from a unified desk.",
+      icon: "LifeBuoy",
+      created: "2026-06-06",
     },
   ],
   "AI Agents": [
