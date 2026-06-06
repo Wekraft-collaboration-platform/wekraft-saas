@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState } from "react";
-import { Play, X, CheckCircle2 } from "lucide-react";
+import { SignUpButton } from "@clerk/nextjs";
+import { useConvexAuth } from "convex/react";
+import { AnimatePresence, motion } from "framer-motion";
+import { CheckCircle2, Play, X } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
-import { useConvexAuth } from "convex/react";
-import { SignUpButton } from "@clerk/nextjs";
-import { motion, AnimatePresence } from "framer-motion";
+import type React from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 
 const ProjectOnSteroids = () => {
@@ -52,7 +53,6 @@ const ProjectOnSteroids = () => {
   return (
     <section className="relative overflow-hidden w-full pt-20 md:pt-32 pb-0 bg-gradient-to-b from-[#2A3DF4] via-[#60A5FA] to-black">
       <div className="max-w-[1440px] mx-auto px-6 md:px-12 lg:px-16 relative z-10">
-
         {/* Top Header Row */}
         <div className="flex flex-col lg:flex-row justify-between items-start gap-10 lg:gap-16 mb-16 md:mb-24">
           <h2 className="text-4xl md:text-5xl lg:text-[64px] font-bold leading-[1.1] max-w-[700px] tracking-tight text-white">
@@ -61,14 +61,16 @@ const ProjectOnSteroids = () => {
 
           <div className="flex flex-col gap-6 lg:max-w-[450px] pt-2">
             <p className="text-lg md:text-xl text-blue-50/90 leading-relaxed font-medium">
-              Wekraft makes it easy to build workflows, track issues, and ship software. Unify your entire development lifecycle in minutes, not months.
+              Wekraft makes it easy to build workflows, track issues, and ship
+              software. Unify your entire development lifecycle in minutes, not
+              months.
             </p>
             <div className="flex flex-wrap items-center gap-4 mt-2">
               {isLoading ? (
                 <button
                   type="button"
                   disabled
-                  className="bg-white/80 text-blue-600 font-bold px-8 py-3.5 rounded-full opacity-65 cursor-not-allowed"
+                  className="bg-white/80 text-blue-600 px-8 py-3.5 rounded-md opacity-65 cursor-not-allowed"
                 >
                   Loading...
                 </button>
@@ -76,7 +78,7 @@ const ProjectOnSteroids = () => {
                 <Link href="/dashboard">
                   <button
                     type="button"
-                    className="bg-white text-blue-600 font-bold px-8 py-3.5 rounded-full hover:bg-neutral-50 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg cursor-pointer"
+                    className="bg-white text-blue-600  px-8 py-3.5 rounded-md hover:bg-neutral-50 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg cursor-pointer"
                   >
                     Go to Dashboard
                   </button>
@@ -85,7 +87,7 @@ const ProjectOnSteroids = () => {
                 <SignUpButton>
                   <button
                     type="button"
-                    className="bg-white text-blue-600 font-bold px-8 py-3.5 rounded-full hover:bg-neutral-50 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-lg cursor-pointer"
+                    className="bg-white text-blue-600 px-8 py-3.5 rounded-md hover:bg-neutral-50 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-sm cursor-pointer"
                   >
                     Try Wekraft for free
                   </button>
@@ -95,9 +97,16 @@ const ProjectOnSteroids = () => {
               <button
                 type="button"
                 onClick={() => setIsDemoModalOpen(true)}
-                className="border border-white/40 text-white font-bold px-8 py-3.5 rounded-full hover:bg-white/10 hover:scale-[1.02] active:scale-[0.98] transition-all backdrop-blur-sm cursor-pointer"
+                className="border border-white/40 text-white px-8 py-3.5 rounded-md hover:bg-white/10 hover:scale-[1.02] active:scale-[0.98] transition-all backdrop-blur-sm cursor-pointer"
               >
                 Get a demo
+              </button>
+
+              <button
+                type="button"
+                className="bg-blue-600 text-white px-8 py-3.5 rounded-md hover:bg-blue-700 hover:scale-[1.02] active:scale-[0.98] transition-all shadow-sm cursor-pointer"
+              >
+                Download Extension
               </button>
             </div>
           </div>
@@ -111,7 +120,8 @@ const ProjectOnSteroids = () => {
           <div
             className="absolute top-0 w-[95%] md:w-[85%] max-w-[1100px]"
             style={{
-              transform: "rotateX(15deg) rotateY(12deg) rotateZ(-4deg) translateX(5%) translateY(5%)",
+              transform:
+                "rotateX(15deg) rotateY(12deg) rotateZ(-4deg) translateX(5%) translateY(5%)",
               transformOrigin: "center top",
             }}
           >
@@ -192,14 +202,16 @@ const ProjectOnSteroids = () => {
                     className="w-20 h-20 md:w-28 md:h-28 bg-black/40 backdrop-blur-md rounded-full flex items-center justify-center text-white hover:bg-black/60 hover:scale-105 transition-all duration-300 shadow-[0_10px_30px_rgba(0,0,0,0.3)] group"
                     aria-label="Play video"
                   >
-                    <Play className="w-8 h-8 md:w-12 md:h-12 ml-2 text-white/90 group-hover:text-white transition-colors" fill="currentColor" />
+                    <Play
+                      className="w-8 h-8 md:w-12 md:h-12 ml-2 text-white/90 group-hover:text-white transition-colors"
+                      fill="currentColor"
+                    />
                   </button>
                 </div>
               </div>
             </div>
           </div>
         </div>
-
       </div>
 
       {/* Interactive Get a Demo Dialog */}
@@ -253,7 +265,11 @@ const ProjectOnSteroids = () => {
                     Request Submitted
                   </h3>
                   <p className="text-neutral-400 text-sm max-w-xs leading-relaxed">
-                    Thank you, {demoName.split(" ")[0]}! We will email you at <span className="text-neutral-300 font-medium">{demoEmail}</span> to arrange a demo.
+                    Thank you, {demoName.split(" ")[0]}! We will email you at{" "}
+                    <span className="text-neutral-300 font-medium">
+                      {demoEmail}
+                    </span>{" "}
+                    to arrange a demo.
                   </p>
                 </motion.div>
               ) : (
@@ -264,13 +280,17 @@ const ProjectOnSteroids = () => {
                       Get a Demo
                     </h3>
                     <p className="text-neutral-400 text-xs mt-1.5 leading-relaxed">
-                      Experience how WeKraft simplifies project management, time tracking, and team channels.
+                      Experience how WeKraft simplifies project management, time
+                      tracking, and team channels.
                     </p>
                   </div>
 
                   <form onSubmit={handleDemoSubmit} className="space-y-4">
                     <div>
-                      <label htmlFor="demo-name" className="block text-neutral-300 text-xs font-semibold mb-1.5">
+                      <label
+                        htmlFor="demo-name"
+                        className="block text-neutral-300 text-xs font-semibold mb-1.5"
+                      >
                         Full Name
                       </label>
                       <input
@@ -286,7 +306,10 @@ const ProjectOnSteroids = () => {
                     </div>
 
                     <div>
-                      <label htmlFor="demo-email" className="block text-neutral-300 text-xs font-semibold mb-1.5">
+                      <label
+                        htmlFor="demo-email"
+                        className="block text-neutral-300 text-xs font-semibold mb-1.5"
+                      >
                         Work Email
                       </label>
                       <input
@@ -303,7 +326,10 @@ const ProjectOnSteroids = () => {
 
                     <div className="grid grid-cols-2 gap-4">
                       <div>
-                        <label htmlFor="demo-size" className="block text-neutral-300 text-xs font-semibold mb-1.5">
+                        <label
+                          htmlFor="demo-size"
+                          className="block text-neutral-300 text-xs font-semibold mb-1.5"
+                        >
                           Team Size
                         </label>
                         <select
@@ -328,7 +354,10 @@ const ProjectOnSteroids = () => {
                     </div>
 
                     <div>
-                      <label htmlFor="demo-note" className="block text-neutral-300 text-xs font-semibold mb-1.5">
+                      <label
+                        htmlFor="demo-note"
+                        className="block text-neutral-300 text-xs font-semibold mb-1.5"
+                      >
                         Tell us about your team (Optional)
                       </label>
                       <textarea
@@ -349,9 +378,25 @@ const ProjectOnSteroids = () => {
                     >
                       {isSubmitting ? (
                         <>
-                          <svg className="animate-spin -ml-1 mr-3 h-4 w-4 text-white" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                            <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                            <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                          <svg
+                            className="animate-spin -ml-1 mr-3 h-4 w-4 text-white"
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                          >
+                            <circle
+                              className="opacity-25"
+                              cx="12"
+                              cy="12"
+                              r="10"
+                              stroke="currentColor"
+                              strokeWidth="4"
+                            ></circle>
+                            <path
+                              className="opacity-75"
+                              fill="currentColor"
+                              d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+                            ></path>
                           </svg>
                           Submitting...
                         </>

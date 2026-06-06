@@ -1,6 +1,6 @@
 "use client";
 import { motion, useScroll, useSpring, useTransform } from "framer-motion";
-import { Megaphone, PlaneTakeoff } from "lucide-react";
+import { ArrowRight, Code2 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
@@ -207,18 +207,34 @@ const Hero = () => {
           style={{ left: bubbleX, top: bubbleY }}
           initial={{ opacity: 0, scale: 0.8, y: 10 }}
           animate={{ opacity: 1, scale: 1, y: 0 }}
-          transition={{ delay: delay + 0.6, type: "spring", stiffness: 80, damping: 15 }}
+          transition={{
+            delay: delay + 0.6,
+            type: "spring",
+            stiffness: 80,
+            damping: 15,
+          }}
         >
           <div
             className={`relative w-8 h-8 rounded-full overflow-hidden border-2 ${borderColor} shadow-lg shrink-0`}
             style={{ boxShadow: `0 0 12px ${glowColor}` }}
           >
-            <img src={avatarUrl} alt={name} className="w-full h-full object-cover" />
+            <img
+              src={avatarUrl}
+              alt={name}
+              className="w-full h-full object-cover"
+            />
             <span className="absolute bottom-0 right-0 w-2 h-2 rounded-full bg-emerald-500 border border-black animate-pulse" />
           </div>
           <div className="bg-neutral-800 backdrop-blur-md border border-white/10 rounded-lg px-2.5 py-1 shadow-[0_8px_30px_rgb(0,0,0,0.5)] flex flex-col justify-center min-w-[125px] max-w-[180px]">
-            <span className="font-semibold text-xs tracking-wide" style={{ color }}>{name}</span>
-            <span className="text-neutral-300 text-base leading-tight mt-0.5">{action}</span>
+            <span
+              className="font-semibold text-xs tracking-wide"
+              style={{ color }}
+            >
+              {name}
+            </span>
+            <span className="text-neutral-300 text-base leading-tight mt-0.5">
+              {action}
+            </span>
           </div>
         </motion.div>
 
@@ -277,27 +293,30 @@ const Hero = () => {
         <div className="inline-flex items-center p-1 pr-4 border border-neutral-400/30 rounded-full cursor-pointer transition-colors duration-200 mb-18 bg-blue-500/5 hover:bg-blue-500/10">
           <div className="bg-blue-600 px-5 py-1 rounded-full flex items-center gap-1.5">
             <span className="text-[12px]">
-              <Megaphone className="w-4 h-4 inline" />
+              <Code2 className="w-4 h-4 inline" />
             </span>
             <span className="text-sm font-medium text-white leading-none">
-              Less Managing
+              Extension
             </span>
           </div>
-          <span className="text-blue-50 text-sm font-medium ml-3">
-            More Building <PlaneTakeoff className="w-4 h-4 inline ml-1" />
+          <span className="text-blue-50 text-xs font-medium ml-3 flex items-center gap-1">
+            Bring WeKraft to your IDE <ArrowRight className="w-4 h-4 inline" />
           </span>
         </div>
 
         <div className="flex flex-col items-center justify-center font-pop relative px-4 text-center">
           <h1 className="text-white font-sans tracking-tight text-[30px] sm:text-[44px] md:text-[62px] font-semibold leading-tight max-w-4xl">
-            <span className="hidden md:block">Your Project Lives in Github,</span>
+            <span className="hidden md:block">
+              Your Project Lives in Github,
+            </span>
             <span className="block md:hidden">
-              Your Project Lives in<br />
+              Your Project Lives in
+              <br />
               Github, so should
             </span>
           </h1>
           <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-white tracking-tight text-[30px] sm:text-[44px] md:text-[62px] font-semibold leading-tight mt-1 md:mt-2">
-            <span className="hidden md:inline">so should your {" "}</span>
+            <span className="hidden md:inline">so should your </span>
             <span className="inline md:hidden">your {""}</span>
             <FlipText className="md:ml-2" duration={3.5}>
               Workspace.
@@ -337,7 +356,8 @@ const Hero = () => {
           <div className="absolute left-1/2 -translate-x-1/2 top-0 bg-linear-to-r from-transparent via-blue-500 to-transparent h-px w-1/4" />
 
           <p className="text-neutral-300 text-base md:text-[20px] max-w-3xl mx-auto mt-5 font-sans tracking-tight text-pretty text-center px-4">
-            AI-first project management for software teams — synced with GitHub, powered by automation, built for shipping, Not for Chaos
+            AI-first project management for software teams — synced with GitHub,
+            powered by automation, built for shipping, Not for Chaos
           </p>
         </div>
 
@@ -366,7 +386,13 @@ const Hero = () => {
           style={{ perspective: "1200px" }}
         >
           <motion.div
-            style={{ rotateX, scale, y, opacity: rawOpacity, transformStyle: "preserve-3d" }}
+            style={{
+              rotateX,
+              scale,
+              y,
+              opacity: rawOpacity,
+              transformStyle: "preserve-3d",
+            }}
             className="relative will-change-transform"
           >
             {/* Top edge glow */}
@@ -386,7 +412,10 @@ const Hero = () => {
             </div>
 
             {/* Collaborator Overlays (Curvy SVG Arrows & Collaborator Info) */}
-            <div className="absolute inset-0 pointer-events-none select-none z-30 overflow-hidden" style={{ transform: "translateZ(20px)" }}>
+            <div
+              className="absolute inset-0 pointer-events-none select-none z-30 overflow-hidden"
+              style={{ transform: "translateZ(20px)" }}
+            >
               <svg
                 className="absolute inset-0 w-full h-full pointer-events-none select-none z-30"
                 viewBox="0 0 100 100"
