@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import { Pie, PieChart, ResponsiveContainer, Cell, Label } from "recharts";
 import {
   ChartContainer,
@@ -25,7 +26,7 @@ const STATUS_COLORS: Record<string, string> = {
 export const TaskStatusCard = ({ tasks }: TaskStatusCardProps) => {
   const totalTasks = tasks?.length || 0;
 
-  const statusCounts =
+  const statusCounts = useMemo(() => 
     tasks?.reduce(
       (acc: Record<string, number>, task) => {
         acc[task.status] = (acc[task.status] || 0) + 1;
@@ -38,22 +39,22 @@ export const TaskStatusCard = ({ tasks }: TaskStatusCardProps) => {
         testing: 0,
         completed: 0,
       },
-    ) || {};
+    ) || {}, [tasks]);
 
-  const chartData = Object.entries(statusCounts)
+  const chartData = useMemo(() => Object.entries(statusCounts)
     .map(([status, count]) => ({
       name: status,
       value: count,
       fill: STATUS_COLORS[status] || "hsl(var(--muted))",
     }))
-    .filter((item) => item.value > 0);
+    .filter((item) => item.value > 0), [statusCounts]);
 
-  const chartConfig = Object.fromEntries(
+  const chartConfig = useMemo(() => Object.fromEntries(
     Object.entries(STATUS_COLORS).map(([status, color]) => [
       status,
       { label: status.charAt(0).toUpperCase() + status.slice(1), color },
     ]),
-  );
+  ), []);
 
   return (
     <Card className="p-3! overflow-hidden shadow-md dark:shadow-sm dark:bg-sidebar bg-card dark:border-accent border-neutral-300 flex flex-col h-full">

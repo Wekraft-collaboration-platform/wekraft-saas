@@ -1,5 +1,6 @@
 "use client";
 
+import { useMemo } from "react";
 import {
   Card,
   CardContent,
@@ -58,6 +59,16 @@ export const MemberWorkloadCard = ({
   const queryData = useQuery(api.workspace.getMemberWorkload, { projectId });
   const workload = providedData || queryData;
 
+  const hasData = useMemo(() => workload !== undefined && workload.length > 0 && workload.some(w => w.total > 0), [workload]);
+
+  const chartData = useMemo(() => {
+    if (!workload) return [];
+    return workload.map(w => ({
+      ...w,
+      shortName: w.name.split(' ')[0]
+    }));
+  }, [workload]);
+
   if (workload === undefined) {
     return (
       <Card className="border shadow-sm bg-accent/20 border-accent h-[340px]">
@@ -71,8 +82,6 @@ export const MemberWorkloadCard = ({
       </Card>
     );
   }
-
-  const hasData = workload.length > 0 && workload.some(w => w.total > 0);
 
   if (!hasData) {
     return (
@@ -121,13 +130,6 @@ export const MemberWorkloadCard = ({
       </Card>
     );
   }
-
-  // Formatting name for Y-Axis
-  const chartData = workload.map(w => ({
-    ...w,
-    shortName: w.name.split(' ')[0]
-  }));
-
 
   const dynamicHeight = Math.max(180, chartData.length * 48);
 
