@@ -11,14 +11,14 @@ export const ratelimit = new Ratelimit({
 
 export const chatbotRatelimit = new Ratelimit({
   redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(2, "1 m"), // 2 requests per minute strictly for chatbot
+  limiter: Ratelimit.slidingWindow(3, "1 m"),
   analytics: true,
   prefix: "chatbot_rl",
 });
 
 export const chatbotGlobalRatelimit = new Ratelimit({
   redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(10, "1 m"), // 10 requests per minute globally for chatbot
+  limiter: Ratelimit.slidingWindow(10, "1 m"),
   analytics: true,
   prefix: "chatbot_global_rl",
 });
