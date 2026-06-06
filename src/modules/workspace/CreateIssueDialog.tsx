@@ -307,6 +307,7 @@ export const CreateIssueDialog = ({
           <div className="flex flex-col space-y-1.5">
             <Label className="text-sm">Issue Title</Label>
             <Input
+              autoFocus
               placeholder="Issue title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}

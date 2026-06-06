@@ -320,6 +320,7 @@ export const CreateTaskDialog = ({
           <div className="flex flex-col space-y-1.5">
             <Label className="text-sm">Task Title</Label>
             <Input
+              autoFocus
               placeholder="Task title"
               value={title}
               onChange={(e) => setTitle(e.target.value)}

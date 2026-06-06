@@ -207,22 +207,22 @@ export default function Layout({
                               </Tooltip>
                             </motion.div>
 
-                            {/* Share */}
-                            <motion.div variants={itemVariants}>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    size="icon-sm"
-                                    variant="outline"
-                                    onClick={() => setIsShareOpen(true)}
-                                    aria-label="Share project"
-                                  >
-                                    <Share2 className="h-4 w-4" />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>Share Project</TooltipContent>
-                              </Tooltip>
-                            </motion.div>
+                             {/* Share */}
+                             {/* <motion.div variants={itemVariants}>
+                               <Tooltip>
+                                 <TooltipTrigger asChild>
+                                   <Button
+                                     size="icon-sm"
+                                     variant="outline"
+                                     onClick={() => setIsShareOpen(true)}
+                                     aria-label="Share project"
+                                   >
+                                     <Share2 className="h-4 w-4" />
+                                   </Button>
+                                 </TooltipTrigger>
+                                 <TooltipContent>Share Project</TooltipContent>
+                               </Tooltip>
+                             </motion.div> */}
 
                             {/* Team Meet */}
                             <motion.div variants={itemVariants}>

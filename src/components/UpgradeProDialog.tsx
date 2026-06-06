@@ -4,31 +4,24 @@ import { Button } from "@/components/ui/button";
 import { Clover, Check, X } from "lucide-react";
 import { useUpgradeModalStore } from "@/store/useUpgradeModalStore";
 import { useRouter } from "next/navigation";
-import { createPortal } from "react-dom";
+import { Dialog, DialogContent, DialogTitle } from "@/components/ui/dialog";
 
 export const UpgradeProDialog = () => {
   const { isOpen, closeModal } = useUpgradeModalStore();
   const router = useRouter();
-
-  if (!isOpen) return null;
 
   const handleUpgrade = () => {
     router.push("/web/pricing");
     closeModal();
   };
 
-  const handleOverlayClick = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (e.target === e.currentTarget) {
-      closeModal();
-    }
-  };
-
-  return createPortal(
-    <div
-      onClick={handleOverlayClick}
-      className="fixed inset-0 z-[9999] flex items-center justify-center bg-black/50 backdrop-blur-[4px] p-4 transition-all duration-300 animate-in fade-in"
-    >
-      <div className="bg-sidebar text-sidebar-foreground rounded-2xl max-w-[480px] w-full border border-accent shadow-2xl flex flex-col justify-between p-6 overflow-hidden animate-in fade-in-50 zoom-in-95 duration-200 relative">
+  return (
+    <Dialog open={isOpen} onOpenChange={(open) => !open && closeModal()}>
+      <DialogContent
+        className="bg-sidebar text-sidebar-foreground rounded-2xl max-w-[480px] w-full border border-accent shadow-2xl flex flex-col justify-between p-6 overflow-hidden !outline-hidden"
+        showCloseButton={false}
+      >
+        <DialogTitle className="sr-only">Upgrade to Pro Plan</DialogTitle>
         {/* Close Button */}
         <button
           onClick={closeModal}
@@ -107,8 +100,7 @@ export const UpgradeProDialog = () => {
             </div>
           </div>
         </div>
-      </div>
-    </div>,
-    document.body
+      </DialogContent>
+    </Dialog>
   );
 };
