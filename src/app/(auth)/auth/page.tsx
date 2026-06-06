@@ -129,19 +129,19 @@ export default async function LoginPage() {
             <div className="flex flex-col items-center gap-6">
               <div className="flex items-center gap-8">
                 <Link
-                  href="/terms"
+                  href="/web/docs/terms"
                   className="text-[11px] font-medium text-neutral-400 hover:text-neutral-300 transition-colors tracking-wider uppercase"
                 >
                   Terms
                 </Link>
                 <Link
-                  href="/privacy"
+                  href="/web/docs/privacy"
                   className="text-[11px] font-medium text-neutral-400 hover:text-neutral-300 transition-colors tracking-wider uppercase"
                 >
                   Privacy
                 </Link>
                 <Link
-                  href="/support"
+                  href="/web/contact"
                   className="text-[11px] font-medium text-neutral-400 hover:text-neutral-300 transition-colors tracking-wider uppercase"
                 >
                   Support
