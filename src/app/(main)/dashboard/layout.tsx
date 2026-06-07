@@ -73,6 +73,8 @@ const itemVariants = {
   },
 } as const;
 
+import { DesktopOnlyGuard } from "../../../components/DesktopOnlyGuard";
+
 export default function Layout({
   children,
   sidebar,
@@ -210,12 +212,13 @@ export default function Layout({
   }, [isStoreLoading, user, router]);
 
   return (
-    <div className="h-screen overflow-hidden">
-      <Unauthenticated>
-        <RedirectToSignIn />
-      </Unauthenticated>
-      <Authenticated>
-        <TourOrchestrator />
+    <DesktopOnlyGuard>
+      <div className="h-screen overflow-hidden">
+        <Unauthenticated>
+          <RedirectToSignIn />
+        </Unauthenticated>
+        <Authenticated>
+          <TourOrchestrator />
         <SidebarProvider defaultOpen={true}>
           {sidebar}
           <SidebarInset className="border-l h-screen flex flex-col">
@@ -398,5 +401,6 @@ export default function Layout({
         </SidebarProvider>
       </Authenticated>
     </div>
+    </DesktopOnlyGuard>
   );
 }
