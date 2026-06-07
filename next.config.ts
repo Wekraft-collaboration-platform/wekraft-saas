@@ -23,6 +23,14 @@ const nextConfig: NextConfig = {
   experimental: {
     viewTransition: true,
   },
+
+  compiler: {
+    // Strips console.log / console.debug / console.info in production builds.
+    // console.error and console.warn are kept for Sentry and runtime error tracking.
+    removeConsole: {
+      exclude: ["error", "warn"],
+    },
+  },
 };
 
 export default withSentryConfig(nextConfig, {

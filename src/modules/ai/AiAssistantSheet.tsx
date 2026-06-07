@@ -174,10 +174,6 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
     },
   });
 
-  // Console threadId
-  useEffect(() => {
-    console.log(`🤖 [Kaya AI] Session: ${threadId}`);
-  }, [threadId]);
 
   // Thinking timer logic
   useEffect(() => {
@@ -641,7 +637,7 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) {
-                  console.log("Selected file for upload:", file);
+                  // TODO: handle file upload
                 }
               }}
             />
