@@ -95,7 +95,7 @@ const TrustedBy = () => {
         </div>
       </div>
 
-      <div className="mt-8 flex justify-center w-full relative z-20">
+      <div className="mt-8 flex flex-row items-center justify-center gap-6 w-full relative z-20">
         <a
           href="https://www.producthunt.com/products/wekraft?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-wekraft"
           target="_blank"
@@ -109,6 +109,20 @@ const TrustedBy = () => {
             width="250"
             height="54"
             className="w-[250px] h-[54px] object-contain"
+          />
+        </a>
+        <a
+          href="https://forg.to/products/wekraft"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hover:opacity-90 transition-opacity duration-200"
+          id="trustedby-forg-badge"
+        >
+          <img
+            src="https://forg.to/api/badges/launch-winner/wekraft?theme=light&shape=square&rank=1"
+            alt="WeKraft - #1 on forg. on forg."
+            height="54"
+            className="h-[54px] w-auto object-contain"
           />
         </a>
       </div>
