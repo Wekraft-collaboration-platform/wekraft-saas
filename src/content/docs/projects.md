@@ -4,6 +4,16 @@ Projects are the top-level boundary in WeKraft. Every sprint, task, issue, team 
 
 ---
 
+## Sub-topics
+
+To help you manage project lifecycles, teams, and visibility settings, see the following operational guides:
+
+- **[Invite Member](/web/docs/invite-member)**: How to invite collaborators to join your project team and manage project seats.
+- **[Join Projects](/web/docs/join-projects)**: How to search public projects, request access, and join active workspaces.
+- **[Delete Projects](/web/docs/delete-projects)**: Detailed instructions on archiving, leaving, and permanently deleting projects.
+
+---
+
 ## Workspace Settings vs. Governance Configs
 
 WeKraft separates project configuration into two distinct areas depending on whether you are editing public profile attributes or configuring member permission policies:
@@ -39,11 +49,3 @@ Plan limits are strictly verified during project creation and join request appro
 | **Members Per Project** | Max 3 members | Max 6 members | Max 15 members |
 
 If you exceed these limits, you must archive/delete existing projects or upgrade your subscription plan to request additional seats.
-
----
-
-## Next Steps
-
-- Explore the [Workspace Dashboard layout](/web/docs/project-workspace).
-- Integrate your source code with [Git Repositories](/web/docs/repositories).
-- Learn about the [Project Delivery Timeline & Gantt Chart](/web/docs/time-logs).

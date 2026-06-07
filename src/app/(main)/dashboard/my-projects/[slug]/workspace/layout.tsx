@@ -55,7 +55,7 @@ export default function WorkspaceLayout({
           deleted.
         </p>
         <Button
-          onClick={() => router.push("/dashboard/my-projects")}
+          onClick={() => router.push("/dashboard")}
           className="mt-6"
           variant="outline"
         >

@@ -1,6 +1,6 @@
 # WeKraft Platform Overview
 
-Welcome to the WeKraft Platform Documentation. WeKraft is a unified software engineering management and real-time collaboration workspace designed to eliminate context-switching. By consolidating **agile project planning**, **team communication**, **git metrics**, and **editor-level integrations** into a single reactive environment, WeKraft provides engineering teams with a single source of truth.
+Welcome to the WeKraft Platform Documentation. WeKraft is a unified software engineering management and real-time collaboration workspace designed to eliminate context-switching. By consolidating **agile project planning**, **team communication**, **git repositories mapping**, and **editor-level integrations** into a single reactive environment, WeKraft provides engineering teams with a single source of truth.
 
 ---
 
@@ -14,24 +14,24 @@ graph TD
     Client -->|Authentication| Auth[Identity Provider Service]
     Backend <-->|Database Actions| DB[(Document Datastore)]
     Backend -->|Queue Background Jobs| QueueEngine[Background Queue Engine]
-    GitRepo[Git Hosting Provider Webhook] -->|HTTP POST| WebhookRoute[API Webhook Handler]
+    GitRepo[Git Hosting API] -->|Manual Fetch/Import| WebhookRoute[Client Import Route]
     WebhookRoute -->|Client Mutate| Backend
     Payment[Billing Gateway Webhook] -->|HTTP POST| WebhookHTTP[HTTP Action Router]
     WebhookHTTP -->|Mutate Tier| Backend
 ```
 
 ### 1. Real-time Reactivity (Serverless Reactive Backend)
-At the core of WeKraft is a **Serverless Reactive Backend**, a platform providing reactive datastore caching. Unlike traditional REST or polling setups, backend queries are reactive: when a database document changes (such as a task being dragged on the Kanban board), the backend automatically pushes the new dataset to all connected clients over a persistent WebSocket connection. This ensures instant dashboard synchronisation across the entire engineering team.
+At the core of WeKraft is a **Serverless Reactive Backend**, a platform providing reactive datastore caching. Unlike traditional REST or polling setups, backend queries are reactive: when a database document changes (such as a task status being updated), the backend automatically pushes the new dataset to all connected clients over a persistent WebSocket connection. This ensures instant dashboard synchronisation across the entire engineering team.
 
 ### 2. Authentication & Identity (Identity Provider)
-User authentication is managed via a dedicated **Identity Provider**. The identity service provides session tokens which are validated server-side by the backend. Onboarding steps, workspace permissions, and profile configurations (`users` table) are keyed off the authenticated user's unique token ID.
+User authentication is managed via a dedicated **Identity Provider** (Clerk). The identity service provides session tokens which are validated server-side by the backend. Onboarding steps, workspace permissions, and profile configurations (`users` table) are keyed off the authenticated user's unique token ID.
 
 ### 3. Background Processing & Schedules (Background Queue Engine & Server Crons)
 - **Background Queue Engine** is used to orchestrate complex event-driven workflows, such as multi-step repository scans and codebase analysis.
 - **Server Crons** run recurring server-side jobs, such as scanning user subscription expiration timestamps and performing database maintenance (e.g., checking for overdue tasks and calculating delay debts).
 
-### 4. Third-Party Webhook Sync
-- **Version Control Integrations**: Connected code repositories issue webhook events (commits, issue status changes, pull request creation) directly to WeKraft's API routes, which trigger database mutations to align WeKraft's issue boards and heatmaps with git activity.
+### 4. Code & Payment Integrations
+- **Version Control Integrations**: Connected code repositories sync codebase file trees to enable linking files to tasks and issues. GitHub issues are imported manually using the **"Import from Github"** utility on the issues page.
 - **Payment Gateways**: Subscriptions are managed via integrated **Billing Processors**. Webhooks processed through the backend's HTTP action routes update user subscription statuses (`active`, `past_due`, `cancelled`) in real-time.
 
 ---
@@ -41,10 +41,10 @@ User authentication is managed via a dedicated **Identity Provider**. The identi
 WeKraft follows a hierarchical project model structured to match modern software team setups:
 
 - **Users & Tiers**: Every user profile is assigned a plan tier (`free`, `plus`, or `pro`) which governs limits across all projects they own or join.
-- **Projects**: The top-level workspace container. Each project can connect to a single git repository, manage separate team memberships, and toggle compliance/security policies.
+- **Projects**: The top-level workspace container. Each project can connect to a single git repository, manage separate team memberships, and toggle workspace/AI configurations.
 - **Sprints**: Time-boxed execution periods. Only one sprint may be marked `active` per project at any given time.
 - **Tasks**: Planned product items forming the backlog.
-- **Issues**: Reactive incident or bug tracking. Issues can be manual, synced from the git provider, or block-escalated directly from a planned task.
+- **Issues**: Bug tracking. Issues can be logged manually, imported from GitHub, or block-escalated directly from a planned task.
 - **Teamspace Channels & Meets**: Chat communication rooms and video call rooms integrated directly into the workspace layout.
 
 ---

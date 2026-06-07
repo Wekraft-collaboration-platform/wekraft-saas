@@ -18,7 +18,7 @@ WeKraft structures project roles into four hierarchical levels:
 
 ### 3. Member
 - **Scope**: Standard developers and team contributors.
-- **Powers**: Updates task statuses, replies to chat threads, and starts video meeting rooms.
+- **Powers**: Updates task statuses, replies to chat threads, and joins active video meeting rooms.
 - **Restricted Powers**: Can only create tasks/issues if the policy `memberCanCreate` is enabled by the owner. Can only invoke Kaya AI if the policy `memberUseKaya` is enabled.
 
 ### 4. Viewer

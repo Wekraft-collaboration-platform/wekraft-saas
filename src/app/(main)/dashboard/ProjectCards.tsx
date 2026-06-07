@@ -69,7 +69,7 @@ export const ProjectCards = ({
           <div className="p-4 flex flex-col flex-1 -mt-2">
             <div className="flex items-start justify-between gap-3 decoration-0">
               <div className="min-w-0">
-                <Link href={`/dashboard/my-projects/${project._id}`}>
+                <Link href={`/dashboard/my-projects/${project.slug}`}>
                   <h3 className="text-sm font-bold text-primary truncate hover:text-primary/80 transition-colors">
                     {project.projectName}
                   </h3>

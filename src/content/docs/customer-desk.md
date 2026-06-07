@@ -1,104 +1,66 @@
 # Customer Desk
 
-The **WeKraft Customer Desk** is a centralized hub for managing all inbound customer requests, service tickets, and client support workflows — directly inside your project workspace. It bridges the gap between your development team and your clients, ensuring no request falls through the cracks.
-
-> **Available on Plus & Pro Plans** — The Customer Desk is available to Plus and Pro plan users. Free plan users can view desk tickets but cannot create or manage them.
+The **WeKraft Customer Desk** is a centralized workspace module for managing customer profiles and triaging inbound service requests into actionable tasks or issues.
 
 ---
 
-## What Is the Customer Desk?
+## Where to Go & How to Go
 
-The Customer Desk is WeKraft's built-in service management layer, purpose-built for software teams that manage client-facing work alongside their internal development sprints. It gives you:
-
-- A **unified inbox** for all client-submitted requests and bug reports.
-- A **ticket lifecycle system** with configurable statuses and SLA tracking.
-- **Two-way visibility** — your team sees tickets linked to tasks and issues; clients see real-time status updates.
-- **AI-assisted triage** — Harry Dev can automatically classify and assign incoming tickets based on severity and category.
-
----
-
-## Key Features
-
-### 📥 Unified Request Inbox
-- All incoming customer requests land in a single, filterable inbox.
-- Requests can be submitted by clients via the **client-facing portal**, email integration, or directly by team members.
-- Duplicate detection flags similar requests to avoid redundant tickets.
-
-### 🏷️ Ticket Categorization
-Tickets are organized by category to speed up routing:
-- **Bug Report** — functionality not working as expected.
-- **Feature Request** — new capability or enhancement request.
-- **Account / Billing** — subscription, invoice, or access issues.
-- **Integration** — issues with connected tools (GitHub, Slack, etc.).
-- **General Inquiry** — questions or clarifications.
-
-### 📊 SLA Tracking
-Each ticket is assigned a **Service Level Agreement (SLA)** target based on its priority:
-
-| Priority  | First Response SLA | Resolution SLA |
-|-----------|--------------------|----------------|
-| Critical  | 1 hour             | 4 hours        |
-| High      | 4 hours            | 24 hours       |
-| Medium    | 8 hours            | 72 hours       |
-| Low       | 24 hours           | 7 days         |
-
-SLA timers are visible on each ticket card and turn red when approaching breach.
-
-### 🔗 Linked to Tasks & Issues
-- Any ticket can be escalated and **linked to an internal task or issue** with one click.
-- When the linked task or issue is resolved, the ticket status automatically updates.
-- Developers can see which open tickets are related to a file or feature they are working on.
-
-### 💬 Client Communication Thread
-Each ticket includes a **threaded response panel**:
-- Respond directly to the client from within WeKraft — no need to switch to email.
-- Attach screenshots, log excerpts, or documentation links.
-- Internal notes (visible only to your team) can be added alongside client-visible replies.
-
-### 📡 Real-Time Status Notifications
-- Clients receive automatic email notifications when their ticket status changes.
-- Your team is alerted in-app when a critical ticket is submitted or a SLA breach is imminent.
+- **Where to Go**: Click on **Customer Desk** in the project sidebar (or navigate to `/dashboard/my-projects/[slug]/workspace/customer-desk`).
+- **How to Go**:
+  1. Toggle between the **Requests** and **Customers** tabs.
+  2. Use the search bar to filter items by name, email, or description.
+  3. Filter requests by status (All, Pending, Approved, Rejected) using the table header dropdown.
 
 ---
 
-## Ticket Lifecycle
+## Managing Customer Profiles
 
-```
-Submitted → Triaged → In Progress → Pending Client → Resolved → Closed
-```
-
-| Status             | Description                                                                 |
-|--------------------|-----------------------------------------------------------------------------|
-| **Submitted**      | Ticket has been created and is awaiting triage.                             |
-| **Triaged**        | Ticket has been reviewed, categorized, and assigned to a team member.       |
-| **In Progress**    | Active work is underway to resolve the ticket.                              |
-| **Pending Client** | WeKraft team is waiting for additional information from the client.         |
-| **Resolved**       | The issue has been fixed or the request has been fulfilled.                 |
-| **Closed**         | The ticket has been acknowledged as resolved by the client or auto-closed.  |
+Customer profiles represent the clients or users submitting feedback or reports.
+- **Fields**: Name, Email, Contact (Optional).
+- **Adding a Customer**: Click the **Add Customer** button at the top right.
+- **Editing / Deleting a Customer**: Click the options menu next to a customer row under the **Customers** tab to edit details or delete the profile (deleting a customer profile also deletes all their linked requests).
+- **Permissions**: Adding, editing, and deleting customer profiles is restricted to the **Project Owner** only.
 
 ---
 
-## Accessing the Customer Desk
+## Triaging Service Requests
 
-1. Navigate to your **Project Workspace** from the sidebar.
-2. Select **Customer Desk** from the workspace navigation.
-3. Use the **Inbox**, **All Tickets**, or **My Assigned** tabs to filter your view.
-4. Click any ticket to open the full detail panel with the response thread.
-
----
-
-## Permissions
-
-| Role        | View Tickets | Create Tickets | Respond | Close/Resolve | Manage SLA |
-|-------------|:------------:|:--------------:|:-------:|:-------------:|:----------:|
-| Owner       | ✅           | ✅             | ✅      | ✅            | ✅         |
-| Admin       | ✅           | ✅             | ✅      | ✅            | ✅         |
-| Member      | ✅           | ✅             | ✅      | ✅            | ❌         |
-| Viewer      | ✅           | ❌             | ❌      | ❌            | ❌         |
+Service requests are logged under specific customer profiles and triaged by project administrators.
+- **Fields**: Customer, Title, Description, Type (`Bug Report` or `Feature Request`).
+- **Logging a Request**:
+  1. Click **Log Request** at the top right.
+  2. Select the customer profile.
+  3. Enter the Title and Description.
+  4. Select the Request Type: **Feature Request** or **Bug Report**.
+  5. Click **Submit**. (Regular members can log requests; Viewers cannot).
 
 ---
 
-## Related Pages
-- [Tickets](/web/docs/tickets) — full guide to creating and resolving tickets.
-- [Issues & Bug Tracking](/web/docs/issues) — for internal engineering bugs.
-- [Help & Support](/web/docs/support) — for WeKraft platform support queries.
+## Request Approval Pipeline
+
+Logged requests are marked as **Pending** and can be triaged with the following actions:
+
+### 1. Approving Requests
+- When you click **Approve** on a pending request, an approval dialog opens:
+  - Select team member **Assignees** to handle the item.
+  - Set the **Start Date** and **End Date** (for feature requests only).
+- Click **Approve**.
+- The request status updates to **Approved** and WeKraft automatically creates:
+  - An internal **Task** (if it was a Feature Request), populated with the estimated dates and assignees.
+  - An internal **Issue** (if it was a Bug Report), populated with the assigned team members.
+
+### 2. Rejecting Requests
+- If a request is duplicate or out of scope, click **Reject**.
+- The request status updates to **Rejected** and is discarded.
+
+---
+
+## Roles & Privileges
+
+| Action | Owner | Admin | Member | Viewer |
+|---|:---:|:---:|:---:|:---:|
+| Manage Customers (Create, Edit, Delete) | ✅ | ❌ | ❌ | ❌ |
+| Log Service Requests | ✅ | ✅ | ✅ | ❌ |
+| Approve / Reject Requests | ✅ | ✅ | ❌ | ❌ |
+| View Customer Desk Data | ✅ | ✅ | ✅ | ✅ |
