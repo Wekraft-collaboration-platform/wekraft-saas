@@ -10,7 +10,7 @@ To help you manage incidents and bugs, the WeKraft Issues system is broken down 
 
 - **[Create Issues](/web/docs/create-issues)**: Step-by-step guides on logging bugs manually, via blocked task escalation, or via manual GitHub import.
 - **[Edit Issues](/web/docs/edit-issues)**: How to modify issue properties, update severity, change status lifecycles, and edit linked files.
-- **[Assign & Delegate Issues](/web/docs/assign-delegate-issues)**: How to allocate issues to developers and sync assignees across blockers.
+- **[Assign Issues](/web/docs/assign-issues)**: How to allocate issues to developers and sync assignees across blockers.
 
 ---
 

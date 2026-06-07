@@ -1,4 +1,4 @@
-# Assign & Delegate Sprint Items
+# Assign Sprint Items
 
 Manage task assignments within sprints, balance workloads, and coordinate team commitments.
 
@@ -18,7 +18,7 @@ Manage task assignments within sprints, balance workloads, and coordinate team c
 - **How to Go**:
   1. Open the **Advanced Charts** tab.
   2. Locate the **Member Workload Card**, which tracks the volume of active tasks and issues currently assigned to each team member, grouped by priority (`High`, `Medium`, `Low`).
-  3. If a team member is overloaded, navigate to the active task list or sprint details, open the task, and modify the assignees to delegate work.
+  3. If a team member is overloaded, navigate to the active task list or sprint details, open the task, and modify the assignees to assign work to others.
 
 ---
 

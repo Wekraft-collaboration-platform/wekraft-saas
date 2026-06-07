@@ -10,7 +10,7 @@ To help you manage chat tickets, see the following operational guides:
 
 - **[Create Tickets](/web/docs/create-tickets)**: How to create a ticket inline using message composer shortcuts.
 - **[Edit Tickets](/web/docs/edit-tickets)**: How to view, reopen, or close active tickets.
-- **[Assign & Delegate Tickets](/web/docs/assign-delegate-tickets)**: How to assign chat tickets to team members.
+- **[Assign Tickets](/web/docs/assign-tickets)**: How to assign chat tickets to team members.
 
 ---
 

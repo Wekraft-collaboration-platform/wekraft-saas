@@ -1,4 +1,4 @@
-# Assign & Delegate Issues
+# Assign Issues
 
 Learn how to assign team members to resolve bugs, coordinate assignments, and manage collaboration rights.
 

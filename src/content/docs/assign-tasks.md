@@ -1,6 +1,6 @@
-# Assign & Delegate Tasks
+# Assign Tasks
 
-Learn how to assign tasks, delegate work, monitor team workloads, and manage task permissions.
+Learn how to assign tasks, monitor team workloads, and manage task permissions.
 
 ---
 
@@ -27,7 +27,7 @@ Learn how to assign tasks, delegate work, monitor team workloads, and manage tas
 
 Actions on tasks are governed by project member roles:
 
-| Access Role | Backlog Creation | Assign Others | Edit Task Details | Resolve/Complete |
+| Access Role | Backlog Creation | Assign | Edit Task Details | Resolve/Complete |
 |---|:---:|:---:|:---:|:---:|
 | **Owner / Admin** | ✅ | ✅ | ✅ | ✅ |
 | **Member** | ✅ | ✅ | ✅ | ✅ |

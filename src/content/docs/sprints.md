@@ -10,7 +10,7 @@ To help you manage and configure team sprints, see the following operational gui
 
 - **[Create Sprints](/web/docs/create-sprints)**: Step-by-step instructions on setting sprint goals, defining date ranges, and adding backlog items.
 - **[Edit Sprints](/web/docs/edit-sprints)**: How to activate or complete sprints, and track active sprint metrics.
-- **[Assign & Delegate Sprints](/web/docs/assign-delegate-sprints)**: How to allocate items within a sprint and monitor member commitments.
+- **[Assign Sprints](/web/docs/assign-sprints)**: How to allocate items within a sprint and monitor member commitments.
 
 ---
 

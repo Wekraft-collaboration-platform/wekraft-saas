@@ -10,7 +10,7 @@ To help you manage tasks and backlog items, see the following operational guides
 
 - **[Create Tasks](/web/docs/create-tasks)**: Step-by-step instructions on creating tasks, setting priorities, estimating dates, and adding attachments.
 - **[Edit Tasks](/web/docs/edit-tasks)**: How to transition task statuses, manage items in List/Board/Table layouts, and link codebase paths.
-- **[Assign & Delegate Tasks](/web/docs/assign-delegate-tasks)**: How to delegate tasks, track active developer workloads, and manage permissions.
+- **[Assign Tasks](/web/docs/assign-tasks)**: How to assign tasks, track active developer workloads, and manage permissions.
 
 ---
 

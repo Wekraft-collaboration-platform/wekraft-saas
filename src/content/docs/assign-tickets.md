@@ -1,4 +1,4 @@
-# Assign & Delegate Tickets
+# Assign Tickets
 
 Learn how chat tickets are assigned to developers and tracked within Teamspace channels.
 

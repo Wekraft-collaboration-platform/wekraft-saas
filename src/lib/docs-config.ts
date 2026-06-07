@@ -98,8 +98,8 @@ export const docsConfig: { [key: string]: DocItem[] } = {
           created: "2026-06-07",
         },
         {
-          title: "Assign & delegate sprints",
-          slug: "assign-delegate-sprints",
+          title: "Assign sprints",
+          slug: "assign-sprints",
           description: "Step-by-step guide on allocating work to members and balancing workloads.",
           icon: "Zap",
           created: "2026-06-07",
@@ -135,8 +135,8 @@ export const docsConfig: { [key: string]: DocItem[] } = {
           created: "2026-06-07",
         },
         {
-          title: "Assign & delegate tasks",
-          slug: "assign-delegate-tasks",
+          title: "Assign tasks",
+          slug: "assign-tasks",
           description: "Step-by-step guide on team task assignment and tracking work progress.",
           icon: "CheckSquare",
           created: "2026-06-07",
@@ -172,8 +172,8 @@ export const docsConfig: { [key: string]: DocItem[] } = {
           created: "2026-06-07",
         },
         {
-          title: "Assign & delegate tickets",
-          slug: "assign-delegate-tickets",
+          title: "Assign tickets",
+          slug: "assign-tickets",
           description: "Step-by-step guide on manual assignments, AI triage, and SLA priority tracking.",
           icon: "Ticket",
           created: "2026-06-07",
@@ -209,8 +209,8 @@ export const docsConfig: { [key: string]: DocItem[] } = {
           created: "2026-06-07",
         },
         {
-          title: "Assign & delegate issues",
-          slug: "assign-delegate-issues",
+          title: "Assign issues",
+          slug: "assign-issues",
           description: "Step-by-step guide on assigning developers and syncing tasks with active issues.",
           icon: "AlertCircle",
           created: "2026-06-07",
