@@ -158,7 +158,7 @@ function SidebarItemWithChildren({
   const isParentActive =
     pathname === `/web/docs/${item.slug}` ||
     pathname.endsWith(`/web/docs/${item.slug}`);
-  const isActive = false;
+  const isActive = isParentActive && !hasActiveChild;
 
   const [isOpen, setIsOpen] = useState(isParentActive || hasActiveChild);
 
@@ -240,7 +240,7 @@ function SidebarItemWithChildren({
                   <SidebarItemText title={child.title} isActive={isChildActive} />
                 </span>
                 {isChildActive && (
-                  <span className="pointer-events-none absolute inset-0 -z-0 bg-linear-to-l from-blue-600/50 dark:from-blue-600/30 via-blue-600/5 to-transparent" />
+                  <span className="pointer-events-none absolute inset-0 -z-0 bg-linear-to-l from-blue-600/80 dark:from-blue-600/50 via-blue-600/10 to-transparent" />
                 )}
               </Link>
             </div>
