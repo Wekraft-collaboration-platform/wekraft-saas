@@ -18,7 +18,7 @@ export default async function LoginPage() {
       {/* Main Container */}
       <div className="flex h-full">
         {/* LEFT SIDE */}
-        <div className="border border-border/40 relative overflow-hidden w-[65%] h-full rounded-lg p-8">
+        <div className="hidden lg:block border border-border/40 relative overflow-hidden w-[65%] h-full rounded-lg p-8">
           <div className="absolute z-10 -top-20 left-1/2 -translate-x-1/2 w-full max-w-[560px] h-[300px] bg-blue-500/25 blur-[160px] rounded-full pointer-events-none" />
           <div className="absolute z-10 -bottom-10 left-1/2 -translate-x-1/2 w-full h-[160px] bg-black blur-[160px] rounded-full pointer-events-none" />
           <Image
@@ -45,7 +45,7 @@ export default async function LoginPage() {
           </div>
         </div>
         {/* RIGHT SIDE */}
-        <div className="w-[35%] h-full flex flex-col justify-center items-center px-12 relative overflow-hidden bg-black">
+        <div className="w-full lg:w-[35%] h-full flex flex-col justify-center items-center px-6 sm:px-12 relative overflow-hidden bg-black">
           {/* Header */}
           <div className="flex flex-col items-center gap-5 mb-12 relative z-10">
             <div className="flex items-center gap-3">
@@ -125,7 +125,7 @@ export default async function LoginPage() {
           </div>
 
           {/* Footer Items */}
-          <div className="absolute bottom-10 left-0 right-0 px-12">
+          <div className="absolute bottom-10 left-0 right-0 px-6 sm:px-12">
             <div className="flex flex-col items-center gap-6">
               <div className="flex items-center gap-8">
                 <Link
