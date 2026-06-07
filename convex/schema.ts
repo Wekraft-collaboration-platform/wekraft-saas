@@ -44,6 +44,7 @@ export default defineSchema({
     // usage tracking (Global)
     cloudStorageUsage: v.optional(v.number()), // How much used 
     kayaUsage: v.optional(v.number()), // Current usage count for this month
+    isAdmin: v.optional(v.boolean()),
   })
     .index("by_token", ["clerkToken"])
     .index("by_accountType", ["accountType"])
