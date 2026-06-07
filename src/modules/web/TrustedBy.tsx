@@ -94,6 +94,24 @@ const TrustedBy = () => {
           ))}
         </div>
       </div>
+
+      <div className="mt-8 flex justify-center w-full relative z-20">
+        <a
+          href="https://www.producthunt.com/products/wekraft?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-wekraft"
+          target="_blank"
+          rel="noopener noreferrer"
+          className="hover:opacity-90 transition-opacity duration-200"
+          id="trustedby-product-hunt-badge"
+        >
+          <img
+            alt="Wekraft - your project lives in Github , so should your workspace. | Product Hunt"
+            src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1165218&theme=light&t=1780813633054"
+            width="250"
+            height="54"
+            className="w-[250px] h-[54px] object-contain"
+          />
+        </a>
+      </div>
     </section>
   );
 };
