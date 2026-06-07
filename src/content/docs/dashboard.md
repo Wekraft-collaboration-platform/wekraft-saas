@@ -31,7 +31,7 @@ Below the metric cards, you'll find three tabs:
 
 ### Getting Started Checklist
 
-New users see a **Getting Started Checklist** at the top of the Stats tab. It tracks your progress through key setup steps like creating a project, inviting members, and installing the editor extension. Complete all steps to unlock the full experience.
+New users see a **Getting Started Checklist** at the top of the Stats tab. It tracks your progress through key setup steps. Complete all steps to unlock the full experience.
 
 Once completed, the checklist is replaced by the **Notifications** panel.
 
@@ -39,7 +39,7 @@ Once completed, the checklist is replaced by the **Notifications** panel.
 
 ## The App Sidebar
 
-The left sidebar is your primary navigation tool. It's present on every dashboard screen.
+The left sidebar is your primary navigation tool. It is present on every dashboard screen.
 
 ### Sidebar Sections
 
@@ -76,16 +76,21 @@ The workspace dashboard is the first view when you enter a project. It shows:
 | **Activity Overview** | Live counts of total tasks, active issues, and recent activity |
 | **Task Status** | Pie chart showing task distribution by status (not started, in progress, reviewing, testing, completed) |
 
-Below these cards, three sub-tabs provide deeper analytics:
+Below these cards, two sub-tabs provide deeper configurations and analytics:
 
 | Sub-Tab | Description |
 |---|---|
 | **Advanced Charts** | Team contribution radar, sprint bar chart, severity heatmap, weekly velocity, member workload, and weekly engagement (Plus/Pro only) |
-| **My Work** | A personal table showing tasks and issues assigned to you |
 | **Config** | Project configuration settings (owner only) |
 
 > [!NOTE]
 > Advanced charts require a **Plus or Pro** plan. Free plan users see a prompt to upgrade.
+
+### Workspace Header Tools
+When inside any workspace view, the header includes a "View More" toggle that gives access to:
+- **Home**: Link to return to the project homepage.
+- **My Work**: Opens the **My Work Side Sheet** from the right, listing tasks and issues assigned to you.
+- **Team Meet**: Launches the project's real-time video calling space.
 
 ### Project Sidebar
 
@@ -143,28 +148,3 @@ Click any notification to navigate directly to the relevant item. Hover over a n
 
 > [!TIP]
 > For more details, see the [Notifications guide →](/web/docs/notifications)
-
----
-
-## Keyboard Shortcuts
-
-WeKraft supports keyboard shortcuts for power users:
-
-| Shortcut | Action |
-|---|---|
-| `Ctrl+K` / `Cmd+K` | Open AI Assistant |
-| `Ctrl+B` / `Cmd+B` | Toggle sidebar |
-| `Esc` | Close any open dialog or sheet |
-
-> [!TIP]
-> See the full list in [Keyboard Shortcuts →](/web/docs/shortcuts)
-
----
-
-## Next Steps
-
-- [Create your first project →](/web/docs/projects)
-- [Manage your profile →](/web/docs/profile)
-- [View notifications →](/web/docs/notifications)
-- [Explore keyboard shortcuts →](/web/docs/shortcuts)
-- [Learn about the Referral Program →](/web/docs/referrals)

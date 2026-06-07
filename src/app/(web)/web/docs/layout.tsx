@@ -138,6 +138,119 @@ function SidebarItemText({ title, isActive }: { title: string; isActive: boolean
   );
 }
 
+// ─── Collapsible Sidebar Item with Children ──────────────────────────────────
+function SidebarItemWithChildren({
+  item,
+  pathname,
+  onNavClick,
+  Icon,
+}: {
+  item: any;
+  pathname: string;
+  onNavClick?: () => void;
+  Icon: any;
+}) {
+  const hasActiveChild = item.children?.some(
+    (child: any) =>
+      pathname === `/web/docs/${child.slug}` ||
+      pathname.endsWith(`/web/docs/${child.slug}`)
+  );
+  const isParentActive =
+    pathname === `/web/docs/${item.slug}` ||
+    pathname.endsWith(`/web/docs/${item.slug}`);
+  const isActive = false;
+
+  const [isOpen, setIsOpen] = useState(isParentActive || hasActiveChild);
+
+  // Auto-expand if active route transitions to parent or children
+  useEffect(() => {
+    if (isParentActive || hasActiveChild) {
+      setIsOpen(true);
+    }
+  }, [isParentActive, hasActiveChild]);
+
+  return (
+    <li key={item.slug} className="space-y-0.5">
+      <div className="flex items-center justify-between rounded-md transition-all duration-150 hover:bg-white/[0.02] group relative overflow-hidden">
+        <Link
+          href={`/web/docs/${item.slug}`}
+          onClick={onNavClick}
+          className={cn(
+            "flex-1 flex items-center gap-2 px-2.5 py-1.5 text-[0.825rem] min-w-0 select-none",
+            isActive
+              ? "text-white font-medium"
+              : "text-[#8a8b92] group-hover:text-[#e5e5e5]",
+          )}
+        >
+          <Icon
+            className={cn(
+              "h-3.5 w-3.5 shrink-0 transition-colors relative z-10",
+              isActive ? "text-white" : "text-[#525252] group-hover:text-[#8a8b92]"
+            )}
+          />
+          <span className="relative z-10 flex-1 min-w-0">
+            <SidebarItemText title={item.title} isActive={isActive} />
+          </span>
+          {isActive && (
+            <span className="pointer-events-none absolute inset-0 -z-0 bg-linear-to-l from-blue-600/80 dark:from-blue-600/50 via-blue-600/10 to-transparent" />
+          )}
+        </Link>
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            e.stopPropagation();
+            setIsOpen(!isOpen);
+          }}
+          className="p-1.5 text-[#525252] hover:text-[#a3a3a3] relative z-10 transition-colors cursor-pointer"
+          aria-label={isOpen ? "Collapse" : "Expand"}
+        >
+          <ChevronDown
+            className={cn(
+              "h-3.5 w-3.5 transition-transform duration-200",
+              !isOpen && "-rotate-90"
+            )}
+          />
+        </button>
+      </div>
+
+      {/* Sub-items */}
+      <div
+        className={cn(
+          "overflow-hidden transition-all duration-200 ease-in-out pl-3.5 border-l border-white/4 ml-4.5 space-y-0.5",
+          isOpen ? "max-h-[300px] opacity-100 mt-0.5" : "max-h-0 opacity-0"
+        )}
+      >
+        {item.children.map((child: any) => {
+          const isChildActive =
+            pathname === `/web/docs/${child.slug}` ||
+            pathname.endsWith(`/web/docs/${child.slug}`);
+          return (
+            <div key={child.slug}>
+              <Link
+                href={`/web/docs/${child.slug}`}
+                onClick={onNavClick}
+                className={cn(
+                  "group relative flex items-center gap-2 rounded-md px-2.5 py-1 text-[0.775rem] transition-all duration-150 min-w-0 select-none overflow-hidden",
+                  isChildActive
+                    ? "text-white font-medium bg-white/[0.03]"
+                    : "text-[#8a8b92] hover:bg-white/[0.015] hover:text-[#e5e5e5]",
+                )}
+              >
+                <span className="relative z-10 flex-1 min-w-0">
+                  <SidebarItemText title={child.title} isActive={isChildActive} />
+                </span>
+                {isChildActive && (
+                  <span className="pointer-events-none absolute inset-0 -z-0 bg-linear-to-l from-blue-600/50 dark:from-blue-600/30 via-blue-600/5 to-transparent" />
+                )}
+              </Link>
+            </div>
+          );
+        })}
+      </div>
+    </li>
+  );
+}
+
 // ─── Collapsible Category ───────────────────────────────────────────────────
 function SidebarCategory({
   category,
@@ -161,7 +274,12 @@ function SidebarCategory({
     const hasActive = items.some(
       (item) =>
         pathname === `/web/docs/${item.slug}` ||
-        pathname.endsWith(`/web/docs/${item.slug}`),
+        pathname.endsWith(`/web/docs/${item.slug}`) ||
+        item.children?.some(
+          (child: any) =>
+            pathname === `/web/docs/${child.slug}` ||
+            pathname.endsWith(`/web/docs/${child.slug}`)
+        )
     );
     if (hasActive) setIsOpen(true);
   }, [pathname, items]);
@@ -192,7 +310,7 @@ function SidebarCategory({
       <div
         className={cn(
           "overflow-hidden transition-all duration-200 ease-in-out",
-          isOpen ? "max-h-[800px] opacity-100" : "max-h-0 opacity-0",
+          isOpen ? "max-h-[1200px] opacity-100" : "max-h-0 opacity-0",
         )}
       >
         <ul className="pl-3.5 space-y-1 mt-0.5 border-l border-white/4 ml-4">
@@ -202,6 +320,19 @@ function SidebarCategory({
             const isActive =
               pathname === `/web/docs/${item.slug}` ||
               pathname.endsWith(`/web/docs/${item.slug}`);
+
+            if (item.children && item.children.length > 0) {
+              return (
+                <SidebarItemWithChildren
+                  key={item.slug}
+                  item={item}
+                  pathname={pathname}
+                  onNavClick={onNavClick}
+                  Icon={Icon}
+                />
+              );
+            }
+
             return (
               <li key={item.slug}>
                 <Link

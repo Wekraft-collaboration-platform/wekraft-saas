@@ -7,6 +7,7 @@ export interface DocItem {
   icon?: string;
   created?: string; // YYYY-MM-DD
   updated?: string; // YYYY-MM-DD
+  children?: DocItem[];
 }
 
 export function getDocBadge(item: DocItem): "New" | "Updated" | "Beta" | undefined {
@@ -46,13 +47,6 @@ export const docsConfig: { [key: string]: DocItem[] } = {
   ],
   "Workspace": [
     {
-      title: "Projects Management",
-      slug: "projects",
-      description: "Create projects, manage roles, connect GitHub, and configure settings.",
-      icon: "FolderTree",
-      created: "2026-01-01",
-    },
-    {
       title: "Workspace Dashboard",
       slug: "project-workspace",
       description: "Detailed guide to the project workspace dashboard, timeline checkpoints, and analytics charts.",
@@ -74,20 +68,80 @@ export const docsConfig: { [key: string]: DocItem[] } = {
       created: "2026-01-01",
     },
   ],
-  "Agile & Tasks": [
+  "Manage Project": [
     {
-      title: "Sprints & Planning",
+      title: "Sprint",
       slug: "sprints",
       description: "Plan, start, and complete time-boxed work periods with live analytics.",
       icon: "Zap",
       created: "2026-01-01",
+      children: [
+        {
+          title: "Get started",
+          slug: "sprints",
+          description: "Sprint overview.",
+          icon: "Zap",
+          created: "2026-01-01",
+        },
+        {
+          title: "Create sprints",
+          slug: "create-sprints",
+          description: "Step-by-step guide on creating planned sprints, selecting dates, and committing tasks.",
+          icon: "Zap",
+          created: "2026-06-07",
+        },
+        {
+          title: "Edit sprints",
+          slug: "edit-sprints",
+          description: "Step-by-step guide on starting/closing sprints, managing goals, and monitoring charts.",
+          icon: "Zap",
+          created: "2026-06-07",
+        },
+        {
+          title: "Assign & delegate sprints",
+          slug: "assign-delegate-sprints",
+          description: "Step-by-step guide on allocating work to members and balancing workloads.",
+          icon: "Zap",
+          created: "2026-06-07",
+        },
+      ],
     },
     {
-      title: "Tasks & Backlog",
+      title: "Tasks",
       slug: "tasks",
       description: "Create, assign, and track work items across List, Board, and Table views.",
       icon: "CheckSquare",
       created: "2026-01-01",
+      children: [
+        {
+          title: "Get started",
+          slug: "tasks",
+          description: "Tasks overview.",
+          icon: "CheckSquare",
+          created: "2026-01-01",
+        },
+        {
+          title: "Create tasks",
+          slug: "create-tasks",
+          description: "Step-by-step guide on backlog task creation, setting priorities, and estimations.",
+          icon: "CheckSquare",
+          created: "2026-06-07",
+        },
+        {
+          title: "Edit tasks",
+          slug: "edit-tasks",
+          description: "Step-by-step guide on transitioning states, using layouts, and inline updates.",
+          icon: "CheckSquare",
+          created: "2026-06-07",
+        },
+        {
+          title: "Assign & delegate tasks",
+          slug: "assign-delegate-tasks",
+          description: "Step-by-step guide on team task assignment and tracking work progress.",
+          icon: "CheckSquare",
+          created: "2026-06-07",
+        },
+      ],
     },
     {
       title: "Tickets",
@@ -95,12 +149,79 @@ export const docsConfig: { [key: string]: DocItem[] } = {
       description: "Create, assign, prioritize, and resolve support tickets with SLA tracking and status workflows.",
       icon: "Ticket",
       created: "2026-06-06",
+      children: [
+        {
+          title: "Get started",
+          slug: "tickets",
+          description: "Tickets overview.",
+          icon: "Ticket",
+          created: "2026-06-06",
+        },
+        {
+          title: "Create tickets",
+          slug: "create-tickets",
+          description: "Step-by-step guide on creating support tickets via Customer Desk, IDE, or client portal.",
+          icon: "Ticket",
+          created: "2026-06-07",
+        },
+        {
+          title: "Edit tickets",
+          slug: "edit-tickets",
+          description: "Step-by-step guide on responding, configuring categories/priorities, and resolving tickets.",
+          icon: "Ticket",
+          created: "2026-06-07",
+        },
+        {
+          title: "Assign & delegate tickets",
+          slug: "assign-delegate-tickets",
+          description: "Step-by-step guide on manual assignments, AI triage, and SLA priority tracking.",
+          icon: "Ticket",
+          created: "2026-06-07",
+        },
+      ],
     },
     {
-      title: "Issues & Bug Tracking",
+      title: "Issues",
       slug: "issues",
       description: "Track bugs, incidents, and reactive work from three different sources.",
       icon: "AlertCircle",
+      created: "2026-01-01",
+      children: [
+        {
+          title: "Get started",
+          slug: "issues",
+          description: "Issues overview.",
+          icon: "AlertCircle",
+          created: "2026-01-01",
+        },
+        {
+          title: "Create issues",
+          slug: "create-issues",
+          description: "Step-by-step guide on logging issues manually, via task blockage, or webhook sync.",
+          icon: "AlertCircle",
+          created: "2026-06-07",
+        },
+        {
+          title: "Edit issues",
+          slug: "edit-issues",
+          description: "Step-by-step guide on updating issue status, environments, linked files, and deadlines.",
+          icon: "AlertCircle",
+          created: "2026-06-07",
+        },
+        {
+          title: "Assign & delegate issues",
+          slug: "assign-delegate-issues",
+          description: "Step-by-step guide on assigning developers and syncing tasks with active issues.",
+          icon: "AlertCircle",
+          created: "2026-06-07",
+        },
+      ],
+    },
+    {
+      title: "Time Logs",
+      slug: "time-logs",
+      description: "Auto-track time from the IDE or log manually. Export for reporting.",
+      icon: "Clock",
       created: "2026-01-01",
     },
     {
@@ -113,24 +234,84 @@ export const docsConfig: { [key: string]: DocItem[] } = {
   ],
   "Team & Collaboration": [
     {
+      title: "Projects",
+      slug: "projects",
+      description: "Create and configure projects, manage visibility, and invite team members.",
+      icon: "FolderTree",
+      created: "2026-01-01",
+      children: [
+        {
+          title: "Get started",
+          slug: "projects",
+          description: "Projects overview.",
+          icon: "FolderTree",
+          created: "2026-01-01",
+        },
+        {
+          title: "Invite member",
+          slug: "invite-member",
+          description: "Step-by-step guide on inviting members to a project.",
+          icon: "FolderTree",
+          created: "2026-06-07",
+        },
+        {
+          title: "Join projects",
+          slug: "join-projects",
+          description: "Step-by-step guide on submitting join requests and joining projects.",
+          icon: "FolderTree",
+          created: "2026-06-07",
+        },
+        {
+          title: "Delete projects",
+          slug: "delete-projects",
+          description: "Step-by-step guide on deleting and archiving projects.",
+          icon: "FolderTree",
+          created: "2026-06-07",
+        },
+      ],
+    },
+    {
       title: "Team Space",
       slug: "team-space",
       description: "See who's on your team, what they're building, and their profiles.",
       icon: "Layers",
       created: "2026-01-01",
+      children: [
+        {
+          title: "Get started",
+          slug: "team-space",
+          description: "Team Space overview.",
+          icon: "Layers",
+          created: "2026-01-01",
+        },
+        {
+          title: "Create channels",
+          slug: "create-channels",
+          description: "Step-by-step guide on creating chat channels.",
+          icon: "Layers",
+          created: "2026-06-07",
+        },
+        {
+          title: "Team Space Settings",
+          slug: "team-space-settings",
+          description: "Step-by-step guide on managing and configuring channel settings.",
+          icon: "Layers",
+          created: "2026-06-07",
+        },
+        {
+          title: "Team Space Permissions",
+          slug: "team-space-permissions",
+          description: "Step-by-step guide on managing channel members and access permissions.",
+          icon: "Layers",
+          created: "2026-06-07",
+        },
+      ],
     },
     {
       title: "Team Meet",
       slug: "team-meet",
       description: "Collaborate in real-time with your teammates via video call rooms.",
       icon: "Video",
-      created: "2026-01-01",
-    },
-    {
-      title: "Time Logs",
-      slug: "time-logs",
-      description: "Auto-track time from the IDE or log manually. Export for reporting.",
-      icon: "Clock",
       created: "2026-01-01",
     },
     {
@@ -233,4 +414,24 @@ export const docsConfig: { [key: string]: DocItem[] } = {
   ],
 };
 
-export const allDocs = Object.values(docsConfig).flat();
+function flattenDocs(items: DocItem[]): DocItem[] {
+  const result: DocItem[] = [];
+  for (const item of items) {
+    result.push(item);
+    if (item.children) {
+      result.push(...flattenDocs(item.children));
+    }
+  }
+  return result;
+}
+
+const uniqueDocs: DocItem[] = [];
+const seenSlugs = new Set<string>();
+for (const doc of flattenDocs(Object.values(docsConfig).flat())) {
+  if (!seenSlugs.has(doc.slug)) {
+    seenSlugs.add(doc.slug);
+    uniqueDocs.push(doc);
+  }
+}
+
+export const allDocs = uniqueDocs;
