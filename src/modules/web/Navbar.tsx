@@ -327,19 +327,19 @@ const Navbar = () => {
               ) : (
                 <div className="hidden md:flex items-center gap-3">
                   <a
-                    href="https://youtu.be/31xHoT9QJP0"
+                    href="https://www.producthunt.com/products/wekraft?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-wekraft"
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="no-underline"
-                    id="navbar-get-demo-desktop"
+                    className="flex items-center hover:opacity-90 transition-opacity"
+                    id="navbar-product-hunt-desktop"
                   >
-                    <Button
-                      size="sm"
-                      variant="ghost"
-                      className="text-neutral-300 hover:text-white hover:bg-white/10 text-sm font-medium rounded-full px-4"
-                    >
-                      Get a demo
-                    </Button>
+                    <img
+                      alt="Wekraft - your project lives in Github , so should your workspace. | Product Hunt"
+                      src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1165218&theme=light&t=1780813633054"
+                      className="h-9 w-auto object-contain"
+                      width="167"
+                      height="36"
+                    />
                   </a>
                   <SignUpButton>
                     <Button
@@ -430,19 +430,20 @@ const Navbar = () => {
                         </Button>
                       </SignUpButton>
                       <a
-                        href="https://youtu.be/31xHoT9QJP0"
+                        href="https://www.producthunt.com/products/wekraft?embed=true&utm_source=badge-featured&utm_medium=badge&utm_campaign=badge-wekraft"
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="w-full no-underline"
-                        id="navbar-get-demo-mobile"
+                        className="w-full flex justify-center py-2"
+                        id="navbar-product-hunt-mobile"
                         onClick={() => setIsMenuOpen(false)}
                       >
-                        <Button
-                          variant="outline"
-                          className="w-full bg-transparent border-white/30 text-white hover:bg-white/10"
-                        >
-                          Get a demo
-                        </Button>
+                        <img
+                          alt="Wekraft - your project lives in Github , so should your workspace. | Product Hunt"
+                          src="https://api.producthunt.com/widgets/embed-image/v1/featured.svg?post_id=1165218&theme=light&t=1780813633054"
+                          className="h-10 w-auto object-contain"
+                          width="185"
+                          height="40"
+                        />
                       </a>
                     </div>
                   )}
