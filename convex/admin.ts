@@ -91,71 +91,124 @@ export const getAdminDashboardData = query({
     const rawQueries = await ctx.db.query("supportQueries").collect();
     const totalQueries = rawQueries.length;
 
-    // 6. Chronological cumulative user growth trend
-    const sortedUsers = [...allUsers].sort((a, b) => a.createdAt - b.createdAt);
-    const dailyGrowth: { date: string; timestamp: number }[] = [];
-    for (const u of sortedUsers) {
-      const dateStr = new Date(u.createdAt).toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      });
-      dailyGrowth.push({ date: dateStr, timestamp: u.createdAt });
-    }
+    // 6. Chronological user growth and onboarding stats aggregated into 24h, 7d, and 30d timeframes
+    const nowMs = Date.now();
 
-    const dateMap = new Map<string, number>();
-    for (const item of dailyGrowth) {
-      dateMap.set(item.date, (dateMap.get(item.date) || 0) + 1);
-    }
-
-    const chartData: { date: string; count: number }[] = [];
-    let cumulative = 0;
-    const uniqueDates = Array.from(new Set(dailyGrowth.map(d => d.date)));
-    for (const d of uniqueDates) {
-      cumulative += dateMap.get(d) || 0;
-      chartData.push({ date: d, count: cumulative });
-    }
-
-    const trendData = chartData;
-
-    // 7. Weekly growth trend (new signups per week)
-    const weeklyMap = new Map<string, number>();
-    for (const u of sortedUsers) {
-      const date = new Date(u.createdAt);
-      const day = date.getDay();
-      const diff = date.getDate() - day; // Go to Sunday of that week
-      const sunday = new Date(date.setDate(diff));
-      sunday.setHours(0, 0, 0, 0);
-      
-      const weekStr = sunday.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      });
-      weeklyMap.set(weekStr, (weeklyMap.get(weekStr) || 0) + 1);
-    }
-
-    const weeklyData: { week: string; count: number }[] = [];
-    const seenWeeks = new Set();
-    for (const u of sortedUsers) {
-      const date = new Date(u.createdAt);
-      const day = date.getDay();
-      const diff = date.getDate() - day;
-      const sunday = new Date(date.setDate(diff));
-      sunday.setHours(0, 0, 0, 0);
-      const weekStr = sunday.toLocaleDateString("en-US", {
-        month: "short",
-        day: "numeric",
-      });
-      if (!seenWeeks.has(weekStr)) {
-        seenWeeks.add(weekStr);
-        weeklyData.push({
-          week: weekStr,
-          count: weeklyMap.get(weekStr) || 0,
-        });
+    const generateHourlyBuckets = () => {
+      const list = [];
+      const now = new Date(nowMs);
+      for (let i = 23; i >= 0; i--) {
+        const d = new Date(now.getTime() - i * 60 * 60 * 1000);
+        d.setMinutes(0, 0, 0);
+        list.push(d);
       }
-    }
-    const weeklyGrowthData = weeklyData.slice(-12); // Last 12 weeks
+      return list;
+    };
 
-    // 8. Recent 10 users (newest first)
+    const generateDailyBuckets = (daysCount: number) => {
+      const list = [];
+      const now = new Date(nowMs);
+      for (let i = daysCount - 1; i >= 0; i--) {
+        const d = new Date(now.getTime() - i * 24 * 60 * 60 * 1000);
+        d.setHours(0, 0, 0, 0);
+        list.push(d);
+      }
+      return list;
+    };
+
+    const sortedUsers = [...allUsers].sort((a, b) => a.createdAt - b.createdAt);
+
+    // 24h Aggregation (hourly)
+    const buckets24h = generateHourlyBuckets();
+    const data24h = buckets24h.map((bStart) => {
+      const startMs = bStart.getTime();
+      const endMs = startMs + 60 * 60 * 1000;
+
+      const signups = sortedUsers.filter(u => u.createdAt >= startMs && u.createdAt < endMs).length;
+      const onboarded = sortedUsers.filter(u => {
+        if (!u.hasCompletedOnboarding) return false;
+        const onboardingTime = u.updatedAt || u.createdAt;
+        return onboardingTime >= startMs && onboardingTime < endMs;
+      }).length;
+
+      return {
+        label: bStart.toLocaleTimeString("en-US", {
+          hour: "numeric",
+          hour12: true,
+        }),
+        signups,
+        onboarded,
+        cumulative: 0,
+      };
+    });
+
+    let cum24h = sortedUsers.filter(u => u.createdAt < buckets24h[0].getTime()).length;
+    for (const item of data24h) {
+      cum24h += item.signups;
+      item.cumulative = cum24h;
+    }
+
+    // 7d Aggregation (daily)
+    const buckets7d = generateDailyBuckets(7);
+    const data7d = buckets7d.map((bStart) => {
+      const startMs = bStart.getTime();
+      const endMs = startMs + 24 * 60 * 60 * 1000;
+
+      const signups = sortedUsers.filter(u => u.createdAt >= startMs && u.createdAt < endMs).length;
+      const onboarded = sortedUsers.filter(u => {
+        if (!u.hasCompletedOnboarding) return false;
+        const onboardingTime = u.updatedAt || u.createdAt;
+        return onboardingTime >= startMs && onboardingTime < endMs;
+      }).length;
+
+      return {
+        label: bStart.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        }),
+        signups,
+        onboarded,
+        cumulative: 0,
+      };
+    });
+
+    let cum7d = sortedUsers.filter(u => u.createdAt < buckets7d[0].getTime()).length;
+    for (const item of data7d) {
+      cum7d += item.signups;
+      item.cumulative = cum7d;
+    }
+
+    // 30d Aggregation (daily)
+    const buckets30d = generateDailyBuckets(30);
+    const data30d = buckets30d.map((bStart) => {
+      const startMs = bStart.getTime();
+      const endMs = startMs + 24 * 60 * 60 * 1000;
+
+      const signups = sortedUsers.filter(u => u.createdAt >= startMs && u.createdAt < endMs).length;
+      const onboarded = sortedUsers.filter(u => {
+        if (!u.hasCompletedOnboarding) return false;
+        const onboardingTime = u.updatedAt || u.createdAt;
+        return onboardingTime >= startMs && onboardingTime < endMs;
+      }).length;
+
+      return {
+        label: bStart.toLocaleDateString("en-US", {
+          month: "short",
+          day: "numeric",
+        }),
+        signups,
+        onboarded,
+        cumulative: 0,
+      };
+    });
+
+    let cum30d = sortedUsers.filter(u => u.createdAt < buckets30d[0].getTime()).length;
+    for (const item of data30d) {
+      cum30d += item.signups;
+      item.cumulative = cum30d;
+    }
+
+    // 7. Recent 10 users (newest first)
     const recentUsers = sortedUsers
       .reverse()
       .slice(0, 10)
@@ -169,7 +222,7 @@ export const getAdminDashboardData = query({
         hasCompletedOnboarding: u.hasCompletedOnboarding,
       }));
 
-    // 9. Recent support queries (enriched with submitter info)
+    // 8. Recent support queries (enriched with submitter info)
     rawQueries.sort((a, b) => b.createdAt - a.createdAt);
 
     const recentQueries = [];
@@ -187,7 +240,7 @@ export const getAdminDashboardData = query({
       });
     }
 
-    // 10. Advanced stats
+    // 9. Advanced stats
     const allDetails = await ctx.db.query("userDetails").collect();
     
     // heardFrom frequencies
@@ -241,8 +294,11 @@ export const getAdminDashboardData = query({
         completedOnboarding: completedOnboardingCount,
         totalQueries,
       },
-      trend: trendData,
-      weeklyGrowth: weeklyGrowthData,
+      timeframeCharts: {
+        "24h": data24h,
+        "7d": data7d,
+        "30d": data30d,
+      },
       recentUsers,
       queries: recentQueries,
       advanced: {
