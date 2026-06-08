@@ -201,7 +201,7 @@ function parseHtmlTags(node: React.ReactNode): React.ReactNode {
         return (
           <kbd
             key={`kbd-${index}`}
-            className="inline-block px-1.5 py-0.5 font-mono text-[11px] font-medium leading-none text-[#e5e5e5] bg-[#1c1c1e] border border-white/10 rounded shadow-[0_1.5px_0_0.5px_rgba(255,255,255,0.08)] mx-0.5 select-none align-middle"
+            className="inline-block px-1.5 py-0.5 font-mono text-[11px] font-medium leading-none text-[#e5e5e5] bg-[#1c1c1e] border border-white/10 rounded shadow-[0_1.5px_0_0.5px_rgba(255,255,255,0.08)] mx-0.5 align-middle"
           >
             {innerText}
           </kbd>

@@ -198,6 +198,12 @@
     -webkit-user-select: text;
   }
 
+  article,
+  article * {
+    user-select: text;
+    -webkit-user-select: text;
+  }
+
   body {
     @apply bg-background text-foreground;
   }
