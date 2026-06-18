@@ -12,6 +12,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/web/contact",
     "/web/why-wekraft",
     "/web/docs",
+    "/web/about",
     "/web/wekraft-vs-asana",
     "/web/wekraft-vs-jira",
     "/web/wekraft-vs-linear",

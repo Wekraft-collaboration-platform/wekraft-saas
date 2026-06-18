@@ -34,6 +34,7 @@ import Link from "next/link";
 import { docsConfig, getDocBadge } from "@/lib/docs-config";
 import { TableOfContents } from "@/components/TableOfContents";
 import type { Metadata } from "next";
+import StructuredData from "@/components/StructuredData";
 
 export const metadata: Metadata = {
   title: "Documentation Hub",
@@ -41,6 +42,25 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://wekraft.xyz/web/docs",
   },
+};
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://wekraft.xyz/web"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Docs",
+      "item": "https://wekraft.xyz/web/docs"
+    }
+  ]
 };
 
 const iconMap: { [key: string]: any } = {
@@ -111,6 +131,7 @@ export default function DocsIndexPage() {
 
   return (
     <div className="flex gap-12 xl:gap-16 w-full">
+      <StructuredData data={breadcrumbSchema} />
       <div className="min-w-0 flex-1 pb-16">
       {/* Hero */}
       <div className="mb-14">

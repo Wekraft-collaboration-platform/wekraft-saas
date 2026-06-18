@@ -6,6 +6,7 @@ import CompareFeatures from "@/modules/web/compare/CompareFeatures";
 
 import CompareFAQ, { FAQItem } from "@/modules/web/compare/CompareFAQ";
 import { CheckCircle2, ArrowRight } from "lucide-react";
+import StructuredData from "@/components/StructuredData";
 
 export const metadata: Metadata = {
   title: {
@@ -15,6 +16,31 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://wekraft.xyz/web/wekraft-vs-asana",
   },
+};
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://wekraft.xyz/web"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Compare",
+      "item": "https://wekraft.xyz/web/why-wekraft"
+    },
+    {
+      "@type": "ListItem",
+      "position": 3,
+      "name": "WeKraft vs Asana",
+      "item": "https://wekraft.xyz/web/wekraft-vs-asana"
+    }
+  ]
 };
 
 
@@ -77,8 +103,22 @@ const asanaFaqs: FAQItem[] = [
 ];
 
 export default function AsanaComparePage() {
+  const faqSchema = {
+    "@context": "https://schema.org",
+    "@type": "FAQPage",
+    "mainEntity": asanaFaqs.map((faq) => ({
+      "@type": "Question",
+      "name": faq.question,
+      "acceptedAnswer": {
+        "@type": "Answer",
+        "text": faq.answer
+      }
+    }))
+  };
+
   return (
     <div className="bg-black min-h-screen text-white font-sans selection:bg-blue-500/30 overflow-hidden relative">
+      <StructuredData data={[breadcrumbSchema, faqSchema]} />
       <Navbar />
 
       <main className="flex flex-col items-center pt-32 pb-16 px-4 md:px-8 text-center w-full mx-auto relative z-10">
