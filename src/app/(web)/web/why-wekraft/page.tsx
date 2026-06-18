@@ -3,6 +3,7 @@ import { Metadata } from "next";
 import Navbar from "@/modules/web/Navbar";
 import Link from "next/link";
 import { Compass, Briefcase, CheckCircle2, FileText, ArrowRight, ExternalLink } from "lucide-react";
+import StructuredData from "@/components/StructuredData";
 
 export const metadata: Metadata = {
   title: "Why WeKraft",
@@ -10,6 +11,25 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "https://wekraft.xyz/web/why-wekraft",
   },
+};
+
+const breadcrumbSchema = {
+  "@context": "https://schema.org",
+  "@type": "BreadcrumbList",
+  "itemListElement": [
+    {
+      "@type": "ListItem",
+      "position": 1,
+      "name": "Home",
+      "item": "https://wekraft.xyz/web"
+    },
+    {
+      "@type": "ListItem",
+      "position": 2,
+      "name": "Compare",
+      "item": "https://wekraft.xyz/web/why-wekraft"
+    }
+  ]
 };
 
 
@@ -54,6 +74,7 @@ const competitors = [
 export default function WhyWeKraftPage() {
   return (
     <div className="bg-black min-h-screen text-white font-sans selection:bg-blue-500/30 overflow-hidden relative">
+      <StructuredData data={breadcrumbSchema} />
       <Navbar />
 
       {/* Background glow effects */}

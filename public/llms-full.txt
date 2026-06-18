@@ -1,0 +1,2733 @@
+# WeKraft Consolidated AI Documentation Hub
+> This file contains the complete, consolidated product documentation, developer guides, and feature specs of WeKraft SaaS. Use this file to understand every feature, configuration, API interface, and integration guide.
+
+---
+
+# Documentation Section: Assign Issues
+Path: /web/docs/assign-issues
+URL: https://wekraft.xyz/web/docs/assign-issues
+
+# Assign Issues
+
+Learn how to assign team members to resolve bugs, coordinate assignments, and manage collaboration rights.
+
+---
+
+## Where to Go & How to Go
+
+### 1. Manual Assignee Checklist (Detail Sheet)
+- **Where to Go**: Navigate to **Manage → Issues** in the left sidebar, click on the issue row, and locate the **Assignee** section in the details side sheet.
+- **How to Go**:
+  1. Click the assignee avatars circle (or the assignee dropdown trigger).
+  2. In the dropdown selection list, check or uncheck team members.
+  3. The changes are immediately written to the database.
+
+### 2. Auto-Inheritance via Task Blockage Escalation
+- **Where to Go**: This occurs automatically when marking tasks as blocked.
+- **How to Go**:
+  1. When a task is escalated (by clicking **"Mark as Issue"** inside the `TaskDetailSheet` details), WeKraft's backend automatically creates the linked issue.
+  2. The new issue **automatically inherits all developers** assigned to the blocked parent task.
+  3. This ensures the developers are notified of the blocking bug without needing manual reassignment.
+
+---
+
+## Assignment Permissions & Roles
+
+| Role | Issue Permissions |
+|---|---|
+| **Admin / Owner** | Full permissions. Can create, edit, assign, delete, close, or reopen issues. |
+| **Member** | Standard permissions. Can create, edit, assign, close, or reopen issues. |
+| **Viewer** | Read-only. Cannot assign, edit, close, reopen, or create issues. |
+
+---
+
+# Documentation Section: Assign Sprint Items
+Path: /web/docs/assign-sprints
+URL: https://wekraft.xyz/web/docs/assign-sprints
+
+# Assign Sprint Items
+
+Manage task assignments within sprints, balance workloads, and coordinate team commitments.
+
+---
+
+## Where to Go & How to Go
+
+### 1. Assigning Sprint Tasks/Issues to Developers
+- **Where to Go**: Open the sprint details page at **Manage → Sprint → [Sprint Name]** (or `/workspace/sprint/[sprintName]`).
+- **How to Go**:
+  1. In the sprint's item tables (Tasks or Issues tabs), click on any row to open the details side sheet.
+  2. Locate the **Assignees** section and check/uncheck the team members responsible for this item.
+  3. The sprint stats page will immediately update its **Assignees** listing to reflect the developers active on the sprint.
+
+### 2. Reviewing Sprint commitments & Balances
+- **Where to Go**: Navigate to the **Project Workspace Dashboard** (`/workspace`).
+- **How to Go**:
+  1. Open the **Advanced Charts** tab.
+  2. Locate the **Member Workload Card**, which tracks the volume of active tasks and issues currently assigned to each team member, grouped by priority (`High`, `Medium`, `Low`).
+  3. If a team member is overloaded, navigate to the active task list or sprint details, open the task, and modify the assignees to assign work to others.
+
+---
+
+## Sprint Allocation Guidelines
+
+To maintain healthy sprint metrics and high team velocity:
+1. Ensure tasks are fully assigned and estimated before starting the sprint.
+2. Monitor member workloads in the workspace **Advanced Charts** to prevent developer burnout.
+3. If a task becomes blocked during the sprint, escalate it using **Mark as Issue** to alert the team and automatically carry over assignees.
+
+---
+
+# Documentation Section: Assign Tasks
+Path: /web/docs/assign-tasks
+URL: https://wekraft.xyz/web/docs/assign-tasks
+
+# Assign Tasks
+
+Learn how to assign tasks, monitor team workloads, and manage task permissions.
+
+---
+
+## Where to Go & How to Go
+
+### 1. Assigning Tasks to Team Members
+- **Where to Go**: Open the task details side sheet from any task view (List, Board, or Table), and click the **"Edit Task"** button.
+- **How to Go**:
+  1. In the `EditTaskDialog` form, locate the **Assignees** section.
+  2. The section displays a list of all team members currently joined to the project.
+  3. Check the box next to one or more members to assign them to the task (multiple assignees are supported).
+  4. Click **Save Changes** to write the assignees mapping to the database in real-time.
+
+### 2. Monitoring Team Workload
+- **Where to Go**: Navigate to the **Project Workspace Dashboard** (`/workspace`).
+- **How to Go**:
+  1. Open the **Advanced Charts** tab (requires Plus or Pro plan).
+  2. Locate the **Member Workload Card**, which lists all team members and their active tasks, categorized by priority (`High`, `Medium`, `Low`).
+  3. If a member is overloaded, navigate to the active task list, click **"Edit Task"**, and update the assignee checklist to re-distribute work.
+
+---
+
+## Workspace Roles & Task Actions
+
+Actions on tasks are governed by project member roles:
+
+| Access Role | Backlog Creation | Assign | Edit Task Details | Resolve/Complete |
+|---|:---:|:---:|:---:|:---:|
+| **Owner / Admin** | ✅ | ✅ | ✅ | ✅ |
+| **Member** | ✅ | ✅ | ✅ | ✅ |
+| **Viewer** | ❌ | ❌ | ❌ | ❌ |
+
+- **Note on Config Settings**: The project owner can toggle member permissions inside the dashboard **Config** tab. If **"Member Task Creation"** is disabled, regular Members cannot create or edit tasks; their role becomes read-only.
+- **Viewers**: Users with the Viewer role have read-only access to all task boards and details, and cannot perform mutations.
+
+---
+
+# Documentation Section: Assign Tickets
+Path: /web/docs/assign-tickets
+URL: https://wekraft.xyz/web/docs/assign-tickets
+
+# Assign Tickets
+
+Learn how chat tickets are assigned to developers and tracked within Teamspace channels.
+
+---
+
+## Where to Go & How to Go
+
+### Assigning a Ticket
+- **Where to Go**: In your chat channel composer, type `/` to launch the **Create Ticket** popover.
+- **How to Go**:
+  1. Under the **Assignee** dropdown field in the popover form, click the selector.
+  2. Select the name of the developer responsible for resolving the ticket.
+  3. Click **Create Ticket**.
+  4. The assignee is saved in the database under the `assignedTo` field. 
+  5. The ticket can be viewed by anyone with project access in the channel header dropdown.
+  6. *Note: Chat tickets do not support re-assigning to a different developer once created.*
+
+---
+
+## Permissions & Roles
+
+- **Access**: Any member who has access to the channel can view, close, or reopen tickets in the header dropdown.
+- **Viewers**: Project members with the **Viewer** role can view all active and closed tickets, but cannot close, reopen, or create new tickets.
+
+---
+
+# Documentation Section: Billing & Subscriptions
+Path: /web/docs/billing
+URL: https://wekraft.xyz/web/docs/billing
+
+# Billing & Subscriptions
+
+WeKraft uses a multi-tier SaaS subscription model governed by server-side limit verifications. Features and resources are scaled across three plans: **Free**, **Plus**, and **Pro**.
+
+---
+
+## Plan Comparison Matrix
+
+All capabilities and data volume metrics are checked dynamically at the database layer.
+
+| Feature / Limit | Free Plan | Plus Plan | Pro Plan |
+| :--- | :--- | :--- | :--- |
+| **Monthly Cost** | $0 | $12 / member | $25 / member |
+| **Owned Project Limit** | Max 2 projects | Max 10 projects | Max 20 projects |
+| **Joined Project Limit** | Max 2 projects | Max 10 projects | Max 20 projects |
+| **Members Per Project** | Max 3 members | Max 6 members | Max 15 members |
+| **Cloud Storage Allocation** | 2 GB | 15 GB | 30 GB |
+| **Kaya AI PM Agent** | Disabled | Disabled | Full access (360 calls/mo) |
+| **Harry AI Dev Agent** | Disabled | Disabled | Beta Access (Coming Soon) |
+| **Editor Sync Mode** | Read-Only | Read-Only | Full Two-Way Sync |
+| **Interactive Heatmaps** | Basic structure | Git activity view | Git activity & issue overlay |
+| **Dedicated Support** | Basic Support | Basic Support | Priority 24/7 Support |
+| **Automated Reports** | No | No | Yes |
+
+---
+
+## Server-Side Limit Enforcements (Technical Rules)
+
+Usage metrics are validated via server-side database rules. Key checks include:
+
+### 1. Active Plan Evaluation
+The system evaluates plan states at runtime rather than relying on static flags:
+- Checks plan expiration fields for temporary upgrades or trials.
+- Checks if the user cancelled the subscription. If the current time exceeds the paid period end timestamp, the account is automatically downgraded to free.
+- Evaluates whether subscriptions are in past due or cancelled states to trigger grace periods.
+
+### 2. Project Creation & Member Seats Checks
+- **Project Limits**: Prior to inserting a project, a query checks the count of owned projects. If the count meets the plan threshold (2 for Free, 10 for Plus), the creation mutation is rejected with an error.
+- **Member Approval**: Approving a join request validates the number of current members against the project owner's active plan tier.
+
+### 3. Storage Allocation Enforcements
+- File uploads to team channels or task attachments calculate file sizes in bytes.
+- The user's total active storage is cached on the user document.
+- If an upload causes the size to exceed the tier threshold (e.g. 2 GB for Free), the storage mutation is rejected.
+
+### 4. AI Credit Caps
+- Every message query targeting the AI PM agent increments active usage on the user profile.
+- Pro users are capped at **360 queries per billing cycle**.
+- The limit is checked during the API gateway call; if the quota is exhausted, responses are blocked, and an exhaustion notice is returned.
+
+---
+
+## Webhook Sync Architectures
+
+WeKraft maintains billing state consistency by processing webhook events emitted from payment gateways via the backend HTTP routers:
+
+```mermaid
+sequenceDiagram
+    participant Gateway as Billing Gateway
+    participant Router as HTTP Action Router
+    participant Mutation as DB Mutation
+    participant DB as User Document Store
+
+    Gateway->>Router: 1. POST Webhook event (subscription.created/deleted)
+    Note over Router: Validates gateway signature
+    Router->>Mutation: 2. Invoke sync mutation
+    Mutation->>DB: 3. Update accountType, currentPeriodEnd, & status
+    DB-->>Mutation: 4. Confirm write
+    Mutation-->>Router: 5. Return success
+    Router-->>Gateway: 6. 200 OK Response
+```
+
+### Webhook Event Processing Map:
+- **`subscription.created` / `subscription.activated`**: Upgrades the user's account type, sets the billing gateway details, maps the unique subscription reference, and computes the billing period end timestamp.
+- **`subscription.cancelled` / `subscription.deleted`**: Triggers a downgrade. If cancelled, it flags cancel-at-period-end status and allows access to continue until the paid period terminates.
+- **`subscription.charge.failed`**: If a renewal payment fails, the subscription moves to past due or unpaid status. WeKraft initiates a 3-day grace period, after which a background job automatically downgrades the user to the Free plan.
+- **Cron Re-verification Safety**: A recurring server cron scans users with active subscriptions. If a subscription period is in the past and no payment webhook has arrived, it automatically verifies the status with the gateway API and synchronizes the account.
+
+---
+
+# Documentation Section: Project Calendar
+Path: /web/docs/calendar
+URL: https://wekraft.xyz/web/docs/calendar
+
+# Project Calendar
+
+The WeKraft Calendar provides a shared timeline of events, scheduled milestones, task deadlines, and sprint scopes across the entire project space.
+
+---
+
+## Calendar Event Properties
+
+Every calendar entry has the following properties:
+
+- **Title**: The display name of the event or milestone checkpoint.
+- **Description** *(optional)*: Additional context or agenda details.
+- **Event Type**:
+  - Event: Standard meetings, daily standups, or retrospective sessions.
+  - Milestone: Critical checkpoints like release freezes, beta releases, or customer deliveries.
+- **All Day Option**: Toggles absolute day views, disabling the hour/minute selection.
+- **Duration**: The time range representing when the event occurs.
+- **Color Overlay**: Custom color for visual grouping on the calendar grid.
+
+---
+
+## Workspace Integrations
+
+WeKraft merges calendar records with project boards to compile a single dashboard view:
+
+### 1. Task Deadline Overlays
+Any active task with an `estimation.endDate` is automatically plotted on the calendar grid. The visual color corresponds to the task's state:
+- **Grey**: `not started`
+- **Blue**: `inprogress`
+- **Purple**: `reviewing`
+- **Cyan**: `testing`
+- **Green**: `completed`
+
+### 2. Sprint Timeline Blocks
+Active and planned sprints display as shaded horizontal bars covering their duration (`duration.startDate` -> `duration.endDate`), making it easy to spot sprint overlaps.
+
+---
+
+## Next Steps
+
+- Track tasks with [Tasks & Backlog](/web/docs/tasks).
+- Organize periods in [Sprints & Planning](/web/docs/sprints).
+- View delivery targets in the [Project Delivery Timeline & Gantt Chart](/web/docs/time-logs).
+
+---
+
+# Documentation Section: Community Hub
+Path: /web/docs/community
+URL: https://wekraft.xyz/web/docs/community
+
+# Community Hub
+
+The **Community Hub** is WeKraft's discovery space, designed to encourage collaboration and project sharing across public workspaces. While some advanced global matchmaking features are under active development, you can share your projects with the community today.
+
+---
+
+## Accessing the Community Space
+
+WeKraft projects have visibility toggles managed on the Project Home page:
+
+- **Visibility Toggles**: The project owner can toggle **Public Visibility** in the settings tab (`SettingsTab.tsx`).
+- **Community Tab**: Every project home page (`/dashboard/my-projects/[slug]`) includes a **Community** tab.
+  - Currently, this tab serves as a placeholder ("Community features coming soon...") as we roll out the global directory features.
+  - In a future update, public projects will be listed in a global searchable directory, allowing developers to filter by tags (e.g., `React`, `Rust`, `Next.js`) and request to join public teams.
+
+---
+
+## Public vs. Private Workspaces
+
+| Capability | Public Project | Private Project |
+| :--- | :--- | :--- |
+| **Visibility** | Visible to all WeKraft users | Invisible to non-members |
+| **Join Requests** | Anyone can send a request to join | Invite-only via direct link |
+| **GitHub Repository Sync** | Syncs commit metrics publicly | Syncs only for authenticated members |
+| **Join Approval** | Owner must approve requests under "Requests" | Pre-authorized via direct invite link |
+
+---
+
+## Next Steps
+
+- Learn how to toggle visibility in [Projects Management](/web/docs/projects).
+- Configure project tags for visibility in [User Profile & Skills](/web/docs/profile).
+- Learn about the [Referral Program](/web/docs/referrals).
+
+---
+
+# Documentation Section: Create Channels
+Path: /web/docs/create-channels
+URL: https://wekraft.xyz/web/docs/create-channels
+
+# Create Channels
+
+Create custom chat channels in WeKraft Teamspace to organize project discussions and coordinate feature implementations.
+
+---
+
+## Where to Go & How to Go
+
+### Creating a New Channel
+- **Where to Go**: Click on **Teamspace** in the sidebar.
+- **How to Go**:
+  1. If you have the required channel creation permissions, click the **Create Channel** button in the Channels sidebar.
+  2. In the dialog, configure your new channel:
+     - **Channel Type**: Choose **Community** (for general group chat) or **Announcement** (for broadcast-only channels).
+     - **Private Channel**: If creating a Community channel, you can toggle **Private Channel** ON to restrict access. (Announcement channels cannot be made private).
+     - **Add Members**: If Private Channel is enabled, select the checkboxes next to the project members you want to add to this channel.
+     - **Channel Name**: Enter a short name. Names must contain only lowercase letters, numbers, spaces, or hyphens, and can be up to 32 characters long. (Any spaces will automatically be replaced with hyphens).
+     - **Description**: Enter an optional description (up to 120 characters) explaining what the channel is for.
+  3. Click **Create Channel**.
+  4. The channel will be created instantly and will appear in the channel list for all authorized team members in real-time.
+
+---
+
+## Channel Types & Visibilities
+
+| Channel Type | Who Can View & Join | Who Can Post | Use Cases |
+|---|---|---|---|
+| **Community Channel** | Any project member | All members | General discussions, Q&A, and updates. |
+| **Announcement Channel**| Any project member | Owners and Admins only | Broadcast alerts, releases, and announcements. |
+| **Private Channel** | Explicitly invited members | Invited members only | Confidential coordination, sub-teams, or private chats. |
+
+---
+
+# Documentation Section: Create Issues
+Path: /web/docs/create-issues
+URL: https://wekraft.xyz/web/docs/create-issues
+
+# Create Issues
+
+Learn how to log bugs and issues in WeKraft manually, via task blockage escalation, or by importing them from GitHub.
+
+---
+
+## Where to Go & How to Go
+
+### 1. Manual Issue Creation
+- **Where to Go**: Navigate to **Manage → Issues** in the left sidebar (or go to `/workspace/issues`).
+- **How to Go**:
+  1. Click the **"+ New Issue"** button in the header of the page.
+  2. A creation dialog modal will appear.
+  3. Fill in the required fields:
+     - **Title**: Brief summary of the bug/incident (required).
+     - **Description**: Technical details or steps to reproduce (optional).
+     - **Severity**: Choose `low`, `medium`, or `critical` (defaults to `medium`).
+     - **Impact Environment**: Choose `local`, `dev`, `staging`, or `production` (defaults to `local`).
+     - **Due Date**: Select the target resolution deadline using the calendar popover.
+     - **File Linked**: Enter the file path pointing to the buggy component.
+     - **Assignees**: Check the box next to any project members you want to assign to this issue.
+     - **Attachments**: Upload screenshots or logs (max 10MB; disabled if owner is on Free tier).
+  4. Click **Create**.
+
+### 2. Task Blockage Escalation (Mark as Issue)
+- **Where to Go**: Open any active task in **Manage → Tasks** to open its details side sheet.
+- **How to Go**:
+  1. Inside the task details side sheet, locate and click the **"Mark as Issue"** button in the header.
+  2. The system will set the task's `isBlocked` property to `true` (blocking it from being completed on the Kanban board).
+  3. A linked issue of type `task-issue` is automatically created.
+  4. **Assignee Inheritance**: The newly created issue automatically inherits all developers assigned to the blocked task.
+
+### 3. GitHub Issue Import
+- **Where to Go**: Navigate to the **Manage → Issues** page and select the **"Github Issue"** tab.
+- **How to Go**:
+  1. Ensure your project's GitHub repository is connected.
+  2. Click the **"Import from Github"** button.
+  3. A dialog listing open issues from your GitHub repository will appear.
+  4. Click on the issues you want to import.
+  5. The selected issues are imported into the WeKraft database as type `github` and are linked to their source URLs.
+  6. *Note: There is no automatic webhook sync; issues must be imported manually.*
+
+---
+
+## Issue Creation Fields Reference
+
+| Field | Type | Description |
+|---|---|---|
+| **Title** | Text (Required) | High-level summary of the bug (e.g. "Checkout page returns 500 error"). |
+| **Description** | Rich Text | Steps to reproduce, specs, or logs. |
+| **Impact Environment** | Dropdown | `local`, `dev`, `staging`, or `production`. |
+| **Severity** | Dropdown | `low`, `medium`, `critical`. |
+| **Due Date** | Date | Target resolution date. |
+| **File Linked** | Text | Relative codebase path (e.g., `src/components/Button.tsx`). |
+| **Assignees** | Checkbox list | Collaborators assigned to resolve the bug. |
+| **Attachments** | File Uploader | Screenshots or error logs (max 10MB; disabled on Free plan). |
+
+---
+
+# Documentation Section: Create Sprints
+Path: /web/docs/create-sprints
+URL: https://wekraft.xyz/web/docs/create-sprints
+
+# Create Sprints
+
+Learn how to create planned sprints, set time-boxed goals, and load tasks or issues from your backlog.
+
+---
+
+## Where to Go & How to Go
+
+### 1. Creating a Planned Sprint
+- **Where to Go**: In your project space, navigate to **Manage → Sprint** in the left sidebar (or `/workspace/sprint`).
+- **How to Go**:
+  1. Click **"+ Create Sprint"** in the top-right corner of the Sprints dashboard.
+  2. A form dialog will appear.
+  3. Enter a **Sprint Name** (e.g., "Sprint 1 - MVP Release").
+  4. Select the **Start Date** and **End Date** using the calendar date-range picker. Note that sprints cannot end after the project target deadline.
+  5. Add a **Sprint Goal** detailing what the team intends to deliver (e.g., "Implement authentication and database connection").
+  6. Click **Create** to save the planned sprint.
+
+### 2. Loading Backlog Items into a Sprint
+- **Where to Go**: Navigate to the sprint detail page by clicking the planned sprint name on the Sprint dashboard list (or go to `/workspace/sprint/[sprintName]`).
+- **How to Go**:
+  1. Once on the sprint details page, click **"Add Task +"** or **"Add Issue +"** depending on which backlog items you want to commit.
+  2. In the backlog drawer/modal list, check the items you want to assign to this sprint.
+  3. Click to save. The item's sprint assignment will update in real-time.
+
+---
+
+## Sprint Creation Fields
+
+| Field Name | Type | Description |
+|---|---|---|
+| **Sprint Name** | Text (Required) | Unique identifier for the sprint (e.g., "Sprint 1"). |
+| **Start / End Date** | Date Range (Required) | Timeframe boundaries for metrics calculations. Sprints must fit within the project timeline. |
+| **Sprint Goal** | Text (Required) | Description of the sprint's focus or primary objective. |
+
+---
+
+# Documentation Section: Create Tasks
+Path: /web/docs/create-tasks
+URL: https://wekraft.xyz/web/docs/create-tasks
+
+# Create Tasks
+
+Learn how to create backlog tasks, configure priorities, estimate durations, and link files.
+
+---
+
+## Where to Go & How to Go
+
+### 1. Creating a Task
+- **Where to Go**: Navigate to **Manage → Tasks** inside your workspace (or go to `/workspace/tasks`).
+- **How to Go**:
+  1. Click the **"+ New Task"** button in the header of the page.
+  2. In the task creation form, fill out the following properties:
+     - **Title**: A description of the work item (required).
+     - **Description**: Detailed requirements or notes (optional).
+     - **Status**: The initial status (defaults to `not started`).
+     - **Priority**: Dropdown of `none`, `low`, `medium`, or `high` (defaults to `none`).
+     - **Duration**: Select the **Start Date** and **Target End Date** using the calendar popover. Note that the task duration must fit within the project timeline.
+     - **Tag**: Select or create exactly **one tag** (e.g., Auth, Payment, Mobile) and configure its color from the palette.
+     - **Codebase Link**: Search and select a repository path to link this task to a specific codebase file.
+     - **Assignees**: Check the box next to any project members you want to assign to this task.
+     - **Attachments**: Upload files or logs (Max size: **10MB**). Note: Uploads are disabled if the project owner is on the Free tier.
+  3. Click **Create**.
+
+### 2. Quick Task Inline Adding
+- **Where to Go**: Go to the **List View** under **Manage → Tasks**.
+- **How to Go**:
+  1. Scroll to the bottom of any status section list.
+  2. Click **"+ Add Task"** inline.
+  3. Type the task title and press <kbd>Enterk</kbd>.
+  4. The task is created with default values (status: `not started`, priority: `none`). You can click on the task row to open the details sheet and add dates, assignees, or details.
+
+---
+
+## Task Creation Fields Reference
+
+| Field | Type | Description |
+|---|---|---|
+| **Title** | Text (Required) | Brief summary of the work item. |
+| **Description** | Rich Text | Detailed specifications or checklist items. |
+| **Status** | Select | `not started`, `inprogress`, `reviewing`, `testing`, `completed`. |
+| **Priority** | Select | `none`, `low`, `medium`, `high`. Defaults to `none`. |
+| **Duration** | Date Range | Start and Target End dates. Must be before the project's target deadline. |
+| **Tag** | Object | exactly one label and color from a color palette. |
+| **Codebase Link** | Dropdown | File selection picker linked to the Git repository. |
+| **Assignees** | Checkbox list | Select multiple project collaborators. |
+| **Attachments** | File Uploader | Upload supporting assets/logs (max 10MB per file; disabled on Free plan). |
+
+---
+
+# Documentation Section: Create Tickets
+Path: /web/docs/create-tickets
+URL: https://wekraft.xyz/web/docs/create-tickets
+
+# Create Tickets
+
+Learn how to log support tickets directly from the real-time chat composer in WeKraft Teamspace.
+
+---
+
+## Where to Go & How to Go
+
+### Creating a Chat Ticket
+- **Where to Go**: Navigate to **Teamspace** in the sidebar and click on any chat channel.
+- **How to Go**:
+  1. Position your cursor in the **Message Composer** input box.
+  2. Type the `/` (Slash) character as the very first character in the composer.
+  3. The **Create Ticket** popover dialog will instantly appear.
+  4. Configure your ticket:
+     - **Ticket Description**: Provide a detailed description of the issue or request (e.g., "Reset password button is throwing a 500 error").
+     - **Assignee**: Choose a team member from the dropdown menu list of project collaborators.
+  5. Click **Create Ticket** (or press <kbd>Enter</kbd>).
+  6. The ticket is immediately inserted into the database and is visible to the team under the channel's Tickets dropdown.
+
+---
+
+## Ticket Fields
+
+| Field | Type | Required | Description |
+|---|---|---|---|
+| **Ticket Description** | Text area | Yes | Detailed summary of the support request or task. |
+| **Assignee** | Dropdown list | Yes | The team member delegated to resolve the ticket. |
+
+---
+
+# Documentation Section: Customer Desk
+Path: /web/docs/customer-desk
+URL: https://wekraft.xyz/web/docs/customer-desk
+
+# Customer Desk
+
+The **WeKraft Customer Desk** is a centralized workspace module for managing customer profiles and triaging inbound service requests into actionable tasks or issues.
+
+---
+
+## Where to Go & How to Go
+
+- **Where to Go**: Click on **Customer Desk** in the project sidebar (or navigate to `/dashboard/my-projects/[slug]/workspace/customer-desk`).
+- **How to Go**:
+  1. Toggle between the **Requests** and **Customers** tabs.
+  2. Use the search bar to filter items by name, email, or description.
+  3. Filter requests by status (All, Pending, Approved, Rejected) using the table header dropdown.
+
+---
+
+## Managing Customer Profiles
+
+Customer profiles represent the clients or users submitting feedback or reports.
+- **Fields**: Name, Email, Contact (Optional).
+- **Adding a Customer**: Click the **Add Customer** button at the top right.
+- **Editing / Deleting a Customer**: Click the options menu next to a customer row under the **Customers** tab to edit details or delete the profile (deleting a customer profile also deletes all their linked requests).
+- **Permissions**: Adding, editing, and deleting customer profiles is restricted to the **Project Owner** only.
+
+---
+
+## Triaging Service Requests
+
+Service requests are logged under specific customer profiles and triaged by project administrators.
+- **Fields**: Customer, Title, Description, Type (`Bug Report` or `Feature Request`).
+- **Logging a Request**:
+  1. Click **Log Request** at the top right.
+  2. Select the customer profile.
+  3. Enter the Title and Description.
+  4. Select the Request Type: **Feature Request** or **Bug Report**.
+  5. Click **Submit**. (Regular members can log requests; Viewers cannot).
+
+---
+
+## Request Approval Pipeline
+
+Logged requests are marked as **Pending** and can be triaged with the following actions:
+
+### 1. Approving Requests
+- When you click **Approve** on a pending request, an approval dialog opens:
+  - Select team member **Assignees** to handle the item.
+  - Set the **Start Date** and **End Date** (for feature requests only).
+- Click **Approve**.
+- The request status updates to **Approved** and WeKraft automatically creates:
+  - An internal **Task** (if it was a Feature Request), populated with the estimated dates and assignees.
+  - An internal **Issue** (if it was a Bug Report), populated with the assigned team members.
+
+### 2. Rejecting Requests
+- If a request is duplicate or out of scope, click **Reject**.
+- The request status updates to **Rejected** and is discarded.
+
+---
+
+## Roles & Privileges
+
+| Action | Owner | Admin | Member | Viewer |
+|---|:---:|:---:|:---:|:---:|
+| Manage Customers (Create, Edit, Delete) | ✅ | ❌ | ❌ | ❌ |
+| Log Service Requests | ✅ | ✅ | ✅ | ❌ |
+| Approve / Reject Requests | ✅ | ✅ | ❌ | ❌ |
+| View Customer Desk Data | ✅ | ✅ | ✅ | ✅ |
+
+---
+
+# Documentation Section: Dashboard & Navigation
+Path: /web/docs/dashboard
+URL: https://wekraft.xyz/web/docs/dashboard
+
+# Dashboard & Navigation
+
+The WeKraft Dashboard is your command center — the first screen you see after logging in. It gives you a bird's-eye view of all your projects, repository activity, notifications, and quick access to every feature.
+
+## Main Dashboard
+
+When you log in, the dashboard is divided into two sections: a **main content area** on the left and a collapsible **right sidebar**.
+
+### Metric Cards
+
+At the top of the dashboard, three metric cards give you a snapshot of your activity:
+
+| Card | What it shows |
+|---|---|
+| **Commits** | Your total repository commits from the past year. Click "Connect Now" if your version control account isn't linked yet. |
+| **Pull Requests / Merged PRs** | Total pull requests and how many have been merged — split into two columns. |
+| **Projects Created / Joined** | How many projects you own vs. how many you've joined, with plan limits shown (e.g., `2/20`). |
+
+> [!TIP]
+> If you see `....` in the PR cards, it means your code hosting account isn't connected yet. Click the "Connect Now" button on the Commits card to link your account.
+
+### Dashboard Tabs
+
+Below the metric cards, you'll find three tabs:
+
+| Tab | Description |
+|---|---|
+| **Stats** | Getting Started Checklist (for new users), notifications feed, upcoming deadlines, and upcoming calendar events |
+| **Projects** | A grid of all your projects (owned + joined) with status, visibility, and member count |
+| **Discover** | Community exploration — find public projects and collaborate |
+
+### Getting Started Checklist
+
+New users see a **Getting Started Checklist** at the top of the Stats tab. It tracks your progress through key setup steps. Complete all steps to unlock the full experience.
+
+Once completed, the checklist is replaced by the **Notifications** panel.
+
+---
+
+## The App Sidebar
+
+The left sidebar is your primary navigation tool. It is present on every dashboard screen.
+
+### Sidebar Sections
+
+| Section | What it contains |
+|---|---|
+| **Logo & Home** | Click the logo to return to the dashboard |
+| **Projects List** | All your projects — click any to open its workspace |
+| **Quick Actions** | New Project, Join Project shortcuts |
+| **User Menu** | Profile, Code Repositories, Documentation, Log out |
+
+### Collapsing the Sidebar
+
+Press `Ctrl+B` (or `Cmd+B` on Mac) to toggle sidebar visibility. This gives you more screen real estate when working on tasks.
+
+---
+
+## The Right Sidebar
+
+The right side of the dashboard has a collapsible panel that you can expand or collapse. It provides quick access to account details, shortcuts, and the **Referral Dialog**, where you can view your unique referral code, track your progress, and earn rewards for inviting users.
+
+---
+
+## The Project Workspace
+
+When you click a project from the dashboard, you enter the **Project Workspace** — a dedicated environment with its own sidebar and navigation.
+
+### Project Workspace Dashboard
+
+The workspace dashboard is the first view when you enter a project. It shows:
+
+| Section | Description |
+|---|---|
+| **Track Your Project** | Project deadline progress bar with days remaining, alert milestones (25%, 50%, 75%, 90%), and date info |
+| **Activity Overview** | Live counts of total tasks, active issues, and recent activity |
+| **Task Status** | Pie chart showing task distribution by status (not started, in progress, reviewing, testing, completed) |
+
+Below these cards, two sub-tabs provide deeper configurations and analytics:
+
+| Sub-Tab | Description |
+|---|---|
+| **Advanced Charts** | Team contribution radar, sprint bar chart, severity heatmap, weekly velocity, member workload, and weekly engagement (Plus/Pro only) |
+| **Config** | Project configuration settings (owner only) |
+
+> [!NOTE]
+> Advanced charts require a **Plus or Pro** plan. Free plan users see a prompt to upgrade.
+
+### Workspace Header Tools
+When inside any workspace view, the header includes a "View More" toggle that gives access to:
+- **Home**: Link to return to the project homepage.
+- **My Work**: Opens the **My Work Side Sheet** from the right, listing tasks and issues assigned to you.
+- **Team Meet**: Launches the project's real-time video calling space.
+
+### Project Sidebar
+
+The project sidebar provides access to all project features:
+
+| Tab | Description |
+|---|---|
+| **Dashboard** | Project overview with analytics, deadline tracking, and team insights |
+| **Tasks** | All project tasks in List, Board (Kanban), or Table view |
+| **Issues** | Bug tracking and incident management |
+| **Sprints** | Sprint planning, active sprint monitoring, and history |
+| **Calendar** | Shared calendar with events, milestones, and task due dates |
+| **Time Logs** | Time tracking records for all project members |
+| **Team Space** | View all team members, their roles, and current workload |
+| **Heatmaps** | AI-powered workload analysis and activity trends |
+| **AI Workspace** | AI assistant for reports, planning, and insights (Pro) |
+| **Code** | File explorer — browse your repository directly |
+
+---
+
+## Breadcrumb Navigation
+
+At the top of every workspace page, breadcrumbs show your current location:
+
+```
+Dashboard → My Projects → Project Name → Tasks
+```
+
+Click any breadcrumb segment to jump back to that level. This makes deep navigation fast and intuitive.
+
+---
+
+## User Menu
+
+Click your avatar in the sidebar footer to access:
+
+- **Profile** — view and edit your profile on the My Profile page
+- **Repositories** — quick link to your connected code repository accounts
+- **Documentation** — opens this documentation site
+- **Log Out** — sign out of your account
+
+---
+
+## Notifications
+
+The **bell icon** in the dashboard shows your notification count in the Stats tab. WeKraft sends notifications for:
+
+- Join requests on your projects
+- Task assignments and status changes
+- Sprint start and completion events
+- Issue escalations and comments
+- Team member activity
+
+Click any notification to navigate directly to the relevant item. Hover over a notification to reveal **Mark as read** (✓) and **Delete** (🗑) actions.
+
+> [!TIP]
+> For more details, see the [Notifications guide →](/web/docs/notifications)
+
+---
+
+# Documentation Section: Delete Projects
+Path: /web/docs/delete-projects
+URL: https://wekraft.xyz/web/docs/delete-projects
+
+# Delete Projects
+
+In WeKraft, manual deletion of projects is restricted to prevent accidental data loss and maintain database integrity.
+
+---
+
+## Where to Go & How to Go
+
+### Requesting Project Deletion
+- **Where to Go**: Click on **Delete Project** at the bottom of the left navigation sidebar.
+- **How to Go**:
+  1. Once on the Delete page, you will see an alert notice stating:
+     > **You cannot delete this project manually. You need to raise a query related to this in Help and Support.**
+  2. To initiate the deletion of your project, click on **Help and Support** located in the sidebar directly above the delete option.
+  3. Submit a support query requesting project deletion. The support team will process your request and permanently remove the project and its resources.
+
+---
+
+# Documentation Section: Edit Issues
+Path: /web/docs/edit-issues
+URL: https://wekraft.xyz/web/docs/edit-issues
+
+# Edit Issues
+
+Modify existing issues to update progress, adjust severity, change target deadlines, or link specific files.
+
+---
+
+## Where to Go & How to Go
+
+### 1. Detailed Issue Editing (Edit Issue Dialog)
+- **Where to Go**: Open any issue details side sheet by clicking on its title in the list, then click the **"Edit Issue"** button in the header.
+- **How to Go**:
+  1. The `EditIssueDialog` modal will appear.
+  2. Modify the fields as needed:
+     - **Title**: Update the description.
+     - **Description**: Add specs, steps to reproduce, or notes.
+     - **Severity**: Choose `low`, `medium`, or `critical`.
+     - **Impact Environment**: Choose `local`, `dev`, `staging`, or `production`.
+     - **Due Date**: Select the target resolution date.
+     - **File Linked**: Select or type the relative path of the buggy file.
+     - **Assignee Checklist**: Check or uncheck team members.
+  3. Click **Save Changes**.
+
+### 2. Transitioning Issue Status (Detail Sheet Toggle)
+- **Where to Go**: Open the issue details side sheet from the **Issues** list view.
+- **How to Go**:
+  1. Look at the top action header of the side sheet.
+  2. Click the **"Close Issue"** button (or **"Reopen Issue"** button if the issue is currently closed).
+  3. The status transitions immediately between `closed` and `reopened`/`opened`, logging the completer's user ID and timestamp on close.
+
+### 3. Quick Actions in Detail Sheet
+While the side sheet is open, you can also perform these quick modifications:
+- **Manage Assignees**: Click the assignee avatars circle to open a dropdown list and check/uncheck project members.
+- **Upload Attachments**: Upload screenshots or error logs (max 10MB per file; disabled on Free plan).
+- **Team Comments**: View, add, and reply to comments in the Comments tab.
+
+---
+
+## Modifying Properties Reference
+
+| Parameter | Options | Description |
+|---|---|---|
+| **Status** | `not opened`, `opened`, `reopened`, `closed` | Toggle via Close/Reopen buttons in sheet header. |
+| **Severity** | `low`, `medium`, `critical` | Edit in `EditIssueDialog`. Filters queues. |
+| **Impact Environment** | `local`, `dev`, `staging`, `production` | Edit in `EditIssueDialog`. Identifies target build. |
+| **File Linked** | Text (path) | Relative codebase path. Clickable file link. |
+| **Due Date** | Date | Target resolution date. |
+
+---
+
+# Documentation Section: Edit & Monitor Sprints
+Path: /web/docs/edit-sprints
+URL: https://wekraft.xyz/web/docs/edit-sprints
+
+# Edit & Monitor Sprints
+
+Learn how to start planned sprints, complete active sprints, and monitor live performance stats.
+
+---
+
+## Where to Go & How to Go
+
+### 1. Activating a Planned Sprint
+- **Where to Go**: Navigate to **Manage → Sprint** in the left sidebar, and click on the planned sprint's card (or navigate to `/workspace/sprint/[sprintName]`).
+- **How to Go**:
+  1. Once on the sprint details page, verify that the backlog items are correctly assigned.
+  2. Click **"Start Sprint"** in the top-right corner of the header.
+  3. Confirm the action in the validation prompt. The sprint status will transition to `active`.
+  4. *Note: **Only one sprint can be active at a time** per project workspace.*
+
+### 2. Completing an Active Sprint
+- **Where to Go**: Open your active sprint's details page (`/workspace/sprint/[sprintName]`).
+- **How to Go**:
+  1. Once the sprint period concludes, click **"Complete"** in the top-right corner of the header.
+  2. Confirm the action in the prompt.
+  3. The status will update to `completed`, and:
+     - The sprint statistics are frozen for historical velocity records.
+     - All uncompleted tasks and open issues are automatically returned to the project **Backlog**.
+     - Sprint details (name, goal, dates) are frozen and cannot be modified.
+
+---
+
+## Sprint Performance Analytics
+
+During an active or completed sprint, the details page displays three real-time stats cards:
+
+1. **Sprint Progress**:
+   - Shows the percentage of tasks and issues completed.
+   - Displays a progress bar visual representation.
+   - Shows total completed items vs total items count (e.g., `3 of 10 items`).
+2. **Burn Rate**:
+   - Displays the rate of item resolution measured in `items/day`.
+3. **Assignees**:
+   - Renders a list of stacked avatar circles representing the team members assigned to tasks or issues within the sprint.
+
+---
+
+# Documentation Section: Edit Tasks
+Path: /web/docs/edit-tasks
+URL: https://wekraft.xyz/web/docs/edit-tasks
+
+# Edit Tasks
+
+Modify task properties, update progress statuses, link codebase paths.
+
+---
+
+## Where to Go & How to Go
+
+### 1. Kanban Status Transitions (Board View)
+- **Where to Go**: Navigate to **Manage → Tasks** and select the **Board View** tab.
+- **How to Go**:
+  1. Hover over a task card and drag it between status columns (`Not Started`, `In Progress`, `Reviewing`, `Testing`, `Completed`).
+  2. **Status Change Constraint (Block Lock)**: If a task has been flagged as blocked (`isBlocked === true`), attempting to transition it to `Completed` will be rejected by the UI, showing the warning toast:
+     > **"task is marked as blocked , kindly fix that"**
+  3. You must resolve the blocking issue before marking the task complete.
+
+### 2. Task Details Sheet (Read-Only & Escalation)
+- **Where to Go**: Click on any task card or row in the List, Board, or Table views.
+- **How to Go**:
+  1. A detailed workspace sheet (`TaskDetailSheet.tsx`) will slide open from the right.
+  2. This sheet is primarily **read-only** for task parameters, but allows you to:
+     - View title, description, dates, priority, codebase link, and assignees.
+     - View, add, and download attachments (max 10MB per file; disabled on Free plan).
+     - Add team comments and mentions in the comment feed.
+     - **Escalate Blockages**: Click **"Mark as Issue"** to flag the task as blocked. This sets `isBlocked` to `true`, creates a linked issue, and automatically copies over all task assignees.
+
+### 3. Detailed Parameter Editing (Edit Task Dialog)
+- **Where to Go**: Open the task details side sheet.
+- **How to Go**:
+  1. Click the **"Edit Task"** button at the top of the side sheet.
+  2. The `EditTaskDialog.tsx` modal will open.
+  3. Here, project members can make full edits: modify the **Title**, **Description**, **Priority**, **Duration** (Start/End dates), **Tag**, **Codebase Link**, and modify the **Assignee Checklist**.
+  4. Click **Save Changes**.
+
+---
+
+## Task Views Comparison
+
+- **List View**: Structured by status sections. Best for quick inline task additions and overview scanning.
+- **Board View**: Visual Kanban board. Best for tracking daily progress.
+- **Table View**: Spreadsheet-like grid. Allows sorting by priority, tag, status, and dates.
+
+---
+
+# Documentation Section: Edit & Resolve Tickets
+Path: /web/docs/edit-tickets
+URL: https://wekraft.xyz/web/docs/edit-tickets
+
+# Edit & Resolve Tickets
+
+Learn how to view, reopen, and close active chat tickets.
+
+---
+
+## Where to Go & How to Go
+
+### 1. Accessing Channel Tickets
+- **Where to Go**: Navigate to **Teamspace** and select the chat channel where the ticket was logged.
+- **How to Go**:
+  1. Click the **Tickets** dropdown icon in the top header of the active channel.
+  2. The dropdown lists all open tickets associated with the channel.
+  3. You can toggle between the **Open** and **Closed** lists inside the dropdown.
+
+### 2. Resolving and Closing a Ticket
+- **Where to Go**: Inside the **Tickets** dropdown menu in the channel header.
+- **How to Go**:
+  1. Find the target ticket in the Open list.
+  2. Click the status checkmark (or close action) next to the ticket.
+  3. The status will transition from `open` to `closed` in the database, and the ticket will move to the Closed tickets archive.
+
+### 3. Reopening a Closed Ticket
+- **Where to Go**: Inside the **Tickets** dropdown menu in the channel header.
+- **How to Go**:
+  1. Click on the **Closed** tab/list.
+  2. Locate the ticket you wish to reopen.
+  3. Click the reopen action next to it.
+  4. The ticket status transitions back to `open`, placing it back in the active queue.
+
+---
+
+# Documentation Section: IDE Extension
+Path: /web/docs/extension
+URL: https://wekraft.xyz/web/docs/extension
+
+# IDE Extension
+
+The **WeKraft IDE Extension** is a developer-first workspace companion. It brings your WeKraft workspace — projects, active sprints, tasks, issues, and tickets — directly into your code editor, so you never have to break your flow or switch context to a browser.
+
+> **Free for Everyone** — The WeKraft Extension is completely free for all users, no plan restrictions. Every WeKraft user gets full extension access.
+
+---
+
+## Features
+
+### ✅ Project & Sprint Management
+- View all your **projects** and their active **sprints** directly in the editor sidebar.
+- Switch between projects without leaving the editor.
+
+### ✅ Task & Issue Tracking
+- Browse the full **task and issue backlog** for any project.
+- View task details including title, description, priority, status, assignees, and codebase links.
+- **Update task and issue statuses** directly from the editor (e.g., move a task from `Not Started` → `In Progress` → `Completed`).
+- Create and edit tasks or issues directly from the extension panel.
+- Mark tasks as blocked (Mark as Issue) to escalate task blockages immediately.
+- Delete tasks and issues.
+
+### ✅ Codebase File Navigation
+- Tasks and issues linked to specific files (e.g., `src/components/Navbar.tsx`) render as **clickable file links** inside the extension.
+- Click a file link to instantly open that file in your active editor workspace — no manual searching.
+
+### ✅ Chat Ticket Management
+- Access the **tickets list** for your projects.
+- View open and closed tickets.
+- Close or reopen tickets directly without leaving the development workspace.
+
+---
+
+## What You Cannot Do
+
+### ❌ Create New Projects or Sprints
+- Project and sprint creation must be done through the **WeKraft web dashboard**. The extension is scoped to viewing and acting on existing work.
+
+### ❌ Manage Workspace Members or Roles
+- Inviting members, changing roles, or managing workspace permissions is only available in the **web dashboard settings**.
+
+### ❌ Reply to Chat Tickets or Create Customer Desk Requests
+- Ticket comments, client communications, and Service Requests are managed via the web client (Teamspace and Customer Desk views).
+
+### ❌ Billing & Plan Management
+- Subscription, billing, and plan upgrades are accessible only through the **WeKraft web dashboard**.
+
+---
+
+## Handshake Authentication Flow
+
+WeKraft authenticates extension clients securely using a deep-linked handshake protocol that generates a cryptographically signed API key without requiring password exposure:
+
+```mermaid
+sequenceDiagram
+    participant Editor as WeKraft Extension
+    participant Browser as Web Browser
+    participant WekraftWeb as WeKraft Web App
+    participant Backend as Reactive Backend DB
+
+    Editor->>Browser: 1. Launch extension auth url
+    Browser->>WekraftWeb: 2. User logs in & clicks "Grant Access to Extension"
+    WekraftWeb->>Backend: 3. Invoke handshake token creation
+    Backend-->>WekraftWeb: 4. Returns 5-Min Temp Token
+    WekraftWeb->>Browser: 5. Redirect browser using editor scheme url
+    Browser->>Editor: 6. Handshake Token Intercepted
+    Editor->>Backend: 7. Call handshake verification mutation
+    Note over Backend: Validates token & deletes it.<br/>Inserts new API Key in database.
+    Backend-->>Editor: 8. Returns { userId, apiKey }
+    Editor->>Editor: 9. Securely stores API Key locally
+```
+
+### Authentication Lifecycle Details
+1. **Initiate**: Select **"Login with WeKraft"** in the extension Activity Bar. This launches your default browser with the callback redirect parameters.
+2. **Authorize**: Authenticated users click **"Grant Access to Extension"** in the browser.
+3. **Generate Token**: The web app invokes a database mutation to insert a handshake record with a **5-minute Time-To-Live (TTL)**.
+4. **Deep-Link Redirection**: The browser redirects to the custom editor URI scheme.
+5. **Exchange**: The extension catches the deep-link parameters and calls the backend endpoint to exchange the token. On success, this generates a permanent key in the API keys table, revokes the handshake token, and returns `{ userId, apiKey }`.
+
+---
+
+# Documentation Section: Quick Start Guide
+Path: /web/docs/getting-started
+URL: https://wekraft.xyz/web/docs/getting-started
+
+# Quick Start Guide
+
+Welcome to WeKraft! This quickstart guide is structured directly around the **Getting Started** checklist on your dashboard. Completing these steps will take you from a fresh sign-up to a fully configured, collaborative, and AI-enabled workspace.
+
+---
+
+## The Onboarding Setup Checklist
+
+Your dashboard tracks 7 key onboarding steps. Here is how to complete each one:
+
+### Step 1: Connect your GitHub Account
+- **Objective**: Link your developer profile to your GitHub account to enable sync features.
+- **Action**: From the dashboard checklist, click **"Connect GitHub account"**. This opens the OAuth dialog. Once authenticated, your commits and pull requests can sync with the platform.
+
+### Step 2: Link repository to your Project
+- **Objective**: Attach a GitHub repository to synchronize file trees and code changes.
+- **Action**: Click **"Link a repository"** on the checklist (or go to **Repositories** in the user menu). Select a connected GitHub repository and link it to your active project workspace.
+
+### Step 3: Visit your Project workspace
+- **Objective**: Tour the project layout and command center.
+- **Action**: Click **"Go to workspace"** to enter the main developer dashboard.
+
+### Step 4: Create your first task
+- **Objective**: Populate the task list or backlog.
+- **Action**: Click **"Go to Tasks"** on the checklist (or navigate to **Manage → Tasks** inside your workspace and click **"+ New Task"**). Add a title, priority level, estimation window, and assign it to yourself or team members.
+
+### Step 5: Set a project deadline to Track
+- **Objective**: Establish the delivery target date.
+- **Action**: Click **"Open workspace overview"** on the checklist. Set a final delivery date for your project. This activates metrics tracking such as Milestone Trajectory and Delay Debt.
+
+### Step 6: Invite teammates to collaborate
+- **Objective**: Add team members up to your plan limit.
+- **Action**: Click **"Invite teammates"** on the checklist (or click **"Invite"** in the header of the workspace). Copy the generated invite link and share it. When they open it, you can approve their join request under the **Requests** tab in your project dashboard.
+
+### Step 7: Unlock your free trial (no charges)
+- **Objective**: Experience premium features.
+- **Action**: Click **"Unlock Trial"** on your dashboard checklist to activate a 1-week free trial of the Plus plan features without entering credit card details.
+
+---
+
+## Frequently Asked Questions
+
+**Q: Do I have to complete Step 7 (Free Trial) to finish the onboarding?**
+A: No. Step 7 is optional. Steps 1-6 are the required core steps. Once you finish steps 1-6, your checklist is officially marked complete, and the checklist is replaced by the **Notifications** panel.
+
+**Q: Can I change my linked repository later?**
+A: Yes, you can unlink and link a new repository from the **Repositories** dashboard view at any time.
+
+---
+
+## Next Steps
+
+- Review the list of [Keyboard Shortcuts & Composer Hotkeys](/web/docs/shortcuts).
+- Learn how to manage project visibility in [Projects Management](/web/docs/projects).
+- Learn about the [Project Delivery Timeline & Gantt Chart](/web/docs/time-logs).
+
+---
+
+# Documentation Section: Harry Dev Agent (Beta / Coming Soon)
+Path: /web/docs/harry-dev
+URL: https://wekraft.xyz/web/docs/harry-dev
+
+# Harry Dev Agent (Beta / Coming Soon)
+
+**Harry** is WeKraft's autonomous AI senior developer agent. Harry is designed to index codebases, debug syntax or dependency issues, and suggest pull request reviews.
+
+> [!NOTE]
+> **Active Beta Development**: The Harry Dev Agent features are currently under active development. The assistant sheet and dedicated workspace inputs are disabled, displaying a *"heavy development / coming soon"* notice.
+
+---
+
+## Workspace Integration & Chat Interfaces
+
+Once released, Harry will be accessible in two primary spaces:
+1. **AI Assistant Sheet (`HarryAssistantSheet.tsx`)**: Accessed by clicking the Harry assistant toggle in the workspace.
+2. **AI Workspace Space (`/workspace/ai?harry=true`)**: A full chat workspace for deep codebase analysis.
+
+---
+
+## Planned Capabilities & Model Tiers
+
+WeKraft will offer two model presets for codebase resolution:
+- **Harry Fast**: Optimised for rapid syntax reviews, regex formatting, and single-file diagnostics.
+- **Harry Deep**: Leverages deeper reasoning paths to solve multi-file refactoring tasks, index directories, and review complex pull requests.
+
+---
+
+## Subscription Requirements
+
+- **Pro Feature**: Harry is restricted to projects owned by a **Pro Plan** subscriber.
+- **Trial / Locked State**: If a project owner is on a Free or Plus plan, clicking the Harry chat toggle displays a Pro Feature upgrade card prompting them to upgrade to the Pro plan to unlock access.
+
+---
+
+## Next Steps
+
+- Leverage the active PM agent in [Kaya PM Agent](/web/docs/kaya-pm).
+- Configure repository syncs in [Git Repositories](/web/docs/repositories).
+- Connect editor-level workflows in [IDE Extension](/web/docs/extension).
+
+---
+
+# Documentation Section: Codebase Map
+Path: /web/docs/heatmaps
+URL: https://wekraft.xyz/web/docs/heatmaps
+
+# Codebase Map
+
+The **Heatmaps** module displays an interactive, codebase-aware visual map of your repository. Built on an interactive **node graph library**, it translates directory trees, file structures, git commits, and outstanding bug tickets into a node graph, providing visual codebase metrics.
+
+---
+
+## Codebase Tree Parsing & Canvas Rendering
+
+WeKraft converts repository file systems into interactive canvas nodes:
+
+```mermaid
+graph TD
+    Repo[Git Hosting API] -->|Parse Directory Structure| FileTree[Recursive Tree Object]
+    FileTree -->|Generate Canvas Layout| NodeGenerator[Node & Edge Generator]
+    NodeGenerator -->|Render| Canvas[Interactive Node Canvas]
+    Backend[Backend Database Queries] -->|Merge Active Issues & Commits| NodeGenerator
+```
+
+1. **Structure Parsing**: The repository file tree is fetched via the hosting provider's API and parsed recursively into a nested JSON structure.
+2. **Layout Calculation**: Nodes represent directories and files. Edges represent path linkages (parent-to-child directory branches). The coordinate placement is calculated dynamically to avoid overlapping.
+3. **Interactive Navigation**: Users can scroll to zoom, drag the canvas to pan, and click a zoom-to-fit trigger to center the codebase tree. Folder nodes support collapse and expand triggers; collapsing a parent folder temporarily hides child branches and recalculates canvas layout.
+
+---
+
+## Directory Activity & Heatmap Color Rules
+
+Folder and file nodes are colored dynamically based on live database metrics:
+
+| Node Color | State Class | Condition | Rationale |
+| :--- | :--- | :--- | :--- |
+| **Red** | `Active Issues` | Outstanding issues exist where the linked file matches the folder path or prefix, and status is not closed. | Alerts developers to buggy codebase modules, preventing further task additions to unstable components. |
+| **Yellow** | `Recent Commits` | Commit records indicate changes in files under this directory tree within the last 7 calendar days. | Identifies active work zones, helping team members track where code changes are compounding. |
+| **Blue / Gray**| `Stable / Idle` | No active issues or commits recorded within the 7-day window. | Represents stable, verified modules that are idle. |
+
+---
+
+## The Heatmap Dashboard Panel
+
+A side dashboard panel anchors Git actions and lists file metrics:
+
+- **Repository Card**: Renders the repository path. Clicking the card launches the linked repository on the hosting provider in a new tab.
+- **Issues Directory**: Aggregates all open issues, displaying assignee avatars and the path of the linked file.
+- **Interactive File Tree**: A collapsible directory tree in list form. Selecting a file node from this tree highlights its corresponding node on the interactive canvas. Clicking a file icon navigates to the file view on the hosting provider.
+- **Commit History**: Renders a scrollable list of recent repository commits, showing commit hashes, author names, and messages.
+
+---
+
+## Plan Limits & Tier Enforcements
+
+Database structures and highlight overlays are gated by user subscription tiers:
+
+### 1. Free Tier
+- Maps the repository layout structure but collapses sub-directories beyond a depth of 2 levels.
+- **Overlays Disabled**: All nodes render in a uniform neutral gray. Git commit history lists and active issue color highlights (Red/Yellow alert status) are locked.
+- Clicking locked panels displays a subscription upgrade modal.
+
+### 2. Plus Tier
+- Full directory depth rendering and canvas expansion.
+- Yellow node highlights (recent commits within 7 days) and commit lists are active.
+- Red node highlights (issue alerts) are disabled.
+
+### 3. Pro Tier
+- Complete map features enabled, including full codebase structure depth, yellow commit alerts, and red issue overlay tags.
+- Enables two-way navigation: clicking a canvas node launches the local editor directly to that file path if the editor handshake is active.
+
+---
+
+# Documentation Section: Invite Member
+Path: /web/docs/invite-member
+URL: https://wekraft.xyz/web/docs/invite-member
+
+# Invite Member
+
+Invite developers and collaborators to join your WeKraft project team.
+
+---
+
+## Where to Go & How to Go
+
+### 1. Generating & Sharing the Project Invite Link
+- **Where to Go**: Click on **Manage Team** in the project sidebar.
+- **How to Go**:
+  1. Click the **Invite** button in the header of the Team page to open the invitation dialog.
+  2. Select the starting role for the invitee from the dropdown menu:
+     - **Admin**: Full administrative permissions.
+     - **Member**: Standard team member access.
+     - **Viewer**: Read-only access.
+  3. Click **Copy invite link** to copy the secure invitation URL to your clipboard.
+  4. Share the link with your teammate. When they open it, they can request to join.
+
+### 2. Inviting Members via Email
+- **Where to Go**: In the **Invite** dialog on the **Manage Team** page.
+- **How to Go**:
+  1. Enter your teammate's email address in the input field.
+  2. Select their role using the dropdown next to the input.
+  3. Click the **Invite** button.
+  4. An invitation email containing a secure link to join your project will be sent to the recipient.
+  5. A toast notification will confirm that the invitation was sent successfully.
+
+---
+
+## Member Seat Limits
+
+Each project has member limits based on the project owner's subscription plan:
+- **Free Tier**: Maximum **3 members** total per project.
+- **Plus Tier**: Maximum **6 members** total per project.
+- **Pro Tier**: Maximum **15 members** total per project.
+
+You can view current seats and availability in the plan banner at the top of the Team page. If you reach your limit, click **Upgrade to Pro** to invite more collaborators.
+
+---
+
+# Documentation Section: Issues & Bug Tracking
+Path: /web/docs/issues
+URL: https://wekraft.xyz/web/docs/issues
+
+# Issues & Bug Tracking
+
+Issues represent reactive or unplanned work in WeKraft, such as application bugs, server crashes, environment failures, or security hotfixes. They operate outside the planned sprint backlog but can be allocated to sprints for tracking alongside planned tasks.
+
+---
+
+## Sub-topics
+
+To help you manage incidents and bugs, the WeKraft Issues system is broken down into the following operational guides:
+
+- **[Create Issues](/web/docs/create-issues)**: Step-by-step guides on logging bugs manually, via blocked task escalation, or via manual GitHub import.
+- **[Edit Issues](/web/docs/edit-issues)**: How to modify issue properties, update severity, change status lifecycles, and edit linked files.
+- **[Assign Issues](/web/docs/assign-issues)**: How to allocate issues to developers and sync assignees across blockers.
+
+---
+
+## Issue Properties
+
+Every issue contains the following fields:
+
+- **Title**: A summary detailing the bug report or incident.
+- **Description**: Optional details containing steps to reproduce, logs, or system specs.
+- **Impact Environment**: Indicates where the issue was detected (`local`, `dev`, `staging`, or `production`).
+- **Severity**: Dictates the urgency and response priority (`critical`, `medium`, or `low`).
+- **File Linked**: Path pointing to the buggy component.
+- **Due Date**: Target resolution deadline.
+- **Source Type**: Identifies how the issue was ingested (`manual`, `task-issue`, or `github`).
+
+---
+
+## The Issue Lifecycle
+
+Issues transition through the following states:
+
+```mermaid
+stateDiagram-v2
+    [*] --> NotOpened : Issue Logged
+    NotOpened --> Opened : Assigned & Investigating
+    Opened --> Reopened : Fix Failed Validation
+    Opened --> Closed : Resolved & Verified
+    Reopened --> Opened : Re-investigating
+    Closed --> [*]
+```
+
+- **Not Opened (`not opened`)**: Logged in backlog, investigation has not begun.
+- **Opened (`opened`)**: Assigned developer is debugging and testing a resolution.
+- **Reopened (`reopened`)**: The patch failed staging tests, or the bug recurred in production, reopening the incident.
+- **Closed (`closed`)**: The bug is resolved. Closing the issue records the completion timestamp and user ID.
+
+---
+
+# Documentation Section: Join Projects
+Path: /web/docs/join-projects
+URL: https://wekraft.xyz/web/docs/join-projects
+
+# Join Projects
+
+Search for public projects, submit access requests, and join collaborative team spaces.
+
+---
+
+## Where to Go & How to Go
+
+### 1. Joining via Invitation Link
+- **Where to Go**: Open the invitation link shared by your project administrator.
+- **How to Go**:
+  1. If you are not logged in, click **"Login to Continue"** to authenticate.
+  2. Once authenticated, review the invitation details, which display the project name, the owner's details, and your assigned role.
+  3. Click **"Accept & Join"**.
+  4. An introduction dialog will prompt you to write an optional message to the project owner.
+  5. Click **"Send Join Request"** to submit. Your request status will update to pending, and the owner will be notified to approve your request.
+
+### 2. Requesting to Join Public Projects
+- **Where to Go**: Visit a public project profile page.
+- **How to Go**:
+  1. Browse the public project profiles in the community portal.
+  2. Click on a project to view its description, members list, tags, and repository statistics.
+  3. Click **"Request to join"**.
+  4. Your request is sent to the owner, and the status button updates to **"✓ Request in progress"**.
+
+---
+
+## Joined Projects Plan Limits
+
+The number of projects you can join is limited based on your subscription tier:
+- **Free Tier**: Maximum **2 joined projects**.
+- **Plus Tier**: Maximum **10 joined projects**.
+- **Pro Tier**: Maximum **20 joined projects**.
+
+If a project has reached its seat capacity, the owner or admin cannot accept new members until the project plan is upgraded or an existing member is removed.
+
+---
+
+# Documentation Section: Kaya PM Agent
+Path: /web/docs/kaya-pm
+URL: https://wekraft.xyz/web/docs/kaya-pm
+
+# Kaya PM Agent
+
+**Kaya** is WeKraft's autonomous AI Product Manager agent. Deeply integrated with the backend database, project channel histories, and developer tool chains, Kaya acts as a virtual project manager. She assists teams with sprint planning, calendar coordination, reporting automation, and backlog grooming.
+
+---
+
+## Architecture & Cognitive Layers
+
+Kaya is constructed on an agentic cognitive loop combining runtime execution graphs with a persistent memory fabric:
+
+```mermaid
+graph TD
+    UserQuery[User Chat Input] --> AgentEngine[Agentic State Machine Engine]
+    AgentEngine -->|Retrieve Memories| MemoryLayer[Persistent Semantic Memory Layer]
+    AgentEngine -->|Tool Selection| ToolRouter{Agent Tools Router}
+    ToolRouter -->|Direct Run| ReadTools[Read Queries: summary, workload, standup]
+    ToolRouter -->|Interrupt Required| InterruptState[State Pause: Wait for Human Approval]
+    InterruptState -->|UI Approval| WriteTools[Mutations: create calendar, allocate sprint, schedule reports]
+```
+
+### 1. Agentic State Machine Engine
+Kaya's cognitive reasoning cycles are governed by an **Agentic State Machine Engine**. Graph nodes process user queries, classify intent, fetch database context, and coordinate tool invocation. If a write action is requested, the execution pauses and emits an **Interrupt State**, which is rendered in the user's chat interface.
+
+### 2. Semantic Memory Layer
+Unlike typical chatbots limited to short-term session memory, Kaya leverages a **Persistent Semantic Memory Layer**. This layer indexes user interactions and extracts structured facts:
+- **Domain Context**: E.g., *"Alice is developing a B2B SaaS fintech platform."*
+- **Engineering Stack**: E.g., *"The project uses Next.js, Tailwind CSS, and a serverless database backend."*
+- **Backlog Decisions**: E.g., *"The team decided to defer the payment gateway export feature to Sprint 3."*
+These memories are injected into Kaya's system prompt during queries, enabling hyper-personalized task breakdowns and sprint planning.
+
+---
+
+## Interactive Interrupt Cards
+
+For operations that modify project states, Kaya enters an interrupt state. The operation halts and displays a specialized card inside the chat panel. The execution only resumes after a human operator clicks a button:
+
+### 1. Calendar Event Approval Card
+- **Trigger**: The user requests a meeting, standup, or demo scheduled (e.g., *"Schedule a design sync with Ronit tomorrow at 10 AM"*), invoking the calendar event creation tool.
+- **Interrupt Card**: Renders the proposed event title, description, start/end dates, and a toggle for all-day duration.
+- **Action**: Clicking **"Approve"** executes the database mutation, writing to the calendar events table. Clicking **"Reject"** cancels the action.
+
+### 2. Sprint Backlog Allocation Card
+- **Trigger**: The user commands Kaya to plan a sprint backlog (e.g., *"Plan our next sprint with critical bugs"*), invoking the backlog allocation tool.
+- **Interrupt Card**: Lists eligible backlog tasks and issues side-by-side with priorities and due dates.
+- **Action**: Users can check/uncheck individual rows before clicking **"Confirm Allocation"** to write the batch mapping to the active sprint.
+
+### 3. Reporting Scheduler Card
+- **Trigger**: The user requests status updates automation (e.g., *"Send a weekly project summary report to our stakeholders"*), invoking the reporting scheduler tool.
+- **Interrupt Card**: Displays options for frequency (daily, weekly, bi-weekly), target channel, recipient emails, and report focus (sprints, tasks, heatmaps).
+- **Action**: Users review and approve to insert the job config into the schedulers table.
+
+---
+
+## Workspace Integration Points
+
+- **AI Workspace Tab (`/workspace/ai?kaya=true`)**: A full chat screen that supports selecting model profiles:
+  - `Kaya Fast`: High-speed, lower latency queries for search and simple summaries.
+  - `Kaya Pro`: Deep-reasoning model optimized for generating PRDs, backlog grooming, and complex report scheduling.
+- **Teamspace Channels**: Mentioning `@kaya` in any chat channel triggers a webhook that reads the channel logs to provide contextual responses.
+- **Right Sidebar Widget (`RightSidebar.tsx`)**: Renders a radial progress chart tracking the current project's monthly Kaya call volume.
+
+---
+
+## Tier Access & Governance
+
+- **Plan Requirement**: Kaya is available exclusively to projects owned by a **Pro Plan** user. If a project owner is on a Free or Plus plan, Kaya chat views display a premium upgrade wall.
+- **Governance Controls**: Project owners can toggle team member access to Kaya. By switching **"Member AI Access (Kaya)"** in the Workspace Config panel, owners restrict/allow other members to query Kaya, protecting monthly credit allocations.
+
+---
+
+# Documentation Section: Manage Teams & Roles
+Path: /web/docs/manage-teams
+URL: https://wekraft.xyz/web/docs/manage-teams
+
+# Manage Teams & Roles
+
+WeKraft projects support role-based member governance, allowing you to regulate workspace access, assign execution responsibilities, and control AI usage policies.
+
+---
+
+## Workspace Access Roles
+
+WeKraft structures project roles into four hierarchical levels:
+
+### 1. Owner
+- **Scope**: The creator of the project.
+- **Exclusive Powers**: Toggles public/private visibility, updates tags, uploads banners, manages policies in the Config tab, sets target project deadlines, and handles billing integrations.
+
+### 2. Admin
+- **Scope**: Project managers and team leads promoted by the Owner.
+- **Powers**: Creates sprints, manages tasks/issues, accepts or rejects join requests, and promotes or demotes members (except the Owner).
+
+### 3. Member
+- **Scope**: Standard developers and team contributors.
+- **Powers**: Updates task statuses, replies to chat threads, and joins active video meeting rooms.
+- **Restricted Powers**: Can only create tasks/issues if the policy `memberCanCreate` is enabled by the owner. Can only invoke Kaya AI if the policy `memberUseKaya` is enabled.
+
+### 4. Viewer
+- **Scope**: Read-only external stakeholders or clients.
+- **Powers**: Browses boards, views calendars, and reads chat channels. Write actions are entirely disabled.
+
+---
+
+## Role Permissions Matrix
+
+| Workspace Capability | Owner | Admin | Member | Viewer |
+| :--- | :--- | :--- | :--- | :--- |
+| **View Project Data** | ✓ | ✓ | ✓ | ✓ |
+| **Edit Task Status** | ✓ | ✓ | ✓ | — |
+| **Write Channel Messages**| ✓ | ✓ | ✓ | — |
+| **Create Sprints** | ✓ | ✓ | — | — |
+| **Complete Sprints** | ✓ | ✓ | — | — |
+| **Create Tasks & Issues**| ✓ | ✓ | Allowed if policy enabled | — |
+| **Invoke Kaya AI** | ✓ | ✓ | Allowed if policy enabled | — |
+| **Manage Join Requests**| ✓ | ✓ | — | — |
+| **Configure Settings** | ✓ | — | — | — |
+
+---
+
+## Member Allocation Limits
+
+Seat limitations are enforced server-side based on the Project Owner's active subscription tier:
+
+- **Free Tier**: Max **3 members** per project (including the Owner).
+- **Plus Tier**: Max **6 members** per project (including the Owner).
+- **Pro Tier**: Max **15 members** per project (including the Owner).
+
+*Note: Join requests will show as pending if approving them would exceed your active tier limit.*
+
+---
+
+## Handling Join Requests
+
+When developers use your project's invite link:
+1. They are prompted to submit a join request.
+2. Owners and Admins receive notification alerts and see these requests in the **Requests** tab on the Project Home page.
+3. Once **Accepted**, the developer is added to the project members list as a default `member`.
+
+---
+
+## Next Steps
+
+- Communicate with team members in [Teamspace Channels](/web/docs/team-space).
+- Coordinate video meetings in [Team Meet Rooms](/web/docs/team-meet).
+- Review workload allocations in the [Project Delivery Timeline & Gantt Chart](/web/docs/time-logs).
+
+---
+
+# Documentation Section: Notifications & Alerts
+Path: /web/docs/notifications
+URL: https://wekraft.xyz/web/docs/notifications
+
+# Notifications & Alerts
+
+WeKraft's real-time notification system keeps you informed of critical events across your projects — from access requests to comment mentions — fanned out instantly without requiring manual page refreshes.
+
+---
+
+## How Notifications Work
+
+Notifications are **real-time** and powered by Convex-native subscriptions. They are fanned out to recipients immediately upon occurrence and rendered in two areas:
+
+1. **Dashboard Stats Tab** — The main notifications feed is embedded directly in the dashboard Stats tab, sorted by creation date.
+2. **Toast Popups** — A floating toast alert pops up briefly at the bottom of your viewport with the sender's avatar, project name, relative timestamp, and body snippet.
+
+Each notification row contains:
+
+| Element | Description |
+| :--- | :--- |
+| **Sender Avatar** | Avatar of the user who performed the action (or a system icon if system-generated). |
+| **Project Badge** | The source project name badge (linked directly to the project dashboard). |
+| **Notification Body** | Descriptive text explaining the trigger. |
+| **Timestamp** | Relative timestamp (e.g., "5m ago", "3h ago"). |
+| **Interactive Action** | Clicking a notification marks it as read and deep-links to the target resource. |
+
+---
+
+## Core Notification Events
+
+The backend tracks exactly ten (10) notification types for various user and system actions:
+
+### Project Access & Requests
+
+| Event Type | Triggered When... | Recipients |
+| :--- | :--- | :--- |
+| **Join Request** | A user requests to join your project. | Project Owner & Admins |
+| **Request Approved** | Your join request is accepted by an administrator. | The requesting user |
+| **Request Declined** | Your join request is declined. | The requesting user |
+
+### Project Member Changes
+
+| Event Type | Triggered When... | Recipients |
+| :--- | :--- | :--- |
+| **Member Joined** | A new member joins the project (either via request acceptance or direct link). | All Owner/Admin members |
+| **Member Left** | A user leaves the project workspace. | All Owner/Admin members |
+| **Member Removed** | An owner/admin removes a user from the team grid. | The removed user only |
+| **Role Changed** | An owner or admin updates a member's workspace role. | The affected user only |
+
+### Collaboration & Mentions
+
+| Event Type | Triggered When... | Recipients |
+| :--- | :--- | :--- |
+| **User Mentioned** | Another team member tags you using `@username` in task comments, issue comments, or Teamspace channel messages. | The tagged user(s) (excludes self-mentions) |
+
+### System Alerts & Meets
+
+| Event Type | Triggered When... | Recipients |
+| :--- | :--- | :--- |
+| **Project Alert** | Project timeline reaches duration milestones (25%, 50%, 75%, or 90% target date). | All project members |
+| **Meeting Started** | A team video meet is launched (initiating a Stream room). | All project members (except the host) |
+
+---
+
+## Managing Notifications
+
+### Read State Management
+
+- **Single Read**: Click the checkmark icon (**✓**) on hover, or click the notification item body to navigate to the target task/room and mark it as read.
+- **Mark All Read**: Click **"Mark all as read"** at the top of the feed to bulk-update all unread notifications.
+
+### Deletion & Cleanup
+
+- **Individual Delete**: Hover over any notification and click the trash icon (**🗑**).
+- **Clear All**: Click the **"Clear all"** button in the header to purge all notifications.
+- **Automatic Cron Cleanup**: WeKraft schedules a nightly database cron cleanup (`cleanup-old-notifications`) that deletes all notifications older than **30 days** to maintain index performance.
+
+---
+
+## Next Steps
+
+- [Manage team roles and access →](/web/docs/manage-teams)
+- [Review security permissions →](/web/docs/security)
+- [Start a video conference in Team Meet →](/web/docs/team-meet)
+- [Track projects on the Workspace Dashboard →](/web/docs/project-workspace)
+- [Learn about the Referral Program →](/web/docs/referrals)
+
+---
+
+# Documentation Section: WeKraft Platform Overview
+Path: /web/docs/overview
+URL: https://wekraft.xyz/web/docs/overview
+
+# WeKraft Platform Overview
+
+Welcome to the WeKraft Platform Documentation. WeKraft is a unified software engineering management and real-time collaboration workspace designed to eliminate context-switching. By consolidating **agile project planning**, **team communication**, **git repositories mapping**, and **editor-level integrations** into a single reactive environment, WeKraft provides engineering teams with a single source of truth.
+
+---
+
+## Technical Architecture & Core Technologies
+
+WeKraft's application stack is designed for low-latency updates, high-throughput database interactions, and persistent real-time states:
+
+```mermaid
+graph TD
+    Client[Next.js App Router Client] <-->|Reactive WebSockets| Backend[Serverless Reactive Backend]
+    Client -->|Authentication| Auth[Identity Provider Service]
+    Backend <-->|Database Actions| DB[(Document Datastore)]
+    Backend -->|Queue Background Jobs| QueueEngine[Background Queue Engine]
+    GitRepo[Git Hosting API] -->|Manual Fetch/Import| WebhookRoute[Client Import Route]
+    WebhookRoute -->|Client Mutate| Backend
+    Payment[Billing Gateway Webhook] -->|HTTP POST| WebhookHTTP[HTTP Action Router]
+    WebhookHTTP -->|Mutate Tier| Backend
+```
+
+### 1. Real-time Reactivity (Serverless Reactive Backend)
+At the core of WeKraft is a **Serverless Reactive Backend**, a platform providing reactive datastore caching. Unlike traditional REST or polling setups, backend queries are reactive: when a database document changes (such as a task status being updated), the backend automatically pushes the new dataset to all connected clients over a persistent WebSocket connection. This ensures instant dashboard synchronisation across the entire engineering team.
+
+### 2. Authentication & Identity (Identity Provider)
+User authentication is managed via a dedicated **Identity Provider** (Clerk). The identity service provides session tokens which are validated server-side by the backend. Onboarding steps, workspace permissions, and profile configurations (`users` table) are keyed off the authenticated user's unique token ID.
+
+### 3. Background Processing & Schedules (Background Queue Engine & Server Crons)
+- **Background Queue Engine** is used to orchestrate complex event-driven workflows, such as multi-step repository scans and codebase analysis.
+- **Server Crons** run recurring server-side jobs, such as scanning user subscription expiration timestamps and performing database maintenance (e.g., checking for overdue tasks and calculating delay debts).
+
+### 4. Code & Payment Integrations
+- **Version Control Integrations**: Connected code repositories sync codebase file trees to enable linking files to tasks and issues. GitHub issues are imported manually using the **"Import from Github"** utility on the issues page.
+- **Payment Gateways**: Subscriptions are managed via integrated **Billing Processors**. Webhooks processed through the backend's HTTP action routes update user subscription statuses (`active`, `past_due`, `cancelled`) in real-time.
+
+---
+
+## Workspace Structure & Data Model
+
+WeKraft follows a hierarchical project model structured to match modern software team setups:
+
+- **Users & Tiers**: Every user profile is assigned a plan tier (`free`, `plus`, or `pro`) which governs limits across all projects they own or join.
+- **Projects**: The top-level workspace container. Each project can connect to a single git repository, manage separate team memberships, and toggle workspace/AI configurations.
+- **Sprints**: Time-boxed execution periods. Only one sprint may be marked `active` per project at any given time.
+- **Tasks**: Planned product items forming the backlog.
+- **Issues**: Bug tracking. Issues can be logged manually, imported from GitHub, or block-escalated directly from a planned task.
+- **Teamspace Channels & Meets**: Chat communication rooms and video call rooms integrated directly into the workspace layout.
+
+---
+
+## Subscription Plans & Limits Matrix
+
+Features and API limits are enforced server-side. When a limit is breached, database queries return structured restriction states, and the frontend renders interactive upgrade sheets.
+
+| Feature / Limit | Free Tier | Plus Tier | Pro Tier |
+| :--- | :--- | :--- | :--- |
+| **Project Creation Limit** | Max 2 projects | Max 10 projects | Max 20 projects |
+| **Project Joining Limit** | Max 2 projects | Max 10 projects | Max 20 projects |
+| **Members Per Project** | Max 3 members | Max 6 members | Max 15 members |
+| **Kaya AI PM Agent** | Disabled | Disabled | Full access (360 queries/month) |
+| **Harry AI Dev Agent** | Disabled | Disabled | Beta Access (Coming Soon) |
+| **VS Code Sync Mode** | Read-Only | Read-Only | Full Two-Way Sync |
+| **Interactive Heatmaps** | Read-Only structure | Git activity view | Git activity & issue overlay |
+| **Cloud Storage Limit** | 2 GB | 15 GB | 30 GB |
+| **Dedicated Support** | Basic Support | Basic Support | Priority 24/7 Support |
+| **Automated Reports** | No | No | Yes |
+
+---
+
+## Frequently Asked Questions
+
+### What happens to my data if my subscription expires?
+If your subscription expires or is downgraded to the Free tier, your account is immediately subjected to Free tier limits. Projects exceeding the limit of 2 will remain in the database but are locked in a read-only state. You will not be able to invite new team members or run active sprints until you delete excess projects or renew your tier.
+
+### How are members counted against the project limit?
+Members are counted when their join request is approved by the project owner or administrator. Pending requests do not count toward your limit. If a project reaches its member limit (e.g., 3 members on the Free plan), the administrator must remove an existing member or upgrade the owner's plan before a new member can join.
+
+### Is my code uploaded to WeKraft servers?
+No. WeKraft only maps repository structures (directories and filenames) to display git metrics and heatmaps. Your source code files are never persisted on WeKraft's database. Code analysis is executed temporarily in memory or inside your local code editor.
+
+---
+
+# Documentation Section: Privacy Policy
+Path: /web/docs/privacy
+URL: https://wekraft.xyz/web/docs/privacy
+
+# Privacy Policy
+
+Your privacy is important to WeKraft. This Privacy Policy describes how we collect, use, and handle your data when you use our platform, services, and integrations.
+
+---
+
+## 1. Data Collection
+
+We collect information required to deliver project coordination, time tracking, and chat features. This includes:
+- **Profile details** supplied during registration (e.g., name, work email, and avatar picture).
+- **Code hosting account details** authorized during registration.
+- **Repository metadata** from your linked code hosting repositories (e.g., branch names, commit hashes, pull request descriptions, and commit timestamps).
+- **Interactive inputs** like team chats, tasks, issues, and calendar events.
+
+> [!IMPORTANT]
+> **No Code Storage**: We do not clone, pull, or cache your raw codebase scripts. WeKraft only reads file structures, names, and commit history necessary to populate the visual map and Git metrics.
+
+---
+
+## 2. How We Share Data
+
+We share necessary data with our infrastructure sub-processors to run the platform services:
+- **Authentication Service**: Manages secure logins and session tokens.
+- **Reactive Database Backend**: Hosts and caches reactive document records and web sockets.
+- **Billing Gateway**: Securely processes paid subscription invoices and renewals (we do not store or transmit credit card details on our own servers).
+- **Repository Hosting API**: Synchronizes active project tasks, commits, and pull requests.
+
+We do not sell, rent, or trade your personal information to third parties for marketing purposes.
+
+---
+
+## 3. Data Safety & Authentication Tokens
+
+Your software projects are treated with strict confidentiality:
+- **API Keys & Handshake Tokens** are stored encrypted using database protection mechanisms.
+- **Scope Isolation**: Permissions are isolated per project workspace. The AI agents and external integrations can only query metadata within the repositories explicitly linked by the project owners.
+
+---
+
+## 4. Cookies & Telemetry
+
+We use standard cookies and local storage to preserve active authentication sessions. These cookies are essential for navigating the workspace. We may also gather non-identifying telemetry (e.g., screen resolution, page load times, and navigation paths) to improve performance and usability.
+
+---
+
+# Documentation Section: User Profile
+Path: /web/docs/profile
+URL: https://wekraft.xyz/web/docs/profile
+
+# User Profile
+
+Your WeKraft profile (`/dashboard/my-profile`) represents your identity and professional skillset across the platform. It is visible to team members in Teamspace chats, project member grids, and task comments.
+
+---
+
+## Profile Page Layout
+
+The profile view compiles your professional metadata into four structured areas:
+
+### 1. Profile Header (`ProfileHeader.tsx`)
+
+- Displays your avatar, full name, occupation title (e.g. `Lead Developer`), and subscription status badge (`Plus` or `Pro` active).
+- Includes the **"Edit Profile"** toggle button to access configuration inputs.
+
+### 2. About Me (Bio Editor)
+
+- Located in the left column.
+- Contains the **Bio Editor** to compose your professional description.
+- _Plan limits_: Free tier users use a plain text input area. Upgraded users (Plus or Pro active) unlock the rich Markdown editor supporting icons, tables, formatting syntax, and live side-by-side previews.
+
+### 3. Skills & Social Connections (Right Column)
+
+- **Profile Skills**: Technical tag cloud displaying your skills (e.g., `React`, `Golang`, `PostgreSQL`). Press Enter inside the input to append new tags.
+- **Social Links**: Lists linked URLs for developer profiles (X/Twitter, LinkedIn, Discord, Instagram, and personal portfolios).
+
+### 4. Repository Activity Stats
+
+- Plotted at the bottom of the profile.
+- Renders your commit history metrics, contribution calendar, and streak counters synced from your linked repository hosting account.
+
+---
+
+## Profile Settings Configuration
+
+Clicking the gear icon in the header switches the viewport to the profile settings tab:
+
+- **Display Name**: Update your visible screen name.
+- **Occupation Title**: Set your role description.
+- **Social URLs**: Configure up to **5 external social links** using the dialog popup.
+- **Handshake Connect**: Manage your synced repository account connections.
+
+---
+
+## Next Steps
+
+- Share invitation codes in [Referral Program](/web/docs/referrals).
+- Learn about workspace permissions in [Manage Teams & Roles](/web/docs/manage-teams).
+- Review pricing updates in [Billing & Plans](/web/docs/billing).
+
+---
+
+# Documentation Section: Project Workspace Dashboard
+Path: /web/docs/project-workspace
+URL: https://wekraft.xyz/web/docs/project-workspace
+
+# Project Workspace Dashboard
+
+The **Project Workspace Dashboard** is the analytics and governance hub for your active project. Accessible via the **Workspace** link in the project sidebar (or `/workspace`), it compiles timeline indicators, sprint progression charts, and configuration options.
+
+---
+
+## Workspace Layout & Main Sections
+
+The page is divided into two structural halves: a **Top Stats Header** and a **Tabbed Details Section**.
+
+### 1. Top Stats Cards
+Three high-level summaries are always rendered at the top of the dashboard:
+- **Track Your Project (Deadline Card)**:
+  - Displays **Days Remaining** and a progress bar of elapsed project time.
+  - Visualizes custom alert markers set at specific duration milestones (25%, 50%, 75%, 90% of project timeline).
+  - Contains actions for the project owner to **Set Deadline** and toggle notifications for milestones.
+- **Activity Overview**: Renders active tasks, open issues, and team member counts.
+- **Task Status Distribution**: Shows a visual breakdown of tasks by status (`not started`, `inprogress`, `reviewing`, `testing`, `completed`).
+
+### 2. Header Workspace Tools
+When inside a project workspace route, the header displays a **"View More"** toggle that expands the following workspace shortcuts:
+- **Home Button**: Quickly return to the main project hub page.
+- **My Work Button**: Opens the **My Work Side Sheet** (`MyWorkSheet.tsx`), displaying a personal table of all tasks and issues assigned to you.
+- **Team Meet Button**: Directly navigate to the integrated project video call room (`/workspace/meet`).
+
+---
+
+## Tabbed Views
+
+The bottom portion of the dashboard switches between two views:
+
+### 1. Advanced Charts Tab
+*Note: Available only if the Project Owner is on a **Plus** or **Pro** plan. On the Free tier, this tab displays a locked feature notice.*
+
+When unlocked, it aggregates data across the project to display six specialized analytics widgets:
+1. **Team Contribution Radar**: Visualizes contribution patterns across different team members.
+2. **Sprint Progress Chart**: Renders sprint velocities.
+3. **Environmental Severity Heatmap**: Tracks reactive bugs color-coded by environment (e.g., `Production`, `Staging`, `Development`) and severity level.
+4. **Weekly Velocity Chart**: Displays the rate of task completions week-over-week.
+5. **Member Workload Card**: Maps priority-segmented (`High`, `Medium`, `Low`) active tasks per team member to monitor workload distribution.
+6. **Weekly Engagement Chart**: Measures git activity volume.
+
+### 2. Config Tab
+Available to all projects, but options can only be modified by the **Project Owner** (Admins/Members see a read-only message):
+- **Member Task Creation**: Toggle whether regular team members can create new tasks and issues.
+- **Member AI Access (Kaya)**: Toggle whether team members are authorized to invoke Kaya AI.
+- **AI in Teamspace**: Enable or disable AI assistant features inside the real-time chat channels.
+- **Reporting Scheduler**: Configure reporting summaries to be emailed to stakeholders (Plus/Pro).
+
+---
+
+## Related Pages
+- [Sprints](/web/docs/sprints) — planning and starting project sprints.
+- [Tasks](/web/docs/tasks) — tracking daily task statuses.
+- [Issues](/web/docs/issues) — debugging and managing bugs.
+
+---
+
+# Documentation Section: Projects Management
+Path: /web/docs/projects
+URL: https://wekraft.xyz/web/docs/projects
+
+# Projects Management
+
+Projects are the top-level boundary in WeKraft. Every sprint, task, issue, team space channel, and repository integration is scoped under a specific Project.
+
+---
+
+## Sub-topics
+
+To help you manage project lifecycles, teams, and visibility settings, see the following operational guides:
+
+- **[Invite Member](/web/docs/invite-member)**: How to invite collaborators to join your project team and manage project seats.
+- **[Join Projects](/web/docs/join-projects)**: How to search public projects, request access, and join active workspaces.
+- **[Delete Projects](/web/docs/delete-projects)**: Detailed instructions on archiving, leaving, and permanently deleting projects.
+
+---
+
+## Workspace Settings vs. Governance Configs
+
+WeKraft separates project configuration into two distinct areas depending on whether you are editing public profile attributes or configuring member permission policies:
+
+### 1. Project Home Settings (`SettingsTab.tsx`)
+Accessed via the **Settings** tab on the Project Home page. These settings manage the project's public profile and metadata.
+- **Project Title**: The display name of your project.
+- **Description**: Detailed overview explaining the project's purpose.
+- **Public Visibility Toggle**:
+  - **Public**: Makes the project visible to the WeKraft community. Anyone can search for it, view metrics, and submit join requests.
+  - **Private**: Hides the project from community searches. Access is strictly invite-only.
+- **Tags Selection**: Select up to **5 descriptive tags** (e.g., `React`, `NodeJS`, `Hackathon`, `MVP`) from the static tags catalog.
+- **Thumbnail Upload**: Upload a project banner (1280x300 recommended, max 1MB) which renders at the top of the project dashboard.
+
+### 2. Workspace Config (`ProjectConfigTab.tsx`)
+Accessed via the **Config** sub-tab inside the Project Workspace page. These settings govern member privileges and AI capabilities:
+- **Member Task Creation**: Toggle whether regular team members can create new tasks and issues. If disabled, only the Owner and Admins can create tasks.
+- **Member AI Access**: Toggle whether team members can use the AI assistant for sprint planning and insights.
+- **AI in Teamspace**: Enable or disable AI assistant replies and summary generation tools inside the chat channels.
+
+*Note: Both settings screens are restricted; only the **Project Owner** can modify details or policies. Other users will see a "Settings Restricted" warning.*
+
+---
+
+## Limits & Creation Scopes
+
+Plan limits are strictly verified during project creation and join request approvals:
+
+| Resource Limit | Free Plan | Plus Plan | Pro Plan |
+| :--- | :--- | :--- | :--- |
+| **Created Projects** | Max 2 projects | Max 10 projects | Max 20 projects |
+| **Joined Projects** | Max 2 projects | Max 10 projects | Max 20 projects |
+| **Members Per Project** | Max 3 members | Max 6 members | Max 15 members |
+
+If you exceed these limits, you must archive/delete existing projects or upgrade your subscription plan to request additional seats.
+
+---
+
+# Documentation Section: Referral Program
+Path: /web/docs/referrals
+URL: https://wekraft.xyz/web/docs/referrals
+
+# Referral Program
+
+The **Referral Program** allows you to earn rewards by inviting other users to join and onboard onto WeKraft. You can share your unique referral code and earn cash rewards or commissions.
+
+---
+
+## How It Works
+
+Each user receives a unique referral code. When new users sign up and use your code during onboarding, they are recorded as your referral.
+
+### Earning Rewards
+
+You can earn rewards in several ways:
+- **$2 for Every 10 Referrals**: For every 10 users who successfully onboard and complete the Getting Started tutorial using your code, you earn $2.
+- **Max $10 Reward (50 Referrals)**: You can refer up to 50 users and earn a maximum of $10 in direct referral rewards.
+- **20% Upgrade Commission**: If any of your referred users upgrade to a paid plan, you earn a straight 20% commission on their purchase.
+
+---
+
+## Accessing Your Referral Code
+
+To view and copy your referral code:
+1. Open the **Referral Dialog** from your Dashboard or Sidebar (you can access this by clicking on the Referral option).
+2. Your unique referral code will be displayed.
+3. Click **Copy Link** to share it with your network.
+
+The dialog also displays your current referral progress, showing how many users you have referred (up to the 50 limit) and estimating your current referral earnings based on the $2 per 10 users rule.
+
+---
+
+## Using a Referral Code
+
+If you were referred by someone else, you can enter their referral code during the **Onboarding** process in the "Source & Referral" step. The code must be in the valid format (typically `username-suffix`).
+
+---
+
+# Documentation Section: Git Repositories
+Path: /web/docs/repositories
+URL: https://wekraft.xyz/web/docs/repositories
+
+# Git Repositories
+
+Connecting your Git repository is the core integration that unlocks codebase-aware project management in WeKraft. Once linked, tasks and issues can be mapped to codebase paths, and repository details are fed directly to your workspace.
+
+---
+
+## Repositories Manager Dashboard
+
+The **Manage Repositories** page (`/dashboard/repositories`) is accessed via the global sidebar and provides the interface for binding code repositories to WeKraft projects:
+
+### 1. Interactive Search
+- Filter your entire list of personal and organization repositories loaded from your connected version control account.
+
+### 2. Connected Repositories Popover
+Click this button to see a list of currently connected codebases:
+- **Active Connections**: View a list of linked repositories showing which WeKraft project name each repo is currently linked to.
+- **Quick Workspace Teleport**: Click the dashboard shortcut button next to any active connection to jump straight to that project's home screen.
+
+### 3. Repository Connections Grid
+- Displays all loaded repositories in a clean card layout.
+- Synced repositories display a green **Active Connection** badge.
+- Unlinked repositories display a project selection dropdown. You can choose any of your **Unlinked WeKraft Projects** and connect them instantly.
+
+### 4. Setup Completion
+- Linking a repository triggers a completion dialog confirming the connection is successful.
+- Closing the dialog automatically routes you back to your main Dashboard.
+
+---
+
+## Technical Integration & OAuth Sync
+
+WeKraft relies on secure OAuth tokens to communicate with your code hosting provider's APIs:
+
+1. **Authentication**: Users sign up or authenticate with their version control account. If signed up via email, they connect their account from their user profile settings.
+2. **Repository Listing**: The platform dynamically queries the hosting provider's API to retrieve repository namespaces (`owner/repo-name`).
+3. **Caching**: Git structure maps are securely cached inside the backend database to avoid hitting API rate limits. Project owners can trigger manual refreshes using the sync button inside the Heatmap view.
+
+---
+
+## Next Steps
+
+- Navigate the folder tree visually in [Repository Heatmaps](/web/docs/heatmaps).
+- Synchronize your local files with the [Editor Extension](/web/docs/extension).
+- Manage task details in [Tasks & Backlog](/web/docs/tasks).
+
+---
+
+# Documentation Section: Security & Permissions
+Path: /web/docs/security
+URL: https://wekraft.xyz/web/docs/security
+
+# Security & Permissions
+
+WeKraft takes your data security seriously. This page covers how access control works, how your data is protected, and best practices for keeping your projects secure.
+
+## Project Visibility
+
+Every project has a visibility setting that determines who can find and join it:
+
+| Visibility  | Who can see it                               | How to join                                                               |
+| ----------- | -------------------------------------------- | ------------------------------------------------------------------------- |
+| **Public**  | Discoverable via search and the Discover tab | Anyone can view the overview and submit a join request                    |
+| **Private** | Hidden from search entirely                  | Users can only join via a direct invite link shared by the owner or admin |
+
+You can change visibility at any time from **Project Settings → General**.
+
+> [!IMPORTANT]
+> Changing a project from Private to Public makes it discoverable immediately. Any user can then see the project overview and submit a join request.
+
+---
+
+## Role-Based Access Control (RBAC)
+
+WeKraft uses a four-tier role system. Every project member is assigned exactly one role, and roles are hierarchical — each includes all permissions of the roles below it.
+
+### Role Overview
+
+| Role       | Badge     | Who gets it                        | Summary                                                     |
+| ---------- | --------- | ---------------------------------- | ----------------------------------------------------------- |
+| **Owner**  | 👑 Crown  | The person who created the project | Full control over everything                                |
+| **Admin**  | 🛡 Shield | Promoted by the owner              | Can manage members, sprints, and project settings           |
+| **Member** | —         | Default role for new joiners       | Can create tasks/issues (if enabled), comment, and log time |
+| **Viewer** | 👁 Eye    | Assigned by owner/admin            | Read-only access to all project data                        |
+
+### Detailed Permissions Matrix
+
+| Action                        | Owner | Admin | Member   | Viewer |
+| ----------------------------- | ----- | ----- | -------- | ------ |
+| View all project data         | ✓     | ✓     | ✓        | ✓      |
+| Comment on tasks/issues       | ✓     | ✓     | ✓        | —      |
+| Create tasks                  | ✓     | ✓     | ✓\*      | —      |
+| Create issues                 | ✓     | ✓     | ✓\*      | —      |
+| Edit any task/issue           | ✓     | ✓     | Own only | —      |
+| Log time                      | ✓     | ✓     | ✓        | —      |
+| Create sprints                | ✓     | ✓     | —        | —      |
+| Start/complete sprint         | ✓     | ✓     | —        | —      |
+| Accept/reject join requests   | ✓     | ✓     | —        | —      |
+| Promote/demote roles          | ✓     | ✓     | —        | —      |
+| Remove a member               | ✓     | ✓     | —        | —      |
+| Edit project settings         | ✓     | ✓     | —        | —      |
+| Delete project                | ✓     | —     | —        | —      |
+| Set project deadline & alerts | ✓     | —     | —        | —      |
+
+> [!NOTE]
+> \*Members can create tasks and issues only if the project owner has enabled **"Members can create"** in Project Settings → Configuration.
+
+---
+
+## Authentication
+
+WeKraft uses secure **single sign-on (SSO)** providers:
+
+- **Version Control Provider** — recommended for developers; also enables repository linking and commit tracking
+- **Third-Party Identity Provider** — quick sign-in for non-developers
+
+We **never** store your passwords. Authentication is handled entirely by the provider, and WeKraft receives only the minimum profile information needed (name, email, avatar).
+
+### Editor Extension Authentication
+
+The editor extension uses a secure **one-time handshake token** system:
+
+1. The extension opens your browser to the WeKraft web app
+2. You click **"Grant Access to IDE"** — a single-use token is generated (5-minute expiry)
+3. The token is exchanged for a permanent API key stored in the editor's encrypted secret storage
+4. The handshake token is **deleted immediately** after exchange — it cannot be reused
+
+> [!TIP]
+> No manual API key copying is required. The entire flow is automated. See the [Editor Extension guide](/web/docs/extension) for full setup details.
+
+---
+
+## Data Security
+
+### Encryption
+
+All data is encrypted at rest and in transit using industry-standard encryption protocols.
+
+### Real-Time Sync
+
+WeKraft uses a real-time backend database infrastructure. All data changes sync instantly across all connected clients without page refreshes, with built-in data validation, access control, and transactional guarantees.
+
+### Repository Integration Access
+
+When you connect a code repository, WeKraft only requests the minimum permissions required to:
+
+1. **Read repository metadata** — name, default branch, stars, forks, language breakdown
+2. **Sync Issues** — import issues into WeKraft for tracking
+3. **Read commit metadata** — link commits to tasks for traceability
+4. **Fetch file tree** — display the repository file structure in the File Explorer
+
+> [!IMPORTANT]
+> We do **not** store your source code on our servers. The File Explorer fetches repository tree data via the hosting provider API on demand and caches the structure temporarily for performance.
+
+---
+
+## Data Privacy
+
+| Data                                                    | Visibility                                                           |
+| ------------------------------------------------------- | -------------------------------------------------------------------- |
+| **Email address**                                       | Never shared publicly — only visible to you                          |
+| **Profile info** (name, avatar, bio, skills)            | Visible to teammates in shared projects                              |
+| **Social links** (profiles, LinkedIn, Twitter, portfolio) | Visible only when someone views your full profile                  |
+| **Tasks & Issues**                                      | Visible only to project members                                      |
+| **Time logs**                                           | Visible only to project members                                      |
+| **AI Assistant conversations**                          | Scoped to the project; the agent only sees data within its active project |
+
+---
+
+## Best Practices
+
+1. **Use the Viewer role** for stakeholders who need to stay informed but aren't actively developing
+2. **Limit Admin roles** to 1–2 trusted team members to prevent accidental configuration changes
+3. **Review Join Requests regularly** in the Manage Team settings to ensure only authorized users have access
+4. **Keep projects Private** unless you intentionally want public discoverability
+5. **Connect your repository account through the dashboard** rather than personal access tokens for better security
+
+---
+
+## Next Steps
+
+- [Manage your team →](/web/docs/manage-teams)
+- [Configure project settings →](/web/docs/projects)
+- [Learn about Billing →](/web/docs/billing)
+- [View your profile →](/web/docs/profile)
+- [Learn about the Referral Program →](/web/docs/referrals)
+
+---
+
+# Documentation Section: Keyboard Shortcuts
+Path: /web/docs/shortcuts
+URL: https://wekraft.xyz/web/docs/shortcuts
+
+# Keyboard Shortcuts
+
+Speed up your development and management workflows with WeKraft's keyboard shortcuts. These commands work globally across the dashboard, project workspaces, and team space shortcuts.
+
+---
+
+## Global Navigation Keybinds
+
+These shortcuts are active from anywhere inside the WeKraft application to streamline navigation and control:
+
+| Keybind | Action / Description | Where Used | Why It Is Used |
+| :--- | :--- | :--- | :--- |
+| `Ctrl + B` or `Cmd + B` | **Toggle left sidebar** collapse / expand | Globally across the Web Client | To quickly maximize screen space when viewing task boards, dashboards, or timelines. |
+| `Ctrl + K` or `Cmd + K` | **Toggle AI Assistant Sheet** (AI PM / Dev) | Within any Web Workspace | To instantly converse with Kaya PM or Harry Dev and request assistance without manual clicking. |
+| `Escape` | **Dismiss active overlays** or panels | Globally on the Web Client | To quickly close side sheets, dialog popups, search overlays, or AI sidebars. |
+| `Enter` | **Submit forms or confirm** actions | Within active dialogs / text boxes | To save inline edits or submit forms rapidly without moving your hand to the mouse. |
+
+---
+
+## Team Space Shortcuts
+
+These autocomplete triggers are used exclusively inside the **Team Space input field**. They help you reference resources, invoke workflows, and attach files inline without leaving the keyboard.
+
+### Autocomplete Actions Detailed
+
+| Trigger | Action / Description | Where / When Triggered | Why It Is Used |
+| :--- | :--- | :--- | :--- |
+| `/` (Slash) | **Open Create Ticket** | Typed as the first character of your message input | To instantly open the Create Ticket Popover and log bugs or backlog tickets directly from the chat flow. |
+| `@` (At-Sign) | **Open Mentions Dropdown** | Typed anywhere in the message input | To tag teammates or summon/switch specific AI agents (e.g., `@everyone`, `@Kaya`, `@Harry`). |
+| `\` (Backslash) | **Open Code Linker** | Typed anywhere in the message input | To query and embed connected repository folder/file paths as direct links in the message. |
+| `#` (Hash) | **Open File Selector** | Typed as the first character of your message input | To instantly open your local device's file selector and upload media/logs up to 10MB to the chat. |
+
+---
+
+---
+
+# Documentation Section: Sprints
+Path: /web/docs/sprints
+URL: https://wekraft.xyz/web/docs/sprints
+
+# Sprints
+
+Sprints in WeKraft are time-boxed execution periods—typically spanning 1 to 2 weeks—during which your team commits to delivering a set of planned tasks and resolving open issues.
+
+---
+
+## Sub-topics
+
+To help you manage and configure team sprints, see the following operational guides:
+
+- **[Create Sprints](/web/docs/create-sprints)**: Step-by-step instructions on setting sprint goals, defining date ranges, and adding backlog items.
+- **[Edit Sprints](/web/docs/edit-sprints)**: How to activate or complete sprints, and track active sprint metrics.
+- **[Assign Sprints](/web/docs/assign-sprints)**: How to allocate items within a sprint and monitor member commitments.
+
+---
+
+## The Sprint Lifecycle
+
+Every sprint transitions through exactly three states:
+
+```mermaid
+stateDiagram-v2
+    [*] --> Planned : Created in backlog
+    Planned --> Active : Click "Start Sprint" (Only 1 active at a time)
+    Active --> Completed : Click "Complete"
+    Completed --> [*] : Stats frozen, incomplete items sent to Backlog
+```
+
+1. **Planned**: Sprints are created from the Sprints dashboard. Developers add tasks or issues from the backlog list into the planned sprint's detail page dialog.
+2. **Active**: Work begins. WeKraft monitors task movements. **Only one sprint can be active per project.**
+3. **Completed**: The active sprint is closed by the project owner or administrator. WeKraft automatically performs cleanups:
+   - Freezes the completion statistics (completed tasks vs total tasks, closed issues vs total issues) for analytics.
+   - Automatically returns any incomplete tasks or open issues back to the project **Backlog**.
+
+---
+
+# Documentation Section: Help & Support
+Path: /web/docs/support
+URL: https://wekraft.xyz/web/docs/support
+
+# Help & Support
+
+WeKraft provides a unified, real-time **Help & Support** module directly inside the platform. You can access it from the sidebar navigation link in either the main Dashboard sidebar or the Project Workspace sidebar.
+
+The support center is divided into two operational channels: manual **Contact Support** ticket submissions and the real-time **Talk to AI** assistant.
+
+---
+
+## 1. Contact Support (Manual Ticket System)
+
+When you encounter bugs, billing discrepancies, or need personal assistance, you can log a ticket directly through the support interface.
+
+### Category Tags
+To ensure your request is routed to the correct engineering or billing lead, select one of the following classification tags:
+
+| Category Tag | Purpose & Description |
+| :--- | :--- |
+| **Found Bug** | System anomalies, UI glitches, or API integration errors. |
+| **Help Needed** | Workspace onboarding blockages or project setup guidance. |
+| **Query** | General questions regarding features, limits, or configuration choices. |
+| **Payment Issue** | Subscription billing details, invoice updates, or payment failures. |
+| **Others** | Feedback, partner integrations, or general feedback. |
+
+### Service Level Agreements (SLAs)
+Response times are determined dynamically based on the project owner's subscription tier:
+
+- > [!IMPORTANT]
+  > **Priority Support (Pro Plan)**: Projects owned by Pro subscribers are routed to the priority queue with an estimated response time **within 12 hours**.
+- > [!NOTE]
+  > **Basic Support (Free & Plus Plans)**: Routed to the standard queue with an estimated response time **within 48 hours**.
+
+---
+
+## 2. Talk to AI (WeKraft Support Assistant)
+
+The AI Support Assistant provides real-time help, documentation searches, and ticket automation. It is powered by a custom LLM runtime integrated directly with WeKraft's documentation and support systems.
+
+### Interactive Quick Starts
+When you open the AI tab, you can select one of four standard starter queries:
+- *"Help me get started with WeKraft and explain what I can do here."*
+- *"I have a query regarding my account or project settings."*
+- *"I found a bug in the app. Can you help me report it?"*
+- *"Tell me more about WeKraft and what makes it unique."*
+
+### Tool Integrations & Capabilities
+The Support Assistant is not just a text chatbot — it has access to specific backend tools to retrieve info and perform actions for you:
+
+#### A. Document Search
+- **How it works**: The AI can query all documentation pages by keyword or title matching. It can also pull the raw markdown of specific pages to provide direct, context-rich answers.
+- **Benefit**: You get immediate answers on plan limits, keybindings, or repository sync flows.
+
+#### B. Fetch Past Tickets
+- **How it works**: The assistant can read the database table (`supportQueries`) to retrieve all tickets previously submitted by your authenticated user ID.
+- **Benefit**: You can ask, *"What is the status of my open bug reports?"* or *"Show me my tickets,"* and the AI will list them with category badges.
+
+#### C. Create Ticket on Your Behalf
+- **How it works**: If you describe a bug or ask the AI to contact support (e.g. *"I'm hitting a billing error, please open a ticket"*), the assistant will dynamically compose a title and description, select the correct category tag, and submit a ticket to the database on your behalf.
+- **Benefit**: Zero-form support. The AI handles the data entry and submits the ticket directly from the chat feed.
+
+### Interface Controls
+- **Clear Chat (🗑)**: Purge your local message feed to start a new support topic.
+- **Stop Generating (■)**: Interrupt the streaming AI response at any time if you wish to adjust your query.
+
+---
+
+## Best Practices for Submitting Tickets
+
+To help WeKraft engineers resolve issues quickly, please follow these tips:
+1. **Provide Clear Repos**: For bugs, detail what you did, what you expected, and what actually happened.
+2. **Include Error traces**: Copy/paste console errors or terminal logs from the editor extension when reporting connection issues.
+3. **Use the AI first**: The AI assistant can answer 95% of questions about settings, routing, pricing caps, and shortcut commands instantly.
+
+---
+
+# Documentation Section: Tasks & Backlog
+Path: /web/docs/tasks
+URL: https://wekraft.xyz/web/docs/tasks
+
+# Tasks & Backlog
+
+Tasks in WeKraft are the primary planning units used to organize product backlogs, map engineering work, and execute sprint goals. This document provides a detailed reference of task properties, lifecycles, and database integration rules.
+
+---
+
+## Sub-topics
+
+To help you manage tasks and backlog items, see the following operational guides:
+
+- **[Create Tasks](/web/docs/create-tasks)**: Step-by-step instructions on creating tasks, setting priorities, estimating dates, and adding attachments.
+- **[Edit Tasks](/web/docs/edit-tasks)**: How to transition task statuses, manage items in List/Board/Table layouts, and link codebase paths.
+- **[Assign Tasks](/web/docs/assign-tasks)**: How to assign tasks, track active developer workloads, and manage permissions.
+
+---
+
+## Task Properties
+
+Every task contains the following properties:
+
+- **Title**: A description of the work to be done.
+- **Description**: Optional details about the requirements or checklist items.
+- **Priority**: Urgency classifications set as High, Medium, or Low.
+- **Status**: The workflow state representing the phase of execution (see Lifecycle).
+- **Estimation**: The planned start and end dates for the task.
+- **Is Blocked**: An indicator showing whether the task is blocked by an open issue.
+- **Codebase Link**: Optional reference to a repository file.
+- **Sprint Association**: Optional reference pointing to a time-boxed sprint.
+- **Attachments**: Optional files or assets uploaded to the task.
+
+---
+
+## Task Workflow & Lifecycle
+
+Tasks move through a standard linear state machine. Status updates trigger automatic database recalculations, including developer workloads and active sprint burn rates.
+
+```mermaid
+stateDiagram-v2
+    [*] --> NotStarted : Task Created
+    NotStarted --> InProgress : Work Begins
+    InProgress --> Reviewing : PR Created / Under Review
+    Reviewing --> Testing : Deployed to QA / Staging
+    Testing --> Completed : Verified & Done
+    Completed --> [*]
+```
+
+1. **Not Started (`not started`)**: Task is parked in the backlog or active sprint.
+2. **In Progress (`inprogress`)**: A developer has accepted the task and is actively writing code.
+3. **Reviewing (`reviewing`)**: Development is complete; work is awaiting pull request approval or peer reviews.
+4. **Testing (`testing`)**: The feature has been built and is undergoing validation on dev or staging builds.
+5. **Completed (`completed`)**: The task is fully delivered. Marking completion sets the completion timestamp and logs the resolver's user ID.
+
+---
+
+# Documentation Section: Team Meet Video Rooms
+Path: /web/docs/team-meet
+URL: https://wekraft.xyz/web/docs/team-meet
+
+# Team Meet Video Rooms
+
+The **Team Meet** tab (accessed via the `Meet` workspace sidebar option) is WeKraft's native, real-time video conferencing portal. It allows developers and managers to initialize video calls, share screens, and coordinate live code reviews without relying on external calendars or link directories.
+
+---
+
+## Room Controls & Access
+
+WeKraft enforces strict meeting management controls based on team roles:
+- **Starting a Meeting**: Starting a new call is restricted to the **Project Owner** and **Project Admins**. Clicking the **"New Meeting"** button triggers an ad-hoc room.
+- **Joining a Meeting**: Any active team member (including viewers) can click to join ongoing calls.
+- **Invitation Protocol**: If a call is already active, members can join by pasting a specific Meeting ID or URL in the **"Join Call"** dialog.
+
+---
+
+## The Meeting Lifecycle & Interface
+
+Meetings transition through two active states tracked in the database:
+
+### 1. Active Call (`Live`)
+- Renders an emerald-colored **Live** status badge with an active pulse indicator.
+- Teammates can click **"Join Now"** to route directly to `/dashboard/my-projects/[slug]/workspace/meet/[meetingId]`.
+- Video streams initialize with low-latency audio/video feeds, screen sharing, and mute toggles.
+
+### 2. Completed Call (`Ended`)
+- When participants disconnect, the call is marked **Ended**.
+- WeKraft registers the final disconnect timestamp, computes the total elapsed **Duration** (e.g. `24m 15s`), and displays it on the meeting timeline list.
+
+---
+
+## Meeting History Feed
+
+The main portal renders a detailed feed card list of all past and active meeting events:
+- **Host Info**: Shows who initiated the meeting with their username and active avatar.
+- **Attendance Tracker**: Lists profile photo icons of all members who participated in the call.
+- **Timestamps**: Logs exactly when the call was started, ended, and the duration.
+
+---
+
+## Next Steps
+
+- Chat with team members before calls in [Teamspace Channels](/web/docs/team-space).
+- Coordinate team members in [Manage Teams & Roles](/web/docs/manage-teams).
+- Log tasks during calls in [Tasks & Backlog](/web/docs/tasks).
+
+---
+
+# Documentation Section: Team Space Permissions
+Path: /web/docs/team-space-permissions
+URL: https://wekraft.xyz/web/docs/team-space-permissions
+
+# Team Space Permissions
+
+Manage channel access rights, monitor participant presence, and understand messaging privileges.
+
+---
+
+## Where to Go & How to Go
+
+### 1. Accessing Private Channels
+- Public channels (Community and Announcement channels) are visible and accessible to all project members.
+- Private channels are restricted. You can only view and access a private channel if you were explicitly added by the channel creator or a project administrator. If you are not a member of a private channel, it will not appear in your channel list.
+
+### 2. Managing Private Channel Members
+- **Where to Go**: Hover over the private channel name in the sidebar, click the three-dot options menu, and select **Edit Channel**.
+- **How to Go**:
+  1. In the Edit Channel dialog, locate the members list picker.
+  2. To add members, check the boxes next to their names. To remove members, uncheck them.
+  3. Click **Save Changes**. The channel will instantly appear in the sidebar of newly added members, and disappear from the sidebar of removed members.
+
+### 3. Real-Time Presence Directory (Right Sidebar)
+- **Where to Go**: View the **Members** panel on the right side of the active chat feed.
+- **How to Go**:
+  1. The right sidebar lists all project members along with their roles.
+  2. Each member has a status indicator:
+     - **Online** (Green indicator): Currently active on the platform.
+     - **Offline** (Gray indicator): Currently disconnected.
+  3. Status updates automatically in real-time as users connect or disconnect.
+
+---
+
+## Channel Privileges & Shortcuts
+
+### Messaging Rights
+* **Community and Private Channels**: All members who have access can send messages, start threads, and add emoji reactions.
+* **Announcement Channels**: Only Project Owners and Admins can post messages. Other members can read posts but cannot write messages.
+* **Viewers**: Project members with the **Viewer** role have read-only access across all channels and cannot post messages.
+
+### Composer Shortcuts
+While typing in the chat composer, you can quickly insert objects using hotkeys:
+* `@` : Mentions (opens the member selection dropdown list).
+* `/` : Support ticket creation helper (triggers the Customer Desk ticket wizard).
+* `\` : Code link helper (links active codebase files).
+* `#` : File attachment uploader.
+
+---
+
+# Documentation Section: Team Space Settings
+Path: /web/docs/team-space-settings
+URL: https://wekraft.xyz/web/docs/team-space-settings
+
+# Team Space Settings
+
+Configure channel details, manage membership lists, delete channels, and adjust member permission policies.
+
+---
+
+## Where to Go & How to Go
+
+### 1. Modifying Channel Details
+- **Where to Go**: Open **Teamspace**, then hover over the channel you wish to update in the channel list.
+- **How to Go**:
+  1. Click the three-dot options menu next to the channel name.
+  2. Click **Edit Channel**.
+  3. Modify the channel name or description as needed. (Note: Names of default channels, such as `#general`, are locked and cannot be edited).
+  4. For private channels, project owners and admins can also manage the participant access list here by checking or unchecking members.
+  5. Click **Save Changes**.
+
+### 2. Deleting a Channel
+- **Where to Go**: Hover over the channel in the Teamspace channel list.
+- **How to Go**:
+  1. Click the three-dot options menu next to the channel name.
+  2. Click **Delete Channel**.
+  3. Confirm the deletion in the confirmation prompt. The channel and all its message history will be permanently deleted.
+  4. *Note: Default channels cannot be deleted.*
+
+### 3. Adjusting Member Permissions (Settings Panel)
+- **Where to Go**: Click the **Setting** button at the bottom of the Teamspace Channels sidebar.
+- **How to Go**:
+  1. A Teamspace Settings dialog will open.
+  2. Project owners and admins can toggle the following permissions for regular team members:
+     - **Create Channels**: Allow members to create new custom channels.
+     - **Edit Channels**: Allow members to rename and edit descriptions of custom channels.
+     - **Delete Channels**: Allow members to delete custom channels.
+  3. Toggling a setting updates the permissions immediately for all project members. Regular members can view these settings but cannot toggle them.
+
+---
+
+# Documentation Section: Teamspace Chat & Channels
+Path: /web/docs/team-space
+URL: https://wekraft.xyz/web/docs/team-space
+
+# Teamspace Chat & Channels
+
+WeKraft **Teamspace** (accessed via the `Teamspace` workspace sidebar tab) is a real-time, channel-based chat application built directly into your workspace. It enables instant team communication, poll creations, file attachments, and direct mentions of colleagues or AI agents.
+
+---
+
+## Sub-topics
+
+To help you coordinate with your team using WeKraft Teamspace, see the following operational guides:
+
+- **[Create Channels](/web/docs/create-channels)**: Step-by-step instructions on creating public, private, or announcement-only channels.
+- **[Team Space Settings](/web/docs/team-space-settings)**: How to update channel topics, toggle announcement-only mode, and archive or delete channels.
+- **[Team Space Permissions](/web/docs/team-space-permissions)**: How to manage channel member lists, restrict posting access, and understand role privileges.
+
+---
+
+## Teamspace Interface Layout
+
+The Teamspace viewport is divided into three functional columns:
+
+### 1. Left Sidebar: Channels List
+- **General Channels**: Standard channels (e.g., `#general`, `#announcements`, `#dev-updates`) for broad coordination.
+- **Announcement Mode**: Public channels can be flagged as announcement-only, restricting post rights. If announcement mode is enabled, the composer is disabled for regular members, displaying a warning badge.
+- **Channel Actions**: Create or delete channels (restricted by project member permissions and role).
+
+### 2. Center Panel: Active Chat Feed
+- **Message Feed**: Real-time message thread rendering messages, user avatar indicators, usernames, and message timestamps.
+- **Message Composer**: Autocomplete-aware rich text input supporting emojis, system file attachments up to 10MB, and interactive polls.
+
+### 3. Right Sidebar: Members Directory
+- Lists all project members grouped by active presence and status (Online/Offline).
+- Displays member names, avatars, and role badges (`owner`, `admin`, `member`, `viewer`).
+
+---
+
+## Rich Message Composer Features
+
+The message input composer is designed for high-speed developer navigation:
+- **Emojis Picker**: Integrated popup categorized by emojis.
+- **Composer Autocomplete Triggers**:
+  - `/` (Slash): Launches the **Create Ticket Dialog** directly inside chat, allowing team members to create support/chat tickets on the fly.
+  - `@` (At-sign): Summons the member mention directory. Mentions of `@everyone`, `@kaya`, or `@harry` are highlighted.
+  - `\` (Backslash): Opens the **Code Linker** to search your repository structure and insert direct path links.
+  - `#` (Hash): Instantly launches your device file selector to upload attachments (max 10MB).
+- **Interactive Polls**: Click the plus menu and select **Poll** to create a multiple-choice poll with custom options. Members can vote live, updating stats instantly.
+
+---
+
+# Documentation Section: Terms of Service
+Path: /web/docs/terms
+URL: https://wekraft.xyz/web/docs/terms
+
+# Terms of Service
+
+Last Modified: June 5, 2026
+
+Welcome to WeKraft. Please read these terms carefully before accessing or using our developer tools, sprint management suite, or autonomous developer agents.
+
+---
+
+## 1. Acceptance of Terms
+By creating an account, connecting a code repository, or using WeKraft (collectively, the "Service"), you agree to be bound by these Terms of Service. If you do not agree to these terms, do not access or use the Service. WeKraft is developed as a SaaS platform integrating real-time chat, sprint boards, git-time tracking, and autonomous AI agents.
+
+## 2. User Accounts and Authentication
+WeKraft utilizes a secure Identity Provider for user authentication and credentials management. You are responsible for safeguarding your account details. Any unauthorized activity on your account must be reported to support immediately. We reserve the right to suspend accounts violating acceptable use guidelines.
+
+## 3. Code Repository Integration & Access
+Our services connect with your code repositories via OAuth to synchronize issue status, pull requests, commits, and activity heatmaps. By connecting your repository, you grant WeKraft permission to read repository metadata and perform actions on your behalf (such as auto-creating issues or commenting on PRs). We do not store your raw source code, only repository structure and metadata necessary for project management.
+
+## 4. Autonomous AI Agents
+WeKraft features built-in AI agents (an AI PM agent for project management summaries and a developer agent for automated code reviews). These agents utilize Large Language Models. You acknowledge that AI output is generated probabilistically. WeKraft does not guarantee the absolute correctness or safety of code recommendations, PR approvals, or velocity forecasts generated by the agents. Developers must review all AI recommendations before production deployment.
+
+## 5. Billing, Subscriptions, and Payments
+Certain features of WeKraft require a paid subscription. Billing, plan upgrades, and cancellations are processed securely via our Billing Processor. Subscriptions are billed on a recurring basis. All fees are non-refundable unless specified otherwise by local legislation. Failed payments may result in access limitations to your projects.
+
+## 6. Acceptable Use Guidelines
+You agree not to use WeKraft to: (a) store or transmit malware or illegal materials; (b) attempt unauthorized access to our internal databases, authentication servers, or other users' workspaces; (c) overload the AI query systems; or (d) violate the intellectual property rights of any third party.
+
+## 7. Limitation of Liability
+TO THE MAXIMUM EXTENT PERMITTED BY LAW, WEKRAFT AND ITS CREATORS SHALL NOT BE LIABLE FOR ANY INDIRECT, INCIDENTAL, SPECIAL, CONSEQUENTIAL, OR PUNITIVE DAMAGES, OR ANY LOSS OF PROFITS OR REVENUES, WHETHER INCURRED DIRECTLY OR INDIRECTLY, OR ANY LOSS OF DATA, USE, GOODWILL, OR OTHER INTANGIBLE LOSSES RESULTING FROM: (A) YOUR USE OF THE SERVICE; (B) ANY CODE BUG OR DATA INCIDENT; OR (C) ACTIONS TAKEN BY THE AUTONOMOUS AI AGENTS.
+
+## 8. Amendments to Terms
+We reserve the right to modify these Terms of Service at any time. Changes will be posted on this page with an updated "Last Modified" date. Your continued use of the platform after changes are posted constitutes acceptance of the new terms.
+
+---
+
+# Documentation Section: Tickets
+Path: /web/docs/tickets
+URL: https://wekraft.xyz/web/docs/tickets
+
+# Tickets
+
+WeKraft **Tickets** are quick support tickets designed to be created and managed directly within your real-time chat channels. They help developers flag issues or requests on the fly without breaking their conversation flow.
+
+---
+
+## Sub-topics
+
+To help you manage chat tickets, see the following operational guides:
+
+- **[Create Tickets](/web/docs/create-tickets)**: How to create a ticket inline using message composer shortcuts.
+- **[Edit Tickets](/web/docs/edit-tickets)**: How to view, reopen, or close active tickets.
+- **[Assign Tickets](/web/docs/assign-tickets)**: How to assign chat tickets to team members.
+
+---
+
+## What are Chat Tickets?
+
+Unlike separate client-facing desks, Chat Tickets are integrated directly into Teamspace channels:
+- **Created via Composer**: Type `/` in the message input field to launch the ticket creation popover.
+- **No Complex Fields**: Each ticket consists of only a description (body), creator details, and a single assigned team member.
+- **Status Lifecycle**: A ticket is either **Open** or **Closed**. There are no SLA response targets, priorities, or categories.
+- **Managed in Channel Header**: Use the Tickets dropdown menu in the channel header to view all open/closed tickets linked to that channel.
+
+---
+
+# Documentation Section: Project Timeline & Gantt Chart
+Path: /web/docs/time-logs
+URL: https://wekraft.xyz/web/docs/time-logs
+
+# Project Timeline & Gantt Chart
+
+The **Time Logs** module (accessed via the workspace sidebar under **Manage → Time Logs**) acts as WeKraft's project delivery timeline. Combining Gantt chart visualizations with delivery metrics, this page tracks schedule variance, accumulated delay debt, and task progress relative to your target deadline.
+
+---
+
+## Technical Prerequisites & Configuration
+
+Timeline tracking requires a project deadline to establish a calendar baseline:
+1. **Target Date Storage**: The target deadline is stored in the project details document under the target date field (as a Unix millisecond timestamp).
+2. **Setup Prompt**: If the target date is undefined, the workspace timeline displays a setup message, prompting the project owner to specify a delivery date.
+3. **Calculation Epoch**: Once set, the system calculates duration deltas between the project's inception timestamp and the target date to calibrate progress charts.
+
+---
+
+## Top Dashboard Metrics
+
+WeKraft computes three real-time schedule analytics cards at the top of the Time Logs panel:
+
+```mermaid
+graph TD
+    Data[Tasks & Issues Datastore] --> TrajectoryCalc[Milestone Trajectory Node]
+    Data --> DebtCalc[Delay Debt Node]
+    Data --> PaceCalc[Pace Tracker Node]
+    TrajectoryCalc -->|Compare Completion vs Deadline| TrajCard[Milestone Trajectory: Ahead/Behind]
+    DebtCalc -->|Sum Overdue Days | DebtCard[Delay Debt: Cumulative Days & Worst Offenders]
+    PaceCalc -->|Completed Items / Days| PaceCard[Pace Tracker: Velocity & Burn Rate]
+```
+
+### 1. Milestone Trajectory
+- **Logic**: Compares your task completion rate against the timeline slope to the target date.
+- **Output**: Returns a status (e.g., `Ahead of Schedule`, `On Track`, or `Behind Schedule`) based on the remaining backlog volume.
+
+### 2. Delay Debt
+- **Logic**: Measures the schedule slippage of uncompleted items.
+- **Threshold**: Activates when **5 or more tasks** have defined end dates. If the task count is below this threshold, the dashboard prompts the team to populate task estimation dates.
+- **Calculations**:
+  - **Cumulative Delay**: Sum of `(CurrentDate - Task.estimation.endDate)` for all active tasks where `status !== "completed"` and `endDate < CurrentDate`.
+  - **Worst Offenders**: Evaluates and lists active tasks and issues with past-due dates, sorted by priority (`critical` and `high` priority items first) to highlight bottlenecks.
+
+### 3. Pace Tracker
+- **Logic**: Measures the average time elapsed per completed task (`finalCompletedAt` - `createdAt`).
+- **Purpose**: Provides managers with early warnings regarding scope expansion, indicating if the current task output velocity is sufficient to meet the final deadline.
+
+---
+
+## The Gantt Chart Timeline Grid
+
+WeKraft provides a horizontal Gantt chart built on a reactive timeline grid.
+
+### 1. Daily Grid Rendering
+Tasks with defined start and end dates are projected horizontally across a calendar grid. 
+
+### 2. Reactive Color Indicators
+Gantt bars dynamically update colors based on deadline compliance:
+- **Red Bar (Overdue)**: Estimated end date is in the past, and task status is not completed.
+- **Orange/Amber Bar (At Risk)**: Estimated end date falls within the next 48 hours, and task status is not completed.
+- **Blue/Gray/Accent Bar (Stable)**: Standard progress within the estimation window.
+- **Avatar Stacking**: Stacked avatar circles represent the assigned developers.
+
+### 3. Interactive Toolbar Controls
+- **Status Filtering**: Filter the timeline view to hide completed tasks, focusing only on active bottlenecks (`not started`, `inprogress`, `reviewing`, `testing`).
+- **Interval Ticks**: Adjust grid ticks (e.g., `2 Days`, `3 Days`, `5 Days`, or `10 Days` columns) to customize the horizontal calendar zoom level.
+- **Detail Tooltips**: Hovering over a Gantt bar fetches full titles, assignee lists, and status metadata without leaving the view.
+
+---

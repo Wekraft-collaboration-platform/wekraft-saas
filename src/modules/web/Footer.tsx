@@ -157,6 +157,7 @@ const Footer = () => {
                 { label: "Overview", href: "/web" },
                 { label: "Pricing", href: "/web/pricing" },
                 { label: "Why WeKraft?", href: "/web/why-wekraft" },
+                { label: "About WeKraft", href: "/web/about" },
                 { label: "Dashboard", href: "/dashboard" },
                 {
                   label: "Download Extension",
@@ -207,6 +208,7 @@ const Footer = () => {
               title="Resources"
               links={[
                 { label: "Docs Index", href: "/web/docs" },
+                { label: "AI Specs (llms.txt)", href: "/llms.txt" },
                 { label: "Help & Support", href: "/web/docs/support" },
                 { label: "Referral Program", href: "/web/docs/referrals" },
                 { label: "Billing & Plans", href: "/web/docs/billing" },

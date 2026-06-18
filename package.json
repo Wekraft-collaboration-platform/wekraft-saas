@@ -4,7 +4,7 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "pnpm dlx convex deploy && next build",
+    "build": "node scripts/generate-llms-full.js && pnpm dlx convex deploy && next build",
     "start": "next start",
     "lint": "biome check",
     "format": "biome format --write"
