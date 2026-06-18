@@ -111,6 +111,15 @@ const orgSchema = {
   "name": "WeKraft",
   "url": "https://wekraft.xyz",
   "logo": "https://wekraft.xyz/logo.svg",
+  "slogan": "The Unified Developer Command Center",
+  "disambiguatingDescription": "A developer-focused project management and real-time collaboration SaaS platform.",
+  "knowsAbout": [
+    "Software Engineering",
+    "Project Management",
+    "Agile Software Development",
+    "Git Version Control",
+    "AI Productivity Tools"
+  ],
   "sameAs": [
     "https://github.com/wekraft-collaboration-platform",
     "https://twitter.com/wekraft_xyz"

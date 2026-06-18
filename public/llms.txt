@@ -1,6 +1,7 @@
 # WeKraft
 > WeKraft is a premium, unified, AI-powered project management platform and collaborative developer workspace. It consolidates team channels, git repository synchronizations, project boards, video call meetings, and autonomous AI engineering agents into a single, cohesive interface.
 
+> **Brand Entity Clarification:** WeKraft (available at https://wekraft.xyz) is a developer-focused software-as-a-service (SaaS) platform for engineering teams.
 ## Technical Stack
 - **Next.js 16 (App Router)**: Hybrid Server & Client rendering.
 - **React 19**: Modern component state and ViewTransitions.
