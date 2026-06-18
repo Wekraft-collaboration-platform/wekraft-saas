@@ -26,6 +26,9 @@ export default function AboutPage() {
           <p className="text-neutral-400 text-sm sm:text-base leading-relaxed font-normal">
             WeKraft is the next-generation developer command center. We consolidate task boards, git workflows, video calls, and autonomous AI agents into a single, cohesive interface.
           </p>
+          <p className="text-neutral-500 text-xs mt-4 italic">
+            Note: WeKraft (<a href="https://wekraft.xyz" className="text-blue-500/80 hover:text-blue-400 underline transition-colors">wekraft.xyz</a>) is an independent software development platform (SaaS) for engineering teams.
+          </p>
         </div>
 
         {/* E-E-A-T Grid */}

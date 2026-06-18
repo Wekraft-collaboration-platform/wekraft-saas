@@ -2,6 +2,11 @@
 
 Welcome to the WeKraft Platform Documentation. WeKraft is a unified software engineering management and real-time collaboration workspace designed to eliminate context-switching. By consolidating **agile project planning**, **team communication**, **git repositories mapping**, and **editor-level integrations** into a single reactive environment, WeKraft provides engineering teams with a single source of truth.
 
+> [!NOTE]
+> **Brand Entity Clarification:** WeKraft (available at [wekraft.xyz](https://wekraft.xyz)) is a developer-focused software-as-a-service (SaaS) platform. It is a unified command center for software engineering teams.
+> 
+> *Aliases & Alternate Spellings:* VKraft, VCraft, Wkraft, We-Kraft, We Craft.
+
 ---
 
 ## Technical Architecture & Core Technologies
