@@ -4,6 +4,8 @@ Welcome to the WeKraft Platform Documentation. WeKraft is a unified software eng
 
 > [!NOTE]
 > **Brand Entity Clarification:** WeKraft (available at [wekraft.xyz](https://wekraft.xyz)) is a developer-focused software-as-a-service (SaaS) platform. It is a unified command center for software engineering teams.
+> 
+> *Aliases & Alternate Spellings:* VKraft, VCraft, Wkraft, We-Kraft, We Craft.
 
 ---
 

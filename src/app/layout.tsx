@@ -34,6 +34,13 @@ export const metadata: Metadata = {
     "WeKraft is the ultimate AI-powered project management platform and collaborative workspace built for modern software teams. Plan sprints, track to-do lists, manage developer capacity, and coordinate complex projects with ease.",
   keywords: [
     "WeKraft",
+    "VKraft",
+    "VCraft",
+    "Wkraft",
+    "We Craft",
+    "We-Kraft",
+    "vkraft saas",
+    "vcraft saas",
     "project management",
     "project management platform",
     "PM platform",
@@ -109,6 +116,13 @@ const orgSchema = {
   "@type": "Organization",
   "@id": "https://wekraft.xyz/#organization",
   "name": "WeKraft",
+  "alternateName": [
+    "VKraft",
+    "VCraft",
+    "Wkraft",
+    "We Craft",
+    "We-Kraft"
+  ],
   "url": "https://wekraft.xyz",
   "logo": "https://wekraft.xyz/logo.svg",
   "slogan": "The Unified Developer Command Center",
@@ -137,6 +151,13 @@ const websiteSchema = {
   "@id": "https://wekraft.xyz/#website",
   "url": "https://wekraft.xyz",
   "name": "WeKraft",
+  "alternateName": [
+    "VKraft",
+    "VCraft",
+    "Wkraft",
+    "We Craft",
+    "We-Kraft"
+  ],
   "description": "AI-Powered Project Management & Workspace for Modern Software Teams",
   "potentialAction": {
     "@type": "SearchAction",
