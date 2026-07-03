@@ -1,6 +1,14 @@
 import { defineSchema, defineTable } from "convex/server";
 import { v } from "convex/values";
 
+const encryptedField = v.object({
+  ciphertext: v.string(),
+  iv: v.string(),
+  tag: v.string(),
+});
+
+const maybeEncryptedField = v.union(v.string(), encryptedField);
+
 export default defineSchema({
   users: defineTable({
     name: v.optional(v.string()), // unique
@@ -185,7 +193,7 @@ export default defineSchema({
   // ------------------------------------------------------------
   tasks: defineTable({
     title: v.string(),
-    description: v.optional(v.string()),
+    description: v.optional(maybeEncryptedField),
     type: v.optional(v.object({ label: v.string(), color: v.string() })), // Custom tag like {label: "dashboard", color: "blue"}
     priority: v.optional(
       v.union(v.literal("high"), v.literal("medium"), v.literal("low")),
@@ -235,7 +243,7 @@ export default defineSchema({
     userId: v.id("users"),
     userName: v.string(),
     userImage: v.optional(v.string()),
-    comment: v.string(),
+    comment: maybeEncryptedField,
     createdAt: v.number(),
     updatedAt: v.number(),
   })
@@ -246,7 +254,7 @@ export default defineSchema({
 
   issues: defineTable({
     title: v.string(),
-    description: v.optional(v.string()),
+    description: v.optional(maybeEncryptedField),
     fileLinked: v.optional(v.string()),
     environment: v.optional(
       v.union(
@@ -304,7 +312,7 @@ export default defineSchema({
     userId: v.id("users"),
     userName: v.string(),
     userImage: v.optional(v.string()),
-    comment: v.string(),
+    comment: maybeEncryptedField,
     createdAt: v.number(),
     updatedAt: v.number(),
   })
@@ -568,21 +576,22 @@ export default defineSchema({
   // ─── Customer Desk Tables ────────────────────────────────────────────────
   serviceCustomers: defineTable({
     projectId: v.id("projects"),
-    name: v.string(),
-    email: v.string(),
-    contact: v.optional(v.string()),
+    name: maybeEncryptedField,
+    email: maybeEncryptedField,
+    emailBlindIndex: v.optional(v.string()),
+    contact: v.optional(maybeEncryptedField),
     createdBy: v.id("users"),           // always the Owner
     createdAt: v.number(),
     updatedAt: v.number(),
   })
     .index("by_project", ["projectId"])
-    .index("by_project_email", ["projectId", "email"]),
+    .index("by_project_email_blind_index", ["projectId", "emailBlindIndex"]),
 
   serviceRequests: defineTable({
     projectId: v.id("projects"),
     customerId: v.id("serviceCustomers"),
     title: v.string(),
-    description: v.optional(v.string()),
+    description: v.optional(maybeEncryptedField),
     type: v.union(v.literal("feature_request"), v.literal("bug_report")),
     status: v.union(
       v.literal("pending"),     // awaiting approval
@@ -598,6 +607,27 @@ export default defineSchema({
     .index("by_project", ["projectId"])
     .index("by_customer", ["customerId"])
     .index("by_project_status", ["projectId", "status"]),
+
+  // ─── Audit Logs (Pro feature) ──────────────────────────────────────────
+  auditLogs: defineTable({
+    projectId: v.id("projects"),
+    userId: v.id("users"),
+    userName: v.string(),
+    userEmail: v.string(),
+    action: v.string(),
+    targetType: v.union(
+      v.literal("task"),
+      v.literal("issue"),
+      v.literal("customer"),
+      v.literal("request"),
+    ),
+    targetId: v.string(),
+    targetTitle: v.string(),
+    changes: v.optional(v.any()),
+    createdAt: v.number(),
+  })
+    .index("by_project_time", ["projectId", "createdAt"])
+    .index("by_project_action", ["projectId", "action", "createdAt"]),
 
 });
 
