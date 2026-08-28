@@ -2,6 +2,8 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { internal } from "./_generated/api";
 import { paginationOptsValidator } from "convex/server";
+import { encryptField, decryptField } from "./encryption";
+import { recordAuditEvent } from "./auditLog";
 
 // =============================
 // 1. CREATE ISSUE
@@ -71,8 +73,13 @@ export const createIssue = mutation({
 
     const { assignees, ...issueData } = args;
 
+    const encryptedDescription = args.description
+      ? await encryptField(args.description)
+      : undefined;
+
     const issueId = await ctx.db.insert("issues", {
       ...issueData,
+      description: encryptedDescription,
       createdByUserId: user._id,
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -91,9 +98,19 @@ export const createIssue = mutation({
           }),
         ),
       );
-
     }
 
+    // Record Audit Log
+    await recordAuditEvent(ctx, {
+      projectId: args.projectId,
+      userId: user._id,
+      userName: user.name || "User",
+      userEmail: user.email,
+      action: "issue.create",
+      targetType: "issue",
+      targetId: issueId,
+      targetTitle: args.title,
+    });
 
     return issueId;
   },
@@ -120,7 +137,11 @@ export const getIssues = query({
           .query("issueAssignees")
           .withIndex("by_issue", (q) => q.eq("issueId", issue._id))
           .collect();
-        return { ...issue, assignedTo: assignees };
+        return {
+          ...issue,
+          description: await decryptField(issue.description),
+          assignedTo: assignees,
+        };
       }),
     );
 
@@ -152,7 +173,11 @@ export const getIssuesForKanban = query({
           .query("issueAssignees")
           .withIndex("by_issue", (q) => q.eq("issueId", issue._id))
           .collect();
-        return { ...issue, assignedTo: assignees };
+        return {
+          ...issue,
+          description: await decryptField(issue.description),
+          assignedTo: assignees,
+        };
       }),
     );
 
@@ -214,7 +239,11 @@ export const getFilteredIssues = query({
           .query("issueAssignees")
           .withIndex("by_issue", (q) => q.eq("issueId", issue._id))
           .collect();
-        return { ...issue, assignedTo: assignees };
+        return {
+          ...issue,
+          description: await decryptField(issue.description),
+          assignedTo: assignees,
+        };
       }),
     );
 
@@ -287,6 +316,27 @@ export const updateIssueStatus = mutation({
 
     await ctx.db.patch(args.issueId, patchData);
 
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (user) {
+      await recordAuditEvent(ctx, {
+        projectId: issue.projectId,
+        userId: user._id,
+        userName: user.name || "User",
+        userEmail: user.email,
+        action: "issue.status_change",
+        targetType: "issue",
+        targetId: args.issueId,
+        targetTitle: issue.title,
+        changes: { oldStatus: issue.status, newStatus: args.status },
+      });
+    }
+
     return args.issueId;
   },
 });
@@ -350,6 +400,12 @@ export const updateIssue = mutation({
       updatedAt: Date.now(),
     };
 
+    if (updates.description !== undefined) {
+      updateData.description = updates.description
+        ? await encryptField(updates.description)
+        : undefined;
+    }
+
     if (updates.status === "closed") {
       updateData.finalCompletedAt = Date.now();
       const identity = await ctx.auth.getUserIdentity();
@@ -378,6 +434,28 @@ export const updateIssue = mutation({
     }
 
     await ctx.db.patch(issueId, updateData);
+
+    const identity = await ctx.auth.getUserIdentity();
+    if (identity) {
+      const user = await ctx.db
+        .query("users")
+        .withIndex("by_token", (q) =>
+          q.eq("clerkToken", identity.tokenIdentifier),
+        )
+        .unique();
+      if (user) {
+        await recordAuditEvent(ctx, {
+          projectId: existing.projectId,
+          userId: user._id,
+          userName: user.name || "User",
+          userEmail: user.email,
+          action: "issue.update",
+          targetType: "issue",
+          targetId: issueId,
+          targetTitle: updateData.title || existing.title,
+        });
+      }
+    }
 
     // Handle Assignees update if provided
     if (assignees !== undefined) {
@@ -428,12 +506,14 @@ export const createIssueComment = mutation({
 
     if (!user) throw new Error("User not found");
 
+    const encryptedComment = await encryptField(args.comment);
+
     const commentId = await ctx.db.insert("issueComments", {
       issueId: args.issueId,
       userId: user._id,
       userName: user.name || "Anonymous",
       userImage: user.avatarUrl,
-      comment: args.comment,
+      comment: encryptedComment,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
@@ -473,6 +553,21 @@ export const createIssueComment = mutation({
       }
     }
 
+    // Record Audit Log
+    const issueObj = await ctx.db.get(args.issueId);
+    if (issueObj) {
+      await recordAuditEvent(ctx, {
+        projectId: issueObj.projectId,
+        userId: user._id,
+        userName: user.name || "User",
+        userEmail: user.email,
+        action: "issue.comment_create",
+        targetType: "issue",
+        targetId: args.issueId,
+        targetTitle: issueObj.title,
+      });
+    }
+
     return commentId;
   },
 });
@@ -485,11 +580,18 @@ export const getIssueComments = query({
     issueId: v.id("issues"),
   },
   handler: async (ctx, args) => {
-    return await ctx.db
+    const comments = await ctx.db
       .query("issueComments")
       .withIndex("by_issue", (q) => q.eq("issueId", args.issueId))
       .order("desc")
       .collect();
+
+    return await Promise.all(
+      comments.map(async (c) => ({
+        ...c,
+        comment: (await decryptField(c.comment)) || "",
+      }))
+    );
   },
 });
 
@@ -530,6 +632,17 @@ export const deleteIssue = mutation({
     if (!isOwner && !isAdmin) {
       throw new Error("Only the project owner or admin can delete this issue.");
     }
+
+    await recordAuditEvent(ctx, {
+      projectId: issue.projectId,
+      userId: user._id,
+      userName: user.name || "User",
+      userEmail: user.email,
+      action: "issue.delete",
+      targetType: "issue",
+      targetId: args.issueId,
+      targetTitle: issue.title,
+    });
 
     // Unblock task if it was a task-issue
     if (issue.type === "task-issue" && issue.taskId) {

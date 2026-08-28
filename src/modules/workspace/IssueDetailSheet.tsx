@@ -866,7 +866,7 @@ export const IssueDetailSheet = ({
                                 </span>
                               </div>
                               <p className="text-[12px] text-muted-foreground leading-relaxed break-words font-inter">
-                                {comment.comment}
+                                {typeof comment.comment === "string" ? comment.comment : (comment.comment && typeof comment.comment === "object" && "ciphertext" in comment.comment ? "[Encrypted]" : String(comment.comment ?? ""))}
                               </p>
                             </div>
                           </div>
