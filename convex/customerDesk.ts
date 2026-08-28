@@ -158,8 +158,8 @@ export const createCustomer = mutation({
     // Email check per project
     const existing = await ctx.db
       .query("serviceCustomers")
-      .withIndex("by_project_email", (q) =>
-        q.eq("projectId", args.projectId).eq("email", args.email)
+      .withIndex("by_project_email_blind_index", (q) =>
+        q.eq("projectId", args.projectId).eq("emailBlindIndex", args.email)
       )
       .unique();
 
@@ -202,8 +202,8 @@ export const editCustomer = mutation({
     if (customer.email !== args.email) {
       const existing = await ctx.db
         .query("serviceCustomers")
-        .withIndex("by_project_email", (q) =>
-          q.eq("projectId", customer.projectId).eq("email", args.email)
+        .withIndex("by_project_email_blind_index", (q) =>
+          q.eq("projectId", customer.projectId).eq("emailBlindIndex", args.email)
         )
         .unique();
 
