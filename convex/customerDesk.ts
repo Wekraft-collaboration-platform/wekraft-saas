@@ -2,6 +2,7 @@ import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 import { recordAuditEvent } from "./auditLog";
+import { encryptField, decryptField, generateBlindIndex } from "./encryption";
 
 // Helper to authenticate user and verify membership
 async function checkProjectAccess(ctx: any, projectId: Id<"projects">) {
@@ -61,10 +62,19 @@ export const getCustomerDeskData = query({
       throw new Error("Access denied");
     }
 
-    const customers = await ctx.db
+    const rawCustomers = await ctx.db
       .query("serviceCustomers")
       .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
       .collect();
+
+    const customers = await Promise.all(
+      rawCustomers.map(async (c) => ({
+        ...c,
+        name: (await decryptField(c.name)) || "",
+        email: (await decryptField(c.email)) || "",
+        contact: (await decryptField(c.contact)) || "",
+      }))
+    );
 
     const rawRequests = await ctx.db
       .query("serviceRequests")
@@ -81,9 +91,11 @@ export const getCustomerDeskData = query({
     const requests = await Promise.all(
       rawRequests.map(async (r) => {
         const customer = customerMap.get(r.customerId);
+        const description = await decryptField(r.description);
 
         return {
           ...r,
+          description: description || undefined,
           customerName: customer?.name || "Unknown Customer",
           customerEmail: customer?.email || "",
         };
@@ -131,11 +143,13 @@ export const getCustomerList = query({
       .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
       .collect();
 
-    return customers.map((c) => ({
-      _id: c._id,
-      name: c.name,
-      email: c.email,
-    }));
+    return await Promise.all(
+      customers.map(async (c) => ({
+        _id: c._id,
+        name: (await decryptField(c.name)) || "",
+        email: (await decryptField(c.email)) || "",
+      }))
+    );
   },
 });
 
@@ -156,11 +170,13 @@ export const createCustomer = mutation({
       throw new Error("Only the owner can create customers");
     }
 
+    const blindIndex = await generateBlindIndex(args.email);
+
     // Email check per project
     const existing = await ctx.db
       .query("serviceCustomers")
       .withIndex("by_project_email_blind_index", (q) =>
-        q.eq("projectId", args.projectId).eq("emailBlindIndex", args.email)
+        q.eq("projectId", args.projectId).eq("emailBlindIndex", blindIndex)
       )
       .unique();
 
@@ -168,11 +184,16 @@ export const createCustomer = mutation({
       throw new Error("A customer with this email already exists in this project.");
     }
 
+    const encryptedName = await encryptField(args.name);
+    const encryptedEmail = await encryptField(args.email);
+    const encryptedContact = args.contact ? await encryptField(args.contact) : undefined;
+
     const customerId = await ctx.db.insert("serviceCustomers", {
       projectId: args.projectId,
-      name: args.name,
-      email: args.email,
-      contact: args.contact,
+      name: encryptedName,
+      email: encryptedEmail,
+      emailBlindIndex: blindIndex,
+      contact: encryptedContact,
       createdBy: access.user._id,
       createdAt: Date.now(),
       updatedAt: Date.now(),
@@ -186,7 +207,7 @@ export const createCustomer = mutation({
       action: "customer.create",
       targetType: "customer",
       targetId: customerId,
-      targetTitle: typeof args.name === "string" ? args.name : "Customer",
+      targetTitle: args.name,
     });
 
     return customerId;
@@ -211,11 +232,13 @@ export const editCustomer = mutation({
       throw new Error("Only the owner can edit customers");
     }
 
-    if (customer.email !== args.email) {
+    const newBlindIndex = await generateBlindIndex(args.email);
+
+    if (customer.emailBlindIndex !== newBlindIndex) {
       const existing = await ctx.db
         .query("serviceCustomers")
         .withIndex("by_project_email_blind_index", (q) =>
-          q.eq("projectId", customer.projectId).eq("emailBlindIndex", args.email)
+          q.eq("projectId", customer.projectId).eq("emailBlindIndex", newBlindIndex)
         )
         .unique();
 
@@ -224,10 +247,15 @@ export const editCustomer = mutation({
       }
     }
 
+    const encryptedName = await encryptField(args.name);
+    const encryptedEmail = await encryptField(args.email);
+    const encryptedContact = args.contact ? await encryptField(args.contact) : undefined;
+
     await ctx.db.patch(args.customerId, {
-      name: args.name,
-      email: args.email,
-      contact: args.contact,
+      name: encryptedName,
+      email: encryptedEmail,
+      emailBlindIndex: newBlindIndex,
+      contact: encryptedContact,
       updatedAt: Date.now(),
     });
 
@@ -239,7 +267,7 @@ export const editCustomer = mutation({
       action: "customer.update",
       targetType: "customer",
       targetId: args.customerId,
-      targetTitle: typeof args.name === "string" ? args.name : "Customer",
+      targetTitle: args.name,
     });
 
     return args.customerId;
@@ -261,6 +289,8 @@ export const deleteCustomer = mutation({
       throw new Error("Only the owner can delete customers");
     }
 
+    const customerName = (await decryptField(customer.name)) || "Customer";
+
     // Cascade delete requests
     const requests = await ctx.db
       .query("serviceRequests")
@@ -279,7 +309,7 @@ export const deleteCustomer = mutation({
       action: "customer.delete",
       targetType: "customer",
       targetId: args.customerId,
-      targetTitle: typeof customer.name === "string" ? customer.name : "Customer",
+      targetTitle: customerName,
     });
 
     await ctx.db.delete(args.customerId);
@@ -301,11 +331,15 @@ export const createRequest = mutation({
       throw new Error("Unauthorized to log requests");
     }
 
+    const encryptedDescription = args.description
+      ? await encryptField(args.description)
+      : undefined;
+
     const requestId = await ctx.db.insert("serviceRequests", {
       projectId: args.projectId,
       customerId: args.customerId,
       title: args.title,
-      description: args.description,
+      description: encryptedDescription,
       type: args.type,
       status: "pending",
       createdBy: access.user._id,

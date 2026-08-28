@@ -35,7 +35,7 @@ import {
 import { format } from "date-fns";
 
 export default function AuditLogsPage() {
-  const user = useQuery(api.user.getUserDetails);
+  const user = useQuery(api.user.getCurrentUser);
   const projects = useQuery(api.project.getUserProjects);
 
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
