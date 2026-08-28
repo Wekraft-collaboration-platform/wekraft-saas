@@ -12,6 +12,7 @@ import ProjectOnSteroids from "@/modules/web/ProjectOnSteroids";
 import TrustedBy from "@/modules/web/TrustedBy";
 import WallOfLove from "@/modules/web/WallOfLove";
 import Footer from "@/modules/web/Footer";
+import FAQ from "@/modules/web/FAQ";
 import type { Metadata } from "next";
 import StructuredData from "@/components/StructuredData";
 
@@ -55,6 +56,7 @@ const WebPage = () => {
       <AIFirstSection />
       <AllInOneSection />
       <InfraSection />
+      <FAQ />
       <Testimonials />
       <ProjectOnSteroids />
       <Footer />
