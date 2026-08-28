@@ -30,3 +30,20 @@ Tasks	title & metadata	Plaintext	Instant indexing & filtering
 Issues	description	AES-256-GCM Encrypted	Encrypted payload
 Issues	issueComments	AES-256-GCM Encrypted	Encrypted payload
 Issues	title & metadata	Plaintext	Instant indexing & filtering
+
+<!-- -------------------------- -->
+## Audit logs
+Tasks	Task Creation	task.create
+Tasks	Task Update / Edit	task.update
+Tasks	Task Status Change	task.status_change
+Tasks	Task Deletion	task.delete
+Task Comments	Comment Posted	task.comment_create
+Issues	Issue Creation	issue.create
+Issues	Issue Update / Edit	issue.update
+Issues	Issue Status Change	issue.status_change
+Issues	Issue Deletion	issue.delete
+Issue Comments	Comment Posted	issue.comment_create
+Customer Desk	Customer Created	customer.create
+Customer Desk	Customer Updated	customer.update
+Customer Desk	Customer Deleted	customer.delete
+Customer Desk	Service Request Logged	request.create

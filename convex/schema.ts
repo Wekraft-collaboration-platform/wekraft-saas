@@ -620,6 +620,7 @@ export default defineSchema({
       v.literal("issue"),
       v.literal("customer"),
       v.literal("request"),
+      v.literal("project"),
     ),
     targetId: v.string(),
     targetTitle: v.string(),

@@ -2,7 +2,7 @@ import { v } from "convex/values";
 import { query, mutation, MutationCtx } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
 
-export type AuditTargetType = "task" | "issue" | "customer" | "request";
+export type AuditTargetType = "task" | "issue" | "customer" | "request" | "project";
 
 interface RecordAuditParams {
   projectId: Id<"projects">;

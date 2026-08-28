@@ -1,6 +1,7 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
+import { recordAuditEvent } from "./auditLog";
 
 // Helper to authenticate user and verify membership
 async function checkProjectAccess(ctx: any, projectId: Id<"projects">) {
@@ -177,6 +178,17 @@ export const createCustomer = mutation({
       updatedAt: Date.now(),
     });
 
+    await recordAuditEvent(ctx, {
+      projectId: args.projectId,
+      userId: access.user._id,
+      userName: access.user.name || "User",
+      userEmail: access.user.email,
+      action: "customer.create",
+      targetType: "customer",
+      targetId: customerId,
+      targetTitle: typeof args.name === "string" ? args.name : "Customer",
+    });
+
     return customerId;
   },
 });
@@ -219,6 +231,17 @@ export const editCustomer = mutation({
       updatedAt: Date.now(),
     });
 
+    await recordAuditEvent(ctx, {
+      projectId: customer.projectId,
+      userId: access.user._id,
+      userName: access.user.name || "User",
+      userEmail: access.user.email,
+      action: "customer.update",
+      targetType: "customer",
+      targetId: args.customerId,
+      targetTitle: typeof args.name === "string" ? args.name : "Customer",
+    });
+
     return args.customerId;
   },
 });
@@ -247,6 +270,17 @@ export const deleteCustomer = mutation({
     for (const r of requests) {
       await ctx.db.delete(r._id);
     }
+
+    await recordAuditEvent(ctx, {
+      projectId: customer.projectId,
+      userId: access.user._id,
+      userName: access.user.name || "User",
+      userEmail: access.user.email,
+      action: "customer.delete",
+      targetType: "customer",
+      targetId: args.customerId,
+      targetTitle: typeof customer.name === "string" ? customer.name : "Customer",
+    });
 
     await ctx.db.delete(args.customerId);
     return args.customerId;
@@ -277,6 +311,17 @@ export const createRequest = mutation({
       createdBy: access.user._id,
       createdAt: Date.now(),
       updatedAt: Date.now(),
+    });
+
+    await recordAuditEvent(ctx, {
+      projectId: args.projectId,
+      userId: access.user._id,
+      userName: access.user.name || "User",
+      userEmail: access.user.email,
+      action: "request.create",
+      targetType: "request",
+      targetId: requestId,
+      targetTitle: args.title,
     });
 
     return requestId;
