@@ -63,6 +63,8 @@ import {
   User,
   User2,
   Users,
+  Lock,
+  ShieldCheck,
 } from "lucide-react";
 
 import {
@@ -105,8 +107,11 @@ export const AppSidebar = () => {
   // after a trial expires, rather than waiting up to 24h for the cron to run.
   const effectivePlan = (() => {
     if (!user) return "free";
-    const isExpired = user.planExpiry !== undefined && user.planExpiry !== null && user.planExpiry < Date.now();
-    return isExpired ? "free" : (user.accountType || "free");
+    const isExpired =
+      user.planExpiry !== undefined &&
+      user.planExpiry !== null &&
+      user.planExpiry < Date.now();
+    return isExpired ? "free" : user.accountType || "free";
   })();
 
   const ownerProjects = useQuery(api.project.getUserProjects);
@@ -148,7 +153,7 @@ export const AppSidebar = () => {
       console.error("❌ Failed to connect GitHub:", error);
       toast.error(
         error?.errors?.[0]?.message ||
-        "Something went wrong while connecting GitHub",
+          "Something went wrong while connecting GitHub",
       );
     }
   };
@@ -161,7 +166,10 @@ export const AppSidebar = () => {
     <Sidebar collapsible="icon" className="">
       <SidebarHeader className="p-0 gap-0">
         {isCollapsed ? (
-          <Link href="/web" className="flex items-center justify-center h-18 border-b w-full shrink-0">
+          <Link
+            href="/web"
+            className="flex items-center justify-center h-18 border-b w-full shrink-0"
+          >
             <Image
               src="/logo.svg"
               alt="Logo"
@@ -171,7 +179,10 @@ export const AppSidebar = () => {
             />
           </Link>
         ) : (
-          <Link href="/web" className="flex items-center justify-center gap-3 px-3 h-18 border-b shrink-0">
+          <Link
+            href="/web"
+            className="flex items-center justify-center gap-3 px-3 h-18 border-b shrink-0"
+          >
             <Image
               src="/logo.svg"
               alt="Logo"
@@ -253,26 +264,6 @@ export const AppSidebar = () => {
               />
             </Link>
           </SidebarMenuButton>
-          {/* 2 */}
-          <SidebarMenuButton
-            tooltip="Community"
-            isActive={isActive("/dashboard/community")}
-            className="group relative overflow-hidden"
-          >
-            <div className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center">
-              <Users className="h-5 w-5 shrink-0" />
-              <span className="text-sm group-data-[collapsible=icon]:hidden">
-                Community
-              </span>
-              <Badge
-                variant="default"
-                className="ml-auto text-[10px] h-4 px-1 group-data-[collapsible=icon]:hidden"
-              >
-                Soon
-              </Badge>
-            </div>
-          </SidebarMenuButton>
-
 
           {/* 4 */}
           <SidebarMenuButton
@@ -335,7 +326,11 @@ export const AppSidebar = () => {
                           {ownerProjects.map((project, index) => (
                             <Link
                               key={project._id}
-                              id={index === 0 ? "sidebar-first-project" : undefined}
+                              id={
+                                index === 0
+                                  ? "sidebar-first-project"
+                                  : undefined
+                              }
                               href={`/dashboard/my-projects/${project.slug}`}
                               className="flex items-center justify-between gap-2 p-0.5 rounded-md hover:bg-accent/40 cursor-pointer transition-all border border-transparent hover:border-sidebar-border"
                             >
@@ -348,7 +343,7 @@ export const AppSidebar = () => {
 
                               <div className="flex -space-x-0.5 overflow-hidden">
                                 {project.members &&
-                                  project.members.length > 0 ? (
+                                project.members.length > 0 ? (
                                   project.members
                                     .slice(0, 3)
                                     .map((member, idx) => (
@@ -430,7 +425,7 @@ export const AppSidebar = () => {
 
                               <div className="flex -space-x-1.5 overflow-hidden">
                                 {project?.members &&
-                                  project?.members.length > 0 ? (
+                                project?.members.length > 0 ? (
                                   project?.members
                                     .slice(0, 3)
                                     .map((member, idx) => (
@@ -483,7 +478,9 @@ export const AppSidebar = () => {
           {/* My Referral */}
           <SidebarMenuButton
             tooltip="My Referral"
-            onClick={() => window.dispatchEvent(new CustomEvent("open-referral-dialog"))}
+            onClick={() =>
+              window.dispatchEvent(new CustomEvent("open-referral-dialog"))
+            }
             className="group relative overflow-hidden cursor-pointer"
           >
             <div className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center">
@@ -493,7 +490,6 @@ export const AppSidebar = () => {
               </span>
             </div>
           </SidebarMenuButton>
-
 
           {/* 6 */}
           <SidebarMenuButton
@@ -535,7 +531,43 @@ export const AppSidebar = () => {
             </div>
           </SidebarMenuButton>
 
-
+          {/* Audit Logs */}
+          <SidebarMenuButton
+            asChild
+            tooltip="Audit Logs"
+            isActive={isActive("/dashboard/audit-logs")}
+            className="group relative overflow-hidden"
+          >
+            <Link
+              href="/dashboard/audit-logs"
+              className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
+            >
+              <ShieldCheck className="h-5 w-5 text-primary" />
+              <span className="text-sm group-data-[collapsible=icon]:hidden font-medium">
+                Audit Logs
+              </span>
+              {effectivePlan !== "pro" ? (
+                <div className="ml-auto flex items-center gap-1 group-data-[collapsible=icon]:hidden">
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] h-4 px-1.5 border-border text-muted-foreground bg-muted/40 flex items-center gap-0.5 font-mono"
+                  >
+                    <Lock className="h-2.5 w-2.5" />
+                    Pro
+                  </Badge>
+                </div>
+              ) : (
+                <span
+                  className="
+            pointer-events-none absolute inset-0 -z-10
+            opacity-0 transition-opacity
+            group-data-[active=true]:opacity-100
+            bg-linear-to-l from-blue-600/80 dark:from-blue-600/50 via-blue-600/10 to-transparent
+          "
+                />
+              )}
+            </Link>
+          </SidebarMenuButton>
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter className="border-t border-accent px-2 py-2 group-data-[collapsible=icon]:hidden">

@@ -130,6 +130,7 @@ const proFeatures: FeatureItem[] = [
     icon: <CalendarCheck className="h-3.5 w-3.5" />,
   },
   { label: "30 GB Cloud Storage", icon: <Cpu className="h-3.5 w-3.5" /> },
+  { label: "Audit Logs", icon: <Shield className="h-3.5 w-3.5" /> },
   { label: "Priority Support", icon: <Star className="h-3.5 w-3.5" /> },
 ];
 
@@ -152,6 +153,7 @@ const customFeatures: FeatureItem[] = [
     icon: <Sparkles className="h-3.5 w-3.5" />,
   },
   { label: "Custom Cloud Storage", icon: <Cpu className="h-3.5 w-3.5" /> },
+  { label: "Audit Logs", icon: <Shield className="h-3.5 w-3.5" /> },
   {
     label: "24/7 Dedicated Support",
     icon: <HeadphonesIcon className="h-3.5 w-3.5" />,
@@ -447,6 +449,14 @@ const featureCategories: FeatureCat[] = [
     title: "Support & Security",
     icon: <Lock className="h-4 w-4" />,
     rows: [
+      {
+        label: "Audit Logs",
+        icon: <Shield className="h-3.5 w-3.5" />,
+        free: false,
+        plus: false,
+        pro: true,
+        custom: "Advanced",
+      },
       {
         label: "Dedicated Support",
         icon: <HeadphonesIcon className="h-3.5 w-3.5" />,

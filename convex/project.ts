@@ -3,6 +3,7 @@ import { customAlphabet } from "nanoid";
 import { internal } from "./_generated/api";
 import { mutation, query } from "./_generated/server";
 import { getActiveUserPlan, getPlanLimits, type PlanType } from "./pricing";
+import { recordAuditEvent } from "./auditLog";
 
 const slugId = customAlphabet("0123456789abcdefghijklmnopqrstuvwxyz", 5);
 
@@ -113,6 +114,17 @@ export const projectInit = mutation({
       userImage: user.avatarUrl,
       AccessRole: "owner",
       joinedAt: Date.now(),
+    });
+
+    await recordAuditEvent(ctx, {
+      projectId,
+      userId: user._id,
+      userName: user.name || "Owner",
+      userEmail: user.email,
+      action: "project.create",
+      targetType: "project",
+      targetId: projectId,
+      targetTitle: args.projectName,
     });
 
     return projectId;
@@ -909,6 +921,17 @@ export const handleJoinRequest = mutation({
         projectId: request.projectId,
         projectName: project.projectName,
       });
+
+      await recordAuditEvent(ctx, {
+        projectId: request.projectId,
+        userId: request.userId,
+        userName: request.userName,
+        userEmail: "Member",
+        action: "project.join",
+        targetType: "project",
+        targetId: request.projectId,
+        targetTitle: project.projectName,
+      });
     } else {
       // Only notify the requester on rejection
       await ctx.runMutation(internal.notifications.notifyRequestDecision, {
@@ -1405,6 +1428,17 @@ export const removeMember = mutation({
       projectName: project.projectName,
     });
 
+    await recordAuditEvent(ctx, {
+      projectId: args.projectId,
+      userId: user._id,
+      userName: user.name || "Admin",
+      userEmail: user.email,
+      action: "project.member_remove",
+      targetType: "project",
+      targetId: args.projectId,
+      targetTitle: target.userName,
+    });
+
     await ctx.db.delete(args.memberId);
   },
 });
@@ -1471,6 +1505,17 @@ export const leaveProject = mutation({
       memberAvatar: user.avatarUrl,
       projectId: args.projectId,
       projectName: project.projectName,
+    });
+
+    await recordAuditEvent(ctx, {
+      projectId: args.projectId,
+      userId: user._id,
+      userName: user.name || "Member",
+      userEmail: user.email,
+      action: "project.leave",
+      targetType: "project",
+      targetId: args.projectId,
+      targetTitle: project.projectName,
     });
 
     await ctx.db.delete(membership._id);

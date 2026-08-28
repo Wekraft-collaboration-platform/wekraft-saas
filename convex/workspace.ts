@@ -2,6 +2,8 @@ import { ConvexError, v } from "convex/values";
 import { mutation, query } from "./_generated/server";
 import { internal } from "./_generated/api";
 import { Id } from "./_generated/dataModel";
+import { encryptField, decryptField } from "./encryption";
+import { recordAuditEvent } from "./auditLog";
 
 // =======================================
 // CREATING TASK WITH NO ISSUE INITIAL
@@ -62,8 +64,13 @@ export const createTask = mutation({
 
     const { assignees, ...taskData } = args;
 
+    const encryptedDescription = args.description
+      ? await encryptField(args.description)
+      : undefined;
+
     const taskId = await ctx.db.insert("tasks", {
       ...taskData,
+      description: encryptedDescription,
       createdByUserId: user._id,
       isBlocked: false,
       createdAt: Date.now(),
@@ -85,6 +92,18 @@ export const createTask = mutation({
       );
 
     }
+
+    // Record Audit Log
+    await recordAuditEvent(ctx, {
+      projectId: args.projectId,
+      userId: user._id,
+      userName: user.name || "User",
+      userEmail: user.email,
+      action: "task.create",
+      targetType: "task",
+      targetId: taskId,
+      targetTitle: args.title,
+    });
 
     return taskId;
   },
@@ -111,7 +130,11 @@ export const getTasks = query({
           .query("taskAssignees")
           .withIndex("by_task", (q) => q.eq("taskId", task._id))
           .collect();
-        return { ...task, assignees: assignees };
+        return {
+          ...task,
+          description: await decryptField(task.description),
+          assignees: assignees,
+        };
       }),
     );
 
@@ -136,7 +159,11 @@ export const getTimelineTasks = query({
           .query("taskAssignees")
           .withIndex("by_task", (q) => q.eq("taskId", task._id))
           .collect();
-        return { ...task, assignees: assignees };
+        return {
+          ...task,
+          description: await decryptField(task.description),
+          assignees: assignees,
+        };
       }),
     );
 
@@ -163,12 +190,14 @@ export const createComment = mutation({
 
     if (!user) throw new Error("User not found");
 
+    const encryptedComment = await encryptField(args.comment);
+
     const commentId = await ctx.db.insert("taskComments", {
       taskId: args.taskId,
       userId: user._id,
       userName: user.name || "Anonymous",
       userImage: user.avatarUrl,
-      comment: args.comment,
+      comment: encryptedComment,
       createdAt: Date.now(),
       updatedAt: Date.now(),
     });
@@ -209,6 +238,21 @@ export const createComment = mutation({
       }
     }
 
+    // Record Audit Log
+    const taskObj = await ctx.db.get(args.taskId);
+    if (taskObj) {
+      await recordAuditEvent(ctx, {
+        projectId: taskObj.projectId,
+        userId: user._id,
+        userName: user.name || "User",
+        userEmail: user.email,
+        action: "task.comment_create",
+        targetType: "task",
+        targetId: args.taskId,
+        targetTitle: taskObj.title,
+      });
+    }
+
     return commentId;
   },
 });
@@ -218,11 +262,18 @@ export const getComments = query({
     taskId: v.id("tasks"),
   },
   handler: async (ctx, args) => {
-    return await ctx.db
+    const comments = await ctx.db
       .query("taskComments")
       .withIndex("by_task", (q) => q.eq("taskId", args.taskId))
       .order("desc")
       .collect();
+
+    return await Promise.all(
+      comments.map(async (c) => ({
+        ...c,
+        comment: (await decryptField(c.comment)) || "",
+      }))
+    );
   },
 });
 
@@ -268,6 +319,17 @@ export const updateTaskStatus = mutation({
         updatedAt: Date.now(),
       });
 
+      await recordAuditEvent(ctx, {
+        projectId: task.projectId,
+        userId: user._id,
+        userName: user.name || "User",
+        userEmail: user.email,
+        action: "task.status_change",
+        targetType: "task",
+        targetId: args.taskId,
+        targetTitle: task.title,
+        changes: { oldStatus: task.status, newStatus: args.status },
+      });
     } else {
       await ctx.db.patch(args.taskId, {
         status: args.status,
@@ -275,6 +337,27 @@ export const updateTaskStatus = mutation({
         finalCompletedBy: undefined,
         updatedAt: Date.now(),
       });
+
+      const user = await ctx.db
+        .query("users")
+        .withIndex("by_token", (q) =>
+          q.eq("clerkToken", identity.tokenIdentifier),
+        )
+        .unique();
+
+      if (user) {
+        await recordAuditEvent(ctx, {
+          projectId: task.projectId,
+          userId: user._id,
+          userName: user.name || "User",
+          userEmail: user.email,
+          action: "task.status_change",
+          targetType: "task",
+          targetId: args.taskId,
+          targetTitle: task.title,
+          changes: { oldStatus: task.status, newStatus: args.status },
+        });
+      }
     }
   },
 });
@@ -454,6 +537,12 @@ export const editTask = mutation({
       updatedAt: Date.now(),
     };
 
+    if (updateFields.description !== undefined) {
+      patchData.description = updateFields.description
+        ? await encryptField(updateFields.description)
+        : undefined;
+    }
+
     if (updateFields.status !== undefined) {
       if (updateFields.status === "completed") {
         const user = await ctx.db
@@ -473,6 +562,26 @@ export const editTask = mutation({
     }
 
     await ctx.db.patch(taskId, patchData);
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (user) {
+      await recordAuditEvent(ctx, {
+        projectId: task.projectId,
+        userId: user._id,
+        userName: user.name || "User",
+        userEmail: user.email,
+        action: "task.update",
+        targetType: "task",
+        targetId: taskId,
+        targetTitle: patchData.title || task.title,
+      });
+    }
 
     // Handle Assignees update if provided
     if (assignees !== undefined) {
@@ -607,7 +716,7 @@ export const getMyTasks = query({
         return {
           _id: task._id,
           title: task.title,
-          description: task.description,
+          description: await decryptField(task.description),
           priority: task.priority,
           status: task.status,
           estimation: task.estimation,
@@ -781,6 +890,13 @@ export const deleteTasks = mutation({
     const identity = await ctx.auth.getUserIdentity();
     if (!identity) throw new Error("Unauthorized");
 
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
     await Promise.all(
       args.taskIds.map(async (taskId) => {
         // 1. Delete task assignees
@@ -797,10 +913,22 @@ export const deleteTasks = mutation({
           .collect();
         await Promise.all(comments.map((c) => ctx.db.delete(c._id)));
 
-        // 3. Delete the task itself
-                // 3. Free attachment storage
+        // 3. Delete the task itself & record audit log
         const task = await ctx.db.get(taskId);
         if (task) {
+          if (user) {
+            await recordAuditEvent(ctx, {
+              projectId: task.projectId,
+              userId: user._id,
+              userName: user.name || "User",
+              userEmail: user.email,
+              action: "task.delete",
+              targetType: "task",
+              targetId: taskId,
+              targetTitle: task.title,
+            });
+          }
+
           const currentAttachments = task.attachments ?? [];
           let totalSizeToFree = 0;
           for (const att of currentAttachments) {

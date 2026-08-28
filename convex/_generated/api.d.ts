@@ -11,9 +11,11 @@
 import type * as admin from "../admin.js";
 import type * as agentTools from "../agentTools.js";
 import type * as apiKeys from "../apiKeys.js";
+import type * as auditLog from "../auditLog.js";
 import type * as calendar from "../calendar.js";
 import type * as crons from "../crons.js";
 import type * as customerDesk from "../customerDesk.js";
+import type * as encryption from "../encryption.js";
 import type * as extensionApi from "../extensionApi.js";
 import type * as http from "../http.js";
 import type * as issue from "../issue.js";
@@ -43,9 +45,11 @@ declare const fullApi: ApiFromModules<{
   admin: typeof admin;
   agentTools: typeof agentTools;
   apiKeys: typeof apiKeys;
+  auditLog: typeof auditLog;
   calendar: typeof calendar;
   crons: typeof crons;
   customerDesk: typeof customerDesk;
+  encryption: typeof encryption;
   extensionApi: typeof extensionApi;
   http: typeof http;
   issue: typeof issue;
