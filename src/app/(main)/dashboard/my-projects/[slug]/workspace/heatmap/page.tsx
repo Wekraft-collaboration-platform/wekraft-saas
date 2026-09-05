@@ -1,0 +1,92 @@
+"use client";
+
+import { useQuery } from "convex/react";
+import { useParams } from "next/navigation";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { useSidebar } from "@/components/ui/sidebar";
+import type { FolderNode } from "@/modules/workspace/heatmaps/action";
+import { HeatmapFlow } from "@/modules/workspace/heatmaps/HeatmapFlow";
+import { HeatmapPanel } from "@/modules/workspace/heatmaps/HeatmapPanel";
+import { api } from "../../../../../../../../convex/_generated/api";
+
+const HeatmapPage = () => {
+  const { open: sidebarOpen, setOpen: setSidebarOpen } = useSidebar();
+  const [isPanelOpen, setIsPanelOpen] = useState(false);
+  const [structure, setStructure] = useState<FolderNode | null>(null);
+  const [recentlyChangedPaths, setRecentlyChangedPaths] = useState<string[]>(
+    [],
+  );
+  const [tasks, setTasks] = useState<any[]>([]);
+
+  const params = useParams();
+  const slug = params.slug as string;
+
+  const project = useQuery(api.project.getProjectBySlug, { slug });
+  const repoId = project?.repositoryId;
+  const projectId = project?._id;
+
+  // Fetch issues for the project
+  const issues = useQuery(
+    api.issue.getFilteredIssues,
+    projectId ? { projectId } : "skip",
+  );
+
+  // Extract file paths from non-closed issues
+  const issuePaths = useMemo(() => {
+    if (!issues) return [];
+    return issues
+      .filter((issue) => issue.status !== "closed" && issue.fileLinked)
+      .map((issue) => issue.fileLinked as string);
+  }, [issues]);
+
+  const didInit = useRef(false);
+
+  useEffect(() => {
+    if (!didInit.current) {
+      setSidebarOpen(false);
+      setIsPanelOpen(true);
+      didInit.current = true;
+    }
+  }, [setSidebarOpen]);
+
+  useEffect(() => {
+    if (sidebarOpen && isPanelOpen) {
+      setIsPanelOpen(false);
+    }
+  }, [sidebarOpen, isPanelOpen]);
+
+  const isFreeTier = (project as any)?.ownerAccountType === "free";
+
+  return (
+    <div className="flex min-h-svh w-full overflow-hidden bg-background">
+      <HeatmapPanel
+        isOpen={isPanelOpen}
+        repoId={repoId}
+        projectId={projectId}
+        structure={structure}
+        issuePaths={issuePaths}
+        recentlyChangedPaths={recentlyChangedPaths}
+        setRecentlyChangedPaths={setRecentlyChangedPaths}
+        setStructure={setStructure}
+        isFreeTier={isFreeTier}
+        onTasksLoaded={setTasks}
+        onToggle={(open) => {
+          setIsPanelOpen(open);
+          if (open) setSidebarOpen(false);
+        }}
+      />
+      {/* REACT FLOW MAP */}
+      <div className="flex-1 relative overflow-hidden">
+        <HeatmapFlow
+          structure={structure}
+          issuePaths={issuePaths}
+          recentlyChangedPaths={recentlyChangedPaths}
+          isFreeTier={isFreeTier}
+          tasks={tasks}
+        />
+      </div>
+    </div>
+  );
+};
+
+export default HeatmapPage;

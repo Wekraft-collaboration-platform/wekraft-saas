@@ -1,0 +1,1141 @@
+/**
+ * MessageItem.tsx
+ *
+ * Component for rendering individual messages in a feed or thread.
+ *
+ * Features:
+ * - Displays user info, content, and timestamp.
+ * - Supports message grouping (collapsed view for consecutive messages from the same user).
+ * - Real-time reactions (add/remove).
+ * - Inline message editing and deletion.
+ * - Quoted reply blocks for context.
+ * - Pinned message indicators.
+ * - Interaction toolbar for quick actions (React, Reply, Edit, Pin, Delete, Copy).
+ *
+ * Integration:
+ * - Communicates actions back to parent components via callbacks (`onReact`, `onReply`, etc.).
+ */
+"use client";
+
+import { useEffect, useRef, useState } from "react";
+import { LinkPreview } from "./LinkPreview";
+import { Message } from "./hooks/useMessages";
+import { PollBlock } from "./PollBlock";
+import { CreatePollDialog } from "./CreatePollDialog";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { ScrollArea } from "@/components/ui/scroll-area";
+import { Button } from "@/components/ui/button";
+import { cn } from "@/lib/utils";
+import { getUserColor, getFileIconPath } from "./lib/utils";
+import {
+  SmilePlus,
+  MoreHorizontal,
+  Reply,
+  Pencil,
+  AtSign,
+  Paperclip,
+  Loader2,
+  FileIcon,
+  Download,
+  Eye,
+  Check,
+  Clock,
+  Trash2,
+  Copy,
+  Pin,
+  Ban,
+  X,
+} from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+} from "@/components/ui/dialog";
+import { format } from "date-fns";
+import { Textarea } from "@/components/ui/textarea";
+import { toast } from "sonner";
+
+// ── Constants ──────────────────────────────────────────────────────────────────
+const QUICK_EMOJIS = ["👍", "❤️", "😂", "🎉", "🔥", "✅", "👀", "💪"] as const;
+const MEDIA_REGEX = /^(!?)\[([^\]]+)\]\(((?:blob:)?https?:\/\/[^\s\)]+)\)(?:\s+([\s\S]*))?$/;
+
+const getProxyUrl = (url: string, download = false) => {
+  if (!url) return "";
+  const s3Prefix = "https://wekraft-saas-upload-s3.s3.ap-south-1.amazonaws.com/";
+  if (url.startsWith(s3Prefix)) {
+    const key = url.slice(s3Prefix.length);
+    return `/api/teamspace/download?key=${encodeURIComponent(key)}&download=${download}`;
+  }
+  return `/api/teamspace/download?url=${encodeURIComponent(url)}&download=${download}`;
+};
+
+// ── Helpers ────────────────────────────────────────────────────────────────────
+
+/**
+ * Highlights all occurrences of `term` inside `text`.
+ *
+ * FIX: The original used a single global RegExp instance and called `.test()`
+ * on the same instance used for `.split()`. Global RegExp keeps `lastIndex`
+ * state between calls, which caused every other match to be skipped.
+ * Now we create a fresh non-global regex for the per-part test.
+ */
+function Highlight({
+  text,
+  term,
+  messageId,
+}: {
+  text: string;
+  term?: string;
+  messageId?: string;
+}) {
+  if (!term || !term.trim()) return <>{text}</>;
+
+  const escaped = term.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+  const splitRegex = new RegExp(`(${escaped})`, "gi");
+  const parts = text.split(splitRegex);
+
+  return (
+    <>
+      {parts.map((part, i) => {
+        // Use a fresh non-global regex so lastIndex never bleeds between calls.
+        const isMatch = new RegExp(escaped, "i").test(part);
+        // FIX: key was previously `match-${i}` / `text-${i}` — using both index
+        // and content makes keys stable across minor list mutations.
+        return isMatch ? (
+          <span
+            key={`match-${i}-${part}`}
+            id={messageId ? `search-match-${messageId}` : undefined}
+            className="bg-yellow-400/40 dark:bg-yellow-500/40 text-foreground rounded-sm px-0.5 ring-1 ring-yellow-500/20 scroll-mt-20"
+          >
+            {part}
+          </span>
+        ) : (
+          <span key={`text-${i}-${part}`}>{part}</span>
+        );
+      })}
+    </>
+  );
+}
+
+// ── Types ──────────────────────────────────────────────────────────────────────
+
+interface Props {
+  message: Message;
+  isGrouped: boolean;
+  currentUserId: string;
+  isPinned?: boolean;
+  /** Admin / owner — can delete anyone's message */
+  canModerateAll?: boolean;
+  /** Admin / owner — can pin anyone's message. Defaults to `canModerateAll`. */
+  canPinAll?: boolean;
+  onReply: (message: Message) => void;
+  onEdit: (messageId: string, content: string) => Promise<void>;
+  onDelete: (messageId: string) => Promise<void>;
+  onReact: (messageId: string, emoji: string, hasReacted: boolean) => Promise<void>;
+  onPin: (messageId: string, pinned: boolean) => void;
+  onPollVote: (messageId: string, optionId: string) => Promise<void>;
+  onEditPoll?: (messageId: string, poll: any) => Promise<void>;
+  highlightTerm?: string;
+  projectMembers?: any[];
+  channelReads?: Record<string, number>;
+  repoFullName?: string;
+  isShimmering?: boolean;
+}
+
+// ── Component ──────────────────────────────────────────────────────────────────
+
+export function MessageItem({
+  message,
+  isGrouped,
+  currentUserId,
+  isPinned = false,
+  canModerateAll = false,
+  canPinAll,
+  onReply,
+  onEdit,
+  onDelete,
+  onReact,
+  onPin,
+  onPollVote,
+  onEditPoll,
+  highlightTerm,
+  projectMembers,
+  channelReads,
+  repoFullName,
+  isShimmering = false,
+}: Props) {
+  const [hovered, setHovered] = useState(false);
+  const [dropdownOpen, setDropdownOpen] = useState(false);
+  const [emojiOpen, setEmojiOpen] = useState(false);
+  const [editing, setEditing] = useState(false);
+  const [editContent, setEditContent] = useState(message.content);
+  const [saving, setSaving] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [deleting, setDeleting] = useState(false);
+  const [editPollDialogOpen, setEditPollDialogOpen] = useState(false);
+  const [readReceiptsOpen, setReadReceiptsOpen] = useState(false);
+
+  const [previewMediaUrl, setPreviewMediaUrl] = useState<string | null>(null);
+  const [previewMediaType, setPreviewMediaType] = useState<"image" | "pdf" | "office" | null>(null);
+  const [previewMediaName, setPreviewMediaName] = useState<string>("");
+  const [previewLoading, setPreviewLoading] = useState(false);
+
+  const isMedia = message.content ? MEDIA_REGEX.test(message.content) : false;
+
+  // FIX: Sync edit buffer when the message is updated externally (e.g. real-time
+  // collaboration) while the user is NOT actively editing.
+  useEffect(() => {
+    if (!editing) {
+      setEditContent(message.content);
+    }
+  }, [message.content, editing]);
+
+  // Keep toolbar visible while any floating menu is open
+  const isDeleted = message.content === "$__DELETED__$";
+  const showToolbar = (hovered || dropdownOpen || emojiOpen) && !editing && !isDeleted;
+
+  const isOwn = message.user_id === currentUserId;
+  // FIX: Separate canPin from canDelete — moderators may delete without
+  // necessarily being allowed to pin (maps to stricter permission models).
+  const canDelete = isOwn || canModerateAll;
+  const canPin = isOwn || (canPinAll ?? canModerateAll);
+
+  // ── Handlers ─────────────────────────────────────────────────────────────────
+
+  const handleSaveEdit = async () => {
+    // FIX: Guard against double-submit (Enter key + button click race).
+    if (saving) return;
+    if (!editContent.trim() || editContent === message.content) {
+      setEditing(false);
+      return;
+    }
+    setSaving(true);
+    try {
+      await onEdit(message.id, editContent);
+    } finally {
+      setSaving(false);
+      setEditing(false);
+    }
+  };
+
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
+    if (e.key === "Enter" && !e.shiftKey) {
+      e.preventDefault();
+      handleSaveEdit();
+    }
+    if (e.key === "Escape") {
+      setEditContent(message.content);
+      setEditing(false);
+    }
+  };
+
+  // FIX: `navigator.clipboard` is undefined in non-HTTPS / non-secure contexts.
+  // Wrap in try/catch and surface a readable error instead of a silent crash.
+  const handleCopy = async () => {
+    try {
+      await navigator.clipboard.writeText(message.content);
+      toast.success("Copied to clipboard", {
+        description:
+          message.content.length > 60
+            ? message.content.slice(0, 60) + "…"
+            : undefined,
+        duration: 2000,
+      });
+    } catch {
+      toast.error("Copy failed", {
+        description: "Your browser may not support clipboard access.",
+        duration: 3000,
+      });
+    }
+  };
+
+  // FIX: `setDeleteDialogOpen(false)` was only called on success, leaving the
+  // dialog open if `onDelete` threw. Moved to `finally`.
+  const handleConfirmDelete = async () => {
+    setDeleting(true);
+    try {
+      await onDelete(message.id);
+    } finally {
+      setDeleting(false);
+      setDeleteDialogOpen(false);
+    }
+  };
+
+  const handleDownload = (e: React.MouseEvent, url: string, filename: string) => {
+    e.preventDefault();
+    e.stopPropagation();
+
+    // Proxy the download through our Next.js API route to bypass CORS 
+    // and force the Content-Disposition attachment header natively.
+    const baseProxyUrl = getProxyUrl(url, true);
+    const proxyUrl = `${baseProxyUrl}&filename=${encodeURIComponent(filename)}`;
+
+    const link = document.createElement("a");
+    link.href = proxyUrl;
+    link.download = filename;
+    link.target = "_blank"; // Opens the download silently in the background
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+
+    toast.success(`Downloading ${filename}...`, { duration: 3000 });
+  };
+
+  // Quoted-reply keyboard handler (div acting as interactive element).
+  const handleQuoteKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
+    if (e.key === "Enter" || e.key === " ") {
+      e.preventDefault();
+      // Scroll to parent if needed — parent handler can be wired in via prop.
+    }
+  };
+
+  // ── Render ────────────────────────────────────────────────────────────────────
+
+  return (
+    <>
+      {/* ── Pinned banner ───────────────────────────────────── */}
+      {isPinned && (
+        <div
+          aria-label="Pinned message"
+          className="flex items-center gap-1.5 mx-4 mb-0.5 mt-1 text-[10px] text-blue-500/80 font-bold select-none uppercase tracking-wider"
+        >
+          <Pin className="h-2.5 w-2.5" aria-hidden="true" />
+          pinned
+        </div>
+      )}
+
+      <div
+        id={`message-${message.id}`}
+        className={cn(
+          "group flex w-full gap-2 px-4 py-0.5 transition-colors relative overflow-visible",
+          isOwn
+            ? "flex-row-reverse justify-start pl-16 pr-4"
+            : "flex-row justify-start pr-16",
+          isGrouped ? "mt-0" : "mt-4",
+          isPinned && "border-l-2 border-l-blue-500 rounded-l-none"
+        )}
+        onMouseEnter={() => setHovered(true)}
+        onMouseLeave={() => setHovered(false)}
+      >
+        {/* Avatar / Spacer (only for others) */}
+        {!isOwn && (
+          <div className="w-9 shrink-0 mt-0.5">
+            {!isGrouped ? (
+              <Avatar className="h-9 w-9 cursor-pointer hover:opacity-90 transition-opacity shadow-sm">
+                <AvatarImage src={message.user_image ?? undefined} />
+                <AvatarFallback className="text-xs bg-muted border">
+                  {message.user_name.substring(0, 2).toUpperCase()}
+                </AvatarFallback>
+              </Avatar>
+            ) : (
+              <div className="w-9" aria-hidden="true" />
+            )}
+          </div>
+        )}
+
+        {/* Message Container (Bubble + Info) */}
+        <div
+          className={cn(
+            "flex flex-col max-w-[85%] md:max-w-[65%] relative",
+            isOwn ? "items-end" : "items-start"
+          )}
+        >
+          {/* Header (only for others, not grouped) */}
+          {!isOwn && !isGrouped && (
+            <div className="flex items-baseline gap-2 mb-1 px-1">
+              <span
+                className="font-semibold text-xs hover:underline cursor-pointer leading-tight"
+                style={{
+                  color:
+                    message.user_id === "kaya" || message.user_id === "harry"
+                      ? "#ffffff"
+                      : getUserColor(message.user_name),
+                }}
+              >
+                {message.user_name}
+              </span>
+              {(message.user_id === "kaya" || message.user_id === "harry") && (
+                <span className="text-[9px] text-muted-foreground font-semibold bg-accent/30 px-1.5 py-0.5 rounded border border-border/50 uppercase tracking-wider">
+                  {message.user_id === "kaya" ? "AI PM Agent" : "AI Dev Agent"}
+                </span>
+              )}
+            </div>
+          )}
+
+          {/* The Bubble */}
+          <div
+            className={cn(
+              "relative px-2.5 py-1 transition-all duration-200 border backdrop-blur-[2px] min-w-[60px] max-w-full shadow-sm",
+              isOwn
+                ? cn(
+                  "bg-primary/[0.03] border-primary/[0.08]",
+                  isGrouped ? "rounded-lg" : "rounded-lg rounded-tr-none"
+                )
+                : cn(
+                  "bg-primary/[0.03] border-primary/[0.08]",
+                  isGrouped ? "rounded-lg" : "rounded-lg rounded-tl-none"
+                )
+            )}
+          >
+            {/* WhatsApp-style tail for first message in group */}
+            {!isGrouped &&
+              (isOwn ? (
+                <span
+                  className="absolute top-0 right-[-8px]"
+                  aria-hidden="true"
+                  style={{
+                    color: "rgba(var(--primary-rgb,99,102,241),0.06)",
+                    filter: "drop-shadow(1px 0px 0px rgba(var(--primary-rgb,99,102,241),0.08))",
+                  }}
+                >
+                  <svg viewBox="0 0 8 13" width="8" height="13" className="overflow-visible">
+                    <path fill="currentColor" d="M5.188 0H0v11.193l6.467-8.625C7.526 1.026 6.958 0 5.188 0z" />
+                  </svg>
+                </span>
+              ) : (
+                <span
+                  className="absolute top-0 left-[-8px]"
+                  aria-hidden="true"
+                  style={{
+                    color: "rgba(var(--primary-rgb,99,102,241),0.06)",
+                    filter: "drop-shadow(-1px 0px 0px rgba(var(--primary-rgb,99,102,241),0.08))",
+                  }}
+                >
+                  <svg viewBox="0 0 8 13" width="8" height="13" className="overflow-visible">
+                    <path fill="currentColor" d="M2.812 0H8v11.193L1.533 2.568C.474 1.026 1.042 0 2.812 0z" />
+                  </svg>
+                </span>
+              ))}
+
+
+
+            {/* Quoted reply block */}
+            {!isDeleted && message.thread_parent_id &&
+              (message.parent_content || message.parent_user_name) && (
+                // FIX: `div` was interactive but had no role/tabIndex/keyboard handler.
+                <div
+                  role="button"
+                  tabIndex={0}
+                  onKeyDown={handleQuoteKeyDown}
+                  className={cn(
+                    "mb-1 rounded p-1.5 text-[12px] flex flex-col gap-0 shadow-sm select-none cursor-pointer hover:bg-black/5 dark:hover:bg-white/5 transition-colors",
+                    "bg-black/10"
+                  )}
+                  aria-label={`Quoted reply from ${message.parent_user_name ?? "Unknown"}`}
+                >
+                  <div
+                    className="font-semibold text-[10px] leading-tight"
+                    style={{ color: message.parent_user_name ? getUserColor(message.parent_user_name) : undefined }}
+                  >
+                    {message.parent_user_name ?? "Unknown"}
+                  </div>
+                  <div className="text-muted-foreground/80 line-clamp-2 leading-snug overflow-hidden text-ellipsis mt-0.5">
+                    {message.parent_content === "$__DELETED__$" ? (
+                      <span className="italic flex items-center gap-1"><Ban className="h-2.5 w-2.5" /> This message was deleted</span>
+                    ) : (() => {
+                      const pc = message.parent_content ?? "";
+                      // Detect markdown media/file: ![name](url) or [name](url)
+                      const mediaMatch = pc.match(/^(!?)\[([^\]]+)\]\(((?:blob:)?https?:\/\/[^\s\)]+)\)(?:\s+([\s\S]*))?$/);
+                      if (mediaMatch) {
+                        const isImg = mediaMatch[1] === "!";
+                        const name = mediaMatch[2];
+                        const url = mediaMatch[3];
+                        const caption = (mediaMatch[4] ?? "").trim();
+                        if (isImg) {
+                          return (
+                            <span className="flex items-center gap-1.5">
+                              {/* eslint-disable-next-line @next/next/no-img-element */}
+                              <img src={getProxyUrl(url, false)} alt={name} className="h-6 w-6 rounded object-cover shrink-0 opacity-80" />
+                              <span className="truncate">{caption || name}</span>
+                            </span>
+                          );
+                        }
+                        // File attachment
+                        return (
+                          <span className="flex items-center gap-1.5">
+                            <Paperclip className="h-3 w-3 shrink-0 opacity-70" />
+                            <span className="truncate">{caption || name}</span>
+                          </span>
+                        );
+                      }
+                      // Plain text — render as-is (truncated by line-clamp)
+                      return pc || "Message not found";
+                    })()}
+                  </div>
+                </div>
+              )}
+
+            {/* Message content / edit box */}
+            {isDeleted ? (
+              <div className="flex items-center gap-1.5 text-muted-foreground/60 italic text-[13px] px-1 py-0.5 min-w-[140px]">
+                <Ban className="h-3.5 w-3.5" />
+                This message was deleted
+              </div>
+            ) : editing ? (
+              <div className="min-w-[200px]">
+                <Textarea
+                  value={editContent}
+                  onChange={(e) => setEditContent(e.target.value)}
+                  onKeyDown={handleKeyDown}
+                  className="text-[14px] min-h-[60px] resize-none bg-transparent border-none focus-visible:ring-0 p-0 text-inherit"
+                  autoFocus
+                  aria-label="Edit message"
+                />
+                <div className="flex items-center gap-1.5 mt-1.5">
+                  <Button
+                    size="sm"
+                    className="h-6 text-[10px] px-2"
+                    onClick={handleSaveEdit}
+                    // FIX: also disabled while saving to prevent double-submit.
+                    disabled={saving}
+                    aria-busy={saving}
+                  >
+                    <Check className="h-3 w-3 mr-1" aria-hidden="true" />
+                    Save
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="h-6 text-[10px] px-2 text-inherit hover:bg-black/10"
+                    onClick={() => {
+                      setEditContent(message.content);
+                      setEditing(false);
+                    }}
+                  >
+                    <X className="h-3 w-3 mr-1" aria-hidden="true" />
+                    Cancel
+                  </Button>
+                </div>
+              </div>
+            ) : (
+              <div className="relative flex flex-col">
+                {message.content && (() => {
+                  const match = message.content.match(MEDIA_REGEX);
+
+                  let isMedia = false;
+                  let isImage = false;
+                  let fileName = "";
+                  let fileUrl = "";
+                  let captionText = message.content;
+
+                  if (match) {
+                    isMedia = true;
+                    isImage = match[1] === "!";
+                    fileName = match[2];
+                    fileUrl = match[3];
+                    captionText = match[4] || "";
+                  }
+
+                  const renderText = (text: string) => {
+                    if (!text) return null;
+                    // Split on @mentions and backtick-wrapped paths
+                    const mentionOrCodeRegex = /(@[a-zA-Z0-9_]+|`[^`]+`)/g;
+                    const parts = text.split(mentionOrCodeRegex);
+                    return parts.map((part, i) => {
+                      if (part.startsWith("@")) {
+                        const username = part.substring(1);
+                        const lowerName = username.toLowerCase();
+                        const isSpecial = ["admin", "owner", "member", "everyone"].includes(lowerName);
+                        const isMember = isSpecial || projectMembers?.some(m => m.userName?.toLowerCase() === lowerName);
+
+                        if (isMember) {
+                          return (
+                            <span
+                              key={`mention-${i}`}
+                              className="font-bold hover:underline cursor-pointer transition-all"
+                              style={{ color: getUserColor(username) }}
+                            >
+                              {part}
+                            </span>
+                          );
+                        }
+                      } else if (part.startsWith("`") && part.endsWith("`") && part.length > 2) {
+                        const filePath = part.slice(1, -1);
+                        const fileName = filePath.split("/").pop() || filePath;
+                        // Check if it looks like a file path (has extension or slash)
+                        if (filePath.includes(".") || filePath.includes("/")) {
+                          if (repoFullName) {
+                            return (
+                              <a
+                                key={`code-link-${i}`}
+                                href={`https://github.com/${repoFullName}/blob/main/${filePath}`}
+                                target="_blank"
+                                rel="noopener noreferrer"
+                                className="text-blue-500 hover:underline cursor-pointer font-medium transition-colors"
+                              >
+                                {fileName}
+                              </a>
+                            );
+                          }
+                          // No repo linked — show as blue text without link
+                          return (
+                            <span key={`code-${i}`} className="text-blue-500 font-medium">
+                              {fileName}
+                            </span>
+                          );
+                        }
+                      }
+                      return (
+                        <Highlight
+                          key={`text-${i}`}
+                          text={part}
+                          term={highlightTerm}
+                          messageId={message.id}
+                        />
+                      );
+                    });
+                  };
+
+                  const editedTag = message.edited_at && (
+                    <span className="text-[8px] ml-1.5 select-none opacity-40 italic">
+                      (edited)
+                    </span>
+                  );
+                  const timestampSpacer = !(message.poll && !message.content) && <span className={cn("inline-block h-0", message.id.startsWith("optimistic-") ? "w-14" : "w-11")} />;
+
+                  if (isMedia) {
+                    return (
+                      <div className="flex flex-col">
+                        {isImage ? (
+                          <div
+                            className={cn("mt-0.5 cursor-pointer relative group inline-block", captionText ? "mb-1.5" : "mb-0.5")}
+                            onClick={() => {
+                              setPreviewMediaUrl(fileUrl);
+                              setPreviewMediaType("image");
+                              setPreviewMediaName(fileName);
+                            }}
+                          >
+                            <img
+                              src={getProxyUrl(fileUrl, false)}
+                              alt={fileName}
+                              className="max-h-[140px] max-w-[160px] sm:max-h-[180px] sm:max-w-[220px] w-auto rounded-md object-contain transition-opacity group-hover:opacity-90"
+                            />
+                            <div className="absolute inset-0 bg-black/30 opacity-0 group-hover:opacity-100 transition-opacity rounded-md flex items-center justify-center pointer-events-none">
+                              <Eye className="text-white h-6 w-6 drop-shadow-md" />
+                            </div>
+                          </div>
+                        ) : (
+                          <div
+                            onClick={async (e) => {
+                              const isPdf = fileName.toLowerCase().endsWith('.pdf');
+                              const isOffice = fileName.toLowerCase().match(/\.(doc|docx|ppt|pptx|xls|xlsx)$/);
+                              if (isPdf || isOffice) {
+                                e.preventDefault();
+                                if (previewLoading) return;
+
+                                if (isOffice) {
+                                  setPreviewLoading(true);
+                                  const toastId = toast.loading("Preparing document preview...");
+                                  try {
+                                    const params = new URLSearchParams();
+                                    const s3Prefix = "https://wekraft-saas-upload-s3.s3.ap-south-1.amazonaws.com/";
+                                    if (fileUrl.startsWith(s3Prefix)) {
+                                      params.set("key", fileUrl.slice(s3Prefix.length));
+                                    } else {
+                                      params.set("url", fileUrl);
+                                    }
+
+                                    const res = await fetch(`/api/teamspace/presign?${params.toString()}`);
+                                    if (!res.ok) throw new Error("Failed to sign URL");
+                                    const data = await res.json();
+                                    
+                                    setPreviewMediaUrl(data.signedUrl);
+                                    setPreviewMediaType("office");
+                                    setPreviewMediaName(fileName);
+                                    toast.dismiss(toastId);
+                                  } catch (err) {
+                                    console.error("Preview error:", err);
+                                    toast.error("Failed to load preview. Downloading file instead.", { id: toastId });
+                                    handleDownload(e, fileUrl, fileName);
+                                  } finally {
+                                    setPreviewLoading(false);
+                                  }
+                                } else {
+                                  setPreviewMediaUrl(fileUrl);
+                                  setPreviewMediaType("pdf");
+                                  setPreviewMediaName(fileName);
+                                }
+                              } else {
+                                handleDownload(e, fileUrl, fileName);
+                              }
+                            }}
+                            className="flex items-center gap-3 p-2.5 mt-0.5 mb-1 bg-black/5 dark:bg-white/5 rounded-lg hover:bg-black/10 dark:hover:bg-white/10 transition-colors cursor-pointer max-w-[280px]"
+                          >
+                            <div className="p-1 shrink-0">
+                              <img src={getFileIconPath(fileName)} alt="icon" className="h-8 w-8 object-contain" />
+                            </div>
+                            <div className="flex flex-col overflow-hidden min-w-[120px] flex-1">
+                              <span className="text-sm font-medium truncate" title={fileName}>{fileName}</span>
+                              <span className="text-[10px] text-muted-foreground uppercase mt-0.5">Document</span>
+                            </div>
+                            <div
+                              className="ml-2 p-1.5 rounded-full bg-black/5 dark:bg-white/5 hover:bg-black/10 dark:hover:bg-white/10 shrink-0"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handleDownload(e, fileUrl, fileName);
+                              }}
+                            >
+                              <Download className="h-3.5 w-3.5 text-muted-foreground" />
+                            </div>
+                          </div>
+                        )}
+
+                        {(captionText || message.edited_at) && (
+                          <div className={cn("text-[14px] leading-snug break-all md:break-words whitespace-pre-wrap text-foreground/80 font-normal", !captionText && "min-h-4")}>
+                            {renderText(captionText)}
+                            {editedTag}
+                            {timestampSpacer}
+                          </div>
+                        )}
+
+                        {/* Space for timestamp if no caption */}
+                        {!captionText && !message.edited_at && (
+                          <div className={cn("h-3 mt-1", message.id.startsWith("optimistic-") ? "w-14" : "w-11")} />
+                        )}
+                      </div>
+                    );
+                  }
+
+                  // Default text render
+                  return (
+                    <div className="text-[14px] leading-snug break-all md:break-words whitespace-pre-wrap text-foreground/80 font-normal">
+                      {isShimmering ? (
+                        <span className="ai-shimmer-text">{message.content}</span>
+                      ) : (
+                        renderText(message.content)
+                      )}
+                      {editedTag}
+                      {timestampSpacer}
+                    </div>
+                  );
+                })()}
+
+                {message.poll && !isDeleted && (
+                  <div className="mt-1 mb-2">
+                    <PollBlock
+                      poll={message.poll}
+                      messageId={message.id}
+                      currentUserId={currentUserId}
+                      onVote={(msgId, optId) => onPollVote(msgId, optId)}
+                    />
+                    {/* Invisible spacer for timestamp when there's only a poll */}
+                    {!message.content && <div className={cn("h-2", message.id.startsWith("optimistic-") ? "w-14" : "w-11")} />}
+                  </div>
+                )}
+
+                <div className="absolute bottom-0 right-0 flex items-center gap-1">
+                  <span className="text-[9px] select-none text-muted-foreground/60 font-medium uppercase leading-none">
+                    {format(new Date(message.created_at), "h:mm a")}
+                  </span>
+                  {message.user_id === currentUserId && message.id.startsWith("optimistic-") && (
+                    <Clock className="h-2.5 w-2.5 text-muted-foreground/60" />
+                  )}
+                </div>
+              </div>
+            )}
+
+            {/* Link Preview */}
+            {message.link_preview && (
+              <LinkPreview preview={message.link_preview} />
+            )}
+
+            {/* Reaction Toolbar (appears on hover, placed outside bubble visually but relative to it) */}
+            {showToolbar && (
+              <div
+                className={cn(
+                  "absolute top-1/2 -translate-y-1/2 flex items-center gap-1 z-30",
+                  isOwn ? "right-full mr-2" : "left-full ml-2"
+                )}
+              >
+                <Popover open={emojiOpen} onOpenChange={setEmojiOpen}>
+                  <PopoverTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      aria-label="Add reaction"
+                      className="h-7 w-7 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white transition-colors"
+                    >
+                      <SmilePlus className="h-4 w-4" aria-hidden="true" />
+                    </Button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    className="w-auto p-2 rounded-2xl shadow-xl"
+                    side="top"
+                    align="center"
+                  >
+                    <div className="flex gap-1" role="toolbar" aria-label="Quick reactions">
+                      {QUICK_EMOJIS.map((emoji) => {
+                        const hasReacted =
+                          message.reactions
+                            .find((r) => r.emoji === emoji)
+                            ?.userIds.includes(currentUserId) ?? false;
+                        return (
+                          <button
+                            key={emoji}
+                            onClick={() => onReact(message.id, emoji, hasReacted)}
+                            aria-label={`React with ${emoji}`}
+                            aria-pressed={hasReacted}
+                            className={cn(
+                              "text-xl p-1.5 rounded-xl transition-all hover:scale-125 active:scale-90",
+                              hasReacted
+                                ? "bg-blue-500/20 ring-1 ring-blue-500/30"
+                                : "hover:bg-accent"
+                            )}
+                          >
+                            {emoji}
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </PopoverContent>
+                </Popover>
+
+                <DropdownMenu open={dropdownOpen} onOpenChange={setDropdownOpen}>
+                  <DropdownMenuTrigger asChild>
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      aria-label="Message actions"
+                      className="h-7 w-7 rounded-full hover:bg-black/10 dark:hover:bg-white/10 text-black/70 dark:text-white/70 hover:text-black dark:hover:text-white transition-colors"
+                    >
+                      <MoreHorizontal className="h-4 w-4" aria-hidden="true" />
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    align={isOwn ? "end" : "start"}
+                    className="w-40 rounded-xl shadow-xl"
+                    onCloseAutoFocus={(e) => e.preventDefault()}
+                  >
+                    <DropdownMenuItem
+                      onClick={() => onReply(message)}
+                      className="rounded-lg"
+                    >
+                      <Reply className="h-4 w-4 mr-2 text-muted-foreground" aria-hidden="true" />
+                      Reply
+                    </DropdownMenuItem>
+                    {(() => {
+                      const match = message.content?.match(MEDIA_REGEX);
+                      if (match) {
+                        return (
+                          <DropdownMenuItem
+                            onClick={(e) => handleDownload(e, match[3], match[2])}
+                            className="rounded-lg"
+                          >
+                            <Download className="h-4 w-4 mr-2 text-muted-foreground" aria-hidden="true" />
+                            Download
+                          </DropdownMenuItem>
+                        );
+                      }
+                      return null;
+                    })()}
+                    {message.content?.trim() && !isMedia ? (
+                      <DropdownMenuItem onClick={handleCopy} className="rounded-lg">
+                        <Copy className="h-4 w-4 mr-2 text-muted-foreground" aria-hidden="true" />
+                        Copy Text
+                      </DropdownMenuItem>
+                    ) : null}
+                    {canPin && (
+                      <DropdownMenuItem
+                        onClick={() => onPin(message.id, !isPinned)}
+                        className="rounded-lg"
+                      >
+                        <Pin className="h-4 w-4 mr-2 text-muted-foreground" aria-hidden="true" />
+                        {isPinned ? "Unpin" : "Pin"}
+                      </DropdownMenuItem>
+                    )}
+                    {isOwn && !isMedia && (
+                      <DropdownMenuItem
+                        onClick={() => {
+                          if (message.poll) {
+                            setEditPollDialogOpen(true);
+                          } else {
+                            setEditing(true);
+                          }
+                        }}
+                        className="rounded-lg"
+                      >
+                        <Pencil className="h-4 w-4 mr-2 text-muted-foreground" aria-hidden="true" />
+                        Edit
+                      </DropdownMenuItem>
+                    )}
+                    {isOwn && (
+                      <DropdownMenuItem
+                        onClick={() => setReadReceiptsOpen(true)}
+                        className="rounded-lg"
+                      >
+                        <Eye className="h-4 w-4 mr-2 text-muted-foreground" aria-hidden="true" />
+                        Read Receipts
+                      </DropdownMenuItem>
+                    )}
+                    {canDelete && (
+                      <DropdownMenuItem
+                        className="text-destructive focus:text-destructive focus:bg-destructive/10 rounded-lg"
+                        onClick={() => setDeleteDialogOpen(true)}
+                      >
+                        <Trash2 className="h-4 w-4 mr-2" aria-hidden="true" />
+                        Delete
+                      </DropdownMenuItem>
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
+              </div>
+            )}
+          </div>
+
+          {/* Reactions */}
+          {message.reactions.length > 0 && (
+            <div
+              className={cn(
+                "flex flex-wrap gap-1 mt-1",
+                isOwn ? "justify-end" : "justify-start"
+              )}
+            >
+              {message.reactions.map((r) => {
+                const hasReacted = r.userIds.includes(currentUserId);
+                return (
+                  // FIX: Added aria-label and aria-pressed for screen reader support.
+                  <button
+                    key={r.emoji}
+                    onClick={() => onReact(message.id, r.emoji, hasReacted)}
+                    aria-label={`React with ${r.emoji}, ${r.userIds.length} reaction${r.userIds.length !== 1 ? "s" : ""}`}
+                    aria-pressed={hasReacted}
+                    className={cn(
+                      "flex items-center gap-1 px-1.5 py-0.5 rounded-full text-[10px] transition-all active:scale-95",
+                      hasReacted
+                        ? "text-blue-500 font-semibold"
+                        : "text-muted-foreground hover:bg-accent/50"
+                    )}
+                  >
+                    <span aria-hidden="true">{r.emoji}</span>
+                    <span className="tabular-nums">{r.userIds.length}</span>
+                  </button>
+                );
+              })}
+            </div>
+          )}
+
+
+        </div>
+      </div>
+
+      {/* Poll Edit Dialog */}
+      {message.poll && onEditPoll && (
+        <CreatePollDialog
+          open={editPollDialogOpen}
+          onOpenChange={setEditPollDialogOpen}
+          isEditing
+          initialPoll={{
+            question: message.poll.question,
+            options: message.poll.options,
+            allowMultiple: message.poll.allowMultiple,
+          }}
+          onSendPoll={async (poll) => {
+            await onEditPoll(message.id, poll);
+            setEditPollDialogOpen(false);
+          }}
+        />
+      )}
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={deleteDialogOpen} onOpenChange={setDeleteDialogOpen}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Delete this message?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. The message will be permanently
+              removed from the channel.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel disabled={deleting}>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              className="bg-destructive hover:bg-destructive/90 text-destructive-foreground"
+              onClick={handleConfirmDelete}
+              disabled={deleting}
+              aria-busy={deleting}
+            >
+              {deleting ? "Deleting…" : "Delete"}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Read Receipts Dialog */}
+      {isOwn && (
+        <Dialog open={readReceiptsOpen} onOpenChange={setReadReceiptsOpen}>
+          <DialogContent className="sm:max-w-[425px]">
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-sm">
+                <Eye className="h-4 w-4 text-blue-500" />
+                Message Details
+              </DialogTitle>
+            </DialogHeader>
+            <div className="py-2">
+              {(() => {
+                if (!readReceiptsOpen) return null;
+
+                const members = projectMembers || [];
+                const reads = channelReads || {};
+                const seenBy = [];
+                const notSeenBy = [];
+
+                for (const member of members) {
+                  // Skip the sender themselves
+                  if (member.clerkUserId === message.user_id) continue;
+
+                  // Also skip members without clerkUserId
+                  if (!member.clerkUserId) continue;
+
+                  const lastRead = reads[member.clerkUserId] || 0;
+                  if (lastRead >= message.created_at) {
+                    seenBy.push(member);
+                  } else {
+                    notSeenBy.push(member);
+                  }
+                }
+
+                return (
+                  <div className="flex flex-col gap-4">
+                    <div>
+                      <h4 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-2">
+                        Seen By ({seenBy.length})
+                      </h4>
+                      {seenBy.length > 0 ? (
+                        <ScrollArea className="max-h-[150px]">
+                          <div className="flex flex-col gap-2 pr-4">
+                            {seenBy.map((m) => (
+                              <div key={m.userId} className="flex items-center gap-2">
+                                <Avatar className="h-6 w-6">
+                                  <AvatarImage src={m.userImage} />
+                                  <AvatarFallback className="text-[9px]">
+                                    {m.userName.substring(0, 2).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="text-sm font-medium">{m.userName}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      ) : (
+                        <div className="text-xs text-muted-foreground/60 italic">No one has seen this yet.</div>
+                      )}
+                    </div>
+
+                    <div>
+                      <h4 className="text-xs font-semibold uppercase text-muted-foreground tracking-wider mb-2">
+                        Not Seen By ({notSeenBy.length})
+                      </h4>
+                      {notSeenBy.length > 0 ? (
+                        <ScrollArea className="max-h-[150px]">
+                          <div className="flex flex-col gap-2 pr-4 opacity-60">
+                            {notSeenBy.map((m) => (
+                              <div key={m.userId} className="flex items-center gap-2">
+                                <Avatar className="h-6 w-6">
+                                  <AvatarImage src={m.userImage} />
+                                  <AvatarFallback className="text-[9px]">
+                                    {m.userName.substring(0, 2).toUpperCase()}
+                                  </AvatarFallback>
+                                </Avatar>
+                                <span className="text-sm">{m.userName}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </ScrollArea>
+                      ) : (
+                        <div className="text-xs text-muted-foreground/60 italic">Everyone has seen this!</div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
+          </DialogContent>
+        </Dialog>
+      )}
+
+      {/* Media Preview Overlay (WhatsApp Web style) */}
+      <Dialog open={!!previewMediaUrl} onOpenChange={(open) => !open && setPreviewMediaUrl(null)}>
+        <DialogContent className="max-w-[100vw] h-[100vh] max-h-[100vh] w-full p-0 m-0 border-none bg-black/95 shadow-none flex flex-col justify-between overflow-hidden [&>button]:hidden z-[500] rounded-none">
+          {/* Top Bar */}
+          <div className="flex items-center justify-between p-4 bg-gradient-to-b from-black/80 to-transparent text-white z-10 shrink-0">
+            <div className="flex items-center gap-4">
+              <div className="flex flex-col">
+                <span className="font-medium text-sm">{message.user_name}</span>
+                <span className="text-xs text-white/60">{format(new Date(message.created_at), "MMM d, h:mm a")}</span>
+              </div>
+            </div>
+            <div className="flex items-center gap-2">
+              <button
+                onClick={(e) => handleDownload(e, previewMediaUrl!, previewMediaName)}
+                className="p-2 hover:bg-white/10 rounded-full transition-colors cursor-pointer"
+                title="Download"
+              >
+                <Download className="h-5 w-5 text-white" />
+              </button>
+              <button
+                onClick={() => setPreviewMediaUrl(null)}
+                className="p-2 hover:bg-white/10 rounded-full transition-colors cursor-pointer"
+                title="Close"
+              >
+                <X className="h-6 w-6 text-white" />
+              </button>
+            </div>
+          </div>
+
+          {/* Content area */}
+          <div className="flex-1 flex items-center justify-center overflow-hidden p-4 relative">
+            {previewMediaType === "image" && previewMediaUrl && (
+              <img
+                src={getProxyUrl(previewMediaUrl, false)}
+                alt={previewMediaName}
+                className="max-w-full max-h-full object-contain drop-shadow-2xl"
+              />
+            )}
+            {previewMediaType === "pdf" && previewMediaUrl && (
+              <iframe
+                src={getProxyUrl(previewMediaUrl, false)}
+                title={previewMediaName}
+                className="w-full h-full max-w-5xl rounded-lg bg-white shadow-2xl"
+              />
+            )}
+            {previewMediaType === "office" && previewMediaUrl && (
+              <iframe
+                src={`https://view.officeapps.live.com/op/embed.aspx?src=${encodeURIComponent(
+                  previewMediaUrl.startsWith("blob:")
+                    ? previewMediaUrl
+                    : previewMediaUrl.startsWith("/")
+                    ? `${window.location.origin}${previewMediaUrl}`
+                    : `${window.location.origin}${getProxyUrl(previewMediaUrl, false)}`
+                )}`}
+                title={previewMediaName}
+                className="w-full h-full max-w-5xl rounded-lg bg-white shadow-2xl"
+              />
+            )}
+          </div>
+        </DialogContent>
+      </Dialog>
+    </>
+  );
+}

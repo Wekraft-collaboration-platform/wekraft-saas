@@ -1,0 +1,135 @@
+"use client";
+
+import { useState, useEffect, useCallback } from "react";
+import Ably from "ably";
+import { getAblyClient } from "@/lib/ably";
+import { toast } from "sonner";
+import { formatNotificationContent } from "../lib/utils";
+
+export interface Notification {
+  id: string;
+  user_id: string;
+  type: string;
+  sender_id: string;
+  sender_name: string;
+  sender_image: string | null;
+  project_id: string;
+  channel_id?: string;
+  channel_name?: string;
+  message_id?: string;
+  content?: string;
+  is_read: number;
+  created_at: number;
+}
+
+
+
+export function useNotifications(userId: string) {
+  const [notifications, setNotifications] = useState<Notification[]>([]);
+  const [unreadCount, setUnreadCount] = useState(0);
+  const [loading, setLoading] = useState(true);
+
+  const fetchNotifications = useCallback(async () => {
+    try {
+      const res = await fetch("/api/teamspace/notifications");
+      const data = await res.json();
+      if (data.notifications) {
+        setNotifications(data.notifications);
+        setUnreadCount(data.unreadCount);
+      }
+    } catch (e) {
+      console.error("Failed to fetch notifications", e);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!userId) return;
+
+    fetchNotifications();
+
+    const ably = getAblyClient();
+    const channel = ably.channels.get(`user:notifications:${userId}`);
+
+    const onNewNotification = (msg: Ably.Message) => {
+      const notification = msg.data as Notification;
+      setNotifications((prev) => [notification, ...prev].slice(0, 50));
+      setUnreadCount((prev) => prev + 1);
+
+      if (notification.type === "mention") {
+        const formattedContent = formatNotificationContent(notification.content);
+        toast(`✨ Mentioned in #${notification.channel_name || "channel"}`, {
+          description: `${notification.sender_name}: "${formattedContent || "Mentioned you in a message."}"`,
+          duration: 5000,
+        });
+      } else if (notification.type === "join") {
+        toast(`👥 Joined Project`, {
+          description: notification.content || `${notification.sender_name} joined the project.`,
+          duration: 5000,
+        });
+        // Force Ably token refresh so the new project's channels are
+        // immediately scoped into the token (instead of waiting up to 1 hour).
+        ably.auth.authorize().catch(() => {});
+      } else if (notification.type === "leave") {
+        toast(`🚪 Left Project`, {
+          description: notification.content || `${notification.sender_name} left the project.`,
+          duration: 5000,
+        });
+      } else if (notification.type === "remove") {
+        toast(`❌ Removed from Project`, {
+          description: notification.content || `${notification.sender_name} was removed from the project.`,
+          duration: 5000,
+        });
+      } else if (notification.type === "join_request") {
+        toast(`⏳ Join Request`, {
+          description: notification.content || `${notification.sender_name} requested to join the project.`,
+          duration: 5000,
+        });
+      } else if (notification.type === "request_accepted") {
+        toast(`🎉 Request Accepted`, {
+          description: notification.content || "Welcome to the team!",
+          duration: 5000,
+        });
+        // Also force a token refresh here — the user's join request was accepted,
+        // meaning they've just been added to the project.
+        ably.auth.authorize().catch(() => {});
+      }
+    };
+
+    channel.subscribe("notification.new", onNewNotification);
+
+    return () => {
+      channel.unsubscribe();
+    };
+  }, [userId, fetchNotifications]);
+
+  const markAsRead = async (id?: string) => {
+    try {
+      const url = id
+        ? `/api/teamspace/notifications?id=${id}`
+        : "/api/teamspace/notifications";
+      await fetch(url, { method: "PATCH" });
+
+      if (id) {
+        setNotifications((prev) =>
+          prev.map((n) => (n.id === id ? { ...n, is_read: 1 } : n)),
+        );
+        setUnreadCount((prev) => Math.max(0, prev - 1));
+      } else {
+        setNotifications((prev) => prev.map((n) => ({ ...n, is_read: 1 })));
+        setUnreadCount(0);
+      }
+    } catch (e) {
+      console.error("Failed to mark notification as read", e);
+    }
+  };
+
+  return {
+    notifications,
+    unreadCount,
+    loading,
+    markAsRead,
+    refresh: fetchNotifications,
+  };
+}

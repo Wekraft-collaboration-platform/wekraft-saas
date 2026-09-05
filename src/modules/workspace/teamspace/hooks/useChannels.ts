@@ -1,0 +1,326 @@
+/**
+ * useChannels.ts
+ *
+ * Custom hook for managing channels within a teamspace.
+ *
+ * Functions:
+ * - `fetchChannels`: Retrieves all channels for a project.
+ * - `createChannel`: Creates a new channel via API.
+ * - `updateChannel`: Updates channel name/description.
+ * - `deleteChannel`: Removes a channel.
+ *
+ * Flow:
+ * - Uses standard fetch API to communicate with `/api/teamspace/channels`.
+ * - Manages local state for immediate UI updates (Optimistic-like updates).
+ */
+"use client";
+
+import { useState, useEffect, useCallback, useRef } from "react";
+import Ably from "ably";
+import { getAblyClient } from "@/lib/ably";
+
+export interface Channel {
+  id: string;
+  project_id: string;
+  name: string;
+  description: string | null;
+  type: "community" | "announcement" | "private";
+  is_default: number;
+  created_by: string;
+  created_at: number;
+  updated_at: number;
+  unread_count?: number;
+  mention_count?: number;
+  /** 0 = locked (private channel, no access); 1 = accessible. undefined = assume accessible (public channels). */
+  has_access?: number;
+}
+
+export function useChannels(
+  projectId: string,
+  currentUserId?: string | null,
+  activeChannelId?: string | null,
+) {
+  const [channels, setChannels] = useState<Channel[]>([]);
+  const [loading, setLoading] = useState(true);
+
+  // Keep track of resolved active channel ID without triggering resubscriptions
+  const resolvedActiveIdRef = useRef<string | null>(null);
+  resolvedActiveIdRef.current =
+    activeChannelId ??
+    channels.find((c) => c.is_default === 1)?.id ??
+    channels[0]?.id ??
+    null;
+
+  const fetchChannels = useCallback(async () => {
+    if (!projectId) return;
+    setLoading(true);
+    try {
+      const res = await fetch(`/api/teamspace/channels?projectId=${projectId}`);
+      const data = await res.json();
+
+      // Deduplicate channels by id to prevent React key warnings
+      const uniqueChannels = (data.channels ?? []).filter(
+        (channel: Channel, index: number, self: Channel[]) =>
+          index === self.findIndex((c) => c.id === channel.id),
+      );
+
+      setChannels(uniqueChannels);
+    } catch (e) {
+      console.error("Failed to fetch channels", e);
+    } finally {
+      setLoading(false);
+    }
+  }, [projectId]);
+
+  useEffect(() => {
+    fetchChannels();
+  }, [fetchChannels]);
+
+  useEffect(() => {
+    let ch: any = null;
+    let msgsCh: any = null;
+    let notifyCh: any = null;
+    let readsCh: any = null;
+    let isSubscribed = false;
+
+    const onChannelCreated = (msg: Ably.Message) => {
+      const newChannel = msg.data as Channel;
+      setChannels((prev) => {
+        if (prev.find((c) => c.id === newChannel.id)) return prev;
+        return [...prev, { ...newChannel, unread_count: 0, mention_count: 0 }];
+      });
+    };
+
+    const onChannelUpdated = (msg: Ably.Message) => {
+      const { id, name, description, type, memberIds } = msg.data;
+      setChannels((prev) =>
+        prev.map((c) => {
+          if (c.id !== id) return c;
+          let has_access = c.has_access;
+          if (type !== undefined) {
+            if (type !== "private") {
+              has_access = 1;
+            } else if (memberIds) {
+              const isMember = memberIds.includes(currentUserId || "");
+              const isCreator = c.created_by === currentUserId;
+              has_access = (isMember || isCreator) ? 1 : 0;
+            }
+          }
+          return {
+            ...c,
+            name: name ?? c.name,
+            description: description ?? c.description,
+            type: type ?? c.type,
+            has_access,
+          };
+        }),
+      );
+    };
+
+    const onChannelDeleted = (msg: Ably.Message) => {
+      const { id } = msg.data;
+      setChannels((prev) => prev.filter((c) => c.id !== id));
+    };
+
+    const onMessageNew = (msg: Ably.Message) => {
+      const data = msg.data as {
+        id: string;
+        channel_id: string;
+        channel_type?: string;
+        user_id: string;
+        created_at: number;
+      };
+      if (
+        data.user_id !== currentUserId &&
+        data.channel_id !== resolvedActiveIdRef.current
+      ) {
+        setChannels((prev) => {
+          const targetChannel = prev.find((c) => c.id === data.channel_id);
+          // Don't bump unread for private channels the user cannot access
+          if (!targetChannel || targetChannel.has_access === 0) return prev;
+          return prev.map((c) =>
+            c.id === data.channel_id
+              ? { ...c, unread_count: (c.unread_count ?? 0) + 1 }
+              : c,
+          );
+        });
+      }
+    };
+
+    const onNotificationNew = (msg: Ably.Message) => {
+      const data = msg.data as { channel_id?: string; type: string };
+      if (
+        data.type === "mention" &&
+        data.channel_id &&
+        data.channel_id !== resolvedActiveIdRef.current
+      ) {
+        setChannels((prev) =>
+          prev.map((c) =>
+            c.id === data.channel_id
+              ? {
+                  ...c,
+                  mention_count: (c.mention_count ?? 0) + 1,
+                }
+              : c,
+          ),
+        );
+      }
+    };
+
+    const onChannelRead = (msg: Ably.Message) => {
+      const data = msg.data as {
+        userId: string;
+        channelId: string;
+        lastReadAt: number;
+      };
+      if (data.userId === currentUserId) {
+        setChannels((prev) =>
+          prev.map((c) =>
+            c.id === data.channelId
+              ? { ...c, unread_count: 0, mention_count: 0 }
+              : c,
+          ),
+        );
+      }
+    };
+
+    try {
+      const ably = getAblyClient();
+
+      ch = ably.channels.get(`project:${projectId}:channels`);
+      ch.subscribe("channel.created", onChannelCreated);
+      ch.subscribe("channel.updated", onChannelUpdated);
+      ch.subscribe("channel.deleted", onChannelDeleted);
+
+      msgsCh = ably.channels.get(`project:${projectId}:messages`);
+      msgsCh.subscribe("message.new", onMessageNew);
+
+      if (currentUserId) {
+        notifyCh = ably.channels.get(`user:notifications:${currentUserId}`);
+        notifyCh.subscribe("notification.new", onNotificationNew);
+      }
+
+      readsCh = ably.channels.get(`project:${projectId}:reads`);
+      readsCh.subscribe("channel.read", onChannelRead);
+      isSubscribed = true;
+    } catch (err) {
+      console.error("Ably channels subscription failed", err);
+    }
+
+    return () => {
+      if (isSubscribed) {
+        try {
+          if (ch) {
+            ch.unsubscribe("channel.created", onChannelCreated);
+            ch.unsubscribe("channel.updated", onChannelUpdated);
+            ch.unsubscribe("channel.deleted", onChannelDeleted);
+          }
+          if (msgsCh) msgsCh.unsubscribe("message.new", onMessageNew);
+          if (notifyCh)
+            notifyCh.unsubscribe("notification.new", onNotificationNew);
+          if (readsCh) readsCh.unsubscribe("channel.read", onChannelRead);
+        } catch (err) {
+          console.error("Ably channels unsubscribe failed", err);
+        }
+      }
+    };
+  }, [projectId, currentUserId]);
+
+  const markChannelAsRead = useCallback(async (channelId: string) => {
+    if (!channelId) return;
+
+    // Optimistically clear counts locally
+    setChannels((prev) =>
+      prev.map((c) =>
+        c.id === channelId ? { ...c, unread_count: 0, mention_count: 0 } : c,
+      ),
+    );
+
+    // Call read endpoint in background
+    try {
+      await fetch(`/api/teamspace/channels/${channelId}/read`, {
+        method: "POST",
+      });
+    } catch (e) {
+      console.error("Failed to mark channel as read", e);
+    }
+  }, []);
+
+  const createChannel = useCallback(
+    async (
+      name: string,
+      description: string,
+      type: "community" | "announcement" | "private" = "community",
+      memberIds?: string[],
+    ) => {
+      const res = await fetch("/api/teamspace/channels", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ projectId, name, description, type, memberIds }),
+      });
+      const data = await res.json();
+      if (data.channel) {
+        setChannels((prev) => {
+          if (prev.some((c) => c.id === data.channel.id)) return prev;
+          return [...prev, data.channel];
+        });
+        return data.channel as Channel;
+      }
+    },
+    [projectId],
+  );
+
+  const updateChannel = useCallback(
+    async (
+      channelId: string,
+      name: string,
+      description: string,
+      type?: "community" | "announcement" | "private",
+      memberIds?: string[],
+    ) => {
+      const res = await fetch(`/api/teamspace/channels/${channelId}`, {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ name, description, type, memberIds }),
+      });
+      if (res.ok) {
+        setChannels((prev) =>
+          prev.map((c) =>
+            c.id === channelId
+              ? {
+                  ...c,
+                  name,
+                  description,
+                  type: type ?? c.type,
+                }
+              : c,
+          ),
+        );
+        return true;
+      }
+      return false;
+    },
+    [],
+  );
+
+  const deleteChannel = useCallback(async (channelId: string) => {
+    const res = await fetch(`/api/teamspace/channels/${channelId}`, {
+      method: "DELETE",
+    });
+    if (res.ok) {
+      setChannels((prev) => prev.filter((c) => c.id !== channelId));
+      return true;
+    }
+    return false;
+  }, []);
+
+  return {
+    channels,
+    loading,
+    createChannel,
+    updateChannel,
+    deleteChannel,
+    markChannelAsRead,
+    refetch: fetchChannels,
+  };
+}

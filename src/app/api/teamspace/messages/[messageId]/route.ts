@@ -1,0 +1,264 @@
+import {
+  DeleteObjectCommand,
+  HeadObjectCommand,
+  S3Client,
+} from "@aws-sdk/client-s3";
+import { auth } from "@clerk/nextjs/server";
+import Ably from "ably";
+import { ConvexHttpClient } from "convex/browser";
+import { type NextRequest, NextResponse } from "next/server";
+import { turso } from "@/lib/turso";
+import { verifyProjectAccess } from "@/modules/workspace/teamspace/lib/auth";
+import { api } from "../../../../../../convex/_generated/api";
+
+const ably = new Ably.Rest(process.env.ABLY_API_KEY!);
+
+const s3Client = new S3Client({
+  credentials: {
+    accessKeyId: process.env.AWS_ACCES_KEY as string,
+    secretAccessKey: process.env.AWS_SECRET_KEY_S3 as string,
+  },
+  region: "ap-south-1",
+});
+
+const BUCKET_NAME = "wekraft-saas-upload-s3";
+const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+
+function extractS3Keys(content: string): string[] {
+  if (!content) return [];
+  const regex =
+    /https:\/\/wekraft-saas-upload-s3\.s3\.ap-south-1\.amazonaws\.com\/(teamspace-media\/[^\s)"\\]+)/g;
+  const keys: string[] = [];
+  let match;
+  while ((match = regex.exec(content)) !== null) {
+    keys.push(match[1]);
+  }
+  return keys;
+}
+
+async function deleteFromS3(keys: string[]): Promise<number> {
+  let totalFreed = 0;
+  await Promise.allSettled(
+    keys.map(async (key) => {
+      try {
+        // Get file size before deletion
+        const head = await s3Client.send(
+          new HeadObjectCommand({ Bucket: BUCKET_NAME, Key: key }),
+        );
+        const size = head.ContentLength ?? 0;
+        totalFreed += size;
+        await s3Client.send(
+          new DeleteObjectCommand({ Bucket: BUCKET_NAME, Key: key }),
+        );
+        console.log(`[Teamspace] S3 deleted: ${key} (${size} bytes)`);
+      } catch (err) {
+        console.error(`[Teamspace] S3 delete failed for key: ${key}`, err);
+      }
+    }),
+  );
+  return totalFreed;
+}
+
+// PATCH /api/teamspace/messages/[messageId]
+export async function PATCH(
+  req: NextRequest,
+  { params }: { params: Promise<{ messageId: string }> },
+) {
+  const { userId } = await auth();
+  if (!userId)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { messageId } = await params;
+  const body = await req.json();
+  const { projectId, content, is_pinned, poll } = body;
+
+  if (!projectId)
+    return NextResponse.json({ error: "projectId required" }, { status: 400 });
+
+  if (content === undefined && is_pinned === undefined && poll === undefined) {
+    return NextResponse.json(
+      { error: "content, is_pinned, or poll required" },
+      { status: 400 },
+    );
+  }
+
+  // --- ACCESS CHECK ---
+  const access = await verifyProjectAccess(userId, projectId);
+  if ("error" in access)
+    return NextResponse.json(
+      { error: access.error },
+      { status: access.status },
+    );
+
+  // Get existing message
+  const existing = await turso.execute({
+    sql: "SELECT user_id, channel_id, content FROM ts_messages WHERE id = ?",
+    args: [messageId],
+  });
+
+  if (existing.rows.length === 0) {
+    return NextResponse.json({ error: "Message not found" }, { status: 404 });
+  }
+
+  const isEditing = content !== undefined;
+  const isPinning = is_pinned !== undefined;
+  const isEditingPoll = poll !== undefined;
+
+  // 1. EDIT content/poll: ONLY AUTHOR
+  if ((isEditing || isEditingPoll) && existing.rows[0].user_id !== userId) {
+    return NextResponse.json(
+      { error: "Forbidden: You can only edit your own messages" },
+      { status: 403 },
+    );
+  }
+
+  // 2. PIN: ONLY OWNER OR ADMIN
+  if (isPinning && !access.permissions.isOwner && !access.permissions.isAdmin) {
+    return NextResponse.json(
+      { error: "Forbidden: Only owner or admin can pin messages" },
+      { status: 403 },
+    );
+  }
+
+  const now = Date.now();
+  const updates: string[] = [];
+  const args: any[] = [];
+
+  if (content !== undefined) {
+    updates.push("content = ?, edited_at = ?");
+    args.push(content.trim(), now);
+
+    const oldContent = existing.rows[0].content as string;
+    const oldKeys = extractS3Keys(oldContent);
+    const newKeys = extractS3Keys(content);
+
+    const keysToDelete = oldKeys.filter((k) => !newKeys.includes(k));
+    if (keysToDelete.length > 0) {
+      await deleteFromS3(keysToDelete);
+    }
+  }
+  if (is_pinned !== undefined) {
+    updates.push("is_pinned = ?");
+    args.push(is_pinned ? 1 : 0);
+  }
+  if (poll !== undefined) {
+    updates.push("poll = ?, edited_at = ?");
+    args.push(JSON.stringify(poll), now);
+  }
+
+  args.push(messageId);
+
+  await turso.execute({
+    sql: `UPDATE ts_messages SET ${updates.join(", ")} WHERE id = ?`,
+    args,
+  });
+
+  // Notify channel subscribers
+  const channelId = existing.rows[0].channel_id as string;
+  const ablyChannel = ably.channels.get(`teamspace:${channelId}`);
+
+  await ablyChannel.publish("message.updated", {
+    id: messageId,
+    content: content?.trim(),
+    is_pinned: is_pinned,
+    edited_at: content !== undefined ? now : undefined,
+  });
+
+  return NextResponse.json({ success: true });
+}
+
+// DELETE /api/teamspace/messages/[messageId]
+export async function DELETE(
+  req: NextRequest,
+  { params }: { params: Promise<{ messageId: string }> },
+) {
+  const { userId } = await auth();
+  if (!userId)
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+
+  const { messageId } = await params;
+  const projectId = req.nextUrl.searchParams.get("projectId");
+
+  if (!projectId)
+    return NextResponse.json({ error: "projectId required" }, { status: 400 });
+
+  // --- ACCESS CHECK ---
+  const access = await verifyProjectAccess(userId, projectId);
+  if ("error" in access)
+    return NextResponse.json(
+      { error: access.error },
+      { status: access.status },
+    );
+
+  const existing = await turso.execute({
+    sql: "SELECT user_id, channel_id, content FROM ts_messages WHERE id = ?",
+    args: [messageId],
+  });
+
+  if (existing.rows.length === 0) {
+    return NextResponse.json({ error: "Message not found" }, { status: 404 });
+  }
+
+  // ALLOW AUTHOR OR OWNER/ADMIN
+  const isAuthor = existing.rows[0].user_id === userId;
+  const canModerate = access.permissions.isOwner || access.permissions.isAdmin;
+
+  if (!isAuthor && !canModerate) {
+    return NextResponse.json(
+      { error: "Forbidden: You don't have permission to delete this message" },
+      { status: 403 },
+    );
+  }
+
+  const channelId = existing.rows[0].channel_id as string;
+
+  const oldContent = existing.rows[0].content as string;
+  const keysToDelete = extractS3Keys(oldContent);
+  let totalFreed = 0;
+  if (keysToDelete.length > 0) {
+    totalFreed = await deleteFromS3(keysToDelete);
+    console.log(
+      `[Teamspace] Freed ${totalFreed} bytes from S3 (${keysToDelete.length} file(s))`,
+    );
+  }
+
+  // Decrement Convex storage counter
+  if (totalFreed > 0) {
+    try {
+      await convex.mutation(api.user.decrementStorage, {
+        projectId: projectId as any,
+        fileSize: totalFreed,
+      });
+      console.log(
+        `[Teamspace] Convex storage decremented by ${totalFreed} bytes`,
+      );
+    } catch (err) {
+      console.error("[Teamspace] Failed to decrement Convex storage:", err);
+    }
+  }
+
+  // Soft delete message
+  const now = Date.now();
+  await turso.execute({
+    sql: "UPDATE ts_messages SET content = ?, poll = NULL, is_pinned = 0, edited_at = ? WHERE id = ?",
+    args: ["$__DELETED__$", now, messageId],
+  });
+
+  // Delete all reactions for this message
+  await turso.execute({
+    sql: "DELETE FROM ts_reactions WHERE message_id = ?",
+    args: [messageId],
+  });
+
+  // Notify subscribers
+  const ablyChannel = ably.channels.get(`teamspace:${channelId}`);
+  await ablyChannel.publish("message.updated", {
+    id: messageId,
+    content: "$__DELETED__$",
+    poll: null,
+    is_pinned: 0,
+    edited_at: now,
+  });
+
+  return NextResponse.json({ success: true });
+}

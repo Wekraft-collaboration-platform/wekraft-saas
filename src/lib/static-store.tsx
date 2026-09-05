@@ -1,0 +1,391 @@
+import {
+  AlertCircle,
+  Bell,
+  Bug,
+  BugPlay,
+  CheckCircle2,
+  CircleCheckBig,
+  Clock,
+  Ellipsis,
+  Globe,
+  Hourglass,
+  Kanban,
+  List,
+  Loader,
+  MailOpen,
+  MessageSquare,
+  Minus,
+  MoreHorizontal,
+  ScanSearch,
+  Table,
+  UserCog,
+  UserMinus,
+  UserPlus,
+  UserX,
+  Video,
+  XCircle,
+  Zap,
+} from "lucide-react";
+import type React from "react";
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover";
+import { Separator } from "@/components/ui/separator";
+
+export const AVAILABLE_TAGS = [
+  "Productivity",
+  "AI",
+  "Healthcare",
+  "Edutech",
+  "Fintech",
+  "Web3",
+  "Agents",
+  "SaaS",
+  "E-commerce",
+  "Social Media",
+  "Developer Tools",
+  "Open Source",
+  "Machine Learning",
+  "Data Science",
+  "Blockchain",
+  "Crypto",
+  "DeFi",
+  "NFT",
+  "Metaverse",
+  "Gaming",
+  "AR/VR",
+  "Mobile App",
+  "Web App",
+  "Desktop App",
+  "CLI",
+  "API",
+  "Library",
+  "Framework",
+  "CMS",
+  "CRM",
+  "Automation",
+  "Cybersecurity",
+  "Database",
+  "Cloud",
+  "DevOps",
+  "Testing",
+  "Monitoring",
+  "Analytics",
+  "Marketing",
+  "SEO",
+  "Content",
+  "Design",
+  "UX/UI",
+  "Education",
+  "Research",
+  "Environment",
+  "Sustainability",
+  "Non-profit",
+  "Community",
+];
+
+export const ROLES = [
+  "frontend developer",
+  "backend developer",
+  "fullstack developer",
+  "devops engineer",
+  "site reliability engineer",
+  "cloud engineer",
+  "cloud architect",
+  "data scientist",
+  "machine learning engineer",
+  "AI engineer",
+  "mobile developer (iOS)",
+  "mobile developer (Android)",
+  "cross-platform mobile developer",
+  "flutter developer",
+  "react native developer",
+  "game developer",
+  "unity developer",
+  "unreal engine developer",
+  "embedded systems engineer",
+  "hardware engineer",
+  "robotics engineer",
+  "AR/VR developer",
+  "computer vision engineer",
+  "blockchain developer",
+  "solidity developer",
+  "web3 developer",
+  "cybersecurity engineer",
+  "network engineer",
+  "systems administrator",
+  "database administrator",
+  "QA engineer",
+  "test automation engineer",
+  "site reliability engineer",
+  "API developer",
+  "kubernetes administrator",
+  "salesforce developer",
+  "IoT engineer",
+  "MLOps engineer",
+  "CRM developer",
+  "generative AI engineer",
+  "UX/UI designer",
+  "enterprise architect",
+  "software architect",
+];
+
+export const PROJECT_STATUS = [
+  "ideation",
+  "validation",
+  "development",
+  "beta",
+  "production",
+  "scaling",
+];
+
+export const TABS = [
+  { id: "List", label: "List", icon: List },
+  { id: "Table", label: "Table", icon: Table },
+  { id: "Kanban", label: "Kanban", icon: Kanban },
+];
+
+export const statusIcons: Record<string, React.ReactNode> = {
+  "not started": <Ellipsis className="w-3.5 h-3.5" />,
+  inprogress: <Loader className="w-3.5 h-3.5 text-yellow-500" />,
+  reviewing: <ScanSearch className="w-3.5 h-3.5 text-blue-500" />,
+  testing: <BugPlay className="w-3.5 h-3.5 text-indigo-500" />,
+  completed: <CircleCheckBig className="w-3.5 h-3.5 text-green-500" />,
+};
+
+export const statusIconsNoColors: Record<string, React.ReactNode> = {
+  "not started": <Ellipsis className="w-3.5 h-3.5" />,
+  inprogress: <Loader className="w-3.5 h-3.5" />,
+  reviewing: <ScanSearch className="w-3.5 h-3.5" />,
+  testing: <BugPlay className="w-3.5 h-3.5" />,
+  completed: <CircleCheckBig className="w-3.5 h-3.5" />,
+};
+
+export const KANBAN_COLUMN_ICONS: Record<string, React.ReactNode> = {
+  "not started": <Ellipsis className="w-4 h-4 text-primary" />,
+  inprogress: <Loader className="w-4 h-4 text-primary" />,
+  reviewing: <ScanSearch className="w-4 h-4 text-primary" />,
+  testing: <BugPlay className="w-4 h-4 text-primary" />,
+  completed: <CircleCheckBig className="w-4 h-4 text-primary" />,
+};
+
+export const statusColors: Record<string, string> = {
+  "not started": "bg-slate-500/10 text-slate-500 border-slate-500/20",
+  inprogress: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+  reviewing: "bg-blue-500/10 text-blue-500 border-blue-500/20",
+  testing: "bg-indigo-500/10 text-indigo-500 border-indigo-500/20",
+  completed: "bg-emerald-500/10 text-emerald-500 border-emerald-500/20",
+};
+
+export const priorityIcons: Record<string, React.ReactNode> = {
+  none: <MoreHorizontal className="w-3.5 h-3.5" />,
+  low: (
+    <div className="flex items-end gap-px h-3 mb-0.5">
+      <div className="w-[1.5px] h-3 bg-yellow-500 rounded-[1px]" />
+      <div className="w-[1.5px] h-2 dark:bg-neutral-400 bg-accent rounded-[1px]" />
+      <div className="w-[1.5px] h-1.5 dark:bg-neutral-400 bg-accent rounded-[1px]" />
+      <div className="w-[1.5px] h-[4px] dark:bg-neutral-400 bg-accent rounded-[1px]" />
+    </div>
+  ),
+  medium: (
+    <div className="flex items-end gap-px h-3 mb-0.5">
+      <div className="w-[1.5px] h-3 bg-green-500 rounded-[1px]" />
+      <div className="w-[1.5px] h-2 bg-green-500 rounded-[1px]" />
+      <div className="w-[1.5px] h-1.5  dark:bg-neutral-400 bg-accent  rounded-[1px]" />
+      <div className="w-[1.5px] h-[4px] dark:bg-neutral-400 bg-accent rounded-[1px]" />
+    </div>
+  ),
+  high: (
+    <div className="flex items-end gap-px h-3 mb-0.5">
+      <div className="w-[1.5px] h-3 bg-red-500 rounded-[1px]" />
+      <div className="w-[1.5px] h-2.5 bg-red-500 rounded-[1px]" />
+      <div className="w-[1.5px] h-2 bg-red-500 rounded-[1px]" />
+      <div className="w-[1.5px] h-[4px] dark:bg-neutral-400 bg-accent rounded-[1px]" />
+    </div>
+  ),
+};
+
+export const priorityIcons2: Record<string, React.ReactNode> = {
+  none: <Minus className="w-3.5 h-3.5" />,
+  low: (
+    <div className="flex items-end gap-px h-3 mb-0.5">
+      <div className="w-[4px] h-5 bg-yellow-500 rounded-px" />
+      <div className="w-[4px] h-4 dark:bg-neutral-400 bg-accent rounded-px" />
+      <div className="w-[4px] h-3 dark:bg-neutral-400 bg-accent rounded-px" />
+      <div className="w-[4px] h-[8px] dark:bg-neutral-400 bg-accent rounded-px" />
+    </div>
+  ),
+  medium: (
+    <div className="flex items-end gap-px h-3 mb-0.5">
+      <div className="w-[4px] h-5 bg-green-500 rounded-px" />
+      <div className="w-[4px] h-4 bg-green-500 rounded-px" />
+      <div className="w-[4px] h-3  dark:bg-neutral-400 bg-accent  rounded-px" />
+      <div className="w-[4px] h-[8px] dark:bg-neutral-400 bg-accent rounded-px" />
+    </div>
+  ),
+  high: (
+    <div className="flex items-end gap-px h-3 mb-0.5">
+      <div className="w-[4px] h-5 bg-red-500 rounded-px" />
+      <div className="w-[4px] h-4 bg-red-500 rounded-px" />
+      <div className="w-[4px] h-3 bg-red-500 rounded-px" />
+      <div className="w-[4px] h-[8px] dark:bg-neutral-400 bg-accent rounded-px" />
+    </div>
+  ),
+};
+
+// =========================ISSSUES STATIC STORE===========================
+import { GoIssueClosed, GoIssueOpened, GoIssueReopened } from "react-icons/go";
+import { LuEyeClosed } from "react-icons/lu";
+
+export const ISSUE_STATUS_ICONS: Record<string, React.ReactNode> = {
+  "not opened": <LuEyeClosed className="w-3.5 h-3.5 text-neutral-400" />,
+  opened: <GoIssueOpened className="w-3.5 h-3.5 text-blue-500" />,
+  "in review": <Clock className="w-3.5 h-3.5 text-yellow-500" />,
+  reopened: <GoIssueReopened className="w-3.5 h-3.5 text-purple-500" />,
+  closed: <GoIssueClosed className="w-3.5 h-3.5 text-emerald-500" />,
+};
+
+export const ISSUE_SEVERITY_ICONS: Record<string, React.ReactNode> = {
+  critical: <Zap className="w-3.5 h-3.5 text-red-500" />,
+  medium: <Zap className="w-3.5 h-3.5 text-orange-400" />,
+  low: <Zap className="w-3.5 h-3.5 text-blue-400" />,
+};
+
+export const ISSUE_ENVIRONMENT_ICONS: Record<string, React.ReactNode> = {
+  local: <Globe className="w-3.5 h-3.5 text-neutral-400" />,
+  dev: <Globe className="w-3.5 h-3.5 text-blue-400" />,
+  staging: <Globe className="w-3.5 h-3.5 text-orange-400" />,
+  production: <Globe className="w-3.5 h-3.5 text-emerald-500" />,
+};
+
+export const SortPopover = ({
+  title,
+  icon: TitleIcon,
+  children,
+  trigger,
+}: {
+  title: string;
+  icon: React.ElementType;
+  children: React.ReactNode;
+  trigger: React.ReactNode;
+}) => (
+  <Popover>
+    <PopoverTrigger asChild>
+      <div className="flex items-center cursor-pointer ml-auto shrink-0 transition-opacity hover:opacity-100 opacity-100">
+        {trigger}
+      </div>
+    </PopoverTrigger>
+    <PopoverContent
+      className="w-56 p-2 rounded-lg shadow-md border-zinc-200 dark:border-zinc-800 bg-sidebar"
+      align="end"
+      sideOffset={8}
+    >
+      <div className="flex items-center gap-2 px-3 py-2 mb-1">
+        <TitleIcon className="w-4 h-4 text-primary" />
+        <span className="text-[13px] tracking-tight font-medium text-primary/70">
+          {title}
+        </span>
+      </div>
+      <Separator className="mb-2 bg-zinc-100 dark:bg-zinc-800" />
+      <div className="space-y-0.5">{children}</div>
+    </PopoverContent>
+  </Popover>
+);
+
+export const INVITE_LINK =
+  typeof window !== "undefined"
+    ? `${window.location.origin}/`
+    : process.env.NEXT_PUBLIC_APP_URL
+      ? process.env.NEXT_PUBLIC_APP_URL.endsWith("/")
+        ? process.env.NEXT_PUBLIC_APP_URL
+        : `${process.env.NEXT_PUBLIC_APP_URL}/`
+      : "http://localhost:3000/";
+
+export const NOTIFICATION_ICONS: Record<string, React.ComponentType<any>> = {
+  member_joined: UserPlus,
+  member_left: UserMinus,
+  member_removed: UserX,
+  join_request: MailOpen,
+  request_accepted: CheckCircle2,
+  request_rejected: XCircle,
+  role_changed: UserCog,
+  mentioned: MessageSquare,
+  project_alert: AlertCircle,
+  meeting_started: Video,
+};
+
+export function getNotificationRedirectUrl(notif: {
+  type: string;
+  projectSlug?: string;
+  body: string;
+  entityId?: string;
+  entityTitle?: string;
+}): string {
+  const slug = notif.projectSlug;
+  if (!slug) return "/dashboard";
+
+  if (notif.type === "join_request") {
+    return `/dashboard/my-projects/${slug}?tab=requests`;
+  }
+
+  const workspaceBase = `/dashboard/my-projects/${slug}/workspace`;
+
+  switch (notif.type) {
+    case "mentioned": {
+      const bodyLower = notif.body.toLowerCase();
+      if (
+        bodyLower.includes("chat") ||
+        bodyLower.includes("teamspace") ||
+        bodyLower.includes("channel") ||
+        bodyLower.includes("#") ||
+        (notif.entityTitle && notif.entityTitle.startsWith("#"))
+      ) {
+        return notif.entityId
+          ? `${workspaceBase}/teamspace?channelId=${notif.entityId}`
+          : `${workspaceBase}/teamspace`;
+      } else if (bodyLower.includes("issue")) {
+        return `${workspaceBase}/issues`;
+      } else {
+        return `${workspaceBase}/tasks`;
+      }
+    }
+
+    case "project_alert":
+    case "request_accepted":
+    case "member_joined":
+      return workspaceBase;
+
+    case "member_left":
+    case "member_removed":
+    case "role_changed":
+      return `${workspaceBase}/team`;
+
+    case "meeting_started":
+      // entityId is the Stream call ID — navigate directly into the call room
+      return notif.entityId
+        ? `${workspaceBase}/meet/${notif.entityId}`
+        : `${workspaceBase}/meet`;
+
+    default:
+      return workspaceBase;
+  }
+}
+
+export function renderNotificationBody(text: string): React.ReactNode {
+  const parts = text.split(/\*\*(.+?)\*\*/g);
+  return (
+    <span>
+      {parts.map((part, i) =>
+        i % 2 === 1 ? (
+          <strong key={i} className="font-semibold text-inherit">
+            {part}
+          </strong>
+        ) : (
+          <span key={i}>{part}</span>
+        ),
+      )}
+    </span>
+  );
+}

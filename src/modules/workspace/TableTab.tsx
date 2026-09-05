@@ -1,0 +1,631 @@
+"use client";
+
+import React, { useState } from "react";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { Checkbox } from "@/components/ui/checkbox";
+import { format } from "date-fns";
+import { cn } from "@/lib/utils";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import {
+  ChevronLeft,
+  ChevronRight,
+  MoreHorizontal,
+  Minus,
+  FileCode,
+  Edit,
+  Trash2,
+  Tag as TagIcon,
+  Table as TableIcon,
+  FolderPen,
+  CircleDot,
+  Hourglass,
+  Box,
+  Users,
+  ChartNoAxesColumnIncreasing,
+  ChartPie,
+  ChevronsUpDown,
+  Calendar,
+  ArrowUpNarrowWide,
+  ArrowDownWideNarrow,
+  Clock,
+  Plus,
+  FileCodeCorner,
+  Bug,
+  Info,
+  Check,
+  AlertCircle,
+} from "lucide-react";
+import { Button } from "@/components/ui/button";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { TaskDetailSheet } from "./TaskDetailSheet";
+import { Task } from "@/types/types";
+import { Id } from "../../../convex/_generated/dataModel";
+import { useMutation } from "convex/react";
+import { api } from "../../../convex/_generated/api";
+import { toast } from "sonner";
+import { EditTaskDialog } from "./EditTaskDialog";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog";
+import {
+  priorityIcons2,
+  statusColors,
+  statusIcons,
+  statusIconsNoColors,
+} from "@/lib/static-store";
+import {
+  DurationSortPopover,
+  PrioritySortPopover,
+  TagFilterPopover,
+} from "./workspace-modules/TaskPopovers";
+import { SortConfig } from "./function/taskFilters";
+import { Separator } from "@/components/ui/separator";
+import Image from "next/image";
+
+interface SortOptionProps {
+  label: string;
+  icon?: React.ReactNode;
+  onClick?: () => void;
+  isActive?: boolean;
+}
+
+interface TableTabProps {
+  tasks: Task[];
+  allTasks: Task[];
+  onLoadMore: () => void;
+  hasMore: boolean;
+  selectedTaskIds: Id<"tasks">[];
+  setSelectedTaskIds: React.Dispatch<React.SetStateAction<Id<"tasks">[]>>;
+  sortConfig: SortConfig;
+  setSortConfig: (config: SortConfig) => void;
+  tagFilter: string | null;
+  setTagFilter: (tag: string | null) => void;
+  projectId: Id<"projects">;
+  projectName: string;
+  repoFullName?: string;
+  ownerClerkId?: string;
+  canDelete?: boolean;
+}
+
+const PriorityBadge = ({ priority = "none" }: { priority?: string }) => {
+  return (
+    <div className="flex items-center justify-center w-full">
+      {priorityIcons2[priority] || priorityIcons2.none}
+    </div>
+  );
+};
+
+const PAGE_SIZE = 10;
+
+export const TableTab = ({
+  tasks,
+  allTasks,
+  onLoadMore,
+  hasMore,
+  selectedTaskIds,
+  setSelectedTaskIds,
+  sortConfig,
+  setSortConfig,
+  tagFilter,
+  setTagFilter,
+  projectId,
+  projectName,
+  repoFullName,
+  ownerClerkId,
+  canDelete = false,
+}: TableTabProps) => {
+  const [page, setPage] = useState(0);
+
+  const deleteTasks = useMutation(api.workspace.deleteTasks);
+  const updateStatus = useMutation(api.workspace.updateTaskStatus);
+
+  const handleDeleteTask = async (taskId: Id<"tasks">) => {
+    try {
+      await deleteTasks({ taskIds: [taskId] });
+      toast.success("Task deleted successfully");
+    } catch (error) {
+      toast.error("Failed to delete task");
+    }
+  };
+
+  const handleMarkAsComplete = async (taskId: Id<"tasks">) => {
+    try {
+      toast.promise(
+        updateStatus({
+          taskId,
+          status: "completed",
+        }),
+        {
+          loading: "Marking task as complete...",
+          success: "Task marked as complete successfully!",
+          error: "Failed to mark task as complete",
+        },
+      );
+    } catch (error) {
+      console.error(error);
+    }
+  };
+
+  // Client-side pagination: slice the loaded tasks
+  const totalPages = Math.ceil(tasks.length / PAGE_SIZE);
+  const paginatedTasks = tasks.slice(page * PAGE_SIZE, (page + 1) * PAGE_SIZE);
+
+  const canGoNext = page < totalPages - 1 || hasMore;
+  const canGoPrev = page > 0;
+
+  const handleNext = () => {
+    if (page < totalPages - 1) {
+      setPage((p) => p + 1);
+    } else if (hasMore) {
+      // At the last page of loaded data, but more exists — load more & advance
+      onLoadMore();
+      setPage((p) => p + 1);
+    }
+  };
+  const [selectedTaskForSheet, setSelectedTaskForSheet] = useState<Task | null>(
+    null,
+  );
+
+  const toggleTask = (taskId: Id<"tasks">) => {
+    setSelectedTaskIds((prev) =>
+      prev.includes(taskId)
+        ? prev.filter((id) => id !== taskId)
+        : [...prev, taskId],
+    );
+  };
+
+  const toggleAll = () => {
+    if (
+      selectedTaskIds.length === paginatedTasks.length &&
+      paginatedTasks.length > 0
+    ) {
+      setSelectedTaskIds([]);
+    } else {
+      setSelectedTaskIds(paginatedTasks.map((t) => t._id as Id<"tasks">));
+    }
+  };
+
+  return (
+    <div className="relative border-none flex flex-col">
+      <div
+        className="overflow-auto custom-scrollbar flex-1"
+        style={{ minHeight: "calc(100vh - 320px)" }}
+      >
+        <Table>
+          <TableHeader className="dark:bg-neutral-800 bg-neutral-200/50  z-10 ">
+            <TableRow className="hover:bg-transparent border-none">
+              <TableHead className="w-[50px] px-6 py-4">
+                <Checkbox
+                  checked={
+                    selectedTaskIds.length === paginatedTasks.length &&
+                    paginatedTasks.length > 0
+                  }
+                  onCheckedChange={toggleAll}
+                  className="rounded  border-neutral-500 data-[state=checked]:bg-primary"
+                />
+              </TableHead>
+              <TableHead className="text-[15px] dark:text-primary text-foreground font-medium px-4 min-w-[180px]  border-r dark:border-neutral-700 border-neutral-200">
+                <div className="flex items-center gap-2">
+                  <FolderPen className="w-4.5 h-4.5" /> Task Name
+                </div>
+              </TableHead>
+              <TableHead className="text-[15px] dark:text-primary text-foreground font-medium  px-4 border-r dark:border-neutral-700 border-neutral-200">
+                <div className="flex items-center justify-between gap-2 overflow-hidden">
+                  <div className="flex items-center gap-2">
+                    <ChartPie className="w-4.5 h-4.5" /> Status
+                  </div>
+                  {/* <ChevronsUpDown className="w-4.5 h-4.5 text-muted-foreground dark:hover:text-primary hover:text-primary/70 transition-colors cursor-pointer shrink-0" /> */}
+                </div>
+              </TableHead>
+              <TableHead className="text-[15px] dark:text-primary text-foreground font-medium  px-4  border-r  dark:border-neutral-700 border-neutral-200">
+                <div className="flex items-center justify-between gap-2 overflow-hidden">
+                  <div className="flex items-center gap-2">
+                    <Hourglass className="w-4.5 h-4.5" /> Duration
+                  </div>
+                  <DurationSortPopover
+                    sortConfig={sortConfig}
+                    setSortConfig={setSortConfig}
+                    trigger={
+                      <ChevronsUpDown className="w-4.5 h-4.5 text-muted-foreground dark:hover:text-primary hover:text-primary/70 transition-colors cursor-pointer shrink-0" />
+                    }
+                  />
+                </div>
+              </TableHead>
+              <TableHead className="text-[15px] dark:text-primary text-foreground font-medium  px-4  border-r  dark:border-neutral-700 border-neutral-200">
+                <div className="flex items-center justify-between gap-2 overflow-hidden">
+                  <div className="flex items-center gap-2">
+                    <Box className="w-4.5 h-4.5" /> Tags
+                  </div>
+                  <TagFilterPopover
+                    tasks={allTasks}
+                    activeTag={tagFilter}
+                    setTagFilter={setTagFilter}
+                    trigger={
+                      <ChevronsUpDown className="w-4.5 h-4.5 text-muted-foreground dark:hover:text-primary hover:text-primary/70 transition-colors cursor-pointer shrink-0" />
+                    }
+                  />
+                </div>
+              </TableHead>
+              <TableHead className="text-[15px] dark:text-primary text-foreground font-medium px-4  border-r  dark:border-neutral-700 border-neutral-200">
+                <div className="flex items-center gap-2">
+                  <Users className="w-4.5 h-4.5" /> Assigned
+                </div>
+              </TableHead>
+              <TableHead className="text-[15px] dark:text-primary text-foreground font-medium px-4 text-center border-r dark:border-neutral-700 border-neutral-200">
+                <div className="flex items-center justify-between gap-2 overflow-hidden">
+                  <div className="flex items-center gap-2 justify-center">
+                    <ChartNoAxesColumnIncreasing className="w-4.5 h-4.5" />{" "}
+                    Priority
+                  </div>
+                  <PrioritySortPopover
+                    sortConfig={sortConfig}
+                    setSortConfig={setSortConfig}
+                    trigger={
+                      <ChevronsUpDown className="w-4.5 h-4.5 text-muted-foreground dark:hover:text-primary hover:text-primary/70 transition-colors cursor-pointer shrink-0" />
+                    }
+                  />
+                </div>
+              </TableHead>
+              <TableHead className="w-[50px]"></TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {paginatedTasks.length === 0 ? (
+              <TableRow className="">
+                <TableCell colSpan={8} className="h-[400px] text-center">
+                  <div className="flex flex-col items-start justify-center space-y-1.5 p-4 w-[360px] mx-auto">
+                    <Image
+                      src="/pat101.svg"
+                      alt="Empty Workspace"
+                      width={100}
+                      height={100}
+                      className="opacity-80 dark:invert-0 invert"
+                    />
+                    <p className="text-base font-medium  text-primary">
+                      Empty Workspace
+                    </p>
+                    <p className="text-muted-foreground text-wrap text-left">
+                      Create your First Task with your teammates and start
+                      managing your project in a right way.
+                    </p>
+
+                    <div className="flex items-center gap-4 mt-2">
+                      <Button
+                        variant="default"
+                        size="sm"
+                        className="rounded-full text-[11px]"
+                      >
+                        <Plus className="w-4 h-4" />
+                        Add Task
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="rounded-full text-[11px]"
+                      >
+                        Check Docs
+                        <FileCodeCorner className="w-4 h-4" />
+                      </Button>
+                    </div>
+                  </div>
+                </TableCell>
+              </TableRow>
+            ) : (
+              paginatedTasks.map((task) => {
+                const isSelected = selectedTaskIds.includes(task._id);
+
+                return (
+                  <TableRow
+                    key={task._id}
+                    className={cn(
+                      "group dark:border-b dark:border-neutral-800 border-b border-neutral-200 dark:hover:bg-neutral-900 hover:bg-neutral-100 transition-all cursor-pointer",
+                      isSelected && "bg-primary/5",
+                    )}
+                    onClick={() => setSelectedTaskForSheet(task)}
+                  >
+                    <TableCell
+                      className="px-6 py-4"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <Checkbox
+                        checked={isSelected}
+                        onCheckedChange={() =>
+                          toggleTask(task._id as Id<"tasks">)
+                        }
+                        className="rounded border-neutral-800 data-[state=checked]:bg-primary"
+                      />
+                    </TableCell>
+                    <TableCell className="px-4 text-sm font-medium border-r border-b dark:border-neutral-700 border-neutral-200 text-muted-foreground transition-colors dark:group-hover:text-primary group-hover:text-foreground max-w-[180px]">
+                      <div className="flex items-center gap-1.5 capitalize w-full min-w-0">
+                        <span className="dark:text-primary text-foreground truncate">
+                          {task.title}
+                        </span>
+                        {task.isBlocked ? (
+                          <Bug className="w-4 h-4 text-red-500/70 shrink-0 ml-auto" />
+                        ) : (
+                          task.estimation?.endDate &&
+                          task.estimation.endDate < Date.now() &&
+                          task.status !== "completed" && (
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <Info className="w-4 h-4 text-primary/80 shrink-0 ml-auto cursor-pointer" />
+                                </TooltipTrigger>
+                                <TooltipContent
+                                  side="top"
+                                  className="px-2 py-4! bg-neutral-900 border border-neutral-800 text-neutral-200"
+                                >
+                                  <p className="text-[11px] font-medium">
+                                    Overdue: due on {format(task.estimation.endDate, "MMM d, yyyy")}
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
+                          )
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="px-4 border-r border-b dark:border-neutral-700 border-neutral-200">
+                      <Badge
+                        className={cn(
+                          "px-2.5 py-0.5 rounded-full text-[12px] flex items-center gap-1.5 border font-medium capitalize whitespace-nowrap dark:bg-primary/10 bg-primary/5 dark:text-primary text-primary/80",
+                        )}
+                      >
+                        {statusIconsNoColors[task.status]}
+                        {task.status}
+                      </Badge>
+                    </TableCell>
+                    <TableCell className="px-4 text-[12px] font-medium text-muted-foreground dark:group-hover:text-primary group-hover:text-foreground transition-colors border-r border-b dark:border-neutral-700 border-neutral-200">
+                      {task.estimation ? (
+                        <span className="flex items-center justify-center gap-1.5 opacity-80">
+                          {format(task.estimation.startDate, "MMM d")} —{" "}
+                          {format(task.estimation.endDate, "MMM d")}
+                        </span>
+                      ) : (
+                        <span className="opacity-20 italic flex justify-center">
+                          No timeline
+                        </span>
+                      )}
+                    </TableCell>
+                    <TableCell className="px-4 border-r border-b dark:border-neutral-700 border-neutral-200">
+                      <div className="flex items-center justify-center gap-1.5 flex-wrap">
+                        {task.type ? (
+                          <div
+                            className={cn(
+                              "flex items-center gap-1.5 px-3 py-1 rounded-full text-[11px] font-medium font-inter capitalize tracking-wide border",
+                              task.type.color === "green" &&
+                              "bg-emerald-500/10 text-primary/80 border-emerald-400/20",
+                              task.type.color === "yellow" &&
+                              "bg-yellow-500/10  text-primary/80 border-yellow-400/20",
+                              task.type.color === "purple" &&
+                              "bg-purple-500/10  text-primary/80 border-purple-400/20",
+                              task.type.color === "blue" &&
+                              "bg-blue-500/20  text-primary/80 border-blue-400/20",
+                              task.type.color === "grey" &&
+                              "bg-neutral-500/10  text-primary/80 border-neutral-400/20",
+                            )}
+                          >
+                            {task.type.label}
+                          </div>
+                        ) : (
+                          <span className="text-[10px] text-muted-foreground">
+                            —
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="px-4 border-r border-b dark:border-neutral-700 border-neutral-200">
+                      {task.assignees && task.assignees.length > 0 ? (
+                        <div className="flex items-center justify-center -space-x-1">
+                          <TooltipProvider>
+                            {task.assignees.slice(0, 3).map((person, i) => (
+                              <Tooltip key={i}>
+                                <TooltipTrigger asChild>
+                                  <Avatar className="w-7 h-7 border-2 border-background shadow-sm hover:z-10 transition-transform hover:scale-110 cursor-pointer">
+                                    <AvatarImage
+                                      src={person.avatar}
+                                      className=""
+                                    />
+                                    <AvatarFallback className="text-[9px] bg-neutral-800 text-primary/40 font-bold uppercase">
+                                      {person.name[0]}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                </TooltipTrigger>
+                                <TooltipContent
+                                  side="top"
+                                  className="px-2 py-1"
+                                >
+                                  <p className="text-[10px] font-medium">
+                                    {person.name}
+                                  </p>
+                                </TooltipContent>
+                              </Tooltip>
+                            ))}
+                          </TooltipProvider>
+                          {task.assignees.length > 4 && (
+                            <div className="w-7 h-7 rounded-full border-2 border-background bg-[#1c1c1c] flex items-center justify-center text-[10px] font-bold text-neutral-400 z-20 shadow-sm">
+                              +{task.assignees.length - 4}
+                            </div>
+                          )}
+                        </div>
+                      ) : (
+                        <div className="flex items-center justify-center w-full">
+                          <p className="text-[11px] text-muted-foreground dark:group-hover:text-primary group-hover:text-foreground flex items-center gap-1 transition-colors">
+                            <Minus className="w-3.5 h-3.5" />
+                            Unassigned
+                          </p>
+                        </div>
+                      )}
+                    </TableCell>
+                    <TableCell className="px-4 border-r border-b text-muted-foreground dark:group-hover:text-primary group-hover:text-foreground transition-colors dark:border-neutral-700 border-neutral-200">
+                      <PriorityBadge priority={task.priority} />
+                    </TableCell>
+                    <TableCell
+                      className="px-4 text-right border-b dark:border-neutral-700 border-neutral-200"
+                      onClick={(e) => e.stopPropagation()}
+                    >
+                      <DropdownMenu>
+                        <DropdownMenuTrigger asChild>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-7 w-7 rounded-lg "
+                          >
+                            <MoreHorizontal className="w-4 h-4" />
+                          </Button>
+                        </DropdownMenuTrigger>
+                        <DropdownMenuContent
+                          align="end"
+                          className="w-48 rounded-xl shadow-xl border-muted/50"
+                        >
+                          <EditTaskDialog
+                            projectName={projectName}
+                            projectId={projectId}
+                            repoFullName={repoFullName}
+                            ownerClerkId={ownerClerkId}
+                            task={task}
+                            trigger={
+                              <DropdownMenuItem
+                                onSelect={(e) => e.preventDefault()}
+                                className="gap-2 focus:bg-primary/5 cursor-pointer text-xs font-semibold py-2"
+                              >
+                                <Edit className="w-4 h-4" /> Edit Task
+                              </DropdownMenuItem>
+                            }
+                          />
+                          {task.status !== "completed" && (
+                            <DropdownMenuItem
+                              onSelect={() => handleMarkAsComplete(task._id)}
+                              className="gap-2 focus:bg-primary/5 cursor-pointer text-xs py-2"
+                            >
+                              <Check className="w-4 h-4" /> Mark as Complete
+                            </DropdownMenuItem>
+                          )}
+                          <AlertDialog>
+                            {canDelete ? (
+                              <AlertDialogTrigger asChild>
+                                <DropdownMenuItem
+                                  onSelect={(e) => e.preventDefault()}
+                                  className="gap-2 focus:bg-red-500/10 text-red-500 cursor-pointer text-xs font-semibold py-2"
+                                >
+                                  <AlertCircle className="w-4 h-4" /> Delete
+                                  Task
+                                </DropdownMenuItem>
+                              </AlertDialogTrigger>
+                            ) : (
+                              <DropdownMenuItem
+                                className="gap-2 opacity-50 cursor-not-allowed text-red-500 text-xs font-semibold py-2"
+                                disabled
+                              >
+                                <AlertCircle className="w-4 h-4" /> Delete Task
+                              </DropdownMenuItem>
+                            )}
+                            <AlertDialogContent className="bg-neutral-900 border-neutral-800 shadow-2xl">
+                              <AlertDialogHeader>
+                                <AlertDialogTitle className="text-primary">
+                                  Are you absolutely sure?
+                                </AlertDialogTitle>
+                                <AlertDialogDescription className="text-muted-foreground">
+                                  This action cannot be undone. This will
+                                  permanently delete this task and remove all
+                                  associated data.
+                                </AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel className="bg-neutral-800 border-neutral-700 text-primary hover:bg-neutral-700">
+                                  Cancel
+                                </AlertDialogCancel>
+                                <AlertDialogAction
+                                  onClick={() => handleDeleteTask(task._id)}
+                                  className="bg-red-600 text-white hover:bg-red-700"
+                                >
+                                  Delete Permanently
+                                </AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </DropdownMenuContent>
+                      </DropdownMenu>
+                    </TableCell>
+                  </TableRow>
+                );
+              })
+            )}
+          </TableBody>
+        </Table>
+      </div>
+
+      {/* Simple Pagination */}
+      <div className="flex items-center justify-between px-6 py-4 border-t dark:border-neutral-800! border-neutral-200">
+        <div className="text-xs font-medium text-muted-foreground tracking-wider">
+          Showing {page * PAGE_SIZE + 1}–
+          {Math.min((page + 1) * PAGE_SIZE, tasks.length)} of {tasks.length}
+          {hasMore ? "+" : ""} Results
+        </div>
+
+        <div className="flex items-center gap-2">
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!canGoPrev}
+            onClick={() => setPage((p) => p - 1)}
+            className="h-7 px-3 text-[10px] font-semibold bg-transparent dark:border-neutral-800 border-neutral-200 dark:text-primary text-foreground transition-all disabled:opacity-20"
+          >
+            <ChevronLeft size={12} className="mr-1" /> Previous
+          </Button>
+          <div className="flex items-center gap-1">
+            <Button
+              variant="secondary"
+              size="sm"
+              className="h-7 w-7 text-[10px] font-bold p-0 dark:bg-primary/10 bg-primary/5 dark:text-primary text-primary/80 border dark:border-primary/20 border-primary/10 rounded-md"
+            >
+              {page + 1}
+            </Button>
+          </div>
+          <Button
+            variant="outline"
+            size="sm"
+            disabled={!canGoNext}
+            onClick={handleNext}
+            className="h-7 px-3 text-[10px] font-semibold bg-transparent dark:border-neutral-800 border-neutral-200 dark:text-primary text-foreground transition-all disabled:opacity-20"
+          >
+            Next <ChevronRight size={12} className="ml-1" />
+          </Button>
+        </div>
+      </div>
+
+      <TaskDetailSheet
+        task={selectedTaskForSheet}
+        isOpen={!!selectedTaskForSheet}
+        onClose={() => setSelectedTaskForSheet(null)}
+      />
+    </div>
+  );
+};

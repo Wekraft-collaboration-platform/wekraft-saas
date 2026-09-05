@@ -1,0 +1,87 @@
+"use client";
+
+import { useQuery } from "convex/react";
+import { useParams } from "next/navigation";
+import { Suspense, useEffect, useRef } from "react";
+import { useSidebar } from "@/components/ui/sidebar";
+import { Skeleton } from "@/components/ui/skeleton";
+import { TeamspaceView } from "@/modules/workspace/teamspace/TeamspaceView";
+import { api } from "../../../../../../../../convex/_generated/api";
+
+export default function TeamspacePage() {
+  const { setOpen: setSidebarOpen } = useSidebar();
+  const didInit = useRef(false);
+
+  useEffect(() => {
+    if (!didInit.current) {
+      setSidebarOpen(false);
+      didInit.current = true;
+    }
+  }, [setSidebarOpen]);
+
+  const params = useParams();
+  const slug = params.slug as string;
+
+  const project = useQuery(api.project.getProjectBySlug, { slug });
+
+  if (project === undefined) {
+    return (
+      <div className="flex h-[calc(100vh-72px)] overflow-hidden">
+        {/* Channels skeleton */}
+        <div className="w-56 border-r p-3 flex flex-col gap-2">
+          <Skeleton className="h-4 w-20 mb-2" />
+          {[...Array(4)].map((_, i) => (
+            <Skeleton key={i} className="h-8 w-full rounded-md" />
+          ))}
+        </div>
+        {/* Feed skeleton */}
+        <div className="flex-1 flex flex-col">
+          <div className="border-b px-4 py-3">
+            <Skeleton className="h-4 w-32" />
+          </div>
+          <div className="flex-1 p-4 flex flex-col gap-4">
+            {[...Array(5)].map((_, i) => (
+              <div key={i} className="flex gap-3">
+                <Skeleton className="h-8 w-8 rounded-full shrink-0" />
+                <div className="flex-1 space-y-2">
+                  <Skeleton className="h-3 w-24" />
+                  <Skeleton className="h-4 w-3/4" />
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+        {/* Members skeleton */}
+        <div className="w-48 border-l p-3 flex flex-col gap-2">
+          <Skeleton className="h-4 w-16 mb-2" />
+          {[...Array(3)].map((_, i) => (
+            <div key={i} className="flex items-center gap-2">
+              <Skeleton className="h-6 w-6 rounded-full" />
+              <Skeleton className="h-3 w-20" />
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  if (!project) {
+    return (
+      <div className="flex h-[calc(100vh-72px)] items-center justify-center">
+        <p className="text-muted-foreground text-sm">Project not found</p>
+      </div>
+    );
+  }
+
+  return (
+    <Suspense
+      fallback={
+        <div className="flex h-[calc(100vh-72px)] items-center justify-center">
+          <Skeleton className="h-8 w-8 rounded-full" />
+        </div>
+      }
+    >
+      <TeamspaceView projectSlug={slug} projectId={project._id} />
+    </Suspense>
+  );
+}

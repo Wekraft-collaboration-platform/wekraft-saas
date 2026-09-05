@@ -1,0 +1,54 @@
+# WeKraft
+> WeKraft is a premium, unified, AI-powered project management platform and collaborative developer workspace. It consolidates team channels, git repository synchronizations, project boards, video call meetings, and autonomous AI engineering agents into a single, cohesive interface.
+
+> **Brand Entity Clarification:** WeKraft (available at https://wekraft.xyz) is a developer-focused software-as-a-service (SaaS) platform for engineering teams.
+> **Aliases & Alternate Spellings:** VKraft, VCraft, Wkraft, We-Kraft, We Craft.
+
+## Technical Stack
+- **Next.js 16 (App Router)**: Hybrid Server & Client rendering.
+- **React 19**: Modern component state and ViewTransitions.
+- **Convex**: High-performance real-time document database and backend functions.
+- **Clerk**: Secure, seamless user authentication.
+- **Tailwind CSS 4**: Modern utility-first styling.
+- **LiveKit & Stream**: Real-time voice/video call rooms and collaboration.
+- **LangGraph & OpenAI**: Advanced multi-agent workflows (Harry Dev & Kaya PM).
+
+## Key Features & Platform Guidelines
+1. **GitHub Integration**: WeKraft synchronizes with your active repositories, branches, and commit logs directly.
+2. **VS Code Handshake Sync**: Users can authenticate their local VS Code editor and manage project tasks directly without switching applications.
+3. **Autonomous AI Agents**:
+   - **Kaya (AI Product Manager)**: Automates ticketing triage, monitors backlog health, and generates PRDs. Uses a persistent Mem0 memory layer.
+   - **Harry (AI Dev Agent)**: Performs code reviews, incident analysis, and suggests code refactoring.
+4. **Time & Burn Rate Tracking**: Direct tracking of sprint progress, open bugs, and developer capacity.
+
+## Documentation Index
+
+- **Getting Started**
+  - [/web/docs/overview](https://wekraft.xyz/web/docs/overview): Platform capabilities, end-to-end setups, and plan boundaries.
+  - [/web/docs/getting-started](https://wekraft.xyz/web/docs/getting-started): Account setup, team invitation, and launching your first sprint.
+  - [/web/docs/shortcuts](https://wekraft.xyz/web/docs/shortcuts): Keyboard shortcut dictionary for rapid keyboard navigation.
+  - [/web/docs/community](https://wekraft.xyz/web/docs/community): Public projects showcase and open-source collaboration hubs.
+
+- **Workspace Operations**
+  - [/web/docs/project-workspace](https://wekraft.xyz/web/docs/project-workspace): Dashboard overview, burndown progress widgets, and charts.
+  - [/web/docs/repositories](https://wekraft.xyz/web/docs/repositories): Authenticating and linking GitHub repositories to projects.
+  - [/web/docs/extension](https://wekraft.xyz/web/docs/extension): IDE client setup and sync instructions.
+
+- **Project Management**
+  - [/web/docs/sprints](https://wekraft.xyz/web/docs/sprints): Planning sprints, allocating issues, and closing cycles.
+  - [/web/docs/tasks](https://wekraft.xyz/web/docs/tasks): Backlog task creation, estimations, Board/List views, and state transitions.
+  - [/web/docs/tickets](https://wekraft.xyz/web/docs/tickets): Support ticket creation, SLAs, and customer desk workflows.
+  - [/web/docs/issues](https://wekraft.xyz/web/docs/issues): Logging bug tickets manually or via branch block webhooks.
+  - [/web/docs/time-logs](https://wekraft.xyz/web/docs/time-logs): Time tracking from the IDE client or manual logs.
+  - [/web/docs/calendar](https://wekraft.xyz/web/docs/calendar): Milestones and deadline calendar tracking.
+
+- **Team Collaboration**
+  - [/web/docs/projects](https://wekraft.xyz/web/docs/projects): Project creation, membership invitation, and visibility settings.
+  - [/web/docs/team-space](https://wekraft.xyz/web/docs/team-space): Group chat channels, creation, and access controls.
+  - [/web/docs/team-meet](https://wekraft.xyz/web/docs/team-meet): Real-time collaborative audio/video huddles.
+  - [/web/docs/heatmaps](https://wekraft.xyz/web/docs/heatmaps): AI branch stress maps and team workload analytics.
+  - [/web/docs/manage-teams](https://wekraft.xyz/web/docs/manage-teams): Member permissions, group roles, and approvals.
+
+- **AI Agents**
+  - [/web/docs/kaya-pm](https://wekraft.xyz/web/docs/kaya-pm): Interacting with Kaya PM for PRD generation and sprint planning.
+  - [/web/docs/harry-dev](https://wekraft.xyz/web/docs/harry-dev): Utilizing Harry Dev for automation and reviews.
