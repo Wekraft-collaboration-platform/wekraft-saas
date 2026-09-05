@@ -139,30 +139,8 @@ http.route({
   }),
 });
 
-// get scheduler (Kaya AI Agent tool)
-http.route({
-  path: "/getScheduler",
-  method: "POST",
-  handler: httpAction(async (ctx, request) => {
-    const body = await request.json();
+// getScheduler HTTP route removed — setup_report_scheduler unified.
 
-    if (!body.projectId) {
-      return new Response(JSON.stringify({ error: "projectId is required" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    const scheduler = await ctx.runQuery(internal.agentTools.getScheduler, {
-      projectId: body.projectId,
-    });
-
-    return new Response(JSON.stringify({ scheduler }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-  }),
-});
 
 // create or update scheduler (Kaya AI Agent tool)
 http.route({

@@ -164,29 +164,8 @@ export const addItemsToSprint = internalMutation({
   },
 });
 
-// Scheduler query by agent
-export const getScheduler = internalQuery({
-  args: {
-    projectId: v.id("projects"),
-  },
-  handler: async (ctx, args) => {
-    const scheduler = await ctx.db
-      .query("schedulers")
-      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
-      .unique();
+// Scheduler query removed — setup_report_scheduler handles both viewing and setting up schedulers.
 
-    if (!scheduler) return null;
-
-    return {
-      name: scheduler.name,
-      frequencyDays: scheduler.frequencyDays,
-      recipientEmail: scheduler.recipientEmail,
-      isActive: scheduler.isActive,
-      lastRunAt: scheduler.lastRunAt ?? null,
-      nextRunAt: scheduler.nextRunAt,
-    };
-  },
-});
 
 // Create or Update Scheduler by agent
 export const createOrUpdateScheduler = internalMutation({
