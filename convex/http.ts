@@ -1036,5 +1036,58 @@ http.route({
   }),
 });
 
+// Bulk Insert Tasks (Kaya AI Agent tool)
+http.route({
+  path: "/bulkInsertTasks",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const body = await request.json();
+
+    if (!body.projectId || !Array.isArray(body.tasks)) {
+      return new Response(
+        JSON.stringify({ error: "projectId and tasks array are required" }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
+    }
+
+    const result = await ctx.runMutation(internal.agentTools.bulkInsertTasks, {
+      projectId: body.projectId,
+      tasks: body.tasks,
+    });
+
+    return new Response(JSON.stringify(result), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }),
+});
+
+// Bulk Insert Issues (Kaya AI Agent tool)
+http.route({
+  path: "/bulkInsertIssues",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const body = await request.json();
+
+    if (!body.projectId || !Array.isArray(body.issues)) {
+      return new Response(
+        JSON.stringify({ error: "projectId and issues array are required" }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
+    }
+
+    const result = await ctx.runMutation(internal.agentTools.bulkInsertIssues, {
+      projectId: body.projectId,
+      issues: body.issues,
+    });
+
+    return new Response(JSON.stringify(result), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }),
+});
+
 export default http;
+
 

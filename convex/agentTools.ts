@@ -856,3 +856,118 @@ export const getSprintHistory = internalQuery({
     });
   },
 });
+
+// Bulk Insert Tasks mutation for PRD / Document AI Extractor
+export const bulkInsertTasks = internalMutation({
+  args: {
+    projectId: v.id("projects"),
+    tasks: v.array(
+      v.object({
+        title: v.string(),
+        description: v.optional(v.string()),
+        priority: v.optional(
+          v.union(v.literal("high"), v.literal("medium"), v.literal("low")),
+        ),
+        type: v.optional(
+          v.object({
+            label: v.string(),
+            color: v.string(),
+          }),
+        ),
+      }),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const project = await ctx.db.get(args.projectId);
+    if (!project) throw new Error(`Project not found: ${args.projectId}`);
+
+    const now = Date.now();
+    const tomorrow = now + 86400000;
+    const insertedIds = [];
+
+    for (const taskItem of args.tasks) {
+      const id = await ctx.db.insert("tasks", {
+        projectId: args.projectId,
+        createdByUserId: project.ownerId,
+        title: taskItem.title,
+        description: taskItem.description,
+        priority: taskItem.priority ?? "medium",
+        type: taskItem.type ?? { label: "PRD-Import", color: "#3b82f6" },
+        status: "not started",
+        estimation: {
+          startDate: now,
+          endDate: tomorrow,
+        },
+        createdAt: now,
+        updatedAt: now,
+      });
+      insertedIds.push(id);
+    }
+
+    return {
+      success: true,
+      count: insertedIds.length,
+      taskIds: insertedIds,
+    };
+  },
+});
+
+// Bulk Insert Issues mutation for PRD / Document AI Extractor
+export const bulkInsertIssues = internalMutation({
+  args: {
+    projectId: v.id("projects"),
+    issues: v.array(
+      v.object({
+        title: v.string(),
+        description: v.optional(v.string()),
+        environment: v.optional(
+          v.union(
+            v.literal("local"),
+            v.literal("dev"),
+            v.literal("staging"),
+            v.literal("production"),
+          ),
+        ),
+        severity: v.optional(
+          v.union(
+            v.literal("critical"),
+            v.literal("medium"),
+            v.literal("low"),
+          ),
+        ),
+      }),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const project = await ctx.db.get(args.projectId);
+    if (!project) throw new Error(`Project not found: ${args.projectId}`);
+
+    const now = Date.now();
+    const dayAfterTomorrow = now + 2 * 86400000;
+    const insertedIds = [];
+
+    for (const issueItem of args.issues) {
+      const id = await ctx.db.insert("issues", {
+        projectId: args.projectId,
+        createdByUserId: project.ownerId,
+        title: issueItem.title,
+        description: issueItem.description,
+        environment: issueItem.environment ?? "dev",
+        severity: issueItem.severity ?? "medium",
+        status: "not opened",
+        type: "manual",
+        due_date: dayAfterTomorrow,
+        createdAt: now,
+        updatedAt: now,
+      });
+      insertedIds.push(id);
+    }
+
+    return {
+      success: true,
+      count: insertedIds.length,
+      issueIds: insertedIds,
+    };
+  },
+});
+
