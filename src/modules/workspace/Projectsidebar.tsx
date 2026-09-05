@@ -89,6 +89,8 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { api } from "../../../convex/_generated/api";
 import type { Doc } from "../../../convex/_generated/dataModel";
 import { ThemeButtons } from "../dashboard/components/ThemeButton";
+import { useKayaStore } from "@/store/useKayaStore";
+import { useHarryStore } from "@/store/useHarryStore";
 
 const workspaceMenu = [
   {
@@ -148,6 +150,10 @@ export default function ProjectSidebar() {
   const slug = params.slug as string;
   const router = useRouter();
   const [_assistantOpen, setAssistantOpen] = useState(false);
+  const isKayaOpen = useKayaStore((s) => s.isOpen);
+  const setKayaOpen = useKayaStore((s) => s.setIsOpen);
+  const isHarryOpen = useHarryStore((s) => s.isOpen);
+  const setHarryOpen = useHarryStore((s) => s.setIsOpen);
   const { signOut } = useClerk();
   const { state, setOpen } = useSidebar();
   const isCollapsed = state === "collapsed";
@@ -161,6 +167,7 @@ export default function ProjectSidebar() {
 
   const project = useQuery(api.project.getProjectBySlug, { slug });
   const ownerProjects = useQuery(api.project.getUserProjects);
+
   const teamProjects = useQuery(api.project.getJoinedProjects);
 
   useEffect(() => {
@@ -503,12 +510,16 @@ export default function ProjectSidebar() {
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton
                           asChild
-                          isActive={pathname.includes("/workspace/ai") && pathname.includes("kaya=true")}
-                          className="group relative h-8 overflow-hidden"
+                          isActive={isKayaOpen}
+                          className="group relative h-8 overflow-hidden cursor-pointer"
                         >
-                          <Link
-                            href={`/dashboard/my-projects/${slug}/workspace/ai?kaya=true`}
-                            className="relative z-10 flex items-center w-full gap-2.5"
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setHarryOpen(false);
+                              setKayaOpen(true);
+                            }}
+                            className="relative z-10 flex items-center w-full gap-2.5 bg-transparent border-0"
                           >
                             <Image
                               src="/kaya.svg"
@@ -520,7 +531,7 @@ export default function ProjectSidebar() {
                             <span className="text-sm text-muted-foreground hover:text-foreground">
                               Kaya PM Agent
                             </span>
-                          </Link>
+                          </button>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
 
@@ -528,12 +539,16 @@ export default function ProjectSidebar() {
                       <SidebarMenuSubItem>
                         <SidebarMenuSubButton
                           asChild
-                          isActive={pathname.includes("/workspace/ai") && pathname.includes("harry=true")}
-                          className="group relative h-8 overflow-hidden"
+                          isActive={isHarryOpen}
+                          className="group relative h-8 overflow-hidden cursor-pointer"
                         >
-                          <Link
-                            href={`/dashboard/my-projects/${slug}/workspace/ai?harry=true`}
-                            className="relative z-10 flex items-center w-full gap-2.5"
+                          <button
+                            type="button"
+                            onClick={() => {
+                              setKayaOpen(false);
+                              setHarryOpen(true);
+                            }}
+                            className="relative z-10 flex items-center w-full gap-2.5 bg-transparent border-0"
                           >
                             <Image
                               src="/harry.svg"
@@ -545,7 +560,7 @@ export default function ProjectSidebar() {
                             <span className="text-sm text-muted-foreground hover:text-foreground">
                               Harry Dev Agent
                             </span>
-                          </Link>
+                          </button>
                         </SidebarMenuSubButton>
                       </SidebarMenuSubItem>
                     </SidebarMenuSub>
@@ -559,12 +574,16 @@ export default function ProjectSidebar() {
                   <SidebarMenuButton
                     asChild
                     tooltip="Kaya PM Agent"
-                    isActive={pathname.includes("/workspace/ai") && pathname.includes("kaya=true")}
+                    isActive={isKayaOpen}
                     className="group relative overflow-hidden cursor-pointer"
                   >
-                    <Link
-                      href={`/dashboard/my-projects/${slug}/workspace/ai?kaya=true`}
-                      className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setHarryOpen(false);
+                        setKayaOpen(true);
+                      }}
+                      className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center bg-transparent border-0"
                     >
                       <Image
                         src="/kaya.svg"
@@ -572,19 +591,23 @@ export default function ProjectSidebar() {
                         width={24}
                         height={24}
                       />
-                    </Link>
+                    </button>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     asChild
                     tooltip="Harry Dev Agent"
-                    isActive={pathname.includes("/workspace/ai") && pathname.includes("harry=true")}
+                    isActive={isHarryOpen}
                     className="group relative overflow-hidden cursor-pointer"
                   >
-                    <Link
-                      href={`/dashboard/my-projects/${slug}/workspace/ai?harry=true`}
-                      className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setKayaOpen(false);
+                        setHarryOpen(true);
+                      }}
+                      className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center bg-transparent border-0"
                     >
                       <Image
                         src="/harry.svg"
@@ -592,10 +615,11 @@ export default function ProjectSidebar() {
                         width={24}
                         height={24}
                       />
-                    </Link>
+                    </button>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </>
+
             )}
           </SidebarMenu>
         )}

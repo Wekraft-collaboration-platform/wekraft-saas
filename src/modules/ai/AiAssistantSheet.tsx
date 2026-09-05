@@ -194,9 +194,6 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
-        if (typeof window !== "undefined" && window.location.pathname.includes("/workspace/ai")) {
-          return;
-        }
         if (isHarryActive) return; // Let Harry's sheet handle it
         e.preventDefault();
         setIsOpen(!isOpen);
@@ -205,6 +202,7 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
   }, [isOpen, setIsOpen, isHarryActive]);
+
 
   // Focus input when not running
   useEffect(() => {
@@ -431,6 +429,7 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
                 </p>
               )}
             </div>
+
             <div className="flex items-center gap-4">
               {/* If messages */}
               {appCheckpoints.length > 0 ? (
@@ -449,25 +448,21 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
                 <Button
                   size="sm"
                   variant="outline"
-                  className="text-[11px]  shrink-0 cursor-pointer"
+                  className="text-[11px] shrink-0 cursor-pointer flex items-center gap-1.5"
                   onClick={() => {
                     setIsOpen(false);
                     useHarryStore.getState().setIsOpen(true);
-                    if (typeof window !== "undefined" && window.location.pathname.includes("/workspace/ai")) {
-                      router.replace(`/dashboard/my-projects/${slug}/workspace/ai?harry=true`);
-                    }
                   }}
                 >
-                  <img src="/harry.svg" alt="Harry" width={24} height={24} />
+                  <img src="/harry.svg" alt="Harry" width={18} height={18} />
                   Open Harry
                 </Button>
               )}
-              <Button size="sm" variant="default" className="text-[10px]">
-                Visit space <MessagesSquare className="h-3 w-3" />
-              </Button>
             </div>
           </div>
         </SheetHeader>
+
+
 
         {/* MESSAGES */}
         <div className="flex-1 overflow-hidden relative flex flex-col">

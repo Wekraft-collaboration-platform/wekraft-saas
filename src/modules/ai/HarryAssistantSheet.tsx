@@ -63,9 +63,6 @@ export function HarryAssistantSheet() {
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
-        if (typeof window !== "undefined" && window.location.pathname.includes("/workspace/ai")) {
-          return;
-        }
         if (!isHarryActive) return; // Let Kaya's sheet handle it
         e.preventDefault();
         setIsOpen(!isOpen);
@@ -74,6 +71,7 @@ export function HarryAssistantSheet() {
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
   }, [isOpen, setIsOpen, isHarryActive]);
+
 
   return (
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
@@ -101,24 +99,19 @@ export function HarryAssistantSheet() {
               <Button
                 size="sm"
                 variant="outline"
-                className="text-[11px]  shrink-0 cursor-pointer"
+                className="text-[11px] shrink-0 cursor-pointer flex items-center gap-1.5"
                 onClick={() => {
                   setIsOpen(false);
                   useKayaStore.getState().setIsOpen(true);
-                  if (typeof window !== "undefined" && window.location.pathname.includes("/workspace/ai")) {
-                    router.replace(`/dashboard/my-projects/${slug}/workspace/ai?kaya=true`);
-                  }
                 }}
               >
-                <img src="/kaya.svg" alt="kaya" width={24} height={24} />
+                <img src="/kaya.svg" alt="kaya" width={18} height={18} />
                 Open Kaya
-              </Button>
-              <Button onClick={() => router.replace(`/dashboard/my-projects/${slug}/workspace/ai?harry=true`)} size="sm" variant="default" className="text-[10px]">
-                Visit space <MessagesSquare className="h-3 w-3" />
               </Button>
             </div>
           </div>
         </SheetHeader>
+
 
         {/* MESSAGES */}
         <div className="flex-1 overflow-hidden relative flex flex-col">

@@ -6,14 +6,13 @@ import Image from "next/image";
 import { X } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 import { cn } from "@/lib/utils";
+import { useKayaStore } from "@/store/useKayaStore";
 
 const HIDE_DURATION = 1000 * 60 * 60 * 1; // 1 hour
 
 export const FloatingKaya = () => {
   const pathname = usePathname();
-  const router = useRouter();
-  const params = useParams();
-  const slug = params.slug as string;
+  const setIsKayaOpen = useKayaStore((s) => s.setIsOpen);
 
   const [isVisible, setIsVisible] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
@@ -24,23 +23,19 @@ export const FloatingKaya = () => {
   }, [pathname]);
 
   const checkVisibility = () => {
-    // 1. Check if inside workspace but not in AI
     const isInWorkspace = pathname.includes(`/workspace`);
-    const isAiPage = pathname.includes(`/workspace/ai`);
 
-    if (!isInWorkspace || isAiPage) {
+    if (!isInWorkspace) {
       setIsVisible(false);
       return;
     }
 
-    // 2. Check localStorage for hidden state
     const hiddenUntil = localStorage.getItem("kaya_floating_hidden_until");
     if (hiddenUntil) {
       if (Date.now() < parseInt(hiddenUntil)) {
         setIsVisible(false);
         return;
       }
-      // If time passed, clean up
       localStorage.removeItem("kaya_floating_hidden_until");
     }
 
@@ -55,8 +50,9 @@ export const FloatingKaya = () => {
   };
 
   const handleClick = () => {
-    router.push(`/dashboard/my-projects/${slug}/workspace/ai`);
+    setIsKayaOpen(true);
   };
+
 
   if (!isMounted || !isVisible) return null;
 
