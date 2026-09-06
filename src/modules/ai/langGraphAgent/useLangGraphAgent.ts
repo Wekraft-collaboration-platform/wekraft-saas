@@ -63,6 +63,7 @@ export function useLangGraphAgent<
   const [restoring, setRestoring] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [agentStatus, setAgentStatus] = useState<string>("");
+  const [reasoning, setReasoning] = useState<string>("");
   const [activeNode, setActiveNode] = useState<string>("");
   const [appCheckpoints, setAppCheckpoints] = useState<
     AppCheckpoint<TAgentState, TInterruptValue>[]
@@ -146,10 +147,12 @@ export function useLangGraphAgent<
       throw new Error("Thread id is required");
     }
 
+    const runStartTime = Date.now();
     try {
       setStatus("running");
       setIsStreaming(false);
       setAgentStatus("");
+      setReasoning("");
       setActiveNode("");
       // Invalidate cache when agent is called
       historyCache.delete(agentInput.thread_id);
@@ -179,12 +182,20 @@ export function useLangGraphAgent<
           if (chunk.message_chunk.content && isKayaNode) {
             setIsStreaming(true);
             setAgentStatus(""); // Clear intermediate status when final response starts
+            setReasoning(""); // Immediate hide reasoning when streaming begins
           }
           processMessageChunk(chunk, appCheckpoints);
           setAppCheckpoints([...appCheckpoints]);
         }
 
         if (msg.event === "custom") {
+          const customData = msg.data as any;
+          if (customData?.reasoning) {
+            setReasoning(customData.reasoning);
+          }
+          if (customData?.agent_status) {
+            setAgentStatus(customData.agent_status);
+          }
           processCustomEvent(msg.data as Partial<TAgentState>, appCheckpoints);
           setAppCheckpoints([...appCheckpoints]);
         }
@@ -204,15 +215,27 @@ export function useLangGraphAgent<
         }
       }
 
+      const elapsedSec = ((Date.now() - runStartTime) / 1000).toFixed(1);
+      if (appCheckpoints.length > 0) {
+        const lastCp = appCheckpoints[appCheckpoints.length - 1];
+        (lastCp as any).executionTime = elapsedSec;
+        if (lastCp.nodes && lastCp.nodes.length > 0) {
+          (lastCp.nodes[0] as any).executionTime = elapsedSec;
+        }
+        setAppCheckpoints([...appCheckpoints]);
+      }
+
       setStatus("idle");
       setIsStreaming(false);
       setAgentStatus("");
+      setReasoning("");
       setActiveNode("");
     } catch (error: any) {
       console.error(error);
       setStatus("error");
       setIsStreaming(false);
       setAgentStatus("");
+      setReasoning("");
       setActiveNode("");
 
       if (error.message.includes("Too many requests")) {
@@ -507,6 +530,9 @@ export function useLangGraphAgent<
     if ((state as any).agent_status) {
       setAgentStatus((state as any).agent_status);
     }
+    if ((state as any).reasoning) {
+      setReasoning((state as any).reasoning);
+    }
 
     lastCheckpoint.state = deepCopy({
       ...lastCheckpoint.state,
@@ -611,6 +637,7 @@ export function useLangGraphAgent<
     restoring,
     isStreaming,
     agentStatus,
+    reasoning,
     activeNode,
     reset,
   };

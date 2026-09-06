@@ -159,6 +159,7 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
     restoring,
     isStreaming,
     agentStatus,
+    reasoning,
     activeNode,
   } = useLangGraphAgent<AgentState, InterruptValue, ResumeValue>({
     onCheckpointStateUpdate: (checkpoint) => {
@@ -368,7 +369,10 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
               : checkpointAiMessages && checkpointAiMessages.length > 0
                 ? { messages: checkpointAiMessages }
                 : node.state;
-          return <ChatbotNode nodeState={stateToUse} />;
+          const execTime =
+            (checkpoint as any).executionTime ||
+            (checkpoint.nodes[0]?.state as any)?.executionTime;
+          return <ChatbotNode nodeState={stateToUse} executionTime={execTime} />;
         }
         return null;
       }
@@ -588,8 +592,8 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                   <KayaLoader />
                   <div className="flex items-center gap-1.5">
                     <span className="text-[10px] uppercase tracking-normal">
-                      {appCheckpoints.length === 0
-                        ? "Kaya is spinning up, hang tight..."
+                      {reasoning
+                        ? "Kaya is reasoning..."
                         : agentStatus || "Kaya is thinking..."}
                     </span>
                     {thinkingTime > 0 && (
@@ -599,7 +603,16 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                     )}
                   </div>
                 </div>
-                {appCheckpoints.length === 0 && (
+
+                {reasoning && (
+                  <div className="ml-7 mt-1 text-xs text-muted-foreground bg-neutral-900/80 border border-neutral-800 rounded-lg p-2.5 max-w-[420px] leading-relaxed animate-in fade-in duration-200">
+                    <p className="text-[11px] text-neutral-300 leading-relaxed font-sans">
+                      {reasoning.replace(/^Reasoning:\s*/i, "")}
+                    </p>
+                  </div>
+                )}
+
+                {appCheckpoints.length === 0 && !reasoning && (
                   <div className="text-[10px] text-muted-foreground animate-pulse pl-10 tracking-tighter">
                     Initial response might take a few seconds to warm up...
                   </div>
