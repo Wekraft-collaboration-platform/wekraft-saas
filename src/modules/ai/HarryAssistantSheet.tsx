@@ -71,7 +71,7 @@ export function HarryAssistantSheet() {
     <Sheet open={isOpen} onOpenChange={setIsOpen}>
       <SheetContent
         side="right"
-        className="w-[500px] flex flex-col p-0 gap-0 h-full focus-visible:ring-0 focus:ring-0 outline-none overflow-hidden"
+        className="w-full sm:max-w-[580px] sm:w-[580px] flex flex-col p-0 gap-0 h-full focus-visible:ring-0 focus:ring-0 outline-none overflow-hidden"
       >
         {/* HEADER */}
         <SheetHeader className="px-4 py-3 border-b bg-card">

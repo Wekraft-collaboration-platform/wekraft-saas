@@ -81,7 +81,9 @@ export function ChatbotNode({ nodeState, executionTime }: ChatbotNodeProps) {
             <div
               className={cn(
                 "text-[13px] font-sans leading-relaxed max-w-none",
-                isAI ? "text-neutral-200" : "text-neutral-400 italic",
+                isAI
+                  ? "text-neutral-200"
+                  : "bg-neutral-900 border border-border/40 rounded-lg px-3.5 py-2 text-neutral-200 shadow-xs max-w-[65%] w-fit",
               )}
             >
               <ReactMarkdown
