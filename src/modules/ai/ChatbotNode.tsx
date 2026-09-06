@@ -149,6 +149,38 @@ export function ChatbotNode({ nodeState, executionTime }: ChatbotNodeProps) {
                       {children}
                     </blockquote>
                   ),
+                  table: ({ children }) => (
+                    <div className="my-3 w-full overflow-x-auto rounded-lg border border-neutral-800 bg-neutral-900/50">
+                      <table className="w-full text-left text-[12px] border-collapse">
+                        {children}
+                      </table>
+                    </div>
+                  ),
+                  thead: ({ children }) => (
+                    <thead className="bg-neutral-800/70 border-b border-neutral-800 text-neutral-200 font-medium">
+                      {children}
+                    </thead>
+                  ),
+                  tbody: ({ children }) => (
+                    <tbody className="divide-y divide-neutral-800/60">
+                      {children}
+                    </tbody>
+                  ),
+                  tr: ({ children }) => (
+                    <tr className="transition-colors hover:bg-neutral-800/30">
+                      {children}
+                    </tr>
+                  ),
+                  th: ({ children }) => (
+                    <th className="px-3 py-2 font-semibold text-neutral-100 text-[11.5px]">
+                      {children}
+                    </th>
+                  ),
+                  td: ({ children }) => (
+                    <td className="px-3 py-2 text-neutral-300 align-top leading-normal">
+                      {children}
+                    </td>
+                  ),
                   hr: () => <hr className="border-neutral-800 my-3" />,
                   a: ({ href, children }) => (
                     <a
