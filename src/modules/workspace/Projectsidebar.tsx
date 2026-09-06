@@ -39,6 +39,7 @@ import {
   X,
   ChevronsDownUp,
   Blocks,
+  Plus,
 } from "lucide-react";
 import { HelpSupportDialog } from "@/modules/dashboard/components/HelpSupportDialog";
 import Image from "next/image";
@@ -209,6 +210,8 @@ export default function ProjectSidebar() {
   const matchesAi =
     "ai assistant".includes(searchQuery.toLowerCase()) ||
     "kaya".includes(searchQuery.toLowerCase()) ||
+    "harry".includes(searchQuery.toLowerCase()) ||
+    "integrations".includes(searchQuery.toLowerCase()) ||
     "chatspace".includes(searchQuery.toLowerCase()) ||
     "ask ai".includes(searchQuery.toLowerCase());
 
@@ -464,7 +467,8 @@ export default function ProjectSidebar() {
           <SidebarMenu>
             {/* =========AI ASSISTANT COLLAPSIBLE====== */}
             {!isCollapsed ? (
-              <Collapsible defaultOpen={false} className="group/collapsible">
+              <>
+                <Collapsible defaultOpen={false} className="group/collapsible">
                 <SidebarMenuItem>
                   <CollapsibleTrigger asChild>
                     <SidebarMenuButton
@@ -567,6 +571,37 @@ export default function ProjectSidebar() {
                   </CollapsibleContent>
                 </SidebarMenuItem>
               </Collapsible>
+
+              {/* Integrations (outside AI Assistant) */}
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  asChild
+                  tooltip="Integrations"
+                  isActive={isActive(
+                    `/dashboard/my-projects/${slug}/workspace/integrations`,
+                  )}
+                  className="group relative overflow-hidden cursor-pointer"
+                >
+                  <Link
+                    href={`/dashboard/my-projects/${slug}/workspace/integrations`}
+                    className="relative z-10 flex items-center justify-between w-full bg-transparent border-0"
+                  >
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Blocks className="h-5 w-5 shrink-0 text-muted-foreground group-hover:text-foreground transition-colors" />
+                      <span className="text-sm font-medium text-foreground transition-colors">
+                        Integrations
+                      </span>
+                    </div>
+                    <span
+                      title="Connect new integration"
+                      className="flex items-center justify-center h-5 w-5 rounded border border-border/70 bg-muted/40 text-muted-foreground group-hover:text-foreground group-hover:border-foreground/40 transition-colors"
+                    >
+                      <Plus className="h-3 w-3" />
+                    </span>
+                  </Link>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </>
             ) : (
               // Collapsed to icon view
               <>
@@ -616,6 +651,23 @@ export default function ProjectSidebar() {
                         height={24}
                       />
                     </button>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    tooltip="Integrations"
+                    isActive={isActive(
+                      `/dashboard/my-projects/${slug}/workspace/integrations`,
+                    )}
+                    className="group relative overflow-hidden cursor-pointer"
+                  >
+                    <Link
+                      href={`/dashboard/my-projects/${slug}/workspace/integrations`}
+                      className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center bg-transparent border-0"
+                    >
+                      <Blocks className="h-5 w-5 text-muted-foreground group-hover:text-foreground" />
+                    </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
               </>
