@@ -194,6 +194,7 @@ http.route({
   method: "POST",
   handler: httpAction(async (ctx, request) => {
     const body = await request.json();
+    console.log("[CONVEX HTTP /getMemberWorkload] Agent requested tool with payload:", body);
 
     if (!body.projectId) {
       return new Response(JSON.stringify({ error: "projectId is required" }), {
@@ -205,6 +206,8 @@ http.route({
     const members = await ctx.runQuery(internal.agentTools.getMemberWorkload, {
       projectId: body.projectId,
     });
+
+    console.log("[CONVEX HTTP /getMemberWorkload] ✓ Sended back members count:", members?.length ?? 0);
 
     return new Response(JSON.stringify({ members }), {
       status: 200,
@@ -219,6 +222,8 @@ http.route({
   method: "POST",
   handler: httpAction(async (ctx, request) => {
     const body = await request.json();
+    console.log("[CONVEX HTTP /getMemberWorkloadPYAgent] Agent requested tool with payload:", body);
+
     if (!body.projectId) {
       return new Response(JSON.stringify({ error: "projectId is required" }), {
         status: 400,
@@ -231,6 +236,12 @@ http.route({
         projectId: body.projectId,
       },
     );
+
+    console.log("[CONVEX HTTP /getMemberWorkloadPYAgent] ✓ Sended back members workload summary:", {
+      totalMembers: members?.length ?? 0,
+      memberSummaries: members?.map((m: any) => ({ name: m.name, tasks: m.totalTasks, issues: m.totalIssues })),
+    });
+
     return new Response(JSON.stringify({ members }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
@@ -244,6 +255,7 @@ http.route({
   method: "POST",
   handler: httpAction(async (ctx, request) => {
     const body = await request.json();
+    console.log("[CONVEX HTTP /getSprintInsights] Agent requested tool with payload:", body);
 
     if (!body.projectId) {
       return new Response(JSON.stringify({ error: "projectId is required" }), {
@@ -255,6 +267,8 @@ http.route({
     const sprints = await ctx.runQuery(internal.agentTools.getSprintInsights, {
       projectId: body.projectId,
     });
+
+    console.log("[CONVEX HTTP /getSprintInsights] ✓ Sended back sprints count:", sprints?.length ?? 0);
 
     return new Response(JSON.stringify({ sprints }), {
       status: 200,
@@ -270,6 +284,8 @@ http.route({
   method: "POST",
   handler: httpAction(async (ctx, request) => {
     const body = await request.json();
+    console.log("[CONVEX HTTP /getTasksSummary] Agent requested tool with payload:", body);
+
     if (!body.projectId) {
       return new Response(JSON.stringify({ error: "projectId is required" }), {
         status: 400,
@@ -282,6 +298,15 @@ http.route({
         projectId: body.projectId,
       },
     );
+
+    console.log("[CONVEX HTTP /getTasksSummary] ✓ Sended back tasksSummary data:", {
+      totalCount: tasksSummary?.totalCount,
+      completedCount: tasksSummary?.completedCount,
+      blockedCount: tasksSummary?.blockedCount,
+      activeTasksCount: tasksSummary?.criticalAndActiveTasks?.length,
+      taskTitles: tasksSummary?.criticalAndActiveTasks?.map((t: any) => t.title),
+    });
+
     return new Response(JSON.stringify({ tasksSummary }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
@@ -296,6 +321,8 @@ http.route({
   method: "POST",
   handler: httpAction(async (ctx, request) => {
     const body = await request.json();
+    console.log("[CONVEX HTTP /getIssuesSummary] Agent requested tool with payload:", body);
+
     if (!body.projectId) {
       return new Response(JSON.stringify({ error: "projectId is required" }), {
         status: 400,
@@ -308,6 +335,15 @@ http.route({
         projectId: body.projectId,
       },
     );
+
+    console.log("[CONVEX HTTP /getIssuesSummary] ✓ Sended back issuesSummary data:", {
+      totalCount: issuesSummary?.totalCount,
+      criticalCount: issuesSummary?.criticalCount,
+      closedCount: issuesSummary?.closedCount,
+      activeIssuesCount: issuesSummary?.activeIssues?.length,
+      issueTitles: issuesSummary?.activeIssues?.map((i: any) => i.title),
+    });
+
     return new Response(JSON.stringify({ issuesSummary }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
@@ -322,6 +358,8 @@ http.route({
   method: "POST",
   handler: httpAction(async (ctx, request) => {
     const body = await request.json();
+    console.log("[CONVEX HTTP /getUserStandup] Agent requested tool with payload:", body);
+
     if (!body.projectId || !body.userId) {
       return new Response(
         JSON.stringify({ error: "projectId and userId are required" }),
@@ -335,6 +373,12 @@ http.route({
       projectId: body.projectId,
       userId: body.userId,
     });
+
+    console.log("[CONVEX HTTP /getUserStandup] ✓ Sended back standup data:", {
+      tasksCount: standup?.tasks?.length ?? 0,
+      issuesCount: standup?.issues?.length ?? 0,
+    });
+
     return new Response(JSON.stringify({ standup }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
@@ -349,6 +393,8 @@ http.route({
   method: "POST",
   handler: httpAction(async (ctx, request) => {
     const body = await request.json();
+    console.log("[CONVEX HTTP /getProjectInsights] Agent requested tool with payload:", body);
+
     if (!body.projectId) {
       return new Response(JSON.stringify({ error: "projectId is required" }), {
         status: 400,
@@ -361,12 +407,20 @@ http.route({
         projectId: body.projectId,
       },
     );
+
+    console.log("[CONVEX HTTP /getProjectInsights] ✓ Sended back projectInsights:", {
+      projectName: projectInsights?.projectName,
+      deadline: projectInsights?.deadline,
+      daysRemaining: projectInsights?.daysRemaining,
+    });
+
     return new Response(JSON.stringify({ projectInsights }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
   }),
 });
+
 
 
 // =============================================================================
