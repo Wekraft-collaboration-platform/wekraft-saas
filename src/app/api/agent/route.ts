@@ -69,9 +69,24 @@ export async function POST(request: NextRequest) {
     );
   }
 
+  if (!AGENT_URL) {
+    console.error("[/api/agent] Error: NEXT_PUBLIC_AGENT_URL is not set in environment");
+    return NextResponse.json(
+      { error: "NEXT_PUBLIC_AGENT_URL is not configured in environment" },
+      { status: 500 },
+    );
+  }
+
+  const baseUrl = AGENT_URL.replace(/\/+$/, "");
+  const targetUrl = baseUrl.endsWith("/kaya") || baseUrl.endsWith("/agent")
+    ? baseUrl
+    : `${baseUrl}/kaya`;
+
+  console.log(`[/api/agent] Forwarding request to Python Agent: ${targetUrl}`);
+
   try {
     // 2. Start the AI Request and the Pro Check in parallel
-    const aiResponsePromise = fetch(`${AGENT_URL}/agent`, {
+    const aiResponsePromise = fetch(targetUrl, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

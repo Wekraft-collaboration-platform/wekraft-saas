@@ -249,9 +249,11 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
         user_id: userId,
         user_name: userName,
         project_id: projectId,
+        project_name: project?.projectName,
         messages: [{ type: "user", content }],
       },
     });
+
     setInputValue("");
   };
 
@@ -284,6 +286,8 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
     switch (node.name) {
       case "__start__":
       case "kaya":
+      case "kaya_direct_node":
+      case "kaya_synthesizer_node":
       case "tools":
       case "sprint_add_items":
       case "scheduler_setup": {
@@ -334,7 +338,7 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
 
         // ── Kaya tool call in-flight ──
         const lastMsg = node.state.messages?.at(-1);
-        if (lastMsg?.tool_calls?.length && node.name === "kaya") {
+        if (lastMsg?.tool_calls?.length && (node.name === "kaya" || node.name === "kaya_direct_node" || node.name === "kaya_synthesizer_node")) {
           return (
             <div className="space-y-1">
               {lastMsg.tool_calls.map((tc: any) => (
@@ -345,9 +349,22 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
         }
 
         // ── Normal chatbot message ──
-        if (node.name === "kaya") return <ChatbotNode nodeState={node.state} />;
+        if (node.name === "kaya" || node.name === "kaya_direct_node" || node.name === "kaya_synthesizer_node") {
+          const nodeMessages = (node.state as any)?.messages;
+          const checkpointAiMessages = (checkpoint.state as any)?.messages?.filter(
+            (m: any) => m.type === "ai",
+          );
+          const stateToUse =
+            nodeMessages && nodeMessages.length > 0
+              ? node.state
+              : checkpointAiMessages && checkpointAiMessages.length > 0
+                ? { messages: checkpointAiMessages }
+                : node.state;
+          return <ChatbotNode nodeState={stateToUse} />;
+        }
         return null;
       }
+
 
       // ── Analyst entry — nothing to render ────────────────────────────────
       case "project_analyst": {

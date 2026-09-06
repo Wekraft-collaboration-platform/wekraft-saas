@@ -171,14 +171,19 @@ export function useLangGraphAgent<
 
         if (msg.event === "message_chunk") {
           const chunk = msg.data as NodeMessageChunk;
+          const isKayaNode =
+            !chunk.node_name ||
+            chunk.node_name === "kaya" ||
+            chunk.node_name.startsWith("kaya");
           // Only start streaming UI for 'kaya' node (the main assistant response)
-          if (chunk.message_chunk.content && chunk.node_name === "kaya") {
+          if (chunk.message_chunk.content && isKayaNode) {
             setIsStreaming(true);
             setAgentStatus(""); // Clear intermediate status when final response starts
           }
           processMessageChunk(chunk, appCheckpoints);
           setAppCheckpoints([...appCheckpoints]);
         }
+
 
         if (msg.event === "custom") {
           processCustomEvent(msg.data as Partial<TAgentState>, appCheckpoints);
@@ -420,25 +425,40 @@ export function useLangGraphAgent<
       (x) => x.id === nodeMessageChunk.message_chunk.id,
     );
 
+    const isKayaChunk =
+      !nodeMessageChunk.node_name ||
+      nodeMessageChunk.node_name === "kaya" ||
+      nodeMessageChunk.node_name.startsWith("kaya");
+
+    const getMatchingNodes = () => {
+      if (!nodeMessageChunk.node_name) return lastCheckpoint.nodes;
+      const matched = lastCheckpoint.nodes.filter(
+        (node) =>
+          node.name === nodeMessageChunk.node_name ||
+          (isKayaChunk && (node.name === "kaya" || node.name.startsWith("kaya"))),
+      );
+      return matched.length > 0 ? matched : lastCheckpoint.nodes;
+    };
+
     if (message) {
       message.content += nodeMessageChunk.message_chunk.content;
-      // TODO: handle tool_call_chunks
 
       // Update content in matching nodes
-      if (nodeMessageChunk.node_name) {
-        const matchingNodes = lastCheckpoint.nodes.filter(
-          (node) => node.name === nodeMessageChunk.node_name,
+      const matchingNodes = getMatchingNodes();
+      matchingNodes.forEach((node) => {
+        const stateWithMessages = node.state as unknown as WithMessages;
+        if (!("messages" in node.state) || !Array.isArray(stateWithMessages.messages)) {
+          stateWithMessages.messages = [];
+        }
+        const nodeMessage = stateWithMessages.messages.find(
+          (x) => x.id === nodeMessageChunk.message_chunk.id,
         );
-        matchingNodes.forEach((node) => {
-          const stateWithMessages = node.state as unknown as WithMessages;
-          const nodeMessage = stateWithMessages.messages.find(
-            (x) => x.id === nodeMessageChunk.message_chunk.id,
-          );
-          if (nodeMessage) {
-            nodeMessage.content += nodeMessageChunk.message_chunk.content;
-          }
-        });
-      }
+        if (nodeMessage) {
+          nodeMessage.content += nodeMessageChunk.message_chunk.content;
+        } else {
+          stateWithMessages.messages.push({ ...message });
+        }
+      });
     } else {
       // When LLM streams input to the tool, tool name is in the first message chunk.
       const toolCalls: ToolCall[] =
@@ -454,21 +474,15 @@ export function useLangGraphAgent<
       lastCheckpoint.state.messages.push(newMessage);
 
       // Add the message to nodes that match the node message chunk name
-      if (nodeMessageChunk.node_name) {
-        const matchingNodes = lastCheckpoint.nodes.filter(
-          (node) => node.name === nodeMessageChunk.node_name,
-        );
-        matchingNodes.forEach((node) => {
-          // Since we're already in a context where we know the parent state has messages,
-          // we can safely initialize the node state with messages
-          const stateWithMessages = node.state as unknown as WithMessages;
-          if (!("messages" in node.state)) {
-            stateWithMessages.messages = [];
-          }
-          stateWithMessages.messages.push({ ...newMessage });
-          node.state = stateWithMessages as unknown as TAgentState;
-        });
-      }
+      const matchingNodes = getMatchingNodes();
+      matchingNodes.forEach((node) => {
+        const stateWithMessages = node.state as unknown as WithMessages;
+        if (!("messages" in node.state) || !Array.isArray(stateWithMessages.messages)) {
+          stateWithMessages.messages = [];
+        }
+        stateWithMessages.messages.push({ ...newMessage });
+        node.state = stateWithMessages as unknown as TAgentState;
+      });
     }
   }
 

@@ -461,25 +461,33 @@ export const getProjectInsights = internalQuery({
       .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
       .unique();
 
-    const deadline = projectDetail?.targetDate ?? null;
+    const deadlineTimestamp = projectDetail?.targetDate ?? null;
     let daysRemaining = null;
+    let formattedDeadline = null;
 
-    if (deadline) {
+    if (deadlineTimestamp) {
       const now = Date.now();
-      const diff = deadline - now;
+      const diff = deadlineTimestamp - now;
       daysRemaining = Math.ceil(diff / (1000 * 60 * 60 * 24));
+      formattedDeadline = new Date(deadlineTimestamp).toLocaleDateString("en-US", {
+        month: "long",
+        day: "numeric",
+        year: "numeric",
+      });
     }
 
     return {
       projectName: project.projectName,
       createdAt: project.createdAt,
-      deadline,
+      deadline: formattedDeadline,
+      deadlineTimestamp,
       daysRemaining:
         daysRemaining !== null ? (daysRemaining > 0 ? daysRemaining : 0) : null,
       isOverdue: daysRemaining !== null && daysRemaining < 0,
     };
   },
 });
+
 
 /**
  * getTasksSummary: Returns an AI-optimized summary of tasks, prioritizing active and high-priority ones.
