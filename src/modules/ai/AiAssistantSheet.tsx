@@ -63,7 +63,7 @@ import { useKayaStore } from "@/store/useKayaStore";
 import { useHarryStore } from "@/store/useHarryStore";
 import { useUpgradeModalStore } from "@/store/useUpgradeModalStore";
 
-interface AiAssistantSheetProps { }
+interface AiAssistantSheetProps {}
 
 const KayaLoader = () => (
   <svg
@@ -112,7 +112,7 @@ const KayaLoader = () => (
   </svg>
 );
 
-export function AiAssistantSheet({ }: AiAssistantSheetProps) {
+export function AiAssistantSheet({}: AiAssistantSheetProps) {
   const { isOpen, setIsOpen, threadId, createNewSession } = useKayaStore();
   const currentUser = useQuery(api.user.getCurrentUser);
   const userId = currentUser?._id;
@@ -277,7 +277,6 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
     });
   };
 
-
   // ── Node renderer ──
   const renderNode = (
     checkpoint: AppCheckpoint<AgentState, InterruptValue>,
@@ -338,7 +337,12 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
 
         // ── Kaya tool call in-flight ──
         const lastMsg = node.state.messages?.at(-1);
-        if (lastMsg?.tool_calls?.length && (node.name === "kaya" || node.name === "kaya_direct_node" || node.name === "kaya_synthesizer_node")) {
+        if (
+          lastMsg?.tool_calls?.length &&
+          (node.name === "kaya" ||
+            node.name === "kaya_direct_node" ||
+            node.name === "kaya_synthesizer_node")
+        ) {
           return (
             <div className="space-y-1">
               {lastMsg.tool_calls.map((tc: any) => (
@@ -349,11 +353,15 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
         }
 
         // ── Normal chatbot message ──
-        if (node.name === "kaya" || node.name === "kaya_direct_node" || node.name === "kaya_synthesizer_node") {
+        if (
+          node.name === "kaya" ||
+          node.name === "kaya_direct_node" ||
+          node.name === "kaya_synthesizer_node"
+        ) {
           const nodeMessages = (node.state as any)?.messages;
-          const checkpointAiMessages = (checkpoint.state as any)?.messages?.filter(
-            (m: any) => m.type === "ai",
-          );
+          const checkpointAiMessages = (
+            checkpoint.state as any
+          )?.messages?.filter((m: any) => m.type === "ai");
           const stateToUse =
             nodeMessages && nodeMessages.length > 0
               ? node.state
@@ -364,7 +372,6 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
         }
         return null;
       }
-
 
       // ── Analyst entry — nothing to render ────────────────────────────────
       case "project_analyst": {
@@ -477,8 +484,6 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
           </div>
         </SheetHeader>
 
-
-
         {/* MESSAGES */}
         <div className="flex-1 overflow-hidden relative flex flex-col">
           <div ref={containerRef} className="flex-1 overflow-y-auto py-4 px-2">
@@ -506,7 +511,10 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
                       />
                     </div>
                     <h3 className="text-lg font-pop font-semibold text-primary tracking-tight">
-                      Hello, I&apos;m Kaya <br /><span className="font-medium text-sm text-neutral-200">Start by asking</span>
+                      Hello, I&apos;m Kaya <br />
+                      <span className="font-medium text-sm text-neutral-200">
+                        Start by asking
+                      </span>
                     </h3>
                     <div className="flex flex-col gap-2 w-full max-w-[320px] mt-4">
                       {[
@@ -534,7 +542,11 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
                   className="text-red-500 py-2 text-xs px-4"
                 >
                   {checkpoint.error && checkpoint.errorMessage && (
-                    <script dangerouslySetInnerHTML={{ __html: `console.error("🤖 [Kaya AI Error]:", ${JSON.stringify(checkpoint.errorMessage)})` }} />
+                    <script
+                      dangerouslySetInnerHTML={{
+                        __html: `console.error("🤖 [Kaya AI Error]:", ${JSON.stringify(checkpoint.errorMessage)})`,
+                      }}
+                    />
                   )}
                   Mistake made by LLM. Try again.
                 </div>
@@ -581,7 +593,7 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
                         : agentStatus || "Kaya is thinking..."}
                     </span>
                     {thinkingTime > 0 && (
-                      <span className="text-[9px] tabular-nums text-neutral-200">
+                      <span className="text-[9px] tabular-nums text-muted-foreground">
                         {thinkingTime}s
                       </span>
                     )}
@@ -662,7 +674,12 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
                       disabled={isDisabled}
                       className="h-8 w-8 text-white rounded-lg cursor-pointer"
                       onClick={() => {
-                        if (!!(project && (project as any).ownerAccountType !== "pro")) {
+                        if (
+                          !!(
+                            project &&
+                            (project as any).ownerAccountType !== "pro"
+                          )
+                        ) {
                           useUpgradeModalStore.getState().openModal();
                         } else {
                           fileInputRef.current?.click();
@@ -672,8 +689,13 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
                       <Paperclip className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent side="top" className="bg-popover text-popover-foreground border border-border">
-                    <p className="text-xs">you can upload PRD/SRS etc pdf/doc upto 5mb limit.</p>
+                  <TooltipContent
+                    side="top"
+                    className="bg-popover text-popover-foreground border border-border"
+                  >
+                    <p className="text-xs">
+                      you can upload PRD/SRS etc pdf/doc upto 5mb limit.
+                    </p>
                   </TooltipContent>
                 </Tooltip>
               </TooltipProvider>
@@ -720,7 +742,12 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
                       disabled={isDisabled}
                       className="h-8 w-8 text-white rounded-lg cursor-pointer"
                       onClick={() => {
-                        if (!!(project && (project as any).ownerAccountType !== "pro")) {
+                        if (
+                          !!(
+                            project &&
+                            (project as any).ownerAccountType !== "pro"
+                          )
+                        ) {
                           useUpgradeModalStore.getState().openModal();
                         }
                       }}
@@ -728,7 +755,10 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
                       <Mic className="h-4 w-4" />
                     </Button>
                   </TooltipTrigger>
-                  <TooltipContent side="top" className="bg-popover text-popover-foreground border border-border">
+                  <TooltipContent
+                    side="top"
+                    className="bg-popover text-popover-foreground border border-border"
+                  >
                     <p className="text-xs">Voice input</p>
                   </TooltipContent>
                 </Tooltip>

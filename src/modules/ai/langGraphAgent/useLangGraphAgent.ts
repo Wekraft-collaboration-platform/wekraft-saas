@@ -184,7 +184,6 @@ export function useLangGraphAgent<
           setAppCheckpoints([...appCheckpoints]);
         }
 
-
         if (msg.event === "custom") {
           processCustomEvent(msg.data as Partial<TAgentState>, appCheckpoints);
           setAppCheckpoints([...appCheckpoints]);
@@ -435,7 +434,8 @@ export function useLangGraphAgent<
       const matched = lastCheckpoint.nodes.filter(
         (node) =>
           node.name === nodeMessageChunk.node_name ||
-          (isKayaChunk && (node.name === "kaya" || node.name.startsWith("kaya"))),
+          (isKayaChunk &&
+            (node.name === "kaya" || node.name.startsWith("kaya"))),
       );
       return matched.length > 0 ? matched : lastCheckpoint.nodes;
     };
@@ -447,7 +447,10 @@ export function useLangGraphAgent<
       const matchingNodes = getMatchingNodes();
       matchingNodes.forEach((node) => {
         const stateWithMessages = node.state as unknown as WithMessages;
-        if (!("messages" in node.state) || !Array.isArray(stateWithMessages.messages)) {
+        if (
+          !("messages" in node.state) ||
+          !Array.isArray(stateWithMessages.messages)
+        ) {
           stateWithMessages.messages = [];
         }
         const nodeMessage = stateWithMessages.messages.find(
@@ -477,7 +480,10 @@ export function useLangGraphAgent<
       const matchingNodes = getMatchingNodes();
       matchingNodes.forEach((node) => {
         const stateWithMessages = node.state as unknown as WithMessages;
-        if (!("messages" in node.state) || !Array.isArray(stateWithMessages.messages)) {
+        if (
+          !("messages" in node.state) ||
+          !Array.isArray(stateWithMessages.messages)
+        ) {
           stateWithMessages.messages = [];
         }
         stateWithMessages.messages.push({ ...newMessage });
@@ -496,7 +502,7 @@ export function useLangGraphAgent<
 
     // Update the last checkpoint state. Update only the properties that are in the custom event.
     const lastCheckpoint = appCheckpoints[appCheckpoints.length - 1];
-    
+
     // Check if the custom event contains an agent_status update
     if ((state as any).agent_status) {
       setAgentStatus((state as any).agent_status);
