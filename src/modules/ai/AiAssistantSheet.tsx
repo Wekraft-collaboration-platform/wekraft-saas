@@ -20,7 +20,9 @@ import {
   Clover,
   LayersPlus,
   Paperclip,
+  Mic,
 } from "lucide-react";
+
 import {
   Tooltip,
   TooltipContent,
@@ -145,7 +147,6 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
   const [restoreError, setRestoreError] = useState(false);
   const [thinkingTime, setThinkingTime] = useState(0);
-  const [selectedModel, setSelectedModel] = useState<"fast" | "deep">("fast");
 
   const {
     status,
@@ -174,7 +175,6 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
     },
   });
 
-
   // Thinking timer logic
   useEffect(() => {
     let interval: any;
@@ -202,7 +202,6 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
   }, [isOpen, setIsOpen, isHarryActive]);
-
 
   // Focus input when not running
   useEffect(() => {
@@ -246,7 +245,6 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
       thread_id: threadId,
       user_id: userId,
       user_name: userName,
-      model: selectedModel,
       state: {
         user_id: userId,
         user_name: userName,
@@ -273,10 +271,10 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
       user_id: userId,
       user_name: userName,
       project_id: projectId,
-      model: selectedModel,
       resume: value,
     });
   };
+
 
   // ── Node renderer ──
   const renderNode = (
@@ -695,43 +693,32 @@ export function AiAssistantSheet({ }: AiAssistantSheetProps) {
                   <Send className="h-3 w-3!" />
                 </Button>
               )}
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={(e) => {
-                      if (!!(project && (project as any).ownerAccountType !== "pro")) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        useUpgradeModalStore.getState().openModal();
-                      }
-                    }}
-                  >
-                    {selectedModel}
-                    <Settings2 className="h-3 w-3!" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <div className="text-xs p-2 items-center border-b border-accent">
-                    Select Model
-                  </div>
-                  <DropdownMenuItem
-                    onClick={() => setSelectedModel("fast")}
-                    className="text-[10px]"
-                  >
-                    Kaya Fast
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setSelectedModel("deep")}
-                    className="text-[10px]"
-                  >
-                    Kaya Deep
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <TooltipProvider>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      size="icon"
+                      disabled={isDisabled}
+                      className="h-8 w-8 text-white rounded-lg cursor-pointer"
+                      onClick={() => {
+                        if (!!(project && (project as any).ownerAccountType !== "pro")) {
+                          useUpgradeModalStore.getState().openModal();
+                        }
+                      }}
+                    >
+                      <Mic className="h-4 w-4" />
+                    </Button>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="bg-popover text-popover-foreground border border-border">
+                    <p className="text-xs">Voice input</p>
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
             </div>
           </div>
+
           <p className="text-[10px] text-center text-muted-foreground mt-2">
             Kaya is personal PM agent.{" "}
             <span className="text-blue-500 cursor-pointer">

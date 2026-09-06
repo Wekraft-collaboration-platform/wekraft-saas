@@ -15,6 +15,7 @@ import {
   MessageSquare,
   Clover,
   LayersPlus,
+  Mic,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -22,12 +23,6 @@ import { api } from "../../../convex/_generated/api";
 import { useQuery } from "convex/react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import Image from "next/image";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 
 import { AnimatePresence, motion } from "framer-motion";
 import { useHarryStore } from "@/store/useHarryStore";
@@ -47,7 +42,6 @@ export function HarryAssistantSheet() {
     slug ? { slug } : "skip",
   );
 
-  const [selectedModel, setSelectedModel] = useState<"fast" | "deep">("fast");
 
   const searchParams = useSearchParams();
   const isHarryActive = searchParams?.get("harry") === "true";
@@ -166,45 +160,17 @@ export function HarryAssistantSheet() {
               >
                 <Send className="h-3 w-3!" />
               </Button>
-              <DropdownMenu>
-                <DropdownMenuTrigger asChild>
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    className="h-8 px-2 flex items-center gap-1.5 text-[10px] capitalize font-medium cursor-not-allowed"
-                    disabled={true}
-                    onClick={(e) => {
-                      if (!!(project && (project as any).ownerAccountType !== "pro")) {
-                        e.preventDefault();
-                        e.stopPropagation();
-                        useUpgradeModalStore.getState().openModal();
-                      }
-                    }}
-                  >
-                    {selectedModel}
-                    <Settings2 className="h-3 w-3!" />
-                  </Button>
-                </DropdownMenuTrigger>
-                <DropdownMenuContent align="end">
-                  <div className="text-xs p-2 items-center border-b border-accent">
-                    Select Model
-                  </div>
-                  <DropdownMenuItem
-                    onClick={() => setSelectedModel("fast")}
-                    className="text-[10px]"
-                  >
-                    Harry Fast
-                  </DropdownMenuItem>
-                  <DropdownMenuItem
-                    onClick={() => setSelectedModel("deep")}
-                    className="text-[10px]"
-                  >
-                    Harry Deep
-                  </DropdownMenuItem>
-                </DropdownMenuContent>
-              </DropdownMenu>
+              <Button
+                size="icon"
+                variant="outline"
+                className="h-8 w-8 cursor-not-allowed"
+                disabled={true}
+              >
+                <Mic className="h-4 w-4" />
+              </Button>
             </div>
           </div>
+
           <p className="text-[10px] text-center text-muted-foreground mt-2">
             Harry is your senior developer agent.{" "}
             <span className="text-orange-500 cursor-pointer font-medium">
