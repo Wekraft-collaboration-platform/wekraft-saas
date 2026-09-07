@@ -592,7 +592,7 @@ export default function ProjectSidebar() {
                       <div className="flex items-center gap-3 min-w-0">
                         <Blocks className="h-4 w-4 shrink-0  " />
                         <span className="text-sm font-medium text-foreground">
-                          Integrations
+                          MCP Connecters
                         </span>
                       </div>
                       <span

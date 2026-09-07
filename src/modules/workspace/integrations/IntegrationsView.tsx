@@ -1,16 +1,22 @@
 "use client";
 
-import React from "react";
+import React, { useState, useEffect, useRef } from "react";
 import Image from "next/image";
+import { useParams, useSearchParams, useRouter } from "next/navigation";
+import { useQuery, useMutation } from "convex/react";
+import { toast } from "sonner";
+import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Blocks } from "lucide-react";
+import { Blocks, CheckCircle2, Clock, UserCheck } from "lucide-react";
+import { api } from "../../../../convex/_generated/api";
 
 interface IntegrationItem {
   id: string;
   name: string;
   category: string;
   logo: string;
+  agent: "kaya" | "harry";
   status: "available" | "coming_soon";
 }
 
@@ -20,6 +26,7 @@ const KAYA_INTEGRATIONS: IntegrationItem[] = [
     name: "Linear",
     category: "Issues & Sprints",
     logo: "/linear.png",
+    agent: "kaya",
     status: "available",
   },
   {
@@ -27,13 +34,15 @@ const KAYA_INTEGRATIONS: IntegrationItem[] = [
     name: "Notion",
     category: "Docs & PRDs",
     logo: "/Notion-logo.png",
-    status: "coming_soon",
+    agent: "kaya",
+    status: "available",
   },
   {
     id: "slack",
     name: "Slack",
     category: "Team Chat",
     logo: "/slack.png",
+    agent: "kaya",
     status: "coming_soon",
   },
   {
@@ -41,6 +50,7 @@ const KAYA_INTEGRATIONS: IntegrationItem[] = [
     name: "Calendly",
     category: "Scheduling",
     logo: "/calendly.png",
+    agent: "kaya",
     status: "coming_soon",
   },
   {
@@ -48,16 +58,26 @@ const KAYA_INTEGRATIONS: IntegrationItem[] = [
     name: "Jira",
     category: "Issue Tracking",
     logo: "/jira-logo.jpg",
+    agent: "kaya",
     status: "coming_soon",
   },
 ];
 
 const HARRY_INTEGRATIONS: IntegrationItem[] = [
   {
+    id: "sentry",
+    name: "Sentry",
+    category: "Error Tracking",
+    logo: "/sentry.svg",
+    agent: "harry",
+    status: "available",
+  },
+  {
     id: "github",
     name: "GitHub",
     category: "Codebase & PRs",
     logo: "/github.png",
+    agent: "harry",
     status: "coming_soon",
   },
   {
@@ -65,18 +85,102 @@ const HARRY_INTEGRATIONS: IntegrationItem[] = [
     name: "Vercel",
     category: "Deployments",
     logo: "vercel",
+    agent: "harry",
     status: "coming_soon",
   },
   {
-    id: "sentry",
-    name: "Sentry",
-    category: "Error Tracking",
-    logo: "/sentry.svg",
+    id: "datadog",
+    name: "Datadog",
+    category: "Observability",
+    logo: "/datadog.png",
+    agent: "harry",
+    status: "coming_soon",
+  },
+  {
+    id: "betterstack",
+    name: "Better Stack",
+    category: "Logs & Incidents",
+    logo: "/betterstack.png",
+    agent: "harry",
     status: "coming_soon",
   },
 ];
 
+const ALL_INTEGRATIONS = [...KAYA_INTEGRATIONS, ...HARRY_INTEGRATIONS];
+
 export const IntegrationsView = () => {
+  const params = useParams();
+  const searchParams = useSearchParams();
+  const router = useRouter();
+  const slug = params?.slug as string | undefined;
+
+  const [activeTab, setActiveTab] = useState<"all" | "connected">("all");
+
+  const project = useQuery(api.project.getProjectBySlug, slug ? { slug } : "skip");
+  const projectId = project?._id;
+
+  const connections = useQuery(
+    api.mcp.getConnectionsByProject,
+    projectId ? { projectId } : "skip"
+  );
+  const userRole = useQuery(
+    api.mcp.getUserProjectRole,
+    projectId ? { projectId } : "skip"
+  );
+
+  const disconnectMutation = useMutation(api.mcp.disconnectTool);
+
+  const canManage = userRole?.canManage ?? false;
+  const processedToastRef = useRef(false);
+
+  // Handle post-OAuth query redirect feedback
+  useEffect(() => {
+    if (processedToastRef.current) return;
+    const connectedParam = searchParams?.get("connected");
+    const errorParam = searchParams?.get("error");
+
+    if (connectedParam) {
+      processedToastRef.current = true;
+      toast.success(`Successfully connected ${connectedParam.toUpperCase()} via OAuth!`);
+      router.replace(`/dashboard/my-projects/${slug}/workspace/integrations`);
+    } else if (errorParam) {
+      processedToastRef.current = true;
+      toast.error(`Connection error: ${errorParam}`);
+      router.replace(`/dashboard/my-projects/${slug}/workspace/integrations`);
+    }
+  }, [searchParams, slug, router]);
+
+  const connectedList = connections?.filter((c) => c.isConnected) || [];
+  const connectedCount = connectedList.length;
+
+  const isConnected = (connectorId: string) => {
+    return connections?.some((c) => c.connectorId === connectorId && c.isConnected);
+  };
+
+  const getConnection = (connectorId: string) => {
+    return connections?.find((c) => c.connectorId === connectorId && c.isConnected);
+  };
+
+  const handleOAuthConnect = (connectorId: string) => {
+    if (!projectId || !slug) return;
+    const uId = userRole?.userId || "";
+    const uName = encodeURIComponent(userRole?.userName || "Admin");
+    window.location.href = `/api/integrations/${connectorId}/authorize?projectId=${projectId}&slug=${slug}&userId=${uId}&userName=${uName}`;
+  };
+
+  const handleDisconnect = async (connectorId: string) => {
+    if (!projectId) return;
+    try {
+      await disconnectMutation({
+        projectId,
+        connectorId,
+      });
+      toast.success("Disconnected successfully");
+    } catch (err: any) {
+      toast.error(err.message || "Failed to disconnect");
+    }
+  };
+
   const renderLogo = (item: IntegrationItem) => {
     if (item.logo === "vercel") {
       return (
@@ -139,81 +243,215 @@ export const IntegrationsView = () => {
     );
   };
 
-  const renderCard = (item: IntegrationItem) => (
-    <div
-      key={item.id}
-      className="flex items-center justify-between p-4 rounded-lg border border-border/70 bg-neutral-950 hover:bg-black cursor-pointer transition-all duration-150"
-    >
-      <div className="flex items-center gap-3">
-        {renderLogo(item)}
-        <div>
-          <h4 className="text-sm font-semibold text-foreground">{item.name}</h4>
-          <p className="text-xs text-muted-foreground">{item.category}</p>
+  const renderCard = (item: IntegrationItem) => {
+    const connection = getConnection(item.id);
+    const connected = !!connection;
+
+    return (
+      <div
+        key={item.id}
+        className={`flex items-center justify-between p-4 rounded-lg border border-border/70 ${
+          connected ? "bg-neutral-900 hover:bg-neutral-900/80" : "bg-neutral-950 hover:bg-black"
+        } cursor-pointer transition-all duration-150`}
+      >
+        <div className="flex items-center gap-3 min-w-0">
+          {renderLogo(item)}
+          <div className="min-w-0">
+            <div className="flex items-center gap-2">
+              <h4 className="text-sm font-semibold text-foreground truncate">{item.name}</h4>
+              {connected && connection?.metadata?.toolsCount && (
+                <span className="text-[10px] font-normal text-muted-foreground bg-neutral-950/80 border border-border/50 rounded px-1.5 py-0.5 shrink-0">
+                  {connection.metadata.toolsCount} tools
+                </span>
+              )}
+            </div>
+            <p className="text-xs text-muted-foreground truncate">
+              {item.category}
+            </p>
+            {activeTab === "connected" && connected && connection && (
+              <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground/80 mt-1">
+                {connection.connectedByUserName && (
+                  <span className="flex items-center gap-1">
+                    <UserCheck className="w-3 h-3 text-emerald-400" />
+                    {connection.connectedByUserName}
+                  </span>
+                )}
+                {connection.updatedAt && (
+                  <span className="flex items-center gap-1 text-[10px] text-muted-foreground/60">
+                    <Clock className="w-2.5 h-2.5" />
+                    {format(connection.updatedAt, "MMM d, h:mm a")}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        <div className="shrink-0 ml-3">
+          {item.status === "available" ? (
+            connected ? (
+              canManage ? (
+                <Button
+                  size="sm"
+                  variant="outline"
+                  onClick={() => handleDisconnect(item.id)}
+                  className="h-8 text-xs px-3 text-red-400 border-red-500/30 hover:bg-red-500/10"
+                >
+                  Disconnect
+                </Button>
+              ) : (
+                <Badge
+                  variant="outline"
+                  className="text-[10px] px-2 py-0.5 text-emerald-400 border-emerald-500/30 font-normal"
+                >
+                  Connected
+                </Badge>
+              )
+            ) : canManage ? (
+              <Button
+                size="sm"
+                onClick={() => handleOAuthConnect(item.id)}
+                className="h-8 text-xs px-3 bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
+              >
+                Connect
+              </Button>
+            ) : (
+              <Badge
+                variant="outline"
+                className="text-[10px] px-2 py-0.5 text-muted-foreground/70 border-border/40 font-normal"
+              >
+                Admin Only
+              </Badge>
+            )
+          ) : (
+            <Badge
+              variant="outline"
+              className="text-[10px] px-2 py-0.5 text-muted-foreground/70 border-border/40 font-normal"
+            >
+              Coming Soon
+            </Badge>
+          )}
         </div>
       </div>
+    );
+  };
 
-      {item.status === "available" ? (
-        <Button
-          size="sm"
-          className="h-8 text-xs px-3 bg-primary hover:bg-primary/90 text-primary-foreground font-medium"
-        >
-          Connect
-        </Button>
-      ) : (
-        <Badge
-          variant="outline"
-          className="text-[10px] px-2 py-0.5 text-muted-foreground/70 border-border/40 font-normal"
-        >
-          Coming Soon
-        </Badge>
-      )}
-    </div>
-  );
+  const kayaList =
+    activeTab === "all"
+      ? KAYA_INTEGRATIONS
+      : KAYA_INTEGRATIONS.filter((item) => isConnected(item.id));
+
+  const harryList =
+    activeTab === "all"
+      ? HARRY_INTEGRATIONS
+      : HARRY_INTEGRATIONS.filter((item) => isConnected(item.id));
 
   return (
     <div className="w-full h-full min-h-screen p-6 md:p-8 space-y-8 bg-background">
       {/* Top Header */}
-      <div className="border-b border-border/50 pb-5 space-y-1">
-        <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-2">
-          <Blocks className="h-6 w-6 inline" /> Integrations
-        </h1>
-        <p className="text-sm text-muted-foreground">
-          Available integrations for Kaya and Harry. Bring your work across
-          different platforms and Power up your Agents.
-        </p>
+      <div className="border-b border-border/50 pb-5 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+        <div className="space-y-1">
+          <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-2">
+            <Blocks className="h-6 w-6 inline" /> MCP Connecters
+          </h1>
+          <p className="text-sm text-muted-foreground">
+            Connect the tools your agents use every day. Give Kaya and Harry{" "}
+            <br />
+            secure, permissioned access to your workspace data.
+          </p>
+        </div>
+
+        {/* Tab Switcher: ALL vs Connected (Right Aligned) */}
+        <div className="flex items-center gap-1 bg-neutral-900 p-1 rounded-lg border border-border/50 shrink-0 self-start sm:self-end">
+          <button
+            type="button"
+            onClick={() => setActiveTab("all")}
+            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all ${
+              activeTab === "all"
+                ? "bg-neutral-800 text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            ALL
+          </button>
+          <button
+            type="button"
+            onClick={() => setActiveTab("connected")}
+            className={`px-3 py-1.5 rounded-md text-xs font-medium transition-all flex items-center gap-1.5 ${
+              activeTab === "connected"
+                ? "bg-neutral-800 text-foreground shadow-sm"
+                : "text-muted-foreground hover:text-foreground"
+            }`}
+          >
+            Connected
+            {connectedCount > 0 && (
+              <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] flex items-center justify-center font-bold">
+                {connectedCount}
+              </span>
+            )}
+          </button>
+        </div>
       </div>
 
-      {/* Kaya Integrations */}
-      <div className="space-y-3">
-        <div className="flex items-center gap-2">
-          <Image src="/kaya.svg" alt="Kaya" width={18} height={18} />
-          <h2 className="text-sm font-semibold text-foreground">
-            Kaya Integrations{" "}
-            <span className="text-xs text-muted-foreground font-normal">
-              ({KAYA_INTEGRATIONS.length})
-            </span>
-          </h2>
+      {activeTab === "connected" && connectedCount === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center space-y-3 border border-dashed border-border/60 rounded-xl bg-neutral-950/40">
+          <div className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center text-muted-foreground">
+            <Blocks className="w-5 h-5" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-sm font-semibold text-foreground">No integrations connected yet</h3>
+            <p className="text-xs text-muted-foreground max-w-sm">
+              Switch back to the <strong className="text-foreground">ALL</strong> tab to connect Linear, Sentry, or Notion to your workspace.
+            </p>
+          </div>
+          <Button
+            size="sm"
+            variant="outline"
+            onClick={() => setActiveTab("all")}
+            className="text-xs h-8"
+          >
+            View All Connectors
+          </Button>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {KAYA_INTEGRATIONS.map(renderCard)}
-        </div>
-      </div>
+      ) : (
+        <>
+          {/* Kaya Integrations */}
+          {(activeTab === "all" || kayaList.length > 0) && (
+            <div className="space-y-3">
+              <div className="flex items-center gap-2">
+                <Image src="/kaya.svg" alt="Kaya" width={18} height={18} />
+                <h2 className="text-sm font-semibold text-foreground">
+                  Kaya Integrations{" "}
+                  <span className="text-xs text-muted-foreground font-normal">
+                    ({kayaList.length})
+                  </span>
+                </h2>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {kayaList.map(renderCard)}
+              </div>
+            </div>
+          )}
 
-      {/* Harry Integrations */}
-      <div className="space-y-3 pt-2">
-        <div className="flex items-center gap-2">
-          <Image src="/harry.svg" alt="Harry" width={18} height={18} />
-          <h2 className="text-sm font-semibold text-foreground">
-            Harry Integrations{" "}
-            <span className="text-xs text-muted-foreground font-normal">
-              ({HARRY_INTEGRATIONS.length})
-            </span>
-          </h2>
-        </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-          {HARRY_INTEGRATIONS.map(renderCard)}
-        </div>
-      </div>
+          {/* Harry Integrations */}
+          {(activeTab === "all" || harryList.length > 0) && (
+            <div className="space-y-3 pt-2">
+              <div className="flex items-center gap-2">
+                <Image src="/harry.svg" alt="Harry" width={18} height={18} />
+                <h2 className="text-sm font-semibold text-foreground">
+                  Harry Integrations{" "}
+                  <span className="text-xs text-muted-foreground font-normal">
+                    ({harryList.length})
+                  </span>
+                </h2>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {harryList.map(renderCard)}
+              </div>
+            </div>
+          )}
+        </>
+      )}
     </div>
   );
 };

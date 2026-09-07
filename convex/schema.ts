@@ -630,5 +630,23 @@ export default defineSchema({
     .index("by_project_time", ["projectId", "createdAt"])
     .index("by_project_action", ["projectId", "action", "createdAt"]),
 
+  // ─── MCP Connectors (Linear, Slack, Sentry, etc.) ──────────────────────
+  mcpConnections: defineTable({
+    projectId: v.id("projects"),
+    connectorId: v.string(), // "linear", "slack", "sentry", etc.
+    agent: v.union(v.literal("kaya"), v.literal("harry")),
+    credentials: maybeEncryptedField,
+    isConnected: v.boolean(),
+    connectedByUserId: v.id("users"),
+    connectedByUserName: v.string(),
+    metadata: v.optional(v.any()), // Cached workspace/tool metadata
+    createdAt: v.number(),
+    updatedAt: v.number(),
+  })
+    .index("by_project", ["projectId"])
+    .index("by_project_connector", ["projectId", "connectorId"])
+    .index("by_project_agent", ["projectId", "agent", "isConnected"])
+    .index("by_user", ["connectedByUserId"]),
+
 });
 

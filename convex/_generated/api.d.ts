@@ -20,6 +20,7 @@ import type * as extensionApi from "../extensionApi.js";
 import type * as http from "../http.js";
 import type * as issue from "../issue.js";
 import type * as lemonsqueezy from "../lemonsqueezy.js";
+import type * as mcp from "../mcp.js";
 import type * as notifications from "../notifications.js";
 import type * as payments from "../payments.js";
 import type * as pricing from "../pricing.js";
@@ -54,6 +55,7 @@ declare const fullApi: ApiFromModules<{
   http: typeof http;
   issue: typeof issue;
   lemonsqueezy: typeof lemonsqueezy;
+  mcp: typeof mcp;
   notifications: typeof notifications;
   payments: typeof payments;
   pricing: typeof pricing;
