@@ -19,6 +19,7 @@ import { useQuery } from "convex/react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { api } from "../../../convex/_generated/api";
 import Image from "next/image";
+import { ToolCallCard } from "@/modules/ai/ToolCard";
 
 interface ChatbotNodeProps {
   nodeState: Partial<AgentState>;
@@ -42,6 +43,10 @@ export function ChatbotNode({ nodeState, executionTime }: ChatbotNodeProps) {
       {nodeState?.messages?.map((msg, index) => {
         const isAI = msg.type === "ai";
         const msgId = msg.id ?? `msg-${index}`;
+        const reasoningText = (msg as any).reasoning;
+        const subagentTools = (msg as any).subagent_tools as
+          | Array<{ toolName: string; caller?: string }>
+          | undefined;
 
         return (
           <div
@@ -61,7 +66,6 @@ export function ChatbotNode({ nodeState, executionTime }: ChatbotNodeProps) {
                   )}
                 >
                   {isAI ? (
-                    // <Sparkle size={12} />
                     <Image src="/kaya.svg" alt="Kaya" width={22} height={22} />
                   ) : (
                     <Avatar className="h-6 w-6 rounded-md overflow-hidden">
@@ -77,6 +81,19 @@ export function ChatbotNode({ nodeState, executionTime }: ChatbotNodeProps) {
                 </span>
               </div>
             </div>
+
+            {/* AI Sub-Agent & Tool Call Cards */}
+            {isAI && subagentTools && subagentTools.length > 0 && (
+              <div className="flex flex-col gap-0.5 my-0.5">
+                {subagentTools.map((tc, idx) => (
+                  <ToolCallCard
+                    key={`${tc.toolName}-${tc.caller || "agent"}-${idx}`}
+                    toolName={tc.toolName}
+                    caller={tc.caller}
+                  />
+                ))}
+              </div>
+            )}
 
             <div
               className={cn(

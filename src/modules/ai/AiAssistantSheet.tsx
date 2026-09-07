@@ -281,7 +281,6 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
   const renderNode = (
     checkpoint: AppCheckpoint<AgentState, InterruptValue>,
     node: GraphNode<AgentState>,
-    cpIndex: number,
   ): React.ReactNode => {
     switch (node.name) {
       case "__start__":
@@ -357,52 +356,7 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
             cp.executionTime ||
             (checkpoint.nodes[0]?.state as any)?.executionTime;
 
-          const hasAiMessageContent = stateToUse.messages?.some(
-            (m: any) =>
-              m.type === "ai" && m.content && m.content.trim().length > 0,
-          );
-
-          const isLatestCheckpoint = cpIndex === appCheckpoints.length - 1;
-          const cpReasoning =
-            cp._reasoning ||
-            (isLatestCheckpoint && reasoning ? reasoning : "");
-          const cpToolCalls: Array<{ toolName: string; caller?: string }> =
-            cp._toolCalls && cp._toolCalls.length > 0
-              ? cp._toolCalls
-              : isLatestCheckpoint && activeToolCalls.length > 0
-                ? activeToolCalls
-                : [];
-
-          return (
-            <div className="flex flex-col">
-              {/* 1. Reasoning Card */}
-              {cpReasoning && (
-                <div className="ml-7 my-1.5 text-xs text-muted-foreground bg-neutral-900/80 border border-neutral-800 rounded-lg p-2.5 max-w-[420px] leading-relaxed animate-in fade-in duration-200">
-                  <p className="text-[11px] text-neutral-300 leading-relaxed font-sans">
-                    {cpReasoning.replace(/^Reasoning:\s*/i, "")}
-                  </p>
-                </div>
-              )}
-
-              {/* 2. Sub-agent and Tool Call Cards below reasoning */}
-              {cpToolCalls.length > 0 && (
-                <div className="flex flex-col gap-0.5 my-1">
-                  {cpToolCalls.map((tc, idx) => (
-                    <ToolCallCard
-                      key={`${tc.toolName}-${tc.caller || "agent"}-${idx}`}
-                      toolName={tc.toolName}
-                      caller={tc.caller}
-                    />
-                  ))}
-                </div>
-              )}
-
-              {/* 3. AI Markdown Response below reasoning and tools */}
-              {hasAiMessageContent ? (
-                <ChatbotNode nodeState={stateToUse} executionTime={execTime} />
-              ) : null}
-            </div>
-          );
+          return <ChatbotNode nodeState={stateToUse} executionTime={execTime} />;
         }
         return null;
       }
@@ -560,7 +514,7 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                             nodeState={{ messages: [m] }}
                           />
                         ))}
-                      {renderNode(checkpoint, node, cpIndex)}
+                      {renderNode(checkpoint, node)}
                     </div>
                   );
                 })
@@ -585,7 +539,7 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                   </div>
                 </div>
 
-                {reasoning && appCheckpoints.length === 0 && (
+                {reasoning && (
                   <div className="ml-7 mt-1 text-xs text-muted-foreground bg-neutral-900/80 border border-neutral-800 rounded-lg p-2.5 max-w-[420px] leading-relaxed animate-in fade-in duration-200">
                     <p className="text-[11px] text-neutral-300 leading-relaxed font-sans">
                       {reasoning.replace(/^Reasoning:\s*/i, "")}
@@ -593,8 +547,8 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                   </div>
                 )}
 
-                {activeToolCalls.length > 0 && appCheckpoints.length === 0 && (
-                  <div className="flex flex-col gap-0.5 my-1">
+                {activeToolCalls.length > 0 && (
+                  <div className="flex flex-col gap-0.5 ml-3 my-1">
                     {activeToolCalls.map((tc, idx) => (
                       <ToolCallCard
                         key={`live-${tc.toolName}-${idx}`}

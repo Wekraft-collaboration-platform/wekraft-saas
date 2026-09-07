@@ -151,6 +151,9 @@ export function useLangGraphAgent<
     }
 
     const runStartTime = Date.now();
+    let currentTurnReasoning = "";
+    let currentTurnTools: Array<{ toolName: string; caller?: string }> = [];
+
     try {
       setStatus("running");
       setIsStreaming(false);
@@ -187,13 +190,19 @@ export function useLangGraphAgent<
             setIsStreaming(true);
             setAgentStatus(""); // Clear intermediate status when final response starts
           }
-          processMessageChunk(chunk, appCheckpoints);
+          processMessageChunk(
+            chunk,
+            appCheckpoints,
+            currentTurnReasoning,
+            currentTurnTools,
+          );
           setAppCheckpoints([...appCheckpoints]);
         }
 
         if (msg.event === "custom") {
           const customData = msg.data as any;
           if (customData?.reasoning) {
+            currentTurnReasoning = customData.reasoning;
             setReasoning(customData.reasoning);
           }
           if (customData?.agent_status) {
@@ -201,28 +210,26 @@ export function useLangGraphAgent<
           }
           if (customData?.subagent_called) {
             const sub = customData.subagent_called;
-            setActiveToolCalls((prev) => {
-              if (
-                prev.some(
-                  (t) => t.toolName === sub && t.caller === "Kaya",
-                )
+            if (
+              !currentTurnTools.some(
+                (t) => t.toolName === sub && t.caller === "Kaya",
               )
-                return prev;
-              return [...prev, { toolName: sub, caller: "Kaya" }];
-            });
+            ) {
+              currentTurnTools.push({ toolName: sub, caller: "Kaya" });
+            }
+            setActiveToolCalls([...currentTurnTools]);
           }
           if (customData?.tool_called) {
             const toolName = customData.tool_called;
             const caller = customData.caller || "Agent";
-            setActiveToolCalls((prev) => {
-              if (
-                prev.some(
-                  (t) => t.toolName === toolName && t.caller === caller,
-                )
+            if (
+              !currentTurnTools.some(
+                (t) => t.toolName === toolName && t.caller === caller,
               )
-                return prev;
-              return [...prev, { toolName, caller }];
-            });
+            ) {
+              currentTurnTools.push({ toolName, caller });
+            }
+            setActiveToolCalls([...currentTurnTools]);
           }
           processCustomEvent(msg.data as Partial<TAgentState>, appCheckpoints);
           setAppCheckpoints([...appCheckpoints]);
@@ -250,6 +257,31 @@ export function useLangGraphAgent<
         if (lastCp.nodes && lastCp.nodes.length > 0) {
           (lastCp.nodes[0] as any).executionTime = elapsedSec;
         }
+
+        // Stamp reasoning & subagent_tools onto the last AI message
+        if (
+          lastCp.state &&
+          "messages" in lastCp.state &&
+          Array.isArray((lastCp.state as any).messages)
+        ) {
+          const msgs = (lastCp.state as any).messages;
+          for (let mIdx = msgs.length - 1; mIdx >= 0; mIdx--) {
+            if (msgs[mIdx].type === "ai") {
+              if (currentTurnReasoning && !msgs[mIdx].reasoning) {
+                msgs[mIdx].reasoning = currentTurnReasoning;
+              }
+              if (
+                currentTurnTools.length > 0 &&
+                (!msgs[mIdx].subagent_tools ||
+                  msgs[mIdx].subagent_tools.length === 0)
+              ) {
+                msgs[mIdx].subagent_tools = [...currentTurnTools];
+              }
+              break;
+            }
+          }
+        }
+
         setAppCheckpoints([...appCheckpoints]);
       }
 
@@ -457,6 +489,8 @@ export function useLangGraphAgent<
   function processMessageChunk(
     nodeMessageChunk: NodeMessageChunk,
     appCheckpoints: AppCheckpoint<TAgentState, TInterruptValue>[],
+    currentTurnReasoning?: string,
+    currentTurnTools?: Array<{ toolName: string; caller?: string }>,
   ) {
     if (appCheckpoints.length === 0) {
       return;
@@ -491,6 +525,16 @@ export function useLangGraphAgent<
 
     if (message) {
       message.content += nodeMessageChunk.message_chunk.content;
+      if (currentTurnReasoning && !message.reasoning) {
+        message.reasoning = currentTurnReasoning;
+      }
+      if (
+        currentTurnTools &&
+        currentTurnTools.length > 0 &&
+        (!message.subagent_tools || message.subagent_tools.length === 0)
+      ) {
+        message.subagent_tools = [...currentTurnTools];
+      }
 
       // Update content in matching nodes
       const matchingNodes = getMatchingNodes();
@@ -507,6 +551,17 @@ export function useLangGraphAgent<
         );
         if (nodeMessage) {
           nodeMessage.content += nodeMessageChunk.message_chunk.content;
+          if (currentTurnReasoning && !nodeMessage.reasoning) {
+            nodeMessage.reasoning = currentTurnReasoning;
+          }
+          if (
+            currentTurnTools &&
+            currentTurnTools.length > 0 &&
+            (!nodeMessage.subagent_tools ||
+              nodeMessage.subagent_tools.length === 0)
+          ) {
+            nodeMessage.subagent_tools = [...currentTurnTools];
+          }
         } else {
           stateWithMessages.messages.push({ ...message });
         }
@@ -522,6 +577,8 @@ export function useLangGraphAgent<
         content: nodeMessageChunk.message_chunk.content,
         id: nodeMessageChunk.message_chunk.id,
         tool_calls: toolCalls,
+        reasoning: currentTurnReasoning || "",
+        subagent_tools: currentTurnTools ? [...currentTurnTools] : [],
       };
       lastCheckpoint.state.messages.push(newMessage);
 
