@@ -116,16 +116,19 @@ export const IntegrationsView = () => {
 
   const [activeTab, setActiveTab] = useState<"all" | "connected">("all");
 
-  const project = useQuery(api.project.getProjectBySlug, slug ? { slug } : "skip");
+  const project = useQuery(
+    api.project.getProjectBySlug,
+    slug ? { slug } : "skip",
+  );
   const projectId = project?._id;
 
   const connections = useQuery(
     api.mcp.getConnectionsByProject,
-    projectId ? { projectId } : "skip"
+    projectId ? { projectId } : "skip",
   );
   const userRole = useQuery(
     api.mcp.getUserProjectRole,
-    projectId ? { projectId } : "skip"
+    projectId ? { projectId } : "skip",
   );
 
   const disconnectMutation = useMutation(api.mcp.disconnectTool);
@@ -141,7 +144,9 @@ export const IntegrationsView = () => {
 
     if (connectedParam) {
       processedToastRef.current = true;
-      toast.success(`Successfully connected ${connectedParam.toUpperCase()} via OAuth!`);
+      toast.success(
+        `Successfully connected ${connectedParam.toUpperCase()} via OAuth!`,
+      );
       router.replace(`/dashboard/my-projects/${slug}/workspace/integrations`);
     } else if (errorParam) {
       processedToastRef.current = true;
@@ -154,11 +159,15 @@ export const IntegrationsView = () => {
   const connectedCount = connectedList.length;
 
   const isConnected = (connectorId: string) => {
-    return connections?.some((c) => c.connectorId === connectorId && c.isConnected);
+    return connections?.some(
+      (c) => c.connectorId === connectorId && c.isConnected,
+    );
   };
 
   const getConnection = (connectorId: string) => {
-    return connections?.find((c) => c.connectorId === connectorId && c.isConnected);
+    return connections?.find(
+      (c) => c.connectorId === connectorId && c.isConnected,
+    );
   };
 
   const handleOAuthConnect = (connectorId: string) => {
@@ -251,14 +260,18 @@ export const IntegrationsView = () => {
       <div
         key={item.id}
         className={`flex items-center justify-between p-4 rounded-lg border border-border/70 ${
-          connected ? "bg-neutral-900 hover:bg-neutral-900/80" : "bg-neutral-950 hover:bg-black"
+          connected
+            ? "bg-neutral-900 hover:bg-neutral-900/80"
+            : "bg-neutral-950 hover:bg-black"
         } cursor-pointer transition-all duration-150`}
       >
         <div className="flex items-center gap-3 min-w-0">
           {renderLogo(item)}
           <div className="min-w-0">
             <div className="flex items-center gap-2">
-              <h4 className="text-sm font-semibold text-foreground truncate">{item.name}</h4>
+              <h4 className="text-sm font-semibold text-foreground truncate">
+                {item.name}
+              </h4>
               {connected && connection?.metadata?.toolsCount && (
                 <span className="text-[10px] font-normal text-muted-foreground bg-neutral-950/80 border border-border/50 rounded px-1.5 py-0.5 shrink-0">
                   {connection.metadata.toolsCount} tools
@@ -272,7 +285,7 @@ export const IntegrationsView = () => {
               <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground/80 mt-1">
                 {connection.connectedByUserName && (
                   <span className="flex items-center gap-1">
-                    <UserCheck className="w-3 h-3 text-emerald-400" />
+                    <UserCheck className="w-3 h-3 text-neutral-200" />
                     {connection.connectedByUserName}
                   </span>
                 )}
@@ -295,7 +308,7 @@ export const IntegrationsView = () => {
                   size="sm"
                   variant="outline"
                   onClick={() => handleDisconnect(item.id)}
-                  className="h-8 text-xs px-3 text-red-400 border-red-500/30 hover:bg-red-500/10"
+                  className="h-8 text-[11px] px-3 text-red-400 bg-neutral-950!"
                 >
                   Disconnect
                 </Button>
@@ -385,7 +398,7 @@ export const IntegrationsView = () => {
           >
             Connected
             {connectedCount > 0 && (
-              <span className="w-4 h-4 rounded-full bg-emerald-500/20 text-emerald-400 border border-emerald-500/30 text-[10px] flex items-center justify-center font-bold">
+              <span className="w-4 h-4 rounded-full bg-neutral-200 text-neutral-800 border border-neutral-200 text-[10px] flex items-center justify-center font-bold">
                 {connectedCount}
               </span>
             )}
@@ -399,9 +412,13 @@ export const IntegrationsView = () => {
             <Blocks className="w-5 h-5" />
           </div>
           <div className="space-y-1">
-            <h3 className="text-sm font-semibold text-foreground">No integrations connected yet</h3>
+            <h3 className="text-sm font-semibold text-foreground">
+              No integrations connected yet
+            </h3>
             <p className="text-xs text-muted-foreground max-w-sm">
-              Switch back to the <strong className="text-foreground">ALL</strong> tab to connect Linear, Sentry, or Notion to your workspace.
+              Switch back to the{" "}
+              <strong className="text-foreground">ALL</strong> tab to connect
+              Linear, Sentry, or Notion to your workspace.
             </p>
           </div>
           <Button

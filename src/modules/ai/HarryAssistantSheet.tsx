@@ -16,9 +16,18 @@ import {
   Clover,
   LayersPlus,
   Mic,
+  Plus,
 } from "lucide-react";
+import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { ConnectorIcon, CONNECTOR_META } from "@/lib/mcp/connectors";
 import { api } from "../../../convex/_generated/api";
 import { useQuery } from "convex/react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
@@ -40,6 +49,14 @@ export function HarryAssistantSheet() {
   const project = useQuery(
     api.project.getProjectBySlug,
     slug ? { slug } : "skip",
+  );
+  const projectId = project?._id;
+  const mcpConnections = useQuery(
+    api.mcp.getConnectionsByProject,
+    projectId ? { projectId } : "skip"
+  );
+  const harryConnectedApps = (mcpConnections || []).filter(
+    (c) => c.isConnected && (c.agent === "harry" || CONNECTOR_META[c.connectorId]?.agent === "harry")
   );
 
 
@@ -171,12 +188,45 @@ export function HarryAssistantSheet() {
             </div>
           </div>
 
-          <p className="text-[10px] text-center text-muted-foreground mt-2">
-            Harry is your senior developer agent.{" "}
-            <span className="text-orange-500 cursor-pointer font-medium">
-              Click to configure
+          <div className="flex items-center justify-center gap-2 mt-2">
+            <span className="text-[11px] text-muted-foreground font-medium">
+              MCP connections:
             </span>
-          </p>
+            <div className="flex items-center gap-1.5">
+              {harryConnectedApps.slice(0, 4).map((app) => (
+                <TooltipProvider key={app.connectorId} delayDuration={150}>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Link
+                        href={`/dashboard/my-projects/${slug}/workspace/integrations`}
+                        className="cursor-pointer transition-transform hover:scale-110"
+                      >
+                        <ConnectorIcon connectorId={app.connectorId} size={22} />
+                      </Link>
+                    </TooltipTrigger>
+                    <TooltipContent side="top" className="text-xs">
+                      {CONNECTOR_META[app.connectorId]?.name || app.connectorId} (Connected)
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+              ))}
+              <TooltipProvider delayDuration={150}>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <Link
+                      href={`/dashboard/my-projects/${slug}/workspace/integrations`}
+                      className="flex items-center justify-center h-[22px] w-[22px] rounded-md border border-border/70 bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-all hover:scale-105"
+                    >
+                      <Plus className="h-3.5 w-3.5" />
+                    </Link>
+                  </TooltipTrigger>
+                  <TooltipContent side="top" className="text-xs">
+                    Connect MCP Tools
+                  </TooltipContent>
+                </Tooltip>
+              </TooltipProvider>
+            </div>
+          </div>
         </div>
       </SheetContent>
     </Sheet>

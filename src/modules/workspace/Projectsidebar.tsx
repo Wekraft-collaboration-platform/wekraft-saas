@@ -92,6 +92,7 @@ import type { Doc } from "../../../convex/_generated/dataModel";
 import { ThemeButtons } from "../dashboard/components/ThemeButton";
 import { useKayaStore } from "@/store/useKayaStore";
 import { useHarryStore } from "@/store/useHarryStore";
+import { ConnectorIcon } from "@/lib/mcp/connectors";
 
 const workspaceMenu = [
   {
@@ -167,6 +168,11 @@ export default function ProjectSidebar() {
   );
 
   const project = useQuery(api.project.getProjectBySlug, { slug });
+  const mcpConnections = useQuery(
+    api.mcp.getConnectionsByProject,
+    project?._id ? { projectId: project._id } : "skip"
+  );
+  const connectedApps = (mcpConnections || []).filter((c) => c.isConnected);
   const ownerProjects = useQuery(api.project.getUserProjects);
 
   const teamProjects = useQuery(api.project.getJoinedProjects);
@@ -579,7 +585,7 @@ export default function ProjectSidebar() {
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     asChild
-                    tooltip="Integrations"
+                    tooltip="MCP Connecters"
                     isActive={isActive(
                       `/dashboard/my-projects/${slug}/workspace/integrations`,
                     )}
@@ -589,18 +595,42 @@ export default function ProjectSidebar() {
                       href={`/dashboard/my-projects/${slug}/workspace/integrations`}
                       className="relative z-10 flex items-center justify-between w-full bg-transparent border-0"
                     >
-                      <div className="flex items-center gap-3 min-w-0">
-                        <Blocks className="h-4 w-4 shrink-0  " />
-                        <span className="text-sm font-medium text-foreground">
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        {connectedApps.length >= 3 ? (
+                          <div className="flex items-center gap-1 shrink-0">
+                            {connectedApps.slice(0, 3).map((app) => (
+                              <ConnectorIcon
+                                key={app.connectorId}
+                                connectorId={app.connectorId}
+                                size={20}
+                              />
+                            ))}
+                          </div>
+                        ) : (
+                          <Blocks className="h-4 w-4 shrink-0" />
+                        )}
+                        <span className="text-sm font-medium text-foreground truncate">
                           MCP Connecters
                         </span>
                       </div>
-                      <span
-                        title="Connect new integration"
-                        className="flex items-center justify-center h-5 w-5 rounded border border-border/70 bg-muted/40 text-muted-foreground "
-                      >
-                        <Plus className="h-3 w-3" />
-                      </span>
+                      {connectedApps.length === 0 ? (
+                        <span
+                          title="Connect new integration"
+                          className="flex items-center justify-center h-5 w-5 rounded border border-border/70 bg-muted/40 text-muted-foreground"
+                        >
+                          <Plus className="h-3 w-3" />
+                        </span>
+                      ) : connectedApps.length < 3 ? (
+                        <div className="flex items-center gap-1 shrink-0">
+                          {connectedApps.map((app) => (
+                            <ConnectorIcon
+                              key={app.connectorId}
+                              connectorId={app.connectorId}
+                              size={20}
+                            />
+                          ))}
+                        </div>
+                      ) : null}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
@@ -659,7 +689,7 @@ export default function ProjectSidebar() {
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     asChild
-                    tooltip="Integrations"
+                    tooltip="MCP Connecters"
                     isActive={isActive(
                       `/dashboard/my-projects/${slug}/workspace/integrations`,
                     )}
@@ -669,7 +699,14 @@ export default function ProjectSidebar() {
                       href={`/dashboard/my-projects/${slug}/workspace/integrations`}
                       className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center bg-transparent border-0"
                     >
-                      <Blocks className="h-4 w-4 text-muted-foreground " />
+                      {connectedApps.length > 0 ? (
+                        <ConnectorIcon
+                          connectorId={connectedApps[0].connectorId}
+                          size={18}
+                        />
+                      ) : (
+                        <Blocks className="h-4 w-4 text-muted-foreground" />
+                      )}
                     </Link>
                   </SidebarMenuButton>
                 </SidebarMenuItem>
