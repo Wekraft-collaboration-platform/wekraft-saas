@@ -160,17 +160,16 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
     isStreaming,
     agentStatus,
     reasoning,
+    activeToolCalls,
     activeNode,
   } = useLangGraphAgent<AgentState, InterruptValue, ResumeValue>({
     onCheckpointStateUpdate: (checkpoint) => {
-      // Backend emits { analyst_tool_running: "tool_name" } for each parallel tool.
-      // We store these on the checkpoint object so they persist after the run finishes.
       const toolName = (checkpoint.state as any).analyst_tool_running;
       if (toolName && typeof toolName === "string") {
         const cp = checkpoint as any;
-        if (!cp._analystTools) cp._analystTools = [];
-        if (!cp._analystTools.includes(toolName)) {
-          cp._analystTools.push(toolName);
+        if (!cp._toolCalls) cp._toolCalls = [];
+        if (!cp._toolCalls.some((t: any) => t.toolName === toolName)) {
+          cp._toolCalls.push({ toolName, caller: "Project analyst" });
         }
       }
     },
@@ -282,6 +281,7 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
   const renderNode = (
     checkpoint: AppCheckpoint<AgentState, InterruptValue>,
     node: GraphNode<AgentState>,
+    cpIndex: number,
   ): React.ReactNode => {
     switch (node.name) {
       case "__start__":
@@ -336,29 +336,13 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
           );
         }
 
-        // ── Kaya tool call in-flight ──
-        const lastMsg = node.state.messages?.at(-1);
-        if (
-          lastMsg?.tool_calls?.length &&
-          (node.name === "kaya" ||
-            node.name === "kaya_direct_node" ||
-            node.name === "kaya_synthesizer_node")
-        ) {
-          return (
-            <div className="space-y-1">
-              {lastMsg.tool_calls.map((tc: any) => (
-                <ToolCallCard key={tc.id} toolName={tc.name} />
-              ))}
-            </div>
-          );
-        }
-
         // ── Normal chatbot message ──
         if (
           node.name === "kaya" ||
           node.name === "kaya_direct_node" ||
           node.name === "kaya_synthesizer_node"
         ) {
+          const cp = checkpoint as any;
           const nodeMessages = (node.state as any)?.messages;
           const checkpointAiMessages = (
             checkpoint.state as any
@@ -370,59 +354,56 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                 ? { messages: checkpointAiMessages }
                 : node.state;
           const execTime =
-            (checkpoint as any).executionTime ||
+            cp.executionTime ||
             (checkpoint.nodes[0]?.state as any)?.executionTime;
-          return <ChatbotNode nodeState={stateToUse} executionTime={execTime} />;
-        }
-        return null;
-      }
 
-      // ── Analyst entry — nothing to render ────────────────────────────────
-      case "project_analyst": {
-        return null;
-      }
+          const hasAiMessageContent = stateToUse.messages?.some(
+            (m: any) =>
+              m.type === "ai" && m.content && m.content.trim().length > 0,
+          );
 
-      // Analyst execution nodes — render tools stored on the checkpoint
-      case "analyst_think":
-      case "analyst_tools": {
-        const cp = checkpoint as any;
-        const tools = cp._analystTools || [];
-        if (tools.length > 0) {
-          // Only render for the first node of this type in the checkpoint to avoid duplication
-          const isFirst =
-            checkpoint.nodes.indexOf(node) ===
-            checkpoint.nodes.findIndex((n) => n.name === node.name);
-          if (isFirst) {
-            return (
-              <div className="space-y-1">
-                {tools.map((name: string) => (
-                  <ToolCallCard key={name} toolName={name} />
-                ))}
-              </div>
-            );
-          }
-        }
-        return null;
-      }
+          const isLatestCheckpoint = cpIndex === appCheckpoints.length - 1;
+          const cpReasoning =
+            cp._reasoning ||
+            (isLatestCheckpoint && reasoning ? reasoning : "");
+          const cpToolCalls: Array<{ toolName: string; caller?: string }> =
+            cp._toolCalls && cp._toolCalls.length > 0
+              ? cp._toolCalls
+              : isLatestCheckpoint && activeToolCalls.length > 0
+                ? activeToolCalls
+                : [];
 
-      // ── Sprint write node — show tool call card while running ─────────────
-      case "sprint_create": {
-        const lastMsg = node.state.messages?.at(-1);
-        if (lastMsg?.tool_calls?.length) {
           return (
-            <div className="space-y-1">
-              {lastMsg.tool_calls.map((tc: any) => (
-                <ToolCallCard key={tc.id} toolName={tc.name} />
-              ))}
+            <div className="flex flex-col">
+              {/* 1. Reasoning Card */}
+              {cpReasoning && (
+                <div className="ml-7 my-1.5 text-xs text-muted-foreground bg-neutral-900/80 border border-neutral-800 rounded-lg p-2.5 max-w-[420px] leading-relaxed animate-in fade-in duration-200">
+                  <p className="text-[11px] text-neutral-300 leading-relaxed font-sans">
+                    {cpReasoning.replace(/^Reasoning:\s*/i, "")}
+                  </p>
+                </div>
+              )}
+
+              {/* 2. Sub-agent and Tool Call Cards below reasoning */}
+              {cpToolCalls.length > 0 && (
+                <div className="flex flex-col gap-0.5 my-1">
+                  {cpToolCalls.map((tc, idx) => (
+                    <ToolCallCard
+                      key={`${tc.toolName}-${tc.caller || "agent"}-${idx}`}
+                      toolName={tc.toolName}
+                      caller={tc.caller}
+                    />
+                  ))}
+                </div>
+              )}
+
+              {/* 3. AI Markdown Response below reasoning and tools */}
+              {hasAiMessageContent ? (
+                <ChatbotNode nodeState={stateToUse} executionTime={execTime} />
+              ) : null}
             </div>
           );
         }
-        return null;
-      }
-
-      case "analyst_done":
-      case "kaya_read_tools":
-      case "scheduler_setup": {
         return null;
       }
 
@@ -579,7 +560,7 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                             nodeState={{ messages: [m] }}
                           />
                         ))}
-                      {renderNode(checkpoint, node)}
+                      {renderNode(checkpoint, node, cpIndex)}
                     </div>
                   );
                 })
@@ -604,11 +585,23 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                   </div>
                 </div>
 
-                {reasoning && (
+                {reasoning && appCheckpoints.length === 0 && (
                   <div className="ml-7 mt-1 text-xs text-muted-foreground bg-neutral-900/80 border border-neutral-800 rounded-lg p-2.5 max-w-[420px] leading-relaxed animate-in fade-in duration-200">
                     <p className="text-[11px] text-neutral-300 leading-relaxed font-sans">
                       {reasoning.replace(/^Reasoning:\s*/i, "")}
                     </p>
+                  </div>
+                )}
+
+                {activeToolCalls.length > 0 && appCheckpoints.length === 0 && (
+                  <div className="flex flex-col gap-0.5 my-1">
+                    {activeToolCalls.map((tc, idx) => (
+                      <ToolCallCard
+                        key={`live-${tc.toolName}-${idx}`}
+                        toolName={tc.toolName}
+                        caller={tc.caller}
+                      />
+                    ))}
                   </div>
                 )}
 

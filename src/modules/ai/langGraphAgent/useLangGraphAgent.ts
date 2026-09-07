@@ -64,6 +64,9 @@ export function useLangGraphAgent<
   const [isStreaming, setIsStreaming] = useState(false);
   const [agentStatus, setAgentStatus] = useState<string>("");
   const [reasoning, setReasoning] = useState<string>("");
+  const [activeToolCalls, setActiveToolCalls] = useState<
+    Array<{ toolName: string; caller?: string }>
+  >([]);
   const [activeNode, setActiveNode] = useState<string>("");
   const [appCheckpoints, setAppCheckpoints] = useState<
     AppCheckpoint<TAgentState, TInterruptValue>[]
@@ -153,6 +156,7 @@ export function useLangGraphAgent<
       setIsStreaming(false);
       setAgentStatus("");
       setReasoning("");
+      setActiveToolCalls([]);
       setActiveNode("");
       // Invalidate cache when agent is called
       historyCache.delete(agentInput.thread_id);
@@ -182,7 +186,6 @@ export function useLangGraphAgent<
           if (chunk.message_chunk.content && isKayaNode) {
             setIsStreaming(true);
             setAgentStatus(""); // Clear intermediate status when final response starts
-            setReasoning(""); // Immediate hide reasoning when streaming begins
           }
           processMessageChunk(chunk, appCheckpoints);
           setAppCheckpoints([...appCheckpoints]);
@@ -195,6 +198,31 @@ export function useLangGraphAgent<
           }
           if (customData?.agent_status) {
             setAgentStatus(customData.agent_status);
+          }
+          if (customData?.subagent_called) {
+            const sub = customData.subagent_called;
+            setActiveToolCalls((prev) => {
+              if (
+                prev.some(
+                  (t) => t.toolName === sub && t.caller === "Kaya",
+                )
+              )
+                return prev;
+              return [...prev, { toolName: sub, caller: "Kaya" }];
+            });
+          }
+          if (customData?.tool_called) {
+            const toolName = customData.tool_called;
+            const caller = customData.caller || "Agent";
+            setActiveToolCalls((prev) => {
+              if (
+                prev.some(
+                  (t) => t.toolName === toolName && t.caller === caller,
+                )
+              )
+                return prev;
+              return [...prev, { toolName, caller }];
+            });
           }
           processCustomEvent(msg.data as Partial<TAgentState>, appCheckpoints);
           setAppCheckpoints([...appCheckpoints]);
@@ -228,14 +256,12 @@ export function useLangGraphAgent<
       setStatus("idle");
       setIsStreaming(false);
       setAgentStatus("");
-      setReasoning("");
       setActiveNode("");
     } catch (error: any) {
       console.error(error);
       setStatus("error");
       setIsStreaming(false);
       setAgentStatus("");
-      setReasoning("");
       setActiveNode("");
 
       if (error.message.includes("Too many requests")) {
@@ -532,6 +558,37 @@ export function useLangGraphAgent<
     }
     if ((state as any).reasoning) {
       setReasoning((state as any).reasoning);
+      (lastCheckpoint as any)._reasoning = (state as any).reasoning;
+    }
+    if ((state as any).subagent_called) {
+      const sub = (state as any).subagent_called;
+      if (!(lastCheckpoint as any)._toolCalls) {
+        (lastCheckpoint as any)._toolCalls = [];
+      }
+      if (
+        !(lastCheckpoint as any)._toolCalls.some(
+          (t: any) => t.toolName === sub && t.caller === "Kaya",
+        )
+      ) {
+        (lastCheckpoint as any)._toolCalls.push({
+          toolName: sub,
+          caller: "Kaya",
+        });
+      }
+    }
+    if ((state as any).tool_called) {
+      const toolName = (state as any).tool_called;
+      const caller = (state as any).caller || "Agent";
+      if (!(lastCheckpoint as any)._toolCalls) {
+        (lastCheckpoint as any)._toolCalls = [];
+      }
+      if (
+        !(lastCheckpoint as any)._toolCalls.some(
+          (t: any) => t.toolName === toolName && t.caller === caller,
+        )
+      ) {
+        (lastCheckpoint as any)._toolCalls.push({ toolName, caller });
+      }
     }
 
     lastCheckpoint.state = deepCopy({
@@ -621,6 +678,8 @@ export function useLangGraphAgent<
     setAppCheckpoints([]);
     setStatus("idle");
     setAgentStatus("");
+    setReasoning("");
+    setActiveToolCalls([]);
     setActiveNode("");
     setIsStreaming(false);
   }
@@ -638,6 +697,7 @@ export function useLangGraphAgent<
     isStreaming,
     agentStatus,
     reasoning,
+    activeToolCalls,
     activeNode,
     reset,
   };
