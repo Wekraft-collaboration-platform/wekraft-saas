@@ -1850,3 +1850,83 @@ export const getUpcomingDeadlines = query({
     return results.slice(0, 15);
   },
 });
+
+// ==========================================
+// GET AGENT PROJECTS OVERVIEW
+// Returns user projects with task count and issue count
+// ==========================================
+export const getAgentProjectsOverview = query({
+  args: {},
+  handler: async (ctx) => {
+    const identity = await ctx.auth.getUserIdentity();
+    if (!identity) return [];
+
+    const user = await ctx.db
+      .query("users")
+      .withIndex("by_token", (q) =>
+        q.eq("clerkToken", identity.tokenIdentifier),
+      )
+      .unique();
+
+    if (!user) return [];
+
+    // 1. Owned projects
+    const ownedProjects = await ctx.db
+      .query("projects")
+      .withIndex("by_owner", (q) => q.eq("ownerId", user._id))
+      .collect();
+
+    // 2. Joined projects
+    const memberships = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_user", (q) => q.eq("userId", user._id))
+      .collect();
+
+    const joinedProjects: any[] = [];
+    for (const m of memberships) {
+      const p = await ctx.db.get(m.projectId);
+      if (p && p.ownerId !== user._id) {
+        joinedProjects.push(p);
+      }
+    }
+
+    const allProjects = [...ownedProjects, ...joinedProjects];
+    const projectMap = new Map<string, any>();
+    for (const p of allProjects) {
+      projectMap.set(p._id, p);
+    }
+
+    const uniqueProjects = Array.from(projectMap.values());
+
+    const results = await Promise.all(
+      uniqueProjects.map(async (p) => {
+        const tasks = await ctx.db
+          .query("tasks")
+          .withIndex("by_project", (q) => q.eq("projectId", p._id))
+          .collect();
+
+        const issues = await ctx.db
+          .query("issues")
+          .withIndex("by_project", (q) => q.eq("projectId", p._id))
+          .collect();
+
+        return {
+          _id: p._id,
+          projectName: p.projectName,
+          slug: p.slug,
+          thumbnailUrl: p.thumbnailUrl || null,
+          isPublic: p.isPublic,
+          createdAt: p.createdAt,
+          taskCount: tasks.length,
+          issueCount: issues.length,
+          totalCount: tasks.length + issues.length,
+          role: p.ownerId === user._id ? ("owned" as const) : ("joined" as const),
+        };
+      })
+    );
+
+    return results;
+  },
+});
+
+

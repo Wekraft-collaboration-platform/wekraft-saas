@@ -65,6 +65,8 @@ import { AnimatePresence, motion } from "framer-motion";
 import { useKayaStore } from "@/store/useKayaStore";
 import { useHarryStore } from "@/store/useHarryStore";
 import { useUpgradeModalStore } from "@/store/useUpgradeModalStore";
+import { useVoiceInput } from "@/modules/ai/useVoiceInput";
+import { EmbeddedVoiceWaveform } from "@/modules/ai/VoiceInputBar";
 
 interface AiAssistantSheetProps {}
 
@@ -157,6 +159,22 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
   const [restoreError, setRestoreError] = useState(false);
   const [thinkingTime, setThinkingTime] = useState(0);
+
+  const {
+    isRecording: isVoiceRecording,
+    isTranscribing: isVoiceTranscribing,
+    formattedDuration: voiceDuration,
+    toggleRecording: toggleVoiceRecording,
+    cancelRecording: cancelVoiceRecording,
+    stopRecording: stopVoiceRecording,
+  } = useVoiceInput({
+    onTranscript: (text) => {
+      setInputValue((prev) => (prev ? `${prev} ${text}` : text));
+      setTimeout(() => {
+        inputRef.current?.focus();
+      }, 50);
+    },
+  });
 
   const {
     status,
@@ -633,107 +651,121 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                 }
               }}
             />
-            <div className="absolute left-2 top-1/2 -translate-y-1/2 z-10">
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
+            {isVoiceRecording || isVoiceTranscribing ? (
+              <EmbeddedVoiceWaveform
+                isRecording={isVoiceRecording}
+                isTranscribing={isVoiceTranscribing}
+                formattedDuration={voiceDuration}
+                onCancel={cancelVoiceRecording}
+                onStop={stopVoiceRecording}
+              />
+            ) : (
+              <>
+                <div className="absolute left-2 top-1/2 -translate-y-1/2 z-10">
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          disabled={isDisabled}
+                          className="h-8 w-8 text-white rounded-lg cursor-pointer"
+                          onClick={() => {
+                            if (
+                              !!(
+                                project &&
+                                (project as any).ownerAccountType !== "pro"
+                              )
+                            ) {
+                              useUpgradeModalStore.getState().openModal();
+                            } else {
+                              fileInputRef.current?.click();
+                            }
+                          }}
+                        >
+                          <Paperclip className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent
+                        side="top"
+                        className="bg-popover text-popover-foreground border border-border"
+                      >
+                        <p className="text-xs">
+                          you can upload PRD/SRS etc pdf/doc upto 5mb limit.
+                        </p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+                <Input
+                  ref={inputRef}
+                  placeholder="Ask anything..."
+                  value={inputValue}
+                  onChange={(e) => setInputValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") sendMessage(inputValue);
+                  }}
+                  disabled={isDisabled}
+                  className="h-12 rounded-xl bg-sidebar pr-36 pl-11"
+                />
+                <div className="flex items-center gap-2 absolute right-2 top-2">
+                  {status === "running" ? (
                     <Button
-                      type="button"
-                      variant="outline"
                       size="icon"
-                      disabled={isDisabled}
-                      className="h-8 w-8 text-white rounded-lg cursor-pointer"
-                      onClick={() => {
-                        if (
-                          !!(
-                            project &&
-                            (project as any).ownerAccountType !== "pro"
-                          )
-                        ) {
-                          useUpgradeModalStore.getState().openModal();
-                        } else {
-                          fileInputRef.current?.click();
-                        }
-                      }}
+                      variant="destructive"
+                      className=" h-8 w-8"
+                      onClick={() => stop(threadId)}
                     >
-                      <Paperclip className="h-4 w-4" />
+                      <Square className="h-3 w-3!" />
                     </Button>
-                  </TooltipTrigger>
-                  <TooltipContent
-                    side="top"
-                    className="bg-popover text-popover-foreground border border-border"
-                  >
-                    <p className="text-xs">
-                      you can upload PRD/SRS etc pdf/doc upto 5mb limit.
-                    </p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
-            <Input
-              ref={inputRef}
-              placeholder="Ask anything..."
-              value={inputValue}
-              onChange={(e) => setInputValue(e.target.value)}
-              onKeyDown={(e) => {
-                if (e.key === "Enter") sendMessage(inputValue);
-              }}
-              disabled={isDisabled}
-              className="h-12 rounded-xl bg-sidebar pr-36 pl-11"
-            />
-            <div className="flex items-center gap-2 absolute right-2 top-2">
-              {status === "running" ? (
-                <Button
-                  size="icon"
-                  variant="destructive"
-                  className=" h-8 w-8"
-                  onClick={() => stop(threadId)}
-                >
-                  <Square className="h-3 w-3!" />
-                </Button>
-              ) : (
-                <Button
-                  size="icon"
-                  variant="outline"
-                  className=" h-8 w-8"
-                  onClick={() => sendMessage(inputValue)}
-                  disabled={!inputValue.trim() || restoring}
-                >
-                  <Send className="h-3 w-3!" />
-                </Button>
-              )}
-              <TooltipProvider>
-                <Tooltip>
-                  <TooltipTrigger asChild>
+                  ) : (
                     <Button
-                      type="button"
-                      variant="outline"
                       size="icon"
-                      disabled={isDisabled}
-                      className="h-8 w-8 text-white rounded-lg cursor-pointer"
-                      onClick={() => {
-                        if (
-                          !!(
-                            project &&
-                            (project as any).ownerAccountType !== "pro"
-                          )
-                        ) {
-                          useUpgradeModalStore.getState().openModal();
-                        }
-                      }}
+                      variant="outline"
+                      className=" h-8 w-8"
+                      onClick={() => sendMessage(inputValue)}
+                      disabled={!inputValue.trim() || restoring}
                     >
-                      <Mic className="h-4 w-4" />
+                      <Send className="h-3 w-3!" />
                     </Button>
-                  </TooltipTrigger>
-                  <TooltipContent
-                    side="top"
-                    className="bg-popover text-popover-foreground border border-border"
-                  >
-                    <p className="text-xs">Voice input</p>
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
-            </div>
+                  )}
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="icon"
+                          disabled={isDisabled}
+                          className="h-8 w-8 text-white rounded-lg cursor-pointer hover:bg-neutral-800"
+                          onClick={() => {
+                            if (
+                              !!(
+                                project &&
+                                (project as any).ownerAccountType !== "pro"
+                              )
+                            ) {
+                              useUpgradeModalStore.getState().openModal();
+                            } else {
+                              toggleVoiceRecording();
+                            }
+                          }}
+                        >
+                          <Mic className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent
+                        side="top"
+                        className="bg-popover text-popover-foreground border border-border"
+                      >
+                        <p className="text-xs">Voice input</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+              </>
+            )}
           </div>
 
           <div className="flex items-center justify-center gap-2 mt-2">
