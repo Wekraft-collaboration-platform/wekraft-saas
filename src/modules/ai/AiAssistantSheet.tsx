@@ -22,7 +22,12 @@ import {
   Paperclip,
   Mic,
   Plus,
+  Loader2,
+  Check,
+  FileText,
+  AlertCircle,
 } from "lucide-react";
+import { toast } from "sonner";
 import Link from "next/link";
 import { ConnectorIcon, CONNECTOR_META } from "@/lib/mcp/connectors";
 
@@ -160,6 +165,81 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
   const [restoreError, setRestoreError] = useState(false);
   const [thinkingTime, setThinkingTime] = useState(0);
 
+  interface DocAttachment {
+    fileId?: string;
+    fileName: string;
+    status: "parsing" | "ready" | "error";
+    error?: string;
+  }
+
+  const [docAttachment, setDocAttachment] = useState<DocAttachment | null>(null);
+  const isDocParsing = docAttachment?.status === "parsing";
+
+  const handleFileUpload = async (file: File) => {
+    if (!file) return;
+
+    const MAX_SIZE = 10 * 1024 * 1024; // 10MB
+    if (file.size > MAX_SIZE) {
+      toast.error(`File size exceeds 10MB limit (${(file.size / (1024 * 1024)).toFixed(2)}MB).`);
+      return;
+    }
+
+    const allowedExts = [".pdf", ".docx", ".doc", ".txt", ".md"];
+    const fileExt = "." + file.name.split(".").pop()?.toLowerCase();
+    if (!allowedExts.includes(fileExt)) {
+      toast.error("Unsupported file format. Please upload PDF, DOCX, DOC, TXT, or MD.");
+      return;
+    }
+
+    if (!userId) {
+      toast.error("User identification required to upload files.");
+      return;
+    }
+
+    setDocAttachment({
+      fileName: file.name,
+      status: "parsing",
+    });
+
+    try {
+      const formData = new FormData();
+      formData.append("file", file);
+      formData.append("user_id", userId);
+      if (projectId) {
+        formData.append("project_id", projectId);
+      }
+
+      const res = await fetch("/api/documents/parse", {
+        method: "POST",
+        body: formData,
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        throw new Error(data.error || "Failed to parse document.");
+      }
+
+      setDocAttachment({
+        fileId: data.file_id,
+        fileName: file.name,
+        status: "ready",
+      });
+      toast.success(`${file.name} parsed successfully.`);
+    } catch (err: any) {
+      setDocAttachment({
+        fileName: file.name,
+        status: "error",
+        error: err.message || "Failed to parse",
+      });
+      toast.error(err.message || "Failed to parse document.");
+    } finally {
+      if (fileInputRef.current) {
+        fileInputRef.current.value = "";
+      }
+    }
+  };
+
   const {
     isRecording: isVoiceRecording,
     isTranscribing: isVoiceTranscribing,
@@ -267,8 +347,11 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
       useUpgradeModalStore.getState().openModal();
       return;
     }
-    if (!content.trim() || status === "running" || restoring) return;
+    if (!content.trim() || status === "running" || restoring || isDocParsing) return;
     setRestoreError(false);
+
+    const attachedFileId = docAttachment?.status === "ready" ? docAttachment.fileId : undefined;
+
     run({
       thread_id: threadId,
       user_id: userId,
@@ -279,10 +362,12 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
         project_id: projectId,
         project_name: project?.projectName,
         messages: [{ type: "user", content }],
+        file_id: attachedFileId,
       },
-    });
+    } as any);
 
     setInputValue("");
+    setDocAttachment(null);
   };
 
   const handleSuggestionClick = (suggestion: string) => {
@@ -632,6 +717,57 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
 
         {/* FOOTER */}
         <div className="px-4 py-6 bg-linear-to-b from-transparent via-indigo-200/10 to-purple-400/30">
+          {/* Phase 1: Uploaded document chip with loader and tick */}
+          {docAttachment && (
+            <div className="flex items-center gap-2 mb-2 px-3 py-1.5 rounded-md bg-neutral-800 text-neutral-200 text-xs w-fit max-w-full shadow-xs animate-in fade-in slide-in-from-bottom-2 duration-200">
+              <Image
+                src={
+                  docAttachment.fileName.toLowerCase().endsWith(".pdf")
+                    ? "/pdf.svg"
+                    : docAttachment.fileName.toLowerCase().endsWith(".doc") || docAttachment.fileName.toLowerCase().endsWith(".docx")
+                    ? "/doc.svg"
+                    : "/file.svg"
+                }
+                alt="File format icon"
+                width={16}
+                height={16}
+                className="w-4 h-4 object-contain shrink-0"
+              />
+              <span className="truncate max-w-[200px] font-medium" title={docAttachment.fileName}>
+                {docAttachment.fileName}
+              </span>
+
+              {docAttachment.status === "parsing" && (
+                <div className="flex items-center gap-1 text-neutral-400 shrink-0">
+                  <Loader2 className="w-3.5 h-3.5 animate-spin text-neutral-300" />
+                  <span className="text-xs">Parsing...</span>
+                </div>
+              )}
+
+              {docAttachment.status === "ready" && (
+                <span title="Parsed & saved" className="flex items-center">
+                  <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
+                </span>
+              )}
+
+              {docAttachment.status === "error" && (
+                <div className="flex items-center gap-1 text-red-400 shrink-0" title={docAttachment.error}>
+                  <AlertCircle className="w-3.5 h-3.5" />
+                  <span className="text-xs">{docAttachment.error || "Failed"}</span>
+                </div>
+              )}
+
+              <button
+                type="button"
+                onClick={() => setDocAttachment(null)}
+                className="ml-1 p-0.5 text-neutral-400 hover:text-white rounded cursor-pointer"
+                title="Remove attachment"
+              >
+                <X className="w-3.5 h-3.5" />
+              </button>
+            </div>
+          )}
+
           <div className="relative">
             {!!(project && (project as any).ownerAccountType !== "pro") && (
               <div
@@ -643,11 +779,11 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
               type="file"
               ref={fileInputRef}
               className="hidden"
-              accept=".pdf,.doc,.docx"
+              accept=".pdf,.doc,.docx,.txt,.md"
               onChange={(e) => {
                 const file = e.target.files?.[0];
                 if (file) {
-                  // TODO: handle file upload
+                  handleFileUpload(file);
                 }
               }}
             />
@@ -669,7 +805,7 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                           type="button"
                           variant="outline"
                           size="icon"
-                          disabled={isDisabled}
+                          disabled={isDisabled || isDocParsing}
                           className="h-8 w-8 text-white rounded-lg cursor-pointer"
                           onClick={() => {
                             if (
@@ -692,7 +828,7 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                         className="bg-popover text-popover-foreground border border-border"
                       >
                         <p className="text-xs">
-                          you can upload PRD/SRS etc pdf/doc upto 5mb limit.
+                          Upload PRD/SRS/Doc (PDF, DOCX, DOC, TXT, MD up to 10MB).
                         </p>
                       </TooltipContent>
                     </Tooltip>
@@ -704,9 +840,9 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter") sendMessage(inputValue);
+                    if (e.key === "Enter" && !isDocParsing) sendMessage(inputValue);
                   }}
-                  disabled={isDisabled}
+                  disabled={isDisabled || isDocParsing}
                   className="h-12 rounded-xl bg-sidebar pr-36 pl-11"
                 />
                 <div className="flex items-center gap-2 absolute right-2 top-2">
@@ -725,7 +861,7 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                       variant="outline"
                       className=" h-8 w-8"
                       onClick={() => sendMessage(inputValue)}
-                      disabled={!inputValue.trim() || restoring}
+                      disabled={!inputValue.trim() || restoring || isDocParsing}
                     >
                       <Send className="h-3 w-3!" />
                     </Button>
