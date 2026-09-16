@@ -13,6 +13,7 @@ import {
   Clock,
   ThumbsUp,
   ThumbsDown,
+  ChevronRight,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "convex/react";
@@ -30,7 +31,15 @@ export function ChatbotNode({ nodeState, executionTime }: ChatbotNodeProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [likedId, setLikedId] = useState<string | null>(null);
   const [dislikedId, setDislikedId] = useState<string | null>(null);
+  const [expandedTools, setExpandedTools] = useState<Record<string, boolean>>({});
   const user = useQuery(api.user.getCurrentUser);
+
+  const toggleTools = (id: string) => {
+    setExpandedTools((prev) => ({
+      ...prev,
+      [id]: !(prev[id] ?? true),
+    }));
+  };
 
   const copyToClipboard = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -105,17 +114,40 @@ export function ChatbotNode({ nodeState, executionTime }: ChatbotNodeProps) {
             </div>
 
             {/* AI Sub-Agent & Tool Call Cards */}
-            {isAI && subagentTools && subagentTools.length > 0 && (
-              <div className="flex flex-col gap-0.5 my-0.5">
-                {subagentTools.map((tc, idx) => (
-                  <ToolCallCard
-                    key={`${tc.toolName}-${tc.caller || "agent"}-${idx}`}
-                    toolName={tc.toolName}
-                    caller={tc.caller}
-                  />
-                ))}
-              </div>
-            )}
+            {isAI && subagentTools && subagentTools.length > 0 && (() => {
+              const isToolsExpanded = expandedTools[msgId] ?? true;
+              return (
+                <div className="flex flex-col gap-1 my-0.5">
+                  <button
+                    type="button"
+                    onClick={() => toggleTools(msgId)}
+                    className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground/75 hover:text-neutral-200 transition-colors cursor-pointer py-0.5 px-1 rounded select-none w-fit"
+                  >
+                    <ChevronRight
+                      className={cn(
+                        "w-3 h-3 transition-transform duration-200",
+                        isToolsExpanded && "rotate-90",
+                      )}
+                    />
+                    <span>
+                      {subagentTools.length}{" "}
+                      {subagentTools.length === 1 ? "tool called" : "tools called"}
+                    </span>
+                  </button>
+                  {isToolsExpanded && (
+                    <div className="flex flex-col gap-0.5 animate-in fade-in duration-150">
+                      {subagentTools.map((tc, idx) => (
+                        <ToolCallCard
+                          key={`${tc.toolName}-${tc.caller || "agent"}-${idx}`}
+                          toolName={tc.toolName}
+                          caller={tc.caller}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
 
             <div
               className={cn(

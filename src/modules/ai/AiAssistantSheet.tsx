@@ -26,6 +26,7 @@ import {
   Check,
   FileText,
   AlertCircle,
+  ChevronRight,
 } from "lucide-react";
 import { toast } from "sonner";
 import Link from "next/link";
@@ -72,6 +73,7 @@ import { useHarryStore } from "@/store/useHarryStore";
 import { useUpgradeModalStore } from "@/store/useUpgradeModalStore";
 import { useVoiceInput } from "@/modules/ai/useVoiceInput";
 import { EmbeddedVoiceWaveform } from "@/modules/ai/VoiceInputBar";
+import { cn } from "@/lib/utils";
 
 interface AiAssistantSheetProps {}
 
@@ -148,16 +150,19 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
   const projectId = project?._id;
   const mcpConnections = useQuery(
     api.mcp.getConnectionsByProject,
-    projectId ? { projectId } : "skip"
+    projectId ? { projectId } : "skip",
   );
   const kayaConnectedApps = (mcpConnections || []).filter(
-    (c) => c.isConnected && (c.agent === "kaya" || CONNECTOR_META[c.connectorId]?.agent === "kaya")
+    (c) =>
+      c.isConnected &&
+      (c.agent === "kaya" || CONNECTOR_META[c.connectorId]?.agent === "kaya"),
   );
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const inputRef = useRef<HTMLInputElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [showLiveTools, setShowLiveTools] = useState(true);
 
   const [inputValue, setInputValue] = useState("");
   const [showScrollButton, setShowScrollButton] = useState(false);
@@ -172,7 +177,9 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
     error?: string;
   }
 
-  const [docAttachment, setDocAttachment] = useState<DocAttachment | null>(null);
+  const [docAttachment, setDocAttachment] = useState<DocAttachment | null>(
+    null,
+  );
   const isDocParsing = docAttachment?.status === "parsing";
 
   const handleFileUpload = async (file: File) => {
@@ -180,14 +187,18 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
 
     const MAX_SIZE = 10 * 1024 * 1024; // 10MB
     if (file.size > MAX_SIZE) {
-      toast.error(`File size exceeds 10MB limit (${(file.size / (1024 * 1024)).toFixed(2)}MB).`);
+      toast.error(
+        `File size exceeds 10MB limit (${(file.size / (1024 * 1024)).toFixed(2)}MB).`,
+      );
       return;
     }
 
     const allowedExts = [".pdf", ".docx", ".doc", ".txt", ".md"];
     const fileExt = "." + file.name.split(".").pop()?.toLowerCase();
     if (!allowedExts.includes(fileExt)) {
-      toast.error("Unsupported file format. Please upload PDF, DOCX, DOC, TXT, or MD.");
+      toast.error(
+        "Unsupported file format. Please upload PDF, DOCX, DOC, TXT, or MD.",
+      );
       return;
     }
 
@@ -347,10 +358,12 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
       useUpgradeModalStore.getState().openModal();
       return;
     }
-    if (!content.trim() || status === "running" || restoring || isDocParsing) return;
+    if (!content.trim() || status === "running" || restoring || isDocParsing)
+      return;
     setRestoreError(false);
 
-    const attachedFileId = docAttachment?.status === "ready" ? docAttachment.fileId : undefined;
+    const attachedFileId =
+      docAttachment?.status === "ready" ? docAttachment.fileId : undefined;
 
     run({
       thread_id: threadId,
@@ -469,7 +482,9 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
             cp.executionTime ||
             (checkpoint.nodes[0]?.state as any)?.executionTime;
 
-          return <ChatbotNode nodeState={stateToUse} executionTime={execTime} />;
+          return (
+            <ChatbotNode nodeState={stateToUse} executionTime={execTime} />
+          );
         }
         return null;
       }
@@ -661,14 +676,36 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                 )}
 
                 {activeToolCalls.length > 0 && (
-                  <div className="flex flex-col gap-0.5 ml-3 my-1">
-                    {activeToolCalls.map((tc, idx) => (
-                      <ToolCallCard
-                        key={`live-${tc.toolName}-${idx}`}
-                        toolName={tc.toolName}
-                        caller={tc.caller}
+                  <div className="flex flex-col gap-1 ml-3 my-1">
+                    <button
+                      type="button"
+                      onClick={() => setShowLiveTools(!showLiveTools)}
+                      className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground/75 hover:text-neutral-200 transition-colors cursor-pointer py-0.5 px-1 rounded select-none w-fit"
+                    >
+                      <ChevronRight
+                        className={cn(
+                          "w-3 h-3 transition-transform duration-200",
+                          showLiveTools && "rotate-90",
+                        )}
                       />
-                    ))}
+                      <span>
+                        {activeToolCalls.length}{" "}
+                        {activeToolCalls.length === 1
+                          ? "tool called"
+                          : "tools called"}
+                      </span>
+                    </button>
+                    {showLiveTools && (
+                      <div className="flex flex-col gap-0.5 animate-in fade-in duration-150">
+                        {activeToolCalls.map((tc, idx) => (
+                          <ToolCallCard
+                            key={`live-${tc.toolName}-${idx}`}
+                            toolName={tc.toolName}
+                            caller={tc.caller}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
                 )}
 
@@ -724,16 +761,20 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                 src={
                   docAttachment.fileName.toLowerCase().endsWith(".pdf")
                     ? "/pdf.svg"
-                    : docAttachment.fileName.toLowerCase().endsWith(".doc") || docAttachment.fileName.toLowerCase().endsWith(".docx")
-                    ? "/doc.svg"
-                    : "/file.svg"
+                    : docAttachment.fileName.toLowerCase().endsWith(".doc") ||
+                        docAttachment.fileName.toLowerCase().endsWith(".docx")
+                      ? "/doc.svg"
+                      : "/file.svg"
                 }
                 alt="File format icon"
                 width={16}
                 height={16}
                 className="w-4 h-4 object-contain shrink-0"
               />
-              <span className="truncate max-w-[200px] font-medium" title={docAttachment.fileName}>
+              <span
+                className="truncate max-w-[200px] font-medium"
+                title={docAttachment.fileName}
+              >
                 {docAttachment.fileName}
               </span>
 
@@ -751,9 +792,14 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
               )}
 
               {docAttachment.status === "error" && (
-                <div className="flex items-center gap-1 text-red-400 shrink-0" title={docAttachment.error}>
+                <div
+                  className="flex items-center gap-1 text-red-400 shrink-0"
+                  title={docAttachment.error}
+                >
                   <AlertCircle className="w-3.5 h-3.5" />
-                  <span className="text-xs">{docAttachment.error || "Failed"}</span>
+                  <span className="text-xs">
+                    {docAttachment.error || "Failed"}
+                  </span>
                 </div>
               )}
 
@@ -828,7 +874,8 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                         className="bg-popover text-popover-foreground border border-border"
                       >
                         <p className="text-xs">
-                          Upload PRD/SRS/Doc (PDF, DOCX, DOC, TXT, MD up to 10MB).
+                          Upload PRD/SRS/Doc (PDF, DOCX, DOC, TXT, MD up to
+                          10MB).
                         </p>
                       </TooltipContent>
                     </Tooltip>
@@ -840,7 +887,8 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                   value={inputValue}
                   onChange={(e) => setInputValue(e.target.value)}
                   onKeyDown={(e) => {
-                    if (e.key === "Enter" && !isDocParsing) sendMessage(inputValue);
+                    if (e.key === "Enter" && !isDocParsing)
+                      sendMessage(inputValue);
                   }}
                   disabled={isDisabled || isDocParsing}
                   className="h-12 rounded-xl bg-sidebar pr-36 pl-11"
@@ -917,11 +965,15 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                         href={`/dashboard/my-projects/${slug}/workspace/integrations`}
                         className="cursor-pointer transition-transform hover:scale-110"
                       >
-                        <ConnectorIcon connectorId={app.connectorId} size={22} />
+                        <ConnectorIcon
+                          connectorId={app.connectorId}
+                          size={22}
+                        />
                       </Link>
                     </TooltipTrigger>
                     <TooltipContent side="top" className="text-xs">
-                      {CONNECTOR_META[app.connectorId]?.name || app.connectorId} (Connected)
+                      {CONNECTOR_META[app.connectorId]?.name || app.connectorId}{" "}
+                      (Connected)
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>

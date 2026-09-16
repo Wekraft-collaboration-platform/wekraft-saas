@@ -59,7 +59,7 @@ const KAYA_INTEGRATIONS: IntegrationItem[] = [
     category: "Issue Tracking",
     logo: "/jira-logo.jpg",
     agent: "kaya",
-    status: "coming_soon",
+    status: "available",
   },
 ];
 
