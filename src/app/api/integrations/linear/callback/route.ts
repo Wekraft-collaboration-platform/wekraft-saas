@@ -94,6 +94,9 @@ export async function GET(req: NextRequest) {
         toolsCount: toolsCount || undefined,
         tools: tools.length > 0 ? tools : undefined,
         mcpUrl: "https://mcp.linear.app/mcp",
+        refreshToken: tokens.refresh_token || undefined,
+        expiresIn: tokens.expires_in || undefined,
+        tokenExpiresAt: tokens.expires_in ? Date.now() + tokens.expires_in * 1000 : undefined,
       },
     });
 

@@ -297,20 +297,81 @@ export const IntegrationsView = () => {
                 )}
               </div>
             )}
+            {activeTab === "connected" &&
+              connected &&
+              connection?.metadata?.tokenExpiresAt && (
+                <span
+                  className={`text-[10px] font-normal rounded px-1.5 py-0.5 shrink-0 ${
+                    connection.metadata.tokenExpiresAt < Date.now()
+                      ? "text-amber-400 bg-amber-500/10 border border-amber-500/30 font-medium"
+                      : "text-muted-foreground/70 bg-neutral-950/80 border border-border/50"
+                  }`}
+                >
+                  {connection.metadata.tokenExpiresAt < Date.now()
+                    ? "Expired"
+                    : `Exp ${format(connection.metadata.tokenExpiresAt, "MMM d, h:mm a")}`}
+                </span>
+              )}
           </div>
         </div>
 
         <div className="shrink-0 ml-3">
-          {item.status === "available" ? (
-            connected ? (
-              canManage ? (
+          {(() => {
+            const isExpired =
+              connected &&
+              Boolean(
+                connection?.metadata?.tokenExpiresAt &&
+                connection.metadata.tokenExpiresAt < Date.now(),
+              );
+            if (item.status !== "available") {
+              return (
+                <Badge
+                  variant="outline"
+                  className="text-[10px] px-2 py-0.5 text-muted-foreground/70 border-border/40 font-normal"
+                >
+                  Coming Soon
+                </Badge>
+              );
+            }
+
+            if (connected) {
+              if (isExpired) {
+                return canManage ? (
+                  <div className="flex items-center gap-1.5">
+                    <Button
+                      size="sm"
+                      onClick={() => handleOAuthConnect(item.id)}
+                      className="h-8 text-xs px-3 bg-amber-500/90 hover:bg-amber-500 text-neutral-950 font-medium"
+                    >
+                      Reconnect
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleDisconnect(item.id)}
+                      className="h-8 text-[11px] px-2.5 text-red-400 bg-neutral-950!"
+                    >
+                      Remove
+                    </Button>
+                  </div>
+                ) : (
+                  <Badge
+                    variant="outline"
+                    className="text-[10px] px-2 py-0.5 text-amber-400 border-amber-500/40 font-normal"
+                  >
+                    Expired
+                  </Badge>
+                );
+              }
+
+              return canManage ? (
                 <Button
                   size="sm"
                   variant="outline"
                   onClick={() => handleDisconnect(item.id)}
                   className="h-8 text-[11px] px-3 text-red-400 bg-neutral-950!"
                 >
-                  Disconnect
+                  Remove
                 </Button>
               ) : (
                 <Badge
@@ -319,8 +380,10 @@ export const IntegrationsView = () => {
                 >
                   Connected
                 </Badge>
-              )
-            ) : canManage ? (
+              );
+            }
+
+            return canManage ? (
               <Button
                 size="sm"
                 onClick={() => handleOAuthConnect(item.id)}
@@ -335,15 +398,8 @@ export const IntegrationsView = () => {
               >
                 Admin Only
               </Badge>
-            )
-          ) : (
-            <Badge
-              variant="outline"
-              className="text-[10px] px-2 py-0.5 text-muted-foreground/70 border-border/40 font-normal"
-            >
-              Coming Soon
-            </Badge>
-          )}
+            );
+          })()}
         </div>
       </div>
     );
