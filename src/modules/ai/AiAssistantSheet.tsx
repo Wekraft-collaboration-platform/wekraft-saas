@@ -54,7 +54,11 @@ import { api } from "../../../convex/_generated/api";
 import { useQuery } from "convex/react";
 import { useParams, useRouter, useSearchParams } from "next/navigation";
 import { CalendarApprovalCard } from "@/modules/ai/CalendarApprovalCard";
-import { CalendarEventInterrupt } from "@/modules/ai/AgentTypes";
+import {
+  CalendarEventInterrupt,
+  TaskCreationInterrupt,
+} from "@/modules/ai/AgentTypes";
+import { TaskApprovalCard } from "@/modules/ai/TaskApprovalCard";
 import { ToolCallCard } from "@/modules/ai/ToolCard";
 import { SprintItemSelectionCard } from "@/modules/ai/SprintItemSelectionCard";
 import Image from "next/image";
@@ -413,12 +417,34 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
       case "kaya":
       case "kaya_direct_node":
       case "kaya_synthesizer_node":
+      case "db_write_node":
+      case "sprint_node":
+      case "analyst_node":
+      case "mcp_node":
       case "tools":
       case "sprint_add_items":
       case "scheduler_setup": {
         const interrupt = checkpoint.interruptValue as
           | InterruptValue
           | undefined;
+
+        // ── Task & Issue Creation HITL ──
+        if (
+          interrupt?.tool === "bulk_create_tasks" ||
+          interrupt?.tool === "create_task" ||
+          interrupt?.tool === "bulk_create_issues" ||
+          interrupt?.tool === "create_issue"
+        ) {
+          const isCompleted =
+            appCheckpoints.indexOf(checkpoint) < appCheckpoints.length - 1;
+          return (
+            <TaskApprovalCard
+              interruptValue={interrupt as TaskCreationInterrupt}
+              isCompleted={isCompleted}
+              onResume={(value) => handleResume(value)}
+            />
+          );
+        }
 
         // ── Calendar HITL ──
         if (interrupt?.tool === "create_calendar_event") {
@@ -608,13 +634,6 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                   key={checkpoint.checkpointConfig.configurable.checkpoint_id}
                   className="text-red-500 py-2 text-xs px-4"
                 >
-                  {checkpoint.error && checkpoint.errorMessage && (
-                    <script
-                      dangerouslySetInnerHTML={{
-                        __html: `console.error("🤖 [Kaya AI Error]:", ${JSON.stringify(checkpoint.errorMessage)})`,
-                      }}
-                    />
-                  )}
                   Mistake made by LLM. Try again.
                 </div>
               ) : (

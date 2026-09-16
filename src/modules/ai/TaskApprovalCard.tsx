@@ -62,13 +62,29 @@ export function TaskApprovalCard({
     onResume(value);
   };
 
+  if (isCompleted) {
+    return (
+      <div className="my-2 mx-4 px-3 py-1.5 w-fit rounded-lg border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 text-xs flex items-center gap-2">
+        <CheckCheck className="w-3.5 h-3.5" />
+        <span className="font-medium">
+          Action Approved ({items.length}{" "}
+          {isIssue
+            ? items.length === 1
+              ? "issue"
+              : "issues"
+            : items.length === 1
+              ? "task"
+              : "tasks"}
+          )
+        </span>
+      </div>
+    );
+  }
+
   return (
     <div
       className={cn(
-        "my-3 p-3 w-full max-w-[440px] mx-4 border rounded-xl transition-all shadow-sm",
-        isCompleted
-          ? "border-border bg-sidebar/30 opacity-60"
-          : "border-border/80 bg-sidebar shadow-md",
+        "my-3 p-3 w-full max-w-[440px] mx-4 border rounded-xl transition-all shadow-md border-border/80 bg-sidebar",
       )}
     >
       {/* Header */}
@@ -86,10 +102,10 @@ export function TaskApprovalCard({
         )}
         <div
           className={cn(
-            "flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] font-medium tracking-wide uppercase",
+            "flex items-center gap-1 px-2 py-0.5 rounded-full border text-[10px] ",
             isIssue
-              ? "bg-rose-500/15 border-rose-500/30 text-rose-300"
-              : "bg-blue-500/15 border-blue-500/30 text-blue-300",
+              ? "bg-neutral-600/30 text-neutral-300"
+              : "bg-neutral-600/30 text-neutral-300",
           )}
         >
           {isIssue ? (
@@ -129,7 +145,7 @@ export function TaskApprovalCard({
             return (
               <div
                 key={idx}
-                className="flex flex-col gap-1 p-2.5 rounded-lg border border-border/60 bg-card/60 hover:bg-card/90 transition-colors"
+                className="flex flex-col p-1.5 rounded-sm border border-border/60 bg-card/60 hover:bg-card/90 transition-colors"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -146,7 +162,7 @@ export function TaskApprovalCard({
                   </div>
                   <span
                     className={cn(
-                      "px-1.5 py-0.5 rounded text-[9px] font-semibold border uppercase tracking-wider shrink-0",
+                      "px-1.5 py-0.5 rounded text-[9px]  border  shrink-0",
                       badge.className,
                     )}
                   >
@@ -154,11 +170,11 @@ export function TaskApprovalCard({
                   </span>
                 </div>
 
-                {item.description && (
+                {/* {item.description && (
                   <p className="text-[11px] text-muted-foreground line-clamp-2 pl-7 leading-relaxed">
                     {item.description}
                   </p>
-                )}
+                )} */}
               </div>
             );
           })

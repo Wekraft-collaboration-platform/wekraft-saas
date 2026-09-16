@@ -872,7 +872,7 @@ export const bulkInsertTasks = internalMutation({
     tasks: v.array(
       v.object({
         title: v.string(),
-        description: v.optional(v.string()),
+        description: v.optional(v.union(v.string(), v.null())),
         priority: v.optional(
           v.union(v.literal("high"), v.literal("medium"), v.literal("low")),
         ),
@@ -898,7 +898,7 @@ export const bulkInsertTasks = internalMutation({
         projectId: args.projectId,
         createdByUserId: project.ownerId,
         title: taskItem.title,
-        description: taskItem.description,
+        description: taskItem.description || undefined,
         priority: taskItem.priority ?? "medium",
         type: taskItem.type ?? { label: "PRD-Import", color: "#3b82f6" },
         status: "not started",
@@ -927,7 +927,7 @@ export const bulkInsertIssues = internalMutation({
     issues: v.array(
       v.object({
         title: v.string(),
-        description: v.optional(v.string()),
+        description: v.optional(v.union(v.string(), v.null())),
         environment: v.optional(
           v.union(
             v.literal("local"),
@@ -959,7 +959,7 @@ export const bulkInsertIssues = internalMutation({
         projectId: args.projectId,
         createdByUserId: project.ownerId,
         title: issueItem.title,
-        description: issueItem.description,
+        description: issueItem.description || undefined,
         environment: issueItem.environment ?? "dev",
         severity: issueItem.severity ?? "medium",
         status: "not opened",
