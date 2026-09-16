@@ -43,7 +43,7 @@ const KAYA_INTEGRATIONS: IntegrationItem[] = [
     category: "Team Chat",
     logo: "/slack.png",
     agent: "kaya",
-    status: "coming_soon",
+    status: "available",
   },
   {
     id: "calendly",
@@ -51,7 +51,7 @@ const KAYA_INTEGRATIONS: IntegrationItem[] = [
     category: "Scheduling",
     logo: "/calendly.png",
     agent: "kaya",
-    status: "coming_soon",
+    status: "available",
   },
   {
     id: "jira",
@@ -418,7 +418,7 @@ export const IntegrationsView = () => {
             <p className="text-xs text-muted-foreground max-w-sm">
               Switch back to the{" "}
               <strong className="text-foreground">ALL</strong> tab to connect
-              Linear, Sentry, or Notion to your workspace.
+              Linear, Notion, Slack, Calendly, or Sentry to your workspace.
             </p>
           </div>
           <Button
