@@ -1,5 +1,5 @@
 import { ConvexError, v } from "convex/values";
-import { mutation, query } from "./_generated/server";
+import { mutation, query, internalQuery } from "./_generated/server";
 import { Id } from "./_generated/dataModel";
 import { encryptField, decryptField } from "./encryption";
 
@@ -265,6 +265,47 @@ export const saveOAuthConnection = mutation({
     });
 
     return { success: true, connectionId: newId };
+  },
+});
+
+/**
+ * Internal query to fetch active MCP connections with decrypted credentials for the AI Agent
+ */
+export const getActiveMCPConnectionsWithTokens = internalQuery({
+  args: {
+    projectId: v.id("projects"),
+  },
+  handler: async (ctx, args) => {
+    const connections = await ctx.db
+      .query("mcpConnections")
+      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .filter((q) => q.eq(q.field("isConnected"), true))
+      .collect();
+
+    const results = [];
+    for (const conn of connections) {
+      let decryptedToken = "";
+      if (conn.credentials) {
+        try {
+          decryptedToken = (await decryptField(conn.credentials)) || "";
+        } catch (e) {
+          console.error(`Failed to decrypt credentials for connector ${conn.connectorId}:`, e);
+        }
+      }
+
+      results.push({
+        _id: conn._id,
+        connectorId: conn.connectorId,
+        agent: conn.agent,
+        accessToken: decryptedToken,
+        connectedByUserId: conn.connectedByUserId,
+        connectedByUserName: conn.connectedByUserName,
+        metadata: conn.metadata,
+        updatedAt: conn.updatedAt,
+      });
+    }
+
+    return results;
   },
 });
 

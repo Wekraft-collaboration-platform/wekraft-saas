@@ -40,6 +40,44 @@ http.route({
   }),
 });
 
+// getProjectMcpConnections: Returns active MCP connections with decrypted tokens for a project (Kaya MCP Agent tool)
+http.route({
+  path: "/getProjectMcpConnections",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const body = await request.json();
+    if (!body.projectId) {
+      return new Response(JSON.stringify({ error: "projectId is required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+
+    try {
+      const connections = await ctx.runQuery(
+        internal.mcp.getActiveMCPConnectionsWithTokens,
+        {
+          projectId: body.projectId,
+        }
+      );
+
+      return new Response(JSON.stringify({ connections }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch (err: any) {
+      console.error("[getProjectMcpConnections] error:", err);
+      return new Response(
+        JSON.stringify({ error: err.message || "Failed to fetch MCP connections" }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        }
+      );
+    }
+  }),
+});
+
 // getSprintPlannerContext: Returns project deadline, all sprint names, count of incomplete unassigned tasks, and duration to deadline.
 // returns: { projectDeadline: number | null, daysToDeadline: string | null, sprintTitles: string[], unassignedTasksCount: number }
 http.route({
