@@ -628,45 +628,50 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                 )}
             </AnimatePresence>
 
-            {appCheckpoints.map((checkpoint, cpIndex) =>
-              checkpoint.error ? (
-                <div
-                  key={checkpoint.checkpointConfig.configurable.checkpoint_id}
-                  className="text-red-500 py-2 text-xs px-4"
-                >
-                  Mistake made by LLM. Try again.
-                </div>
-              ) : (
-                checkpoint.nodes.map((node, i) => {
-                  const prevCheckpoint =
-                    cpIndex > 0 ? appCheckpoints[cpIndex - 1] : null;
-                  const userMessages =
-                    checkpoint.state.messages?.filter((m) => {
-                      const isUser = m.type === "human" || m.type === "user";
-                      if (!isUser) return false;
-                      if (!prevCheckpoint) return true;
-                      return !prevCheckpoint.state.messages.some(
-                        (pm) => pm.id === m.id,
-                      );
-                    }) || [];
+            {appCheckpoints.map((checkpoint, cpIndex) => {
+              const prevCheckpoint =
+                cpIndex > 0 ? appCheckpoints[cpIndex - 1] : null;
+              const userMessages =
+                checkpoint.state?.messages?.filter((m) => {
+                  const isUser = m.type === "human" || m.type === "user";
+                  if (!isUser) return false;
+                  if (!prevCheckpoint) return true;
+                  return !prevCheckpoint.state?.messages?.some(
+                    (pm) => pm.id === m.id,
+                  );
+                }) || [];
 
-                  return (
+              return (
+                <div
+                  key={
+                    checkpoint.checkpointConfig?.configurable?.checkpoint_id ||
+                    `checkpoint-${cpIndex}`
+                  }
+                >
+                  {userMessages.map((m, idx) => (
+                    <ChatbotNode
+                      key={`user-${cpIndex}-${idx}`}
+                      nodeState={{ messages: [m] }}
+                    />
+                  ))}
+
+                  {checkpoint.nodes?.map((node, i) => (
                     <div
-                      key={`${checkpoint.checkpointConfig.configurable.checkpoint_id}-${i}`}
+                      key={`${checkpoint.checkpointConfig?.configurable?.checkpoint_id || cpIndex}-${i}`}
                     >
-                      {i === 0 &&
-                        userMessages.map((m, idx) => (
-                          <ChatbotNode
-                            key={`user-${idx}`}
-                            nodeState={{ messages: [m] }}
-                          />
-                        ))}
                       {renderNode(checkpoint, node)}
                     </div>
-                  );
-                })
-              ),
-            )}
+                  ))}
+
+                  {checkpoint.error && (
+                    <div className="text-red-500 py-2 text-xs px-4">
+                      {checkpoint.errorMessage ||
+                        "Mistake made by LLM. Try again."}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
 
             {status === "running" && !restoring && !isStreaming && (
               <div className="flex flex-col gap-1 py-3 px-4">

@@ -9,35 +9,43 @@ const AGENT_URL = process.env.NEXT_PUBLIC_AGENT_URL;
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
 async function getCachedUser(userId: string) {
+  if (!userId || userId === "undefined" || userId === "null") return null;
   const cacheKey = `user:${userId}`;
   try {
     const cached = await redis.get(cacheKey);
     if (cached) {
       if (cached === "__NULL__") return null;
-      return JSON.parse(cached as string);
+      return typeof cached === "string" ? JSON.parse(cached) : cached;
     }
   } catch (e) {
     console.error("Redis error in getCachedUser:", e);
   }
 
-  const user = await convex.query(api.user.getUserById, { userId: userId as Id<"users"> });
-  
   try {
+    const user = await convex.query(api.user.getUserById, { userId: userId as Id<"users"> });
     if (user) {
-      await redis.set(cacheKey, JSON.stringify(user), { ex: 60 });
+      try {
+        await redis.set(cacheKey, JSON.stringify(user), { ex: 60 });
+      } catch (e) {}
     } else {
-      await redis.set(cacheKey, "__NULL__", { ex: 60 });
+      try {
+        await redis.set(cacheKey, "__NULL__", { ex: 60 });
+      } catch (e) {}
     }
-  } catch (e) {
-    console.error("Redis write error in getCachedUser:", e);
+    return user;
+  } catch (err) {
+    console.error("Convex query error in getCachedUser:", err);
+    return null;
   }
-
-  return user;
 }
 
 export async function POST(request: NextRequest) {
   const body = await request.json();
-  const userId = body.state?.user_id;
+  const userId =
+    body.user_id ||
+    body.userId ||
+    body.state?.user_id ||
+    body.state?.userId;
 
   // 1. Rate Limiting (Fastest check)
   // Identify anonymous users by IP to prevent global rate-limit starvation
