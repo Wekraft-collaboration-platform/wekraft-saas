@@ -80,6 +80,28 @@ export function ChatbotNode({ nodeState, executionTime }: ChatbotNodeProps) {
                   {isAI ? "KAYA" : user?.name || "YOU"}
                 </span>
               </div>
+
+              {/* User message copy button */}
+              {!isAI && msg.content && (
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-5 w-5 text-muted-foreground/60 hover:text-white opacity-100 cursor-pointer"
+                  onClick={() =>
+                    copyToClipboard(
+                      typeof msg.content === "string" ? msg.content : "",
+                      msgId,
+                    )
+                  }
+                  title="Copy your message"
+                >
+                  {copiedId === msgId ? (
+                    <Check className="w-3 h-3 text-emerald-400" />
+                  ) : (
+                    <Copy className="w-3 h-3" />
+                  )}
+                </Button>
+              )}
             </div>
 
             {/* AI Sub-Agent & Tool Call Cards */}

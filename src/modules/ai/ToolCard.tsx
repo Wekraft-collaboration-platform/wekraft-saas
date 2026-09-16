@@ -29,6 +29,38 @@ const TOOL_META: Record<
     caller: "Kaya",
     colorClass: "bg-violet-500/25 text-primary",
   },
+  mcp_agent: {
+    label: "mcp agent",
+    caller: "Kaya",
+    colorClass: "bg-purple-500/30 text-purple-200 border border-purple-500/30",
+  },
+  mcp: {
+    label: "mcp agent",
+    caller: "Kaya",
+    colorClass: "bg-purple-500/30 text-purple-200 border border-purple-500/30",
+  },
+
+  // ── MCP Tools ────────────────────────────────────────────────────────────
+  linear_list_issues: {
+    label: "linear list issues",
+    caller: "MCP Agent",
+    colorClass: "bg-purple-600/30 text-purple-200 border border-purple-500/30",
+  },
+  slack_list_channels: {
+    label: "slack list channels",
+    caller: "MCP Agent",
+    colorClass: "bg-purple-600/30 text-purple-200 border border-purple-500/30",
+  },
+  calendly_get_availability: {
+    label: "calendly get availability",
+    caller: "MCP Agent",
+    colorClass: "bg-purple-600/30 text-purple-200 border border-purple-500/30",
+  },
+  notion_search: {
+    label: "notion search",
+    caller: "MCP Agent",
+    colorClass: "bg-purple-600/30 text-purple-200 border border-purple-500/30",
+  },
 
   // ── Project Analyst's Tools ───────────────────────────────────────────────
   get_tasks_summary: {
@@ -114,23 +146,46 @@ export interface ToolCallCardProps {
 }
 
 export function ToolCallCard({ toolName, caller, label }: ToolCallCardProps) {
+  const isMcp =
+    toolName === "mcp_agent" ||
+    toolName === "mcp" ||
+    caller?.toLowerCase().includes("mcp") ||
+    toolName.startsWith("linear_") ||
+    toolName.startsWith("slack_") ||
+    toolName.startsWith("calendly_") ||
+    toolName.startsWith("notion_") ||
+    toolName.startsWith("jira_") ||
+    toolName.startsWith("sentry_");
+
+  const defaultColorClass = isMcp
+    ? "bg-purple-600/25 text-purple-200 border border-purple-500/30"
+    : "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300";
+
   const meta = TOOL_META[toolName] ?? {
     label: label || toolName.replace(/_/g, " "),
-    caller: caller || "Agent",
-    colorClass:
-      "bg-neutral-100 text-neutral-700 dark:bg-neutral-800 dark:text-neutral-300",
+    caller: caller || (isMcp ? "MCP Agent" : "Agent"),
+    colorClass: defaultColorClass,
   };
 
   const finalCaller = caller || meta.caller;
   const finalLabel = label || meta.label;
+  const finalColorClass = meta.colorClass || defaultColorClass;
 
   return (
-    <div className="mx-4 my-1.5 px-3 py-1.5 border border-neutral-800 rounded-md bg-card text-xs tracking-tight text-muted-foreground flex items-center gap-3 w-fit animate-in fade-in duration-200">
-      <span className="font-medium text-neutral-300">{finalCaller}</span> called <MoveRight className="inline w-3 h-3 text-muted-foreground/70" />
+    <div
+      className={cn(
+        "mx-4 my-1.5 px-3 py-1.5 border rounded-md bg-card text-xs tracking-tight text-muted-foreground flex items-center gap-3 w-fit animate-in fade-in duration-200",
+        isMcp ? "border-purple-900/50 bg-purple-950/20" : "border-neutral-800",
+      )}
+    >
+      <span className={cn("font-medium", isMcp ? "text-purple-200" : "text-neutral-300")}>
+        {finalCaller}
+      </span>{" "}
+      called <MoveRight className="inline w-3 h-3 text-muted-foreground/70" />
       <div
         className={cn(
           "flex items-center gap-2 py-1 px-3 rounded-full text-xs",
-          meta.colorClass,
+          finalColorClass,
         )}
       >
         <span className="w-1.5 h-1.5 rounded-full bg-current opacity-70 animate-pulse" />
