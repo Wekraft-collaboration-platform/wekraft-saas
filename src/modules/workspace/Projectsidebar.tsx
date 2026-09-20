@@ -91,7 +91,6 @@ import { api } from "../../../convex/_generated/api";
 import type { Doc } from "../../../convex/_generated/dataModel";
 import { ThemeButtons } from "../dashboard/components/ThemeButton";
 import { useKayaStore } from "@/store/useKayaStore";
-import { useHarryStore } from "@/store/useHarryStore";
 import { ConnectorIcon } from "@/lib/mcp/connectors";
 
 const workspaceMenu = [
@@ -154,8 +153,6 @@ export default function ProjectSidebar() {
   const [_assistantOpen, setAssistantOpen] = useState(false);
   const isKayaOpen = useKayaStore((s) => s.isOpen);
   const setKayaOpen = useKayaStore((s) => s.setIsOpen);
-  const isHarryOpen = useHarryStore((s) => s.isOpen);
-  const setHarryOpen = useHarryStore((s) => s.setIsOpen);
   const { signOut } = useClerk();
   const { state, setOpen } = useSidebar();
   const isCollapsed = state === "collapsed";
@@ -170,7 +167,7 @@ export default function ProjectSidebar() {
   const project = useQuery(api.project.getProjectBySlug, { slug });
   const mcpConnections = useQuery(
     api.mcp.getConnectionsByProject,
-    project?._id ? { projectId: project._id } : "skip"
+    project?._id ? { projectId: project._id } : "skip",
   );
   const connectedApps = (mcpConnections || []).filter((c) => c.isConnected);
   const ownerProjects = useQuery(api.project.getUserProjects);
@@ -214,9 +211,9 @@ export default function ProjectSidebar() {
   };
 
   const matchesAi =
-    "ai assistant".includes(searchQuery.toLowerCase()) ||
+    "kaya ai".includes(searchQuery.toLowerCase()) ||
     "kaya".includes(searchQuery.toLowerCase()) ||
-    "harry".includes(searchQuery.toLowerCase()) ||
+    "ai".includes(searchQuery.toLowerCase()) ||
     "integrations".includes(searchQuery.toLowerCase()) ||
     "chatspace".includes(searchQuery.toLowerCase()) ||
     "ask ai".includes(searchQuery.toLowerCase());
@@ -477,109 +474,43 @@ export default function ProjectSidebar() {
             {/* =========AI ASSISTANT COLLAPSIBLE====== */}
             {!isCollapsed ? (
               <>
-                <Collapsible defaultOpen={false} className="group/collapsible">
-                  <SidebarMenuItem>
-                    <CollapsibleTrigger asChild>
-                      <SidebarMenuButton
-                        tooltip="AI Assistant"
-                        className="group relative overflow-hidden group-data-[collapsible=icon]:bg-transparent! cursor-pointer"
-                      >
-                        <div className="relative z-10 flex items-center gap-3 w-full text-sm group-data-[collapsible=icon]:justify-center">
-                          <Image
-                            src="/kaya.svg"
-                            alt="Logo"
-                            width={24}
-                            height={24}
-                          />
-
-                          <span
-                            className={cn(
-                              "group-data-[collapsible=icon]:hidden transition-colors text-foreground",
-                            )}
-                          >
-                            AI Assistant
-                          </span>
-                          <ChevronRight className="ml-auto h-4 w-4 transition-transform duration-200 group-data-[state=open]/collapsible:rotate-90 group-data-[collapsible=icon]:hidden text-primary!" />
-                        </div>
-                      </SidebarMenuButton>
-                    </CollapsibleTrigger>
-                    <CollapsibleContent>
-                      <SidebarMenuSub className="border-l border-dashed dark:border-neutral-400! border-muted-foreground ml-[21px] pl-3 gap-1.5">
-                        {/* Keyboard shortcut indicator */}
-                        <div className="flex items-center justify-between px-2.5 py-1 text-[10px] bg-muted rounded-md text-muted-foreground select-none">
-                          <span>Toggle AI Assistant</span>
-                          <div className="flex items-center gap-1">
-                            <Kbd className="bg-muted/50 font-sans text-[8px] px-1 py-0">
-                              Ctrl
-                            </Kbd>
-                            <span>+</span>
-                            <Kbd className="bg-muted/50 font-sans text-[8px] px-1 py-0">
-                              K
-                            </Kbd>
-                          </div>
-                        </div>
-
-                        {/* Kaya PM Agent */}
-                        <SidebarMenuSubItem>
-                          <SidebarMenuSubButton
-                            asChild
-                            isActive={isKayaOpen}
-                            className="group relative h-8 overflow-hidden cursor-pointer"
-                          >
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setHarryOpen(false);
-                                setKayaOpen(true);
-                              }}
-                              className="relative z-10 flex items-center w-full gap-2.5 bg-transparent border-0"
-                            >
-                              <Image
-                                src="/kaya.svg"
-                                alt="Kaya PM"
-                                width={16}
-                                height={16}
-                                className="shrink-0"
-                              />
-                              <span className="text-sm text-muted-foreground hover:text-foreground">
-                                Kaya PM Agent
-                              </span>
-                            </button>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-
-                        {/* Harry Dev Agent */}
-                        <SidebarMenuSubItem>
-                          <SidebarMenuSubButton
-                            asChild
-                            isActive={isHarryOpen}
-                            className="group relative h-8 overflow-hidden cursor-pointer"
-                          >
-                            <button
-                              type="button"
-                              onClick={() => {
-                                setKayaOpen(false);
-                                setHarryOpen(true);
-                              }}
-                              className="relative z-10 flex items-center w-full gap-2.5 bg-transparent border-0"
-                            >
-                              <Image
-                                src="/harry.svg"
-                                alt="Harry Dev"
-                                width={16}
-                                height={16}
-                                className="shrink-0"
-                              />
-                              <span className="text-sm text-muted-foreground hover:text-foreground">
-                                Harry Dev Agent
-                              </span>
-                            </button>
-                          </SidebarMenuSubButton>
-                        </SidebarMenuSubItem>
-                      </SidebarMenuSub>
-                    </CollapsibleContent>
-                  </SidebarMenuItem>
-                </Collapsible>
+                {/* KAYA AI */}
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    tooltip="Kaya AI (Ctrl+K)"
+                    isActive={isKayaOpen}
+                    className="group relative overflow-hidden cursor-pointer"
+                  >
+                    <button
+                      type="button"
+                      onClick={() => setKayaOpen(!isKayaOpen)}
+                      className="relative z-10 flex items-center justify-between w-full bg-transparent border-0"
+                    >
+                      <div className="flex items-center gap-2.5 min-w-0">
+                        <Image
+                          src="/kaya.svg"
+                          alt="Kaya AI"
+                          width={22}
+                          height={22}
+                          className="shrink-0"
+                        />
+                        <span className="text-sm font-semibold tracking-tight text-foreground font-pop">
+                          Kaya AI
+                        </span>
+                      </div>
+                      <div className="flex items-center gap-1 shrink-0 text-muted-foreground">
+                        <Kbd className="bg-muted/80 text-neutral-300 font-sans text-[9px] px-1.5 py-0.5 rounded border border-border/50 font-medium">
+                          Ctrl
+                        </Kbd>
+                        <span className="text-[10px] text-neutral-300">+</span>
+                        <Kbd className="bg-muted/80 text-muted-foreground font-sans text-[9px] px-1.5 py-0.5 rounded border border-border/50 font-medium">
+                          K
+                        </Kbd>
+                      </div>
+                    </button>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
 
                 {/* Integrations (outside AI Assistant) */}
                 <SidebarMenuItem>
@@ -641,45 +572,20 @@ export default function ProjectSidebar() {
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     asChild
-                    tooltip="Kaya PM Agent"
+                    tooltip="Kaya AI Assistant"
                     isActive={isKayaOpen}
                     className="group relative overflow-hidden cursor-pointer"
                   >
                     <button
                       type="button"
                       onClick={() => {
-                        setHarryOpen(false);
-                        setKayaOpen(true);
+                        setKayaOpen(!isKayaOpen);
                       }}
                       className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center bg-transparent border-0"
                     >
                       <Image
                         src="/kaya.svg"
-                        alt="Kaya PM"
-                        width={24}
-                        height={24}
-                      />
-                    </button>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-                <SidebarMenuItem>
-                  <SidebarMenuButton
-                    asChild
-                    tooltip="Harry Dev Agent"
-                    isActive={isHarryOpen}
-                    className="group relative overflow-hidden cursor-pointer"
-                  >
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setKayaOpen(false);
-                        setHarryOpen(true);
-                      }}
-                      className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center bg-transparent border-0"
-                    >
-                      <Image
-                        src="/harry.svg"
-                        alt="Harry Dev"
+                        alt="Kaya AI"
                         width={24}
                         height={24}
                       />

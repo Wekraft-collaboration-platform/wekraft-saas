@@ -73,7 +73,6 @@ import {
 import { AnimatePresence, motion } from "framer-motion";
 
 import { useKayaStore } from "@/store/useKayaStore";
-import { useHarryStore } from "@/store/useHarryStore";
 import { useUpgradeModalStore } from "@/store/useUpgradeModalStore";
 import { useVoiceInput } from "@/modules/ai/useVoiceInput";
 import { EmbeddedVoiceWaveform } from "@/modules/ai/VoiceInputBar";
@@ -130,21 +129,6 @@ const KayaLoader = () => (
 
 export function AiAssistantSheet({}: AiAssistantSheetProps) {
   const { isOpen, setIsOpen, threadId, createNewSession } = useKayaStore();
-  const currentUser = useQuery(api.user.getCurrentUser);
-  const userId = currentUser?._id;
-  const userName = currentUser?.name || "User";
-
-  const searchParams = useSearchParams();
-  const isHarryActive = searchParams?.get("harry") === "true";
-  const router = useRouter();
-
-  // Mutually exclusive sheets
-  useEffect(() => {
-    if (isOpen) {
-      useHarryStore.getState().setIsOpen(false);
-    }
-  }, [isOpen]);
-
   const params = useParams();
   const slug = params?.slug as string;
   const project = useQuery(
@@ -156,10 +140,12 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
     api.mcp.getConnectionsByProject,
     projectId ? { projectId } : "skip",
   );
+  const currentUser = useQuery(api.user.getCurrentUser);
+  const userId = currentUser?._id;
+  const userName = currentUser?.name || "User";
+
   const kayaConnectedApps = (mcpConnections || []).filter(
-    (c) =>
-      c.isConnected &&
-      (c.agent === "kaya" || CONNECTOR_META[c.connectorId]?.agent === "kaya"),
+    (c) => c.isConnected,
   );
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
@@ -317,14 +303,13 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
   useEffect(() => {
     const down = (e: KeyboardEvent) => {
       if (e.key === "k" && (e.metaKey || e.ctrlKey)) {
-        if (isHarryActive) return; // Let Harry's sheet handle it
         e.preventDefault();
         setIsOpen(!isOpen);
       }
     };
     document.addEventListener("keydown", down);
     return () => document.removeEventListener("keydown", down);
-  }, [isOpen, setIsOpen, isHarryActive]);
+  }, [isOpen, setIsOpen]);
 
   // Focus input when not running
   useEffect(() => {
@@ -411,6 +396,7 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
   const renderNode = (
     checkpoint: AppCheckpoint<AgentState, InterruptValue>,
     node: GraphNode<AgentState>,
+    nodeIndex: number = 0,
   ): React.ReactNode => {
     switch (node.name) {
       case "__start__":
@@ -424,9 +410,12 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
       case "tools":
       case "sprint_add_items":
       case "scheduler_setup": {
-        const interrupt = checkpoint.interruptValue as
-          | InterruptValue
-          | undefined;
+        // Only render checkpoint-level HITL interrupt on the first node to avoid duplicate cards
+        // when multiple parallel workers (e.g. analyst + db_write) are in the checkpoint
+        const interrupt =
+          nodeIndex === 0
+            ? (checkpoint.interruptValue as InterruptValue | undefined)
+            : undefined;
 
         // ── Task & Issue Creation HITL ──
         if (
@@ -546,8 +535,7 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
             </div>
 
             <div className="flex items-center gap-4">
-              {/* If messages */}
-              {appCheckpoints.length > 0 ? (
+              {appCheckpoints.length > 0 && (
                 <Button
                   className="text-[11px] cursor-pointer"
                   size="sm"
@@ -558,19 +546,6 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                   }}
                 >
                   new <MessageSquare className="h-3! w-3!" />
-                </Button>
-              ) : (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  className="text-[11px] shrink-0 cursor-pointer flex items-center gap-1.5"
-                  onClick={() => {
-                    setIsOpen(false);
-                    useHarryStore.getState().setIsOpen(true);
-                  }}
-                >
-                  <img src="/harry.svg" alt="Harry" width={18} height={18} />
-                  Open Harry
                 </Button>
               )}
             </div>
@@ -659,7 +634,7 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                     <div
                       key={`${checkpoint.checkpointConfig?.configurable?.checkpoint_id || cpIndex}-${i}`}
                     >
-                      {renderNode(checkpoint, node)}
+                      {renderNode(checkpoint, node, i)}
                     </div>
                   ))}
 
@@ -918,26 +893,6 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                   className="h-12 rounded-xl bg-sidebar pr-36 pl-11"
                 />
                 <div className="flex items-center gap-2 absolute right-2 top-2">
-                  {status === "running" ? (
-                    <Button
-                      size="icon"
-                      variant="destructive"
-                      className=" h-8 w-8"
-                      onClick={() => stop(threadId)}
-                    >
-                      <Square className="h-3 w-3!" />
-                    </Button>
-                  ) : (
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      className=" h-8 w-8"
-                      onClick={() => sendMessage(inputValue)}
-                      disabled={!inputValue.trim() || restoring || isDocParsing}
-                    >
-                      <Send className="h-3 w-3!" />
-                    </Button>
-                  )}
                   <TooltipProvider>
                     <Tooltip>
                       <TooltipTrigger asChild>
@@ -971,6 +926,26 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                       </TooltipContent>
                     </Tooltip>
                   </TooltipProvider>
+                  {status === "running" ? (
+                    <Button
+                      size="icon"
+                      variant="destructive"
+                      className=" h-8 w-8"
+                      onClick={() => stop(threadId)}
+                    >
+                      <Square className="h-3 w-3!" />
+                    </Button>
+                  ) : (
+                    <Button
+                      size="icon"
+                      variant="outline"
+                      className=" h-8 w-8"
+                      onClick={() => sendMessage(inputValue)}
+                      disabled={!inputValue.trim() || restoring || isDocParsing}
+                    >
+                      <Send className="h-3 w-3!" />
+                    </Button>
+                  )}
                 </div>
               </>
             )}

@@ -56,13 +56,13 @@ export function VoiceInputBar({
   return (
     <div className={cn("relative flex items-center gap-2 w-full", className)}>
       {isActive ? (
-        <div className="flex items-center gap-3 w-full bg-sidebar border border-indigo-500/30 rounded-xl px-3 py-2 animate-in fade-in duration-200 shadow-inner">
+        <div className="flex items-center gap-3 w-full bg-sidebar border border-border rounded-xl px-3 py-2 animate-in fade-in duration-200 shadow-inner">
           <div className="flex items-center gap-2">
             {isTranscribing ? (
-              <Loader2 className="w-4 h-4 text-indigo-400 animate-spin" />
+              <Loader2 className="w-4 h-4 text-neutral-400 animate-spin" />
             ) : (
               <span className="relative flex h-3 w-3">
-                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                <span className=" absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-red-500"></span>
               </span>
             )}
@@ -163,7 +163,7 @@ export function EmbeddedVoiceWaveform({
   onStop: () => void;
 }) {
   return (
-    <div className="flex items-center gap-3 w-full h-12 bg-neutral-900/95 backdrop-blur-md border border-indigo-500/40 rounded-xl px-3 shadow-lg animate-in fade-in duration-200">
+    <div className="flex items-center gap-3 w-full h-12 bg-neutral-900/95 backdrop-blur-md border border-border rounded-xl px-3 shadow-sm animate-in fade-in duration-200">
       <div className="flex items-center gap-2 shrink-0">
         {isTranscribing ? (
           <Loader2 className="w-4 h-4 text-indigo-400 animate-spin" />
@@ -208,7 +208,7 @@ export function EmbeddedVoiceWaveform({
           size="icon"
           onClick={onStop}
           disabled={isTranscribing}
-          className="h-7 w-7 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg cursor-pointer shadow-sm"
+          className="h-7 w-7 bg-white text-neutral-800 rounded-md cursor-pointer shadow-sm"
           title="Finish & Transcribe"
         >
           <Check className="w-3.5 h-3.5" />

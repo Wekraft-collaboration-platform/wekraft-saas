@@ -64,7 +64,7 @@ export function TaskApprovalCard({
 
   if (isCompleted) {
     return (
-      <div className="my-2 mx-4 px-3 py-1.5 w-fit rounded-lg border border-emerald-500/20 bg-emerald-500/10 text-emerald-400 text-xs flex items-center gap-2">
+      <div className="my-2 mx-4 px-3 py-1.5 w-fit rounded-lg border border-emerald-500/20 bg-emerald-500/10 text-neutral-300 text-xs flex items-center gap-2">
         <CheckCheck className="w-3.5 h-3.5" />
         <span className="font-medium">
           Action Approved ({items.length}{" "}
@@ -95,7 +95,7 @@ export function TaskApprovalCard({
             <span>Completed</span>
           </span>
         ) : (
-          <span className="text-xs font-medium text-blue-400 flex items-center gap-1.5">
+          <span className="text-xs flex items-center gap-1.5">
             <AlertCircle className="w-3.5 h-3.5" />
             <span>Approval Required</span>
           </span>
@@ -198,7 +198,7 @@ export function TaskApprovalCard({
           <div className="flex items-center gap-2">
             <Button
               variant="outline"
-              size="sm"
+              size="xs"
               onClick={() => handleAction({ action: "cancel" })}
               disabled={isLoading}
               className="text-[11px] h-7 px-3 cursor-pointer hover:bg-muted/80"

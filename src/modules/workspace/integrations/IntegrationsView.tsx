@@ -8,7 +8,7 @@ import { toast } from "sonner";
 import { format } from "date-fns";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Blocks, CheckCircle2, Clock, UserCheck } from "lucide-react";
+import { Blocks, CheckCircle2, Clock, Search, UserCheck } from "lucide-react";
 import { api } from "../../../../convex/_generated/api";
 
 interface IntegrationItem {
@@ -16,7 +16,7 @@ interface IntegrationItem {
   name: string;
   category: string;
   logo: string;
-  agent: "kaya" | "harry";
+  agent: "kaya";
   status: "available" | "coming_soon";
 }
 
@@ -61,15 +61,12 @@ const KAYA_INTEGRATIONS: IntegrationItem[] = [
     agent: "kaya",
     status: "available",
   },
-];
-
-const HARRY_INTEGRATIONS: IntegrationItem[] = [
   {
     id: "sentry",
     name: "Sentry",
     category: "Error Tracking",
     logo: "/sentry.svg",
-    agent: "harry",
+    agent: "kaya",
     status: "available",
   },
   {
@@ -77,36 +74,114 @@ const HARRY_INTEGRATIONS: IntegrationItem[] = [
     name: "GitHub",
     category: "Codebase & PRs",
     logo: "/github.png",
-    agent: "harry",
+    agent: "kaya",
     status: "coming_soon",
+  },
+  {
+    id: "stripe",
+    name: "Stripe",
+    category: "Payments & Billing",
+    logo: "/stripe.svg",
+    agent: "kaya",
+    status: "coming_soon",
+  },
+  {
+    id: "hubspot",
+    name: "HubSpot",
+    category: "CRM & Marketing",
+    logo: "/hubsport.svg",
+    agent: "kaya",
+    status: "available",
   },
   {
     id: "vercel",
     name: "Vercel",
     category: "Deployments",
     logo: "vercel",
-    agent: "harry",
+    agent: "kaya",
+    status: "available",
+  },
+  {
+    id: "asana",
+    name: "Asana",
+    category: "Project Management",
+    logo: "/asana-logo.svg",
+    agent: "kaya",
+    status: "coming_soon",
+  },
+  {
+    id: "amplitude",
+    name: "Amplitude",
+    category: "Product Analytics",
+    logo: "/amplitude.svg",
+    agent: "kaya",
+    status: "coming_soon",
+  },
+  {
+    id: "plane",
+    name: "Plane",
+    category: "Project Tracking",
+    logo: "/plane-so logo.png",
+    agent: "kaya",
     status: "coming_soon",
   },
   {
     id: "datadog",
     name: "Datadog",
     category: "Observability",
-    logo: "/datadog.png",
-    agent: "harry",
+    logo: "/dd-logo.svg",
+    agent: "kaya",
     status: "coming_soon",
   },
   {
     id: "betterstack",
     name: "Better Stack",
     category: "Logs & Incidents",
-    logo: "/betterstack.png",
-    agent: "harry",
+    logo: "/beter-stack.svg",
+    agent: "kaya",
+    status: "coming_soon",
+  },
+  {
+    id: "posthog",
+    name: "PostHog",
+    category: "Product Analytics",
+    logo: "/posthog.svg",
+    agent: "kaya",
+    status: "coming_soon",
+  },
+  {
+    id: "supabase",
+    name: "Supabase",
+    category: "Backend Database",
+    logo: "/supabase.png",
+    agent: "kaya",
+    status: "coming_soon",
+  },
+  {
+    id: "neon",
+    name: "Neon",
+    category: "Serverless Postgres",
+    logo: "/neon.png",
+    agent: "kaya",
+    status: "coming_soon",
+  },
+  {
+    id: "gitlab",
+    name: "GitLab",
+    category: "CI/CD & Code",
+    logo: "/gitlab.svg",
+    agent: "kaya",
+    status: "coming_soon",
+  },
+  {
+    id: "cloudflare",
+    name: "Cloudflare",
+    category: "DNS & Edge Hosting",
+    logo: "/cloudfare_black.svg",
+    agent: "kaya",
     status: "coming_soon",
   },
 ];
-
-const ALL_INTEGRATIONS = [...KAYA_INTEGRATIONS, ...HARRY_INTEGRATIONS];
 
 export const IntegrationsView = () => {
   const params = useParams();
@@ -115,6 +190,7 @@ export const IntegrationsView = () => {
   const slug = params?.slug as string | undefined;
 
   const [activeTab, setActiveTab] = useState<"all" | "connected">("all");
+  const [searchQuery, setSearchQuery] = useState("");
 
   const project = useQuery(
     api.project.getProjectBySlug,
@@ -213,6 +289,19 @@ export const IntegrationsView = () => {
         </div>
       );
     }
+    if (item.id === "betterstack") {
+      return (
+        <div className="w-9 h-9 rounded-lg border border-border/60 flex items-center justify-center shrink-0 overflow-hidden bg-transparent">
+          <Image
+            src={item.logo}
+            alt={item.name}
+            width={36}
+            height={36}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      );
+    }
     if (item.id === "calendly") {
       return (
         <div className="w-9 h-9 rounded-lg bg-neutral-900 border border-border/60 flex items-center justify-center shrink-0 overflow-hidden">
@@ -221,6 +310,45 @@ export const IntegrationsView = () => {
             alt={item.name}
             width={36}
             height={36}
+            className="object-contain"
+          />
+        </div>
+      );
+    }
+    if (item.id === "stripe") {
+      return (
+        <div className="w-9 h-9 rounded-lg bg-white border border-border/60 flex items-center justify-center p-0.5 shrink-0 overflow-hidden">
+          <Image
+            src={item.logo}
+            alt={item.name}
+            width={32}
+            height={32}
+            className="object-contain"
+          />
+        </div>
+      );
+    }
+    if (item.id === "datadog" || item.id === "cloudflare") {
+      return (
+        <div className="w-9 h-9 rounded-lg bg-white border border-border/60 flex items-center justify-center p-1 shrink-0 overflow-hidden">
+          <Image
+            src={item.logo}
+            alt={item.name}
+            width={item.id === "datadog" ? 30 : 28}
+            height={item.id === "datadog" ? 30 : 28}
+            className="object-contain"
+          />
+        </div>
+      );
+    }
+    if (item.id === "hubspot" || item.id === "plane") {
+      return (
+        <div className="w-9 h-9 rounded-lg bg-neutral-900 border border-border/60 flex items-center justify-center p-0.5 shrink-0 overflow-hidden">
+          <Image
+            src={item.logo}
+            alt={item.name}
+            width={32}
+            height={32}
             className="object-contain"
           />
         </div>
@@ -341,7 +469,7 @@ export const IntegrationsView = () => {
                     <Button
                       size="sm"
                       onClick={() => handleOAuthConnect(item.id)}
-                      className="h-8 text-xs px-3 bg-amber-500/90 hover:bg-amber-500 text-neutral-950 font-medium"
+                      className="h-8 text-[10px] px-2 bg-neutral-900! border border-neutral-700 text-neutral-300 font-medium"
                     >
                       Reconnect
                     </Button>
@@ -349,7 +477,7 @@ export const IntegrationsView = () => {
                       size="sm"
                       variant="outline"
                       onClick={() => handleDisconnect(item.id)}
-                      className="h-8 text-[11px] px-2.5 text-red-400 bg-neutral-950!"
+                      className="h-8 text-[10px] px-2 text-neutral-300 bg-neutral-900!"
                     >
                       Remove
                     </Button>
@@ -357,7 +485,7 @@ export const IntegrationsView = () => {
                 ) : (
                   <Badge
                     variant="outline"
-                    className="text-[10px] px-2 py-0.5 text-amber-400 border-amber-500/40 font-normal"
+                    className="text-[10px] px-2 py-0.5 text-neutral-300  font-normal"
                   >
                     Expired
                   </Badge>
@@ -369,7 +497,7 @@ export const IntegrationsView = () => {
                   size="sm"
                   variant="outline"
                   onClick={() => handleDisconnect(item.id)}
-                  className="h-8 text-[11px] px-3 text-red-400 bg-neutral-950!"
+                  className="h-8 text-[11px] px-3 text-neutral-300 bg-neutral-900!"
                 >
                   Remove
                 </Button>
@@ -405,15 +533,15 @@ export const IntegrationsView = () => {
     );
   };
 
-  const kayaList =
+  const kayaList = (
     activeTab === "all"
       ? KAYA_INTEGRATIONS
-      : KAYA_INTEGRATIONS.filter((item) => isConnected(item.id));
-
-  const harryList =
-    activeTab === "all"
-      ? HARRY_INTEGRATIONS
-      : HARRY_INTEGRATIONS.filter((item) => isConnected(item.id));
+      : KAYA_INTEGRATIONS.filter((item) => isConnected(item.id))
+  ).filter(
+    (item) =>
+      item.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      item.category.toLowerCase().includes(searchQuery.toLowerCase()),
+  );
 
   return (
     <div className="w-full h-full min-h-screen p-6 md:p-8 space-y-8 bg-background">
@@ -421,12 +549,11 @@ export const IntegrationsView = () => {
       <div className="border-b border-border/50 pb-5 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
         <div className="space-y-1">
           <h1 className="text-2xl font-semibold tracking-tight text-foreground flex items-center gap-2">
-            <Blocks className="h-6 w-6 inline" /> MCP Connecters
+            <Blocks className="h-6 w-6 inline" /> MCP Connectors
           </h1>
           <p className="text-sm text-muted-foreground">
-            Connect the tools your agents use every day. Give Kaya and Harry{" "}
-            <br />
-            secure, permissioned access to your workspace data.
+            Connect the tools your agent uses every day. Give Kaya secure,
+            permissioned access to your workspace data.
           </p>
         </div>
 
@@ -462,6 +589,29 @@ export const IntegrationsView = () => {
         </div>
       </div>
 
+      {/* Top Center Search Bar above Kaya Integrations */}
+      <div className="flex justify-center w-full">
+        <div className="relative w-full max-w-md">
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+          <input
+            type="text"
+            placeholder="Search integrations..."
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+            className="w-full bg-neutral-900 border border-border/60 rounded-lg pl-10 pr-4 py-2 text-sm text-foreground placeholder:text-muted-foreground/60 focus:outline-none focus:border-border transition-colors"
+          />
+          {searchQuery && (
+            <button
+              type="button"
+              onClick={() => setSearchQuery("")}
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-muted-foreground hover:text-foreground"
+            >
+              Clear
+            </button>
+          )}
+        </div>
+      </div>
+
       {activeTab === "connected" && connectedCount === 0 ? (
         <div className="flex flex-col items-center justify-center py-16 text-center space-y-3 border border-dashed border-border/60 rounded-xl bg-neutral-950/40">
           <div className="w-10 h-10 rounded-full bg-neutral-900 flex items-center justify-center text-muted-foreground">
@@ -472,9 +622,9 @@ export const IntegrationsView = () => {
               No integrations connected yet
             </h3>
             <p className="text-xs text-muted-foreground max-w-sm">
-              Switch back to the{" "}
-              <strong className="text-foreground">ALL</strong> tab to connect
-              Linear, Notion, Slack, Calendly, or Sentry to your workspace.
+              Switch back to the <strong className="text-foreground">ALL</strong> tab
+              to connect Linear, Notion, Slack, Calendly, or Sentry to your
+              workspace.
             </p>
           </div>
           <Button
@@ -486,44 +636,30 @@ export const IntegrationsView = () => {
             View All Connectors
           </Button>
         </div>
+      ) : searchQuery && kayaList.length === 0 ? (
+        <div className="flex flex-col items-center justify-center py-16 text-center space-y-2 border border-dashed border-border/60 rounded-xl bg-neutral-950/40">
+          <p className="text-sm font-medium text-foreground">
+            No integrations found
+          </p>
+          <p className="text-xs text-muted-foreground">
+            No connectors matched &quot;{searchQuery}&quot;
+          </p>
+        </div>
       ) : (
-        <>
-          {/* Kaya Integrations */}
-          {(activeTab === "all" || kayaList.length > 0) && (
-            <div className="space-y-3">
-              <div className="flex items-center gap-2">
-                <Image src="/kaya.svg" alt="Kaya" width={18} height={18} />
-                <h2 className="text-sm font-semibold text-foreground">
-                  Kaya Integrations{" "}
-                  <span className="text-xs text-muted-foreground font-normal">
-                    ({kayaList.length})
-                  </span>
-                </h2>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {kayaList.map(renderCard)}
-              </div>
-            </div>
-          )}
-
-          {/* Harry Integrations */}
-          {(activeTab === "all" || harryList.length > 0) && (
-            <div className="space-y-3 pt-2">
-              <div className="flex items-center gap-2">
-                <Image src="/harry.svg" alt="Harry" width={18} height={18} />
-                <h2 className="text-sm font-semibold text-foreground">
-                  Harry Integrations{" "}
-                  <span className="text-xs text-muted-foreground font-normal">
-                    ({harryList.length})
-                  </span>
-                </h2>
-              </div>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
-                {harryList.map(renderCard)}
-              </div>
-            </div>
-          )}
-        </>
+        <div className="space-y-3">
+          <div className="flex items-center gap-2">
+            <Image src="/kaya.svg" alt="Kaya" width={26} height={26} />
+            <h2 className="text-[16px] font-semibold text-foreground">
+              Kaya Integrations{" "}
+              <span className="text-xs text-muted-foreground font-normal">
+                ({kayaList.length})
+              </span>
+            </h2>
+          </div>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+            {kayaList.map(renderCard)}
+          </div>
+        </div>
       )}
     </div>
   );

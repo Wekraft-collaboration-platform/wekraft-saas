@@ -6,7 +6,7 @@ export interface ConnectorInfo {
   name: string;
   category: string;
   logo: string;
-  agent: "kaya" | "harry";
+  agent: "kaya";
 }
 
 export const CONNECTOR_META: Record<string, ConnectorInfo> = {
@@ -50,35 +50,42 @@ export const CONNECTOR_META: Record<string, ConnectorInfo> = {
     name: "Sentry",
     category: "Error Tracking",
     logo: "/sentry.svg",
-    agent: "harry",
+    agent: "kaya",
   },
   github: {
     id: "github",
     name: "GitHub",
     category: "Codebase & PRs",
     logo: "/github.png",
-    agent: "harry",
+    agent: "kaya",
   },
   vercel: {
     id: "vercel",
     name: "Vercel",
     category: "Deployments",
     logo: "vercel",
-    agent: "harry",
+    agent: "kaya",
   },
   datadog: {
     id: "datadog",
     name: "Datadog",
     category: "Observability",
     logo: "/datadog.png",
-    agent: "harry",
+    agent: "kaya",
+  },
+  hubspot: {
+    id: "hubspot",
+    name: "HubSpot",
+    category: "CRM & Marketing",
+    logo: "/hubsport.svg",
+    agent: "kaya",
   },
   betterstack: {
     id: "betterstack",
     name: "Better Stack",
     category: "Logs & Incidents",
     logo: "/betterstack.png",
-    agent: "harry",
+    agent: "kaya",
   },
 };
 
