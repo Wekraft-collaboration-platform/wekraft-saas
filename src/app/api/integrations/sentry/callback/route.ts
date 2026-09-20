@@ -57,10 +57,14 @@ export async function GET(req: NextRequest) {
       accessToken
     );
 
+    const tokenExpiresAt = tokens.expires_in
+      ? Date.now() + tokens.expires_in * 1000
+      : Date.now() + 8 * 3600 * 1000;
+
     await convex.mutation(api.mcp.saveOAuthConnection, {
       projectId,
       connectorId: "sentry",
-      agent: "harry",
+      agent: "kaya",
       accessToken,
       userId,
       userName: userName ? decodeURIComponent(userName) : undefined,
@@ -69,6 +73,7 @@ export async function GET(req: NextRequest) {
         toolsCount: toolsCount || undefined,
         tools: tools.length > 0 ? tools : undefined,
         mcpUrl: "https://mcp.sentry.dev/mcp",
+        tokenExpiresAt,
       },
     });
 

@@ -686,20 +686,29 @@ export function useLangGraphAgent<
   }
 
   function getStateDiff(
-    stateOld: TAgentState,
-    stateNew: TAgentState,
+    stateOld: TAgentState | null | undefined,
+    stateNew: TAgentState | null | undefined,
   ): TAgentState {
-    const diff = {} as TAgentState;
+    if (!stateOld) return (stateNew ? deepCopy(stateNew) : {}) as TAgentState;
+    if (!stateNew) return {} as TAgentState;
 
-    // Get all keys from old state (structure should be the same in both states)
+    const diff = {} as TAgentState;
     const keys = Object.keys(stateOld);
 
     for (const key of keys) {
       const oldValue = (stateOld as any)[key];
       const newValue = (stateNew as any)[key];
 
+      if (newValue === undefined) {
+        continue;
+      }
+
       // Handle arrays - only include new items
       if (Array.isArray(oldValue)) {
+        if (!Array.isArray(newValue)) {
+          (diff as any)[key] = newValue;
+          continue;
+        }
         const newItems = newValue.filter(
           (newItem: any) =>
             !oldValue.some(
@@ -713,7 +722,11 @@ export function useLangGraphAgent<
 
       // For objects, recursively compute diff
       if (typeof oldValue === "object" && oldValue !== null) {
-        (diff as any)[key] = getStateDiff(oldValue, newValue);
+        if (typeof newValue === "object" && newValue !== null) {
+          (diff as any)[key] = getStateDiff(oldValue, newValue);
+        } else {
+          (diff as any)[key] = newValue;
+        }
       }
       // For primitive values, include both changed and unchanged
       else {
