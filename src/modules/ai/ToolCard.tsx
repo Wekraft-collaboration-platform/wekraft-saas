@@ -25,7 +25,7 @@ const TOOL_META: Record<
     colorClass: "bg-blue-500/25 text-primary",
   },
   db_write_agent: {
-    label: "DB & Memory agent",
+    label: "DB Write agent",
     caller: "Kaya",
     colorClass: "bg-violet-500/25 text-primary",
   },
@@ -116,12 +116,7 @@ const TOOL_META: Record<
     colorClass: "bg-blue-600/20 text-primary/80",
   },
 
-  // ── DB Write & Memory Tools ───────────────────────────────────────────────
-  search_user_memory: {
-    label: "Searching user memory",
-    caller: "DB Write agent",
-    colorClass: "bg-emerald-500/20 text-emerald-300",
-  },
+  // ── DB Write Tools ────────────────────────────────────────────────────────
   get_scheduler: {
     label: "Checking scheduler",
     caller: "DB Write agent",
