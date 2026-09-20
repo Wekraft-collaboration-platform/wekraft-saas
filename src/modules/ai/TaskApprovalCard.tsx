@@ -145,24 +145,24 @@ export function TaskApprovalCard({
             return (
               <div
                 key={idx}
-                className="flex flex-col p-1.5 rounded-sm border border-border/60 bg-card/60 hover:bg-card/90 transition-colors"
+                className="flex flex-col p-2 rounded-lg border border-border/60 bg-card/60 hover:bg-card/90 transition-colors gap-1"
               >
                 <div className="flex items-start justify-between gap-2">
                   <div className="flex items-center gap-2 flex-1 min-w-0">
                     <div className="w-5 h-5 rounded-md bg-muted flex items-center justify-center shrink-0">
                       {isIssue ? (
-                        <AlertTriangle className="w-3 h-3 text-rose-400" />
+                        <AlertTriangle className="w-3.5 h-3.5 text-rose-400" />
                       ) : (
-                        <ListTodo className="w-3 h-3 text-blue-400" />
+                        <ListTodo className="w-3.5 h-3.5 text-blue-400" />
                       )}
                     </div>
-                    <p className="text-xs font-medium text-foreground truncate leading-tight">
+                    <p className="text-xs font-semibold text-foreground truncate leading-tight">
                       {item.title}
                     </p>
                   </div>
                   <span
                     className={cn(
-                      "px-1.5 py-0.5 rounded text-[9px]  border  shrink-0",
+                      "px-1.5 py-0.5 rounded text-[10px] font-medium border shrink-0",
                       badge.className,
                     )}
                   >
@@ -170,11 +170,11 @@ export function TaskApprovalCard({
                   </span>
                 </div>
 
-                {/* {item.description && (
+                {item.description && (
                   <p className="text-[11px] text-muted-foreground line-clamp-2 pl-7 leading-relaxed">
                     {item.description}
                   </p>
-                )} */}
+                )}
               </div>
             );
           })

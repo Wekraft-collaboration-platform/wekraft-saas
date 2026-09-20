@@ -3,17 +3,15 @@
 import React, { useState, useRef, useMemo, useEffect } from "react";
 import Image from "next/image";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useKayaStore } from "@/store/useKayaStore";
 import {
-  Upload,
   Mic,
   Send,
   Plus,
   Activity,
   Mail,
   FileUp,
-  GitPullRequest,
-  Zap,
-  Sparkles,
   ChevronDown,
   Check,
   FolderCode,
@@ -72,11 +70,11 @@ const CONNECTOR_INFO: Record<
 };
 
 export function AgentDashboardView() {
-  const [activeTab, setActiveTab] = useState<"kaya" | "harry">("kaya");
+  const router = useRouter();
+  const setIsKayaOpen = useKayaStore((s) => s.setIsOpen);
   const [prompt, setPrompt] = useState("");
   const [isRightSidebarExpanded, setIsRightSidebarExpanded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
-  const isKaya = activeTab === "kaya";
 
   // Fetch all user projects with task and issue counts
   const projectsOverview = useQuery(api.project.getAgentProjectsOverview);
@@ -161,35 +159,6 @@ export function AgentDashboardView() {
     },
   ];
 
-  const harryTemplates: TemplateItem[] = [
-    {
-      title: "Codebase & blockers audit",
-      body: "Audit repository codebase and identify blockers",
-      prompt: "Audit repository codebase and identify blockers.",
-      icon: (
-        <GitPullRequest className="w-4 h-4 text-zinc-400 group-hover:text-zinc-200 transition-colors" />
-      ),
-    },
-    {
-      title: "Sprint retrospective",
-      body: "Generate sprint retrospective and action items",
-      prompt: "Generate sprint retrospective and action items.",
-      icon: (
-        <Zap className="w-4 h-4 text-zinc-400 group-hover:text-zinc-200 transition-colors" />
-      ),
-    },
-    {
-      title: "PR & release notes",
-      body: "Analyze pull request changes and write release notes",
-      prompt: "Analyze pull request changes and write release notes.",
-      icon: (
-        <Sparkles className="w-4 h-4 text-zinc-400 group-hover:text-zinc-200 transition-colors" />
-      ),
-    },
-  ];
-
-  const currentTemplates = isKaya ? kayaTemplates : harryTemplates;
-
   return (
     <div className="flex flex-col lg:flex-row items-start w-full min-h-[calc(100vh-120px)] relative">
       {/* Center Agent Interface */}
@@ -264,85 +233,36 @@ export function AgentDashboardView() {
         <div className="flex items-center gap-3 mb-8 mt-12 sm:mt-8">
           <div className="relative w-9 h-9 flex items-center justify-center">
             <Image
-              src={isKaya ? "/kaya.svg" : "/harry.svg"}
-              alt={isKaya ? "Kaya" : "Harry"}
+              src="/kaya.svg"
+              alt="Kaya"
               width={36}
               height={36}
               className="object-contain"
             />
           </div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            {isKaya ? "Kaya" : "Harry"}
+            Kaya
           </h1>
         </div>
 
         {/* Card Wrapper */}
         <div className="w-full max-w-[760px]">
-          {/* Top Attached Tabs */}
-          <div className="flex items-end pl-2.5 -mb-[1px]">
-            {/* Ask Kaya Tab */}
-            <button
-              type="button"
-              onClick={() => setActiveTab("kaya")}
-              className={cn(
-                "flex items-center gap-2 px-5 py-1.5 rounded-t-xl text-[13px] font-semibold tracking-tight transition-all cursor-pointer ",
-                isKaya
-                  ? "bg-gradient-to-r from-[#ec85bd] via-[#d8b4fe] to-[#75cbf8] text-zinc-950 border-transparent z-10"
-                  : "bg-zinc-800 text-zinc-300 hover:text-zinc-200 border-zinc-800",
-              )}
-            >
-              <div className="relative w-5 h-5 flex items-center justify-center shrink-0">
-                <Image
-                  src="/kaya.svg"
-                  alt="Kaya"
-                  width={35}
-                  height={35}
-                  className="object-cover"
-                />
-              </div>
-              <span>Ask Kaya</span>
-            </button>
-
-            {/* Ask Harry Tab */}
-            <button
-              type="button"
-              onClick={() => setActiveTab("harry")}
-              className={cn(
-                "flex items-center gap-2 px-5 py-1.5 rounded-t-xl text-[13px] font-semibold tracking-tight transition-all cursor-pointer",
-                !isKaya
-                  ? "bg-gradient-to-r from-[#d19e64] via-[#d5c442] to-[#e6dd97] text-zinc-950 border-transparent z-10"
-                  : "bg-zinc-800 text-zinc-300 hover:text-zinc-200 border-zinc-700!",
-              )}
-            >
-              <div className="relative w-5 h-5 flex items-center justify-center shrink-0">
-                <Image
-                  src="/harry.svg"
-                  alt="Harry"
-                  width={35}
-                  height={35}
-                  className="object-contain"
-                />
-              </div>
-              <span>Ask Harry</span>
-            </button>
-          </div>
-
           {/* Main Box - Fully rounded on all sides */}
-          <div
-            className={cn(
-              "relative w-full rounded-2xl! bg-[#09090b] border-[1.5px] overflow-hidden!",
-              isKaya ? "border-[#d8b4fe]/70" : "border-[#fed7aa]/70",
-            )}
-          >
+          <div className="relative w-full rounded-2xl! bg-[#09090b] border-[1.5px] border-[#d8b4fe]/70 overflow-hidden!">
             {/* Input area */}
             <textarea
               value={prompt}
               onChange={(e) => setPrompt(e.target.value)}
-              placeholder={
-                isKaya
-                  ? "Ask Kaya anything about your project..."
-                  : "Ask Harry anything about your codebase..."
-              }
+              onKeyDown={(e) => {
+                if (e.key === "Enter" && !e.shiftKey) {
+                  e.preventDefault();
+                  if (prompt.trim() && selectedProject) {
+                    setIsKayaOpen(true);
+                    router.push(`/dashboard/my-projects/${selectedProject.slug}/workspace/tasks`);
+                  }
+                }
+              }}
+              placeholder="Ask Kaya anything about your project or upload a PRD..."
               rows={3}
               className="w-full bg-neutral-900 text-sm p-4 text-zinc-100 placeholder:text-zinc-300 resize-none outline-none leading-relaxed min-h-[90px]"
             />
@@ -453,15 +373,19 @@ export function AgentDashboardView() {
                 <Button
                   size={"icon-sm"}
                   disabled={!prompt.trim()}
+                  onClick={() => {
+                    if (prompt.trim() && selectedProject) {
+                      setIsKayaOpen(true);
+                      router.push(`/dashboard/my-projects/${selectedProject.slug}/workspace/tasks`);
+                    }
+                  }}
                   className={cn(
-                    " cursor-pointer flex items-center justify-center",
+                    "cursor-pointer flex items-center justify-center",
                     prompt.trim()
-                      ? isKaya
-                        ? "bg-slate-100"
-                        : "bg-slate-100"
-                      : "bg-zinc-800 border border-zinc-800  text-zinc-300 cursor-not-allowed",
+                      ? "bg-slate-100 text-neutral-900 hover:bg-slate-200"
+                      : "bg-zinc-800 border border-zinc-800 text-zinc-300 cursor-not-allowed",
                   )}
-                  title="Send message"
+                  title="Send message to Kaya"
                 >
                   <Send className="w-4 h-4" />
                 </Button>
@@ -471,7 +395,7 @@ export function AgentDashboardView() {
 
           {/* 3 Quick Templates - Serious Linear style (title, body, icon, bg-gradient-to-br from-white/15 to neutral-900) */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 w-full mt-4">
-            {currentTemplates.map((template, idx) => (
+            {kayaTemplates.map((template, idx) => (
               <button
                 key={idx}
                 type="button"
