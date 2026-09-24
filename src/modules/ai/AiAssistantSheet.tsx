@@ -170,6 +170,7 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
   const [docAttachment, setDocAttachment] = useState<DocAttachment | null>(
     null,
   );
+  const [sessionFileId, setSessionFileId] = useState<string | null>(null);
   const isDocParsing = docAttachment?.status === "parsing";
 
   const handleFileUpload = async (file: File) => {
@@ -226,6 +227,7 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
         fileName: file.name,
         status: "ready",
       });
+      setSessionFileId(data.file_id);
       toast.success(`${file.name} parsed successfully.`);
     } catch (err: any) {
       setDocAttachment({
@@ -352,7 +354,13 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
     setRestoreError(false);
 
     const attachedFileId =
-      docAttachment?.status === "ready" ? docAttachment.fileId : undefined;
+      docAttachment?.status === "ready"
+        ? docAttachment.fileId
+        : (sessionFileId || undefined);
+
+    if (docAttachment?.status === "ready" && docAttachment.fileId) {
+      setSessionFileId(docAttachment.fileId);
+    }
 
     run({
       thread_id: threadId,
@@ -542,6 +550,8 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                   variant={"outline"}
                   onClick={() => {
                     createNewSession();
+                    setSessionFileId(null);
+                    setDocAttachment(null);
                     reset();
                   }}
                 >

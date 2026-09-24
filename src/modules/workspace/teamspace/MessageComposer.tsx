@@ -124,7 +124,7 @@ export function MessageComposer({
   ownerIsPro = null,
 }: Props) {
   const [content, setContent] = useState("");
-  const [activeAgent, setActiveAgent] = useState<"kaya" | "harry">("kaya");
+  const [activeAgent, setActiveAgent] = useState<"kaya">("kaya");
   const [agentDropdownOpen, setAgentDropdownOpen] = useState(false);
   const [isPollDialogOpen, setIsPollDialogOpen] = useState(false);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
@@ -224,17 +224,6 @@ export function MessageComposer({
             userName: "kaya",
             AccessRole: "AI PM Agent",
             userImage: "/kaya.svg",
-            role: "ai",
-          },
-        ]
-      : []),
-    ...("harry".includes(mentionQuery.toLowerCase())
-      ? [
-          {
-            _id: "harry-bot",
-            userName: "harry",
-            AccessRole: "AI Dev Agent",
-            userImage: "/harry.svg",
             role: "ai",
           },
         ]
@@ -790,16 +779,10 @@ export function MessageComposer({
                   charBeforeAt === " " ||
                   charBeforeAt === "\n";
 
-                // --- @kaya / @harry intercept — never show member dropdown ---
+                // --- @kaya intercept — never show member dropdown ---
                 const lowerAfterAt = textAfterAt.toLowerCase();
                 if (validStart && lowerAfterAt === "kaya") {
                   setActiveAgent("kaya");
-                  setShowMentions(false);
-                  setMentionStartIndex(-1);
-                  setShowCodeLinker(false);
-                } else if (validStart && lowerAfterAt === "harry") {
-                  setActiveAgent("harry");
-                  toast.info("Harry is coming soon!", { duration: 3000 });
                   setShowMentions(false);
                   setMentionStartIndex(-1);
                   setShowCodeLinker(false);
@@ -945,13 +928,13 @@ export function MessageComposer({
               }
             >
               <img
-                src={activeAgent === "kaya" ? "/kaya.svg" : "/harry.svg"}
-                alt={activeAgent === "kaya" ? "Kaya" : "Harry"}
+                src="/kaya.svg"
+                alt="Kaya"
                 width={20}
                 height={20}
                 className="shrink-0"
               />
-              <span className="capitalize">{activeAgent}</span>
+              <span className="capitalize">Kaya</span>
               <ChevronDown className="h-4 w-4" />
             </button>
           </PopoverTrigger>
@@ -972,40 +955,23 @@ export function MessageComposer({
                   svg: "/kaya.svg",
                   desc: "AI PM Agent",
                 },
-                {
-                  id: "harry",
-                  label: "Harry",
-                  svg: "/harry.svg",
-                  desc: "AI Dev Agent",
-                  comingSoon: true,
-                },
               ] as const
             ).map((agent) => (
               <button
                 key={agent.id}
                 type="button"
                 onClick={() => {
-                  if ((agent as any).comingSoon) {
-                    toast.info("Harry is coming soon! Stay tuned.", {
-                      duration: 3000,
-                    });
-                    setAgentDropdownOpen(false);
-                    return;
-                  }
-                  setActiveAgent(agent.id as "kaya" | "harry");
+                  setActiveAgent("kaya");
                   setAgentDropdownOpen(false);
                   setContent((c) => {
-                    const stripped = c
-                      .replace(/^@kaya\s*/i, "")
-                      .replace(/^@harry\s*/i, "");
-                    return `@${agent.id} ${stripped}`;
+                    const stripped = c.replace(/^@kaya\s*/i, "");
+                    return `@kaya ${stripped}`;
                   });
                   setTimeout(() => textareaRef.current?.focus(), 10);
                 }}
                 className={cn(
                   "w-full flex items-center gap-4 px-2 py-1 rounded-md text-left transition-colors hover:bg-accent/60",
                   activeAgent === agent.id && "bg-accent/50",
-                  (agent as any).comingSoon && "opacity-60 cursor-not-allowed",
                 )}
               >
                 <img
@@ -1020,10 +986,10 @@ export function MessageComposer({
                     {agent.label}
                   </span>
                   <span className="text-[10px] text-muted-foreground leading-tight">
-                    {(agent as any).comingSoon ? "Coming soon" : agent.desc}
+                    {agent.desc}
                   </span>
                 </div>
-                {activeAgent === agent.id && !(agent as any).comingSoon && (
+                {activeAgent === agent.id && (
                   <span className="ml-auto text-[9px] text-muted-foreground">
                     ✓
                   </span>
