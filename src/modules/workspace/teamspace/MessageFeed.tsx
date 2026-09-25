@@ -116,6 +116,7 @@ const getTempMsgContent = (
     const nameMap: Record<string, string> = {
       getProjectHealthAndInsights: "Reviewing project health, deadline, tasks & issues",
       createProjectItem: "Creating item & assigning to team member",
+      broadcastAnnouncementAndNotify: "Publishing announcement & notifying all team members",
       getMemberWorkload: "Analyzing team workloads",
       getProjectInsights: "Reviewing project timeline and deadline",
       getTasksSummary: "Summarizing active tasks and critical items",

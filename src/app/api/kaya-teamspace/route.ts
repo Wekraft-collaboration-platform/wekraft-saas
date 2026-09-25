@@ -8,16 +8,20 @@ dotenv.config({
 });
 
 import { auth } from "@clerk/nextjs/server";
+import Ably from "ably";
+import { randomUUID } from "crypto";
 import { type NextRequest } from "next/server";
 import { createOpenAI } from "@ai-sdk/openai";
 import { convertToModelMessages, streamText, tool, stepCountIs } from "ai";
 import { ConvexHttpClient } from "convex/browser";
 import { z } from "zod";
+import { initTeamspaceDB, turso } from "@/lib/turso";
 import { api } from "../../../../convex/_generated/api";
 import { Ratelimit } from "@upstash/ratelimit";
 import { Redis } from "@upstash/redis";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
+const ably = new Ably.Rest(process.env.ABLY_API_KEY!);
 
 // Strict rate limiter — 6/min per project for teamspace interactions
 const kayaRatelimit = new Ratelimit({
@@ -94,6 +98,133 @@ const createTools = (callerClerkId?: string) => ({
       });
     },
   }),
+
+  broadcastAnnouncementAndNotify: tool({
+    description:
+      "Broadcast an announcement to all project team members: writes the announcement message to the Announcements #general channel authored by Kaya and sends an in-app notification to every team member in the project.",
+    inputSchema: z.object({
+      projectId: z.string().describe("The ID of the current project"),
+      announcementTitle: z
+        .string()
+        .describe("Short punchy headline or topic for the announcement (e.g. 'Deployment at 6 PM', 'Sprint Review Tomorrow')"),
+      message: z
+        .string()
+        .describe("The full announcement message content to broadcast to the team"),
+      priority: z
+        .enum(["normal", "urgent"])
+        .optional()
+        .describe("Priority level (defaults to 'normal')"),
+    }),
+    execute: async ({
+      projectId,
+      announcementTitle,
+      message,
+      priority = "normal",
+    }) => {
+      console.log(
+        `[Kaya Tool] broadcastAnnouncementAndNotify called: "${announcementTitle}" for project ${projectId}`,
+      );
+      try {
+        await initTeamspaceDB();
+
+        // 1. Find the announcement channel for this project
+        const channelRes = await turso.execute({
+          sql: "SELECT id, name FROM ts_channels WHERE project_id = ? AND type = 'announcement' LIMIT 1",
+          args: [projectId],
+        });
+
+        let announcementChannelId: string | undefined = undefined;
+        let announcementChannelName = "General (Announcements)";
+
+        if (channelRes.rows.length > 0) {
+          announcementChannelId = channelRes.rows[0].id as string;
+          announcementChannelName = (channelRes.rows[0].name as string) || "General";
+        }
+
+        const now = Date.now();
+        const msgId = randomUUID();
+        const cleanTitle = announcementTitle.trim();
+        const cleanMsg = message.trim();
+        const priorityBadge = priority === "urgent" ? "🚨 **[URGENT ANNOUNCEMENT]**" : "📢 **[ANNOUNCEMENT]**";
+        const formattedContent = `${priorityBadge} **${cleanTitle}**\n\n${cleanMsg}`;
+
+        // 2. Insert message into ts_messages if announcement channel exists
+        if (announcementChannelId) {
+          const THIRTY_DAYS_MS = 30 * 24 * 60 * 60 * 1000;
+          await turso.execute({
+            sql: `INSERT INTO ts_messages (id, channel_id, project_id, user_id, user_name, user_image, content, created_at, expires_at)
+                  VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            args: [
+              msgId,
+              announcementChannelId,
+              projectId,
+              "kaya",
+              "Kaya",
+              "/kaya.svg",
+              formattedContent,
+              now,
+              now + THIRTY_DAYS_MS,
+            ],
+          });
+
+          // Publish to Ably channel so active viewers in announcements see it live
+          try {
+            const ablyChannel = ably.channels.get(`teamspace:${announcementChannelId}`);
+            await ablyChannel.publish("message.new", {
+              id: msgId,
+              channel_id: announcementChannelId,
+              project_id: projectId,
+              user_id: "kaya",
+              user_name: "Kaya",
+              user_image: "/kaya.svg",
+              content: formattedContent,
+              created_at: now,
+              reactions: [],
+              reply_count: 0,
+            });
+
+            const projectMsgsChannel = ably.channels.get(`project:${projectId}:messages`);
+            await projectMsgsChannel.publish("message.new", {
+              id: msgId,
+              channel_id: announcementChannelId,
+              channel_type: "announcement",
+              user_id: "kaya",
+              created_at: now,
+            });
+          } catch (ablyErr) {
+            console.error("[Kaya Tool] Ably publish error:", ablyErr);
+          }
+        }
+
+        // 3. Fan out in-app notifications in Convex to all project members
+        const notifyRes = await convex.mutation(
+          api.teamspaceAgents.broadcastNotifications,
+          {
+            projectId,
+            announcementTitle: cleanTitle,
+            message: cleanMsg,
+            channelId: announcementChannelId,
+            priority,
+          },
+        );
+
+        return {
+          success: true,
+          announcementTitle: cleanTitle,
+          message: cleanMsg,
+          channelName: `#${announcementChannelName}`,
+          notifiedCount: notifyRes.notifiedCount,
+          confirmationMessage: `📢 **Announcement Broadcasted!**\n- **Delivered to**: #${announcementChannelName} (Announcements)\n- **Team Notified**: ${notifyRes.notifiedCount} team member(s) received in-app notifications.`,
+        };
+      } catch (err: any) {
+        console.error("[Kaya Tool] Error broadcasting announcement:", err);
+        return {
+          success: false,
+          error: err.message || "Failed to broadcast announcement",
+        };
+      }
+    },
+  }),
 });
 
 const getSystemPrompt = (projectId: string, membersList: string[] = []) =>
@@ -119,7 +250,7 @@ Your Capabilities & Behaviour:
        | :--- | :---: | :---: | :--- |
      * If there are active issues in \`activeIssuesList\`, render an "🚨 Active Issues" markdown table:
        | Issue Title | Severity | Status | Env | Assignee |
-       | :--- | :---: | :---: | :---: | :--- |
+       | :--- | :---: | :---: | :--- | :--- |
      * Highlight high-priority items and critical issues clearly.
 
 2. CREATE TASKS, ISSUES & TICKETS (Tool: createProjectItem):
@@ -129,6 +260,14 @@ Your Capabilities & Behaviour:
      * e.g. "log production issue: redis cache timeout"
    - Extract the parameters (itemType: 'task' | 'issue' | 'ticket', titleOrBody, priorityOrSeverity, assigneeName, environment) and immediately call \`createProjectItem\`.
    - Confirm the creation with a clear, celebratory badge showing the title, assigned team member, and priority level.
+
+3. BROADCAST ANNOUNCEMENTS & NOTIFY ALL (Tool: broadcastAnnouncementAndNotify):
+   - When users ask you to announce, notify all, remind everyone, or broadcast something to the team:
+     * e.g. "notify all about tomorrow's demo at 3 PM"
+     * e.g. "announce to team: code freeze starting at 6 PM today"
+     * e.g. "remind all team members to complete timesheet"
+   - Extract the \`announcementTitle\` and \`message\` (and \`priority\` if urgent) and immediately call \`broadcastAnnouncementAndNotify\`.
+   - Confirm with a celebratory announcement summary in your response indicating that the message was posted to #general (Announcements) and all members were notified.
 
 Tone & Style:
 - Address team members professionally and directly. In chat history, user messages may be prefixed with [User: Username].

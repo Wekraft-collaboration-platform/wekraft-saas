@@ -337,6 +337,16 @@ export function useTeamspaceAgent(
                   },
                 );
               }
+
+              if (toolName === "broadcastAnnouncementAndNotify" && output?.success) {
+                toast.success(
+                  `📢 Announcement broadcasted & sent to ${output.notifiedCount || "all"} team member(s)!`,
+                  {
+                    position: "top-center",
+                    duration: 5000,
+                  },
+                );
+              }
             },
             onFinish: async () => {
               // Save final response to the DB

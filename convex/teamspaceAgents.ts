@@ -370,3 +370,58 @@ export const createProjectItem = mutation({
     throw new Error(`Unsupported itemType: ${args.itemType}`);
   },
 });
+
+/**
+ * Tool 3: broadcastNotifications
+ * Fans out in-app project alert notifications to all active project members for an announcement.
+ */
+export const broadcastNotifications = mutation({
+  args: {
+    projectId: v.string(),
+    announcementTitle: v.string(),
+    message: v.string(),
+    channelId: v.optional(v.string()),
+    priority: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const projectId = args.projectId as Id<"projects">;
+    const project = await ctx.db.get(projectId);
+    if (!project) throw new Error("Project not found");
+
+    const members = await ctx.db
+      .query("projectMembers")
+      .withIndex("by_project", (q) => q.eq("projectId", projectId))
+      .collect();
+
+    // Ensure owner is included in notification targets
+    const memberUserIds = new Set<Id<"users">>(members.map((m) => m.userId));
+    memberUserIds.add(project.ownerId);
+
+    const now = Date.now();
+    const cleanTitle = args.announcementTitle.trim();
+    const cleanMsg = args.message.trim();
+    const previewText = cleanMsg.length > 120 ? `${cleanMsg.slice(0, 120)}...` : cleanMsg;
+
+    await Promise.all(
+      Array.from(memberUserIds).map((recipientId) =>
+        ctx.db.insert("notifications", {
+          recipientId,
+          projectId,
+          projectName: project.projectName,
+          type: "project_alert",
+          body: `📢 **[Announcement] ${cleanTitle}**: "${previewText}"`,
+          entityId: args.channelId,
+          entityTitle: "#general (Announcements)",
+          isRead: false,
+          createdAt: now,
+        }),
+      ),
+    );
+
+    return {
+      success: true,
+      notifiedCount: memberUserIds.size,
+    };
+  },
+});
+
