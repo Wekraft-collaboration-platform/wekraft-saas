@@ -20,10 +20,12 @@ import { AnimatePresence, motion } from "framer-motion";
 import {
   AtSign,
   BarChart2,
+  Check,
   ChevronDown,
   Code,
   FileIcon,
   Loader2,
+  Mic,
   Paperclip,
   Plus,
   Save,
@@ -43,6 +45,15 @@ import {
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
+import { useVoiceInput } from "@/modules/ai/useVoiceInput";
+import { LiveWaveform } from "@/modules/ai/waveform";
+import { useUpgradeModalStore } from "@/store/useUpgradeModalStore";
 import {
   Dialog,
   DialogContent,
@@ -135,6 +146,22 @@ export function MessageComposer({
   const [ticketBody, setTicketBody] = useState("");
   const [ticketAssigneeId, setTicketAssigneeId] = useState<string>("");
   const createTicketMutation = useMutation(api.workspace.createTicket);
+
+  const {
+    isRecording: isVoiceRecording,
+    isTranscribing: isVoiceTranscribing,
+    formattedDuration: voiceDuration,
+    toggleRecording: toggleVoiceRecording,
+    cancelRecording: cancelVoiceRecording,
+    stopRecording: stopVoiceRecording,
+  } = useVoiceInput({
+    onTranscript: (text) => {
+      setContent((prev) => (prev ? `${prev} ${text}` : text));
+      setTimeout(() => {
+        textareaRef.current?.focus();
+      }, 50);
+    },
+  });
 
   // Mention state
   const [mentionQuery, setMentionQuery] = useState("");
@@ -731,184 +758,270 @@ export function MessageComposer({
           </Popover>
         </div>
 
-        {/* Text input — wrapper is `relative` so the mention dropdown anchors here */}
-        <div className="flex-1 relative">
-          <Textarea
-            ref={textareaRef}
-            value={content}
-            onChange={(e) => {
-              const val = e.target.value;
+        {/* Text input area or Live Waveform */}
+        <div className="flex-1 relative flex items-center min-h-[24px]">
+          {isVoiceRecording || isVoiceTranscribing ? (
+            <div className="flex items-center gap-2 max-w-[400px] w-full h-8 px-1 py-0.5 animate-in fade-in duration-150">
+              <div className="flex items-center gap-1.5 shrink-0">
+                {isVoiceTranscribing ? (
+                  <Loader2 className="w-3.5 h-3.5 text-indigo-400 animate-spin" />
+                ) : (
+                  <span className="relative flex h-2 w-2">
+                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-red-400 opacity-75"></span>
+                    <span className="relative inline-flex rounded-full h-2 w-2 bg-red-500"></span>
+                  </span>
+                )}
+                <span className="text-[11px] font-mono text-neutral-300">
+                  {isVoiceTranscribing ? "Transcribing..." : voiceDuration}
+                </span>
+              </div>
 
-              if (val.trim() === "/") {
-                setShowTicketCreate(true);
-                setContent("");
-                setShowMentions(false);
-                setShowCodeLinker(false);
-                return;
-              }
+              <div className="flex-1 h-6 flex items-center overflow-hidden">
+                <LiveWaveform
+                  active={isVoiceRecording}
+                  processing={isVoiceTranscribing}
+                  mode="static"
+                  height={20}
+                  barWidth={2.5}
+                  barGap={1.5}
+                  barColor={isVoiceRecording ? "#818cf8" : "#34d399"}
+                  className="w-full"
+                />
+              </div>
 
-              if (val.trim() === "#") {
-                if (fileInputRef.current) {
-                  fileInputRef.current.click();
-                }
-                setContent("");
-                setShowMentions(false);
-                setShowCodeLinker(false);
-                return;
-              }
-
-              setContent(val);
-              onTyping?.(val.length > 0);
-
-              const cursorPosition = e.target.selectionStart ?? 0;
-              const textBeforeCursor = val.substring(0, cursorPosition);
-
-              // Handle mentions (@)
-              const lastAtIndex = textBeforeCursor.lastIndexOf("@");
-              // Handle code linker (\)
-              const lastBackslashIndex = textBeforeCursor.lastIndexOf("\\");
-
-              if (lastAtIndex !== -1 && lastAtIndex >= lastBackslashIndex) {
-                const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
-                const charBeforeAt =
-                  lastAtIndex > 0
-                    ? textBeforeCursor[lastAtIndex - 1]
-                    : undefined;
-                const validStart =
-                  charBeforeAt === undefined ||
-                  charBeforeAt === " " ||
-                  charBeforeAt === "\n";
-
-                // --- @kaya intercept — never show member dropdown ---
-                const lowerAfterAt = textAfterAt.toLowerCase();
-                if (validStart && lowerAfterAt === "kaya") {
-                  setActiveAgent("kaya");
-                  setShowMentions(false);
-                  setMentionStartIndex(-1);
-                  setShowCodeLinker(false);
-                } else if (validStart && !textAfterAt.includes(" ")) {
-                  setMentionQuery(textAfterAt);
-                  setShowMentions(true);
-                  setMentionIndex(0);
-                  setMentionStartIndex(lastAtIndex);
-                  setShowCodeLinker(false);
-                } else {
-                  setShowMentions(false);
-                  setMentionStartIndex(-1);
-                }
-              } else if (lastBackslashIndex !== -1) {
-                const charBeforeBackslash =
-                  lastBackslashIndex > 0
-                    ? textBeforeCursor[lastBackslashIndex - 1]
-                    : undefined;
-                const validStart =
-                  charBeforeBackslash === undefined ||
-                  charBeforeBackslash === " " ||
-                  charBeforeBackslash === "\n";
-                const textAfterBackslash = textBeforeCursor.substring(
-                  lastBackslashIndex + 1,
-                );
-
-                if (validStart && !textAfterBackslash.includes(" ")) {
-                  setShowCodeLinker(true);
-                  setShowMentions(false);
-                } else {
-                  setShowCodeLinker(false);
-                }
-              } else {
-                setShowMentions(false);
-                setShowCodeLinker(false);
-                setMentionStartIndex(-1);
-              }
-            }}
-            onKeyDown={handleKeyDown}
-            placeholder={placeholder || "@ to mention,  / for workflows"}
-            disabled={disabled}
-            className="w-full border-0 shadow-none focus-visible:ring-0 resize-none bg-transparent min-h-[24px] py-1 text-[15px] placeholder:text-muted-foreground/60 leading-normal scrollbar-hide disabled:cursor-not-allowed transition-[height] duration-200 ease-out"
-            rows={1}
-            style={{ height: "auto" }}
-          />
-
-          {/* Mentions Dropdown — anchored relative to the textarea wrapper */}
-          <AnimatePresence>
-            {showMentions &&
-              filteredMembers.length > 0 &&
-              !selectedMediaFile && (
-                <motion.div
-                  initial={{ opacity: 0, y: 6, scale: 0.97 }}
-                  animate={{ opacity: 1, y: 0, scale: 1 }}
-                  exit={{ opacity: 0, y: 6, scale: 0.97 }}
-                  transition={{ duration: 0.15, ease: "easeOut" }}
-                  className="absolute bottom-[calc(100%+8px)] left-0 w-64 bg-popover border border-border shadow-2xl rounded-xl overflow-hidden z-[200]"
+              <div className="flex items-center gap-1 shrink-0">
+                <button
+                  type="button"
+                  onClick={cancelVoiceRecording}
+                  disabled={isVoiceTranscribing}
+                  className="h-5 w-5 flex items-center justify-center text-neutral-400 hover:text-red-400 hover:bg-neutral-800 rounded transition-colors cursor-pointer"
+                  title="Cancel"
                 >
-                  <div className="px-3 py-2 border-b border-border bg-muted/50 flex items-center gap-2">
-                    <AtSign className="h-3.5 w-3.5 text-primary" />
-                    <span className="text-sm text-muted-foreground">
-                      Mention someone
-                    </span>
-                  </div>
-                  <div className="max-h-[220px] overflow-y-auto scrollbar-thin">
-                    <div className="py-1">
-                      {filteredMembers.map((member, i) => (
-                        <button
-                          key={member._id}
-                          id={`mention-item-${i}`}
-                          onClick={() =>
-                            insertMention(member.userName || "", false)
-                          }
-                          onMouseEnter={() => setMentionIndex(i)}
-                          className={cn(
-                            "w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-colors",
-                            i === mentionIndex
-                              ? "bg-primary/10"
-                              : "hover:bg-accent/20",
-                          )}
-                        >
-                          <Avatar className="h-8 w-8 border border-border/40 shrink-0">
-                            <AvatarImage src={member.userImage ?? undefined} />
-                            <AvatarFallback className="text-[11px] bg-primary/10 text-primary font-bold">
-                              {(member.userName || "??")
-                                .substring(0, 2)
-                                .toUpperCase()}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex flex-col min-w-0">
-                            <span
-                              className={cn(
-                                "text-[13px] font-semibold truncate leading-tight",
-                                (member as any).role === "ai"
-                                  ? "text-white"
-                                  : "",
-                              )}
-                              style={
-                                (member as any).role !== "ai"
-                                  ? {
-                                      color: getUserColor(
-                                        member.userName || "",
-                                      ),
-                                    }
-                                  : undefined
+                  <X className="w-3 h-3" />
+                </button>
+                <button
+                  type="button"
+                  onClick={stopVoiceRecording}
+                  disabled={isVoiceTranscribing}
+                  className="h-5 w-5 flex items-center justify-center bg-white text-neutral-900 hover:bg-white/90 rounded transition-colors shadow-sm cursor-pointer"
+                  title="Finish & Transcribe"
+                >
+                  <Check className="w-3 h-3" />
+                </button>
+              </div>
+            </div>
+          ) : (
+            <>
+              <Textarea
+                ref={textareaRef}
+                value={content}
+                onChange={(e) => {
+                  const val = e.target.value;
+
+                  if (val.trim() === "/") {
+                    setShowTicketCreate(true);
+                    setContent("");
+                    setShowMentions(false);
+                    setShowCodeLinker(false);
+                    return;
+                  }
+
+                  if (val.trim() === "#") {
+                    if (fileInputRef.current) {
+                      fileInputRef.current.click();
+                    }
+                    setContent("");
+                    setShowMentions(false);
+                    setShowCodeLinker(false);
+                    return;
+                  }
+
+                  setContent(val);
+                  onTyping?.(val.length > 0);
+
+                  const cursorPosition = e.target.selectionStart ?? 0;
+                  const textBeforeCursor = val.substring(0, cursorPosition);
+
+                  // Handle mentions (@)
+                  const lastAtIndex = textBeforeCursor.lastIndexOf("@");
+                  // Handle code linker (\)
+                  const lastBackslashIndex = textBeforeCursor.lastIndexOf("\\");
+
+                  if (lastAtIndex !== -1 && lastAtIndex >= lastBackslashIndex) {
+                    const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
+                    const charBeforeAt =
+                      lastAtIndex > 0
+                        ? textBeforeCursor[lastAtIndex - 1]
+                        : undefined;
+                    const validStart =
+                      charBeforeAt === undefined ||
+                      charBeforeAt === " " ||
+                      charBeforeAt === "\n";
+
+                    // --- @kaya intercept — never show member dropdown ---
+                    const lowerAfterAt = textAfterAt.toLowerCase();
+                    if (validStart && lowerAfterAt === "kaya") {
+                      setActiveAgent("kaya");
+                      setShowMentions(false);
+                      setMentionStartIndex(-1);
+                      setShowCodeLinker(false);
+                    } else if (validStart && !textAfterAt.includes(" ")) {
+                      setMentionQuery(textAfterAt);
+                      setShowMentions(true);
+                      setMentionIndex(0);
+                      setMentionStartIndex(lastAtIndex);
+                      setShowCodeLinker(false);
+                    } else {
+                      setShowMentions(false);
+                      setMentionStartIndex(-1);
+                    }
+                  } else if (lastBackslashIndex !== -1) {
+                    const charBeforeBackslash =
+                      lastBackslashIndex > 0
+                        ? textBeforeCursor[lastBackslashIndex - 1]
+                        : undefined;
+                    const validStart =
+                      charBeforeBackslash === undefined ||
+                      charBeforeBackslash === " " ||
+                      charBeforeBackslash === "\n";
+                    const textAfterBackslash = textBeforeCursor.substring(
+                      lastBackslashIndex + 1,
+                    );
+
+                    if (validStart && !textAfterBackslash.includes(" ")) {
+                      setShowCodeLinker(true);
+                      setShowMentions(false);
+                    } else {
+                      setShowCodeLinker(false);
+                    }
+                  } else {
+                    setShowMentions(false);
+                    setShowCodeLinker(false);
+                    setMentionStartIndex(-1);
+                  }
+                }}
+                onKeyDown={handleKeyDown}
+                placeholder={placeholder || "@ to mention,  / for workflows"}
+                disabled={disabled}
+                className="w-full border-0 shadow-none focus-visible:ring-0 resize-none bg-transparent min-h-[24px] py-1 text-[15px] placeholder:text-muted-foreground/60 leading-normal scrollbar-hide disabled:cursor-not-allowed transition-[height] duration-200 ease-out"
+                rows={1}
+                style={{ height: "auto" }}
+              />
+
+              {/* Mentions Dropdown — anchored relative to the textarea wrapper */}
+              <AnimatePresence>
+                {showMentions &&
+                  filteredMembers.length > 0 &&
+                  !selectedMediaFile && (
+                    <motion.div
+                      initial={{ opacity: 0, y: 6, scale: 0.97 }}
+                      animate={{ opacity: 1, y: 0, scale: 1 }}
+                      exit={{ opacity: 0, y: 6, scale: 0.97 }}
+                      transition={{ duration: 0.15, ease: "easeOut" }}
+                      className="absolute bottom-[calc(100%+8px)] left-0 w-64 bg-popover border border-border shadow-2xl rounded-xl overflow-hidden z-[200]"
+                    >
+                      <div className="px-3 py-2 border-b border-border bg-muted/50 flex items-center gap-2">
+                        <AtSign className="h-3.5 w-3.5 text-primary" />
+                        <span className="text-sm text-muted-foreground">
+                          Mention someone
+                        </span>
+                      </div>
+                      <div className="max-h-[220px] overflow-y-auto scrollbar-thin">
+                        <div className="py-1">
+                          {filteredMembers.map((member, i) => (
+                            <button
+                              key={member._id}
+                              id={`mention-item-${i}`}
+                              onClick={() =>
+                                insertMention(member.userName || "", false)
                               }
+                              onMouseEnter={() => setMentionIndex(i)}
+                              className={cn(
+                                "w-full flex items-center gap-2.5 px-3 py-2.5 text-left transition-colors",
+                                i === mentionIndex
+                                  ? "bg-primary/10"
+                                  : "hover:bg-accent/20",
+                              )}
                             >
-                              {member.userName}
-                            </span>
-                            <span className="text-[11px] text-muted-foreground truncate">
-                              {member.AccessRole || "Member"}
-                            </span>
-                          </div>
-                          {i === mentionIndex && (
-                            <span className="ml-auto text-xs text-muted-foreground shrink-0">
-                              ↵
-                            </span>
-                          )}
-                        </button>
-                      ))}
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-          </AnimatePresence>
+                              <Avatar className="h-8 w-8 border border-border/40 shrink-0">
+                                <AvatarImage src={member.userImage ?? undefined} />
+                                <AvatarFallback className="text-[11px] bg-primary/10 text-primary font-bold">
+                                  {(member.userName || "??")
+                                    .substring(0, 2)
+                                    .toUpperCase()}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex flex-col min-w-0">
+                                <span
+                                  className={cn(
+                                    "text-[13px] font-semibold truncate leading-tight",
+                                    (member as any).role === "ai"
+                                      ? "text-white"
+                                      : "",
+                                  )}
+                                  style={
+                                    (member as any).role !== "ai"
+                                      ? {
+                                          color: getUserColor(
+                                            member.userName || "",
+                                          ),
+                                        }
+                                      : undefined
+                                  }
+                                >
+                                  {member.userName}
+                                </span>
+                                <span className="text-[11px] text-muted-foreground truncate">
+                                  {member.AccessRole || "Member"}
+                                </span>
+                              </div>
+                              {i === mentionIndex && (
+                                <span className="ml-auto text-xs text-muted-foreground shrink-0">
+                                  ↵
+                                </span>
+                              )}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </motion.div>
+                  )}
+              </AnimatePresence>
+            </>
+          )}
         </div>
+
+        {/* Mic button — right before Kaya selector */}
+        <TooltipProvider>
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <motion.button
+                whileHover={{ scale: 1.08 }}
+                whileTap={{ scale: 0.92 }}
+                type="button"
+                disabled={disabled}
+                onClick={() => {
+                  if (ownerIsPro === false) {
+                    useUpgradeModalStore.getState().openModal();
+                  } else {
+                    toggleVoiceRecording();
+                  }
+                }}
+                className={cn(
+                  "h-8 w-8 flex items-center justify-center rounded-lg transition-colors shrink-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed",
+                  isVoiceRecording
+                    ? "text-red-400 bg-red-500/10 hover:bg-red-500/20"
+                    : "text-muted-foreground/80 hover:text-foreground hover:bg-muted/60",
+                )}
+              >
+                <Mic className="h-4 w-4" />
+              </motion.button>
+            </TooltipTrigger>
+            <TooltipContent side="top" className="text-xs">
+              {isVoiceRecording ? "Stop recording" : "Voice input"}
+            </TooltipContent>
+          </Tooltip>
+        </TooltipProvider>
 
         {/* AI Agent Selector — right side dropdown */}
         <Popover open={agentDropdownOpen} onOpenChange={setAgentDropdownOpen}>
