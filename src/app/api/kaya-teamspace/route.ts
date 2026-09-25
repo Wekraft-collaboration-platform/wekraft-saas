@@ -19,112 +19,120 @@ import { Redis } from "@upstash/redis";
 
 const convex = new ConvexHttpClient(process.env.NEXT_PUBLIC_CONVEX_URL!);
 
-// Strict rate limiter — 3/min per project
+// Strict rate limiter — 6/min per project for teamspace interactions
 const kayaRatelimit = new Ratelimit({
   redis: Redis.fromEnv(),
-  limiter: Ratelimit.slidingWindow(3, "1 m"),
+  limiter: Ratelimit.slidingWindow(6, "1 m"),
   analytics: true,
   prefix: "kaya_ts_rl",
 });
 
-const allTools = {
-  getMemberWorkload: tool({
+const createTools = (callerClerkId?: string) => ({
+  getProjectHealthAndInsights: tool({
     description:
-      "Get the current tasks and issues workload breakdown for all project members.",
+      "Retrieve unified project health overview: deadline, days remaining/overdue, total task count, non-completed tasks count, high-priority tasks with assignees, total issue count, non-closed issues count, and critical/high issues with assignees.",
     inputSchema: z.object({
-      projectId: z.string().describe("The ID of the project"),
+      projectId: z.string().describe("The ID of the current project"),
     }),
     execute: async ({ projectId }) => {
-      console.log("Kaya Tool: getMemberWorkload called for", projectId);
-      return await convex.query(api.teamspaceAgents.getMemberWorkload, {
+      console.log("[Kaya Tool] getProjectHealthAndInsights called for", projectId);
+      return await convex.query(api.teamspaceAgents.getProjectHealthAndInsights, {
         projectId,
       });
     },
   }),
 
-  getProjectInsights: tool({
-    description: "Get basic project timeline and deadline tracking details.",
-    inputSchema: z.object({
-      projectId: z.string().describe("The ID of the project"),
-    }),
-    execute: async ({ projectId }) => {
-      console.log("Kaya Tool: getProjectInsights called for", projectId);
-      return await convex.query(api.teamspaceAgents.getProjectInsights, {
-        projectId: projectId as any,
-      });
-    },
-  }),
-
-  getTasksSummary: tool({
+  createProjectItem: tool({
     description:
-      "Get an AI-optimized summary of project tasks, prioritizing critical, active, completed, and blocked tasks.",
+      "Create a Task, Issue, or lightweight Ticket directly in the project and assign it to a team member (resolves assignee name fuzzy matching with avatar).",
     inputSchema: z.object({
-      projectId: z.string().describe("The ID of the project"),
+      projectId: z.string().describe("The ID of the current project"),
+      itemType: z
+        .enum(["task", "issue", "ticket"])
+        .describe("The type of item to create: 'task', 'issue', or 'ticket'"),
+      titleOrBody: z
+        .string()
+        .describe("The title of the task/issue or the full body/content of the ticket"),
+      description: z
+        .string()
+        .optional()
+        .describe("Optional detailed description for tasks or issues"),
+      priorityOrSeverity: z
+        .enum(["critical", "high", "medium", "low"])
+        .optional()
+        .describe("Priority level for tasks ('high'|'medium'|'low') or severity for issues ('critical'|'medium'|'low')"),
+      assigneeName: z
+        .string()
+        .optional()
+        .describe("Name or username of the team member to assign (e.g. 'roxy', 'Alex', '@sarah')"),
+      environment: z
+        .enum(["production", "staging", "dev", "local"])
+        .optional()
+        .describe("Environment for issues (defaults to 'dev')"),
     }),
-    execute: async ({ projectId }) => {
-      console.log("Kaya Tool: getTasksSummary called for", projectId);
-      return await convex.query(api.teamspaceAgents.getTasksSummary, {
-        projectId: projectId as any,
+    execute: async ({
+      projectId,
+      itemType,
+      titleOrBody,
+      description,
+      priorityOrSeverity,
+      assigneeName,
+      environment,
+    }) => {
+      console.log(
+        `[Kaya Tool] createProjectItem called: ${itemType} - "${titleOrBody}", assignee: ${assigneeName}, priority: ${priorityOrSeverity}`,
+      );
+      return await convex.mutation(api.teamspaceAgents.createProjectItem, {
+        projectId,
+        itemType,
+        titleOrBody,
+        description,
+        priorityOrSeverity,
+        assigneeName,
+        environment,
+        callerClerkId,
       });
     },
   }),
+});
 
-  getIssuesSummary: tool({
-    description: "Get a summary of active and critical project issues.",
-    inputSchema: z.object({
-      projectId: z.string().describe("The ID of the project"),
-    }),
-    execute: async ({ projectId }) => {
-      console.log("Kaya Tool: getIssuesSummary called for", projectId);
-      return await convex.query(api.teamspaceAgents.getIssuesSummary, {
-        projectId: projectId as any,
-      });
-    },
-  }),
-
-  getProjectVelocity: tool({
-    description:
-      "Get project throughput velocity, average cycle times, and the 4-week trend.",
-    inputSchema: z.object({
-      projectId: z.string().describe("The ID of the project"),
-    }),
-    execute: async ({ projectId }) => {
-      console.log("Kaya Tool: getProjectVelocity called for", projectId);
-      return await convex.query(api.teamspaceAgents.getProjectVelocity, {
-        projectId: projectId as any,
-      });
-    },
-  }),
-
-  getSprintHistory: tool({
-    description:
-      "Get sprint completion analytics and goal history for completed and active sprints.",
-    inputSchema: z.object({
-      projectId: z.string().describe("The ID of the project"),
-    }),
-    execute: async ({ projectId }) => {
-      console.log("Kaya Tool: getSprintHistory called for", projectId);
-      return await convex.query(api.teamspaceAgents.getSprintHistory, {
-        projectId: projectId as any,
-      });
-    },
-  }),
-};
-
-const getSystemPrompt = (projectId: string) =>
+const getSystemPrompt = (projectId: string, membersList: string[] = []) =>
   `
-You are Kaya, the AI Project Manager (PM) Agent for this project.
-You assist the team inside the teamspace chat by analyzing project metrics, task statuses, issues, team workloads, sprints, and velocity of the project.
+You are Kaya, the Autonomous AI Project Manager (PM) & Team Facilitator for this team.
+You live inside the Teamspace chat channel to actively assist team members with project metrics, status tracking, and instant task/issue/ticket creations.
 
 The ID of the current project is: "${projectId}".
 CRITICAL: Never ask users for the project ID. Use this ID "${projectId}" directly for all of your tool calls.
 
-Your Behaviour:
-- In the chat history, user messages are prefixed with [User: Username] so you know who is speaking. Address project members by name when appropriate.
-- Use your tools to fetch accurate details from the project whenever the user asks for tasks, issues, workload, velocity, sprints, or overall insights. Always pass "${projectId}" as the projectId argument to your tools.
-- Be clear, professional, direct, and concise in your responses. Keep responses focused and avoid unnecessary fluff.
-- CRITICAL: You cannot perform any write or mutation operations in this interface (e.g. creating/assigning tasks or issues, creating sprints, calendar events, scheduling, etc.).
-- If the user asks you to perform a write/mutation action, you must explicitly reply: "I cannot do that here. You need to open me outside the teamspace (e.g. by using Ctrl+K or visiting the AI page)."
+VALID PROJECT TEAM MEMBERS:
+${membersList.length > 0 ? membersList.map((m) => `- ${m}`).join("\n") : "- No additional members registered"}
+IMPORTANT: When a user asks to assign a task, issue, or ticket to someone (e.g. "assign to roxy", "assign to @roxy"), ALWAYS select the exact matching name from the VALID PROJECT TEAM MEMBERS list above for the \`assigneeName\` parameter. Never invent or hallucinate non-existent member names.
+
+Your Capabilities & Behaviour:
+1. PROJECT HEALTH & INSIGHTS (Tool: getProjectHealthAndInsights):
+   - When users ask about project health, deadlines, active tasks, critical bugs, overdue status, or general project overview:
+   - Call \`getProjectHealthAndInsights\` to get the complete single-source snapshot.
+   - FORMATTING REQUIREMENT: Always format the response using clean Markdown Tables:
+     * First show a concise top overview summary (Project Name, Deadline / Days Remaining, Total Tasks, Total Issues).
+     * If there are active tasks in \`activeTasksList\`, render an "📋 Active Tasks" markdown table:
+       | Task Title | Priority | Status | Assignee |
+       | :--- | :---: | :---: | :--- |
+     * If there are active issues in \`activeIssuesList\`, render an "🚨 Active Issues" markdown table:
+       | Issue Title | Severity | Status | Env | Assignee |
+       | :--- | :---: | :---: | :---: | :--- |
+     * Highlight high-priority items and critical issues clearly.
+
+2. CREATE TASKS, ISSUES & TICKETS (Tool: createProjectItem):
+   - When users ask you to create, add, or log a task, bug/issue, or ticket:
+     * e.g. "create ticket saying handle client tomorrow, assign to roxy"
+     * e.g. "create task fix payment webhook, set priority high and assign to roxy"
+     * e.g. "log production issue: redis cache timeout"
+   - Extract the parameters (itemType: 'task' | 'issue' | 'ticket', titleOrBody, priorityOrSeverity, assigneeName, environment) and immediately call \`createProjectItem\`.
+   - Confirm the creation with a clear, celebratory badge showing the title, assigned team member, and priority level.
+
+Tone & Style:
+- Address team members professionally and directly. In chat history, user messages may be prefixed with [User: Username].
+- Be punchy, structured, and action-oriented. Keep responses concise and focused for a team chat feed.
 `.trim();
 
 export async function POST(req: NextRequest) {
@@ -165,7 +173,18 @@ export async function POST(req: NextRequest) {
       });
     }
 
-    // Strict rate limit per project (3 requests per minute for the whole project team)
+    // Fetch active project members list to ground the LLM
+    let membersList: string[] = [];
+    try {
+      membersList = await convex.query(
+        api.teamspaceAgents.getProjectMembersList,
+        { projectId },
+      );
+    } catch (e) {
+      console.error("[Kaya Route] Failed to fetch project members list:", e);
+    }
+
+    // Strict rate limit per project (6 requests per minute for the whole project team)
     const limitKey = projectId;
     const { success, limit, reset, remaining } =
       await kayaRatelimit.limit(limitKey);
@@ -175,7 +194,7 @@ export async function POST(req: NextRequest) {
     if (!success) {
       console.log("[Kaya Route] Rate limit exceeded!");
       return new Response(
-        "Too many requests. The project rate limit is 3 requests per minute.",
+        "Too many requests. The project rate limit is 6 requests per minute.",
         {
           status: 429,
           headers: {
@@ -202,17 +221,15 @@ export async function POST(req: NextRequest) {
     }
 
     const convertedMessages = await convertToModelMessages(messages);
-    console.log(
-      "[Kaya Route] Converted model messages being sent to LLM:",
-      JSON.stringify(convertedMessages, null, 2),
-    );
 
-    console.log("[Kaya Route] Starting text stream...");
+    console.log("[Kaya Route] Starting text stream with gpt-4.1-mini...");
+    const tools = createTools(userId);
+
     const result = streamText({
-      model: customOpenai("gpt-4.1-nano"),
-      system: getSystemPrompt(projectId),
+      model: customOpenai("gpt-4.1-mini"),
+      system: getSystemPrompt(projectId, membersList),
       messages: convertedMessages,
-      tools: allTools,
+      tools,
       toolChoice: "auto",
       maxRetries: 2,
       stopWhen: stepCountIs(5),

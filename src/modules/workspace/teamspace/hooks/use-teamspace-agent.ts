@@ -326,6 +326,17 @@ export function useTeamspaceAgent(
                 toolStatus: { toolName, status: "done" },
                 text: "",
               });
+
+              if (toolName === "createProjectItem" && output?.success) {
+                toast.success(
+                  output.message ||
+                    `Created ${output.itemType || "item"} successfully!`,
+                  {
+                    position: "top-center",
+                    duration: 4000,
+                  },
+                );
+              }
             },
             onFinish: async () => {
               // Save final response to the DB

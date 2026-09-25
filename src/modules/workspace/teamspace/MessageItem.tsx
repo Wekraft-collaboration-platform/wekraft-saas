@@ -18,6 +18,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
+import ReactMarkdown from "react-markdown";
+import remarkGfm from "remark-gfm";
 import { LinkPreview } from "./LinkPreview";
 import { Message } from "./hooks/useMessages";
 import { PollBlock } from "./PollBlock";
@@ -719,6 +721,64 @@ export function MessageItem({
                   }
 
                   // Default text render
+                  const isAgentOrTable =
+                    message.user_id === "kaya" ||
+                    message.user_id === "harry" ||
+                    Boolean(message.content && message.content.includes("|") && message.content.includes("---"));
+
+                  if (isAgentOrTable && !isShimmering) {
+                    return (
+                      <div className="text-[13px] leading-relaxed text-foreground/90 space-y-1.5 overflow-x-auto">
+                        <ReactMarkdown
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            table: ({ node, ...props }) => (
+                              <div className="my-2.5 overflow-x-auto rounded-lg border border-border/80 bg-accent/20 shadow-xs">
+                                <table className="w-full text-left text-[11px] border-collapse" {...props} />
+                              </div>
+                            ),
+                            thead: ({ node, ...props }) => (
+                              <thead className="bg-accent/70 font-semibold border-b border-border/80 text-foreground" {...props} />
+                            ),
+                            th: ({ node, ...props }) => (
+                              <th className="px-3 py-1.5 font-semibold text-foreground/95 border-r border-border/40 last:border-r-0" {...props} />
+                            ),
+                            td: ({ node, ...props }) => (
+                              <td className="px-3 py-1.5 border-t border-border/40 border-r border-border/40 last:border-r-0 text-foreground/85" {...props} />
+                            ),
+                            tr: ({ node, ...props }) => (
+                              <tr className="hover:bg-accent/40 transition-colors" {...props} />
+                            ),
+                            h3: ({ node, ...props }) => (
+                              <h3 className="font-semibold text-[13px] mt-2.5 mb-1 text-foreground" {...props} />
+                            ),
+                            h4: ({ node, ...props }) => (
+                              <h4 className="font-semibold text-[12px] mt-2 mb-0.5 text-foreground" {...props} />
+                            ),
+                            p: ({ node, ...props }) => (
+                              <p className="my-1 leading-snug" {...props} />
+                            ),
+                            ul: ({ node, ...props }) => (
+                              <ul className="list-disc pl-4 space-y-0.5 my-1" {...props} />
+                            ),
+                            ol: ({ node, ...props }) => (
+                              <ol className="list-decimal pl-4 space-y-0.5 my-1" {...props} />
+                            ),
+                            code: ({ node, className, children, ...props }) => (
+                              <code className="bg-accent/70 px-1 py-0.5 rounded text-[11px] font-mono text-primary font-medium" {...props}>
+                                {children}
+                              </code>
+                            ),
+                          }}
+                        >
+                          {message.content}
+                        </ReactMarkdown>
+                        {editedTag}
+                        {timestampSpacer}
+                      </div>
+                    );
+                  }
+
                   return (
                     <div className="text-[14px] leading-snug break-all md:break-words whitespace-pre-wrap text-foreground/80 font-normal">
                       {isShimmering ? (

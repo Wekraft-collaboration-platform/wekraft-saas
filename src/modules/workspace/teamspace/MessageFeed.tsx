@@ -114,6 +114,8 @@ const getTempMsgContent = (
   if (assistantMsg?.text) return assistantMsg.text;
   if (toolStatus) {
     const nameMap: Record<string, string> = {
+      getProjectHealthAndInsights: "Reviewing project health, deadline, tasks & issues",
+      createProjectItem: "Creating item & assigning to team member",
       getMemberWorkload: "Analyzing team workloads",
       getProjectInsights: "Reviewing project timeline and deadline",
       getTasksSummary: "Summarizing active tasks and critical items",

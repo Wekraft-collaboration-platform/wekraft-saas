@@ -1,418 +1,372 @@
-import { query } from "./_generated/server";
+import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 import { Id } from "./_generated/dataModel";
 
+export interface ResolvedMember {
+  userId: Id<"users">;
+  name: string;
+  avatar?: string;
+}
+
 /**
- * getMemberWorkload: Returns a detailed breakdown of each team member's current task and issue assignments.
+ * Helper function: Resolves a project member name/mention against the database.
+ * Supports exact match, prefix match, and substring search to prevent hallucinations.
+ * Returns the resolved member with userId, name, and avatar, along with all active member names.
  */
-export const getMemberWorkload = query({
+export async function resolveProjectMember(
+  ctx: any,
+  projectId: Id<"projects">,
+  inputName?: string,
+): Promise<{ member: ResolvedMember | null; allMembers: string[] }> {
+  const project = await ctx.db.get(projectId);
+  if (!project) return { member: null, allMembers: [] };
+
+  const members = await ctx.db
+    .query("projectMembers")
+    .withIndex("by_project", (q: any) => q.eq("projectId", projectId))
+    .collect();
+
+  // Ensure owner is included in the searchable list
+  const hasOwner = members.some((m: any) => m.userId === project.ownerId);
+  if (!hasOwner) {
+    const ownerUser = await ctx.db.get(project.ownerId);
+    if (ownerUser) {
+      members.push({
+        projectId: project._id,
+        userId: project.ownerId,
+        userName: ownerUser.name || "Owner",
+        userImage: ownerUser.avatarUrl,
+        AccessRole: "owner",
+      });
+    }
+  }
+
+  const allMemberNames = members.map((m: any) => m.userName);
+
+  if (!inputName || !inputName.trim()) {
+    return { member: null, allMembers: allMemberNames };
+  }
+
+  const cleanQuery = inputName.toLowerCase().replace(/[@:]/g, "").trim();
+
+  // 1. Exact match
+  let matched = members.find(
+    (m: any) => m.userName.toLowerCase().trim() === cleanQuery,
+  );
+
+  // 2. Substring / prefix match
+  if (!matched) {
+    matched = members.find((m: any) => {
+      const u = m.userName.toLowerCase().trim();
+      return (
+        u.startsWith(cleanQuery) ||
+        u.includes(cleanQuery) ||
+        cleanQuery.includes(u)
+      );
+    });
+  }
+
+  if (matched) {
+    return {
+      member: {
+        userId: matched.userId,
+        name: matched.userName,
+        avatar: matched.userImage || undefined,
+      },
+      allMembers: allMemberNames,
+    };
+  }
+
+  return { member: null, allMembers: allMemberNames };
+}
+
+/**
+ * Query: Returns the list of unique active member names in the project
+ * so the LLM system prompt has the ground-truth list of members.
+ */
+export const getProjectMembersList = query({
   args: { projectId: v.string() },
   handler: async (ctx, args) => {
     const projectId = args.projectId as Id<"projects">;
-    const members = await ctx.db
-      .query("projectMembers")
-      .withIndex("by_project", (q) => q.eq("projectId", projectId))
-      .collect();
-
-    const tasks = await ctx.db
-      .query("tasks")
-      .withIndex("by_project", (q) => q.eq("projectId", projectId))
-      .collect();
-
-    const issues = await ctx.db
-      .query("issues")
-      .withIndex("by_project", (q) => q.eq("projectId", projectId))
-      .collect();
-
-    const taskAssignees = await ctx.db
-      .query("taskAssignees")
-      .withIndex("by_project", (q) => q.eq("projectId", projectId))
-      .collect();
-
-    const issueAssignees = await ctx.db
-      .query("issueAssignees")
-      .withIndex("by_project", (q) => q.eq("projectId", projectId))
-      .collect();
-
-    return members.map((m) => {
-      const memberTasks = tasks.filter((t) =>
-        taskAssignees.some((a) => a.taskId === t._id && a.userId === m.userId),
-      );
-
-      const memberIssues = issues.filter((i) =>
-        issueAssignees.some(
-          (a) => a.issueId === i._id && a.userId === m.userId,
-        ),
-      );
-
-      const activeTasks = memberTasks.filter((t) => t.status !== "completed");
-      const activeIssues = memberIssues.filter((i) => i.status !== "closed");
-
-      const completedTasksCount = memberTasks.length - activeTasks.length;
-      const closedIssuesCount = memberIssues.length - activeIssues.length;
-
-      return {
-        name: m.userName,
-        role: m.AccessRole ?? "member",
-        activeTasks: activeTasks.slice(0, 8).map((t) => ({
-          title: t.title,
-          priority: t.priority ?? "low",
-          status: t.status,
-        })),
-        totalActiveTasks: activeTasks.length,
-        completedTasksCount,
-        activeIssues: activeIssues.slice(0, 8).map((i) => ({
-          title: i.title,
-          status: i.status,
-        })),
-        totalActiveIssues: activeIssues.length,
-        closedIssuesCount,
-      };
-    });
+    const { allMembers } = await resolveProjectMember(ctx, projectId);
+    return allMembers;
   },
 });
 
 /**
- * getProjectInsights: Returns basic project timeline information.
+ * Tool 1: getProjectHealthAndInsights
+ * Single comprehensive query returning project deadline, task counts, non-completed tasks,
+ * high-priority tasks with assignees, and issues with assignees.
  */
-export const getProjectInsights = query({
-  args: { projectId: v.id("projects") },
+export const getProjectHealthAndInsights = query({
+  args: { projectId: v.string() },
   handler: async (ctx, args) => {
-    const project = await ctx.db.get(args.projectId);
+    const projectId = args.projectId as Id<"projects">;
+    const project = await ctx.db.get(projectId);
     if (!project) throw new Error("Project not found");
 
     const projectDetail = await ctx.db
       .query("projectDetails")
-      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .withIndex("by_project", (q) => q.eq("projectId", projectId))
       .unique();
 
+    // 1. Deadline calculation
     const deadline = projectDetail?.targetDate ?? null;
-    let daysRemaining = null;
-
+    let daysLeftOrOverdue: string = "No target deadline set";
     if (deadline) {
       const now = Date.now();
       const diff = deadline - now;
-      daysRemaining = Math.ceil(diff / (1000 * 60 * 60 * 24));
+      const days = Math.ceil(diff / (1000 * 60 * 60 * 24));
+      if (days > 0) {
+        daysLeftOrOverdue = `${days} day${days === 1 ? "" : "s"} remaining`;
+      } else if (days === 0) {
+        daysLeftOrOverdue = "Due today!";
+      } else {
+        daysLeftOrOverdue = `${Math.abs(days)} day${Math.abs(days) === 1 ? "" : "s"} OVERDUE`;
+      }
     }
 
-    return {
-      projectName: project.projectName,
-      createdAt: project.createdAt,
-      deadline,
-      daysRemaining:
-        daysRemaining !== null ? (daysRemaining > 0 ? daysRemaining : 0) : null,
-      isOverdue: daysRemaining !== null && daysRemaining < 0,
-    };
-  },
-});
-
-/**
- * getTasksSummary: Returns an AI-optimized summary of tasks, prioritizing active and high-priority ones.
- */
-export const getTasksSummary = query({
-  args: { projectId: v.id("projects") },
-  handler: async (ctx, args) => {
-    const tasks = await ctx.db
+    // 2. Fetch Tasks & Task Assignees
+    const allTasks = await ctx.db
       .query("tasks")
-      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .withIndex("by_project", (q) => q.eq("projectId", projectId))
       .collect();
 
     const taskAssignees = await ctx.db
       .query("taskAssignees")
-      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .withIndex("by_project", (q) => q.eq("projectId", projectId))
       .collect();
 
-    const now = Date.now();
-    const NEAR_OVERDUE_THRESHOLD = 2 * 24 * 60 * 60 * 1000; // 2 days
+    const completedTasks = allTasks.filter((t) => t.status === "completed");
+    const nonCompletedTasks = allTasks.filter((t) => t.status !== "completed");
+    const highPriorityTasks = nonCompletedTasks.filter(
+      (t) => t.priority === "high",
+    );
 
-    const criticalTasks = tasks.filter((t) => {
-      if (t.status === "completed") return false;
-
-      const isOverdue = now > t.estimation.endDate;
-      const isNearOverdue =
-        !isOverdue && now > t.estimation.endDate - NEAR_OVERDUE_THRESHOLD;
-      const isNotStarted = t.status === "not started";
-      const isHighPriority = t.priority === "high";
-
-      return (
-        isOverdue ||
-        isNearOverdue ||
-        isNotStarted ||
-        isHighPriority ||
-        t.isBlocked
-      );
+    const activeTasksDetailed = nonCompletedTasks.slice(0, 20).map((t) => {
+      const assignees = taskAssignees
+        .filter((a) => a.taskId === t._id)
+        .map((a) => a.name);
+      return {
+        id: t._id,
+        title: t.title,
+        status: t.status,
+        priority: t.priority ?? "medium",
+        assignees: assignees.length > 0 ? assignees : ["Unassigned"],
+      };
     });
 
-    const completedCount = tasks.filter((t) => t.status === "completed").length;
-    const blockedCount = tasks.filter((t) => t.isBlocked).length;
-
-    return {
-      criticalAndActiveTasks: criticalTasks.map((t) => {
-        const isOverdue = now > t.estimation.endDate;
-        const isNearOverdue =
-          !isOverdue && now > t.estimation.endDate - NEAR_OVERDUE_THRESHOLD;
-
-        let timelineStatus = "on track";
-        if (isOverdue) {
-          const days = Math.ceil(
-            (now - t.estimation.endDate) / (1000 * 60 * 60 * 24),
-          );
-          timelineStatus = `OVERDUE by ${days} days`;
-        } else if (isNearOverdue) {
-          const days = Math.ceil(
-            (t.estimation.endDate - now) / (1000 * 60 * 60 * 24),
-          );
-          timelineStatus = `Near overdue (due in ${days} days)`;
-        }
-
-        return {
-          title: t.title,
-          status: t.status,
-          priority: t.priority ?? "medium",
-          isBlocked: t.isBlocked ?? false,
-          assignees: taskAssignees
-            .filter((a) => a.taskId === t._id)
-            .map((a) => a.name),
-          endDate: new Date(t.estimation.endDate).toLocaleDateString(),
-          timelineStatus,
-        };
-      }),
-      completedCount,
-      blockedCount,
-      totalCount: tasks.length,
-    };
-  },
-});
-
-/**
- * getIssuesSummary: Returns an AI-optimized summary of issues, prioritizing critical and open ones.
- */
-export const getIssuesSummary = query({
-  args: { projectId: v.id("projects") },
-  handler: async (ctx, args) => {
-    const issues = await ctx.db
+    // 3. Fetch Issues & Issue Assignees
+    const allIssues = await ctx.db
       .query("issues")
-      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .withIndex("by_project", (q) => q.eq("projectId", projectId))
       .collect();
 
     const issueAssignees = await ctx.db
       .query("issueAssignees")
-      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
+      .withIndex("by_project", (q) => q.eq("projectId", projectId))
       .collect();
 
-    const openIssues = issues.filter((i) => i.status !== "closed");
-    const closedCount = issues.filter((i) => i.status === "closed").length;
-    const criticalCount = issues.filter(
-      (i) => i.severity === "critical" && i.status !== "closed",
-    ).length;
+    const closedIssues = allIssues.filter((i) => i.status === "closed");
+    const nonClosedIssues = allIssues.filter((i) => i.status !== "closed");
+    const criticalIssues = nonClosedIssues.filter((i) => i.severity === "critical");
 
-    return {
-      activeIssues: openIssues.map((i) => ({
-        title: i.title,
-        status: i.status,
-        severity: i.severity ?? "medium",
-        type: i.type,
-        assignees: issueAssignees
-          .filter((a) => a.issueId === i._id)
-          .map((a) => a.name),
-      })),
-      closedCount,
-      criticalCount,
-      totalCount: issues.length,
-    };
-  },
-});
-
-/**
- * Tool 5 — getProjectVelocity
- *
- * Calculates project throughput (velocity) using `finalCompletedAt` timestamps
- * on tasks and issues. Returns weekly completion rates, average cycle time
- * (createdAt → finalCompletedAt), and a rolling 4-week trend so Kaya can
- * reason about whether the team is speeding up or slowing down.
- */
-export const getProjectVelocity = query({
-  args: { projectId: v.id("projects") },
-  handler: async (ctx, args) => {
-    const now = Date.now();
-    const MS_PER_DAY = 24 * 60 * 60 * 1000;
-    const MS_PER_WEEK = 7 * MS_PER_DAY;
-    const WEEKS_BACK = 4;
-
-    const allTasks = await ctx.db
-      .query("tasks")
-      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
-      .collect();
-
-    const allIssues = await ctx.db
-      .query("issues")
-      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
-      .collect();
-
-    const doneTasks = allTasks.filter(
-      (t) => t.status === "completed" && t.finalCompletedAt,
-    );
-    const doneIssues = allIssues.filter(
-      (i) => i.status === "closed" && i.finalCompletedAt,
-    );
-
-    // --- Weekly buckets (last 4 weeks, oldest first) ---
-    const weeklyVelocity = Array.from({ length: WEEKS_BACK }, (_, idx) => {
-      const weekEnd = now - idx * MS_PER_WEEK;
-      const weekStart = weekEnd - MS_PER_WEEK;
-      const weekLabel = `Week -${idx + 1}`;
-
-      const tasksCompleted = doneTasks.filter(
-        (t) => t.finalCompletedAt! >= weekStart && t.finalCompletedAt! < weekEnd,
-      ).length;
-
-      const issuesResolved = doneIssues.filter(
-        (i) => i.finalCompletedAt! >= weekStart && i.finalCompletedAt! < weekEnd,
-      ).length;
-
-      return { weekLabel, tasksCompleted, issuesResolved, total: tasksCompleted + issuesResolved };
-    }).reverse();
-
-    // --- Average cycle time (createdAt → finalCompletedAt) ---
-    const avg = (arr: number[]) =>
-      arr.length > 0
-        ? Math.round((arr.reduce((a, b) => a + b, 0) / arr.length) * 10) / 10
-        : null;
-
-    const avgCycleTimeDays = {
-      tasks: avg(
-        doneTasks
-          .map((t) => (t.finalCompletedAt! - t.createdAt) / MS_PER_DAY)
-          .filter((d) => d > 0),
-      ),
-      issues: avg(
-        doneIssues
-          .map((i) => (i.finalCompletedAt! - i.createdAt) / MS_PER_DAY)
-          .filter((d) => d > 0),
-      ),
-    };
-
-    // --- Trend: first 2 weeks vs last 2 weeks ---
-    let trend: "improving" | "stable" | "declining" | "insufficient_data" =
-      "insufficient_data";
-    if (weeklyVelocity.length === 4) {
-      const firstHalf = weeklyVelocity[0].total + weeklyVelocity[1].total;
-      const secondHalf = weeklyVelocity[2].total + weeklyVelocity[3].total;
-      if (secondHalf > firstHalf * 1.15) trend = "improving";
-      else if (secondHalf < firstHalf * 0.85) trend = "declining";
-      else if (firstHalf + secondHalf > 0) trend = "stable";
-    }
-
-    const thisWeek = weeklyVelocity[weeklyVelocity.length - 1];
-    const summary =
-      `Last 4 weeks throughput: ${weeklyVelocity.map((w) => w.total).join(", ")} items/week. ` +
-      `This week: ${thisWeek.total} (${thisWeek.tasksCompleted} tasks, ${thisWeek.issuesResolved} issues). ` +
-      `Avg task cycle: ${avgCycleTimeDays.tasks ?? "N/A"} days. ` +
-      `Avg issue cycle: ${avgCycleTimeDays.issues ?? "N/A"} days. ` +
-      `Trend: ${trend}.`;
-
-    return {
-      trend,
-      avgCycleTimeDays,
-      totalCompleted: doneTasks.length + doneIssues.length,
-      summary,
-    };
-  },
-});
-
-/**
- * Tool 6 — getSprintHistory
- *
- * Returns all sprints (completed → active → planned) with enriched signals.
- */
-export const getSprintHistory = query({
-  args: { projectId: v.id("projects") },
-  handler: async (ctx, args) => {
-    const sprints = await ctx.db
-      .query("sprints")
-      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
-      .collect();
-
-    const statusOrder: Record<string, number> = { completed: 0, active: 1, planned: 2 };
-    sprints.sort(
-      (a, b) =>
-        statusOrder[a.status] - statusOrder[b.status] ||
-        a.duration.startDate - b.duration.startDate,
-    );
-
-    const allTasks = await ctx.db
-      .query("tasks")
-      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
-      .collect();
-
-    const allIssues = await ctx.db
-      .query("issues")
-      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
-      .collect();
-
-    // Resolve creator names in one pass
-    const creatorIds = [...new Set(sprints.map((s) => s.creatorId))];
-    const creatorMap: Record<string, string> = {};
-    await Promise.all(
-      creatorIds.map(async (id) => {
-        const user = await ctx.db.get(id);
-        if (user) creatorMap[id as string] = user.name ?? user.githubUsername ?? "Unknown";
-      }),
-    );
-
-    const MS_PER_DAY = 24 * 60 * 60 * 1000;
-
-    // Keep last 6 completed (most recent) + active sprint only; skip empty planned
-    const completed = sprints
-      .filter((s) => s.status === "completed")
-      .slice(-6);
-    const active = sprints.filter((s) => s.status === "active");
-    const relevant = [...completed, ...active];
-
-    return relevant.map((s) => {
-      let completedTasks: number;
-      let totalTasks: number;
-      let closedIssues: number;
-      let totalIssues: number;
-
-      if (s.status === "completed" && s.finalStats) {
-        completedTasks = s.finalStats.completedTasks;
-        totalTasks = s.finalStats.totalTasks;
-        closedIssues = s.finalStats.closedIssues;
-        totalIssues = s.finalStats.totalIssues;
-      } else {
-        const sprintTasks = allTasks.filter((t) => t.sprintId === s._id);
-        const sprintIssues = allIssues.filter((i) => i.sprintId === s._id);
-        completedTasks = sprintTasks.filter((t) => t.status === "completed").length;
-        totalTasks = sprintTasks.length;
-        closedIssues = sprintIssues.filter((i) => i.status === "closed").length;
-        totalIssues = sprintIssues.length;
-      }
-
-      const totalItems = totalTasks + totalIssues;
-      const doneItems = completedTasks + closedIssues;
-      const completionRate =
-        totalItems > 0 ? Math.round((doneItems / totalItems) * 100) : null;
-
-      const durationDays = Math.round(
-        (s.duration.endDate - s.duration.startDate) / MS_PER_DAY,
-      );
-
-      // Truncate long goals so they don't bloat the prompt
-      const goal =
-        s.sprintGoal.length > 100
-          ? s.sprintGoal.slice(0, 100) + "…"
-          : s.sprintGoal;
-
+    const activeIssuesDetailed = nonClosedIssues.slice(0, 20).map((i) => {
+      const assignees = issueAssignees
+        .filter((a) => a.issueId === i._id)
+        .map((a) => a.name);
       return {
-        name: s.sprintName,
-        goal,
-        status: s.status,
-        createdBy: creatorMap[s.creatorId as string] ?? "Unknown",
-        durationDays,
-        stats: { completedTasks, totalTasks, closedIssues, totalIssues },
-        completionRate,
+        id: i._id,
+        title: i.title,
+        severity: i.severity ?? "medium",
+        status: i.status,
+        environment: i.environment ?? "dev",
+        assignees: assignees.length > 0 ? assignees : ["Unassigned"],
       };
     });
+
+    return {
+      projectName: project.projectName,
+      deadlineFormatted: deadline ? new Date(deadline).toLocaleDateString() : null,
+      daysLeftOrOverdue,
+      tasks: {
+        total: allTasks.length,
+        completed: completedTasks.length,
+        nonCompleted: nonCompletedTasks.length,
+        highPriorityCount: highPriorityTasks.length,
+        activeTasksList: activeTasksDetailed,
+      },
+      issues: {
+        total: allIssues.length,
+        closed: closedIssues.length,
+        nonClosed: nonClosedIssues.length,
+        criticalCount: criticalIssues.length,
+        activeIssuesList: activeIssuesDetailed,
+      },
+    };
+  },
+});
+
+/**
+ * Tool 2: createProjectItem
+ * Creates a Task, Issue, or Ticket with fuzzy assignee resolution, avatar linking, and zero hallucinations.
+ */
+export const createProjectItem = mutation({
+  args: {
+    projectId: v.string(),
+    itemType: v.union(v.literal("task"), v.literal("issue"), v.literal("ticket")),
+    titleOrBody: v.string(),
+    description: v.optional(v.string()),
+    priorityOrSeverity: v.optional(v.string()), // 'critical' | 'high' | 'medium' | 'low'
+    assigneeName: v.optional(v.string()),
+    environment: v.optional(v.string()), // 'production' | 'staging' | 'dev' | 'local'
+    callerClerkId: v.optional(v.string()),
+  },
+  handler: async (ctx, args) => {
+    const projectId = args.projectId as Id<"projects">;
+    const project = await ctx.db.get(projectId);
+    if (!project) throw new Error("Project not found");
+
+    // Resolve caller user ID
+    let callerUserId = project.ownerId;
+    if (args.callerClerkId) {
+      const user = await ctx.db
+        .query("users")
+        .withIndex("by_token", (q) => q.eq("clerkToken", args.callerClerkId!))
+        .unique();
+      if (user) callerUserId = user._id;
+    }
+
+    // Resolve assignee using robust helper
+    const { member: resolvedMember, allMembers } = await resolveProjectMember(
+      ctx,
+      projectId,
+      args.assigneeName,
+    );
+
+    const now = Date.now();
+
+    // ── 1. Create Ticket ──────────────────────────────────────────────────────
+    if (args.itemType === "ticket") {
+      const assignedToUser = resolvedMember ? resolvedMember.userId : callerUserId;
+      const ticketId = await ctx.db.insert("tickets", {
+        projectId,
+        body: args.titleOrBody,
+        createdBy: callerUserId,
+        assignedTo: assignedToUser,
+        status: "open",
+        createdAt: now,
+        updatedAt: now,
+      });
+
+      const assignedLabel = resolvedMember ? resolvedMember.name : "Assigned to Creator";
+      return {
+        success: true,
+        itemType: "ticket",
+        itemId: ticketId,
+        titleOrBody: args.titleOrBody,
+        assigneeName: assignedLabel,
+        message: `✅ Created Ticket: "${args.titleOrBody}" (Assigned to ${assignedLabel})`,
+      };
+    }
+
+    // ── 2. Create Task ────────────────────────────────────────────────────────
+    if (args.itemType === "task") {
+      const priority =
+        args.priorityOrSeverity &&
+        ["high", "medium", "low"].includes(args.priorityOrSeverity.toLowerCase())
+          ? (args.priorityOrSeverity.toLowerCase() as "high" | "medium" | "low")
+          : "medium";
+
+      const taskId = await ctx.db.insert("tasks", {
+        projectId,
+        title: args.titleOrBody,
+        description: args.description ? args.description : undefined,
+        priority,
+        status: "not started",
+        estimation: {
+          startDate: now,
+          endDate: now + 7 * 24 * 60 * 60 * 1000, // 1 week default
+        },
+        createdByUserId: callerUserId,
+        createdAt: now,
+        updatedAt: now,
+      });
+
+      // Insert into taskAssignees with taskId, userId, name, avatar, projectId
+      if (resolvedMember) {
+        await ctx.db.insert("taskAssignees", {
+          taskId,
+          userId: resolvedMember.userId,
+          name: resolvedMember.name,
+          avatar: resolvedMember.avatar,
+          projectId,
+        });
+      }
+
+      const assignedLabel = resolvedMember ? resolvedMember.name : "Unassigned";
+      return {
+        success: true,
+        itemType: "task",
+        itemId: taskId,
+        title: args.titleOrBody,
+        priority,
+        assigneeName: assignedLabel,
+        message: `✅ Created Task: "${args.titleOrBody}" [Priority: ${priority.toUpperCase()}] (Assigned to ${assignedLabel})`,
+      };
+    }
+
+    // ── 3. Create Issue ───────────────────────────────────────────────────────
+    if (args.itemType === "issue") {
+      const severity =
+        args.priorityOrSeverity &&
+        ["critical", "medium", "low"].includes(args.priorityOrSeverity.toLowerCase())
+          ? (args.priorityOrSeverity.toLowerCase() as "critical" | "medium" | "low")
+          : "medium";
+
+      const environment =
+        args.environment &&
+        ["production", "staging", "dev", "local"].includes(args.environment.toLowerCase())
+          ? (args.environment.toLowerCase() as "production" | "staging" | "dev" | "local")
+          : "dev";
+
+      const issueId = await ctx.db.insert("issues", {
+        projectId,
+        title: args.titleOrBody,
+        description: args.description ? args.description : undefined,
+        severity,
+        environment,
+        status: "opened",
+        type: "manual",
+        createdByUserId: callerUserId,
+        createdAt: now,
+        updatedAt: now,
+      });
+
+      // Insert into issueAssignees with issueId, userId, name, avatar, projectId
+      if (resolvedMember) {
+        await ctx.db.insert("issueAssignees", {
+          issueId,
+          userId: resolvedMember.userId,
+          name: resolvedMember.name,
+          avatar: resolvedMember.avatar,
+          projectId,
+        });
+      }
+
+      const assignedLabel = resolvedMember ? resolvedMember.name : "Unassigned";
+      return {
+        success: true,
+        itemType: "issue",
+        itemId: issueId,
+        title: args.titleOrBody,
+        severity,
+        environment,
+        assigneeName: assignedLabel,
+        message: `🚨 Logged Issue: "${args.titleOrBody}" [Severity: ${severity.toUpperCase()}, Env: ${environment}] (Assigned to ${assignedLabel})`,
+      };
+    }
+
+    throw new Error(`Unsupported itemType: ${args.itemType}`);
   },
 });
