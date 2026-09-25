@@ -272,11 +272,11 @@ export default function ProjectSidebar() {
     "faq".includes(searchQuery.toLowerCase()) ||
     "docs".includes(searchQuery.toLowerCase());
 
-  const matchesDelete =
-    "delete project".includes(searchQuery.toLowerCase()) ||
-    "remove".includes(searchQuery.toLowerCase()) ||
+  const matchesSettings =
+    "project settings".includes(searchQuery.toLowerCase()) ||
     "settings".includes(searchQuery.toLowerCase()) ||
-    "danger zone".includes(searchQuery.toLowerCase());
+    "repository".includes(searchQuery.toLowerCase()) ||
+    "connect repo".includes(searchQuery.toLowerCase());
 
   const hasNoResults =
     searchQuery.trim().length > 0 &&
@@ -285,7 +285,7 @@ export default function ProjectSidebar() {
     !matchesAi &&
     !matchesWorkspace &&
     !matchesHelp &&
-    !matchesDelete;
+    !matchesSettings;
 
   return (
     <Sidebar collapsible="icon" className="border bg-white! dark:bg-sidebar!">
@@ -862,7 +862,7 @@ export default function ProjectSidebar() {
           </SidebarMenu>
         )}
 
-        {(!searchQuery || matchesHelp || matchesDelete) && (
+        {(!searchQuery || matchesHelp || matchesSettings) && (
           <>
             <SidebarSeparator className="my-2 mx-0 w-full" />
             <SidebarMenu className="flex flex-col space-y-1.5">
@@ -884,21 +884,24 @@ export default function ProjectSidebar() {
                 </SidebarMenuItem>
               )}
 
-              {/* DELETE */}
-              {(!searchQuery || matchesDelete) && (
+              {/* PROJECT SETTINGS */}
+              {(!searchQuery || matchesSettings) && (
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     asChild
-                    tooltip="Delete Project"
-                    className="group relative overflow-hidden cursor-pointer  group-data-[collapsible=icon]:hidden"
+                    tooltip="Project Settings"
+                    isActive={isActive(
+                      `/dashboard/my-projects/${slug}/workspace/settings`,
+                    )}
+                    className="group relative overflow-hidden cursor-pointer group-data-[collapsible=icon]:hidden"
                   >
                     <Link
-                      href={`/dashboard/my-projects/${slug}/workspace/delete`}
+                      href={`/dashboard/my-projects/${slug}/workspace/settings`}
                       className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
                     >
-                      <Trash2 className="h-5 w-5 text-destructive" />
-                      <span className="text-sm  group-data-[collapsible=icon]:hidden">
-                        Delete Project
+                      <Settings2 className="h-5 w-5 text-foreground" />
+                      <span className="text-sm group-data-[collapsible=icon]:hidden">
+                        Project Settings
                       </span>
                     </Link>
                   </SidebarMenuButton>

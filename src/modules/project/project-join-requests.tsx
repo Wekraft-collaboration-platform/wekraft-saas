@@ -214,28 +214,36 @@ const RequestCard = ({ request, isPower, onAction, isLimitReached, onLimitReache
         </div>
 
         {isPower && isPending && (
-          <div className="flex items-center gap-2 ml-4">
+          <div className="flex items-center gap-2 ml-4 shrink-0">
             <Button
-              size="icon"
+              size="sm"
               variant="outline"
               disabled={isLimitReached}
-              className={`h-8 w-8 rounded-md px-6! border-green-500/20 text-green-500 hover:bg-green-500/10 hover:text-green-600 transition-all active:scale-95 ${isLimitReached ? "opacity-50 cursor-not-allowed border-muted" : ""}`}
-              onClick={() => onAction(request, "accepted")}
+              className={`h-8 px-3 text-xs border-green-500/30 text-green-500 hover:bg-green-500/10 hover:text-green-600 font-medium flex items-center gap-1.5 transition-all cursor-pointer ${isLimitReached ? "opacity-50 cursor-not-allowed border-muted" : ""}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                onAction(request, "accepted");
+              }}
             >
-              <Check className="h-4 w-4" />
+              <Check className="h-3.5 w-3.5" />
+              Accept
             </Button>
             <Button
-              size="icon"
+              size="sm"
               variant="outline"
-              className="h-8 w-8 rounded-md px-6! border-red-500/20 text-red-500 hover:bg-red-500/10 hover:text-red-600 transition-all active:scale-95"
-              onClick={() => onAction(request, "rejected")}
+              className="h-8 px-3 text-xs border-red-500/30 text-red-500 hover:bg-red-500/10 hover:text-red-600 font-medium flex items-center gap-1.5 transition-all cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                onAction(request, "rejected");
+              }}
             >
-              <X className="h-4 w-4" />
+              <X className="h-3.5 w-3.5" />
+              Reject
             </Button>
           </div>
         )}
         {!isPower && isPending && (
-          <p className="text-[11px] text-muted-foreground font-medium ml-4">
+          <p className="text-[11px] text-muted-foreground font-medium ml-4 shrink-0">
             Actions restricted
           </p>
         )}

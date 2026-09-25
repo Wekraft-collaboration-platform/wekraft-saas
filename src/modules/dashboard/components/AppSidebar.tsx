@@ -329,7 +329,7 @@ export const AppSidebar = () => {
                                   ? "sidebar-first-project"
                                   : undefined
                               }
-                              href={`/dashboard/my-projects/${project.slug}`}
+                              href={`/dashboard/my-projects/${project.slug}/workspace`}
                               className="flex items-center justify-between gap-2 p-0.5 rounded-md hover:bg-accent/40 cursor-pointer transition-all border border-transparent hover:border-sidebar-border"
                             >
                               <div className="flex items-center gap-2 max-w-[130px]">

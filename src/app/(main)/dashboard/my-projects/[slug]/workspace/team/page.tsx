@@ -48,6 +48,7 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { Skeleton } from "@/components/ui/skeleton";
 import { InviteDialog } from "@/modules/project/inviteDilogag";
+import { ProjectJoinRequests } from "@/modules/project/project-join-requests";
 import { api } from "../../../../../../../../convex/_generated/api";
 import type { Id } from "../../../../../../../../convex/_generated/dataModel";
 
@@ -72,7 +73,16 @@ export default function TeamPage() {
     api.project.getTeamPageData,
     project?._id ? { projectId: project._id as Id<"projects"> } : "skip",
   );
+  const requests = useQuery(
+    api.project.getProjectJoinRequests,
+    project?._id ? { projectId: project._id as Id<"projects"> } : "skip",
+  );
   const currentUser = useQuery(api.user.getCurrentUser);
+
+  const [teamTab, setTeamTab] = useState<"members" | "requests">("members");
+  const pendingRequestsCount = (requests || []).filter(
+    (r) => r.status === "pending",
+  ).length;
 
   const removeMember = useMutation(api.project.removeMember);
   const leaveTeam = useMutation(api.project.leaveProject);
@@ -297,18 +307,39 @@ export default function TeamPage() {
               </div>
             </div>
 
-            {/* Upgrade Action */}
-            {isOwner && teamData.ownerPlan !== "pro" && (
-              <Button
-                variant="default"
-                size="sm"
-                onClick={() => router.push("/web/pricing")}
-                className="rounded-full text-xs bg-blue-500 text-white hover:bg-blue-600"
+            {/* Upgrade Action & Requests Button */}
+            <div className="flex items-center gap-3">
+              {isOwner && teamData.ownerPlan !== "pro" && (
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => router.push("/web/pricing")}
+                  className="rounded-full text-xs bg-blue-500 text-white hover:bg-blue-600"
+                >
+                  Upgrade to Pro
+                  <ArrowUpRight className="w-3.5 h-3.5 ml-1.5 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
+                </Button>
+              )}
+
+              {/* Requests Trigger at end of narrow border */}
+              <button
+                type="button"
+                onClick={() => setTeamTab(teamTab === "requests" ? "members" : "requests")}
+                className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-normal transition-all cursor-pointer bg-white text-black hover:bg-white/90 border border-white shadow-xs"
               >
-                Upgrade to Pro
-                <ArrowUpRight className="w-3.5 h-3.5 ml-1.5 opacity-60 group-hover:opacity-100 group-hover:translate-x-0.5 group-hover:-translate-y-0.5 transition-all" />
-              </Button>
-            )}
+                <UserPlus className="w-3.5 h-3.5 text-black" />
+                <span className="font-normal">Requests</span>
+                {pendingRequestsCount > 0 ? (
+                  <span className="px-1.5 py-0.2 rounded-full text-[10px] font-medium bg-blue-600 text-white">
+                    {pendingRequestsCount}
+                  </span>
+                ) : (
+                  <span className="ml-0.5 text-[10px] opacity-80 font-normal text-black">
+                    ({(requests || []).length})
+                  </span>
+                )}
+              </button>
+            </div>
           </div>
 
           {/* Decorative background element */}
@@ -316,205 +347,235 @@ export default function TeamPage() {
         </div>
       </div>
 
-      {/* Members Grid */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 px-6 py-5">
-        {teamData.members.map((member) => {
-          const roleConfig =
-            ROLE_CONFIG[member.AccessRole] || ROLE_CONFIG.member;
-          const RoleIcon = roleConfig.icon;
-          const isCurrentUser = member.userId === currentUser?._id;
-          const canManage =
-            isPower && member.AccessRole !== "owner" && !isCurrentUser;
+      {/* Tab Content: Members */}
+      {teamTab === "members" && (
+        <>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 px-6 py-5">
+            {teamData.members.map((member) => {
+              const roleConfig =
+                ROLE_CONFIG[member.AccessRole] || ROLE_CONFIG.member;
+              const RoleIcon = roleConfig.icon;
+              const isCurrentUser = member.userId === currentUser?._id;
+              const canManage =
+                isPower && member.AccessRole !== "owner" && !isCurrentUser;
 
-          return (
-            <div
-              key={member.userId}
-              className="group relative bg-muted border border-border rounded-xl p-5 transition-all duration-200 hover:border-primary/20 hover:shadow-sm"
-            >
-              {/* Actions Menu */}
-              {canManage && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="absolute top-3.5 right-3.5 p-1 rounded-md  text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer">
-                      <MoreHorizontal className="w-4 h-4" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-44">
-                    {isOwner && (
-                      <DropdownMenuSub>
-                        <DropdownMenuSubTrigger>
-                          <ArrowRightLeft className="w-4 h-4 mr-2" />
-                          Change Role
-                        </DropdownMenuSubTrigger>
-                        <DropdownMenuSubContent>
-                          {(["admin", "member", "viewer"] as const).map((role) => (
-                            <DropdownMenuItem
-                              key={role}
-                              disabled={member.AccessRole === role}
-                              onClick={() =>
-                                member._id &&
-                                handleRoleChange(
-                                  member._id as Id<"projectMembers">,
-                                  role,
-                                  member.userName,
-                                )
-                              }
-                              className="cursor-pointer"
-                            >
-                              {ROLE_CONFIG[role].label}
-                              {member.AccessRole === role && (
-                                <span className="ml-auto text-xs text-muted-foreground">
-                                  Current
-                                </span>
-                              )}
-                            </DropdownMenuItem>
-                          ))}
-                        </DropdownMenuSubContent>
-                      </DropdownMenuSub>
-                    )}
-                    <DropdownMenuItem
-                      onClick={() =>
-                        router.push(
-                          `/dashboard/my-projects/${slug}/workspace/teamspace`,
-                        )
-                      }
-                      className="cursor-pointer"
-                    >
-                      <MessageSquare className="w-4 h-4 mr-2" />
-                      Message
-                    </DropdownMenuItem>
-                    <DropdownMenuSeparator />
-                    <DropdownMenuItem
-                      variant="destructive"
-                      onClick={() =>
-                        member._id &&
-                        setRemoveTarget({
-                          id: member._id as Id<"projectMembers">,
-                          name: member.userName,
-                          clerkUserId: member.clerkUserId,
-                          userImage: member.userImage,
-                        })
-                      }
-                      className="cursor-pointer"
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Remove
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-
-              {/* Actions Menu for current user (Leave only, no other actions) */}
-              {isCurrentUser && member.AccessRole !== "owner" && (
-                <DropdownMenu>
-                  <DropdownMenuTrigger asChild>
-                    <button className="absolute top-3.5 right-3.5 p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer">
-                      <MoreHorizontal className="w-4 h-4" />
-                    </button>
-                  </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="w-44">
-                    <DropdownMenuItem
-                      variant="destructive"
-                      onClick={() => setShowLeaveConfirm(true)}
-                      className="cursor-pointer"
-                    >
-                      <Trash2 className="w-4 h-4 mr-2" />
-                      Leave Project
-                    </DropdownMenuItem>
-                  </DropdownMenuContent>
-                </DropdownMenu>
-              )}
-
-              {/* Non-manageable members just get Message */}
-              {!canManage &&
-                member.AccessRole !== "owner" &&
-                !isCurrentUser && (
-                  <button
-                    onClick={() =>
-                      router.push(
-                        `/dashboard/my-projects/${slug}/workspace/teamspace`,
-                      )
-                    }
-                    className="absolute top-3.5 right-3.5 p-1 rounded-md  text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer"
-                  >
-                    <MessageSquare className="w-4 h-4" />
-                  </button>
-                )}
-
-              {/* Avatar + Name + Role */}
-              <div className="flex items-start gap-3 mb-4">
-                <Avatar className="w-10 h-10 border border-border">
-                  <AvatarImage src={member.userImage} />
-                  <AvatarFallback className="text-xs font-medium bg-secondary text-secondary-foreground">
-                    {member.userName?.[0]?.toUpperCase() || "?"}
-                  </AvatarFallback>
-                </Avatar>
-                <div className="min-w-0 flex-1">
-                  <p className="text-sm font-medium text-foreground truncate">
-                    {member.userName}
-                  </p>
-                  <p className="text-xs text-muted-foreground truncate">
-                    {member.userEmail}
-                  </p>
-                </div>
-              </div>
-
-              {/* Role Badge */}
-              <div className="mb-4">
-                <Badge
-                  variant="outline"
-                  className="text-[10px] font-medium gap-1 py-0.5"
+              return (
+                <div
+                  key={member.userId}
+                  className="group relative bg-muted border border-border rounded-xl p-5 transition-all duration-200 hover:border-primary/20 hover:shadow-sm"
                 >
-                  <RoleIcon className="w-3 h-3" />
-                  {roleConfig.label}
-                </Badge>
-              </div>
+                  {/* Actions Menu */}
+                  {canManage && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="absolute top-3.5 right-3.5 p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-44">
+                        {isOwner && (
+                          <DropdownMenuSub>
+                            <DropdownMenuSubTrigger>
+                              <ArrowRightLeft className="w-4 h-4 mr-2" />
+                              Change Role
+                            </DropdownMenuSubTrigger>
+                            <DropdownMenuSubContent>
+                              {(["admin", "member", "viewer"] as const).map((role) => (
+                                <DropdownMenuItem
+                                  key={role}
+                                  disabled={member.AccessRole === role}
+                                  onClick={() =>
+                                    member._id &&
+                                    handleRoleChange(
+                                      member._id as Id<"projectMembers">,
+                                      role,
+                                      member.userName,
+                                    )
+                                  }
+                                  className="cursor-pointer"
+                                >
+                                  {ROLE_CONFIG[role].label}
+                                  {member.AccessRole === role && (
+                                    <span className="ml-auto text-xs text-muted-foreground">
+                                      Current
+                                    </span>
+                                  )}
+                                </DropdownMenuItem>
+                              ))}
+                            </DropdownMenuSubContent>
+                          </DropdownMenuSub>
+                        )}
+                        <DropdownMenuItem
+                          onClick={() =>
+                            router.push(
+                              `/dashboard/my-projects/${slug}/workspace/teamspace`,
+                            )
+                          }
+                          className="cursor-pointer"
+                        >
+                          <MessageSquare className="w-4 h-4 mr-2" />
+                          Message
+                        </DropdownMenuItem>
+                        <DropdownMenuSeparator />
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onClick={() =>
+                            member._id &&
+                            setRemoveTarget({
+                              id: member._id as Id<"projectMembers">,
+                              name: member.userName,
+                              clerkUserId: member.clerkUserId,
+                              userImage: member.userImage,
+                            })
+                          }
+                          className="cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Remove
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
 
-              {/* Stats Row */}
-              <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3">
-                <div className="flex items-center gap-1.5">
-                  <CheckSquare className="w-3.5 h-3.5" />
-                  <span>
-                    <span className="text-foreground font-medium">
-                      {member.taskCount}
-                    </span>{" "}
-                    tasks
-                  </span>
-                </div>
-                <div className="flex items-center gap-1.5">
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  <span>
-                    <span className="text-foreground font-medium">
-                      {member.issueCount}
-                    </span>{" "}
-                    issues
-                  </span>
-                </div>
-              </div>
+                  {/* Actions Menu for current user (Leave only) */}
+                  {isCurrentUser && member.AccessRole !== "owner" && (
+                    <DropdownMenu>
+                      <DropdownMenuTrigger asChild>
+                        <button className="absolute top-3.5 right-3.5 p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer">
+                          <MoreHorizontal className="w-4 h-4" />
+                        </button>
+                      </DropdownMenuTrigger>
+                      <DropdownMenuContent align="end" className="w-44">
+                        <DropdownMenuItem
+                          variant="destructive"
+                          onClick={() => setShowLeaveConfirm(true)}
+                          className="cursor-pointer"
+                        >
+                          <Trash2 className="w-4 h-4 mr-2" />
+                          Leave Project
+                        </DropdownMenuItem>
+                      </DropdownMenuContent>
+                    </DropdownMenu>
+                  )}
 
-              {/* Joined Date */}
-              <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground pt-3 border-t border-border">
-                <CalendarDays className="w-3 h-3" />
-                Joined{" "}
-                {new Date(member.joinedAt).toLocaleDateString("en-US", {
-                  month: "short",
-                  day: "numeric",
-                  year: "numeric",
-                })}
-              </div>
+                  {/* Non-manageable members just get Message */}
+                  {!canManage &&
+                    member.AccessRole !== "owner" &&
+                    !isCurrentUser && (
+                      <button
+                        onClick={() =>
+                          router.push(
+                            `/dashboard/my-projects/${slug}/workspace/teamspace`,
+                          )
+                        }
+                        className="absolute top-3.5 right-3.5 p-1 rounded-md text-muted-foreground hover:text-foreground hover:bg-accent cursor-pointer"
+                      >
+                        <MessageSquare className="w-4 h-4" />
+                      </button>
+                    )}
+
+                  {/* Avatar + Name + Role */}
+                  <div className="flex items-start gap-3 mb-4">
+                    <Avatar className="w-10 h-10 border border-border">
+                      <AvatarImage src={member.userImage} />
+                      <AvatarFallback className="text-xs font-medium bg-secondary text-secondary-foreground">
+                        {member.userName?.[0]?.toUpperCase() || "?"}
+                      </AvatarFallback>
+                    </Avatar>
+                    <div className="min-w-0 flex-1">
+                      <p className="text-sm font-medium text-foreground truncate">
+                        {member.userName}
+                      </p>
+                      <p className="text-xs text-muted-foreground truncate">
+                        {member.userEmail}
+                      </p>
+                    </div>
+                  </div>
+
+                  {/* Role Badge */}
+                  <div className="mb-4">
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] font-medium gap-1 py-0.5"
+                    >
+                      <RoleIcon className="w-3 h-3" />
+                      {roleConfig.label}
+                    </Badge>
+                  </div>
+
+                  {/* Stats Row */}
+                  <div className="flex items-center gap-4 text-xs text-muted-foreground mb-3">
+                    <div className="flex items-center gap-1.5">
+                      <CheckSquare className="w-3.5 h-3.5" />
+                      <span>
+                        <span className="text-foreground font-medium">
+                          {member.taskCount}
+                        </span>{" "}
+                        tasks
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-1.5">
+                      <AlertCircle className="w-3.5 h-3.5" />
+                      <span>
+                        <span className="text-foreground font-medium">
+                          {member.issueCount}
+                        </span>{" "}
+                        issues
+                      </span>
+                    </div>
+                  </div>
+
+                  {/* Joined Date */}
+                  <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground pt-3 border-t border-border">
+                    <CalendarDays className="w-3 h-3" />
+                    Joined{" "}
+                    {new Date(member.joinedAt).toLocaleDateString("en-US", {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Empty State */}
+          {teamData.members.length === 0 && (
+            <div className="flex flex-col items-center justify-center py-24 text-center">
+              <Users className="w-10 h-10 text-muted-foreground/40 mb-3" />
+              <p className="text-sm text-muted-foreground">No team members yet</p>
+              <p className="text-xs text-muted-foreground/60 mt-1">
+                Invite members to start collaborating
+              </p>
             </div>
-          );
-        })}
-      </div>
+          )}
+        </>
+      )}
 
-      {/* Empty State */}
-      {teamData.members.length === 0 && (
-        <div className="flex flex-col items-center justify-center py-24 text-center">
-          <Users className="w-10 h-10 text-muted-foreground/40 mb-3" />
-          <p className="text-sm text-muted-foreground">No team members yet</p>
-          <p className="text-xs text-muted-foreground/60 mt-1">
-            Invite members to start collaborating
-          </p>
+      {/* Tab Content: Requests */}
+      {teamTab === "requests" && (
+        <div className="px-6 py-4 space-y-2">
+          <div className="flex items-center justify-between pb-2 border-b border-border">
+            <h2 className="text-sm font-semibold flex items-center gap-2 text-foreground">
+              <UserPlus className="w-4 h-4 text-primary" />
+              Project Join Requests
+            </h2>
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setTeamTab("members")}
+              className="text-xs cursor-pointer text-muted-foreground hover:text-foreground h-8"
+            >
+              ← Back to Members
+            </Button>
+          </div>
+          <ProjectJoinRequests
+            projectId={project._id as Id<"projects">}
+            projectName={project.projectName}
+            currentMemberCount={teamData.total}
+            memberLimit={teamData.memberLimit}
+          />
         </div>
       )}
 
