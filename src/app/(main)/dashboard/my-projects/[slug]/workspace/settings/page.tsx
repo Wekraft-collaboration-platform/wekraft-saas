@@ -4,11 +4,11 @@ import { useMutation, useQuery } from "convex/react";
 import {
   ExternalLink,
   GitBranch,
-  Layers,
   Link2,
   Loader2,
   Save,
   Settings2,
+  ShieldCheck,
 } from "lucide-react";
 import Link from "next/link";
 import { useParams, useRouter } from "next/navigation";
@@ -18,16 +18,10 @@ import { api } from "@/../convex/_generated/api";
 import type { Id } from "@/../convex/_generated/dataModel";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle,
-} from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
+import { Switch } from "@/components/ui/switch";
+import { KayaSettingsSection } from "@/modules/workspace/settings/KayaSettingsSection";
 
 export default function ProjectSettingsPage() {
   const params = useParams();
@@ -35,7 +29,20 @@ export default function ProjectSettingsPage() {
   const slug = params.slug as string;
 
   const project = useQuery(api.project.getProjectBySlug, { slug });
+  const user = useQuery(api.user.getCurrentUser);
+  const isOwner = !!project && !!user && project.ownerId === user._id;
+
+  const projectId = project?._id;
+
+  const projectDetails = useQuery(
+    api.projectDetails.getProjectDetails,
+    projectId ? { projectId: projectId as Id<"projects"> } : "skip",
+  );
+
   const updateProject = useMutation(api.project.updateProject);
+  const updateProjectConfig = useMutation(
+    api.projectDetails.updateProjectConfig,
+  );
 
   const [projectName, setProjectName] = useState("");
   const [isSaving, setIsSaving] = useState(false);
@@ -46,11 +53,12 @@ export default function ProjectSettingsPage() {
     }
   }, [project?.projectName]);
 
-  if (project === undefined) {
+  if (project === undefined || user === undefined) {
     return (
-      <div className="w-full h-full p-6 space-y-6">
+      <div className="w-full h-full p-8 space-y-6">
         <Skeleton className="h-10 w-64" />
-        <Skeleton className="h-48 w-full rounded-xl" />
+        <Skeleton className="h-32 w-full rounded-xl" />
+        <Skeleton className="h-32 w-full rounded-xl" />
         <Skeleton className="h-48 w-full rounded-xl" />
       </div>
     );
@@ -86,135 +94,230 @@ export default function ProjectSettingsPage() {
     }
   };
 
+  const handleUpdateConfig = async (updates: any) => {
+    if (!projectId) return;
+    try {
+      await updateProjectConfig({
+        projectId: projectId as Id<"projects">,
+        ...updates,
+      });
+      toast.success("Project policy updated");
+    } catch (error) {
+      toast.error("Failed to update project policy");
+    }
+  };
+
   return (
-    <div className="w-full max-w-4xl p-6 mx-auto space-y-8 animate-in fade-in duration-500">
+    <div className="w-full p-8 animate-in fade-in duration-500">
       {/* Header */}
-      <div>
-        <h1 className="text-2xl font-bold flex items-center gap-2 text-foreground">
+      <div className="mb-10">
+        <h1 className="text-2xl font-semibold flex items-center gap-2 text-foreground">
           <Settings2 className="w-6 h-6 text-primary" />
           Project Settings
         </h1>
         <p className="text-sm text-muted-foreground mt-1">
-          Manage project details and repository connections
+          Manage your Project details, Policies, Integrations, and Kaya Settings.
         </p>
       </div>
 
-      {/* Project Title Card */}
-      <Card className="border-accent">
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <Layers className="w-4 h-4 text-primary" />
-            Project Title
-          </CardTitle>
-          <CardDescription>
-            The display name of your project across the workspace.
-          </CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="projectName" className="text-xs">
-              Title
-            </Label>
-            <Input
-              id="projectName"
-              value={projectName}
-              onChange={(e) => setProjectName(e.target.value)}
-              placeholder="Enter project title..."
-              className="max-w-md font-medium"
-            />
+      <div className="max-w-4xl min-w-2xl:max-w-5xl mx-auto space-y-6">
+        {/* 1. Project Title - Linear Style */}
+        <div className="space-y-2">
+          <div>
+            <h3 className="text-sm font-medium text-foreground">
+              Project Title
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              The display name of your project across the workspace
+            </p>
           </div>
-          <Button
-            size="sm"
-            onClick={handleSaveTitle}
-            disabled={isSaving || projectName === project.projectName}
-            className="text-xs cursor-pointer"
-          >
-            {isSaving ? (
-              <>
-                <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" /> Saving...
-              </>
-            ) : (
-              <>
-                <Save className="w-3.5 h-3.5 mr-1.5" /> Save Title
-              </>
-            )}
-          </Button>
-        </CardContent>
-      </Card>
 
-      {/* Connected Repository Card */}
-      <Card className="border-accent">
-        <CardHeader>
-          <CardTitle className="text-base flex items-center gap-2">
-            <GitBranch className="w-4 h-4 text-primary" />
-            Connected Repository
-          </CardTitle>
-          <CardDescription>
-            The GitHub repository linked to this project.
-          </CardDescription>
-        </CardHeader>
-        <CardContent>
-          {project.repoFullName || project.repositoryId ? (
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-lg border border-border bg-muted/40 gap-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-md bg-accent text-primary">
-                  <Link2 className="w-5 h-5" />
-                </div>
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="font-semibold text-sm">
-                      {project.repoFullName || "Repository Connected"}
-                    </span>
-                    <Badge
-                      variant="outline"
-                      className="text-[10px] bg-green-500/10 text-green-500 border-green-500/20"
-                    >
-                      Connected
-                    </Badge>
+          <div className="rounded-xl border border-border bg-card p-3 shadow-xs">
+            <div className="flex items-center justify-between gap-3">
+              <Input
+                id="projectName"
+                value={projectName}
+                onChange={(e) => setProjectName(e.target.value)}
+                placeholder="Enter project title..."
+                className="max-w-md text-xs h-9 bg-background/60 font-medium"
+              />
+              <Button
+                size="sm"
+                onClick={handleSaveTitle}
+                disabled={isSaving || projectName === project.projectName}
+                className="text-xs cursor-pointer h-9 px-3"
+              >
+                {isSaving ? (
+                  <>
+                    <Loader2 className="w-3.5 h-3.5 mr-1.5 animate-spin" />{" "}
+                    Saving...
+                  </>
+                ) : (
+                  <>
+                    <Save className="w-3.5 h-3.5 mr-1.5" /> Save Title
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </div>
+
+        {/* 2. Connected Repository - Linear Style */}
+        <div className="space-y-2 pt-2">
+          <div>
+            <h3 className="text-sm font-medium text-foreground">
+              Connected Repository
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              The GitHub repository linked to this project for commits and code tracking
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-border bg-card overflow-hidden shadow-xs">
+            {project.repoFullName || project.repositoryId ? (
+              <div className="flex items-center justify-between px-4 py-3.5 hover:bg-muted/15 transition-colors">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-8 h-8 rounded-lg bg-neutral-900/90 border border-border/60 flex items-center justify-center shrink-0 text-primary">
+                    <Link2 className="w-4 h-4" />
                   </div>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Synced with GitHub
-                  </p>
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-medium text-xs text-foreground truncate">
+                        {project.repoFullName || "Repository Connected"}
+                      </span>
+                      <Badge
+                        variant="outline"
+                        className="text-[10px] py-0 px-1.5 bg-green-500/10 text-green-500 border-green-500/20 font-normal"
+                      >
+                        Connected
+                      </Badge>
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      Synced with GitHub
+                    </p>
+                  </div>
                 </div>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => router.push("/dashboard/repositories")}
+                  className="text-xs cursor-pointer h-8"
+                >
+                  Change Repository
+                  <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
+                </Button>
               </div>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => router.push("/dashboard/repositories")}
-                className="text-xs cursor-pointer"
-              >
-                Change Repository
-                <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
-              </Button>
-            </div>
-          ) : (
-            <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between p-4 rounded-lg border border-dashed border-border bg-muted/20 gap-4">
-              <div className="flex items-center gap-3">
-                <div className="p-2.5 rounded-md bg-accent text-muted-foreground">
-                  <GitBranch className="w-5 h-5" />
+            ) : (
+              <div className="flex items-center justify-between px-4 py-3.5 hover:bg-muted/15 transition-colors">
+                <div className="flex items-center gap-3">
+                  <div className="w-8 h-8 rounded-lg bg-muted/40 border border-border/60 flex items-center justify-center shrink-0 text-muted-foreground">
+                    <GitBranch className="w-4 h-4" />
+                  </div>
+                  <div>
+                    <div className="text-xs font-medium text-foreground">
+                      No repository connected
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      Connect a repository to link commits & code tracking.
+                    </p>
+                  </div>
                 </div>
-                <div>
-                  <p className="font-medium text-sm text-foreground">
-                    No repository connected
-                  </p>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    Connect a repository to link commits & code tracking.
-                  </p>
-                </div>
+                <Button
+                  variant="default"
+                  size="sm"
+                  onClick={() => router.push("/dashboard/repositories")}
+                  className="text-xs cursor-pointer h-8 bg-blue-500 text-white hover:bg-blue-600"
+                >
+                  Connect Repository
+                  <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
+                </Button>
               </div>
-              <Button
-                variant="default"
-                size="sm"
-                onClick={() => router.push("/dashboard/repositories")}
-                className="text-xs cursor-pointer bg-blue-500 text-white hover:bg-blue-600"
-              >
-                Connect Repository
-                <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
-              </Button>
+            )}
+          </div>
+        </div>
+
+        {/* Project Policies Section - Linear Style */}
+        <div className="space-y-2 pt-2">
+          <div>
+            <h3 className="text-sm font-medium text-foreground">
+              Project Policies
+            </h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Member governance, AI permissions, and channel access
+            </p>
+          </div>
+
+          <div className="rounded-xl border border-border bg-card divide-y divide-neutral-800 overflow-hidden shadow-xs">
+            {/* Member Task Creation */}
+            <div className="flex items-center justify-between px-4 py-3.5 hover:bg-muted/15 transition-colors">
+              <div className="space-y-0.5">
+                <div className="text-xs font-medium text-foreground">
+                  Member Task Creation
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Allow team members to create new tasks and issues.
+                </p>
+              </div>
+              <Switch
+                disabled={!isOwner}
+                checked={projectDetails?.memberCanCreate ?? true}
+                onCheckedChange={(checked) =>
+                  handleUpdateConfig({ memberCanCreate: checked })
+                }
+              />
             </div>
-          )}
-        </CardContent>
-      </Card>
+
+            {/* Member AI Access (Kaya) */}
+            <div className="flex items-center justify-between px-4 py-3.5 hover:bg-muted/15 transition-colors">
+              <div className="space-y-0.5">
+                <div className="text-xs font-medium text-foreground">
+                  Member AI Access (Kaya)
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Allow team members to use Kaya AI for insights and automation.
+                </p>
+              </div>
+              <Switch
+                disabled={!isOwner}
+                checked={projectDetails?.memberUseKaya ?? true}
+                onCheckedChange={(checked) =>
+                  handleUpdateConfig({ memberUseKaya: checked })
+                }
+              />
+            </div>
+
+            {/* AI in Teamspace */}
+            <div className="flex items-center justify-between px-4 py-3.5 hover:bg-muted/15 transition-colors">
+              <div className="space-y-0.5">
+                <div className="text-xs font-medium text-foreground">
+                  AI in Teamspace
+                </div>
+                <p className="text-[11px] text-muted-foreground">
+                  Enable AI assistants and summary tools in project channels.
+                </p>
+              </div>
+              <Switch
+                disabled={!isOwner}
+                checked={projectDetails?.canUseAITeamspace ?? false}
+                onCheckedChange={(checked) =>
+                  handleUpdateConfig({ canUseAITeamspace: checked })
+                }
+              />
+            </div>
+
+            {/* Non-owner notice */}
+            {!isOwner && (
+              <div className="px-4 py-2.5 bg-muted/20 text-[11px] text-muted-foreground flex items-center gap-2">
+                <ShieldCheck className="w-3.5 h-3.5 text-muted-foreground" />
+                <span>Only the project owner can modify governance policies.</span>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Kaya Settings Section */}
+        <KayaSettingsSection projectId={project._id as Id<"projects">} />
+      </div>
     </div>
   );
 }

@@ -17,15 +17,10 @@ import {
   FlagTriangleRight,
   History,
   Home,
-  Lock,
   Plus,
-  PlusCircle,
-  Settings2,
-  Sparkles,
   Table,
   Timer,
   Users,
-  XCircle,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -33,24 +28,13 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Card,
-  CardAction,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Popover,
   PopoverContent,
@@ -65,7 +49,6 @@ import { SetTargetDateDialog } from "@/modules/workspace/SetTargetDateDialog";
 import { ActivityOverviewCard } from "@/modules/workspace/workspace-modules/ActivityOverviewCard";
 import { EnvironmentalSeverityHeatmap } from "@/modules/workspace/workspace-modules/EnvironmentalSeverityHeatmap";
 import { MemberWorkloadCard } from "@/modules/workspace/workspace-modules/MemberWorkloadCard";
-import { ProjectConfigTab } from "@/modules/workspace/workspace-modules/ProjectConfigTab";
 import { SchedulerCard } from "@/modules/workspace/workspace-modules/SchedulerCard";
 import { SprintBarChart } from "@/modules/workspace/workspace-modules/SprintBarChart";
 import { TaskStatusCard } from "@/modules/workspace/workspace-modules/TaskStatusCard";
@@ -79,9 +62,6 @@ const ProjectWorkspace = () => {
   const params = useParams();
   const slug = params.slug as string;
   const [isDeadlineDialogOpen, setIsDeadlineDialogOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"charts" | "config">(
-    "charts",
-  );
   const [cachedData, setCachedData] = useState<any>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -127,11 +107,10 @@ const ProjectWorkspace = () => {
   );
 
   useEffect(() => {
-    if (projectId && activeTab === "charts" && !cachedData) {
+    if (projectId && !cachedData) {
       fetchAnalytics(projectId).then(setCachedData).catch(console.error);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectId, activeTab]);
+  }, [projectId, cachedData]);
 
   const handleToggleAlert = async (percent: number, checked: boolean) => {
     if (!projectId) return;
@@ -449,127 +428,95 @@ const ProjectWorkspace = () => {
         <TaskStatusCard tasks={tasks || []} />
       </section>
 
-      {/* TABS: advance charts (scheduler + advance charts) / Config */}
-      <div className="flex mt-8 mb-2 items-center justify-end px-10">
-        <div className="flex items-center gap-4">
+      {/* Advance Charts Header */}
+      <div className="flex mt-8 mb-2 items-center justify-between px-2">
+        <h2 className="text-base font-semibold flex items-center gap-2 text-foreground">
+          <ChartBar className="w-4 h-4 text-primary" />
+          Advance Charts & Analytics
+        </h2>
+        {(project as any)?.ownerAccountType !== "free" && (
           <Button
-            className="text-xs cursor-pointer"
-            variant={activeTab === "charts" ? "default" : "outline"}
-            size={"sm"}
-            onClick={() => setActiveTab("charts")}
+            className={cn(
+              "text-[10px] h-7 px-2 cursor-pointer transition-all",
+              isRefreshing && "animate-pulse opacity-50",
+            )}
+            variant="outline"
+            size="sm"
+            onClick={handleRefresh}
+            disabled={isRefreshing}
           >
-            Advance Charts <ChartBar />
+            <History
+              className={cn("w-3 h-3 mr-1", isRefreshing && "animate-spin")}
+            />
+            {isRefreshing ? "Refreshing..." : "Refresh Analytics"}
           </Button>
-
-          <Button
-            className="text-xs cursor-pointer"
-            variant={activeTab === "config" ? "default" : "outline"}
-            size={"sm"}
-            onClick={() => setActiveTab("config")}
-          >
-            Config <Settings2 />
-          </Button>
-        </div>
+        )}
       </div>
 
       <Separator className="bg-accent" />
 
-      <section className="mt-4 w-full">
-        {activeTab === "charts" &&
-          (project as any)?.ownerAccountType !== "free" && (
-            <Button
-              className={cn(
-                "text-[10px] h-7 px-2 flex justify-end ml-auto mb-5 cursor-pointer transition-all",
-                isRefreshing && "animate-pulse opacity-50",
-              )}
-              variant="default"
-              size="sm"
-              onClick={handleRefresh}
-              disabled={isRefreshing}
-            >
-              <History
-                className={cn("w-3 h-3 mr-1", isRefreshing && "animate-spin")}
+      <section className="mt-6 w-full">
+        {(project as any)?.ownerAccountType === "free" ? (
+          <div className="flex flex-col items-center justify-center py-16 ">
+            <div className="flex flex-col items-start gap-1.5 max-w-sm text-sm">
+              <Image
+                src="/pat106.svg"
+                alt="locked features"
+                width={120}
+                height={120}
               />
-              {isRefreshing ? "Refreshing..." : "Refresh Analytics"}
-            </Button>
-          )}
-        {/* Advace charts area */}
-        {activeTab === "charts" && (
-          <div className="mt-6">
-            {(project as any)?.ownerAccountType === "free" ? (
-              <div className="flex flex-col items-center justify-center py-16 ">
-                <div className="flex flex-col items-start gap-1.5 max-w-sm text-sm">
-                  <Image
-                    src="/pat106.svg"
-                    alt="locked features"
-                    width={120}
-                    height={120}
-                  />
-                  <h3 className="text-muted-foreground">
-                    Project Owner must upgrade in order to unlock advanced
-                    analytics / Team insights and much more.
-                  </h3>
-                  <div className="flex items-center gap-4 mt-3">
-                    <Button
-                      className="cursor-pointer"
-                      variant="default"
-                      size="sm"
-                    >
-                      Upgrade
-                    </Button>
-                    <Button
-                      className="cursor-pointer"
-                      variant="outline"
-                      size="sm"
-                    >
-                      Learn More <Plus className="w-3 h-3 ml-1" />
-                    </Button>
-                  </div>
-                </div>
+              <h3 className="text-muted-foreground">
+                Project Owner must upgrade in order to unlock advanced
+                analytics / Team insights and much more.
+              </h3>
+              <div className="flex items-center gap-4 mt-3">
+                <Button
+                  className="cursor-pointer"
+                  variant="default"
+                  size="sm"
+                >
+                  Upgrade
+                </Button>
+                <Button
+                  className="cursor-pointer"
+                  variant="outline"
+                  size="sm"
+                >
+                  Learn More <Plus className="w-3 h-3 ml-1" />
+                </Button>
               </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-x-10 gap-y-6 px-5">
-                <TeamContributionRadarCard
-                  projectId={projectId as Id<"projects">}
-                  data={cachedData?.contributions}
-                />
-                <SprintBarChart
-                  projectId={projectId as Id<"projects">}
-                  data={cachedData?.sprints}
-                />
-                <EnvironmentalSeverityHeatmap
-                  projectId={projectId as Id<"projects">}
-                  data={cachedData?.heatmap}
-                />
-
-                <WeeklyVelocityChart
-                  projectId={projectId as Id<"projects">}
-                  data={cachedData?.velocity}
-                />
-
-                <MemberWorkloadCard
-                  projectId={projectId as Id<"projects">}
-                  data={cachedData?.workload}
-                />
-
-                <WeeklyEngagementChartCard
-                  projectId={projectId as Id<"projects">}
-                  data={cachedData?.weeklyEngagement}
-                />
-              </div>
-            )}
+            </div>
           </div>
-        )}
+        ) : (
+          <div className="grid grid-cols-2 gap-x-10 gap-y-6 px-5">
+            <TeamContributionRadarCard
+              projectId={projectId as Id<"projects">}
+              data={cachedData?.contributions}
+            />
+            <SprintBarChart
+              projectId={projectId as Id<"projects">}
+              data={cachedData?.sprints}
+            />
+            <EnvironmentalSeverityHeatmap
+              projectId={projectId as Id<"projects">}
+              data={cachedData?.heatmap}
+            />
 
+            <WeeklyVelocityChart
+              projectId={projectId as Id<"projects">}
+              data={cachedData?.velocity}
+            />
 
-        {/* Config Area */}
-        {activeTab === "config" && projectId && (
-          <ProjectConfigTab
-            projectId={projectId as Id<"projects">}
-            projectDetails={projectDetails}
-            scheduler={scheduler}
-            isOwner={isOwner}
-          />
+            <MemberWorkloadCard
+              projectId={projectId as Id<"projects">}
+              data={cachedData?.workload}
+            />
+
+            <WeeklyEngagementChartCard
+              projectId={projectId as Id<"projects">}
+              data={cachedData?.weeklyEngagement}
+            />
+          </div>
         )}
       </section>
     </div>
