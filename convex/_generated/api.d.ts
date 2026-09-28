@@ -30,6 +30,7 @@ import type * as razorpay from "../razorpay.js";
 import type * as repo from "../repo.js";
 import type * as scheduleRunner from "../scheduleRunner.js";
 import type * as scheduler from "../scheduler.js";
+import type * as skills from "../skills.js";
 import type * as sprint from "../sprint.js";
 import type * as support from "../support.js";
 import type * as teamspaceAgents from "../teamspaceAgents.js";
@@ -65,6 +66,7 @@ declare const fullApi: ApiFromModules<{
   repo: typeof repo;
   scheduleRunner: typeof scheduleRunner;
   scheduler: typeof scheduler;
+  skills: typeof skills;
   sprint: typeof sprint;
   support: typeof support;
   teamspaceAgents: typeof teamspaceAgents;

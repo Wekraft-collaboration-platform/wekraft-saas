@@ -1,10 +1,10 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { useQuery, useMutation } from "convex/react";
 import { toast } from "sonner";
-import { Sparkles, Plug, Wrench, Plus, Save, X } from "lucide-react";
+import { Sparkles, Plug, Wrench, Plus, Save, X, Copy, Check, FileText, Eye } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { api } from "@/../convex/_generated/api";
@@ -69,6 +69,17 @@ export function KayaSettingsSection({ projectId }: KayaSettingsSectionProps) {
   const connections = useQuery(api.mcp.getConnectionsByProject, { projectId });
   const disconnectMutation = useMutation(api.mcp.disconnectTool);
 
+  // Skills queries & mutations (Global + User-Scoped)
+  const userSkills = useQuery(api.skills.getUserSkills, {});
+  const createSkillMutation = useMutation(api.skills.createSkill);
+  const deleteSkillMutation = useMutation(api.skills.deleteSkill);
+  const seedDefaultSkillsMutation = useMutation(api.skills.seedDefaultSkills);
+
+  // Auto-seed default skills in Convex DB if not already present
+  useEffect(() => {
+    seedDefaultSkillsMutation().catch(() => {});
+  }, [seedDefaultSkillsMutation]);
+
   // Kaya Personality State (3 PM Styles)
   const [selectedPreset, setSelectedPreset] = useState("delivery");
   const [customPrompt, setCustomPrompt] = useState(
@@ -81,8 +92,16 @@ export function KayaSettingsSection({ projectId }: KayaSettingsSectionProps) {
 
   // Skills Registry State
   const [isCreateSkillOpen, setIsCreateSkillOpen] = useState(false);
+  const [newSkillTitle, setNewSkillTitle] = useState("");
   const [newSkillName, setNewSkillName] = useState("");
   const [newSkillDesc, setNewSkillDesc] = useState("");
+  const [newSkillContent, setNewSkillContent] = useState("");
+  const [newSkillConnector, setNewSkillConnector] = useState("");
+  const [isSubmittingSkill, setIsSubmittingSkill] = useState(false);
+
+  // View Skill Dialog State
+  const [viewingSkill, setViewingSkill] = useState<any | null>(null);
+  const [copiedSkill, setCopiedSkill] = useState(false);
 
   const handlePresetSelect = (presetId: string) => {
     setSelectedPreset(presetId);
@@ -111,20 +130,62 @@ export function KayaSettingsSection({ projectId }: KayaSettingsSectionProps) {
     }
   };
 
-  const handleCreateSkillSubmit = (e: React.FormEvent) => {
+  const handleCreateSkillSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newSkillName.trim()) {
-      toast.error("Skill name is required");
+    if (!newSkillTitle.trim()) {
+      toast.error("Skill title is required");
       return;
     }
-    toast.success(`Skill "${newSkillName}" created!`);
-    setNewSkillName("");
-    setNewSkillDesc("");
-    setIsCreateSkillOpen(false);
+    const finalName = (newSkillName.trim() || newSkillTitle.trim())
+      .toLowerCase()
+      .replace(/[^a-z0-9_-]/g, "_");
+
+    setIsSubmittingSkill(true);
+    try {
+      await createSkillMutation({
+        name: finalName,
+        title: newSkillTitle.trim(),
+        description: newSkillDesc.trim() || undefined,
+        content:
+          newSkillContent.trim() ||
+          `# ${newSkillTitle}\n\n${newSkillDesc || "Custom skill definition for Kaya agent."}`,
+        createdBy: "user",
+        connectorId: newSkillConnector.trim() || undefined,
+      });
+
+      toast.success(`Skill "${newSkillTitle}" created successfully!`);
+      setNewSkillTitle("");
+      setNewSkillName("");
+      setNewSkillDesc("");
+      setNewSkillContent("");
+      setNewSkillConnector("");
+      setIsCreateSkillOpen(false);
+    } catch (err: any) {
+      toast.error(err?.message || "Failed to create skill.");
+    } finally {
+      setIsSubmittingSkill(false);
+    }
+  };
+
+  const handleDeleteSkill = async (skillId: Id<"skills">) => {
+    try {
+      await deleteSkillMutation({ skillId });
+      toast.success("Skill deleted");
+    } catch (e: any) {
+      toast.error(e?.message || "Failed to delete skill.");
+    }
+  };
+
+  const handleCopySkillContent = (content: string) => {
+    navigator.clipboard.writeText(content);
+    setCopiedSkill(true);
+    toast.success("Skill content copied to clipboard!");
+    setTimeout(() => setCopiedSkill(false), 2000);
   };
 
   // Connected MCP tools from Convex
   const connectedItems = (connections || []).filter((c) => c.isConnected);
+  const skillsList = userSkills || [];
 
   return (
     <div className="space-y-6 mt-5">
@@ -246,82 +307,293 @@ export function KayaSettingsSection({ projectId }: KayaSettingsSectionProps) {
         </CardContent>
       </Card>
 
-      {/* 2. Skills Section - Linear Style */}
+      {/* 2. Skills Section - Same Linear/MCP Style */}
       <div className="space-y-2 pt-2">
         <div>
           <h3 className="text-sm font-medium text-foreground">Skills</h3>
           <p className="text-xs text-muted-foreground mt-0.5">
-            Automated routines created dynamically by Kaya and pre-installed
-            skills.
+            Automated routines created dynamically by Kaya and pre-installed skills.
           </p>
         </div>
 
-        <div className="rounded-xl border border-border bg-card/60 px-4 py-3.5 flex items-center justify-between">
-          <span className="text-xs text-muted-foreground">
-            No skills created
-          </span>
-          <Button
-            type="button"
-            variant="ghost"
-            size="icon"
-            onClick={() => setIsCreateSkillOpen(true)}
-            className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md cursor-pointer"
-            title="Create custom skill"
-          >
-            <Plus className="w-4 h-4" />
-          </Button>
+        <div className="rounded-xl border border-border bg-card divide-y divide-neutral-800 overflow-hidden shadow-xs">
+          {/* Header Row inside box */}
+          <div className="flex items-center justify-between px-4 py-3">
+            <span className="text-xs font-medium text-foreground">
+              {skillsList.length === 0
+                ? "No skills created"
+                : `${skillsList.length} skill${skillsList.length > 1 ? "s" : ""} active`}
+            </span>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon"
+              onClick={() => setIsCreateSkillOpen(true)}
+              className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md cursor-pointer"
+              title="Create custom skill"
+            >
+              <Plus className="w-4 h-4" />
+            </Button>
+          </div>
+
+          {/* Skills List */}
+          {userSkills === undefined ? (
+            <div className="px-4 py-3 space-y-2">
+              <div className="h-6 bg-muted/40 animate-pulse rounded-md" />
+            </div>
+          ) : skillsList.length > 0 ? (
+            <div className="divide-y divide-border/30">
+              {skillsList.map((skill: any) => (
+                <div
+                  key={skill._id || skill.name}
+                  onClick={() => setViewingSkill(skill)}
+                  className="flex items-center justify-between px-4 py-3 hover:bg-muted/15 transition-colors group cursor-pointer"
+                >
+                  <div className="min-w-0 pr-4">
+                    <div className="text-xs font-medium text-foreground flex items-center gap-2">
+                      <span>{skill.title}</span>
+                      {skill.isDefault ? (
+                        <Badge
+                          variant="outline"
+                          className="text-[9px] py-0 px-1.5 bg-primary/10 text-primary border-primary/20 font-normal"
+                        >
+                          Default
+                        </Badge>
+                      ) : (
+                        <Badge
+                          variant="outline"
+                          className="text-[9px] py-0 px-1.5 bg-muted/30 text-muted-foreground font-normal"
+                        >
+                          Custom
+                        </Badge>
+                      )}
+                    </div>
+                    <div className="text-[11px] text-muted-foreground mt-0.5 flex items-center gap-1.5 flex-wrap">
+                      {skill.isDefault ? (
+                        <span className="font-mono text-[10px] text-muted-foreground/75 truncate">
+                          {skill.name}.md
+                        </span>
+                      ) : (
+                        <>
+                          <span>By {skill.createdBy}</span>
+                          <span className="opacity-40">•</span>
+                          <span className="font-mono text-[10px] text-muted-foreground/75 truncate">
+                            {skill.name}.md
+                          </span>
+                        </>
+                      )}
+                    </div>
+                  </div>
+
+                  <div className="flex items-center gap-1.5 shrink-0">
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="sm"
+                      className="text-[11px] h-7 px-2.5 text-muted-foreground hover:text-foreground hover:bg-muted/40 cursor-pointer"
+                    >
+                      <Eye className="w-3.5 h-3.5 mr-1" /> View
+                    </Button>
+                    {!skill.isDefault && skill._id && (
+                      <button
+                        type="button"
+                        title="Delete custom skill"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          handleDeleteSkill(skill._id);
+                        }}
+                        className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive p-1 rounded-md hover:bg-destructive/10 transition-all cursor-pointer"
+                      >
+                        <X className="w-3.5 h-3.5" />
+                      </button>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : null}
         </div>
+
+        {/* View Skill Dialog */}
+        <Dialog open={!!viewingSkill} onOpenChange={(open) => !open && setViewingSkill(null)}>
+          <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col p-6">
+            <DialogHeader className="pb-3 border-b border-border/40">
+              <div className="flex items-center justify-between gap-3 pr-6">
+                <DialogTitle className="text-sm font-semibold text-foreground">
+                  {viewingSkill?.title}
+                </DialogTitle>
+                <div className="flex items-center gap-1.5">
+                  {viewingSkill?.isDefault ? (
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] py-0 px-1.5 bg-primary/10 text-primary border-primary/20 font-normal"
+                    >
+                      Default
+                    </Badge>
+                  ) : (
+                    <Badge
+                      variant="outline"
+                      className="text-[10px] py-0 px-1.5 font-normal"
+                    >
+                      Created by {viewingSkill?.createdBy}
+                    </Badge>
+                  )}
+                </div>
+              </div>
+              <DialogDescription className="text-xs text-muted-foreground pt-1 flex items-center gap-2">
+                <span className="font-mono text-[11px] text-foreground/80">
+                  {viewingSkill?.name}.md
+                </span>
+                {viewingSkill?.description && (
+                  <>
+                    <span>•</span>
+                    <span>{viewingSkill.description}</span>
+                  </>
+                )}
+              </DialogDescription>
+            </DialogHeader>
+
+            {/* Scrollable Markdown Skill File View */}
+            <div className="flex-1 overflow-y-auto py-3 space-y-2 min-h-[300px]">
+              <div className="flex items-center justify-between text-xs text-muted-foreground px-1 pb-1">
+                <span className="font-mono text-[10px] tracking-wide uppercase opacity-75">
+                  Anthropic Skill Specification (.md)
+                </span>
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => viewingSkill && handleCopySkillContent(viewingSkill.content)}
+                  className="h-6 px-2 text-[10px] gap-1 cursor-pointer"
+                >
+                  {copiedSkill ? (
+                    <>
+                      <Check className="w-3 h-3 text-green-500" /> Copied
+                    </>
+                  ) : (
+                    <>
+                      <Copy className="w-3 h-3" /> Copy .md
+                    </>
+                  )}
+                </Button>
+              </div>
+
+              <pre className="p-4 rounded-xl bg-neutral-950/90 border border-border/50 text-[11px] font-mono text-neutral-300 leading-relaxed overflow-x-auto whitespace-pre-wrap selection:bg-primary/30">
+                {viewingSkill?.content}
+              </pre>
+            </div>
+
+            <DialogFooter className="pt-3 border-t border-border/40 sm:justify-end">
+              <Button
+                type="button"
+                variant="secondary"
+                size="sm"
+                onClick={() => setViewingSkill(null)}
+                className="text-xs cursor-pointer"
+              >
+                Close
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Create Skill Dialog */}
         <Dialog open={isCreateSkillOpen} onOpenChange={setIsCreateSkillOpen}>
-          <DialogContent className="sm:max-w-md">
+          <DialogContent className="sm:max-w-lg">
             <DialogHeader>
               <DialogTitle className="text-sm font-bold flex items-center gap-2">
-                <Wrench className="w-4 h-4 text-primary" /> Create New Kaya
-                Skill
+                <Wrench className="w-4 h-4 text-primary" /> Create New Kaya Skill
               </DialogTitle>
               <DialogDescription className="text-xs">
-                Define custom instructions, context hooks, and triggers for
-                Kaya.
+                Define a custom routine or rulebook for Kaya and MCP sub-agents.
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleCreateSkillSubmit} className="space-y-4 py-2">
+            <form onSubmit={handleCreateSkillSubmit} className="space-y-3.5 py-2">
               <div className="space-y-1.5">
-                <Label htmlFor="skillName" className="text-xs">
-                  Skill Name
+                <Label htmlFor="skillTitle" className="text-xs">
+                  Skill Title
                 </Label>
                 <Input
-                  id="skillName"
-                  value={newSkillName}
-                  onChange={(e) => setNewSkillName(e.target.value)}
+                  id="skillTitle"
+                  value={newSkillTitle}
+                  onChange={(e) => setNewSkillTitle(e.target.value)}
                   placeholder="e.g. Next.js Routing Audit"
                   className="text-xs"
+                  required
                 />
               </div>
+
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1.5">
+                  <Label htmlFor="skillFileName" className="text-xs">
+                    File Identifier (.md)
+                  </Label>
+                  <Input
+                    id="skillFileName"
+                    value={newSkillName}
+                    onChange={(e) => setNewSkillName(e.target.value)}
+                    placeholder="e.g. nextjs_routing_audit"
+                    className="text-xs font-mono text-[11px]"
+                  />
+                </div>
+
+                <div className="space-y-1.5">
+                  <Label htmlFor="skillConnector" className="text-xs">
+                    Connector (Optional)
+                  </Label>
+                  <Input
+                    id="skillConnector"
+                    value={newSkillConnector}
+                    onChange={(e) => setNewSkillConnector(e.target.value)}
+                    placeholder="e.g. sentry, linear, github"
+                    className="text-xs"
+                  />
+                </div>
+              </div>
+
               <div className="space-y-1.5">
                 <Label htmlFor="skillDesc" className="text-xs">
-                  Description & Prompt Instructions
+                  Brief Purpose
                 </Label>
-                <Textarea
+                <Input
                   id="skillDesc"
                   value={newSkillDesc}
                   onChange={(e) => setNewSkillDesc(e.target.value)}
-                  placeholder="Describe what this skill performs and prompt rules..."
-                  className="text-xs min-h-[80px]"
+                  placeholder="e.g. Audits route transitions and dynamic segments"
+                  className="text-xs"
                 />
               </div>
+
+              <div className="space-y-1.5">
+                <Label htmlFor="skillContent" className="text-xs">
+                  Skill Markdown Content (.md)
+                </Label>
+                <Textarea
+                  id="skillContent"
+                  value={newSkillContent}
+                  onChange={(e) => setNewSkillContent(e.target.value)}
+                  placeholder={`# Skill Name\n\n## Context\n...\n\n## Step-by-Step Workflow\n1. Step 1...\n2. Step 2...\n\n## Anti-Hallucination Rules\n...`}
+                  className="text-[11px] font-mono min-h-[140px] resize-y"
+                />
+              </div>
+
               <DialogFooter className="pt-2">
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
                   onClick={() => setIsCreateSkillOpen(false)}
-                  className="text-xs"
+                  className="text-xs cursor-pointer"
                 >
                   Cancel
                 </Button>
-                <Button type="submit" size="sm" className="text-xs">
-                  Create Skill
+                <Button
+                  type="submit"
+                  size="sm"
+                  disabled={isSubmittingSkill}
+                  className="text-xs cursor-pointer"
+                >
+                  {isSubmittingSkill ? "Creating..." : "Save Skill"}
                 </Button>
               </DialogFooter>
             </form>

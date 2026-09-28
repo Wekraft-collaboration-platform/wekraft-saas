@@ -648,5 +648,22 @@ export default defineSchema({
     .index("by_project_agent", ["projectId", "agent", "isConnected"])
     .index("by_user", ["connectedByUserId"]),
 
+  // ─── Skills Registry (Kaya & MCP Sub-Agents) ───────────────────────────
+  skills: defineTable({
+    userId: v.optional(v.id("users")),       // null/undefined for global default skills; user ID for custom skills
+    name: v.string(),                        // "sentry_error_triage", "linear_issue_management"
+    title: v.string(),                       // Human-readable title
+    description: v.optional(v.string()),     // Brief purpose summary
+    content: v.string(),                     // Markdown .md content (Anthropic style)
+    createdBy: v.string(),                   // "default", "user", or "agent"
+    connectorId: v.optional(v.string()),     // "sentry" | "linear" | "cross_app"
+    isDefault: v.optional(v.boolean()),      // default true for pre-installed platform skills
+    createdAt: v.number(),
+    updatedAt: v.optional(v.number()),
+  })
+    .index("by_user", ["userId"])
+    .index("by_name", ["name"]),
+
 });
+
 
