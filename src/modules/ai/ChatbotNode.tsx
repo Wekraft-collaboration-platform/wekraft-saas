@@ -113,6 +113,17 @@ export function ChatbotNode({ nodeState, executionTime }: ChatbotNodeProps) {
               )}
             </div>
 
+            {/* Selected Skill — separate single line */}
+            {isAI && ((msg as any).selected_skill || (nodeState as any)?.selected_skill) && (
+              <div className="flex items-center gap-2 text-xs text-neutral-300 my-0.5 select-none animate-in fade-in duration-150">
+                <span className="font-semibold text-white">Skill is activated</span>
+                <span className="text-neutral-500">—</span>
+                <span className="text-neutral-200 capitalize font-medium">
+                  {String((msg as any).selected_skill || (nodeState as any)?.selected_skill).replace(/_/g, " ")}
+                </span>
+              </div>
+            )}
+
             {/* AI Sub-Agent & Tool Call Cards */}
             {isAI && subagentTools && subagentTools.length > 0 && (() => {
               const isToolsExpanded = expandedTools[msgId] ?? true;

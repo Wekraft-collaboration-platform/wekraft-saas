@@ -68,6 +68,7 @@ export function useLangGraphAgent<
     Array<{ toolName: string; caller?: string }>
   >([]);
   const [activeNode, setActiveNode] = useState<string>("");
+  const [activeSkill, setActiveSkill] = useState<string | null>(null);
   const [appCheckpoints, setAppCheckpoints] = useState<
     AppCheckpoint<TAgentState, TInterruptValue>[]
   >([]);
@@ -152,6 +153,7 @@ export function useLangGraphAgent<
 
     const runStartTime = Date.now();
     let currentTurnReasoning = "";
+    let currentTurnSkill = "";
     let currentTurnTools: Array<{ toolName: string; caller?: string }> = [];
 
     try {
@@ -161,6 +163,7 @@ export function useLangGraphAgent<
       setReasoning("");
       setActiveToolCalls([]);
       setActiveNode("");
+      setActiveSkill(null);
       // Invalidate cache when agent is called
       historyCache.delete(agentInput.thread_id);
 
@@ -195,12 +198,18 @@ export function useLangGraphAgent<
             appCheckpoints,
             currentTurnReasoning,
             currentTurnTools,
+            currentTurnSkill,
           );
           setAppCheckpoints([...appCheckpoints]);
         }
 
         if (msg.event === "custom") {
           const customData = msg.data as any;
+          if (customData?.skill_activated) {
+            const skillName = customData.skill_activated;
+            currentTurnSkill = skillName;
+            setActiveSkill(skillName);
+          }
           if (customData?.reasoning) {
             currentTurnReasoning = customData.reasoning;
             setReasoning(customData.reasoning);
@@ -269,6 +278,9 @@ export function useLangGraphAgent<
             if (msgs[mIdx].type === "ai") {
               if (currentTurnReasoning && !msgs[mIdx].reasoning) {
                 msgs[mIdx].reasoning = currentTurnReasoning;
+              }
+              if (currentTurnSkill && !msgs[mIdx].selected_skill) {
+                msgs[mIdx].selected_skill = currentTurnSkill;
               }
               if (
                 currentTurnTools.length > 0 &&
@@ -491,6 +503,7 @@ export function useLangGraphAgent<
     appCheckpoints: AppCheckpoint<TAgentState, TInterruptValue>[],
     currentTurnReasoning?: string,
     currentTurnTools?: Array<{ toolName: string; caller?: string }>,
+    currentTurnSkill?: string,
   ) {
     if (appCheckpoints.length === 0) {
       return;
@@ -528,6 +541,9 @@ export function useLangGraphAgent<
       if (currentTurnReasoning && !message.reasoning) {
         message.reasoning = currentTurnReasoning;
       }
+      if (currentTurnSkill && !(message as any).selected_skill) {
+        (message as any).selected_skill = currentTurnSkill;
+      }
       if (
         currentTurnTools &&
         currentTurnTools.length > 0 &&
@@ -554,6 +570,9 @@ export function useLangGraphAgent<
           if (currentTurnReasoning && !nodeMessage.reasoning) {
             nodeMessage.reasoning = currentTurnReasoning;
           }
+          if (currentTurnSkill && !(nodeMessage as any).selected_skill) {
+            (nodeMessage as any).selected_skill = currentTurnSkill;
+          }
           if (
             currentTurnTools &&
             currentTurnTools.length > 0 &&
@@ -570,14 +589,15 @@ export function useLangGraphAgent<
       // When LLM streams input to the tool, tool name is in the first message chunk.
       const toolCalls: ToolCall[] =
         nodeMessageChunk.message_chunk.tool_call_chunks
-          ?.filter((x) => x.name)
-          .map((x) => ({ name: x.name, args: {}, id: x.id })) as ToolCall[];
+            ?.filter((x) => x.name)
+            .map((x) => ({ name: x.name, args: {}, id: x.id })) as ToolCall[];
       const newMessage = {
         type: "ai" as const,
         content: nodeMessageChunk.message_chunk.content,
         id: nodeMessageChunk.message_chunk.id,
         tool_calls: toolCalls,
         reasoning: currentTurnReasoning || "",
+        selected_skill: currentTurnSkill || (lastCheckpoint.state as any)?.selected_skill || "",
         subagent_tools: currentTurnTools ? [...currentTurnTools] : [],
       };
       lastCheckpoint.state.messages.push(newMessage);
@@ -751,6 +771,7 @@ export function useLangGraphAgent<
     setReasoning("");
     setActiveToolCalls([]);
     setActiveNode("");
+    setActiveSkill(null);
     setIsStreaming(false);
   }
 
@@ -769,6 +790,8 @@ export function useLangGraphAgent<
     reasoning,
     activeToolCalls,
     activeNode,
+    activeSkill,
+    setActiveSkill,
     reset,
   };
 }

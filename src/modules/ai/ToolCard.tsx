@@ -151,26 +151,37 @@ export interface ToolCallCardProps {
 }
 
 export function ToolCallCard({ toolName, caller, label }: ToolCallCardProps) {
+  const isSkill = caller === "Skill" || caller === "Skill activated";
   const meta = TOOL_META[toolName] ?? {
     label: label || toolName.replace(/_/g, " "),
     caller: caller || "Agent",
-    colorClass: "bg-indigo-500/30 text-primary/80",
+    colorClass: isSkill
+      ? "bg-white/10 text-neutral-100 border border-white/20"
+      : "bg-indigo-500/30 text-primary/80",
   };
 
-  const finalCaller = caller || meta.caller;
+  const finalCaller = isSkill ? "Skill" : caller || meta.caller;
   const finalLabel = label || meta.label;
 
   return (
     <div className="mx-4 my-1.5 px-3 py-1.5 border border-neutral-800 rounded-md bg-card text-xs tracking-tight text-muted-foreground flex items-center gap-3 w-fit animate-in fade-in duration-200">
-      <span className="font-medium text-neutral-300">{finalCaller}</span> called{" "}
+      <span className="font-medium text-neutral-300">{finalCaller}</span>{" "}
+      {isSkill ? "activated" : "called"}{" "}
       <MoveRight className="inline w-3 h-3 text-muted-foreground/70" />
       <div
         className={cn(
           "flex items-center gap-2 py-1 px-3 rounded-full text-xs",
-          meta.colorClass,
+          isSkill
+            ? "bg-white/10 text-neutral-100 border border-white/20"
+            : meta.colorClass,
         )}
       >
-        <span className="w-1.5 h-1.5 rounded-full bg-current opacity-80" />
+        <span
+          className={cn(
+            "w-1.5 h-1.5 rounded-full",
+            isSkill ? "bg-white" : "bg-current opacity-80",
+          )}
+        />
         <span className="capitalize">{finalLabel}</span>
       </div>
     </div>

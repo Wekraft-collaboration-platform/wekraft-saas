@@ -1,8 +1,31 @@
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
-import { internal } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 
 const http = httpRouter();
+
+// getActiveSkills: Returns all active skills for Kaya & MCP sub-agents
+http.route({
+  path: "/getActiveSkills",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const body = await request.json().catch(() => ({}));
+      const skills = await ctx.runQuery(api.skills.getUserSkills, {
+        userId: body?.userId ? body.userId : undefined,
+      });
+      return new Response(JSON.stringify({ skills }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch (e: any) {
+      return new Response(JSON.stringify({ error: e.message || "Failed to fetch skills" }), {
+        status: 500,
+        headers: { "Content-Type": "application/json" },
+      });
+    }
+  }),
+});
 
 
 // create calendar event (Kaya AI Agent tool)

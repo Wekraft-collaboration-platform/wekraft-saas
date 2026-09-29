@@ -39,7 +39,6 @@ import {
   TooltipTrigger,
 } from "@/components/ui/tooltip";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Spinner } from "@/components/ui/spinner";
 import { ChatbotNode } from "@/modules/ai/ChatbotNode";
@@ -144,12 +143,10 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
   const userId = currentUser?._id;
   const userName = currentUser?.name || "User";
 
-  const kayaConnectedApps = (mcpConnections || []).filter(
-    (c) => c.isConnected,
-  );
+  const kayaConnectedApps = (mcpConnections || []).filter((c) => c.isConnected);
 
   const messagesEndRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
   const containerRef = useRef<HTMLDivElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [showLiveTools, setShowLiveTools] = useState(true);
@@ -254,7 +251,7 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
     onTranscript: (text) => {
       setInputValue((prev) => (prev ? `${prev} ${text}` : text));
       setTimeout(() => {
-        inputRef.current?.focus();
+        textareaRef.current?.focus();
       }, 50);
     },
   });
@@ -273,6 +270,7 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
     reasoning,
     activeToolCalls,
     activeNode,
+    activeSkill,
   } = useLangGraphAgent<AgentState, InterruptValue, ResumeValue>({
     onCheckpointStateUpdate: (checkpoint) => {
       const toolName = (checkpoint.state as any).analyst_tool_running;
@@ -316,7 +314,7 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
   // Focus input when not running
   useEffect(() => {
     if (status !== "running" && !restoring) {
-      inputRef.current?.focus();
+      textareaRef.current?.focus();
     }
   }, [status, restoring]);
 
@@ -356,7 +354,7 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
     const attachedFileId =
       docAttachment?.status === "ready"
         ? docAttachment.fileId
-        : (sessionFileId || undefined);
+        : sessionFileId || undefined;
 
     if (docAttachment?.status === "ready" && docAttachment.fileId) {
       setSessionFileId(docAttachment.fileId);
@@ -385,7 +383,7 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
       useUpgradeModalStore.getState().openModal();
     } else {
       setInputValue(suggestion);
-      inputRef.current?.focus();
+      textareaRef.current?.focus();
     }
   };
 
@@ -684,6 +682,19 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                   </div>
                 )}
 
+                {/* Selected Skill — separate single line */}
+                {activeSkill && (
+                  <div className="flex items-center gap-2 text-xs text-neutral-300 ml-7 my-1 select-none animate-in fade-in duration-150">
+                    <span className="font-semibold text-white">
+                      Skill is activated
+                    </span>
+                    <span className="text-neutral-500">—</span>
+                    <span className="text-neutral-200 capitalize font-medium">
+                      {activeSkill.replace(/_/g, " ")}
+                    </span>
+                  </div>
+                )}
+
                 {activeToolCalls.length > 0 && (
                   <div className="flex flex-col gap-1 ml-3 my-1">
                     <button
@@ -762,86 +773,82 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
         </div>
 
         {/* FOOTER */}
-        <div className="px-4 py-6 bg-linear-to-b from-transparent via-indigo-200/10 to-purple-400/30">
-          {/* Phase 1: Uploaded document chip with loader and tick */}
-          {docAttachment && (
-            <div className="flex items-center gap-2 mb-2 px-3 py-1.5 rounded-md bg-neutral-800 text-neutral-200 text-xs w-fit max-w-full shadow-xs animate-in fade-in slide-in-from-bottom-2 duration-200">
-              <Image
-                src={
-                  docAttachment.fileName.toLowerCase().endsWith(".pdf")
-                    ? "/pdf.svg"
-                    : docAttachment.fileName.toLowerCase().endsWith(".doc") ||
-                        docAttachment.fileName.toLowerCase().endsWith(".docx")
-                      ? "/doc.svg"
-                      : "/file.svg"
-                }
-                alt="File format icon"
-                width={16}
-                height={16}
-                className="w-4 h-4 object-contain shrink-0"
-              />
-              <span
-                className="truncate max-w-[200px] font-medium"
-                title={docAttachment.fileName}
-              >
-                {docAttachment.fileName}
-              </span>
+        <div className="px-3 pb-4 pt-2 bg-linear-to-b from-transparent via-indigo-200/10 to-purple-400/30">
+          <input
+            type="file"
+            ref={fileInputRef}
+            className="hidden"
+            accept=".pdf,.doc,.docx,.txt,.md"
+            onChange={(e) => {
+              const file = e.target.files?.[0];
+              if (file) handleFileUpload(file);
+            }}
+          />
 
-              {docAttachment.status === "parsing" && (
-                <div className="flex items-center gap-1 text-neutral-400 shrink-0">
-                  <Loader2 className="w-3.5 h-3.5 animate-spin text-neutral-300" />
-                  <span className="text-xs">Parsing...</span>
-                </div>
-              )}
-
-              {docAttachment.status === "ready" && (
-                <span title="Parsed & saved" className="flex items-center">
-                  <Check className="w-3.5 h-3.5 text-emerald-400 shrink-0" />
-                </span>
-              )}
-
-              {docAttachment.status === "error" && (
-                <div
-                  className="flex items-center gap-1 text-red-400 shrink-0"
-                  title={docAttachment.error}
-                >
-                  <AlertCircle className="w-3.5 h-3.5" />
-                  <span className="text-xs">
-                    {docAttachment.error || "Failed"}
-                  </span>
-                </div>
-              )}
-
-              <button
-                type="button"
-                onClick={() => setDocAttachment(null)}
-                className="ml-1 p-0.5 text-neutral-400 hover:text-white rounded cursor-pointer"
-                title="Remove attachment"
-              >
-                <X className="w-3.5 h-3.5" />
-              </button>
-            </div>
-          )}
-
-          <div className="relative">
+          {/* Unified bordered container */}
+          <div className="relative rounded-xl border border-border bg-sidebar/90 shadow-sm transition-all px-3 pt-2.5 pb-2">
             {!!(project && (project as any).ownerAccountType !== "pro") && (
               <div
-                className="absolute inset-0 z-30 cursor-pointer"
+                className="absolute inset-0 z-30 rounded-2xl cursor-pointer"
                 onClick={() => useUpgradeModalStore.getState().openModal()}
               />
             )}
-            <input
-              type="file"
-              ref={fileInputRef}
-              className="hidden"
-              accept=".pdf,.doc,.docx,.txt,.md"
-              onChange={(e) => {
-                const file = e.target.files?.[0];
-                if (file) {
-                  handleFileUpload(file);
-                }
-              }}
-            />
+
+            {/* Doc attachment chip */}
+            {docAttachment && (
+              <div className="flex items-center gap-2 mb-1.5 px-2 py-1 rounded-md bg-neutral-800/70 text-neutral-200 text-xs w-fit max-w-full animate-in fade-in slide-in-from-bottom-2 duration-200">
+                <Image
+                  src={
+                    docAttachment.fileName.toLowerCase().endsWith(".pdf")
+                      ? "/pdf.svg"
+                      : docAttachment.fileName.toLowerCase().endsWith(".doc") ||
+                          docAttachment.fileName.toLowerCase().endsWith(".docx")
+                        ? "/doc.svg"
+                        : "/file.svg"
+                  }
+                  alt="File format icon"
+                  width={14}
+                  height={14}
+                  className="w-3.5 h-3.5 object-contain shrink-0"
+                />
+                <span
+                  className="truncate max-w-[180px] font-medium"
+                  title={docAttachment.fileName}
+                >
+                  {docAttachment.fileName}
+                </span>
+                {docAttachment.status === "parsing" && (
+                  <div className="flex items-center gap-1 text-neutral-400 shrink-0">
+                    <Loader2 className="w-3 h-3 animate-spin text-neutral-300" />
+                    <span className="text-[10px]">Parsing...</span>
+                  </div>
+                )}
+                {docAttachment.status === "ready" && (
+                  <Check className="w-3 h-3 text-emerald-400 shrink-0" />
+                )}
+                {docAttachment.status === "error" && (
+                  <div
+                    className="flex items-center gap-1 text-red-400 shrink-0"
+                    title={docAttachment.error}
+                  >
+                    <AlertCircle className="w-3 h-3" />
+                    <span className="text-[10px]">
+                      {docAttachment.error || "Failed"}
+                    </span>
+                  </div>
+                )}
+                <button
+                  type="button"
+                  onClick={() => setDocAttachment(null)}
+                  className="ml-0.5 p-0.5 text-neutral-400 hover:text-white rounded cursor-pointer"
+                  title="Remove attachment"
+                >
+                  <X className="w-3 h-3" />
+                </button>
+              </div>
+            )}
+
+            {/* Voice waveform or textarea */}
             {isVoiceRecording || isVoiceTranscribing ? (
               <EmbeddedVoiceWaveform
                 isRecording={isVoiceRecording}
@@ -851,157 +858,191 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                 onStop={stopVoiceRecording}
               />
             ) : (
-              <>
-                <div className="absolute left-2 top-1/2 -translate-y-1/2 z-10">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          disabled={isDisabled || isDocParsing}
-                          className="h-8 w-8 text-white rounded-lg cursor-pointer"
-                          onClick={() => {
-                            if (
-                              !!(
-                                project &&
-                                (project as any).ownerAccountType !== "pro"
-                              )
-                            ) {
-                              useUpgradeModalStore.getState().openModal();
-                            } else {
-                              fileInputRef.current?.click();
-                            }
-                          }}
-                        >
-                          <Paperclip className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent
-                        side="top"
-                        className="bg-popover text-popover-foreground border border-border"
-                      >
-                        <p className="text-xs">
-                          Upload PRD/SRS/Doc (PDF, DOCX, DOC, TXT, MD up to
-                          10MB).
-                        </p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                </div>
-                <Input
-                  ref={inputRef}
-                  placeholder="Ask anything..."
-                  value={inputValue}
-                  onChange={(e) => setInputValue(e.target.value)}
-                  onKeyDown={(e) => {
-                    if (e.key === "Enter" && !isDocParsing)
-                      sendMessage(inputValue);
-                  }}
-                  disabled={isDisabled || isDocParsing}
-                  className="h-12 rounded-xl bg-sidebar pr-36 pl-11"
-                />
-                <div className="flex items-center gap-2 absolute right-2 top-2">
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="icon"
-                          disabled={isDisabled}
-                          className="h-8 w-8 text-white rounded-lg cursor-pointer hover:bg-neutral-800"
-                          onClick={() => {
-                            if (
-                              !!(
-                                project &&
-                                (project as any).ownerAccountType !== "pro"
-                              )
-                            ) {
-                              useUpgradeModalStore.getState().openModal();
-                            } else {
-                              toggleVoiceRecording();
-                            }
-                          }}
-                        >
-                          <Mic className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent
-                        side="top"
-                        className="bg-popover text-popover-foreground border border-border"
-                      >
-                        <p className="text-xs">Voice input</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </TooltipProvider>
-                  {status === "running" ? (
-                    <Button
-                      size="icon"
-                      variant="destructive"
-                      className=" h-8 w-8"
-                      onClick={() => stop(threadId)}
-                    >
-                      <Square className="h-3 w-3!" />
-                    </Button>
-                  ) : (
-                    <Button
-                      size="icon"
-                      variant="outline"
-                      className=" h-8 w-8"
-                      onClick={() => sendMessage(inputValue)}
-                      disabled={!inputValue.trim() || restoring || isDocParsing}
-                    >
-                      <Send className="h-3 w-3!" />
-                    </Button>
-                  )}
-                </div>
-              </>
+              <textarea
+                ref={textareaRef}
+                rows={2}
+                placeholder="Ask anything..."
+                value={inputValue}
+                onChange={(e) => setInputValue(e.target.value)}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" && !e.shiftKey && !isDocParsing) {
+                    e.preventDefault();
+                    if (inputValue.trim()) sendMessage(inputValue);
+                  }
+                }}
+                disabled={isDisabled || isDocParsing}
+                className="w-full bg-neutral-900 border-0 resize-none text-sm text-foreground placeholder:text-muted-foregroundfocus:outline-none focus:ring-0 min-h-[44px] max-h-[160px] px-2 py-0.5 leading-relaxed rounded-lg"
+              />
             )}
-          </div>
 
-          <div className="flex items-center justify-center gap-2 mt-2">
-            <span className="text-[11px] text-muted-foreground font-medium">
-              MCP connections:
-            </span>
-            <div className="flex items-center gap-1.5">
-              {kayaConnectedApps.slice(0, 4).map((app) => (
-                <TooltipProvider key={app.connectorId} delayDuration={150}>
+            {/* Bottom action bar */}
+            <div className="flex items-center justify-between pt-1.5 mt-0.5 border-t border-border/40">
+              {/* Left: upload + MCP connections */}
+              <div className="flex items-center gap-1.5">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        disabled={isDisabled || isDocParsing}
+                        className="h-7 w-7 text-muted-foreground hover:text-foreground rounded-lg cursor-pointer"
+                        onClick={() => {
+                          if (
+                            !!(
+                              project &&
+                              (project as any).ownerAccountType !== "pro"
+                            )
+                          ) {
+                            useUpgradeModalStore.getState().openModal();
+                          } else {
+                            fileInputRef.current?.click();
+                          }
+                        }}
+                      >
+                        <Paperclip className="h-3.5 w-3.5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent
+                      side="top"
+                      className="bg-popover text-popover-foreground border border-border"
+                    >
+                      <p className="text-xs">
+                        Upload PRD/SRS/Doc (PDF, DOCX, DOC, TXT, MD up to 10MB).
+                      </p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                <div className="w-px h-4.5 bg-neutral-600 mx-0.5" />
+
+                <span className="text-[10px] font-semibold tracking-wider text-muted-foreground uppercase select-none px-0.5">
+                  MCP
+                </span>
+
+                {kayaConnectedApps.slice(0, 3).map((app) => (
+                  <TooltipProvider key={app.connectorId} delayDuration={150}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Link
+                          href={`/dashboard/my-projects/${slug}/workspace/integrations`}
+                          className="cursor-pointer transition-transform hover:scale-110"
+                        >
+                          <ConnectorIcon
+                            connectorId={app.connectorId}
+                            size={20}
+                          />
+                        </Link>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-xs">
+                        {CONNECTOR_META[app.connectorId]?.name ||
+                          app.connectorId}{" "}
+                        (Connected)
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                ))}
+
+                {kayaConnectedApps.length > 3 && (
+                  <TooltipProvider delayDuration={150}>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Link
+                          href={`/dashboard/my-projects/${slug}/workspace/integrations`}
+                          className="text-[10px] font-medium text-muted-foreground hover:text-foreground bg-muted/40 hover:bg-muted border border-border/50 px-1.5 py-0.5 rounded transition-colors cursor-pointer select-none"
+                        >
+                          +{kayaConnectedApps.length - 3} more
+                        </Link>
+                      </TooltipTrigger>
+                      <TooltipContent side="top" className="text-xs">
+                        {kayaConnectedApps
+                          .slice(3)
+                          .map(
+                            (a) =>
+                              CONNECTOR_META[a.connectorId]?.name ||
+                              a.connectorId,
+                          )
+                          .join(", ")}
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                )}
+
+                <TooltipProvider delayDuration={150}>
                   <Tooltip>
                     <TooltipTrigger asChild>
                       <Link
                         href={`/dashboard/my-projects/${slug}/workspace/integrations`}
-                        className="cursor-pointer transition-transform hover:scale-110"
+                        className="flex items-center justify-center h-[20px] w-[20px] rounded-md border border-border/60 bg-muted/30 hover:bg-muted text-muted-foreground hover:text-foreground transition-all hover:scale-105"
                       >
-                        <ConnectorIcon
-                          connectorId={app.connectorId}
-                          size={22}
-                        />
+                        <Plus className="h-3 w-3" />
                       </Link>
                     </TooltipTrigger>
                     <TooltipContent side="top" className="text-xs">
-                      {CONNECTOR_META[app.connectorId]?.name || app.connectorId}{" "}
-                      (Connected)
+                      Connect MCP Tools
                     </TooltipContent>
                   </Tooltip>
                 </TooltipProvider>
-              ))}
-              <TooltipProvider delayDuration={150}>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Link
-                      href={`/dashboard/my-projects/${slug}/workspace/integrations`}
-                      className="flex items-center justify-center h-[22px] w-[22px] rounded-md border border-border/70 bg-muted/40 hover:bg-muted text-muted-foreground hover:text-foreground transition-all hover:scale-105"
+              </div>
+
+              {/* Right: mic + send/stop */}
+              <div className="flex items-center gap-1.5">
+                <TooltipProvider>
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        disabled={isDisabled}
+                        className="h-7 w-7 text-muted-foreground hover:text-foreground rounded-lg cursor-pointer"
+                        onClick={() => {
+                          if (
+                            !!(
+                              project &&
+                              (project as any).ownerAccountType !== "pro"
+                            )
+                          ) {
+                            useUpgradeModalStore.getState().openModal();
+                          } else {
+                            toggleVoiceRecording();
+                          }
+                        }}
+                      >
+                        <Mic className="h-3.5 w-3.5" />
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent
+                      side="top"
+                      className="bg-popover text-popover-foreground border border-border"
                     >
-                      <Plus className="h-3.5 w-3.5" />
-                    </Link>
-                  </TooltipTrigger>
-                  <TooltipContent side="top" className="text-xs">
-                    Connect MCP Tools
-                  </TooltipContent>
-                </Tooltip>
-              </TooltipProvider>
+                      <p className="text-xs">Voice input</p>
+                    </TooltipContent>
+                  </Tooltip>
+                </TooltipProvider>
+
+                {status === "running" ? (
+                  <Button
+                    size="icon"
+                    variant="destructive"
+                    className="h-7 w-7"
+                    onClick={() => stop(threadId)}
+                  >
+                    <Square className="h-3 w-3" />
+                  </Button>
+                ) : (
+                  <Button
+                    size="icon"
+                    variant="outline"
+                    className="h-7 w-7"
+                    onClick={() => sendMessage(inputValue)}
+                    disabled={!inputValue.trim() || restoring || isDocParsing}
+                  >
+                    <Send className="h-3 w-3" />
+                  </Button>
+                )}
+              </div>
             </div>
           </div>
         </div>

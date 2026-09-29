@@ -201,10 +201,10 @@ Return an Executive PM Synthesis featuring:
  */
 export const getUserSkills = query({
   args: {
-    userId: v.optional(v.id("users")),
+    userId: v.optional(v.union(v.null(), v.id("users"))),
   },
   handler: async (ctx, args) => {
-    let currentUserId = args.userId;
+    let currentUserId = args.userId ?? undefined;
 
     if (!currentUserId) {
       const identity = await ctx.auth.getUserIdentity();
