@@ -21,6 +21,7 @@ interface IntegrationItem {
 }
 
 const KAYA_INTEGRATIONS: IntegrationItem[] = [
+  // ─── Available Connectors ──────────────────────────────────────────────
   {
     id: "linear",
     name: "Linear",
@@ -70,20 +71,12 @@ const KAYA_INTEGRATIONS: IntegrationItem[] = [
     status: "available",
   },
   {
-    id: "github",
-    name: "GitHub",
-    category: "Codebase & PRs",
-    logo: "/github.png",
-    agent: "kaya",
-    status: "coming_soon",
-  },
-  {
     id: "stripe",
     name: "Stripe",
     category: "Payments & Billing",
     logo: "/stripe.svg",
     agent: "kaya",
-    status: "coming_soon",
+    status: "available",
   },
   {
     id: "hubspot",
@@ -100,6 +93,40 @@ const KAYA_INTEGRATIONS: IntegrationItem[] = [
     logo: "vercel",
     agent: "kaya",
     status: "available",
+  },
+  {
+    id: "supabase",
+    name: "Supabase",
+    category: "Backend Database",
+    logo: "/supabase.png",
+    agent: "kaya",
+    status: "available",
+  },
+  {
+    id: "neon",
+    name: "Neon",
+    category: "Serverless Postgres",
+    logo: "/neon.png",
+    agent: "kaya",
+    status: "available",
+  },
+  {
+    id: "posthog",
+    name: "PostHog",
+    category: "Product Analytics",
+    logo: "/posthog.svg",
+    agent: "kaya",
+    status: "available",
+  },
+
+  // ─── Coming Soon Connectors ────────────────────────────────────────────
+  {
+    id: "github",
+    name: "GitHub",
+    category: "Codebase & PRs",
+    logo: "/github.png",
+    agent: "kaya",
+    status: "coming_soon",
   },
   {
     id: "asana",
@@ -138,30 +165,6 @@ const KAYA_INTEGRATIONS: IntegrationItem[] = [
     name: "Better Stack",
     category: "Logs & Incidents",
     logo: "/beter-stack.svg",
-    agent: "kaya",
-    status: "coming_soon",
-  },
-  {
-    id: "posthog",
-    name: "PostHog",
-    category: "Product Analytics",
-    logo: "/posthog.svg",
-    agent: "kaya",
-    status: "coming_soon",
-  },
-  {
-    id: "supabase",
-    name: "Supabase",
-    category: "Backend Database",
-    logo: "/supabase.png",
-    agent: "kaya",
-    status: "coming_soon",
-  },
-  {
-    id: "neon",
-    name: "Neon",
-    category: "Serverless Postgres",
-    logo: "/neon.png",
     agent: "kaya",
     status: "coming_soon",
   },
@@ -269,7 +272,7 @@ export const IntegrationsView = () => {
   const renderLogo = (item: IntegrationItem) => {
     if (item.logo === "vercel") {
       return (
-        <div className="w-9 h-9 rounded-lg bg-neutral-950 border border-border/60 flex items-center justify-center shrink-0">
+        <div className="w-9 h-9  flex items-center justify-center shrink-0">
           <svg viewBox="0 0 24 24" className="w-4 h-4 fill-foreground">
             <path d="M12 1L24 22H0L12 1Z" />
           </svg>
@@ -278,7 +281,7 @@ export const IntegrationsView = () => {
     }
     if (item.id === "sentry") {
       return (
-        <div className="w-10 h-10 rounded-lg bg-purple-900 border border-border/60 flex items-center justify-center shrink-0 overflow-hidden">
+        <div className="w-10 h-10 rounded-lg bg-purple-800  flex items-center justify-center shrink-0 overflow-hidden">
           <Image
             src={item.logo}
             alt={item.name}
@@ -291,7 +294,7 @@ export const IntegrationsView = () => {
     }
     if (item.id === "betterstack") {
       return (
-        <div className="w-9 h-9 rounded-lg border border-border/60 flex items-center justify-center shrink-0 overflow-hidden bg-transparent">
+        <div className="w-9 h-9  flex items-center justify-center shrink-0 overflow-hidden bg-transparent">
           <Image
             src={item.logo}
             alt={item.name}
@@ -304,12 +307,12 @@ export const IntegrationsView = () => {
     }
     if (item.id === "calendly") {
       return (
-        <div className="w-9 h-9 rounded-lg bg-neutral-900 border border-border/60 flex items-center justify-center shrink-0 overflow-hidden">
+        <div className="w-10 h-10  flex items-center justify-center shrink-0 overflow-hidden">
           <Image
             src={item.logo}
             alt={item.name}
-            width={36}
-            height={36}
+            width={40}
+            height={40}
             className="object-contain"
           />
         </div>
@@ -317,7 +320,7 @@ export const IntegrationsView = () => {
     }
     if (item.id === "stripe") {
       return (
-        <div className="w-9 h-9 rounded-lg bg-white border border-border/60 flex items-center justify-center p-0.5 shrink-0 overflow-hidden">
+        <div className="w-9 h-9  flex items-center justify-center p-0.5 shrink-0 overflow-hidden">
           <Image
             src={item.logo}
             alt={item.name}
@@ -343,7 +346,7 @@ export const IntegrationsView = () => {
     }
     if (item.id === "hubspot" || item.id === "plane") {
       return (
-        <div className="w-9 h-9 rounded-lg bg-neutral-900 border border-border/60 flex items-center justify-center p-0.5 shrink-0 overflow-hidden">
+        <div className="w-9 h-9 flex items-center justify-center p-0.5 shrink-0 overflow-hidden">
           <Image
             src={item.logo}
             alt={item.name}
@@ -356,7 +359,7 @@ export const IntegrationsView = () => {
     }
     if (item.id === "github" || item.id === "jira") {
       return (
-        <div className="w-9 h-9 rounded-lg bg-white border border-border/60 flex items-center justify-center p-1.5 shrink-0 overflow-hidden">
+        <div className="w-9 h-9 rounded-lg bg-white flex items-center justify-center p-1.5 shrink-0 overflow-hidden">
           <Image
             src={item.logo}
             alt={item.name}
@@ -368,7 +371,7 @@ export const IntegrationsView = () => {
       );
     }
     return (
-      <div className="w-9 h-9 rounded-lg bg-neutral-900 border border-border/60 flex items-center justify-center p-1.5 shrink-0 overflow-hidden">
+      <div className="w-9 h-9 flex items-center justify-center p-1.5 shrink-0 overflow-hidden">
         <Image
           src={item.logo}
           alt={item.name}
@@ -622,9 +625,9 @@ export const IntegrationsView = () => {
               No integrations connected yet
             </h3>
             <p className="text-xs text-muted-foreground max-w-sm">
-              Switch back to the <strong className="text-foreground">ALL</strong> tab
-              to connect Linear, Notion, Slack, Calendly, or Sentry to your
-              workspace.
+              Switch back to the{" "}
+              <strong className="text-foreground">ALL</strong> tab to connect
+              Linear, Notion, Slack, Calendly, or Sentry to your workspace.
             </p>
           </div>
           <Button
