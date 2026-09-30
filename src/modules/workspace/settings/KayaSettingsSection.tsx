@@ -93,9 +93,7 @@ export function KayaSettingsSection({ projectId }: KayaSettingsSectionProps) {
   // Skills Registry State
   const [isCreateSkillOpen, setIsCreateSkillOpen] = useState(false);
   const [newSkillTitle, setNewSkillTitle] = useState("");
-  const [newSkillName, setNewSkillName] = useState("");
   const [newSkillDesc, setNewSkillDesc] = useState("");
-  const [newSkillContent, setNewSkillContent] = useState("");
   const [newSkillConnector, setNewSkillConnector] = useState("");
   const [isSubmittingSkill, setIsSubmittingSkill] = useState(false);
 
@@ -136,7 +134,8 @@ export function KayaSettingsSection({ projectId }: KayaSettingsSectionProps) {
       toast.error("Skill title is required");
       return;
     }
-    const finalName = (newSkillName.trim() || newSkillTitle.trim())
+    const finalName = newSkillTitle
+      .trim()
       .toLowerCase()
       .replace(/[^a-z0-9_-]/g, "_");
 
@@ -146,18 +145,14 @@ export function KayaSettingsSection({ projectId }: KayaSettingsSectionProps) {
         name: finalName,
         title: newSkillTitle.trim(),
         description: newSkillDesc.trim() || undefined,
-        content:
-          newSkillContent.trim() ||
-          `# ${newSkillTitle}\n\n${newSkillDesc || "Custom skill definition for Kaya agent."}`,
+        content: `# ${newSkillTitle.trim()}\n\n${newSkillDesc.trim() || "Custom skill definition for Kaya agent."}`,
         createdBy: "user",
         connectorId: newSkillConnector.trim() || undefined,
       });
 
       toast.success(`Skill "${newSkillTitle}" created successfully!`);
       setNewSkillTitle("");
-      setNewSkillName("");
       setNewSkillDesc("");
-      setNewSkillContent("");
       setNewSkillConnector("");
       setIsCreateSkillOpen(false);
     } catch (err: any) {
@@ -523,57 +518,29 @@ export function KayaSettingsSection({ projectId }: KayaSettingsSectionProps) {
                 />
               </div>
 
-              <div className="grid grid-cols-2 gap-3">
-                <div className="space-y-1.5">
-                  <Label htmlFor="skillFileName" className="text-xs">
-                    File Identifier (.md)
-                  </Label>
-                  <Input
-                    id="skillFileName"
-                    value={newSkillName}
-                    onChange={(e) => setNewSkillName(e.target.value)}
-                    placeholder="e.g. nextjs_routing_audit"
-                    className="text-xs font-mono text-[11px]"
-                  />
-                </div>
-
-                <div className="space-y-1.5">
-                  <Label htmlFor="skillConnector" className="text-xs">
-                    Connector (Optional)
-                  </Label>
-                  <Input
-                    id="skillConnector"
-                    value={newSkillConnector}
-                    onChange={(e) => setNewSkillConnector(e.target.value)}
-                    placeholder="e.g. sentry, linear, github"
-                    className="text-xs"
-                  />
-                </div>
+              <div className="space-y-1.5">
+                <Label htmlFor="skillConnector" className="text-xs">
+                  Connector (Optional)
+                </Label>
+                <Input
+                  id="skillConnector"
+                  value={newSkillConnector}
+                  onChange={(e) => setNewSkillConnector(e.target.value)}
+                  placeholder="e.g. sentry, linear, github"
+                  className="text-xs"
+                />
               </div>
 
               <div className="space-y-1.5">
                 <Label htmlFor="skillDesc" className="text-xs">
                   Brief Purpose
                 </Label>
-                <Input
+                <Textarea
                   id="skillDesc"
                   value={newSkillDesc}
                   onChange={(e) => setNewSkillDesc(e.target.value)}
-                  placeholder="e.g. Audits route transitions and dynamic segments"
-                  className="text-xs"
-                />
-              </div>
-
-              <div className="space-y-1.5">
-                <Label htmlFor="skillContent" className="text-xs">
-                  Skill Markdown Content (.md)
-                </Label>
-                <Textarea
-                  id="skillContent"
-                  value={newSkillContent}
-                  onChange={(e) => setNewSkillContent(e.target.value)}
-                  placeholder={`# Skill Name\n\n## Context\n...\n\n## Step-by-Step Workflow\n1. Step 1...\n2. Step 2...\n\n## Anti-Hallucination Rules\n...`}
-                  className="text-[11px] font-mono min-h-[140px] resize-y"
+                  placeholder="e.g. Describe the routine, workflow steps, context, and rules for this skill..."
+                  className="text-xs min-h-[120px] resize-y bg-background"
                 />
               </div>
 
