@@ -530,39 +530,40 @@ export const getTasksSummary = internalQuery({
     const blockedCount = tasks.filter((t) => t.isBlocked).length;
 
     return {
-      criticalAndActiveTasks: criticalTasks.map((t) => {
+      tasks: criticalTasks.map((t) => {
         const isOverdue = now > t.estimation.endDate;
         const isNearOverdue =
           !isOverdue && now > t.estimation.endDate - NEAR_OVERDUE_THRESHOLD;
 
-        let timelineStatus = "on track";
+        let deadlineStatus = "on track";
         if (isOverdue) {
           const days = Math.ceil(
             (now - t.estimation.endDate) / (1000 * 60 * 60 * 24),
           );
-          timelineStatus = `OVERDUE by ${days} days`;
+          deadlineStatus = `OVERDUE by ${days} days`;
         } else if (isNearOverdue) {
           const days = Math.ceil(
             (t.estimation.endDate - now) / (1000 * 60 * 60 * 24),
           );
-          timelineStatus = `Near overdue (due in ${days} days)`;
+          deadlineStatus = `due in ${days} days`;
         }
+
+        const assignee =
+          taskAssignees
+            .filter((a) => a.taskId === t._id)
+            .map((a) => a.name)
+            .join(", ") || "Unassigned";
 
         return {
           title: t.title,
-          status: t.status,
+          assignee,
+          deadlineStatus,
           priority: t.priority ?? "medium",
-          isBlocked: t.isBlocked ?? false,
-          assignees: taskAssignees
-            .filter((a) => a.taskId === t._id)
-            .map((a) => a.name),
-          endDate: new Date(t.estimation.endDate).toLocaleDateString(),
-          timelineStatus,
         };
       }),
+      totalCount: tasks.length,
       completedCount,
       blockedCount,
-      totalCount: tasks.length,
     };
   },
 });

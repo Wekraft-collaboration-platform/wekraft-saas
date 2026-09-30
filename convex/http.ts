@@ -338,8 +338,8 @@ http.route({
   }),
 });
 
-// getTasksSummary: Returns a high-level summary of all tasks including critical and active ones.
-// returns: { criticalAndActiveTasks: Array<{ title: string, status: string, priority: string, isBlocked: boolean, assignees: string[], endDate: string, timelineStatus: string }>, completedCount: number, blockedCount: number, totalCount: number }
+// getTasksSummary: Returns a slim summary of tasks for AI use.
+// returns: { tasks: Array<{ title: string, assignee: string, deadlineStatus: string, priority: string }>, totalCount: number, completedCount: number, blockedCount: number }
 http.route({
   path: "/getTasksSummary",
   method: "POST",
@@ -364,11 +364,10 @@ http.route({
       totalCount: tasksSummary?.totalCount,
       completedCount: tasksSummary?.completedCount,
       blockedCount: tasksSummary?.blockedCount,
-      activeTasksCount: tasksSummary?.criticalAndActiveTasks?.length,
-      taskTitles: tasksSummary?.criticalAndActiveTasks?.map((t: any) => t.title),
+      tasks: tasksSummary?.tasks?.map((t: any) => `${t.title} | ${t.assignee} | ${t.priority} | ${t.deadlineStatus}`),
     });
 
-    return new Response(JSON.stringify({ tasksSummary }), {
+    return new Response(JSON.stringify(tasksSummary), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });

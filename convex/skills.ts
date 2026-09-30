@@ -194,81 +194,135 @@ Return an Executive PM Synthesis featuring:
   },
   {
     name: "cross_platform_issue_triage_notion_sync",
-    title: "Cross-Platform Issue Triage & Notion Sync",
+    title: "Linear & Sentry Issue Triage & Notion Sync",
     description:
-      "Fetches active issues across Linear, Sentry, and GitHub, aggregates and synthesizes them into structured markdown tables, and creates a verified Notion documentation page via Notion MCP.",
-    connectorId: "linear, sentry, github, notion",
+      "Fetches active issues from Linear and unresolved production errors from Sentry, aggregates them into structured markdown tables, and creates a Notion page.",
+    connectorId: "linear, sentry, notion",
     createdBy: "default",
     isDefault: true,
     content: `---
 name: cross_platform_issue_triage_notion_sync
-title: Cross-Platform Issue Triage & Notion Sync
-description: Fetches active issues across Linear, Sentry, and GitHub, aggregates and synthesizes them into structured markdown tables, and creates a verified Notion documentation page via Notion MCP.
-connectorId: linear, sentry, github, notion
-createdBy: default
+title: Linear & Sentry Issue Triage & Notion Sync
+connectorId: linear, sentry, notion
+version: 1.3.0
+---
+
+# Linear & Sentry Issue Triage & Notion Sync
+
+## Execution Steps
+1. **Linear** → call \`list_issues\` with \`{}\`. Extract \`id\`, \`title\`, \`priority\`, \`state\`, \`url\`.
+2. **Sentry** → call \`find_organizations\` → capture \`organizationSlug\` → call \`search_issues\` with \`{organizationSlug, query: "is:unresolved", sort: "date"}\`. Extract error title, culprit, event count, url.
+3. **Notion** → call \`notion-create-pages\` with \`{creation_mode: "draft", allow_async: false, pages: [{properties: {title: "Linear & Sentry Issue Triage - Live Sync"}, content: "<markdown>", icon: "📊"}]}\`. Capture returned \`id\` and \`url\`.
+4. **Finalize** → call \`finalize_result\` with the created Notion page URL and issue counts.
+
+## Rules
+- Only output IDs, URLs, and counts that appear verbatim in tool responses. Never invent keys or links.
+- Never claim the page was created until \`notion-create-pages\` returns a valid \`id\`.
+- End with \`finalize_result\` containing the Notion page URL, issue counts, and top-priority highlights.
+
+## Execution Configuration
+\`\`\`json
+{
+  "maxSteps": 2,
+  "pinnedTools": {
+    "linear": [
+      {
+        "name": "list_issues",
+        "description": "List all Linear issues. Returns issues array with id, title, priority, state, url.",
+        "inputSchema": { "type": "object", "properties": {}, "required": [] }
+      }
+    ],
+    "sentry": [
+      {
+        "name": "find_organizations",
+        "description": "Find Sentry orgs. Returns organizations array each with a slug. Call first before search_issues.",
+        "inputSchema": { "type": "object", "properties": {}, "required": [] }
+      },
+      {
+        "name": "search_issues",
+        "description": "Search Sentry issues. Requires organizationSlug. Use query 'is:unresolved', sort 'date'.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "organizationSlug": { "type": "string" },
+            "query": { "type": "string" },
+            "sort": { "type": "string" }
+          },
+          "required": ["organizationSlug", "query"]
+        }
+      }
+    ],
+    "notion": [
+      {
+        "name": "notion-create-pages",
+        "description": "Create Notion pages. Pass creation_mode 'draft', allow_async false for sync id return.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "pages": { "type": "array", "items": { "type": "object" } },
+            "creation_mode": { "type": "string", "enum": ["draft"] },
+            "allow_async": { "type": "boolean" }
+          },
+          "required": ["pages"]
+        }
+      }
+    ]
+  }
+}
+\`\`\``,
+  },
+  {
+    name: "jira_project_tasks_alignment_notion_sync",
+    title: "Project & Jira Tasks Alignment & Notion Action Plan",
+    description:
+      "Fetches internal project tasks and live Jira tasks via JQL, performs cross-system alignment and workload gap analysis, generates actionable insights and recommended actions, and publishes a structured report to Notion.",
+    connectorId: "jira, notion, project",
+    createdBy: "default",
+    isDefault: true,
+    content: `---
+name: jira_project_tasks_alignment_notion_sync
+title: Project & Jira Tasks Alignment & Notion Action Plan
+connectorId: jira, notion, project
 version: 1.0.0
 ---
 
-# Cross-Platform Issue Triage & Notion Sync Skill
+# Project & Jira Tasks Alignment & Notion Action Plan
 
 ## Context & Objectives
-This skill instructs Kaya and MCP sub-agents on how to reliably aggregate issues and production telemetry from Linear, Sentry, and GitHub, format them into an executive-ready triage document, publish it directly as a new Notion page via Notion MCP, and perform read-after-write verification.
+This skill coordinates internal project tasks and external Jira Kanban/Scrum tasks to identify unassigned items, status mismatches, and delivery blockers, synthesizing them into actionable insights and publishing a strategic plan to Notion.
 
----
-
-## Prerequisites & Auth Resolution Protocol
-1. **Decrypted Credentials:** Ensure tokens for Linear, Sentry, GitHub, and Notion are decrypted from workspace credentials using AES-256-GCM.
-2. **Endpoint Mapping:**
-   - **Linear:** \`https://mcp.linear.app/mcp\`
-   - **Sentry:** \`https://mcp.sentry.dev/mcp\`
-   - **GitHub:** REST \`https://api.github.com\` or GitHub MCP
-   - **Notion:** \`https://mcp.notion.com/mcp\`
-
----
-
-## Step-by-Step Tool Execution Workflow
-
-### Step 1: Linear Issues Ingestion
-1. **Tool:** \`list_issues\`
-   - Target MCP: \`https://mcp.linear.app/mcp\`
+## Step-by-Step Execution Workflow
+1. **Jira Discovery:**
+   - Tool: \`getAccessibleAtlassianResources\`
    - Arguments: \`{}\`
-2. **Extraction:**
-   - Parse \`issues\` array from JSON response.
-   - Extract \`id\` (e.g. \`TES-11\`), \`title\`, \`priority.name\`, \`state.name\`, and \`url\`.
-   - Filter out closed/completed items if only active items are requested.
+   - Capture: Active \`cloudId\` (e.g. \`e56da97a-1da4-40fd-bed2-4c2663ef28e7\`).
 
-### Step 2: Sentry Errors Ingestion
-1. **Discovery Tool:** \`find_organizations\`
-   - Target MCP: \`https://mcp.sentry.dev/mcp\`
-   - Arguments: \`{}\`
-   - Capture: Active \`organizationSlug\` (e.g. \`vrsa-solution-6q\`).
-2. **Telemetry Tool:** \`search_issues\`
-   - Target MCP: \`https://mcp.sentry.dev/mcp\`
-   - Arguments:
+2. **Jira Tasks Query (Adaptive JQL):**
+   - Tool: \`searchJiraIssuesUsingJql\`
+   - **Default JQL (Universal for any project):**
      \`\`\`json
      {
-       "organizationSlug": "<organizationSlug>",
-       "query": "is:unresolved",
-       "sort": "date"
+       "cloudId": "<discovered_cloudId>",
+       "jql": "status IS NOT NULL ORDER BY updated DESC",
+       "maxResults": 20
      }
      \`\`\`
-   - Capture: Error title, culprit route, event count, affected user count, and direct dashboard URL.
+     *(Notice: Do not filter by \`project = '...'\` unless specifically requested. This queries all active issues across accessible boards without failing on project key mismatch).*
+   - **If User Explicitly Specified a Project:** If the user prompt specifically specifies a Jira project (e.g. 'project KAN' or 'project Payments'), pass:
+     \`jql: "project = '<ProjectKeyOrName>' AND status IS NOT NULL ORDER BY updated DESC"\`.
+     If Jira returns an error that the project does not exist, immediately fall back to \`status IS NOT NULL ORDER BY updated DESC\`.
+   - Never restrict search strictly to \`assignee = currentUser()\` because tickets in the board may be unassigned.
+   - Extract: Issue \`key\` (e.g. \`KAN-5\`), \`summary\`, \`status.name\`, \`priority.name\`, \`assignee.displayName\` (or Unassigned).
 
-### Step 3: GitHub Issues Ingestion
-1. **API Call:** \`GET https://api.github.com/user/issues?filter=all&state=all&per_page=30\`
-   - Headers: \`{"Authorization": "Bearer <github_token>", "Accept": "application/vnd.github.v3+json"}\`
-2. **Extraction:**
-   - Extract issue \`number\`, \`title\`, \`repository.full_name\`, \`state\`, \`user.login\`, and \`html_url\`.
+3. **Internal Project Tasks Ingestion:**
+   - Ingest active project tasks, priorities, assignees, and deadlines.
 
-### Step 4: Markdown Payload Synthesis
-Assemble the data into Notion-compatible Enhanced Markdown:
-- Use clean Markdown tables with headers (\`| ID | Title | Priority | Status | Link |\`).
-- Include direct hyperlinked URLs (\`[Open in Linear](...)\`, \`[Sentry Error](...)\`, \`[GitHub Issue](...)\`).
-- Escape pipe characters (\`|\`) in titles to prevent broken table syntax.
+4. **Strategic Synthesis & Gap Analysis:**
+   - Cross-reference internal tasks against Jira items.
+   - Formulate 3-5 concrete **Actionable Insights** (unassigned blockers, mismatched priorities, overdue items) and 2-3 immediate **Recommended Actions**.
 
-### Step 5: Notion Page Creation via Notion MCP
-1. **Tool:** \`notion-create-pages\`
-   - Target MCP: \`https://mcp.notion.com/mcp\`
+5. **Notion Publication:**
+   - Tool: \`notion-create-pages\`
    - Arguments:
      \`\`\`json
      {
@@ -277,46 +331,76 @@ Assemble the data into Notion-compatible Enhanced Markdown:
        "pages": [
          {
            "properties": {
-             "title": "Unified Issue Triage & Status Report (Linear, Sentry & GitHub)"
+             "title": "Project & Jira Tasks Alignment & Action Plan"
            },
-           "content": "<Generated Markdown Content>",
-           "icon": "📊"
+           "content": "<Comprehensive Markdown Report with Project Tasks Table, Jira Tasks Table, Actionable Insights & Recommended Actions>",
+           "icon": "🎯"
          }
        ]
      }
      \`\`\`
-2. **Capture Output:**
-   - Extract created page \`id\` (UUID) and \`url\` (e.g. \`https://app.notion.com/p/<pageId>\`).
+   - Capture returned \`id\` and \`url\`.
 
-### Step 6: Read-After-Write Verification
-1. **Tool:** \`notion-fetch\`
-   - Target MCP: \`https://mcp.notion.com/mcp\`
-   - Arguments: \`{"id": "<created_page_id>"}\` (Note: parameter key is \`id\`, not \`page_id\`).
-2. **Verification Check:**
-   - Confirm response status is success and page content contains the synced sections.
+6. **Finalization Handshake:**
+   - Call \`finalize_result\` with:
+     * Created Notion Page URL
+     * Task count breakdown (Internal vs Jira)
+     * Top-priority blockers and immediate actions.
 
----
+## Strict Rules
+- Always use the discovered \`cloudId\`, never guess an arbitrary ID.
+- Never claim the Notion page is created until \`notion-create-pages\` returns a valid \`id\` and \`url\`.
+- End with \`finalize_result\` containing the Notion page URL and strategic highlights.
 
-## Strict Anti-Hallucination & Execution Rules
-1. **Zero Hallucinated Issue Keys:** NEVER invent Linear keys (e.g. \`LIN-99\`) or Sentry IDs (e.g. \`ERR-404\`). Only output IDs present in the exact tool responses.
-2. **Verified Counts Only:** Only report the exact number of tickets/errors returned by the respective tool calls.
-3. **No Phantom URLs:** Always use the exact URLs returned by Linear, Sentry, and GitHub API responses.
-4. **Mandatory Verification:** Never claim the Notion page is created without inspecting the response from \`notion-create-pages\` and verifying via \`notion-fetch\`.
-5. **Parameter Precision:** In \`notion-fetch\`, always pass \`{"id": "<page_id>"}\`. In \`notion-create-pages\`, always pass \`creation_mode: "draft"\` when creating private workspace-level pages.
-
----
-
-## Finalization Handshake
-Return structured output with:
-- **Notion Page URL & ID:** Permalinks to access the newly created document.
-- **Synchronized Breakdown:** Exact counts of Linear tickets, Sentry unresolved errors, and GitHub issues included.
-- **Top Priority Highlights:** Critical crashes or urgent tickets flagged for immediate team attention.`,
+## Execution Configuration
+\`\`\`json
+{
+  "maxSteps": 2,
+  "pinnedTools": {
+    "jira": [
+      {
+        "name": "getAccessibleAtlassianResources",
+        "description": "Discover accessible Atlassian cloudId and resources. Call first before running JQL.",
+        "inputSchema": { "type": "object", "properties": {}, "required": [] }
+      },
+      {
+        "name": "searchJiraIssuesUsingJql",
+        "description": "Search Jira issues using JQL. Pass cloudId and bounded jql 'status IS NOT NULL ORDER BY updated DESC'.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "cloudId": { "type": "string" },
+            "jql": { "type": "string" },
+            "maxResults": { "type": "number" }
+          },
+          "required": ["cloudId", "jql"]
+        }
+      }
+    ],
+    "notion": [
+      {
+        "name": "notion-create-pages",
+        "description": "Create Notion pages. Pass creation_mode 'draft', allow_async false for sync id return.",
+        "inputSchema": {
+          "type": "object",
+          "properties": {
+            "pages": { "type": "array", "items": { "type": "object" } },
+            "creation_mode": { "type": "string", "enum": ["draft"] },
+            "allow_async": { "type": "boolean" }
+          },
+          "required": ["pages"]
+        }
+      }
+    ]
+  }
+}
+\`\`\``,
   },
 ];
 
 /**
  * Retrieves all skills for the active user:
- * - 3 Global default skills (where userId is null or undefined)
+ * - 4 Global default skills (where userId is null or undefined)
  * - User's custom skills (where userId matches current user)
  */
 export const getUserSkills = query({
@@ -350,14 +434,38 @@ export const getUserSkills = query({
       }));
     }
 
-    return allSkills.filter(
+    const filtered = allSkills.filter(
       (s) => !s.userId || (currentUserId && s.userId === currentUserId),
     );
+
+    // Merge in code DEFAULT_SKILLS so newly added default skills are always available
+    const result = [...filtered];
+    for (const defaultSkill of DEFAULT_SKILLS) {
+      const existingIdx = result.findIndex((s) => s.name === defaultSkill.name);
+      if (existingIdx === -1) {
+        result.push({
+          _id: `default_${defaultSkill.name}` as unknown as Id<"skills">,
+          ...defaultSkill,
+          userId: undefined,
+          createdAt: Date.now(),
+        } as any);
+      } else if (result[existingIdx].isDefault) {
+        result[existingIdx] = {
+          ...result[existingIdx],
+          content: defaultSkill.content,
+          title: defaultSkill.title,
+          description: defaultSkill.description,
+          connectorId: defaultSkill.connectorId,
+        };
+      }
+    }
+
+    return result;
   },
 });
 
 /**
- * Idempotent seeder: Seeds/updates the 3 default skills in Convex DB.
+ * Idempotent seeder: Seeds/updates default skills in Convex DB.
  */
 export const seedDefaultSkills = mutation({
   args: {},
@@ -381,10 +489,11 @@ export const seedDefaultSkills = mutation({
           updatedAt: now,
         });
         updatedCount++;
-      } else if (match.createdBy !== "default" || !match.isDefault) {
+      } else if (match.isDefault) {
         await ctx.db.patch(match._id, {
-          createdBy: "default",
-          isDefault: true,
+          title: skill.title,
+          description: skill.description,
+          connectorId: skill.connectorId,
           content: skill.content,
           updatedAt: now,
         });
