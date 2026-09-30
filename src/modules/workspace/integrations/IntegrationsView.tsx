@@ -119,15 +119,16 @@ const KAYA_INTEGRATIONS: IntegrationItem[] = [
     status: "available",
   },
 
-  // ─── Coming Soon Connectors ────────────────────────────────────────────
   {
     id: "github",
     name: "GitHub",
     category: "Codebase & PRs",
     logo: "/github.png",
     agent: "kaya",
-    status: "coming_soon",
+    status: "available",
   },
+
+  // ─── Coming Soon Connectors ────────────────────────────────────────────
   {
     id: "asana",
     name: "Asana",

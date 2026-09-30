@@ -31,7 +31,7 @@ const kayaRatelimit = new Ratelimit({
   prefix: "kaya_ts_rl",
 });
 
-const createTools = (callerClerkId?: string) => ({
+const createTools = (callerClerkId?: string, currentChannelId?: string) => ({
   getProjectHealthAndInsights: tool({
     description:
       "Retrieve unified project health overview: deadline, days remaining/overdue, total task count, non-completed tasks count, high-priority tasks with assignees, total issue count, non-closed issues count, and critical/high issues with assignees.",
@@ -225,9 +225,74 @@ const createTools = (callerClerkId?: string) => ({
       }
     },
   }),
+
+  summarizeChannelAndFollowUps: tool({
+    description:
+      "Fetch the last 24 hours of messages from the current channel (max 50) and return them so Kaya can produce a structured summary and action-item list. Use this when the user asks to summarize chats, recap the discussion, or list follow-ups.",
+    inputSchema: z.object({
+      channelId: z
+        .string()
+        .describe("The ID of the current channel to summarize"),
+    }),
+    execute: async ({ channelId }) => {
+      console.log(
+        "[Kaya Tool] summarizeChannelAndFollowUps called for channel",
+        channelId,
+      );
+      try {
+        await initTeamspaceDB();
+
+        const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
+
+        const res = await turso.execute({
+          sql: `
+            SELECT user_name, content, created_at
+            FROM ts_messages
+            WHERE channel_id = ?
+              AND created_at >= ?
+              AND user_id NOT IN ('kaya', 'harry')
+              AND thread_parent_id IS NULL
+            ORDER BY created_at ASC
+            LIMIT 50
+          `,
+          args: [channelId, oneDayAgo],
+        });
+
+        if (res.rows.length === 0) {
+          return {
+            messageCount: 0,
+            messages: [],
+            note: "No messages found in the last 24 hours for this channel.",
+          };
+        }
+
+        const messages = res.rows.map((row) => ({
+          author: row.user_name as string,
+          text: (row.content as string).slice(0, 500), // cap each message at 500 chars
+          time: new Date(row.created_at as number).toISOString(),
+        }));
+
+        return {
+          messageCount: messages.length,
+          windowHours: 24,
+          messages,
+        };
+      } catch (err: any) {
+        console.error(
+          "[Kaya Tool] Error fetching channel messages for summary:",
+          err,
+        );
+        return {
+          messageCount: 0,
+          messages: [],
+          error: err.message || "Failed to fetch channel messages.",
+        };
+      }
+    },
+  }),
 });
 
-const getSystemPrompt = (projectId: string, membersList: string[] = []) =>
+const getSystemPrompt = (projectId: string, membersList: string[] = [], channelId?: string) =>
   `
 You are Kaya, the Autonomous AI Project Manager (PM) & Team Facilitator for this team.
 You live inside the Teamspace chat channel to actively assist team members with project metrics, status tracking, and instant task/issue/ticket creations.
@@ -269,6 +334,18 @@ Your Capabilities & Behaviour:
    - Extract the \`announcementTitle\` and \`message\` (and \`priority\` if urgent) and immediately call \`broadcastAnnouncementAndNotify\`.
    - Confirm with a celebratory announcement summary in your response indicating that the message was posted to #general (Announcements) and all members were notified.
 
+4. SUMMARIZE CHANNEL & FOLLOW-UPS (Tool: summarizeChannelAndFollowUps):
+   - When users ask to summarize the chat, recap the discussion, or list follow-ups:
+     * e.g. "summarize the chats", "what did we discuss today?", "give me follow ups"
+   - Call \`summarizeChannelAndFollowUps\` with the current channelId: "${channelId || 'unknown'}".
+   - CRITICAL: Never ask the user for a channelId. Always use "${channelId || 'unknown'}" directly.
+   - After the tool returns the messages array, produce a structured response with this exact format:
+     * **📋 Channel Summary** (last 24h — {N} messages)
+     * **🗣️ Discussion Topics:** — bullet list of key topics discussed
+     * **✅ Action Items / Follow-ups:** — bullet list with owner and task (e.g. "• Alex → Fix payment webhook")
+     * If messageCount is 0: reply that there are no messages in the last 24 hours to summarize.
+   - Keep the summary concise and scannable. Max 10 bullet points per section.
+
 Tone & Style:
 - Address team members professionally and directly. In chat history, user messages may be prefixed with [User: Username].
 - Be punchy, structured, and action-oriented. Keep responses concise and focused for a team chat feed.
@@ -288,9 +365,9 @@ export async function POST(req: NextRequest) {
       return new Response("Invalid JSON payload", { status: 400 });
     }
 
-    const { messages, projectId } = body;
+    const { messages, projectId, channelId } = body;
     console.log(
-      `[Kaya Route] POST request received. Project ID: ${projectId}, Messages Count: ${messages?.length}, User ID: ${userId}`,
+      `[Kaya Route] POST request received. Project ID: ${projectId}, Channel ID: ${channelId}, Messages Count: ${messages?.length}, User ID: ${userId}`,
     );
 
     if (!projectId || !messages) {
@@ -362,11 +439,11 @@ export async function POST(req: NextRequest) {
     const convertedMessages = await convertToModelMessages(messages);
 
     console.log("[Kaya Route] Starting text stream with gpt-4.1-mini...");
-    const tools = createTools(userId);
+    const tools = createTools(userId, channelId);
 
     const result = streamText({
       model: customOpenai("gpt-4.1-mini"),
-      system: getSystemPrompt(projectId, membersList),
+      system: getSystemPrompt(projectId, membersList, channelId),
       messages: convertedMessages,
       tools,
       toolChoice: "auto",

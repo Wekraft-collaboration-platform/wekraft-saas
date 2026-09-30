@@ -238,6 +238,26 @@ export const saveOAuthConnection = mutation({
 
     const now = Date.now();
 
+    let metadataToSave = args.metadata;
+    if (args.connectorId === "github" && project) {
+      let repoDoc: any = null;
+      if (project.repositoryId) {
+        repoDoc = await ctx.db.get(project.repositoryId);
+      }
+      metadataToSave = {
+        ...(metadataToSave || {}),
+        projectName: project.projectName,
+        projectSlug: project.slug,
+        repoName: project.repoName || repoDoc?.repoName,
+        repoFullName: project.repoFullName || repoDoc?.repoFullName,
+        repoOwner: repoDoc?.repoOwner,
+        repoId: project.repositoryId ? String(project.repositoryId) : (repoDoc?._id ? String(repoDoc._id) : undefined),
+        repositoryId: project.repositoryId ? String(project.repositoryId) : (repoDoc?._id ? String(repoDoc._id) : undefined),
+        githubId: repoDoc?.githubId ? String(repoDoc.githubId) : undefined,
+        repoUrl: repoDoc?.repoUrl,
+      };
+    }
+
     if (existing) {
       await ctx.db.patch(existing._id, {
         credentials: encryptedCredentials,
@@ -245,7 +265,7 @@ export const saveOAuthConnection = mutation({
         agent: args.agent,
         connectedByUserId: finalUserId,
         connectedByUserName: finalUserName,
-        metadata: args.metadata ?? existing.metadata,
+        metadata: metadataToSave ?? existing.metadata,
         updatedAt: now,
       });
       return { success: true, connectionId: existing._id };
@@ -259,7 +279,7 @@ export const saveOAuthConnection = mutation({
       isConnected: true,
       connectedByUserId: finalUserId,
       connectedByUserName: finalUserName,
-      metadata: args.metadata,
+      metadata: metadataToSave,
       createdAt: now,
       updatedAt: now,
     });
@@ -276,6 +296,12 @@ export const getActiveMCPConnectionsWithTokens = internalQuery({
     projectId: v.id("projects"),
   },
   handler: async (ctx, args) => {
+    const project = await ctx.db.get(args.projectId);
+    let repoDoc: any = null;
+    if (project?.repositoryId) {
+      repoDoc = await ctx.db.get(project.repositoryId);
+    }
+
     const connections = await ctx.db
       .query("mcpConnections")
       .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
@@ -293,6 +319,22 @@ export const getActiveMCPConnectionsWithTokens = internalQuery({
         }
       }
 
+      let metadata = conn.metadata || {};
+      if (conn.connectorId === "github" && project) {
+        metadata = {
+          ...metadata,
+          projectName: project.projectName,
+          projectSlug: project.slug,
+          repoName: project.repoName || repoDoc?.repoName,
+          repoFullName: project.repoFullName || repoDoc?.repoFullName,
+          repoOwner: repoDoc?.repoOwner,
+          repoId: project.repositoryId ? String(project.repositoryId) : (repoDoc?._id ? String(repoDoc._id) : undefined),
+          repositoryId: project.repositoryId ? String(project.repositoryId) : (repoDoc?._id ? String(repoDoc._id) : undefined),
+          githubId: repoDoc?.githubId ? String(repoDoc.githubId) : undefined,
+          repoUrl: repoDoc?.repoUrl,
+        };
+      }
+
       results.push({
         _id: conn._id,
         connectorId: conn.connectorId,
@@ -300,7 +342,7 @@ export const getActiveMCPConnectionsWithTokens = internalQuery({
         accessToken: decryptedToken,
         connectedByUserId: conn.connectedByUserId,
         connectedByUserName: conn.connectedByUserName,
-        metadata: conn.metadata,
+        metadata,
         updatedAt: conn.updatedAt,
       });
     }

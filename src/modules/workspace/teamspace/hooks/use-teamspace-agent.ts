@@ -47,7 +47,7 @@ export interface AgentStreamCallbacks {
 
 async function streamAgent(
   agent: "kaya" | "harry",
-  body: { projectId: string; messages: unknown[] },
+  body: { projectId: string; channelId: string; messages: unknown[] },
   callbacks: AgentStreamCallbacks,
 ) {
   // Only Kaya route exists currently, default to kaya if harry is selected
@@ -274,7 +274,7 @@ export function useTeamspaceAgent(
       try {
         await streamAgent(
           agent,
-          { projectId, messages: allMessages },
+          { projectId, channelId, messages: allMessages },
           {
             onText: (delta: string) => {
               const prevText = assistantTextRef.current;

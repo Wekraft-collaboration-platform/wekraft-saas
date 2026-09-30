@@ -192,6 +192,126 @@ Return an Executive PM Synthesis featuring:
 - **Escalation Receipt:** Linear Ticket Key (\`TES-...\`), priority, and direct URL.
 - **Recommended Action Plan:** Specific component/file to patch.`,
   },
+  {
+    name: "cross_platform_issue_triage_notion_sync",
+    title: "Cross-Platform Issue Triage & Notion Sync",
+    description:
+      "Fetches active issues across Linear, Sentry, and GitHub, aggregates and synthesizes them into structured markdown tables, and creates a verified Notion documentation page via Notion MCP.",
+    connectorId: "linear, sentry, github, notion",
+    createdBy: "default",
+    isDefault: true,
+    content: `---
+name: cross_platform_issue_triage_notion_sync
+title: Cross-Platform Issue Triage & Notion Sync
+description: Fetches active issues across Linear, Sentry, and GitHub, aggregates and synthesizes them into structured markdown tables, and creates a verified Notion documentation page via Notion MCP.
+connectorId: linear, sentry, github, notion
+createdBy: default
+version: 1.0.0
+---
+
+# Cross-Platform Issue Triage & Notion Sync Skill
+
+## Context & Objectives
+This skill instructs Kaya and MCP sub-agents on how to reliably aggregate issues and production telemetry from Linear, Sentry, and GitHub, format them into an executive-ready triage document, publish it directly as a new Notion page via Notion MCP, and perform read-after-write verification.
+
+---
+
+## Prerequisites & Auth Resolution Protocol
+1. **Decrypted Credentials:** Ensure tokens for Linear, Sentry, GitHub, and Notion are decrypted from workspace credentials using AES-256-GCM.
+2. **Endpoint Mapping:**
+   - **Linear:** \`https://mcp.linear.app/mcp\`
+   - **Sentry:** \`https://mcp.sentry.dev/mcp\`
+   - **GitHub:** REST \`https://api.github.com\` or GitHub MCP
+   - **Notion:** \`https://mcp.notion.com/mcp\`
+
+---
+
+## Step-by-Step Tool Execution Workflow
+
+### Step 1: Linear Issues Ingestion
+1. **Tool:** \`list_issues\`
+   - Target MCP: \`https://mcp.linear.app/mcp\`
+   - Arguments: \`{}\`
+2. **Extraction:**
+   - Parse \`issues\` array from JSON response.
+   - Extract \`id\` (e.g. \`TES-11\`), \`title\`, \`priority.name\`, \`state.name\`, and \`url\`.
+   - Filter out closed/completed items if only active items are requested.
+
+### Step 2: Sentry Errors Ingestion
+1. **Discovery Tool:** \`find_organizations\`
+   - Target MCP: \`https://mcp.sentry.dev/mcp\`
+   - Arguments: \`{}\`
+   - Capture: Active \`organizationSlug\` (e.g. \`vrsa-solution-6q\`).
+2. **Telemetry Tool:** \`search_issues\`
+   - Target MCP: \`https://mcp.sentry.dev/mcp\`
+   - Arguments:
+     \`\`\`json
+     {
+       "organizationSlug": "<organizationSlug>",
+       "query": "is:unresolved",
+       "sort": "date"
+     }
+     \`\`\`
+   - Capture: Error title, culprit route, event count, affected user count, and direct dashboard URL.
+
+### Step 3: GitHub Issues Ingestion
+1. **API Call:** \`GET https://api.github.com/user/issues?filter=all&state=all&per_page=30\`
+   - Headers: \`{"Authorization": "Bearer <github_token>", "Accept": "application/vnd.github.v3+json"}\`
+2. **Extraction:**
+   - Extract issue \`number\`, \`title\`, \`repository.full_name\`, \`state\`, \`user.login\`, and \`html_url\`.
+
+### Step 4: Markdown Payload Synthesis
+Assemble the data into Notion-compatible Enhanced Markdown:
+- Use clean Markdown tables with headers (\`| ID | Title | Priority | Status | Link |\`).
+- Include direct hyperlinked URLs (\`[Open in Linear](...)\`, \`[Sentry Error](...)\`, \`[GitHub Issue](...)\`).
+- Escape pipe characters (\`|\`) in titles to prevent broken table syntax.
+
+### Step 5: Notion Page Creation via Notion MCP
+1. **Tool:** \`notion-create-pages\`
+   - Target MCP: \`https://mcp.notion.com/mcp\`
+   - Arguments:
+     \`\`\`json
+     {
+       "creation_mode": "draft",
+       "allow_async": false,
+       "pages": [
+         {
+           "properties": {
+             "title": "Unified Issue Triage & Status Report (Linear, Sentry & GitHub)"
+           },
+           "content": "<Generated Markdown Content>",
+           "icon": "📊"
+         }
+       ]
+     }
+     \`\`\`
+2. **Capture Output:**
+   - Extract created page \`id\` (UUID) and \`url\` (e.g. \`https://app.notion.com/p/<pageId>\`).
+
+### Step 6: Read-After-Write Verification
+1. **Tool:** \`notion-fetch\`
+   - Target MCP: \`https://mcp.notion.com/mcp\`
+   - Arguments: \`{"id": "<created_page_id>"}\` (Note: parameter key is \`id\`, not \`page_id\`).
+2. **Verification Check:**
+   - Confirm response status is success and page content contains the synced sections.
+
+---
+
+## Strict Anti-Hallucination & Execution Rules
+1. **Zero Hallucinated Issue Keys:** NEVER invent Linear keys (e.g. \`LIN-99\`) or Sentry IDs (e.g. \`ERR-404\`). Only output IDs present in the exact tool responses.
+2. **Verified Counts Only:** Only report the exact number of tickets/errors returned by the respective tool calls.
+3. **No Phantom URLs:** Always use the exact URLs returned by Linear, Sentry, and GitHub API responses.
+4. **Mandatory Verification:** Never claim the Notion page is created without inspecting the response from \`notion-create-pages\` and verifying via \`notion-fetch\`.
+5. **Parameter Precision:** In \`notion-fetch\`, always pass \`{"id": "<page_id>"}\`. In \`notion-create-pages\`, always pass \`creation_mode: "draft"\` when creating private workspace-level pages.
+
+---
+
+## Finalization Handshake
+Return structured output with:
+- **Notion Page URL & ID:** Permalinks to access the newly created document.
+- **Synchronized Breakdown:** Exact counts of Linear tickets, Sentry unresolved errors, and GitHub issues included.
+- **Top Priority Highlights:** Critical crashes or urgent tickets flagged for immediate team attention.`,
+  },
 ];
 
 /**
