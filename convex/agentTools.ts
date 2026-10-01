@@ -508,29 +508,13 @@ export const getTasksSummary = internalQuery({
     const now = Date.now();
     const NEAR_OVERDUE_THRESHOLD = 2 * 24 * 60 * 60 * 1000; // 2 days
 
-    const criticalTasks = tasks.filter((t) => {
-      if (t.status === "completed") return false;
-
-      const isOverdue = now > t.estimation.endDate;
-      const isNearOverdue =
-        !isOverdue && now > t.estimation.endDate - NEAR_OVERDUE_THRESHOLD;
-      const isNotStarted = t.status === "not started";
-      const isHighPriority = t.priority === "high";
-
-      return (
-        isOverdue ||
-        isNearOverdue ||
-        isNotStarted ||
-        isHighPriority ||
-        t.isBlocked
-      );
-    });
+    // Return all tasks regardless of status
 
     const completedCount = tasks.filter((t) => t.status === "completed").length;
     const blockedCount = tasks.filter((t) => t.isBlocked).length;
 
     return {
-      tasks: criticalTasks.map((t) => {
+      tasks: tasks.map((t) => {
         const isOverdue = now > t.estimation.endDate;
         const isNearOverdue =
           !isOverdue && now > t.estimation.endDate - NEAR_OVERDUE_THRESHOLD;
