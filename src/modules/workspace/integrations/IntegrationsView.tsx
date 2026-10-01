@@ -17,10 +17,20 @@ interface IntegrationItem {
   category: string;
   logo: string;
   agent: "kaya";
-  status: "available" | "coming_soon";
+  status: "available" | "coming_soon" | "default";
 }
 
 const KAYA_INTEGRATIONS: IntegrationItem[] = [
+  // ─── Default / Native Integrations ────────────────────────────────────
+  {
+    id: "github",
+    name: "GitHub",
+    category: "Codebase & PRs",
+    logo: "/github.png",
+    agent: "kaya",
+    status: "default",
+  },
+
   // ─── Available Connectors ──────────────────────────────────────────────
   {
     id: "linear",
@@ -115,15 +125,6 @@ const KAYA_INTEGRATIONS: IntegrationItem[] = [
     name: "PostHog",
     category: "Product Analytics",
     logo: "/posthog.svg",
-    agent: "kaya",
-    status: "available",
-  },
-
-  {
-    id: "github",
-    name: "GitHub",
-    category: "Codebase & PRs",
-    logo: "/github.png",
     agent: "kaya",
     status: "available",
   },
@@ -239,6 +240,7 @@ export const IntegrationsView = () => {
   const connectedCount = connectedList.length;
 
   const isConnected = (connectorId: string) => {
+    if (connectorId === "github") return true;
     return connections?.some(
       (c) => c.connectorId === connectorId && c.isConnected,
     );
@@ -385,8 +387,9 @@ export const IntegrationsView = () => {
   };
 
   const renderCard = (item: IntegrationItem) => {
+    const isDefault = item.status === "default" || item.id === "github";
     const connection = getConnection(item.id);
-    const connected = !!connection;
+    const connected = isDefault || !!connection;
 
     return (
       <div
@@ -404,7 +407,7 @@ export const IntegrationsView = () => {
               <h4 className="text-sm font-semibold text-foreground truncate">
                 {item.name}
               </h4>
-              {connected && connection?.metadata?.toolsCount && (
+              {connected && !isDefault && connection?.metadata?.toolsCount && (
                 <span className="text-[10px] font-normal text-muted-foreground bg-neutral-950/80 border border-border/50 rounded px-1.5 py-0.5 shrink-0">
                   {connection.metadata.toolsCount} tools
                 </span>
@@ -413,24 +416,43 @@ export const IntegrationsView = () => {
             <p className="text-xs text-muted-foreground truncate">
               {item.category}
             </p>
-            {activeTab === "connected" && connected && connection && (
+            {activeTab === "connected" && connected && isDefault && (
               <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground/80 mt-1">
-                {connection.connectedByUserName && (
-                  <span className="flex items-center gap-1">
-                    <UserCheck className="w-3 h-3 text-neutral-200" />
-                    {connection.connectedByUserName}
+                {project?.repoFullName ? (
+                  <span className="flex items-center gap-1 text-[10px] text-emerald-400/90">
+                    <CheckCircle2 className="w-2.5 h-2.5 text-emerald-400" />
+                    {project.repoFullName}
                   </span>
-                )}
-                {connection.updatedAt && (
+                ) : (
                   <span className="flex items-center gap-1 text-[10px] text-muted-foreground/60">
-                    <Clock className="w-2.5 h-2.5" />
-                    {format(connection.updatedAt, "MMM d, h:mm a")}
+                    <CheckCircle2 className="w-2.5 h-2.5 text-emerald-400" />
+                    Native Project Agent
                   </span>
                 )}
               </div>
             )}
             {activeTab === "connected" &&
               connected &&
+              !isDefault &&
+              connection && (
+                <div className="flex flex-wrap items-center gap-x-2 gap-y-0.5 text-[11px] text-muted-foreground/80 mt-1">
+                  {connection.connectedByUserName && (
+                    <span className="flex items-center gap-1">
+                      <UserCheck className="w-3 h-3 text-neutral-200" />
+                      {connection.connectedByUserName}
+                    </span>
+                  )}
+                  {connection.updatedAt && (
+                    <span className="flex items-center gap-1 text-[10px] text-muted-foreground/60">
+                      <Clock className="w-2.5 h-2.5" />
+                      {format(connection.updatedAt, "MMM d, h:mm a")}
+                    </span>
+                  )}
+                </div>
+              )}
+            {activeTab === "connected" &&
+              connected &&
+              !isDefault &&
               connection?.metadata?.tokenExpiresAt && (
                 <span
                   className={`text-[10px] font-normal rounded px-1.5 py-0.5 shrink-0 ${
@@ -449,6 +471,17 @@ export const IntegrationsView = () => {
 
         <div className="shrink-0 ml-3">
           {(() => {
+            if (isDefault) {
+              return (
+                <Badge
+                  variant="outline"
+                  className="text-[10px] px-2.5 py-2 text-neutral-300 border-neutral-700 bg-neutral-900 font-medium rounded-sm!"
+                >
+                  Default
+                </Badge>
+              );
+            }
+
             const isExpired =
               connected &&
               Boolean(

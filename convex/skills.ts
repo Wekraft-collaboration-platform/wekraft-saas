@@ -396,6 +396,95 @@ This skill coordinates internal project tasks and external Jira Kanban/Scrum tas
 }
 \`\`\``,
   },
+  {
+    name: "notion_page_operations",
+    title: "Notion — Create, Update & Fetch Pages",
+    description:
+      "Exact MCP tool names, payloads, and response parsing to create a Notion page, insert content into it, and fetch its full content.",
+    connectorId: "notion",
+    createdBy: "default",
+    isDefault: true,
+    content: `---
+name: notion_page_operations
+title: Notion — Create, Update & Fetch Pages
+connectorId: notion
+version: 1.0.0
+---
+
+# Notion Page Operations
+
+> ⚠️ All Notion MCP responses wrap data as a **JSON string inside \`result.content\`**. Always do \`JSON.parse(result.content)\` before reading any field.
+
+---
+
+## Step 1 — Create a Page
+
+**Tool:** \`notion-create-pages\`
+
+\`\`\`json
+{
+  "creation_mode": "draft",
+  "allow_async": false,
+  "pages": [{
+    "properties": { "title": "<Page Title>" },
+    "content": "<Markdown body>",
+    "icon": "📋"
+  }]
+}
+\`\`\`
+
+**Extract page ID from response:**
+\`\`\`
+const inner = JSON.parse(result.content)
+const pageId = inner.pages[0].id
+const pageUrl = inner.pages[0].url
+\`\`\`
+
+---
+
+## Step 2 — Insert Content into a Page
+
+**Tool:** \`notion-update-page\`
+
+\`\`\`json
+{
+  "page_id": "<pageId from Step 1>",
+  "command": "insert_content",
+  "content": "<Markdown to append>"
+}
+\`\`\`
+
+> ⚠️ Field is **\`page_id\`** — NOT \`id\`. Wrong key → validation error.
+>
+> \`command\` options: \`insert_content\` | \`replace_content\` | \`update_properties\`
+
+Success: \`result.isError === false\`
+
+---
+
+## Step 3 — Fetch Page Content
+
+**Tool:** \`notion-fetch\`
+
+\`\`\`json
+{ "id": "<pageId or full https://app.notion.com/p/<id> URL>" }
+\`\`\`
+
+**Read body:**
+\`\`\`
+const inner = JSON.parse(result.content)
+const body = inner.text  // full page content
+\`\`\`
+
+---
+
+## Finalization
+Call \`finalize_result\` with \`{ pageId, pageUrl }\` from Step 1 and a one-line summary.
+
+## Rules
+- Never claim page was created until \`notion-create-pages\` returns \`isError: false\`.
+- Never fabricate URLs — always use the \`url\` from the create response.`,
+  },
 ];
 
 /**
