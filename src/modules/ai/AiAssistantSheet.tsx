@@ -135,6 +135,10 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
     slug ? { slug } : "skip",
   );
   const projectId = project?._id;
+  const projectDetails = useQuery(
+    api.projectDetails.getProjectDetails,
+    projectId ? { projectId } : "skip",
+  );
   const mcpConnections = useQuery(
     api.mcp.getConnectionsByProject,
     projectId ? { projectId } : "skip",
@@ -373,6 +377,14 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
       setSessionFileId(docAttachment.fileId);
     }
 
+    const projectDeadline = projectDetails?.targetDate
+      ? new Date(projectDetails.targetDate).toLocaleDateString("en-US", {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        })
+      : undefined;
+
     run({
       thread_id: threadId,
       user_id: userId,
@@ -382,6 +394,7 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
         user_name: userName,
         project_id: projectId,
         project_name: project?.projectName,
+        project_deadline: projectDeadline,
         messages: [{ type: "user", content }],
         file_id: attachedFileId,
       },

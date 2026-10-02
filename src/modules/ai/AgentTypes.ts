@@ -5,6 +5,7 @@ export interface AgentState extends WithMessages {
   user_name?: string;
   project_id?: string;
   project_name?: string;
+  project_deadline?: string;
   thread_id: string;
 }
 
