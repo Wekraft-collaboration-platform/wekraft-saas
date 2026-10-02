@@ -11,7 +11,7 @@ import {
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useClerk, useUser } from "@clerk/nextjs";
 import { useQuery } from "convex/react";
-import { BookOpen, ChevronDown, Github, LogOut, User } from "lucide-react";
+import { BookOpen, ChevronDown, Github, LogOut, ShieldCheck, User } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { api } from "../../../../convex/_generated/api";
 import { toast } from "sonner";
@@ -84,6 +84,13 @@ export function UserMenu() {
         >
           <User className="mr-2 h-4 w-4" />
           <span>Profile</span>
+        </DropdownMenuItem>
+        <DropdownMenuItem
+          onClick={() => router.push("/dashboard/audit-logs")}
+          className="cursor-pointer rounded-md transition-colors"
+        >
+          <ShieldCheck className="mr-2 h-4 w-4" />
+          <span>Audit Logs</span>
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => router.push("/web/docs")}

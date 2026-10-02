@@ -7,19 +7,12 @@ import Link from "next/link";
 import {
   ShieldCheck,
   Lock,
-  Sparkles,
   ArrowRight,
   Search,
   Activity,
   CheckCircle2,
   ListTodo,
   Bug,
-  Users,
-  MessageSquare,
-  Trash2,
-  RefreshCw,
-  ChevronDown,
-  ChevronUp,
   Clover,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -41,7 +34,6 @@ export default function AuditLogsPage() {
   const [selectedProjectId, setSelectedProjectId] = useState<string>("");
   const [searchQuery, setSearchQuery] = useState("");
   const [actionFilter, setActionFilter] = useState("all");
-  const [expandedLogId, setExpandedLogId] = useState<string | null>(null);
 
   const effectivePlan = user?.accountType || "free";
   const isPro = effectivePlan === "pro";
@@ -73,9 +65,6 @@ export default function AuditLogsPage() {
   // Calculate stat counts
   const taskCount = logs.filter((l) => l.targetType === "task").length;
   const issueCount = logs.filter((l) => l.targetType === "issue").length;
-  const customerCount = logs.filter(
-    (l) => l.targetType === "customer" || l.targetType === "request",
-  ).length;
 
   const getActionBadge = (action: string) => {
     if (action.includes("create")) {
@@ -246,11 +235,11 @@ export default function AuditLogsPage() {
         /* PRO AUDIT LOG VIEWER */
         <div className="space-y-6">
           {/* Stat Cards Header */}
-          <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
             <div className="bg-card border border-border p-4 rounded-xl space-y-1">
               <div className="flex items-center justify-between text-muted-foreground">
                 <span className="text-xs font-medium">Total Events</span>
-                <Activity className="h-4 w-4 text-primary" />
+                <Activity className="h-4 w-4" />
               </div>
               <p className="text-2xl font-bold text-foreground font-mono">
                 {logs.length}
@@ -260,7 +249,7 @@ export default function AuditLogsPage() {
             <div className="bg-card border border-border p-4 rounded-xl space-y-1">
               <div className="flex items-center justify-between text-muted-foreground">
                 <span className="text-xs font-medium">Tasks Logs</span>
-                <ListTodo className="h-4 w-4 text-blue-400" />
+                <ListTodo className="h-4 w-4" />
               </div>
               <p className="text-2xl font-bold text-foreground font-mono">
                 {taskCount}
@@ -270,20 +259,10 @@ export default function AuditLogsPage() {
             <div className="bg-card border border-border p-4 rounded-xl space-y-1">
               <div className="flex items-center justify-between text-muted-foreground">
                 <span className="text-xs font-medium">Issues Logs</span>
-                <Bug className="h-4 w-4 text-rose-400" />
+                <Bug className="h-4 w-4" />
               </div>
               <p className="text-2xl font-bold text-foreground font-mono">
                 {issueCount}
-              </p>
-            </div>
-
-            <div className="bg-card border border-border p-4 rounded-xl space-y-1">
-              <div className="flex items-center justify-between text-muted-foreground">
-                <span className="text-xs font-medium">Customer Desk</span>
-                <Users className="h-4 w-4 text-emerald-400" />
-              </div>
-              <p className="text-2xl font-bold text-foreground font-mono">
-                {customerCount}
               </p>
             </div>
           </div>
@@ -313,8 +292,6 @@ export default function AuditLogsPage() {
                   <SelectItem value="project">Projects & Team</SelectItem>
                   <SelectItem value="task">Tasks</SelectItem>
                   <SelectItem value="issue">Issues</SelectItem>
-                  <SelectItem value="customer">Customers</SelectItem>
-                  <SelectItem value="request">Requests</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -328,7 +305,7 @@ export default function AuditLogsPage() {
                 No Audit Logs Recorded
               </h3>
               <p className="text-xs text-muted-foreground max-w-sm">
-                Member actions on tasks, issues, and customer desk will
+                Member actions on tasks and issues will
                 automatically populate here.
               </p>
             </div>
@@ -343,12 +320,10 @@ export default function AuditLogsPage() {
                       <th className="py-3 px-4">Action</th>
                       <th className="py-3 px-4">Target Item</th>
                       <th className="py-3 px-4">Category</th>
-                      <th className="py-3 px-4 text-right">Details</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-border">
                     {filteredLogs.map((log) => {
-                      const isExpanded = expandedLogId === log._id;
                       return (
                         <tr
                           key={log._id}
@@ -375,32 +350,6 @@ export default function AuditLogsPage() {
                           </td>
                           <td className="py-3.5 px-4 capitalize font-mono text-[11px] text-muted-foreground">
                             {log.targetType}
-                          </td>
-                          <td className="py-3.5 px-4 text-right">
-                            {log.changes ? (
-                              <Button
-                                variant="ghost"
-                                size="xs"
-                                onClick={() =>
-                                  setExpandedLogId(isExpanded ? null : log._id)
-                                }
-                                className="text-[11px] gap-1 cursor-pointer"
-                              >
-                                {isExpanded ? (
-                                  <>
-                                    Hide <ChevronUp className="h-3 w-3" />
-                                  </>
-                                ) : (
-                                  <>
-                                    Diff <ChevronDown className="h-3 w-3" />
-                                  </>
-                                )}
-                              </Button>
-                            ) : (
-                              <span className="text-[11px] text-muted-foreground/40">
-                                -
-                              </span>
-                            )}
                           </td>
                         </tr>
                       );

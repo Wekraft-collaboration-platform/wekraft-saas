@@ -512,44 +512,6 @@ export const AppSidebar = () => {
               </span>
             </div>
           </SidebarMenuButton>
-
-          {/* Audit Logs */}
-          <SidebarMenuButton
-            asChild
-            tooltip="Audit Logs"
-            isActive={isActive("/dashboard/audit-logs")}
-            className="group relative overflow-hidden"
-          >
-            <Link
-              href="/dashboard/audit-logs"
-              className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
-            >
-              <ShieldCheck className="h-5 w-5 text-primary" />
-              <span className="text-sm group-data-[collapsible=icon]:hidden font-medium">
-                Audit Logs
-              </span>
-              {effectivePlan !== "pro" ? (
-                <div className="ml-auto flex items-center gap-1 group-data-[collapsible=icon]:hidden">
-                  <Badge
-                    variant="outline"
-                    className="text-[10px] h-4 px-1.5 border-border text-muted-foreground bg-muted/40 flex items-center gap-0.5 font-mono"
-                  >
-                    <Lock className="h-2.5 w-2.5" />
-                    Pro
-                  </Badge>
-                </div>
-              ) : (
-                <span
-                  className="
-            pointer-events-none absolute inset-0 -z-10
-            opacity-0 transition-opacity
-            group-data-[active=true]:opacity-100
-            bg-linear-to-l from-blue-600/80 dark:from-blue-600/50 via-blue-600/10 to-transparent
-          "
-                />
-              )}
-            </Link>
-          </SidebarMenuButton>
         </SidebarMenu>
       </SidebarContent>
       <SidebarFooter className="border-t border-accent px-2 py-2 group-data-[collapsible=icon]:hidden">

@@ -4,7 +4,20 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { useQuery, useMutation } from "convex/react";
 import { toast } from "sonner";
-import { Sparkles, Plug, Wrench, Plus, Save, X, Copy, Check, FileText, Eye, Globe, FolderKanban } from "lucide-react";
+import {
+  Sparkles,
+  Plug,
+  Wrench,
+  Plus,
+  Save,
+  X,
+  Copy,
+  Check,
+  FileText,
+  Eye,
+  Globe,
+  FolderKanban,
+} from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { api } from "@/../convex/_generated/api";
@@ -91,7 +104,9 @@ export function KayaSettingsSection({ projectId }: KayaSettingsSectionProps) {
   const [disconnectingId, setDisconnectingId] = useState<string | null>(null);
 
   // Skills Registry State (Tabs: "project" vs "global")
-  const [activeSkillTab, setActiveSkillTab] = useState<"project" | "global">("project");
+  const [activeSkillTab, setActiveSkillTab] = useState<"project" | "global">(
+    "project",
+  );
   const [isCreateSkillOpen, setIsCreateSkillOpen] = useState(false);
   const [newSkillTitle, setNewSkillTitle] = useState("");
   const [newSkillDesc, setNewSkillDesc] = useState("");
@@ -184,7 +199,8 @@ export function KayaSettingsSection({ projectId }: KayaSettingsSectionProps) {
   const skillsList = userSkills || [];
   const projectSkills = skillsList.filter((s: any) => !s.isDefault);
   const globalSkills = skillsList.filter((s: any) => s.isDefault);
-  const activeSkillsToDisplay = activeSkillTab === "project" ? projectSkills : globalSkills;
+  const activeSkillsToDisplay =
+    activeSkillTab === "project" ? projectSkills : globalSkills;
 
   return (
     <div className="space-y-6 mt-5">
@@ -307,72 +323,73 @@ export function KayaSettingsSection({ projectId }: KayaSettingsSectionProps) {
       </Card>
 
       {/* 2. Skills Section - Project Skills vs Global Skills Tabs */}
-      <div className="space-y-3 pt-2">
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
-          <div>
-            <h3 className="text-sm font-medium text-foreground">Skills</h3>
-            <p className="text-xs text-muted-foreground mt-0.5">
-              Automated routines created dynamically by Kaya and pre-installed global skills.
-            </p>
-          </div>
-
-          {/* Tab Switcher: Project Skills vs Global Skills */}
-          <div className="flex items-center p-1 bg-muted/30 border border-border/50 rounded-lg text-xs self-start sm:self-auto">
-            <button
-              type="button"
-              onClick={() => setActiveSkillTab("project")}
-              className={`px-3 py-1.5 rounded-md font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
-                activeSkillTab === "project"
-                  ? "bg-background text-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <FolderKanban className="w-3.5 h-3.5" />
-              <span>Project Skills</span>
-              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-muted text-muted-foreground font-mono">
-                {projectSkills.length}
-              </span>
-            </button>
-            <button
-              type="button"
-              onClick={() => setActiveSkillTab("global")}
-              className={`px-3 py-1.5 rounded-md font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
-                activeSkillTab === "global"
-                  ? "bg-background text-foreground shadow-xs"
-                  : "text-muted-foreground hover:text-foreground"
-              }`}
-            >
-              <Globe className="w-3.5 h-3.5" />
-              <span>Global Skills</span>
-              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-primary/10 text-primary font-mono">
-                {globalSkills.length}
-              </span>
-            </button>
-          </div>
+      <div className="space-y-2 pt-2">
+        <div>
+          <h3 className="text-sm font-medium text-foreground">Skills</h3>
+          <p className="text-xs text-muted-foreground mt-0.5">
+            Automated routines created dynamically by Kaya and pre-installed
+            global skills.
+          </p>
         </div>
 
         <div className="rounded-xl border border-border bg-card divide-y divide-neutral-800 overflow-hidden shadow-xs">
           {/* Header Row inside box */}
-          <div className="flex items-center justify-between px-4 py-3 bg-muted/10">
-            <span className="text-xs font-medium text-foreground">
-              {activeSkillTab === "project"
-                ? projectSkills.length === 0
-                  ? "No custom project skills"
-                  : `${projectSkills.length} custom project skill${projectSkills.length > 1 ? "s" : ""}`
-                : `${globalSkills.length} global platform skill${globalSkills.length > 1 ? "s" : ""}`}
-            </span>
-            {activeSkillTab === "project" && (
-              <Button
+          <div className="flex items-center justify-between px-4 py-2.5 bg-muted/10 gap-3">
+            <div className="flex items-center gap-2.5 min-w-0">
+              <span className="text-xs font-medium text-foreground">
+                {activeSkillTab === "project"
+                  ? projectSkills.length === 0
+                    ? "Project Skills"
+                    : `${projectSkills.length} project skill${projectSkills.length > 1 ? "s" : ""}`
+                  : `${globalSkills.length} global platform skill${globalSkills.length > 1 ? "s" : ""}`}
+              </span>
+              {activeSkillTab === "project" && (
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => setIsCreateSkillOpen(true)}
+                  className="h-7 text-xs px-2.5 text-muted-foreground hover:text-foreground hover:bg-neutral-800/60 rounded-md cursor-pointer flex items-center gap-1"
+                >
+                  <Plus className="w-3.5 h-3.5" />
+                  <span>Create Skill</span>
+                </Button>
+              )}
+            </div>
+
+            {/* Tab Switcher: Attached to top right of skill box */}
+            <div className="flex items-center p-0.5 bg-neutral-900/90 border border-neutral-800 rounded-lg text-xs shrink-0">
+              <button
                 type="button"
-                variant="ghost"
-                size="sm"
-                onClick={() => setIsCreateSkillOpen(true)}
-                className="h-7 text-xs px-2.5 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md cursor-pointer flex items-center gap-1"
+                onClick={() => setActiveSkillTab("project")}
+                className={`px-2.5 py-1 rounded-md font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
+                  activeSkillTab === "project"
+                    ? "bg-neutral-800 text-foreground shadow-xs border border-neutral-700/60"
+                    : "text-muted-foreground hover:text-foreground hover:bg-neutral-800/40 border border-transparent"
+                }`}
               >
-                <Plus className="w-3.5 h-3.5" />
-                <span>Create Skill</span>
-              </Button>
-            )}
+                <FolderKanban className="w-3.5 h-3.5" />
+                <span>Project Skills</span>
+                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-neutral-950/80 text-neutral-300 font-mono">
+                  {projectSkills.length}
+                </span>
+              </button>
+              <button
+                type="button"
+                onClick={() => setActiveSkillTab("global")}
+                className={`px-2.5 py-1 rounded-md font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
+                  activeSkillTab === "global"
+                    ? "bg-neutral-800 text-foreground shadow-xs border border-neutral-700/60"
+                    : "text-muted-foreground hover:text-foreground hover:bg-neutral-800/40 border border-transparent"
+                }`}
+              >
+                <Globe className="w-3.5 h-3.5" />
+                <span>Global Skills</span>
+                <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-neutral-950/80 text-neutral-300 font-mono">
+                  {globalSkills.length}
+                </span>
+              </button>
+            </div>
           </div>
 
           {/* Skills List */}
@@ -465,7 +482,8 @@ export function KayaSettingsSection({ projectId }: KayaSettingsSectionProps) {
                   onClick={() => setIsCreateSkillOpen(true)}
                   className="mt-3 text-xs h-7 cursor-pointer"
                 >
-                  <Plus className="w-3.5 h-3.5 mr-1" /> Create First Project Skill
+                  <Plus className="w-3.5 h-3.5 mr-1" /> Create First Project
+                  Skill
                 </Button>
               )}
             </div>
@@ -473,7 +491,10 @@ export function KayaSettingsSection({ projectId }: KayaSettingsSectionProps) {
         </div>
 
         {/* View Skill Dialog */}
-        <Dialog open={!!viewingSkill} onOpenChange={(open) => !open && setViewingSkill(null)}>
+        <Dialog
+          open={!!viewingSkill}
+          onOpenChange={(open) => !open && setViewingSkill(null)}
+        >
           <DialogContent className="sm:max-w-2xl max-h-[85vh] flex flex-col p-6">
             <DialogHeader className="pb-3 border-b border-border/40">
               <div className="flex items-center justify-between gap-3 pr-6">
@@ -521,7 +542,9 @@ export function KayaSettingsSection({ projectId }: KayaSettingsSectionProps) {
                   type="button"
                   variant="outline"
                   size="sm"
-                  onClick={() => viewingSkill && handleCopySkillContent(viewingSkill.content)}
+                  onClick={() =>
+                    viewingSkill && handleCopySkillContent(viewingSkill.content)
+                  }
                   className="h-6 px-2 text-[10px] gap-1 cursor-pointer"
                 >
                   {copiedSkill ? (
@@ -560,13 +583,17 @@ export function KayaSettingsSection({ projectId }: KayaSettingsSectionProps) {
           <DialogContent className="sm:max-w-lg">
             <DialogHeader>
               <DialogTitle className="text-sm font-bold flex items-center gap-2">
-                <Wrench className="w-4 h-4 text-primary" /> Create New Kaya Skill
+                <Wrench className="w-4 h-4 text-primary" /> Create New Kaya
+                Skill
               </DialogTitle>
               <DialogDescription className="text-xs">
                 Define a custom routine or rulebook for Kaya and MCP sub-agents.
               </DialogDescription>
             </DialogHeader>
-            <form onSubmit={handleCreateSkillSubmit} className="space-y-3.5 py-2">
+            <form
+              onSubmit={handleCreateSkillSubmit}
+              className="space-y-3.5 py-2"
+            >
               <div className="space-y-1.5">
                 <Label htmlFor="skillTitle" className="text-xs">
                   Skill Title
