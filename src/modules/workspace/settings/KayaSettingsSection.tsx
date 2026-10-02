@@ -4,7 +4,7 @@ import React, { useState, useEffect } from "react";
 import Image from "next/image";
 import { useQuery, useMutation } from "convex/react";
 import { toast } from "sonner";
-import { Sparkles, Plug, Wrench, Plus, Save, X, Copy, Check, FileText, Eye } from "lucide-react";
+import { Sparkles, Plug, Wrench, Plus, Save, X, Copy, Check, FileText, Eye, Globe, FolderKanban } from "lucide-react";
 import Link from "next/link";
 import { useParams } from "next/navigation";
 import { api } from "@/../convex/_generated/api";
@@ -90,7 +90,8 @@ export function KayaSettingsSection({ projectId }: KayaSettingsSectionProps) {
   // MCP Disconnecting State
   const [disconnectingId, setDisconnectingId] = useState<string | null>(null);
 
-  // Skills Registry State
+  // Skills Registry State (Tabs: "project" vs "global")
+  const [activeSkillTab, setActiveSkillTab] = useState<"project" | "global">("project");
   const [isCreateSkillOpen, setIsCreateSkillOpen] = useState(false);
   const [newSkillTitle, setNewSkillTitle] = useState("");
   const [newSkillDesc, setNewSkillDesc] = useState("");
@@ -181,6 +182,9 @@ export function KayaSettingsSection({ projectId }: KayaSettingsSectionProps) {
   // Connected MCP tools from Convex
   const connectedItems = (connections || []).filter((c) => c.isConnected);
   const skillsList = userSkills || [];
+  const projectSkills = skillsList.filter((s: any) => !s.isDefault);
+  const globalSkills = skillsList.filter((s: any) => s.isDefault);
+  const activeSkillsToDisplay = activeSkillTab === "project" ? projectSkills : globalSkills;
 
   return (
     <div className="space-y-6 mt-5">
@@ -302,33 +306,73 @@ export function KayaSettingsSection({ projectId }: KayaSettingsSectionProps) {
         </CardContent>
       </Card>
 
-      {/* 2. Skills Section - Same Linear/MCP Style */}
-      <div className="space-y-2 pt-2">
-        <div>
-          <h3 className="text-sm font-medium text-foreground">Skills</h3>
-          <p className="text-xs text-muted-foreground mt-0.5">
-            Automated routines created dynamically by Kaya and pre-installed skills.
-          </p>
+      {/* 2. Skills Section - Project Skills vs Global Skills Tabs */}
+      <div className="space-y-3 pt-2">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+          <div>
+            <h3 className="text-sm font-medium text-foreground">Skills</h3>
+            <p className="text-xs text-muted-foreground mt-0.5">
+              Automated routines created dynamically by Kaya and pre-installed global skills.
+            </p>
+          </div>
+
+          {/* Tab Switcher: Project Skills vs Global Skills */}
+          <div className="flex items-center p-1 bg-muted/30 border border-border/50 rounded-lg text-xs self-start sm:self-auto">
+            <button
+              type="button"
+              onClick={() => setActiveSkillTab("project")}
+              className={`px-3 py-1.5 rounded-md font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
+                activeSkillTab === "project"
+                  ? "bg-background text-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <FolderKanban className="w-3.5 h-3.5" />
+              <span>Project Skills</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-muted text-muted-foreground font-mono">
+                {projectSkills.length}
+              </span>
+            </button>
+            <button
+              type="button"
+              onClick={() => setActiveSkillTab("global")}
+              className={`px-3 py-1.5 rounded-md font-medium transition-all cursor-pointer flex items-center gap-1.5 ${
+                activeSkillTab === "global"
+                  ? "bg-background text-foreground shadow-xs"
+                  : "text-muted-foreground hover:text-foreground"
+              }`}
+            >
+              <Globe className="w-3.5 h-3.5" />
+              <span>Global Skills</span>
+              <span className="text-[10px] px-1.5 py-0.2 rounded-full bg-primary/10 text-primary font-mono">
+                {globalSkills.length}
+              </span>
+            </button>
+          </div>
         </div>
 
         <div className="rounded-xl border border-border bg-card divide-y divide-neutral-800 overflow-hidden shadow-xs">
           {/* Header Row inside box */}
-          <div className="flex items-center justify-between px-4 py-3">
+          <div className="flex items-center justify-between px-4 py-3 bg-muted/10">
             <span className="text-xs font-medium text-foreground">
-              {skillsList.length === 0
-                ? "No skills created"
-                : `${skillsList.length} skill${skillsList.length > 1 ? "s" : ""} active`}
+              {activeSkillTab === "project"
+                ? projectSkills.length === 0
+                  ? "No custom project skills"
+                  : `${projectSkills.length} custom project skill${projectSkills.length > 1 ? "s" : ""}`
+                : `${globalSkills.length} global platform skill${globalSkills.length > 1 ? "s" : ""}`}
             </span>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon"
-              onClick={() => setIsCreateSkillOpen(true)}
-              className="h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md cursor-pointer"
-              title="Create custom skill"
-            >
-              <Plus className="w-4 h-4" />
-            </Button>
+            {activeSkillTab === "project" && (
+              <Button
+                type="button"
+                variant="ghost"
+                size="sm"
+                onClick={() => setIsCreateSkillOpen(true)}
+                className="h-7 text-xs px-2.5 text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-md cursor-pointer flex items-center gap-1"
+              >
+                <Plus className="w-3.5 h-3.5" />
+                <span>Create Skill</span>
+              </Button>
+            )}
           </div>
 
           {/* Skills List */}
@@ -336,9 +380,9 @@ export function KayaSettingsSection({ projectId }: KayaSettingsSectionProps) {
             <div className="px-4 py-3 space-y-2">
               <div className="h-6 bg-muted/40 animate-pulse rounded-md" />
             </div>
-          ) : skillsList.length > 0 ? (
+          ) : activeSkillsToDisplay.length > 0 ? (
             <div className="divide-y divide-border/30">
-              {skillsList.map((skill: any) => (
+              {activeSkillsToDisplay.map((skill: any) => (
                 <div
                   key={skill._id || skill.name}
                   onClick={() => setViewingSkill(skill)}
@@ -352,14 +396,14 @@ export function KayaSettingsSection({ projectId }: KayaSettingsSectionProps) {
                           variant="outline"
                           className="text-[9px] py-0 px-1.5 bg-primary/10 text-primary border-primary/20 font-normal"
                         >
-                          Default
+                          Global
                         </Badge>
                       ) : (
                         <Badge
                           variant="outline"
-                          className="text-[9px] py-0 px-1.5 bg-muted/30 text-muted-foreground font-normal"
+                          className="text-[9px] py-0 px-1.5 bg-emerald-500/10 text-emerald-400 border-emerald-500/20 font-normal"
                         >
-                          Custom
+                          Project
                         </Badge>
                       )}
                     </div>
@@ -406,7 +450,26 @@ export function KayaSettingsSection({ projectId }: KayaSettingsSectionProps) {
                 </div>
               ))}
             </div>
-          ) : null}
+          ) : (
+            <div className="px-4 py-8 text-center">
+              <p className="text-xs text-muted-foreground">
+                {activeSkillTab === "project"
+                  ? "No project skills created yet. Skills created by you or Kaya for this project will appear here."
+                  : "No global skills loaded."}
+              </p>
+              {activeSkillTab === "project" && (
+                <Button
+                  type="button"
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setIsCreateSkillOpen(true)}
+                  className="mt-3 text-xs h-7 cursor-pointer"
+                >
+                  <Plus className="w-3.5 h-3.5 mr-1" /> Create First Project Skill
+                </Button>
+              )}
+            </div>
+          )}
         </div>
 
         {/* View Skill Dialog */}

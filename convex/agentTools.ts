@@ -166,7 +166,6 @@ export const addItemsToSprint = internalMutation({
 
 // Scheduler query removed — setup_report_scheduler handles both viewing and setting up schedulers.
 
-
 // Create or Update Scheduler by agent
 export const createOrUpdateScheduler = internalMutation({
   args: {
@@ -469,11 +468,14 @@ export const getProjectInsights = internalQuery({
       const now = Date.now();
       const diff = deadlineTimestamp - now;
       daysRemaining = Math.ceil(diff / (1000 * 60 * 60 * 24));
-      formattedDeadline = new Date(deadlineTimestamp).toLocaleDateString("en-US", {
-        month: "long",
-        day: "numeric",
-        year: "numeric",
-      });
+      formattedDeadline = new Date(deadlineTimestamp).toLocaleDateString(
+        "en-US",
+        {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        },
+      );
     }
 
     return {
@@ -487,7 +489,6 @@ export const getProjectInsights = internalQuery({
     };
   },
 });
-
 
 /**
  * getTasksSummary: Returns an AI-optimized summary of tasks, prioritizing active and high-priority ones.
@@ -690,14 +691,21 @@ export const getProjectVelocity = internalQuery({
       const weekLabel = `Week -${idx + 1}`;
 
       const tasksCompleted = doneTasks.filter(
-        (t) => t.finalCompletedAt! >= weekStart && t.finalCompletedAt! < weekEnd,
+        (t) =>
+          t.finalCompletedAt! >= weekStart && t.finalCompletedAt! < weekEnd,
       ).length;
 
       const issuesResolved = doneIssues.filter(
-        (i) => i.finalCompletedAt! >= weekStart && i.finalCompletedAt! < weekEnd,
+        (i) =>
+          i.finalCompletedAt! >= weekStart && i.finalCompletedAt! < weekEnd,
       ).length;
 
-      return { weekLabel, tasksCompleted, issuesResolved, total: tasksCompleted + issuesResolved };
+      return {
+        weekLabel,
+        tasksCompleted,
+        issuesResolved,
+        total: tasksCompleted + issuesResolved,
+      };
     }).reverse();
 
     // --- Average cycle time (createdAt → finalCompletedAt) ---
@@ -766,7 +774,11 @@ export const getSprintHistory = internalQuery({
       .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
       .collect();
 
-    const statusOrder: Record<string, number> = { completed: 0, active: 1, planned: 2 };
+    const statusOrder: Record<string, number> = {
+      completed: 0,
+      active: 1,
+      planned: 2,
+    };
     sprints.sort(
       (a, b) =>
         statusOrder[a.status] - statusOrder[b.status] ||
@@ -789,16 +801,16 @@ export const getSprintHistory = internalQuery({
     await Promise.all(
       creatorIds.map(async (id) => {
         const user = await ctx.db.get(id);
-        if (user) creatorMap[id as string] = user.name ?? user.githubUsername ?? "Unknown";
+        if (user)
+          creatorMap[id as string] =
+            user.name ?? user.githubUsername ?? "Unknown";
       }),
     );
 
     const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
     // Keep last 6 completed (most recent) + active sprint only; skip empty planned
-    const completed = sprints
-      .filter((s) => s.status === "completed")
-      .slice(-6);
+    const completed = sprints.filter((s) => s.status === "completed").slice(-6);
     const active = sprints.filter((s) => s.status === "active");
     const relevant = [...completed, ...active];
 
@@ -816,7 +828,9 @@ export const getSprintHistory = internalQuery({
       } else {
         const sprintTasks = allTasks.filter((t) => t.sprintId === s._id);
         const sprintIssues = allIssues.filter((i) => i.sprintId === s._id);
-        completedTasks = sprintTasks.filter((t) => t.status === "completed").length;
+        completedTasks = sprintTasks.filter(
+          (t) => t.status === "completed",
+        ).length;
         totalTasks = sprintTasks.length;
         closedIssues = sprintIssues.filter((i) => i.status === "closed").length;
         totalIssues = sprintIssues.length;
@@ -849,6 +863,21 @@ export const getSprintHistory = internalQuery({
     });
   },
 });
+
+function inferTaskTag(title: string): { label: string; color: string } {
+  const t = title.toLowerCase();
+  if (/pay|bill|invoice|finance|money|subscri/.test(t))
+    return { label: "Payment", color: "green" };
+  if (/auth|login|sign|jwt|user|secu|iam/.test(t))
+    return { label: "Auth", color: "blue" };
+  if (/ui|front|design|view|css|page|client|meet/.test(t))
+    return { label: "UI", color: "purple" };
+  if (/middle|rout|api|back|serv|data|db|sql|endp/.test(t))
+    return { label: "API", color: "yellow" };
+  if (/bug|fix|err|patch|resolv/.test(t))
+    return { label: "Bugfix", color: "grey" };
+  return { label: "Feature", color: "blue" };
+}
 
 // Bulk Insert Tasks mutation for PRD / Document AI Extractor
 export const bulkInsertTasks = internalMutation({
@@ -885,7 +914,7 @@ export const bulkInsertTasks = internalMutation({
         title: taskItem.title,
         description: taskItem.description || undefined,
         priority: taskItem.priority ?? "medium",
-        type: taskItem.type ?? { label: "PRD-Import", color: "#3b82f6" },
+        type: taskItem.type ?? inferTaskTag(taskItem.title),
         status: "not started",
         estimation: {
           startDate: now,
@@ -922,11 +951,7 @@ export const bulkInsertIssues = internalMutation({
           ),
         ),
         severity: v.optional(
-          v.union(
-            v.literal("critical"),
-            v.literal("medium"),
-            v.literal("low"),
-          ),
+          v.union(v.literal("critical"), v.literal("medium"), v.literal("low")),
         ),
       }),
     ),
@@ -963,4 +988,3 @@ export const bulkInsertIssues = internalMutation({
     };
   },
 });
-

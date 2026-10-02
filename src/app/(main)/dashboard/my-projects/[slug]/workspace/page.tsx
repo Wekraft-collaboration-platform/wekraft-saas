@@ -55,6 +55,7 @@ import { TaskStatusCard } from "@/modules/workspace/workspace-modules/TaskStatus
 import { TeamContributionRadarCard } from "@/modules/workspace/workspace-modules/TeamContributionRadarCard";
 import { WeeklyEngagementChartCard } from "@/modules/workspace/workspace-modules/WeeklyEngagementChartCard";
 import { WeeklyVelocityChart } from "@/modules/workspace/workspace-modules/WeeklyVelocityChart";
+import { useKayaStore } from "@/store/useKayaStore";
 import { api } from "../../../../../../../convex/_generated/api";
 import type { Id } from "../../../../../../../convex/_generated/dataModel";
 
@@ -226,6 +227,13 @@ const ProjectWorkspace = () => {
             className="text-xs cursor-pointer font-sans font-medium! text-primary bg-linear-to-br from-transparent to-indigo-500"
             variant="outline"
             size="sm"
+            onClick={() => {
+              useKayaStore
+                .getState()
+                .openWithPrompt(
+                  "Hey kaya help me with my project , get me team memeber workload ,  all our project tasks and issues , and my work .\nand also let me know bout project duration , are we on track ?"
+                );
+            }}
           >
             <Image src="/kaya.svg" alt="kaya" width={20} height={20} />
             Today Insights

@@ -46,6 +46,8 @@ export interface TaskItemPreview {
   title: string;
   description?: string;
   priority?: "high" | "medium" | "low";
+  severity?: "critical" | "high" | "medium" | "low";
+  tag?: string;
 }
 
 export interface TaskCreationInterrupt {

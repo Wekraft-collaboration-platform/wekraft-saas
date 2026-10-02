@@ -127,7 +127,7 @@ const KayaLoader = () => (
 );
 
 export function AiAssistantSheet({}: AiAssistantSheetProps) {
-  const { isOpen, setIsOpen, threadId, createNewSession } = useKayaStore();
+  const { isOpen, setIsOpen, threadId, createNewSession, initialPrompt, setInitialPrompt } = useKayaStore();
   const params = useParams();
   const slug = params?.slug as string;
   const project = useQuery(
@@ -156,6 +156,19 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
   const [shouldAutoScroll, setShouldAutoScroll] = useState(true);
   const [restoreError, setRestoreError] = useState(false);
   const [thinkingTime, setThinkingTime] = useState(0);
+
+  useEffect(() => {
+    if (initialPrompt && isOpen) {
+      setInputValue(initialPrompt);
+      setInitialPrompt("");
+      const timer = setTimeout(() => {
+        if (textareaRef.current) {
+          textareaRef.current.focus();
+        }
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [initialPrompt, isOpen, setInitialPrompt]);
 
   interface DocAttachment {
     fileId?: string;

@@ -14,34 +14,18 @@ import {
   CheckSquare,
   Bug,
   AlertTriangle,
-  Flame,
   ListTodo,
 } from "lucide-react";
+import {
+  priorityIcons,
+  ISSUE_SEVERITY_ICONS,
+} from "@/lib/static-store";
 
 interface TaskApprovalCardProps {
   interruptValue: TaskCreationInterrupt;
   isCompleted?: boolean;
   onResume: (value: ResumeValue) => void;
 }
-
-const PRIORITY_BADGES: Record<string, { label: string; className: string }> = {
-  critical: {
-    label: "Critical",
-    className: "text-red-400 bg-red-500/10 border-red-500/20",
-  },
-  high: {
-    label: "High",
-    className: "text-rose-400 bg-rose-500/10 border-rose-500/20",
-  },
-  medium: {
-    label: "Medium",
-    className: "text-amber-400 bg-amber-500/10 border-amber-500/20",
-  },
-  low: {
-    label: "Low",
-    className: "text-blue-400 bg-blue-500/10 border-blue-500/20",
-  },
-};
 
 export function TaskApprovalCard({
   interruptValue,
@@ -138,9 +122,7 @@ export function TaskApprovalCard({
           </div>
         ) : (
           items.map((item, idx) => {
-            const level = item.priority || "NA";
-            const badge =
-              PRIORITY_BADGES[level.toLowerCase()] ?? PRIORITY_BADGES.medium;
+            const level = item.priority || "medium";
 
             return (
               <div
@@ -160,14 +142,26 @@ export function TaskApprovalCard({
                       {item.title}
                     </p>
                   </div>
-                  <span
-                    className={cn(
-                      "px-1.5 py-0.5 rounded text-[10px] font-medium border shrink-0",
-                      badge.className,
+
+                  <div className="flex items-center gap-2 shrink-0">
+                    {item.tag && (
+                      <span className="px-2 py-0.5 rounded-full text-[10px] font-medium border bg-neutral-500/10 text-neutral-300 border-neutral-700/40">
+                        {item.tag}
+                      </span>
                     )}
-                  >
-                    {badge.label}
-                  </span>
+                    <div
+                      className="flex items-center justify-center shrink-0"
+                      title={`Priority: ${level}`}
+                    >
+                      {isIssue && item.severity ? (
+                        ISSUE_SEVERITY_ICONS[item.severity.toLowerCase()] ??
+                        priorityIcons[level.toLowerCase()] ??
+                        priorityIcons.medium
+                      ) : (
+                        priorityIcons[level.toLowerCase()] ?? priorityIcons.medium
+                      )}
+                    </div>
+                  </div>
                 </div>
 
                 {item.description && (
