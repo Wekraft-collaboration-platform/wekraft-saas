@@ -228,7 +228,7 @@ const createTools = (callerClerkId?: string, currentChannelId?: string) => ({
 
   summarizeChannelAndFollowUps: tool({
     description:
-      "Fetch the last 24 hours of messages from the current channel (max 50) and return them so Kaya can produce a structured summary and action-item list. Use this when the user asks to summarize chats, recap the discussion, or list follow-ups.",
+      "Fetch recent messages from the current channel (checks last 24h, automatically expanding up to 7 days if messages are few, max 50) and return them so Kaya can produce a structured summary and action-item list. Use this when the user asks to summarize chats, recap the discussion, or list follow-ups.",
     inputSchema: z.object({
       channelId: z
         .string()
@@ -242,27 +242,59 @@ const createTools = (callerClerkId?: string, currentChannelId?: string) => ({
       try {
         await initTeamspaceDB();
 
-        const oneDayAgo = Date.now() - 24 * 60 * 60 * 1000;
+        const now = Date.now();
+        const oneDayAgo = now - 24 * 60 * 60 * 1000;
+        const oneWeekAgo = now - 7 * 24 * 60 * 60 * 1000;
 
-        const res = await turso.execute({
+        let res = await turso.execute({
           sql: `
-            SELECT user_name, content, created_at
-            FROM ts_messages
-            WHERE channel_id = ?
-              AND created_at >= ?
-              AND user_id NOT IN ('kaya', 'harry')
-              AND thread_parent_id IS NULL
+            SELECT user_name, content, created_at FROM (
+              SELECT user_name, content, created_at
+              FROM ts_messages
+              WHERE channel_id = ?
+                AND created_at >= ?
+                AND user_id NOT IN ('kaya', 'harry')
+                AND thread_parent_id IS NULL
+              ORDER BY created_at DESC
+              LIMIT 50
+            ) sub
             ORDER BY created_at ASC
-            LIMIT 50
           `,
           args: [channelId, oneDayAgo],
         });
+
+        let timeframe = "last 24h";
+
+        // If messages in the last 24h are fewer than 15, expand lookback window up to 1 week (7 days)
+        if (res.rows.length < 15) {
+          const weekRes = await turso.execute({
+            sql: `
+              SELECT user_name, content, created_at FROM (
+                SELECT user_name, content, created_at
+                FROM ts_messages
+                WHERE channel_id = ?
+                  AND created_at >= ?
+                  AND user_id NOT IN ('kaya', 'harry')
+                  AND thread_parent_id IS NULL
+                ORDER BY created_at DESC
+                LIMIT 50
+              ) sub
+              ORDER BY created_at ASC
+            `,
+            args: [channelId, oneWeekAgo],
+          });
+
+          if (weekRes.rows.length > res.rows.length) {
+            res = weekRes;
+            timeframe = "past 7 days";
+          }
+        }
 
         if (res.rows.length === 0) {
           return {
             messageCount: 0,
             messages: [],
-            note: "No messages found in the last 24 hours for this channel.",
+            note: "No messages found in the past week for this channel.",
           };
         }
 
@@ -274,7 +306,7 @@ const createTools = (callerClerkId?: string, currentChannelId?: string) => ({
 
         return {
           messageCount: messages.length,
-          windowHours: 24,
+          timeframe,
           messages,
         };
       } catch (err: any) {
@@ -340,10 +372,10 @@ Your Capabilities & Behaviour:
    - Call \`summarizeChannelAndFollowUps\` with the current channelId: "${channelId || 'unknown'}".
    - CRITICAL: Never ask the user for a channelId. Always use "${channelId || 'unknown'}" directly.
    - After the tool returns the messages array, produce a structured response with this exact format:
-     * **📋 Channel Summary** (last 24h — {N} messages)
+     * **📋 Channel Summary** ({timeframe} — {N} messages)
      * **🗣️ Discussion Topics:** — bullet list of key topics discussed
      * **✅ Action Items / Follow-ups:** — bullet list with owner and task (e.g. "• Alex → Fix payment webhook")
-     * If messageCount is 0: reply that there are no messages in the last 24 hours to summarize.
+     * If messageCount is 0: reply that there are no recent messages to summarize.
    - Keep the summary concise and scannable. Max 10 bullet points per section.
 
 Tone & Style:

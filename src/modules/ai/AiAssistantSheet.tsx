@@ -335,29 +335,43 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
     }
   }, [status, restoring]);
 
-  // Auto-scroll
+  // Auto-scroll: Smooth bottom lock without competing animation fighting or jumping
   useEffect(() => {
-    if (shouldAutoScroll && appCheckpoints.length > 0) {
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-    }
-  }, [appCheckpoints, status, shouldAutoScroll]);
+    if (!shouldAutoScroll) return;
+    const el = containerRef.current;
+    if (!el) return;
 
-  // Scroll button visibility
+    const rafId = requestAnimationFrame(() => {
+      if (el && shouldAutoScroll) {
+        el.scrollTop = el.scrollHeight;
+      }
+    });
+    return () => cancelAnimationFrame(rafId);
+  }, [
+    appCheckpoints,
+    status,
+    shouldAutoScroll,
+    reasoning,
+    activeToolCalls,
+    isStreaming,
+  ]);
+
+  // Scroll button visibility & user scroll-away detection
   useEffect(() => {
     const el = containerRef.current;
     if (!el) return;
     const handler = () => {
-      const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 100;
+      const isAtBottom = el.scrollHeight - el.scrollTop - el.clientHeight < 80;
       const hasOverflow = el.scrollHeight > el.clientHeight;
       setShowScrollButton(
         !isAtBottom && hasOverflow && appCheckpoints.length > 0,
       );
       setShouldAutoScroll(isAtBottom);
     };
-    el.addEventListener("scroll", handler);
+    el.addEventListener("scroll", handler, { passive: true });
     handler(); // Initial check
     return () => el.removeEventListener("scroll", handler);
-  }, [appCheckpoints, status]);
+  }, [appCheckpoints.length, status]);
 
   const sendMessage = (content: string) => {
     if (!!(project && (project as any).ownerAccountType !== "pro")) {
@@ -682,15 +696,32 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
               );
             })}
 
-            {status === "running" && !restoring && !isStreaming && (
-              <div className="flex flex-col gap-1 py-3 px-4">
+            {(() => {
+              const lastCp = appCheckpoints[appCheckpoints.length - 1];
+              const hasActiveApproval = Boolean(
+                lastCp?.interruptValue ||
+                (lastCp?.interrupts && lastCp.interrupts.length > 0)
+              );
+
+              if (
+                status !== "running" ||
+                restoring ||
+                isStreaming ||
+                hasActiveApproval
+              ) {
+                return null;
+              }
+
+              return (
+                <div className="flex flex-col gap-1 py-3 px-4">
                 <div className="flex gap-2 items-center text-neutral-300">
                   <KayaLoader />
                   <div className="flex items-center gap-1.5">
                     <span className="text-[10px] uppercase tracking-normal">
-                      {reasoning
-                        ? "Kaya is reasoning..."
-                        : agentStatus || "Kaya is thinking..."}
+                      {agentStatus ||
+                        (reasoning
+                          ? "Kaya is reasoning..."
+                          : "Kaya is thinking...")}
                     </span>
                     {thinkingTime > 0 && (
                       <span className="text-[9px] tabular-nums text-muted-foreground">
@@ -760,8 +791,9 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
                     Initial response might take a few seconds to warm up...
                   </div>
                 )}
-              </div>
-            )}
+                </div>
+              );
+            })()}
 
             {restoring && (
               <div className="flex gap-2 items-center py-3 px-4 text-neutral-500">

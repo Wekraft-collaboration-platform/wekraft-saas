@@ -172,6 +172,24 @@ export function useLangGraphAgent<
         TInterruptValue,
         TResumeValue
       >(agentInput);
+      let chunkRafId: number | null = null;
+      const queueChunkUpdate = () => {
+        if (chunkRafId === null) {
+          chunkRafId = requestAnimationFrame(() => {
+            setAppCheckpoints([...appCheckpoints]);
+            chunkRafId = null;
+          });
+        }
+      };
+
+      const flushImmediate = () => {
+        if (chunkRafId !== null) {
+          cancelAnimationFrame(chunkRafId);
+          chunkRafId = null;
+        }
+        setAppCheckpoints([...appCheckpoints]);
+      };
+
       for await (const msg of messageStream) {
         if (msg.event === "checkpoint") {
           setIsStreaming(false);
@@ -179,7 +197,7 @@ export function useLangGraphAgent<
             msg.data as Checkpoint<TAgentState, TInterruptValue>,
             appCheckpoints,
           );
-          setAppCheckpoints([...appCheckpoints]);
+          flushImmediate();
         }
 
         if (msg.event === "message_chunk") {
@@ -200,7 +218,7 @@ export function useLangGraphAgent<
             currentTurnTools,
             currentTurnSkill,
           );
-          setAppCheckpoints([...appCheckpoints]);
+          queueChunkUpdate();
         }
 
         if (msg.event === "custom") {
@@ -241,7 +259,7 @@ export function useLangGraphAgent<
             setActiveToolCalls([...currentTurnTools]);
           }
           processCustomEvent(msg.data as Partial<TAgentState>, appCheckpoints);
-          setAppCheckpoints([...appCheckpoints]);
+          flushImmediate();
         }
 
         if (msg.event === "interrupt") {
@@ -249,15 +267,16 @@ export function useLangGraphAgent<
             msg.data as Interrupt<TInterruptValue>[],
             appCheckpoints,
           );
-          setAppCheckpoints([...appCheckpoints]);
+          flushImmediate();
         }
 
         if (msg.event === "error") {
           const errorData = msg.data as { error?: string } | undefined;
           processError(appCheckpoints, errorData?.error);
-          setAppCheckpoints([...appCheckpoints]);
+          flushImmediate();
         }
       }
+      flushImmediate();
 
       const elapsedSec = ((Date.now() - runStartTime) / 1000).toFixed(1);
       if (appCheckpoints.length > 0) {

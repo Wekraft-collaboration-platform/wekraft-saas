@@ -12,135 +12,135 @@ const TOOL_META: Record<
   analyst_agent: {
     label: "Project analyst agent",
     caller: "Kaya",
-    colorClass: "bg-amber-500/30 text-primary",
+    colorClass: "bg-indigo-500/30 text-primary/80",
   },
   ask_project_analyst: {
     label: "Project analyst agent",
     caller: "Kaya",
-    colorClass: "bg-amber-500/30 text-primary",
+    colorClass: "bg-indigo-500/30 text-primary/80",
   },
   sprint_agent: {
     label: "Sprint manager agent",
     caller: "Kaya",
-    colorClass: "bg-blue-500/25 text-primary",
+    colorClass: "bg-indigo-500/30 text-primary/80",
   },
   db_write_agent: {
     label: "DB Write agent",
     caller: "Kaya",
-    colorClass: "bg-violet-500/25 text-primary",
+    colorClass: "bg-indigo-500/30 text-primary/80",
   },
   mcp_agent: {
     label: "mcp agent",
     caller: "Kaya",
-    colorClass: "bg-purple-500/25 text-primary",
+    colorClass: "bg-indigo-500/30 text-primary/80",
   },
   mcp: {
     label: "mcp agent",
     caller: "Kaya",
-    colorClass: "bg-purple-500/25 text-primary",
+    colorClass: "bg-indigo-500/30 text-primary/80",
   },
 
   // ── MCP Tools ────────────────────────────────────────────────────────────
   linear_list_issues: {
     label: "linear list issues",
     caller: "MCP Agent",
-    colorClass: "bg-indigo-500/30 text-primary/80",
+    colorClass: "bg-neutral-800 text-neutral-300",
   },
   slack_list_channels: {
     label: "slack list channels",
     caller: "MCP Agent",
-    colorClass: "bg-indigo-500/30 text-primary/80",
+    colorClass: "bg-neutral-800 text-neutral-300",
   },
   calendly_get_availability: {
     label: "calendly get availability",
     caller: "MCP Agent",
-    colorClass: "bg-indigo-500/30 text-primary/80",
+    colorClass: "bg-neutral-800 text-neutral-300",
   },
   notion_search: {
     label: "notion search",
     caller: "MCP Agent",
-    colorClass: "bg-indigo-500/30 text-primary/80",
+    colorClass: "bg-neutral-800 text-neutral-300",
   },
   jira_list_issues: {
     label: "jira list issues",
     caller: "MCP Agent",
-    colorClass: "bg-indigo-500/30 text-primary/80",
+    colorClass: "bg-neutral-800 text-neutral-300",
   },
   jira_search_issues: {
     label: "jira search issues",
     caller: "MCP Agent",
-    colorClass: "bg-indigo-500/30 text-primary/80",
+    colorClass: "bg-neutral-800 text-neutral-300",
   },
 
   // ── Project Analyst's Tools ───────────────────────────────────────────────
   get_tasks_summary: {
     label: "Analyzing tasks summary",
     caller: "Project analyst",
-    colorClass: "bg-indigo-500/30 text-primary/80",
+    colorClass: "bg-neutral-800 text-neutral-300",
   },
   get_issues_summary: {
     label: "Analyzing issues summary",
     caller: "Project analyst",
-    colorClass: "bg-indigo-500/30 text-primary/80",
+    colorClass: "bg-neutral-800 text-neutral-300",
   },
   get_member_workload: {
     label: "Reviewing team workload",
     caller: "Project analyst",
-    colorClass: "bg-indigo-500/30 text-primary/80",
+    colorClass: "bg-neutral-800 text-neutral-300",
   },
   get_project_insights: {
     label: "Checking project timeline",
     caller: "Project analyst",
-    colorClass: "bg-indigo-500/30 text-primary/80",
+    colorClass: "bg-neutral-800 text-neutral-300",
   },
   get_user_standup: {
     label: "Preparing your standup",
     caller: "Project analyst",
-    colorClass: "bg-orange-600/30 text-primary/80",
+    colorClass: "bg-neutral-800 text-neutral-300",
   },
 
   // ── Sprint Manager's Tools ────────────────────────────────────────────────
   get_sprint_insights: {
     label: "Analyzing sprint velocity",
     caller: "Sprint manager",
-    colorClass: "bg-blue-500/20 text-muted-foreground",
+    colorClass: "bg-neutral-800 text-neutral-300",
   },
   create_sprint: {
     label: "Creating sprint",
     caller: "Sprint manager",
-    colorClass: "bg-blue-500/20 text-muted-foreground",
+    colorClass: "bg-neutral-800 text-neutral-300",
   },
   add_items_to_sprint: {
     label: "Allocating sprint backlog",
     caller: "Sprint manager",
-    colorClass: "bg-blue-600/20 text-primary/80",
+    colorClass: "bg-neutral-800 text-neutral-300",
   },
 
   // ── DB Write Tools ────────────────────────────────────────────────────────
   get_scheduler: {
     label: "Checking scheduler",
     caller: "DB Write agent",
-    colorClass: "bg-violet-600/20 text-primary/80",
+    colorClass: "bg-neutral-800 text-neutral-300",
   },
   setup_report_scheduler: {
     label: "Setting up scheduler",
     caller: "DB Write agent",
-    colorClass: "bg-violet-600/30 text-primary/80",
+    colorClass: "bg-neutral-800 text-neutral-300",
   },
   create_calendar_event: {
     label: "Creating calendar event",
     caller: "DB Write agent",
-    colorClass: "bg-blue-50 text-blue-800 dark:bg-blue-950 dark:text-blue-200",
+    colorClass: "bg-neutral-800 text-neutral-300",
   },
   bulk_create_tasks: {
     label: "Generating bulk tasks",
     caller: "DB Write agent",
-    colorClass: "bg-purple-500/20 text-primary/80",
+    colorClass: "bg-neutral-800 text-neutral-300",
   },
   bulk_create_issues: {
     label: "Generating bulk issues",
     caller: "DB Write agent",
-    colorClass: "bg-purple-500/20 text-primary/80",
+    colorClass: "bg-neutral-800 text-neutral-300",
   },
 };
 
@@ -152,12 +152,17 @@ export interface ToolCallCardProps {
 
 export function ToolCallCard({ toolName, caller, label }: ToolCallCardProps) {
   const isSkill = caller === "Skill" || caller === "Skill activated";
+  const isKayaCaller = caller === "Kaya";
+  const defaultColor = isSkill
+    ? "bg-white/10 text-neutral-100 border border-white/20"
+    : isKayaCaller
+      ? "bg-indigo-500/30 text-primary/80"
+      : "bg-neutral-800 text-neutral-300";
+
   const meta = TOOL_META[toolName] ?? {
     label: label || toolName.replace(/_/g, " "),
     caller: caller || "Agent",
-    colorClass: isSkill
-      ? "bg-white/10 text-neutral-100 border border-white/20"
-      : "bg-indigo-500/30 text-primary/80",
+    colorClass: defaultColor,
   };
 
   const finalCaller = isSkill ? "Skill" : caller || meta.caller;
