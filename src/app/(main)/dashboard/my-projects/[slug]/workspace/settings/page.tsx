@@ -22,6 +22,7 @@ import { Input } from "@/components/ui/input";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Switch } from "@/components/ui/switch";
 import { KayaSettingsSection } from "@/modules/workspace/settings/KayaSettingsSection";
+import { ProjectSchedulerSection } from "@/modules/workspace/settings/ProjectSchedulerSection";
 
 export default function ProjectSettingsPage() {
   const params = useParams();
@@ -132,20 +133,20 @@ export default function ProjectSettingsPage() {
             </p>
           </div>
 
-          <div className="rounded-xl border border-border bg-card p-3 shadow-xs">
+          <div className="rounded-md border border-border/60 bg-card p-3 shadow-xs">
             <div className="flex items-center justify-between gap-3">
               <Input
                 id="projectName"
                 value={projectName}
                 onChange={(e) => setProjectName(e.target.value)}
                 placeholder="Enter project title..."
-                className="max-w-md text-xs h-9 bg-background/60 font-medium"
+                className="max-w-md text-xs h-9 bg-background/60 font-medium rounded-md"
               />
               <Button
                 size="sm"
                 onClick={handleSaveTitle}
                 disabled={isSaving || projectName === project.projectName}
-                className="text-xs cursor-pointer h-9 px-3"
+                className="text-xs cursor-pointer h-9 px-3 rounded-md"
               >
                 {isSaving ? (
                   <>
@@ -173,11 +174,11 @@ export default function ProjectSettingsPage() {
             </p>
           </div>
 
-          <div className="rounded-xl border border-border bg-card overflow-hidden shadow-xs">
+          <div className="rounded-md border border-border/60 bg-card overflow-hidden shadow-xs">
             {project.repoFullName || project.repositoryId ? (
               <div className="flex items-center justify-between px-4 py-3.5 hover:bg-muted/15 transition-colors">
                 <div className="flex items-center gap-3 min-w-0">
-                  <div className="w-8 h-8 rounded-lg bg-neutral-900/90 border border-border/60 flex items-center justify-center shrink-0 text-primary">
+                  <div className="w-8 h-8 rounded-md bg-neutral-900/90 border border-border/60 flex items-center justify-center shrink-0 text-primary">
                     <Link2 className="w-4 h-4" />
                   </div>
                   <div className="min-w-0">
@@ -187,7 +188,7 @@ export default function ProjectSettingsPage() {
                       </span>
                       <Badge
                         variant="outline"
-                        className="text-[10px] py-0 px-1.5 bg-green-500/10 text-green-500 border-green-500/20 font-normal"
+                        className="text-[10px] py-0 px-1.5 bg-green-500/10 text-green-500 border-green-500/20 font-normal rounded-md"
                       >
                         Connected
                       </Badge>
@@ -201,7 +202,7 @@ export default function ProjectSettingsPage() {
                   variant="outline"
                   size="sm"
                   onClick={() => router.push("/dashboard/repositories")}
-                  className="text-xs cursor-pointer h-8"
+                  className="text-xs cursor-pointer h-8 rounded-md"
                 >
                   Change Repository
                   <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
@@ -210,7 +211,7 @@ export default function ProjectSettingsPage() {
             ) : (
               <div className="flex items-center justify-between px-4 py-3.5 hover:bg-muted/15 transition-colors">
                 <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-lg bg-muted/40 border border-border/60 flex items-center justify-center shrink-0 text-muted-foreground">
+                  <div className="w-8 h-8 rounded-md bg-muted/40 border border-border/60 flex items-center justify-center shrink-0 text-muted-foreground">
                     <GitBranch className="w-4 h-4" />
                   </div>
                   <div>
@@ -226,7 +227,7 @@ export default function ProjectSettingsPage() {
                   variant="default"
                   size="sm"
                   onClick={() => router.push("/dashboard/repositories")}
-                  className="text-xs cursor-pointer h-8 bg-blue-500 text-white hover:bg-blue-600"
+                  className="text-xs cursor-pointer h-8 bg-blue-500 text-white hover:bg-blue-600 rounded-md"
                 >
                   Connect Repository
                   <ExternalLink className="w-3.5 h-3.5 ml-1.5" />
@@ -236,7 +237,7 @@ export default function ProjectSettingsPage() {
           </div>
         </div>
 
-        {/* Project Policies Section - Linear Style */}
+        {/* 3. Project Policies Section - Linear Style */}
         <div className="space-y-2 pt-2">
           <div>
             <h3 className="text-sm font-medium text-foreground">
@@ -247,7 +248,7 @@ export default function ProjectSettingsPage() {
             </p>
           </div>
 
-          <div className="rounded-xl border border-border bg-card divide-y divide-neutral-800 overflow-hidden shadow-xs">
+          <div className="rounded-md border border-border/60 bg-card divide-y divide-neutral-800/60 overflow-hidden shadow-xs">
             {/* Member Task Creation */}
             <div className="flex items-center justify-between px-4 py-3.5 hover:bg-muted/15 transition-colors">
               <div className="space-y-0.5">
@@ -315,7 +316,14 @@ export default function ProjectSettingsPage() {
           </div>
         </div>
 
-        {/* Kaya Settings Section */}
+        {/* 4. Automated Report Scheduler */}
+        <ProjectSchedulerSection
+          projectId={project._id as Id<"projects">}
+          isOwner={isOwner}
+          currentUserEmail={user?.email}
+        />
+
+        {/* 5. Kaya Settings Section */}
         <KayaSettingsSection projectId={project._id as Id<"projects">} />
       </div>
     </div>

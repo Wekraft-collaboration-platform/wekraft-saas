@@ -227,7 +227,7 @@ export function KayaSettingsSection({ projectId }: KayaSettingsSectionProps) {
       </div>
 
       {/* 1. Kaya PM Personality Card */}
-      <Card className="border-accent">
+      <Card className="border-border/60 rounded-md">
         <CardHeader>
           <CardTitle className="text-sm flex items-center gap-2">
             <div className="relative w-4 h-4 flex-shrink-0">
@@ -258,11 +258,11 @@ export function KayaSettingsSection({ projectId }: KayaSettingsSectionProps) {
             <Select value={selectedPreset} onValueChange={handlePresetSelect}>
               <SelectTrigger
                 id="pmPersonality"
-                className="w-full text-xs bg-background"
+                className="w-full text-xs bg-background rounded-md border-border/60"
               >
                 <SelectValue placeholder="Select PM management style" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="rounded-md border-border/60">
                 {PM_PERSONALITIES.map((p) => (
                   <SelectItem
                     key={p.id}
@@ -276,7 +276,7 @@ export function KayaSettingsSection({ projectId }: KayaSettingsSectionProps) {
                       {p.recommended && (
                         <Badge
                           variant="outline"
-                          className="text-[10px] py-0 px-1.5 bg-primary/10 text-primary border-primary/20 font-normal"
+                          className="text-[10px] py-0 px-1.5 bg-primary/10 text-primary border-primary/20 font-normal rounded-md"
                         >
                           Recommended
                         </Badge>
@@ -301,7 +301,7 @@ export function KayaSettingsSection({ projectId }: KayaSettingsSectionProps) {
               value={customPrompt}
               onChange={(e) => setCustomPrompt(e.target.value)}
               placeholder="Reply in tabular format , nice clean and bold headings , action and resuts first , recomended actions at last."
-              className="text-[11px] placeholder:text-[11px]! min-h-[85px] resize-y bg-background"
+              className="text-[11px] placeholder:text-[11px]! min-h-[85px] resize-y bg-background rounded-md border-border/60"
             />
           </div>
 
@@ -309,7 +309,7 @@ export function KayaSettingsSection({ projectId }: KayaSettingsSectionProps) {
             size="sm"
             onClick={handleSavePersonality}
             disabled={isSavingPersona}
-            className="text-xs cursor-pointer"
+            className="text-xs cursor-pointer rounded-md"
           >
             {isSavingPersona ? (
               <>Saving changes...</>
@@ -332,7 +332,7 @@ export function KayaSettingsSection({ projectId }: KayaSettingsSectionProps) {
           </p>
         </div>
 
-        <div className="rounded-xl border border-border bg-card divide-y divide-neutral-800 overflow-hidden shadow-xs">
+        <div className="rounded-md border border-border/60 bg-card divide-y divide-neutral-800/60 overflow-hidden shadow-xs">
           {/* Header Row inside box */}
           <div className="flex items-center justify-between px-4 py-2.5 bg-muted/10 gap-3">
             <div className="flex items-center gap-2.5 min-w-0">
@@ -670,7 +670,7 @@ export function KayaSettingsSection({ projectId }: KayaSettingsSectionProps) {
           </p>
         </div>
 
-        <div className="rounded-xl border border-border bg-card divide-y divide-neutral-800 overflow-hidden shadow-xs">
+        <div className="rounded-md border border-border/60 bg-card divide-y divide-neutral-800/60 overflow-hidden shadow-xs">
           {/* Header Row inside box */}
           <div className="flex items-center justify-between px-4 py-3">
             <span className="text-xs font-medium text-foreground">
