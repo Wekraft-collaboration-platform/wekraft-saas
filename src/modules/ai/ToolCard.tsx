@@ -39,6 +39,33 @@ const TOOL_META: Record<
     caller: "Kaya",
     colorClass: "bg-indigo-500/30 text-primary/80",
   },
+  github_agent: {
+    label: "GitHub sub-agent",
+    caller: "Kaya",
+    colorClass: "bg-indigo-500/30 text-primary/80",
+  },
+
+  // ── GitHub Tools ─────────────────────────────────────────────────────────
+  get_pull_requests_summary: {
+    label: "Reviewing pull requests",
+    caller: "GitHub sub-agent",
+    colorClass: "bg-neutral-800 text-neutral-300",
+  },
+  get_issues: {
+    label: "Checking GitHub issues",
+    caller: "GitHub sub-agent",
+    colorClass: "bg-neutral-800 text-neutral-300",
+  },
+  get_contributor_activity: {
+    label: "Analyzing contributor velocity",
+    caller: "GitHub sub-agent",
+    colorClass: "bg-neutral-800 text-neutral-300",
+  },
+  get_release_and_ci_status: {
+    label: "Checking releases & CI health",
+    caller: "GitHub sub-agent",
+    colorClass: "bg-neutral-800 text-neutral-300",
+  },
 
   // ── MCP Tools ────────────────────────────────────────────────────────────
   linear_list_issues: {
@@ -140,6 +167,28 @@ const TOOL_META: Record<
   bulk_create_issues: {
     label: "Generating bulk issues",
     caller: "DB Write agent",
+    colorClass: "bg-neutral-800 text-neutral-300",
+  },
+
+  // ── GitHub Sub-Agent Tools ────────────────────────────────────────────────
+  get_pull_requests_summary: {
+    label: "Analyzing Pull Requests",
+    caller: "GitHub Sub-Agent",
+    colorClass: "bg-neutral-800 text-neutral-300",
+  },
+  get_issues: {
+    label: "Fetching GitHub Issues",
+    caller: "GitHub Sub-Agent",
+    colorClass: "bg-neutral-800 text-neutral-300",
+  },
+  get_contributor_activity: {
+    label: "Analyzing Contributor Velocity",
+    caller: "GitHub Sub-Agent",
+    colorClass: "bg-neutral-800 text-neutral-300",
+  },
+  get_release_and_ci_status: {
+    label: "Checking Releases & CI Health",
+    caller: "GitHub Sub-Agent",
     colorClass: "bg-neutral-800 text-neutral-300",
   },
 };

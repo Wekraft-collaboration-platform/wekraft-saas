@@ -408,6 +408,8 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
         user_name: userName,
         project_id: projectId,
         project_name: project?.projectName,
+        repo_full_name: project?.repoFullName,
+        github_username: (currentUser as any)?.githubUsername,
         project_deadline: projectDeadline,
         messages: [{ type: "user", content }],
         file_id: attachedFileId,

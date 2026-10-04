@@ -22,7 +22,9 @@ async function getCachedUser(userId: string) {
   }
 
   try {
-    const user = await convex.query(api.user.getUserById, { userId: userId as Id<"users"> });
+    const user = await convex.query(api.user.getUserById, {
+      userId: userId as Id<"users">,
+    });
     if (user) {
       try {
         await redis.set(cacheKey, JSON.stringify(user), { ex: 60 });
@@ -42,10 +44,7 @@ async function getCachedUser(userId: string) {
 export async function POST(request: NextRequest) {
   const body = await request.json();
   const userId =
-    body.user_id ||
-    body.userId ||
-    body.state?.user_id ||
-    body.state?.userId;
+    body.user_id || body.userId || body.state?.user_id || body.state?.userId;
 
   // 1. Rate Limiting (Fastest check)
   // Identify anonymous users by IP to prevent global rate-limit starvation
@@ -54,7 +53,7 @@ export async function POST(request: NextRequest) {
     request.headers.get("x-forwarded-for")?.split(",")[0].trim() ||
     "anonymous";
   const identifier = userId || ip;
-  
+
   const { success, limit, reset, remaining } =
     await ratelimit.limit(identifier);
 
@@ -78,7 +77,9 @@ export async function POST(request: NextRequest) {
   }
 
   if (!AGENT_URL) {
-    console.error("[/api/agent] Error: NEXT_PUBLIC_AGENT_URL is not set in environment");
+    console.error(
+      "[/api/agent] Error: NEXT_PUBLIC_AGENT_URL is not set in environment",
+    );
     return NextResponse.json(
       { error: "NEXT_PUBLIC_AGENT_URL is not configured in environment" },
       { status: 500 },
@@ -86,9 +87,10 @@ export async function POST(request: NextRequest) {
   }
 
   const baseUrl = AGENT_URL.replace(/\/+$/, "");
-  const targetUrl = baseUrl.endsWith("/kaya") || baseUrl.endsWith("/agent")
-    ? baseUrl
-    : `${baseUrl}/kaya`;
+  const targetUrl =
+    baseUrl.endsWith("/kaya") || baseUrl.endsWith("/agent")
+      ? baseUrl
+      : `${baseUrl}/kaya`;
 
   console.log(`[/api/agent] Forwarding request to Python Agent: ${targetUrl}`);
 
