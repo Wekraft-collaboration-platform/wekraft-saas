@@ -128,6 +128,7 @@ const KayaLoader = () => (
 
 export function AiAssistantSheet({}: AiAssistantSheetProps) {
   const { isOpen, setIsOpen, threadId, createNewSession, initialPrompt, setInitialPrompt } = useKayaStore();
+  const router = useRouter();
   const params = useParams();
   const slug = params?.slug as string;
   const project = useQuery(
@@ -582,7 +583,23 @@ export function AiAssistantSheet({}: AiAssistantSheetProps) {
               )}
             </div>
 
-            <div className="flex items-center gap-4">
+            <div className="flex items-center gap-2">
+              {(slug || project?.slug) && (
+                <Button
+                  className="text-[11px] cursor-pointer"
+                  size="sm"
+                  variant="outline"
+                  onClick={() => {
+                    setIsOpen(false);
+                    router.push(
+                      `/dashboard/my-projects/${slug || project?.slug}/workspace/settings`,
+                    );
+                  }}
+                >
+                  <Settings2 className="h-3 w-3 mr-1" /> Config
+                </Button>
+              )}
+
               {appCheckpoints.length > 0 && (
                 <Button
                   className="text-[11px] cursor-pointer"
