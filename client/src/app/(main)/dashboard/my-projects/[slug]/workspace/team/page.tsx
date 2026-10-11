@@ -9,6 +9,7 @@ import {
   CheckSquare,
   Crown,
   Eye,
+  History,
   Loader2,
   MessageSquare,
   MoreHorizontal,
@@ -258,13 +259,8 @@ export default function TeamPage() {
                 </div>
                 <div>
                   <p className="text-[10px] ">Owner Plan</p>
-                  <p className="text-sm capitalize flex items-center gap-1.5">
+                  <p className="text-sm capitalize">
                     {teamData.ownerPlan} Plan
-                    {teamData.ownerPlan === "pro" && (
-                      <Badge className="h-4 px-1 text-[8px] bg-amber-500/10 text-amber-500 border-amber-500/20">
-                        ELITE
-                      </Badge>
-                    )}
                   </p>
                 </div>
               </div>
@@ -324,18 +320,16 @@ export default function TeamPage() {
               {/* Requests Trigger at end of narrow border */}
               <button
                 type="button"
-                onClick={() => setTeamTab(teamTab === "requests" ? "members" : "requests")}
+                onClick={() =>
+                  setTeamTab(teamTab === "requests" ? "members" : "requests")
+                }
                 className="flex items-center gap-1.5 px-3.5 py-1.5 rounded-md text-xs font-normal transition-all cursor-pointer bg-white text-black hover:bg-white/90 border border-white shadow-xs"
               >
                 <UserPlus className="w-3.5 h-3.5 text-black" />
                 <span className="font-normal">Requests</span>
-                {pendingRequestsCount > 0 ? (
+                {pendingRequestsCount > 0 && (
                   <span className="px-1.5 py-0.2 rounded-full text-[10px] font-medium bg-blue-600 text-white">
                     {pendingRequestsCount}
-                  </span>
-                ) : (
-                  <span className="ml-0.5 text-[10px] opacity-80 font-normal text-black">
-                    ({(requests || []).length})
                   </span>
                 )}
               </button>
@@ -380,28 +374,30 @@ export default function TeamPage() {
                               Change Role
                             </DropdownMenuSubTrigger>
                             <DropdownMenuSubContent>
-                              {(["admin", "member", "viewer"] as const).map((role) => (
-                                <DropdownMenuItem
-                                  key={role}
-                                  disabled={member.AccessRole === role}
-                                  onClick={() =>
-                                    member._id &&
-                                    handleRoleChange(
-                                      member._id as Id<"projectMembers">,
-                                      role,
-                                      member.userName,
-                                    )
-                                  }
-                                  className="cursor-pointer"
-                                >
-                                  {ROLE_CONFIG[role].label}
-                                  {member.AccessRole === role && (
-                                    <span className="ml-auto text-xs text-muted-foreground">
-                                      Current
-                                    </span>
-                                  )}
-                                </DropdownMenuItem>
-                              ))}
+                              {(["admin", "member", "viewer"] as const).map(
+                                (role) => (
+                                  <DropdownMenuItem
+                                    key={role}
+                                    disabled={member.AccessRole === role}
+                                    onClick={() =>
+                                      member._id &&
+                                      handleRoleChange(
+                                        member._id as Id<"projectMembers">,
+                                        role,
+                                        member.userName,
+                                      )
+                                    }
+                                    className="cursor-pointer"
+                                  >
+                                    {ROLE_CONFIG[role].label}
+                                    {member.AccessRole === role && (
+                                      <span className="ml-auto text-xs text-muted-foreground">
+                                        Current
+                                      </span>
+                                    )}
+                                  </DropdownMenuItem>
+                                ),
+                              )}
                             </DropdownMenuSubContent>
                           </DropdownMenuSub>
                         )}
@@ -544,7 +540,9 @@ export default function TeamPage() {
           {teamData.members.length === 0 && (
             <div className="flex flex-col items-center justify-center py-24 text-center">
               <Users className="w-10 h-10 text-muted-foreground/40 mb-3" />
-              <p className="text-sm text-muted-foreground">No team members yet</p>
+              <p className="text-sm text-muted-foreground">
+                No team members yet
+              </p>
               <p className="text-xs text-muted-foreground/60 mt-1">
                 Invite members to start collaborating
               </p>
@@ -556,10 +554,10 @@ export default function TeamPage() {
       {/* Tab Content: Requests */}
       {teamTab === "requests" && (
         <div className="px-6 py-4 space-y-2">
-          <div className="flex items-center justify-between pb-2 border-b border-border">
+          <div className="flex items-center justify-between">
             <h2 className="text-sm font-semibold flex items-center gap-2 text-foreground">
-              <UserPlus className="w-4 h-4 text-primary" />
-              Project Join Requests
+              <History className="w-4 h-4 text-muted-foreground" />
+              History
             </h2>
             <Button
               variant="ghost"
@@ -653,9 +651,9 @@ function StatPill({
   value: number;
 }) {
   return (
-    <div className="flex items-center gap-2 px-3.5 py-1.5 rounded-md  bg-white text-sm">
-      <span className="text-neutral-700">{icon}</span>
-      <span className="text-neutral-700">{label}</span>
+    <div className="flex items-center gap-1 px-2 py-1.5 rounded-md  bg-white text-xs">
+      <span className="text-neutral-900">{icon}</span>
+      <span className="text-neutral-900">{label}</span>
       <span className="font-semibold text-neutral-900">{value}</span>
     </div>
   );
