@@ -216,11 +216,11 @@ export default function TeamPage() {
             label="Total"
             value={teamData.total}
           />
-          <StatPill
+          {/* <StatPill
             icon={<Crown className="w-3.5 h-3.5" />}
             label="Owner"
             value={teamData.ownerCount}
-          />
+          /> */}
           <StatPill
             icon={<Shield className="w-3.5 h-3.5" />}
             label="Admin"
