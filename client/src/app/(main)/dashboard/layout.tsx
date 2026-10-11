@@ -44,6 +44,7 @@ import { MyWorkSheet } from "@/modules/workspace/workspace-modules/MyWorkSheet";
 import { useMyWorkStore } from "@/store/useMyWorkStore";
 import { motion, AnimatePresence } from "framer-motion";
 import { AgentDashboardView } from "@/modules/dashboard/components/AgentDashboardView";
+import { InviteDialog } from "@/modules/project/inviteDilogag";
 import { cn } from "@/lib/utils";
 
 const containerVariants = {
@@ -88,6 +89,66 @@ const itemVariants = {
 
 import { DesktopOnlyGuard } from "../../../components/DesktopOnlyGuard";
 
+function WorkspaceInviteButton({
+  inviteLink,
+  projectName,
+}: {
+  inviteLink?: string;
+  projectName?: string;
+}) {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <InviteDialog
+      inviteLink={inviteLink}
+      projectName={projectName}
+      trigger={
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          className="h-8 px-2 overflow-hidden cursor-pointer select-none rounded-lg border hover:bg-accent hover:text-accent-foreground transition-colors duration-200 flex items-center justify-center shrink-0"
+        >
+          <motion.div
+            className="flex items-center justify-center"
+            layout
+            transition={{ type: "spring", stiffness: 400, damping: 28 }}
+          >
+            <AnimatePresence initial={false}>
+              {isHovered && (
+                <motion.span
+                  key="invite-text"
+                  initial={{ width: 0, opacity: 0, x: -14 }}
+                  animate={{ width: "auto", opacity: 1, x: 0 }}
+                  exit={{ width: 0, opacity: 0, x: -14 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 400,
+                    damping: 28,
+                    opacity: { duration: 0.15 },
+                  }}
+                  className="overflow-hidden whitespace-nowrap text-xs font-medium mr-1.5 leading-none"
+                >
+                  Invite
+                </motion.span>
+              )}
+            </AnimatePresence>
+            <motion.div
+              layout
+              transition={{ type: "spring", stiffness: 400, damping: 28 }}
+              className="flex items-center justify-center shrink-0"
+            >
+              <Share2 className="h-4 w-4" />
+            </motion.div>
+          </motion.div>
+        </Button>
+      }
+    />
+  );
+}
+
 export default function Layout({
   children,
   sidebar,
@@ -103,6 +164,11 @@ export default function Layout({
   const params = useParams();
   const isWorkspaceRoute = pathname?.includes("/workspace");
   const slug = params?.slug as string | undefined;
+
+  const project = useQuery(
+    api.project.getProjectBySlug,
+    isWorkspaceRoute && slug ? { slug } : "skip",
+  );
 
   const { theme, setTheme } = useTheme();
 
@@ -391,6 +457,12 @@ export default function Layout({
                         </TooltipTrigger>
                         <TooltipContent>Help & Support</TooltipContent>
                       </Tooltip>
+                      {isWorkspaceRoute && (
+                        <WorkspaceInviteButton
+                          inviteLink={project?.inviteLink}
+                          projectName={project?.projectName}
+                        />
+                      )}
                     </TooltipProvider>
                   </div>
                   <UserMenu />
