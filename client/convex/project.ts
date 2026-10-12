@@ -2,6 +2,7 @@ import { v } from "convex/values";
 import { customAlphabet } from "nanoid";
 import { internal } from "./_generated/api";
 import { mutation, query } from "./_generated/server";
+import { Doc, Id } from "./_generated/dataModel";
 import { getActiveUserPlan, getPlanLimits, type PlanType } from "./pricing";
 import { recordAuditEvent } from "./auditLog";
 
@@ -1910,6 +1911,11 @@ export const getAgentProjectsOverview = query({
           .withIndex("by_project", (q) => q.eq("projectId", p._id))
           .collect();
 
+        const owner =
+          p.ownerId === user._id
+            ? user
+            : ((await ctx.db.get(p.ownerId as Id<"users">)) as Doc<"users"> | null);
+
         return {
           _id: p._id,
           projectName: p.projectName,
@@ -1921,6 +1927,7 @@ export const getAgentProjectsOverview = query({
           issueCount: issues.length,
           totalCount: tasks.length + issues.length,
           role: p.ownerId === user._id ? ("owned" as const) : ("joined" as const),
+          ownerAccountType: owner ? getActiveUserPlan(owner) : ("free" as const),
         };
       })
     );
