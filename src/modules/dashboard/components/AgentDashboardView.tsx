@@ -27,6 +27,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useUpgradeModalStore } from "@/store/useUpgradeModalStore";
 import { useQuery } from "convex/react";
 import { api } from "../../../../convex/_generated/api";
 import { Id } from "../../../../convex/_generated/dataModel";
@@ -72,6 +73,7 @@ const CONNECTOR_INFO: Record<
 export function AgentDashboardView() {
   const router = useRouter();
   const setIsKayaOpen = useKayaStore((s) => s.setIsOpen);
+  const openUpgradeModal = useUpgradeModalStore((s) => s.openModal);
   const [prompt, setPrompt] = useState("");
   const [isRightSidebarExpanded, setIsRightSidebarExpanded] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
@@ -115,6 +117,44 @@ export function AgentDashboardView() {
       null
     );
   }, [sortedProjects, selectedProjectId]);
+
+  // Query project details by slug and by id to ensure ownerAccountType is resolved
+  const projectDetails = useQuery(
+    api.project.getProjectBySlug,
+    selectedProject?.slug ? { slug: selectedProject.slug } : "skip",
+  );
+
+  const projectById = useQuery(
+    api.project.getProjectById,
+    selectedProject?._id
+      ? { projectId: selectedProject._id as Id<"projects"> }
+      : "skip",
+  );
+
+  const ownerPlan =
+    (selectedProject as any)?.ownerAccountType ||
+    (projectDetails as any)?.ownerAccountType ||
+    (projectById as any)?.ownerAccountType;
+
+  const isOwnerNotPro = Boolean(selectedProject && ownerPlan !== "pro");
+
+  // If the owner of selected project is not pro, show the upgrade modal
+  useEffect(() => {
+    if (selectedProject && isOwnerNotPro) {
+      openUpgradeModal();
+    }
+  }, [selectedProject?._id, isOwnerNotPro, openUpgradeModal]);
+
+  const handleSendMessage = () => {
+    if (isOwnerNotPro || ownerPlan !== "pro") {
+      openUpgradeModal();
+      return;
+    }
+
+    if (prompt.trim() && selectedProject) {
+      // TODO: kaya route here
+    }
+  };
 
   // MCP Connections query for selected project
   const mcpConnections = useQuery(
@@ -201,7 +241,15 @@ export function AgentDashboardView() {
                   return (
                     <DropdownMenuItem
                       key={p._id}
-                      onClick={() => setSelectedProjectId(p._id)}
+                      onClick={() => {
+                        setSelectedProjectId(p._id);
+                        if (
+                          (p as any).ownerAccountType &&
+                          (p as any).ownerAccountType !== "pro"
+                        ) {
+                          openUpgradeModal();
+                        }
+                      }}
                       className={cn(
                         "flex items-center justify-between gap-2 px-2.5 py-2 rounded-lg text-xs cursor-pointer transition-colors focus:bg-zinc-800 focus:text-zinc-100 mb-0.5",
                         isSelected
@@ -249,6 +297,14 @@ export function AgentDashboardView() {
         <div className="w-full max-w-[760px]">
           {/* Main Box - Fully rounded on all sides */}
           <div className="relative w-full rounded-2xl! bg-[#09090b] border-[1.5px] border-[#d8b4fe]/70 overflow-hidden!">
+            {/* Click overlay when owner is not Pro */}
+            {isOwnerNotPro && (
+              <div
+                className="absolute inset-0 z-30 rounded-2xl cursor-pointer"
+                onClick={() => openUpgradeModal()}
+              />
+            )}
+
             {/* Input area */}
             <textarea
               value={prompt}
@@ -256,10 +312,7 @@ export function AgentDashboardView() {
               onKeyDown={(e) => {
                 if (e.key === "Enter" && !e.shiftKey) {
                   e.preventDefault();
-                  if (prompt.trim() && selectedProject) {
-                    setIsKayaOpen(true);
-                    router.push(`/dashboard/my-projects/${selectedProject.slug}/workspace/tasks`);
-                  }
+                  handleSendMessage();
                 }
               }}
               placeholder="Ask Kaya anything about your project or upload a PRD..."
@@ -292,7 +345,13 @@ export function AgentDashboardView() {
                 <Button
                   type="button"
                   size={"icon-sm"}
-                  onClick={() => fileInputRef.current?.click()}
+                  onClick={() => {
+                    if (isOwnerNotPro) {
+                      openUpgradeModal();
+                      return;
+                    }
+                    fileInputRef.current?.click();
+                  }}
                   className="bg-neutral-800 text-white hover:bg-neutral-600 rounded! cursor-pointer"
                   title="Upload attachment"
                 >
@@ -364,7 +423,13 @@ export function AgentDashboardView() {
                 <Button
                   size={"icon-sm"}
                   type="button"
-                  className="bg-neutral-800  hover:bg-neutral-600 text-white rounded! cursor-pointer"
+                  onClick={() => {
+                    if (isOwnerNotPro) {
+                      openUpgradeModal();
+                      return;
+                    }
+                  }}
+                  className="bg-neutral-800 hover:bg-neutral-600 text-white rounded! cursor-pointer"
                   title="Voice input"
                 >
                   <Mic className="w-4 h-4" />
@@ -372,16 +437,11 @@ export function AgentDashboardView() {
 
                 <Button
                   size={"icon-sm"}
-                  disabled={!prompt.trim()}
-                  onClick={() => {
-                    if (prompt.trim() && selectedProject) {
-                      setIsKayaOpen(true);
-                      router.push(`/dashboard/my-projects/${selectedProject.slug}/workspace/tasks`);
-                    }
-                  }}
+                  disabled={!prompt.trim() && !isOwnerNotPro}
+                  onClick={handleSendMessage}
                   className={cn(
                     "cursor-pointer flex items-center justify-center",
-                    prompt.trim()
+                    prompt.trim() || isOwnerNotPro
                       ? "bg-slate-100 text-neutral-900 hover:bg-slate-200"
                       : "bg-zinc-800 border border-zinc-800 text-zinc-300 cursor-not-allowed",
                   )}
@@ -393,13 +453,19 @@ export function AgentDashboardView() {
             </div>
           </div>
 
-          {/* 3 Quick Templates - Serious Linear style (title, body, icon, bg-gradient-to-br from-white/15 to neutral-900) */}
+          {/* 3 Quick Templates - Serious Linear style */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-3 w-full mt-4">
             {kayaTemplates.map((template, idx) => (
               <button
                 key={idx}
                 type="button"
-                onClick={() => setPrompt(template.prompt)}
+                onClick={() => {
+                  if (isOwnerNotPro) {
+                    openUpgradeModal();
+                    return;
+                  }
+                  setPrompt(template.prompt);
+                }}
                 className="flex flex-col items-start text-left p-4 rounded-xl border border-white/10 hover:border-white/20 bg-gradient-to-br from-white/15 to-neutral-900 transition-all duration-200 cursor-pointer group shadow-sm hover:shadow-md"
               >
                 <div className="mb-2.5 p-1.5 rounded-lg bg-zinc-900/80 border border-zinc-800">
