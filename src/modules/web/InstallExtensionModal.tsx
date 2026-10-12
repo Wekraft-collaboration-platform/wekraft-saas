@@ -54,6 +54,8 @@ export const InstallExtensionModal: React.FC<InstallExtensionModalProps> = ({
       ? "fixed inset-0 z-40"
       : "fixed inset-0 z-40 bg-black/55 backdrop-blur-sm";
 
+  const [copied, setCopied] = React.useState(false);
+
   return (
     <>
       {/* backdrop */}
@@ -80,7 +82,9 @@ export const InstallExtensionModal: React.FC<InstallExtensionModalProps> = ({
             <a
               key={ide.name}
               href={ide.href}
-              {...(ide.newTab ? { target: "_blank", rel: "noopener noreferrer" } : {})}
+              {...(ide.newTab
+                ? { target: "_blank", rel: "noopener noreferrer" }
+                : {})}
               onClick={onClose}
               className="group flex items-center gap-3 px-3 py-2 rounded-xl hover:bg-neutral-900/40 transition-colors duration-150 cursor-pointer"
             >
@@ -111,13 +115,6 @@ export const InstallExtensionModal: React.FC<InstallExtensionModalProps> = ({
               </span>
             </a>
           ))}
-        </div>
-
-        {/* footer */}
-        <div className="px-4 pb-3 pt-1">
-          <p className="text-[10px] text-neutral-200/30 text-center font-mono">
-            Your backlog. Your IDE. Zero context switching.
-          </p>
         </div>
       </div>
     </>
