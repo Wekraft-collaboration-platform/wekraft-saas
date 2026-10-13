@@ -4,6 +4,8 @@ export interface AgentState extends WithMessages {
   user_id?: string;
   user_name?: string;
   project_id?: string;
+  project_name?: string;
+  project_deadline?: string;
   thread_id: string;
 }
 
@@ -40,19 +42,43 @@ export interface SchedulerSetupInterrupt {
   };
 }
 
+// ── Task & Issue Creation HITL interrupt payload ───────────────────────────
+export interface TaskItemPreview {
+  title: string;
+  description?: string;
+  priority?: "high" | "medium" | "low";
+  severity?: "critical" | "high" | "medium" | "low";
+  tag?: string;
+}
+
+export interface TaskCreationInterrupt {
+  tool:
+    | "create_task"
+    | "bulk_create_tasks"
+    | "create_issue"
+    | "bulk_create_issues";
+  message: string;
+  preview: {
+    type: "task" | "issue";
+    tasks?: TaskItemPreview[];
+    issues?: TaskItemPreview[];
+  };
+}
+
 // ── Union of all possible interrupt values ─────────────────────────────────
 export type InterruptValue =
   | CalendarEventInterrupt
   | SprintItemSelectionInterrupt
-  | SchedulerSetupInterrupt;
+  | SchedulerSetupInterrupt
+  | TaskCreationInterrupt;
 
 // ── Resume values the frontend can send back ───────────────────────────────
 export type ResumeValue =
   | { action: "cancel" }
-  | { action: "approve"; edits?: Partial<CalendarEventInterrupt["preview"]> }
+  //  { action: "approve"; edits?: Partial<CalendarEventInterrupt["preview"]> } older working code
+  | { action: "approve"; edits?: any }
   | { task_ids: string[] }
   | {
-      // action: "submit";
       name: string;
       frequencyDays: number;
       recipientEmail?: string;

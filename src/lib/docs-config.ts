@@ -329,15 +329,6 @@ export const docsConfig: { [key: string]: DocItem[] } = {
       created: "2026-01-01",
     },
   ],
-  "Customer Desk": [
-    {
-      title: "Customer Desk",
-      slug: "customer-desk",
-      description: "Manage inbound customer requests, service tickets, and client support workflows from a unified desk.",
-      icon: "LifeBuoy",
-      created: "2026-06-06",
-    },
-  ],
   "AI Agents": [
     {
       title: "Kaya PM Agent",
@@ -382,13 +373,6 @@ export const docsConfig: { [key: string]: DocItem[] } = {
       description: "Detailed breakdown of Free, Plus, and Pro plans and usage limits.",
       icon: "CreditCard",
       created: "2026-01-01",
-    },
-    {
-      title: "Referral Program",
-      slug: "referrals",
-      description: "Share your unique code to invite users and earn rewards.",
-      icon: "UserPlus",
-      created: "2026-06-03",
     },
     {
       title: "Help & Support",

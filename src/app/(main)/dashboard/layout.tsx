@@ -2,7 +2,18 @@
 
 import { RedirectToSignIn } from "@clerk/nextjs";
 import { Authenticated, Unauthenticated, useQuery } from "convex/react";
-import { BugPlay, Home, Moon, Share2, SunMedium, Video, HelpCircle, BriefcaseBusiness, ChevronRight, ChevronLeft, Gift } from "lucide-react";
+import {
+  BugPlay,
+  Home,
+  Moon,
+  Share2,
+  SunMedium,
+  Video,
+  HelpCircle,
+  BriefcaseBusiness,
+  ChevronRight,
+  ChevronLeft,
+} from "lucide-react";
 import Link from "next/link";
 import { useParams, usePathname, useRouter } from "next/navigation";
 import { useTheme } from "next-themes";
@@ -32,6 +43,9 @@ import { TourOrchestrator } from "@/modules/dashboard/components/TourOrchestrato
 import { MyWorkSheet } from "@/modules/workspace/workspace-modules/MyWorkSheet";
 import { useMyWorkStore } from "@/store/useMyWorkStore";
 import { motion, AnimatePresence } from "framer-motion";
+import { AgentDashboardView } from "@/modules/dashboard/components/AgentDashboardView";
+import { InviteDialog } from "@/modules/project/inviteDilogag";
+import { cn } from "@/lib/utils";
 
 const containerVariants = {
   hidden: { opacity: 0, width: 0 },
@@ -75,6 +89,66 @@ const itemVariants = {
 
 import { DesktopOnlyGuard } from "../../../components/DesktopOnlyGuard";
 
+function WorkspaceInviteButton({
+  inviteLink,
+  projectName,
+}: {
+  inviteLink?: string;
+  projectName?: string;
+}) {
+  const [isHovered, setIsHovered] = useState(false);
+
+  return (
+    <InviteDialog
+      inviteLink={inviteLink}
+      projectName={projectName}
+      trigger={
+        <Button
+          type="button"
+          size="sm"
+          variant="outline"
+          onMouseEnter={() => setIsHovered(true)}
+          onMouseLeave={() => setIsHovered(false)}
+          className="h-8 px-2 overflow-hidden cursor-pointer select-none rounded-lg border hover:bg-accent hover:text-accent-foreground transition-colors duration-200 flex items-center justify-center shrink-0"
+        >
+          <motion.div
+            className="flex items-center justify-center"
+            layout
+            transition={{ type: "spring", stiffness: 400, damping: 28 }}
+          >
+            <AnimatePresence initial={false}>
+              {isHovered && (
+                <motion.span
+                  key="invite-text"
+                  initial={{ width: 0, opacity: 0, x: -14 }}
+                  animate={{ width: "auto", opacity: 1, x: 0 }}
+                  exit={{ width: 0, opacity: 0, x: -14 }}
+                  transition={{
+                    type: "spring",
+                    stiffness: 400,
+                    damping: 28,
+                    opacity: { duration: 0.15 },
+                  }}
+                  className="overflow-hidden whitespace-nowrap text-xs font-medium mr-1.5 leading-none"
+                >
+                  Invite
+                </motion.span>
+              )}
+            </AnimatePresence>
+            <motion.div
+              layout
+              transition={{ type: "spring", stiffness: 400, damping: 28 }}
+              className="flex items-center justify-center shrink-0"
+            >
+              <Share2 className="h-4 w-4" />
+            </motion.div>
+          </motion.div>
+        </Button>
+      }
+    />
+  );
+}
+
 export default function Layout({
   children,
   sidebar,
@@ -91,11 +165,19 @@ export default function Layout({
   const isWorkspaceRoute = pathname?.includes("/workspace");
   const slug = params?.slug as string | undefined;
 
+  const project = useQuery(
+    api.project.getProjectBySlug,
+    isWorkspaceRoute && slug ? { slug } : "skip",
+  );
+
   const { theme, setTheme } = useTheme();
 
   const [mounted, setMounted] = useState(false);
   const [isShareOpen, setIsShareOpen] = useState(false);
   const [isHelpOpen, setIsHelpOpen] = useState(false);
+  const [dashboardMode, setDashboardMode] = useState<"default" | "agent">(
+    "agent",
+  );
   const { setIsOpen: setIsWorkOpen } = useMyWorkStore();
   const [showWorkspaceTools, setShowWorkspaceTools] = useState(false);
 
@@ -150,9 +232,6 @@ export default function Layout({
           break;
         case "calendar":
           pageTitle = "Calendar";
-          break;
-        case "customer-desk":
-          pageTitle = "Customer Desk";
           break;
         case "ai":
           pageTitle = "AI Workspace";
@@ -219,188 +298,199 @@ export default function Layout({
         </Unauthenticated>
         <Authenticated>
           <TourOrchestrator />
-        <SidebarProvider defaultOpen={true}>
-          {sidebar}
-          <SidebarInset className="border-l h-screen flex flex-col">
-            <header className="flex justify-between h-18 py-1 flex-none items-center border-b px-4 bg-sidebar/60 backdrop-blur-xl z-50">
-              <div className="flex items-center gap-2">
-                <SidebarTrigger className="-ml-1 cursor-pointer hover:scale-105 transition-all duration-200" />
-                <DashboardBreadcrumbs />
-              </div>
-              {/* <div>
+          <SidebarProvider defaultOpen={true}>
+            {sidebar}
+            <SidebarInset className="border-l h-screen flex flex-col">
+              <header className="flex justify-between h-18 py-1 flex-none items-center border-b px-4 bg-sidebar/60 backdrop-blur-xl z-50">
+                <div className="flex items-center gap-2">
+                  <SidebarTrigger className="-ml-1 cursor-pointer hover:scale-105 transition-all duration-200" />
+                  <DashboardBreadcrumbs />
+                </div>
+                {/* <div>
                 <CommunitySearchBar />
               </div> */}
-              <div className="flex items-center gap-5">
-                {/* <UserButton
+                <div className="flex items-center gap-5">
+                  {/* <UserButton
                   appearance={{
                     elements: {
                       userButtonAvatarBox: "h-9 w-9",
                     },
                   }}
                 /> */}
-                <div className="flex items-center gap-3">
-                  {/* Only when workspace ! */}
-                  {isWorkspaceRoute && (
-                    <div className="flex items-center gap-2">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => setShowWorkspaceTools(!showWorkspaceTools)}
-                        className="h-8 gap-1.5 px-3 cursor-pointer hover:scale-105 transition-all duration-200 select-none rounded-lg text-xs font-medium flex items-center"
-                      >
-                        <ChevronLeft
-                          className={`h-4 w-4 transition-transform duration-300 ${showWorkspaceTools ? "rotate-180" : ""
+                  <div className="flex items-center gap-3">
+                    {/* Only when workspace ! */}
+                    {isWorkspaceRoute && (
+                      <div className="flex items-center gap-2">
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() =>
+                            setShowWorkspaceTools(!showWorkspaceTools)
+                          }
+                          className="h-8 gap-1.5 px-3 cursor-pointer hover:scale-105 transition-all duration-200 select-none rounded-lg text-xs font-medium flex items-center"
+                        >
+                          <ChevronLeft
+                            className={`h-4 w-4 transition-transform duration-300 ${
+                              showWorkspaceTools ? "rotate-180" : ""
                             }`}
-                        />
-                        <span className="whitespace-nowrap">
-                          {showWorkspaceTools ? "Close" : "View More"}
-                        </span>
-
-                      </Button>
-                      <AnimatePresence>
-                        {showWorkspaceTools && (
-                          <motion.div
-                            variants={containerVariants}
-                            initial="hidden"
-                            animate="visible"
-                            exit="exit"
-                            className="flex items-center gap-2 overflow-hidden whitespace-nowrap"
-                          >
-                            {/* HOME */}
-                            <motion.div variants={itemVariants}>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    size="icon-sm"
-                                    variant="outline"
-                                    onClick={() => router.push(`/dashboard/my-projects/${slug}`)}
-                                    aria-label="Home"
-                                    className="cursor-pointer hover:scale-105 transition-all duration-200"
-                                  >
-                                    <Home className="h-4 w-4" />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>Home</TooltipContent>
-                              </Tooltip>
-                            </motion.div>
-
-                            {/* MY WORK */}
-                            <motion.div variants={itemVariants}>
-                              <Tooltip>
-                                <TooltipTrigger asChild>
-                                  <Button
-                                    size="icon-sm"
-                                    variant="outline"
-                                    aria-label="My-work"
-                                    onClick={() => setIsWorkOpen(true)}
-                                    className="cursor-pointer hover:scale-105 transition-all duration-200"
-                                  >
-                                    <BriefcaseBusiness className="h-4 w-4" />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>My Work</TooltipContent>
-                              </Tooltip>
-                            </motion.div>
-
-                             {/* Share */}
-                             {/* <motion.div variants={itemVariants}>
-                               <Tooltip>
-                                 <TooltipTrigger asChild>
-                                   <Button
-                                     size="icon-sm"
-                                     variant="outline"
-                                     onClick={() => setIsShareOpen(true)}
-                                     aria-label="Share project"
-                                   >
-                                     <Share2 className="h-4 w-4" />
-                                   </Button>
-                                 </TooltipTrigger>
-                                 <TooltipContent>Share Project</TooltipContent>
-                               </Tooltip>
-                             </motion.div> */}
-
-                            {/* Team Meet */}
-                            <motion.div variants={itemVariants}>
-                              <Link href={`/dashboard/my-projects/${slug}/workspace/meet`}>
+                          />
+                          <span className="whitespace-nowrap">
+                            {showWorkspaceTools ? "Close" : "View More"}
+                          </span>
+                        </Button>
+                        <AnimatePresence>
+                          {showWorkspaceTools && (
+                            <motion.div
+                              variants={containerVariants}
+                              initial="hidden"
+                              animate="visible"
+                              exit="exit"
+                              className="flex items-center gap-2 overflow-hidden whitespace-nowrap"
+                            >
+                              {/* HOME */}
+                              <motion.div variants={itemVariants}>
                                 <Tooltip>
                                   <TooltipTrigger asChild>
                                     <Button
                                       size="icon-sm"
                                       variant="outline"
-                                      aria-label="Start video call"
+                                      onClick={() =>
+                                        router.push(
+                                          `/dashboard/my-projects/${slug}`,
+                                        )
+                                      }
+                                      aria-label="Home"
+                                      className="cursor-pointer hover:scale-105 transition-all duration-200"
                                     >
-                                      <Video className="h-4 w-4" />
+                                      <Home className="h-4 w-4" />
                                     </Button>
                                   </TooltipTrigger>
-                                  <TooltipContent>Team Meet</TooltipContent>
+                                  <TooltipContent>Home</TooltipContent>
                                 </Tooltip>
-                              </Link>
+                              </motion.div>
+
+                              {/* MY WORK */}
+                              <motion.div variants={itemVariants}>
+                                <Tooltip>
+                                  <TooltipTrigger asChild>
+                                    <Button
+                                      size="icon-sm"
+                                      variant="outline"
+                                      aria-label="My-work"
+                                      onClick={() => setIsWorkOpen(true)}
+                                      className="cursor-pointer hover:scale-105 transition-all duration-200"
+                                    >
+                                      <BriefcaseBusiness className="h-4 w-4" />
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>My Work</TooltipContent>
+                                </Tooltip>
+                              </motion.div>
+
+                              {/* Team Meet */}
+                              <motion.div variants={itemVariants}>
+                                <Link
+                                  href={`/dashboard/my-projects/${slug}/workspace/meet`}
+                                >
+                                  <Tooltip>
+                                    <TooltipTrigger asChild>
+                                      <Button
+                                        size="icon-sm"
+                                        variant="outline"
+                                        aria-label="Start video call"
+                                      >
+                                        <Video className="h-4 w-4" />
+                                      </Button>
+                                    </TooltipTrigger>
+                                    <TooltipContent>Team Meet</TooltipContent>
+                                  </Tooltip>
+                                </Link>
+                              </motion.div>
                             </motion.div>
-                          </motion.div>
-                        )}
-                      </AnimatePresence>
-                    </div>
-                  )}
-                  {/* NOTIFICATION + HELP & SUPPORT */}
-                  <TooltipProvider>
-                    <NotificationCenter />
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          size="icon-sm"
-                          variant="outline"
-                          onClick={() => setIsHelpOpen(true)}
-                          aria-label="Help & Support"
-                          className="cursor-pointer hover:scale-105 transition-all duration-200"
+                          )}
+                        </AnimatePresence>
+                      </div>
+                    )}
+                    {/* Top Switcher Tab (Scoped to /dashboard, Agent first) */}
+                    {pathname === "/dashboard" && (
+                      <div className="inline-flex items-center p-0.5 bg-muted! dark:bg-zinc-900 border border-border rounded-lg mr-5">
+                        <button
+                          type="button"
+                          onClick={() => setDashboardMode("agent")}
+                          className={cn(
+                            "px-3.5 py-1 rounded-md text-[13px] font-medium transition-all cursor-pointer",
+                            dashboardMode === "agent"
+                              ? "bg-background text-foreground shadow-xs"
+                              : "text-foreground hover:text-foreground",
+                          )}
                         >
-                          <HelpCircle className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Help & Support</TooltipContent>
-                    </Tooltip>
-
-                  </TooltipProvider>
-                  {/* Referal */}
-                  <TooltipProvider>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <Button
-                          size="icon-sm"
-                          variant="outline"
-                          onClick={() => window.dispatchEvent(new CustomEvent("open-referral-dialog"))}
-                          aria-label="Referral Program"
-                          className="cursor-pointer hover:scale-105 transition-all duration-200"
+                          Agent
+                        </button>
+                        <button
+                          type="button"
+                          onClick={() => setDashboardMode("default")}
+                          className={cn(
+                            "px-3.5 py-1 rounded-md text-[13px] font-medium transition-all cursor-pointer",
+                            dashboardMode === "default"
+                              ? "bg-background text-foreground shadow-xs"
+                              : "text-muted-foreground hover:text-foreground",
+                          )}
                         >
-                          <Gift className="h-4 w-4" />
-                        </Button>
-                      </TooltipTrigger>
-                      <TooltipContent>Referral Program</TooltipContent>
-                    </Tooltip>
-
-                  </TooltipProvider>
+                          Default
+                        </button>
+                      </div>
+                    )}
+                    {/* NOTIFICATION + HELP & SUPPORT */}
+                    <TooltipProvider>
+                      <NotificationCenter />
+                      <Tooltip>
+                        <TooltipTrigger asChild>
+                          <Button
+                            size="icon-sm"
+                            variant="outline"
+                            onClick={() => setIsHelpOpen(true)}
+                            aria-label="Help & Support"
+                            className="cursor-pointer hover:scale-105 transition-all duration-200"
+                          >
+                            <HelpCircle className="h-4 w-4" />
+                          </Button>
+                        </TooltipTrigger>
+                        <TooltipContent>Help & Support</TooltipContent>
+                      </Tooltip>
+                      {isWorkspaceRoute && (
+                        <WorkspaceInviteButton
+                          inviteLink={project?.inviteLink}
+                          projectName={project?.projectName}
+                        />
+                      )}
+                    </TooltipProvider>
+                  </div>
+                  <UserMenu />
                 </div>
-                <UserMenu />
+              </header>
+              <div className="flex-1 min-h-0 overflow-hidden">
+                <ScrollArea className="h-full scroll-smooth scrollbar-hide">
+                  {pathname === "/dashboard" && dashboardMode === "agent" ? (
+                    <AgentDashboardView />
+                  ) : (
+                    children
+                  )}
+                </ScrollArea>
               </div>
-            </header>
-            <div className="flex-1 min-h-0 overflow-hidden">
-              <ScrollArea className="h-full scroll-smooth scrollbar-hide">
-                {children}
-              </ScrollArea>
-            </div>
-          </SidebarInset>
-          {slug && (
-            <ShareProjectDialog
-              isOpen={isShareOpen}
-              onClose={() => setIsShareOpen(false)}
-              projectSlug={slug}
-            />
-          )}
-          <HelpSupportDialog open={isHelpOpen} onOpenChange={setIsHelpOpen} />
-          <UpgradeProDialog />
-          {isWorkspaceRoute && <MyWorkSheet />}
-        </SidebarProvider>
-      </Authenticated>
-    </div>
+            </SidebarInset>
+            {slug && (
+              <ShareProjectDialog
+                isOpen={isShareOpen}
+                onClose={() => setIsShareOpen(false)}
+                projectSlug={slug}
+              />
+            )}
+            <HelpSupportDialog open={isHelpOpen} onOpenChange={setIsHelpOpen} />
+            <UpgradeProDialog />
+            {isWorkspaceRoute && <MyWorkSheet />}
+          </SidebarProvider>
+        </Authenticated>
+      </div>
     </DesktopOnlyGuard>
   );
 }

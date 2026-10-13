@@ -37,156 +37,9 @@ export const insertCalendarEvent = internalMutation({
   },
 });
 
-// returns: project deadline, all sprint names, count of incomplete unassigned tasks, and duration to deadline.
-export const getSprintPlannerContext = internalQuery({
-  args: {
-    projectId: v.id("projects"),
-  },
-  handler: async (ctx, args) => {
-    const project = await ctx.db.get(args.projectId);
-    if (!project) throw new Error(`Project not found: ${args.projectId}`);
+// Dead sprint mutations/queries removed. Sprint analytics are consolidated under getSprintInsights.
 
-    // Get project details for the targetDate (deadline)
-    const projectDetail = await ctx.db
-      .query("projectDetails")
-      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
-      .unique();
-
-    const projectDeadline = projectDetail?.targetDate ?? null;
-
-    // Get all sprints for the project
-    const sprints = await ctx.db
-      .query("sprints")
-      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
-      .collect();
-
-    // Get tasks to count unassigned and incomplete ones
-    const tasks = await ctx.db
-      .query("tasks")
-      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
-      .collect();
-
-    const sprintTitles = sprints.map((s) => s.sprintName);
-
-    // Count tasks that are NOT completed AND have NO sprintId
-    const unassignedTasksCount = tasks.filter(
-      (t) => t.status !== "completed" && !t.sprintId,
-    ).length;
-
-    // Calculate duration from today to deadline
-    let daysToDeadline = null;
-    if (projectDeadline) {
-      const now = new Date();
-      now.setHours(0, 0, 0, 0);
-      const diffTime = projectDeadline - now.getTime();
-      const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-      daysToDeadline =
-        diffDays > 0
-          ? `${diffDays} days`
-          : diffDays === 0
-            ? "0 days (today)"
-            : "past due";
-    }
-
-    return {
-      projectDeadline,
-      daysToDeadline,
-      sprintTitles,
-      unassignedTasksCount,
-    };
-  },
-});
-
-// create_sprint: agent will call to create with sprint name, sprint goal and duration as start date and end date and return sprint created id.
-export const createSprint = internalMutation({
-  args: {
-    projectId: v.id("projects"),
-    sprintName: v.string(),
-    sprintGoal: v.string(),
-    startDate: v.number(),
-    endDate: v.number(),
-  },
-  handler: async (ctx, args) => {
-    const project = await ctx.db.get(args.projectId);
-    if (!project) throw new Error(`Project not found: ${args.projectId}`);
-
-    const now = Date.now();
-    const id = await ctx.db.insert("sprints", {
-      projectId: args.projectId,
-      creatorId: project.ownerId,
-      sprintName: args.sprintName,
-      sprintGoal: args.sprintGoal,
-      duration: { startDate: args.startDate, endDate: args.endDate },
-      status: "planned",
-      taskIds: [],
-      issueIds: [],
-      createdAt: now,
-      updatedAt: now,
-    });
-
-    return id;
-  },
-});
-
-// add_items_to_sprint : tasks id assigned to the sprint id.
-export const addItemsToSprint = internalMutation({
-  args: {
-    sprintId: v.id("sprints"),
-    taskIds: v.array(v.id("tasks")),
-  },
-  handler: async (ctx, args) => {
-    const sprint = await ctx.db.get(args.sprintId);
-    if (!sprint) throw new Error(`Sprint not found: ${args.sprintId}`);
-
-    // Update historical tracking array on the sprint
-    const existingTaskIds = sprint.taskIds || [];
-    const newTaskIds = Array.from(
-      new Set([...existingTaskIds, ...args.taskIds]),
-    );
-
-    await ctx.db.patch(args.sprintId, {
-      taskIds: newTaskIds,
-      updatedAt: Date.now(),
-    });
-
-    // Update sprintId on each task for live view
-    for (const taskId of args.taskIds) {
-      const task = await ctx.db.get(taskId);
-      if (!task) continue;
-
-      await ctx.db.patch(taskId, {
-        sprintId: args.sprintId,
-        updatedAt: Date.now(),
-      });
-    }
-
-    return "Tasks added to sprint successfully";
-  },
-});
-
-// Scheduler query by agent
-export const getScheduler = internalQuery({
-  args: {
-    projectId: v.id("projects"),
-  },
-  handler: async (ctx, args) => {
-    const scheduler = await ctx.db
-      .query("schedulers")
-      .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
-      .unique();
-
-    if (!scheduler) return null;
-
-    return {
-      name: scheduler.name,
-      frequencyDays: scheduler.frequencyDays,
-      recipientEmail: scheduler.recipientEmail,
-      isActive: scheduler.isActive,
-      lastRunAt: scheduler.lastRunAt ?? null,
-      nextRunAt: scheduler.nextRunAt,
-    };
-  },
-});
+// Scheduler query removed — setup_report_scheduler handles both viewing and setting up schedulers.
 
 // Create or Update Scheduler by agent
 export const createOrUpdateScheduler = internalMutation({
@@ -274,13 +127,15 @@ export const createOrUpdateScheduler = internalMutation({
 });
 
 /**
- * getMemberWorkloadPYAgent: Returns a detailed breakdown of each team member's current task and issue assignments.
+ * getMemberWorkloadPYAgent: Returns a detailed breakdown of each team member's current task and issue assignments,
+ * including overloaded status, idle/stale status, blocked tasks, and overdue items.
  * Specially for Python Agent where we pass projectId as string.
  */
 export const getMemberWorkloadPYAgent = internalQuery({
   args: { projectId: v.string() },
   handler: async (ctx, args) => {
     const projectId = args.projectId as Id<"projects">;
+    const now = Date.now();
     const members = await ctx.db
       .query("projectMembers")
       .withIndex("by_project", (q) => q.eq("projectId", projectId))
@@ -317,20 +172,72 @@ export const getMemberWorkloadPYAgent = internalQuery({
         ),
       );
 
+      const activeTasks = memberTasks.filter((t) => t.status !== "completed");
+      const completedTasks = memberTasks.filter((t) => t.status === "completed");
+      const activeIssues = memberIssues.filter((i) => i.status !== "closed");
+      const closedIssues = memberIssues.filter((i) => i.status === "closed");
+
+      const blockedTasks = activeTasks.filter((t) => t.isBlocked === true);
+      const overdueTasks = activeTasks.filter(
+        (t) => t.estimation && t.estimation.endDate && t.estimation.endDate < now,
+      );
+      const overdueIssues = activeIssues.filter(
+        (i) => i.due_date && i.due_date < now,
+      );
+      const highPriorityCount =
+        activeTasks.filter((t) => t.priority === "high").length +
+        activeIssues.filter((i) => i.severity === "critical").length;
+
+      const totalActive = activeTasks.length + activeIssues.length;
+      const overdueCount = overdueTasks.length + overdueIssues.length;
+      const blockedCount = blockedTasks.length;
+
+      // Status classification: overloaded, stale_or_blocked, idle, balanced
+      let workloadStatus: "overloaded" | "stale_or_blocked" | "idle" | "balanced" = "balanced";
+      let statusNote = "Workload balanced";
+
+      if (totalActive >= 5 || highPriorityCount >= 3) {
+        workloadStatus = "overloaded";
+        statusNote = `Overloaded (${totalActive} active items, ${highPriorityCount} critical/high)`;
+      } else if (overdueCount > 0 || blockedCount > 0) {
+        workloadStatus = "stale_or_blocked";
+        statusNote = `Sitting stale / blocked (${overdueCount} overdue, ${blockedCount} blocked)`;
+      } else if (totalActive === 0) {
+        workloadStatus = "idle";
+        statusNote = "Sitting idle / underutilized (0 active assignments)";
+      } else {
+        workloadStatus = "balanced";
+        statusNote = `Optimal (${totalActive} active items)`;
+      }
+
       return {
         name: m.userName,
         role: m.AccessRole ?? "member",
-        tasks: memberTasks.map((t) => ({
+        totalTasks: memberTasks.length,
+        activeTasksCount: activeTasks.length,
+        completedTasksCount: completedTasks.length,
+        totalIssues: memberIssues.length,
+        activeIssuesCount: activeIssues.length,
+        closedIssuesCount: closedIssues.length,
+        totalActive,
+        overdueCount,
+        blockedCount,
+        highPriorityCount,
+        workloadStatus,
+        statusNote,
+        tasks: activeTasks.map((t) => ({
           title: t.title,
           priority: t.priority ?? "low",
           status: t.status,
+          isBlocked: t.isBlocked ?? false,
+          isOverdue: Boolean(t.estimation && t.estimation.endDate && t.estimation.endDate < now),
         })),
-        totalTasks: memberTasks.length,
-        issues: memberIssues.map((i) => ({
+        issues: activeIssues.map((i) => ({
           title: i.title,
+          severity: i.severity ?? "medium",
           status: i.status,
+          isOverdue: Boolean(i.due_date && i.due_date < now),
         })),
-        totalIssues: memberIssues.length,
       };
     });
   },
@@ -338,11 +245,11 @@ export const getMemberWorkloadPYAgent = internalQuery({
 
 /**
  * getMemberWorkload: Returns a detailed breakdown of each team member's current task and issue assignments.
- * returns: Array<{ name: string, role: string, tasks: Array<{ title: string, priority: string, status: string }>, totalTasks: number, issues: Array<{ title: string, status: string }>, totalIssues: number }>
  */
 export const getMemberWorkload = internalQuery({
   args: { projectId: v.id("projects") },
   handler: async (ctx, args) => {
+    const now = Date.now();
     const members = await ctx.db
       .query("projectMembers")
       .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
@@ -379,20 +286,71 @@ export const getMemberWorkload = internalQuery({
         ),
       );
 
+      const activeTasks = memberTasks.filter((t) => t.status !== "completed");
+      const completedTasks = memberTasks.filter((t) => t.status === "completed");
+      const activeIssues = memberIssues.filter((i) => i.status !== "closed");
+      const closedIssues = memberIssues.filter((i) => i.status === "closed");
+
+      const blockedTasks = activeTasks.filter((t) => t.isBlocked === true);
+      const overdueTasks = activeTasks.filter(
+        (t) => t.estimation && t.estimation.endDate && t.estimation.endDate < now,
+      );
+      const overdueIssues = activeIssues.filter(
+        (i) => i.due_date && i.due_date < now,
+      );
+      const highPriorityCount =
+        activeTasks.filter((t) => t.priority === "high").length +
+        activeIssues.filter((i) => i.severity === "critical").length;
+
+      const totalActive = activeTasks.length + activeIssues.length;
+      const overdueCount = overdueTasks.length + overdueIssues.length;
+      const blockedCount = blockedTasks.length;
+
+      let workloadStatus: "overloaded" | "stale_or_blocked" | "idle" | "balanced" = "balanced";
+      let statusNote = "Workload balanced";
+
+      if (totalActive >= 5 || highPriorityCount >= 3) {
+        workloadStatus = "overloaded";
+        statusNote = `Overloaded (${totalActive} active items, ${highPriorityCount} critical/high)`;
+      } else if (overdueCount > 0 || blockedCount > 0) {
+        workloadStatus = "stale_or_blocked";
+        statusNote = `Sitting stale / blocked (${overdueCount} overdue, ${blockedCount} blocked)`;
+      } else if (totalActive === 0) {
+        workloadStatus = "idle";
+        statusNote = "Sitting idle / underutilized (0 active assignments)";
+      } else {
+        workloadStatus = "balanced";
+        statusNote = `Optimal (${totalActive} active items)`;
+      }
+
       return {
         name: m.userName,
         role: m.AccessRole ?? "member",
-        tasks: memberTasks.map((t) => ({
+        totalTasks: memberTasks.length,
+        activeTasksCount: activeTasks.length,
+        completedTasksCount: completedTasks.length,
+        totalIssues: memberIssues.length,
+        activeIssuesCount: activeIssues.length,
+        closedIssuesCount: closedIssues.length,
+        totalActive,
+        overdueCount,
+        blockedCount,
+        highPriorityCount,
+        workloadStatus,
+        statusNote,
+        tasks: activeTasks.map((t) => ({
           title: t.title,
           priority: t.priority ?? "low",
           status: t.status,
+          isBlocked: t.isBlocked ?? false,
+          isOverdue: Boolean(t.estimation && t.estimation.endDate && t.estimation.endDate < now),
         })),
-        totalTasks: memberTasks.length,
-        issues: memberIssues.map((i) => ({
+        issues: activeIssues.map((i) => ({
           title: i.title,
+          severity: i.severity ?? "medium",
           status: i.status,
+          isOverdue: Boolean(i.due_date && i.due_date < now),
         })),
-        totalIssues: memberIssues.length,
       };
     });
   },
@@ -482,19 +440,29 @@ export const getProjectInsights = internalQuery({
       .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
       .unique();
 
-    const deadline = projectDetail?.targetDate ?? null;
+    const deadlineTimestamp = projectDetail?.targetDate ?? null;
     let daysRemaining = null;
+    let formattedDeadline = null;
 
-    if (deadline) {
+    if (deadlineTimestamp) {
       const now = Date.now();
-      const diff = deadline - now;
+      const diff = deadlineTimestamp - now;
       daysRemaining = Math.ceil(diff / (1000 * 60 * 60 * 24));
+      formattedDeadline = new Date(deadlineTimestamp).toLocaleDateString(
+        "en-US",
+        {
+          month: "long",
+          day: "numeric",
+          year: "numeric",
+        },
+      );
     }
 
     return {
       projectName: project.projectName,
       createdAt: project.createdAt,
-      deadline,
+      deadline: formattedDeadline,
+      deadlineTimestamp,
       daysRemaining:
         daysRemaining !== null ? (daysRemaining > 0 ? daysRemaining : 0) : null,
       isOverdue: daysRemaining !== null && daysRemaining < 0,
@@ -521,61 +489,46 @@ export const getTasksSummary = internalQuery({
     const now = Date.now();
     const NEAR_OVERDUE_THRESHOLD = 2 * 24 * 60 * 60 * 1000; // 2 days
 
-    const criticalTasks = tasks.filter((t) => {
-      if (t.status === "completed") return false;
-
-      const isOverdue = now > t.estimation.endDate;
-      const isNearOverdue =
-        !isOverdue && now > t.estimation.endDate - NEAR_OVERDUE_THRESHOLD;
-      const isNotStarted = t.status === "not started";
-      const isHighPriority = t.priority === "high";
-
-      return (
-        isOverdue ||
-        isNearOverdue ||
-        isNotStarted ||
-        isHighPriority ||
-        t.isBlocked
-      );
-    });
+    // Return all tasks regardless of status
 
     const completedCount = tasks.filter((t) => t.status === "completed").length;
     const blockedCount = tasks.filter((t) => t.isBlocked).length;
 
     return {
-      criticalAndActiveTasks: criticalTasks.map((t) => {
+      tasks: tasks.map((t) => {
         const isOverdue = now > t.estimation.endDate;
         const isNearOverdue =
           !isOverdue && now > t.estimation.endDate - NEAR_OVERDUE_THRESHOLD;
 
-        let timelineStatus = "on track";
+        let deadlineStatus = "on track";
         if (isOverdue) {
           const days = Math.ceil(
             (now - t.estimation.endDate) / (1000 * 60 * 60 * 24),
           );
-          timelineStatus = `OVERDUE by ${days} days`;
+          deadlineStatus = `OVERDUE by ${days} days`;
         } else if (isNearOverdue) {
           const days = Math.ceil(
             (t.estimation.endDate - now) / (1000 * 60 * 60 * 24),
           );
-          timelineStatus = `Near overdue (due in ${days} days)`;
+          deadlineStatus = `due in ${days} days`;
         }
+
+        const assignee =
+          taskAssignees
+            .filter((a) => a.taskId === t._id)
+            .map((a) => a.name)
+            .join(", ") || "Unassigned";
 
         return {
           title: t.title,
-          status: t.status,
+          assignee,
+          deadlineStatus,
           priority: t.priority ?? "medium",
-          isBlocked: t.isBlocked ?? false,
-          assignees: taskAssignees
-            .filter((a) => a.taskId === t._id)
-            .map((a) => a.name),
-          endDate: new Date(t.estimation.endDate).toLocaleDateString(),
-          timelineStatus,
         };
       }),
+      totalCount: tasks.length,
       completedCount,
       blockedCount,
-      totalCount: tasks.length,
     };
   },
 });
@@ -718,14 +671,21 @@ export const getProjectVelocity = internalQuery({
       const weekLabel = `Week -${idx + 1}`;
 
       const tasksCompleted = doneTasks.filter(
-        (t) => t.finalCompletedAt! >= weekStart && t.finalCompletedAt! < weekEnd,
+        (t) =>
+          t.finalCompletedAt! >= weekStart && t.finalCompletedAt! < weekEnd,
       ).length;
 
       const issuesResolved = doneIssues.filter(
-        (i) => i.finalCompletedAt! >= weekStart && i.finalCompletedAt! < weekEnd,
+        (i) =>
+          i.finalCompletedAt! >= weekStart && i.finalCompletedAt! < weekEnd,
       ).length;
 
-      return { weekLabel, tasksCompleted, issuesResolved, total: tasksCompleted + issuesResolved };
+      return {
+        weekLabel,
+        tasksCompleted,
+        issuesResolved,
+        total: tasksCompleted + issuesResolved,
+      };
     }).reverse();
 
     // --- Average cycle time (createdAt → finalCompletedAt) ---
@@ -794,7 +754,11 @@ export const getSprintHistory = internalQuery({
       .withIndex("by_project", (q) => q.eq("projectId", args.projectId))
       .collect();
 
-    const statusOrder: Record<string, number> = { completed: 0, active: 1, planned: 2 };
+    const statusOrder: Record<string, number> = {
+      completed: 0,
+      active: 1,
+      planned: 2,
+    };
     sprints.sort(
       (a, b) =>
         statusOrder[a.status] - statusOrder[b.status] ||
@@ -817,16 +781,16 @@ export const getSprintHistory = internalQuery({
     await Promise.all(
       creatorIds.map(async (id) => {
         const user = await ctx.db.get(id);
-        if (user) creatorMap[id as string] = user.name ?? user.githubUsername ?? "Unknown";
+        if (user)
+          creatorMap[id as string] =
+            user.name ?? user.githubUsername ?? "Unknown";
       }),
     );
 
     const MS_PER_DAY = 24 * 60 * 60 * 1000;
 
     // Keep last 6 completed (most recent) + active sprint only; skip empty planned
-    const completed = sprints
-      .filter((s) => s.status === "completed")
-      .slice(-6);
+    const completed = sprints.filter((s) => s.status === "completed").slice(-6);
     const active = sprints.filter((s) => s.status === "active");
     const relevant = [...completed, ...active];
 
@@ -844,7 +808,9 @@ export const getSprintHistory = internalQuery({
       } else {
         const sprintTasks = allTasks.filter((t) => t.sprintId === s._id);
         const sprintIssues = allIssues.filter((i) => i.sprintId === s._id);
-        completedTasks = sprintTasks.filter((t) => t.status === "completed").length;
+        completedTasks = sprintTasks.filter(
+          (t) => t.status === "completed",
+        ).length;
         totalTasks = sprintTasks.length;
         closedIssues = sprintIssues.filter((i) => i.status === "closed").length;
         totalIssues = sprintIssues.length;
@@ -875,5 +841,130 @@ export const getSprintHistory = internalQuery({
         completionRate,
       };
     });
+  },
+});
+
+function inferTaskTag(title: string): { label: string; color: string } {
+  const t = title.toLowerCase();
+  if (/pay|bill|invoice|finance|money|subscri/.test(t))
+    return { label: "Payment", color: "green" };
+  if (/auth|login|sign|jwt|user|secu|iam/.test(t))
+    return { label: "Auth", color: "blue" };
+  if (/ui|front|design|view|css|page|client|meet/.test(t))
+    return { label: "UI", color: "purple" };
+  if (/middle|rout|api|back|serv|data|db|sql|endp/.test(t))
+    return { label: "API", color: "yellow" };
+  if (/bug|fix|err|patch|resolv/.test(t))
+    return { label: "Bugfix", color: "grey" };
+  return { label: "Feature", color: "blue" };
+}
+
+// Bulk Insert Tasks mutation for PRD / Document AI Extractor
+export const bulkInsertTasks = internalMutation({
+  args: {
+    projectId: v.id("projects"),
+    tasks: v.array(
+      v.object({
+        title: v.string(),
+        description: v.optional(v.union(v.string(), v.null())),
+        priority: v.optional(
+          v.union(v.literal("high"), v.literal("medium"), v.literal("low")),
+        ),
+        type: v.optional(
+          v.object({
+            label: v.string(),
+            color: v.string(),
+          }),
+        ),
+      }),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const project = await ctx.db.get(args.projectId);
+    if (!project) throw new Error(`Project not found: ${args.projectId}`);
+
+    const now = Date.now();
+    const tomorrow = now + 86400000;
+    const insertedIds = [];
+
+    for (const taskItem of args.tasks) {
+      const id = await ctx.db.insert("tasks", {
+        projectId: args.projectId,
+        createdByUserId: project.ownerId,
+        title: taskItem.title,
+        description: taskItem.description || undefined,
+        priority: taskItem.priority ?? "medium",
+        type: taskItem.type ?? inferTaskTag(taskItem.title),
+        status: "not started",
+        estimation: {
+          startDate: now,
+          endDate: tomorrow,
+        },
+        createdAt: now,
+        updatedAt: now,
+      });
+      insertedIds.push(id);
+    }
+
+    return {
+      success: true,
+      count: insertedIds.length,
+      taskIds: insertedIds,
+    };
+  },
+});
+
+// Bulk Insert Issues mutation for PRD / Document AI Extractor
+export const bulkInsertIssues = internalMutation({
+  args: {
+    projectId: v.id("projects"),
+    issues: v.array(
+      v.object({
+        title: v.string(),
+        description: v.optional(v.union(v.string(), v.null())),
+        environment: v.optional(
+          v.union(
+            v.literal("local"),
+            v.literal("dev"),
+            v.literal("staging"),
+            v.literal("production"),
+          ),
+        ),
+        severity: v.optional(
+          v.union(v.literal("critical"), v.literal("medium"), v.literal("low")),
+        ),
+      }),
+    ),
+  },
+  handler: async (ctx, args) => {
+    const project = await ctx.db.get(args.projectId);
+    if (!project) throw new Error(`Project not found: ${args.projectId}`);
+
+    const now = Date.now();
+    const dayAfterTomorrow = now + 2 * 86400000;
+    const insertedIds = [];
+
+    for (const issueItem of args.issues) {
+      const id = await ctx.db.insert("issues", {
+        projectId: args.projectId,
+        createdByUserId: project.ownerId,
+        title: issueItem.title,
+        description: issueItem.description || undefined,
+        environment: issueItem.environment ?? "dev",
+        severity: issueItem.severity ?? "medium",
+        status: "not opened",
+        type: "manual",
+        due_date: dayAfterTomorrow,
+        createdAt: now,
+        updatedAt: now,
+      });
+      insertedIds.push(id);
+    }
+
+    return {
+      success: true,
+      count: insertedIds.length,
+      issueIds: insertedIds,
+    };
   },
 });

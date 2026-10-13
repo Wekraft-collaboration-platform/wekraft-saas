@@ -1,11 +1,10 @@
 "use client";
 import { motion, useScroll, useSpring, useTransform } from "framer-motion";
-import { ArrowRight, Code2 } from "lucide-react";
+import { ArrowRight, Code2, PlaneTakeoff } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import React, { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
-import { FlipText } from "@/components/ui/flip-text";
 import { Spotlight } from "@/components/ui/spotlight";
 import { InstallExtensionModal } from "./InstallExtensionModal";
 
@@ -299,17 +298,13 @@ const Hero = () => {
             onClick={() => setIdePickerOpen((v) => !v)}
             className="inline-flex items-center p-1 pr-4 border border-neutral-400/30 rounded-full cursor-pointer transition-colors duration-200 bg-blue-500/5 hover:bg-blue-500/10"
           >
-            <div className="bg-blue-600 px-5 py-1 rounded-full flex items-center gap-1.5">
-              <Code2 className="w-4 h-4 text-white" />
-              <span className="text-sm font-medium text-white leading-none">
-                Extension
+            <div className="bg-blue-600 px-4 py-1 rounded-full flex items-center gap-1.5">
+              <span className="text-sm font-medium text-white leading-none flex items-center gap-2">
+                Introducing <PlaneTakeoff className="w-3.5 h-3.5" />
               </span>
             </div>
-            <span className="text-blue-50 text-xs font-medium ml-3 flex items-center gap-1">
-              <span className="hidden sm:inline">
-                Bring WeKraft to your IDE
-              </span>
-              <span className="inline sm:hidden">available!</span>
+            <span className="text-neutral-200 text-xs font-medium ml-3 flex items-center gap-1">
+              <span>WeKraft version 2.0</span>
               <ArrowRight className="w-4 h-4 inline" />
             </span>
           </button>
@@ -323,22 +318,9 @@ const Hero = () => {
 
         <div className="flex flex-col items-center justify-center font-pop relative px-4 text-center">
           <h1 className="text-white font-sans tracking-tight text-[30px] sm:text-[44px] md:text-[62px] font-semibold leading-tight max-w-4xl">
-            <span className="hidden md:block">
-              Your Project Lives in Github,
-            </span>
-            <span className="block md:hidden">
-              Your Project Lives in
-              <br />
-              Github, so should
-            </span>
+            <span className="block">Crafted for Devs &amp; PMs.</span>
+            <span className="block mt-1 md:mt-2">Tuned for Agents.</span>
           </h1>
-          <div className="flex flex-wrap items-center justify-center gap-x-2.5 gap-y-1 text-white tracking-tight text-[30px] sm:text-[44px] md:text-[62px] font-semibold leading-tight mt-1 md:mt-2">
-            <span className="hidden md:inline">so should your </span>
-            <span className="inline md:hidden">your {""}</span>
-            <FlipText className="md:ml-2" duration={3.5}>
-              Workspace.
-            </FlipText>
-          </div>
 
           <div className="hidden min-[600px]:block">
             <FloatingCursor
@@ -381,8 +363,8 @@ const Hero = () => {
         {/* CTA  */}
         <div className="flex flex-row items-center gap-3 sm:gap-4 mt-20">
           <Link href={"/auth"}>
-            <Button className="rounded-md bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-10 py-3 text-xs sm:text-sm transition-all hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(37,99,235,0.2)]">
-              Try for Free
+            <Button className="rounded-md bg-blue-600 hover:bg-blue-700 text-white px-4 sm:px-10 py-3 text-xs sm:text-sm transition-all hover:scale-105 active:scale-95 shadow-[0_0_30px_rgba(37,99,235,0.2)] flex items-center gap-2">
+              Try for Free <PlaneTakeoff className="w-3.5 h-3.5" />
             </Button>
           </Link>
           <a
@@ -541,7 +523,7 @@ const Hero = () => {
                 bubbleY="8%"
                 cursorX="73.5%"
                 cursorY="23.5%"
-                action="checking project status"
+                action="Creating bulk Tasks"
                 delay={0.2}
               />
 

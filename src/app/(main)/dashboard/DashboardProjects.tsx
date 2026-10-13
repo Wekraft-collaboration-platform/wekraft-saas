@@ -610,7 +610,9 @@ export const DashboardProjects = ({
                     variant="outline"
                     size="sm"
                     onClick={() =>
-                      router.push(`/dashboard/my-projects/${project.slug}`)
+                      router.push(
+                        `/dashboard/my-projects/${project.slug}/workspace/settings`,
+                      )
                     }
                     className="h-7 text-xs border-accent!"
                   >

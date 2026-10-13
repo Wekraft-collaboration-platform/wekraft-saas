@@ -6,13 +6,16 @@ import { internal } from "./_generated/api";
 async function generateUniqueReferralCode(
   ctx: any,
   email: string,
-  name?: string
+  name?: string,
 ): Promise<string> {
   let prefix = "user";
   if (name) {
     prefix = name.replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
   } else if (email) {
-    prefix = email.split("@")[0].replace(/[^a-zA-Z0-9]/g, "").toLowerCase();
+    prefix = email
+      .split("@")[0]
+      .replace(/[^a-zA-Z0-9]/g, "")
+      .toLowerCase();
   }
   if (prefix.length > 10) {
     prefix = prefix.substring(0, 10);
@@ -65,7 +68,7 @@ export const createNewUser = mutation({
     const code = await generateUniqueReferralCode(
       ctx,
       identity.email || "",
-      identity.name || identity.nickname || ""
+      identity.name || identity.nickname || "",
     );
 
     const userId = await ctx.db.insert("users", {
@@ -151,11 +154,11 @@ export const checkUsernameAvailability = query({
     const identity = await ctx.auth.getUserIdentity();
     const currentUser = identity
       ? await ctx.db
-        .query("users")
-        .withIndex("by_token", (q) =>
-          q.eq("clerkToken", identity.tokenIdentifier),
-        )
-        .unique()
+          .query("users")
+          .withIndex("by_token", (q) =>
+            q.eq("clerkToken", identity.tokenIdentifier),
+          )
+          .unique()
       : null;
 
     const existingUser = await ctx.db
@@ -320,7 +323,11 @@ export const completeOnboarding = mutation({
       .unique();
 
     if (!details || !details.referalCreated) {
-      const generatedCode = await generateUniqueReferralCode(ctx, user.email, user.name);
+      const generatedCode = await generateUniqueReferralCode(
+        ctx,
+        user.email,
+        user.name,
+      );
       if (details) {
         await ctx.db.patch(details._id, { referalCreated: generatedCode });
       } else {
@@ -351,7 +358,7 @@ export const checkReferralCode = query({
     if (!currentUser) return { valid: false, message: "User not found" };
 
     const checkCode = args.code.trim().toLowerCase();
-    
+
     // Validate format: must contain a hyphen and suffix must be at least 5 characters
     const parts = checkCode.split("-");
     if (parts.length < 2 || parts[parts.length - 1].length < 5) {
@@ -449,7 +456,11 @@ export const updateUserReferralAndSource = mutation({
     }
 
     if (!details?.referalCreated) {
-      const generatedCode = await generateUniqueReferralCode(ctx, user.email, user.name);
+      const generatedCode = await generateUniqueReferralCode(
+        ctx,
+        user.email,
+        user.name,
+      );
       detailsPatch.referalCreated = generatedCode;
     }
 
@@ -622,7 +633,9 @@ export const updateUserSubscriptionInternal = internalMutation({
   args: {
     userId: v.id("users"),
     // plan is optional here — if omitted, we only update status fields (e.g. past_due)
-    plan: v.optional(v.union(v.literal("free"), v.literal("plus"), v.literal("pro"))),
+    plan: v.optional(
+      v.union(v.literal("free"), v.literal("plus"), v.literal("pro")),
+    ),
     subscriptionId: v.optional(v.string()),
     customerId: v.optional(v.string()),
     status: v.optional(v.string()),
@@ -648,7 +661,7 @@ export const updateUserSubscriptionInternal = internalMutation({
 
     await ctx.db.patch(args.userId, patch);
     console.log(
-      `[Payments] Subscription updated: user=${args.userId}, plan=${args.plan ?? "unchanged"}, status=${args.status}, provider=${args.provider}`
+      `[Payments] Subscription updated: user=${args.userId}, plan=${args.plan ?? "unchanged"}, status=${args.status}, provider=${args.provider}`,
     );
   },
 });
@@ -986,7 +999,9 @@ export const checkAndIncrementStorage = mutation({
     // Check 1: Free plan owner cannot upload task/issue attachments
     const plan = getActiveUserPlan(owner);
     if (!args.isTeamspace && plan === "free") {
-      throw new Error("Attachments are disabled for Free projects. Upgrade to Plus/Pro to unlock.");
+      throw new Error(
+        "Attachments are disabled for Free projects. Upgrade to Plus/Pro to unlock.",
+      );
     }
 
     const limits = getPlanLimits(owner);
@@ -1053,12 +1068,14 @@ export const getUserDetails = query({
       .withIndex("by_user", (q) => q.eq("userId", user._id))
       .unique();
 
-    return details ?? {
-      userId: user._id,
-      freeTrialUsed: false,
-      referalUsing: undefined,
-      referalCreated: undefined,
-    };
+    return (
+      details ?? {
+        userId: user._id,
+        freeTrialUsed: false,
+        referalUsing: undefined,
+        referalCreated: undefined,
+      }
+    );
   },
 });
 
@@ -1095,9 +1112,13 @@ export const activateFreeTrial = mutation({
     });
 
     // Schedule background downgrade safety-net job to run exactly when trial expires
-    await ctx.scheduler.runAfter(oneWeekMs, internal.payments.downgradeUserByIdInternal, {
-      userId: user._id,
-    });
+    await ctx.scheduler.runAfter(
+      oneWeekMs,
+      internal.payments.downgradeUserByIdInternal,
+      {
+        userId: user._id,
+      },
+    );
 
     // Save freeTrialUsed: true in userDetails
     if (details) {
@@ -1147,7 +1168,11 @@ export const getReferralCount = query({
     let count = 0;
     for (const match of matches) {
       const refUser = await ctx.db.get(match.userId);
-      if (refUser && refUser.hasCompletedOnboarding && refUser.gettingstartedcompleted) {
+      if (
+        refUser &&
+        refUser.hasCompletedOnboarding &&
+        refUser.gettingstartedcompleted
+      ) {
         count++;
       }
     }
@@ -1155,6 +1180,3 @@ export const getReferralCount = query({
     return count;
   },
 });
-
-
-

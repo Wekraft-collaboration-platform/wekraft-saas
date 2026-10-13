@@ -17,15 +17,11 @@ import {
   FlagTriangleRight,
   History,
   Home,
-  Lock,
   Plus,
-  PlusCircle,
   Settings2,
-  Sparkles,
   Table,
   Timer,
   Users,
-  XCircle,
 } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
@@ -33,24 +29,13 @@ import { useParams } from "next/navigation";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
-import { Calendar } from "@/components/ui/calendar";
 import {
   Card,
-  CardAction,
   CardContent,
-  CardDescription,
   CardFooter,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
-} from "@/components/ui/dropdown-menu";
 import {
   Popover,
   PopoverContent,
@@ -65,13 +50,13 @@ import { SetTargetDateDialog } from "@/modules/workspace/SetTargetDateDialog";
 import { ActivityOverviewCard } from "@/modules/workspace/workspace-modules/ActivityOverviewCard";
 import { EnvironmentalSeverityHeatmap } from "@/modules/workspace/workspace-modules/EnvironmentalSeverityHeatmap";
 import { MemberWorkloadCard } from "@/modules/workspace/workspace-modules/MemberWorkloadCard";
-import { ProjectConfigTab } from "@/modules/workspace/workspace-modules/ProjectConfigTab";
 import { SchedulerCard } from "@/modules/workspace/workspace-modules/SchedulerCard";
 import { SprintBarChart } from "@/modules/workspace/workspace-modules/SprintBarChart";
 import { TaskStatusCard } from "@/modules/workspace/workspace-modules/TaskStatusCard";
 import { TeamContributionRadarCard } from "@/modules/workspace/workspace-modules/TeamContributionRadarCard";
 import { WeeklyEngagementChartCard } from "@/modules/workspace/workspace-modules/WeeklyEngagementChartCard";
 import { WeeklyVelocityChart } from "@/modules/workspace/workspace-modules/WeeklyVelocityChart";
+import { useKayaStore } from "@/store/useKayaStore";
 import { api } from "../../../../../../../convex/_generated/api";
 import type { Id } from "../../../../../../../convex/_generated/dataModel";
 
@@ -79,9 +64,6 @@ const ProjectWorkspace = () => {
   const params = useParams();
   const slug = params.slug as string;
   const [isDeadlineDialogOpen, setIsDeadlineDialogOpen] = useState(false);
-  const [activeTab, setActiveTab] = useState<"charts" | "config">(
-    "charts",
-  );
   const [cachedData, setCachedData] = useState<any>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -105,7 +87,9 @@ const ProjectWorkspace = () => {
   );
 
   // const updateDeadline = useMutation(api.projectDetails.updateTargetDate);
-  const updateProjectAlerts = useMutation(api.projectDetails.updateProjectAlerts);
+  const updateProjectAlerts = useMutation(
+    api.projectDetails.updateProjectAlerts,
+  );
 
   const tasks = useQuery(
     api.workspace.getTimelineTasks,
@@ -127,11 +111,10 @@ const ProjectWorkspace = () => {
   );
 
   useEffect(() => {
-    if (projectId && activeTab === "charts" && !cachedData) {
+    if (projectId && !cachedData) {
       fetchAnalytics(projectId).then(setCachedData).catch(console.error);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [projectId, activeTab]);
+  }, [projectId, cachedData]);
 
   const handleToggleAlert = async (percent: number, checked: boolean) => {
     if (!projectId) return;
@@ -230,8 +213,8 @@ const ProjectWorkspace = () => {
             Space.
           </p>
         </div>
-        <div className="flex items-center gap-4">
-          <Link href={`/dashboard/my-projects/${slug}`}>
+        <div className="flex items-center gap-3">
+          <Link href={`/dashboard`}>
             <Button
               className="text-xs cursor-pointer"
               variant="outline"
@@ -247,6 +230,13 @@ const ProjectWorkspace = () => {
             className="text-xs cursor-pointer font-sans font-medium! text-primary bg-linear-to-br from-transparent to-indigo-500"
             variant="outline"
             size="sm"
+            onClick={() => {
+              useKayaStore
+                .getState()
+                .openWithPrompt(
+                  "Hey kaya help me with my project , get me team memeber workload ,  all our project tasks and issues , and my work .\nand also let me know bout project duration , are we on track ?",
+                );
+            }}
           >
             <Image src="/kaya.svg" alt="kaya" width={20} height={20} />
             Today Insights
@@ -286,31 +276,32 @@ const ProjectWorkspace = () => {
                 className="h-3 bg-blue-100/50 dark:bg-accent [&>div]:bg-blue-500 transition-all duration-500"
               />
               {/* Alert Markers */}
-              {deadline && projectDetails?.alerts?.map((percent) => {
-                const progress = calculateProgress();
-                const isPassed = progress >= percent;
-                return (
-                  <div
-                    key={percent}
-                    className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 group"
-                    style={{ left: `${percent}%` }}
-                  >
-                    {/* Tooltip on hover */}
-                    <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:block bg-popover border border-border text-[9px] font-semibold text-popover-foreground px-1.5 py-0.5 rounded shadow-md whitespace-nowrap z-50">
-                      Alert set at {percent}%
-                    </div>
-                    {/* Tiny circle indicator */}
+              {deadline &&
+                projectDetails?.alerts?.map((percent) => {
+                  const progress = calculateProgress();
+                  const isPassed = progress >= percent;
+                  return (
                     <div
-                      className={cn(
-                        "w-2.5 h-2.5 rounded-full border-2 transition-all duration-300",
-                        isPassed
-                          ? "bg-blue-500 border-background dark:border-sidebar ring-1 ring-blue-500 scale-110"
-                          : "bg-background dark:bg-sidebar border-muted-foreground/60 hover:border-blue-400"
-                      )}
-                    />
-                  </div>
-                );
-              })}
+                      key={percent}
+                      className="absolute top-1/2 -translate-y-1/2 -translate-x-1/2 group"
+                      style={{ left: `${percent}%` }}
+                    >
+                      {/* Tooltip on hover */}
+                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-1.5 hidden group-hover:block bg-popover border border-border text-[9px] font-semibold text-popover-foreground px-1.5 py-0.5 rounded shadow-md whitespace-nowrap z-50">
+                        Alert set at {percent}%
+                      </div>
+                      {/* Tiny circle indicator */}
+                      <div
+                        className={cn(
+                          "w-2.5 h-2.5 rounded-full border-2 transition-all duration-300",
+                          isPassed
+                            ? "bg-blue-500 border-background dark:border-sidebar ring-1 ring-blue-500 scale-110"
+                            : "bg-background dark:bg-sidebar border-muted-foreground/60 hover:border-blue-400",
+                        )}
+                      />
+                    </div>
+                  );
+                })}
             </div>
           </CardContent>
           <CardFooter className="flex flex-col items-start gap-3 border-t pt-5! px-2!">
@@ -378,26 +369,36 @@ const ProjectWorkspace = () => {
                       Set Alerts <AlertCircle className="w-3 h-3!" />
                     </Button>
                   </PopoverTrigger>
-                  <PopoverContent align="end" side="bottom" avoidCollisions={false} className="w-64 p-4 bg-card border border-accent rounded-xl shadow-xl dark:shadow-none">
+                  <PopoverContent
+                    align="end"
+                    side="bottom"
+                    avoidCollisions={false}
+                    className="w-64 p-4 bg-card border border-accent rounded-xl shadow-xl dark:shadow-none"
+                  >
                     <h3 className="text-sm font-semibold mb-2 text-center text-foreground flex items-center justify-center gap-1.5">
-                      <AlertCircle className="w-4 h-4 text-primary" /> Project Alerts
+                      <AlertCircle className="w-4 h-4 text-primary" /> Project
+                      Alerts
                     </h3>
                     <Separator className="my-2 bg-accent" />
                     {!deadline ? (
                       <div className="text-center py-4 space-y-2">
                         <AlertCircle className="w-7 h-7 text-amber-500/80 mx-auto" />
                         <p className="text-[11px] text-muted-foreground leading-normal">
-                          Please set a project deadline first to enable duration alerts.
+                          Please set a project deadline first to enable duration
+                          alerts.
                         </p>
                       </div>
                     ) : (
                       <div className="space-y-2 mt-2">
                         <p className="text-[11px] text-muted-foreground mb-3 leading-normal">
-                          Notify project owner and admins when elapsed project duration passes:
+                          Notify project owner and admins when elapsed project
+                          duration passes:
                         </p>
                         <div className="space-y-2">
                           {[25, 50, 75, 90].map((percent) => {
-                            const isChecked = projectDetails?.alerts?.includes(percent) ?? false;
+                            const isChecked =
+                              projectDetails?.alerts?.includes(percent) ??
+                              false;
                             return (
                               <div
                                 key={percent}
@@ -449,40 +450,31 @@ const ProjectWorkspace = () => {
         <TaskStatusCard tasks={tasks || []} />
       </section>
 
-      {/* TABS: advance charts (scheduler + advance charts) / Config */}
-      <div className="flex mt-8 mb-2 items-center justify-end px-10">
-        <div className="flex items-center gap-4">
-          <Button
-            className="text-xs cursor-pointer"
-            variant={activeTab === "charts" ? "default" : "outline"}
-            size={"sm"}
-            onClick={() => setActiveTab("charts")}
-          >
-            Advance Charts <ChartBar />
-          </Button>
+      {/* Advance Charts Header */}
+      <div className="flex mt-8 mb-2 items-center justify-between px-2">
+        <h2 className="text-base font-semibold flex items-center gap-2 text-foreground">
+          <ChartBar className="w-4 h-4 text-primary" />
+          Advance Charts & Analytics
+        </h2>
+        <div className="flex items-center gap-2">
+          <Link href={`/dashboard/my-projects/${slug}/workspace/settings`}>
+            <Button
+              className="text-[10px] h-7 px-2 cursor-pointer"
+              variant="outline"
+              size="sm"
+            >
+              <Settings2 className="w-3 h-3 mr-1" />
+              Project Config
+            </Button>
+          </Link>
 
-          <Button
-            className="text-xs cursor-pointer"
-            variant={activeTab === "config" ? "default" : "outline"}
-            size={"sm"}
-            onClick={() => setActiveTab("config")}
-          >
-            Config <Settings2 />
-          </Button>
-        </div>
-      </div>
-
-      <Separator className="bg-accent" />
-
-      <section className="mt-4 w-full">
-        {activeTab === "charts" &&
-          (project as any)?.ownerAccountType !== "free" && (
+          {(project as any)?.ownerAccountType !== "free" && (
             <Button
               className={cn(
-                "text-[10px] h-7 px-2 flex justify-end ml-auto mb-5 cursor-pointer transition-all",
+                "text-[10px] h-7 px-2 cursor-pointer transition-all",
                 isRefreshing && "animate-pulse opacity-50",
               )}
-              variant="default"
+              variant="outline"
               size="sm"
               onClick={handleRefresh}
               disabled={isRefreshing}
@@ -493,83 +485,65 @@ const ProjectWorkspace = () => {
               {isRefreshing ? "Refreshing..." : "Refresh Analytics"}
             </Button>
           )}
-        {/* Advace charts area */}
-        {activeTab === "charts" && (
-          <div className="mt-6">
-            {(project as any)?.ownerAccountType === "free" ? (
-              <div className="flex flex-col items-center justify-center py-16 ">
-                <div className="flex flex-col items-start gap-1.5 max-w-sm text-sm">
-                  <Image
-                    src="/pat106.svg"
-                    alt="locked features"
-                    width={120}
-                    height={120}
-                  />
-                  <h3 className="text-muted-foreground">
-                    Project Owner must upgrade in order to unlock advanced
-                    analytics / Team insights and much more.
-                  </h3>
-                  <div className="flex items-center gap-4 mt-3">
-                    <Button
-                      className="cursor-pointer"
-                      variant="default"
-                      size="sm"
-                    >
-                      Upgrade
-                    </Button>
-                    <Button
-                      className="cursor-pointer"
-                      variant="outline"
-                      size="sm"
-                    >
-                      Learn More <Plus className="w-3 h-3 ml-1" />
-                    </Button>
-                  </div>
-                </div>
+        </div>
+      </div>
+
+      <Separator className="bg-accent" />
+
+      <section className="mt-6 w-full">
+        {(project as any)?.ownerAccountType === "free" ? (
+          <div className="flex flex-col items-center justify-center py-16 ">
+            <div className="flex flex-col items-start gap-1.5 max-w-sm text-sm">
+              <Image
+                src="/pat106.svg"
+                alt="locked features"
+                width={120}
+                height={120}
+              />
+              <h3 className="text-muted-foreground">
+                Project Owner must upgrade in order to unlock advanced analytics
+                / Team insights and much more.
+              </h3>
+              <div className="flex items-center gap-4 mt-3">
+                <Button className="cursor-pointer" variant="default" size="sm">
+                  Upgrade
+                </Button>
+                <Button className="cursor-pointer" variant="outline" size="sm">
+                  Learn More <Plus className="w-3 h-3 ml-1" />
+                </Button>
               </div>
-            ) : (
-              <div className="grid grid-cols-2 gap-x-10 gap-y-6 px-5">
-                <TeamContributionRadarCard
-                  projectId={projectId as Id<"projects">}
-                  data={cachedData?.contributions}
-                />
-                <SprintBarChart
-                  projectId={projectId as Id<"projects">}
-                  data={cachedData?.sprints}
-                />
-                <EnvironmentalSeverityHeatmap
-                  projectId={projectId as Id<"projects">}
-                  data={cachedData?.heatmap}
-                />
-
-                <WeeklyVelocityChart
-                  projectId={projectId as Id<"projects">}
-                  data={cachedData?.velocity}
-                />
-
-                <MemberWorkloadCard
-                  projectId={projectId as Id<"projects">}
-                  data={cachedData?.workload}
-                />
-
-                <WeeklyEngagementChartCard
-                  projectId={projectId as Id<"projects">}
-                  data={cachedData?.weeklyEngagement}
-                />
-              </div>
-            )}
+            </div>
           </div>
-        )}
+        ) : (
+          <div className="grid grid-cols-2 gap-x-10 gap-y-6 px-5">
+            <TeamContributionRadarCard
+              projectId={projectId as Id<"projects">}
+              data={cachedData?.contributions}
+            />
+            <SprintBarChart
+              projectId={projectId as Id<"projects">}
+              data={cachedData?.sprints}
+            />
+            <EnvironmentalSeverityHeatmap
+              projectId={projectId as Id<"projects">}
+              data={cachedData?.heatmap}
+            />
 
+            <WeeklyVelocityChart
+              projectId={projectId as Id<"projects">}
+              data={cachedData?.velocity}
+            />
 
-        {/* Config Area */}
-        {activeTab === "config" && projectId && (
-          <ProjectConfigTab
-            projectId={projectId as Id<"projects">}
-            projectDetails={projectDetails}
-            scheduler={scheduler}
-            isOwner={isOwner}
-          />
+            <MemberWorkloadCard
+              projectId={projectId as Id<"projects">}
+              data={cachedData?.workload}
+            />
+
+            <WeeklyEngagementChartCard
+              projectId={projectId as Id<"projects">}
+              data={cachedData?.weeklyEngagement}
+            />
+          </div>
         )}
       </section>
     </div>

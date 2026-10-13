@@ -8,7 +8,6 @@ import {
   FaGithub,
   FaInstagram,
   FaLinkedin,
-  FaWhatsapp,
   FaXTwitter,
   FaYoutube,
 } from "react-icons/fa6";
@@ -129,11 +128,6 @@ const Footer = () => {
                   name: "YouTube",
                   href: "https://www.youtube.com/@wekraft.xyz_official",
                 },
-                {
-                  icon: <FaWhatsapp className="w-4 h-4" />,
-                  name: "WhatsApp",
-                  href: "https://chat.whatsapp.com/K0aokYtMGOqHWNFZYlfqb5?s=cl&p=a&ilr=1",
-                },
               ].map((social) => (
                 <a
                   key={social.name}
@@ -183,7 +177,6 @@ const Footer = () => {
                 { label: "Repo Heatmaps", href: "/web/docs/heatmaps" },
                 { label: "Time Tracking", href: "/web/docs/time-logs" },
                 { label: "Kaya AI PM", href: "/web/docs/kaya-pm" },
-                { label: "Harry Dev Agent", href: "/web/docs/harry-dev" },
               ]}
             />
           </div>

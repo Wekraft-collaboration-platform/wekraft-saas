@@ -327,14 +327,6 @@ const featureCategories: FeatureCat[] = [
         custom: "Advanced",
       },
       {
-        label: "Customer Desk",
-        icon: <Inbox className="h-3.5 w-3.5" />,
-        free: "Basic",
-        plus: "Basic",
-        pro: true,
-        custom: "Advanced",
-      },
-      {
         label: "Manage Team",
         icon: <Users2 className="h-3.5 w-3.5" />,
         free: "Basic",

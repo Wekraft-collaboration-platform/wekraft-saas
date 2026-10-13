@@ -82,7 +82,7 @@ export const ProjectJoinRequests = ({
   const historyRequests = requests.filter((r) => r.status !== "pending");
 
   return (
-    <div className="space-y-4 py-6 animate-in fade-in slide-in-from-bottom-2 duration-500">
+    <div className="space-y-4 py-2 animate-in fade-in slide-in-from-bottom-2 duration-500">
       {/* Global member-limit dialog */}
       <MemberLimitDialog
         open={limitDialogOpen}
@@ -123,10 +123,12 @@ export const ProjectJoinRequests = ({
       )}
 
       {historyRequests.length > 0 && (
-        <div className="space-y-4 pt-4">
-          <h3 className="text-base text-muted-foreground px-1 flex items-center gap-2">
-            <LucideHistory className="h-4 w-4" /> History
-          </h3>
+        <div className="space-y-4">
+          {pendingRequests.length > 0 && (
+            <h3 className="text-base text-muted-foreground px-1 flex items-center gap-2">
+              <LucideHistory className="h-4 w-4" /> History
+            </h3>
+          )}
           {historyRequests.map((request) => (
             <RequestCard
               key={request._id}
@@ -183,11 +185,7 @@ const RequestCard = ({ request, isPower, onAction, isLimitReached, onLimitReache
               {request.role && (
                 <Badge
                   variant="outline"
-                  className={`text-[10px] px-2.5 py-1 h-6! font-bold transition-all ${
-                    request.role === "admin"
-                      ? "bg-amber-500/10 text-amber-500 border-amber-500/20 hover:bg-amber-500/20"
-                      : "bg-blue-500/10 text-blue-500 border-blue-500/20 hover:bg-blue-500/20"
-                  }`}
+                  className="text-[10px] px-2.5 py-1 h-6! font-normal text-muted-foreground border-border bg-accent/30"
                 >
                   {request.role === "admin" ? "Admin" : "Member"}
                 </Badge>
@@ -214,28 +212,36 @@ const RequestCard = ({ request, isPower, onAction, isLimitReached, onLimitReache
         </div>
 
         {isPower && isPending && (
-          <div className="flex items-center gap-2 ml-4">
+          <div className="flex items-center gap-2 ml-4 shrink-0">
             <Button
-              size="icon"
+              size="sm"
               variant="outline"
               disabled={isLimitReached}
-              className={`h-8 w-8 rounded-md px-6! border-green-500/20 text-green-500 hover:bg-green-500/10 hover:text-green-600 transition-all active:scale-95 ${isLimitReached ? "opacity-50 cursor-not-allowed border-muted" : ""}`}
-              onClick={() => onAction(request, "accepted")}
+              className={`h-8 px-3 text-xs border-green-500/30 text-green-500 hover:bg-green-500/10 hover:text-green-600 font-medium flex items-center gap-1.5 transition-all cursor-pointer ${isLimitReached ? "opacity-50 cursor-not-allowed border-muted" : ""}`}
+              onClick={(e) => {
+                e.stopPropagation();
+                onAction(request, "accepted");
+              }}
             >
-              <Check className="h-4 w-4" />
+              <Check className="h-3.5 w-3.5" />
+              Accept
             </Button>
             <Button
-              size="icon"
+              size="sm"
               variant="outline"
-              className="h-8 w-8 rounded-md px-6! border-red-500/20 text-red-500 hover:bg-red-500/10 hover:text-red-600 transition-all active:scale-95"
-              onClick={() => onAction(request, "rejected")}
+              className="h-8 px-3 text-xs border-red-500/30 text-red-500 hover:bg-red-500/10 hover:text-red-600 font-medium flex items-center gap-1.5 transition-all cursor-pointer"
+              onClick={(e) => {
+                e.stopPropagation();
+                onAction(request, "rejected");
+              }}
             >
-              <X className="h-4 w-4" />
+              <X className="h-3.5 w-3.5" />
+              Reject
             </Button>
           </div>
         )}
         {!isPower && isPending && (
-          <p className="text-[11px] text-muted-foreground font-medium ml-4">
+          <p className="text-[11px] text-muted-foreground font-medium ml-4 shrink-0">
             Actions restricted
           </p>
         )}

@@ -21,7 +21,6 @@ import { Toaster } from "@/components/ui/sonner";
 import { ConvexClientProvider } from "@/providers/ConvexClientProvider";
 import { QueryProvider } from "@/providers/QueryProvider";
 import { ThemeProvider } from "@/providers/ThemeProvider";
-import { ReferralTracker } from "@/providers/ReferralTracker";
 import StructuredData from "@/components/StructuredData";
 
 export const metadata: Metadata = {
@@ -193,7 +192,6 @@ export default function RootLayout({
               <ConvexClientProvider>
                 <main>
                   <ViewTransition>
-                    <ReferralTracker />
                     {children}
                   </ViewTransition>
                 </main>

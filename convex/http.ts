@@ -1,9 +1,34 @@
 import { httpRouter } from "convex/server";
 import { httpAction } from "./_generated/server";
-import { internal } from "./_generated/api";
+import { api, internal } from "./_generated/api";
 
 const http = httpRouter();
 
+// getActiveSkills: Returns all active skills for Kaya & MCP sub-agents
+http.route({
+  path: "/getActiveSkills",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    try {
+      const body = await request.json().catch(() => ({}));
+      const skills = await ctx.runQuery(api.skills.getUserSkills, {
+        userId: body?.userId ? body.userId : undefined,
+      });
+      return new Response(JSON.stringify({ skills }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch (e: any) {
+      return new Response(
+        JSON.stringify({ error: e.message || "Failed to fetch skills" }),
+        {
+          status: 500,
+          headers: { "Content-Type": "application/json" },
+        },
+      );
+    }
+  }),
+});
 
 // create calendar event (Kaya AI Agent tool)
 http.route({
@@ -40,14 +65,12 @@ http.route({
   }),
 });
 
-// getSprintPlannerContext: Returns project deadline, all sprint names, count of incomplete unassigned tasks, and duration to deadline.
-// returns: { projectDeadline: number | null, daysToDeadline: string | null, sprintTitles: string[], unassignedTasksCount: number }
+// getProjectMcpConnections: Returns active MCP connections with decrypted tokens for a project (Kaya MCP Agent tool)
 http.route({
-  path: "/getSprintPlannerContext",
+  path: "/getProjectMcpConnections",
   method: "POST",
   handler: httpAction(async (ctx, request) => {
     const body = await request.json();
-
     if (!body.projectId) {
       return new Response(JSON.stringify({ error: "projectId is required" }), {
         status: 400,
@@ -55,114 +78,36 @@ http.route({
       });
     }
 
-    const sprintPlannerContext = await ctx.runQuery(
-      internal.agentTools.getSprintPlannerContext,
-      {
-        projectId: body.projectId,
-      },
-    );
+    try {
+      const connections = await ctx.runQuery(
+        internal.mcp.getActiveMCPConnectionsWithTokens,
+        {
+          projectId: body.projectId,
+        },
+      );
 
-    return new Response(JSON.stringify({ sprintPlannerContext }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-  }),
-});
-
-// create sprint (Kaya AI Agent tool)
-http.route({
-  path: "/createSprint",
-  method: "POST",
-  handler: httpAction(async (ctx, request) => {
-    const body = await request.json();
-
-    if (
-      !body.projectId ||
-      !body.sprintName ||
-      !body.sprintGoal ||
-      !body.startDate ||
-      !body.endDate
-    ) {
+      return new Response(JSON.stringify({ connections }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      });
+    } catch (err: any) {
+      console.error("[getProjectMcpConnections] error:", err);
       return new Response(
         JSON.stringify({
-          error:
-            "projectId, sprintName, sprintGoal, startDate, endDate are required",
+          error: err.message || "Failed to fetch MCP connections",
         }),
         {
-          status: 400,
+          status: 500,
           headers: { "Content-Type": "application/json" },
         },
       );
     }
-
-    const sprint = await ctx.runMutation(internal.agentTools.createSprint, {
-      projectId: body.projectId,
-      sprintName: body.sprintName,
-      sprintGoal: body.sprintGoal,
-      startDate: body.startDate,
-      endDate: body.endDate,
-    });
-
-    return new Response(JSON.stringify({ sprint }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
   }),
 });
 
-// add items to sprint (Kaya AI Agent tool)
-http.route({
-  path: "/addItemsToSprint",
-  method: "POST",
-  handler: httpAction(async (ctx, request) => {
-    const body = await request.json();
+// Dead sprint mutation & planner routes removed; sprint insights are unified under /getSprintInsights and Analyst Sub-Agent.
 
-    if (!body.sprintId || !body.taskIds) {
-      return new Response(
-        JSON.stringify({ error: "sprintId and taskIds are required" }),
-        {
-          status: 400,
-          headers: { "Content-Type": "application/json" },
-        },
-      );
-    }
-
-    const result = await ctx.runMutation(internal.agentTools.addItemsToSprint, {
-      sprintId: body.sprintId,
-      taskIds: body.taskIds,
-    });
-
-    return new Response(JSON.stringify({ result }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-  }),
-});
-
-// get scheduler (Kaya AI Agent tool)
-http.route({
-  path: "/getScheduler",
-  method: "POST",
-  handler: httpAction(async (ctx, request) => {
-    const body = await request.json();
-
-    if (!body.projectId) {
-      return new Response(JSON.stringify({ error: "projectId is required" }), {
-        status: 400,
-        headers: { "Content-Type": "application/json" },
-      });
-    }
-
-    const scheduler = await ctx.runQuery(internal.agentTools.getScheduler, {
-      projectId: body.projectId,
-    });
-
-    return new Response(JSON.stringify({ scheduler }), {
-      status: 200,
-      headers: { "Content-Type": "application/json" },
-    });
-  }),
-});
+// getScheduler HTTP route removed — setup_report_scheduler unified.
 
 // create or update scheduler (Kaya AI Agent tool)
 http.route({
@@ -216,6 +161,10 @@ http.route({
   method: "POST",
   handler: httpAction(async (ctx, request) => {
     const body = await request.json();
+    console.log(
+      "[CONVEX HTTP /getMemberWorkload] Agent requested tool with payload:",
+      body,
+    );
 
     if (!body.projectId) {
       return new Response(JSON.stringify({ error: "projectId is required" }), {
@@ -227,6 +176,11 @@ http.route({
     const members = await ctx.runQuery(internal.agentTools.getMemberWorkload, {
       projectId: body.projectId,
     });
+
+    console.log(
+      "[CONVEX HTTP /getMemberWorkload] ✓ Sended back members count:",
+      members?.length ?? 0,
+    );
 
     return new Response(JSON.stringify({ members }), {
       status: 200,
@@ -241,6 +195,11 @@ http.route({
   method: "POST",
   handler: httpAction(async (ctx, request) => {
     const body = await request.json();
+    console.log(
+      "[CONVEX HTTP /getMemberWorkloadPYAgent] Agent requested tool with payload:",
+      body,
+    );
+
     if (!body.projectId) {
       return new Response(JSON.stringify({ error: "projectId is required" }), {
         status: 400,
@@ -253,6 +212,19 @@ http.route({
         projectId: body.projectId,
       },
     );
+
+    console.log(
+      "[CONVEX HTTP /getMemberWorkloadPYAgent] ✓ Sended back members workload summary:",
+      {
+        totalMembers: members?.length ?? 0,
+        memberSummaries: members?.map((m: any) => ({
+          name: m.name,
+          tasks: m.totalTasks,
+          issues: m.totalIssues,
+        })),
+      },
+    );
+
     return new Response(JSON.stringify({ members }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
@@ -266,6 +238,10 @@ http.route({
   method: "POST",
   handler: httpAction(async (ctx, request) => {
     const body = await request.json();
+    console.log(
+      "[CONVEX HTTP /getSprintInsights] Agent requested tool with payload:",
+      body,
+    );
 
     if (!body.projectId) {
       return new Response(JSON.stringify({ error: "projectId is required" }), {
@@ -278,6 +254,11 @@ http.route({
       projectId: body.projectId,
     });
 
+    console.log(
+      "[CONVEX HTTP /getSprintInsights] ✓ Sended back sprints count:",
+      sprints?.length ?? 0,
+    );
+
     return new Response(JSON.stringify({ sprints }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
@@ -285,13 +266,18 @@ http.route({
   }),
 });
 
-// getTasksSummary: Returns a high-level summary of all tasks including critical and active ones.
-// returns: { criticalAndActiveTasks: Array<{ title: string, status: string, priority: string, isBlocked: boolean, assignees: string[], endDate: string, timelineStatus: string }>, completedCount: number, blockedCount: number, totalCount: number }
+// getTasksSummary: Returns a slim summary of tasks for AI use.
+// returns: { tasks: Array<{ title: string, assignee: string, deadlineStatus: string, priority: string }>, totalCount: number, completedCount: number, blockedCount: number }
 http.route({
   path: "/getTasksSummary",
   method: "POST",
   handler: httpAction(async (ctx, request) => {
     const body = await request.json();
+    console.log(
+      "[CONVEX HTTP /getTasksSummary] Agent requested tool with payload:",
+      body,
+    );
+
     if (!body.projectId) {
       return new Response(JSON.stringify({ error: "projectId is required" }), {
         status: 400,
@@ -304,7 +290,21 @@ http.route({
         projectId: body.projectId,
       },
     );
-    return new Response(JSON.stringify({ tasksSummary }), {
+
+    console.log(
+      "[CONVEX HTTP /getTasksSummary] ✓ Sended back tasksSummary data:",
+      {
+        totalCount: tasksSummary?.totalCount,
+        completedCount: tasksSummary?.completedCount,
+        blockedCount: tasksSummary?.blockedCount,
+        tasks: tasksSummary?.tasks?.map(
+          (t: any) =>
+            `${t.title} | ${t.assignee} | ${t.priority} | ${t.deadlineStatus}`,
+        ),
+      },
+    );
+
+    return new Response(JSON.stringify(tasksSummary), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
@@ -318,6 +318,11 @@ http.route({
   method: "POST",
   handler: httpAction(async (ctx, request) => {
     const body = await request.json();
+    console.log(
+      "[CONVEX HTTP /getIssuesSummary] Agent requested tool with payload:",
+      body,
+    );
+
     if (!body.projectId) {
       return new Response(JSON.stringify({ error: "projectId is required" }), {
         status: 400,
@@ -330,6 +335,18 @@ http.route({
         projectId: body.projectId,
       },
     );
+
+    console.log(
+      "[CONVEX HTTP /getIssuesSummary] ✓ Sended back issuesSummary data:",
+      {
+        totalCount: issuesSummary?.totalCount,
+        criticalCount: issuesSummary?.criticalCount,
+        closedCount: issuesSummary?.closedCount,
+        activeIssuesCount: issuesSummary?.activeIssues?.length,
+        issueTitles: issuesSummary?.activeIssues?.map((i: any) => i.title),
+      },
+    );
+
     return new Response(JSON.stringify({ issuesSummary }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
@@ -344,6 +361,11 @@ http.route({
   method: "POST",
   handler: httpAction(async (ctx, request) => {
     const body = await request.json();
+    console.log(
+      "[CONVEX HTTP /getUserStandup] Agent requested tool with payload:",
+      body,
+    );
+
     if (!body.projectId || !body.userId) {
       return new Response(
         JSON.stringify({ error: "projectId and userId are required" }),
@@ -357,6 +379,12 @@ http.route({
       projectId: body.projectId,
       userId: body.userId,
     });
+
+    console.log("[CONVEX HTTP /getUserStandup] ✓ Sended back standup data:", {
+      tasksCount: standup?.tasks?.length ?? 0,
+      issuesCount: standup?.issues?.length ?? 0,
+    });
+
     return new Response(JSON.stringify({ standup }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
@@ -371,6 +399,11 @@ http.route({
   method: "POST",
   handler: httpAction(async (ctx, request) => {
     const body = await request.json();
+    console.log(
+      "[CONVEX HTTP /getProjectInsights] Agent requested tool with payload:",
+      body,
+    );
+
     if (!body.projectId) {
       return new Response(JSON.stringify({ error: "projectId is required" }), {
         status: 400,
@@ -383,13 +416,22 @@ http.route({
         projectId: body.projectId,
       },
     );
+
+    console.log(
+      "[CONVEX HTTP /getProjectInsights] ✓ Sended back projectInsights:",
+      {
+        projectName: projectInsights?.projectName,
+        deadline: projectInsights?.deadline,
+        daysRemaining: projectInsights?.daysRemaining,
+      },
+    );
+
     return new Response(JSON.stringify({ projectInsights }), {
       status: 200,
       headers: { "Content-Type": "application/json" },
     });
   }),
 });
-
 
 // =============================================================================
 // IDE EXTENSION – REST API  (/ext/*)
@@ -398,7 +440,8 @@ http.route({
 const CORS_HEADERS = {
   "Access-Control-Allow-Origin": "*",
   "Access-Control-Allow-Methods": "GET, POST, PATCH, DELETE, OPTIONS",
-  "Access-Control-Allow-Headers": "Content-Type, Authorization, X-Wekraft-Client",
+  "Access-Control-Allow-Headers":
+    "Content-Type, Authorization, X-Wekraft-Client",
 };
 
 /**
@@ -407,55 +450,103 @@ const CORS_HEADERS = {
  */
 async function authenticateRequest(
   ctx: any,
-  request: Request
+  request: Request,
 ): Promise<
-  | { ok: true; userId: string; user: any }
-  | { ok: false; response: Response }
+  { ok: true; userId: string; user: any } | { ok: false; response: Response }
 > {
   const authHeader = request.headers.get("Authorization");
   if (!authHeader || !authHeader.startsWith("Bearer ")) {
-    return { ok: false, response: new Response(JSON.stringify({ error: "Missing or invalid Authorization header" }), { status: 401, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }) };
+    return {
+      ok: false,
+      response: new Response(
+        JSON.stringify({ error: "Missing or invalid Authorization header" }),
+        {
+          status: 401,
+          headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+        },
+      ),
+    };
   }
   const apiKey = authHeader.slice(7);
 
   // Unified authentication + rate limiting + last used touch mutation in exactly 1 round-trip!
-  const authResult = await ctx.runMutation(internal.extensionApi.authenticateKeyInternal, { apiKey });
+  const authResult = await ctx.runMutation(
+    internal.extensionApi.authenticateKeyInternal,
+    { apiKey },
+  );
 
   if (!authResult.ok) {
     if (authResult.error === "rate_limit_exceeded") {
-      return { ok: false, response: new Response(JSON.stringify({ error: "Rate limit exceeded. Max 60 requests per minute." }), { status: 429, headers: { "Content-Type": "application/json", "Retry-After": "60", ...CORS_HEADERS } }) };
+      return {
+        ok: false,
+        response: new Response(
+          JSON.stringify({
+            error: "Rate limit exceeded. Max 60 requests per minute.",
+          }),
+          {
+            status: 429,
+            headers: {
+              "Content-Type": "application/json",
+              "Retry-After": "60",
+              ...CORS_HEADERS,
+            },
+          },
+        ),
+      };
     }
-    return { ok: false, response: new Response(JSON.stringify({ error: authResult.error }), { status: authResult.status || 401, headers: { "Content-Type": "application/json", ...CORS_HEADERS } }) };
+    return {
+      ok: false,
+      response: new Response(JSON.stringify({ error: authResult.error }), {
+        status: authResult.status || 401,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      }),
+    };
   }
 
   return { ok: true, userId: authResult.userId, user: authResult.safeUser };
 }
 
-["/ext/projects", "/ext/project-data", "/ext/tasks", "/ext/sprints", "/ext/issues", "/ext/team", "/ext/me"].forEach((path) => {
+[
+  "/ext/projects",
+  "/ext/project-data",
+  "/ext/tasks",
+  "/ext/sprints",
+  "/ext/issues",
+  "/ext/team",
+  "/ext/me",
+].forEach((path) => {
   http.route({
     path,
     method: "OPTIONS",
-    handler: httpAction(async () => new Response(null, { status: 204, headers: CORS_HEADERS })),
+    handler: httpAction(
+      async () => new Response(null, { status: 204, headers: CORS_HEADERS }),
+    ),
   });
 });
 
 http.route({
   pathPrefix: "/ext/tasks/",
   method: "OPTIONS",
-  handler: httpAction(async () => new Response(null, { status: 204, headers: CORS_HEADERS })),
+  handler: httpAction(
+    async () => new Response(null, { status: 204, headers: CORS_HEADERS }),
+  ),
 });
 
 http.route({
   pathPrefix: "/ext/issues/",
   method: "OPTIONS",
-  handler: httpAction(async () => new Response(null, { status: 204, headers: CORS_HEADERS })),
+  handler: httpAction(
+    async () => new Response(null, { status: 204, headers: CORS_HEADERS }),
+  ),
 });
 
 // Covers PATCH /ext/tickets/:id cross-origin preflight
 http.route({
   pathPrefix: "/ext/tickets/",
   method: "OPTIONS",
-  handler: httpAction(async () => new Response(null, { status: 204, headers: CORS_HEADERS })),
+  handler: httpAction(
+    async () => new Response(null, { status: 204, headers: CORS_HEADERS }),
+  ),
 });
 
 // ── GET /ext/me — returns display-safe authenticated user ───────────────────
@@ -465,7 +556,10 @@ http.route({
   handler: httpAction(async (ctx, request) => {
     const auth = await authenticateRequest(ctx, request);
     if (!auth.ok) return auth.response;
-    return new Response(JSON.stringify(auth.user), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    return new Response(JSON.stringify(auth.user), {
+      status: 200,
+      headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+    });
   }),
 });
 
@@ -477,7 +571,10 @@ http.route({
     const auth = await authenticateRequest(ctx, request);
     if (!auth.ok) return auth.response;
     try {
-      const projects = await ctx.runQuery(internal.extensionApi.getUserProjectsFull, { userId: auth.userId as any });
+      const projects = await ctx.runQuery(
+        internal.extensionApi.getUserProjectsFull,
+        { userId: auth.userId as any },
+      );
       const mapped = (projects ?? []).map((p: any) => ({
         id: p._id,
         name: p.projectName,
@@ -487,9 +584,15 @@ http.route({
         repoFullName: p.repoFullName,
         projectDeadline: p.projectDeadline ?? null,
       }));
-      return new Response(JSON.stringify(mapped), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify(mapped), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     } catch (e: any) {
-      return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify({ error: e.message }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     }
   }),
 });
@@ -503,13 +606,20 @@ http.route({
     if (!auth.ok) return auth.response;
     const url = new URL(request.url);
     const projectId = url.searchParams.get("projectId");
-    if (!projectId) return new Response(JSON.stringify({ error: "projectId required" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    if (!projectId)
+      return new Response(JSON.stringify({ error: "projectId required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
 
     try {
-      const sprints = await ctx.runQuery(internal.extensionApi.getProjectSprintsFull, {
-        projectId: projectId as any,
-        userId: auth.userId as any
-      });
+      const sprints = await ctx.runQuery(
+        internal.extensionApi.getProjectSprintsFull,
+        {
+          projectId: projectId as any,
+          userId: auth.userId as any,
+        },
+      );
       const mapped = (sprints ?? []).map((s: any) => ({
         id: s._id,
         sprintName: s.sprintName,
@@ -518,9 +628,15 @@ http.route({
         startDate: s.duration?.startDate,
         endDate: s.duration?.endDate,
       }));
-      return new Response(JSON.stringify(mapped), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify(mapped), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     } catch (e: any) {
-      return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify({ error: e.message }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     }
   }),
 });
@@ -534,18 +650,39 @@ http.route({
     if (!auth.ok) return auth.response;
     const url = new URL(request.url);
     const projectId = url.searchParams.get("projectId");
-    if (!projectId) return new Response(JSON.stringify({ error: "projectId required" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    if (!projectId)
+      return new Response(JSON.stringify({ error: "projectId required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     const sprintId = url.searchParams.get("sprintId") || undefined;
 
     try {
       const [sprints, tasks, issues, teamMembers] = await Promise.all([
-        ctx.runQuery(internal.extensionApi.getProjectSprintsFull, { projectId: projectId as any, userId: auth.userId as any }),
-        ctx.runQuery(internal.extensionApi.getProjectTasksFull, { projectId: projectId as any, userId: auth.userId as any, sprintId: sprintId as any }),
-        ctx.runQuery(internal.extensionApi.getProjectIssuesFull, { projectId: projectId as any, userId: auth.userId as any }),
-        ctx.runQuery(internal.extensionApi.getProjectMembersFull, { projectId: projectId as any, userId: auth.userId as any }),
+        ctx.runQuery(internal.extensionApi.getProjectSprintsFull, {
+          projectId: projectId as any,
+          userId: auth.userId as any,
+        }),
+        ctx.runQuery(internal.extensionApi.getProjectTasksFull, {
+          projectId: projectId as any,
+          userId: auth.userId as any,
+          sprintId: sprintId as any,
+        }),
+        ctx.runQuery(internal.extensionApi.getProjectIssuesFull, {
+          projectId: projectId as any,
+          userId: auth.userId as any,
+        }),
+        ctx.runQuery(internal.extensionApi.getProjectMembersFull, {
+          projectId: projectId as any,
+          userId: auth.userId as any,
+        }),
       ]);
 
-      const priorityMap: Record<string, string> = { critical: "critical", medium: "medium", low: "low" };
+      const priorityMap: Record<string, string> = {
+        critical: "critical",
+        medium: "medium",
+        low: "low",
+      };
 
       const mappedSprints = (sprints ?? []).map((s: any) => ({
         id: s._id,
@@ -565,10 +702,74 @@ http.route({
         status: t.status,
         type: t.type,
         priority: t.priority ?? "low",
-        assigneeId: Array.isArray(t.assignedTo) && t.assignedTo[0] ? (typeof t.assignedTo[0] === "object" ? t.assignedTo[0].userId : t.assignedTo[0]) : (typeof t.assignedTo === "string" ? t.assignedTo : undefined),
-        assignee: Array.isArray(t.assignedTo) && t.assignedTo[0] ? (typeof t.assignedTo[0] === "object" ? { id: t.assignedTo[0].userId, name: t.assignedTo[0].name || "Unknown", avatarUrl: t.assignedTo[0].avatar, role: "member" as const, email: "" } : { id: t.assignedTo[0], name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" }) : (typeof t.assignedTo === "string" ? { id: t.assignedTo, name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" } : undefined),
-        assigneeIds: Array.isArray(t.assignedTo) ? t.assignedTo.map((a: any) => typeof a === "object" ? a.userId : a) : (typeof t.assignedTo === "string" ? [t.assignedTo] : []),
-        assignees: Array.isArray(t.assignedTo) ? t.assignedTo.map((a: any) => typeof a === "object" ? { id: a.userId, name: a.name || "Unknown", avatarUrl: a.avatar, role: "member" as const, email: "" } : { id: a, name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" }) : (typeof t.assignedTo === "string" ? [{ id: t.assignedTo, name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" }] : []),
+        assigneeId:
+          Array.isArray(t.assignedTo) && t.assignedTo[0]
+            ? typeof t.assignedTo[0] === "object"
+              ? t.assignedTo[0].userId
+              : t.assignedTo[0]
+            : typeof t.assignedTo === "string"
+              ? t.assignedTo
+              : undefined,
+        assignee:
+          Array.isArray(t.assignedTo) && t.assignedTo[0]
+            ? typeof t.assignedTo[0] === "object"
+              ? {
+                  id: t.assignedTo[0].userId,
+                  name: t.assignedTo[0].name || "Unknown",
+                  avatarUrl: t.assignedTo[0].avatar,
+                  role: "member" as const,
+                  email: "",
+                }
+              : {
+                  id: t.assignedTo[0],
+                  name: "Unknown",
+                  avatarUrl: undefined,
+                  role: "member" as const,
+                  email: "",
+                }
+            : typeof t.assignedTo === "string"
+              ? {
+                  id: t.assignedTo,
+                  name: "Unknown",
+                  avatarUrl: undefined,
+                  role: "member" as const,
+                  email: "",
+                }
+              : undefined,
+        assigneeIds: Array.isArray(t.assignedTo)
+          ? t.assignedTo.map((a: any) => (typeof a === "object" ? a.userId : a))
+          : typeof t.assignedTo === "string"
+            ? [t.assignedTo]
+            : [],
+        assignees: Array.isArray(t.assignedTo)
+          ? t.assignedTo.map((a: any) =>
+              typeof a === "object"
+                ? {
+                    id: a.userId,
+                    name: a.name || "Unknown",
+                    avatarUrl: a.avatar,
+                    role: "member" as const,
+                    email: "",
+                  }
+                : {
+                    id: a,
+                    name: "Unknown",
+                    avatarUrl: undefined,
+                    role: "member" as const,
+                    email: "",
+                  },
+            )
+          : typeof t.assignedTo === "string"
+            ? [
+                {
+                  id: t.assignedTo,
+                  name: "Unknown",
+                  avatarUrl: undefined,
+                  role: "member" as const,
+                  email: "",
+                },
+              ]
+            : [],
         reporterId: t.createdByUserId,
         createdAt: t.createdAt,
         updatedAt: t.updatedAt,
@@ -591,9 +792,27 @@ http.route({
         fileLinked: i.fileLinked ?? null,
         linkWithCodebase: i.fileLinked ?? null,
         assigneeId: i.IssueAssignee?.[0]?.userId,
-        assignee: i.IssueAssignee?.[0] ? { id: i.IssueAssignee[0].userId, name: i.IssueAssignee[0].name, avatarUrl: i.IssueAssignee[0].avatar, role: "member" as const, email: "" } : undefined,
-        assigneeIds: Array.isArray(i.IssueAssignee) ? i.IssueAssignee.map((a: any) => a.userId) : [],
-        assignees: Array.isArray(i.IssueAssignee) ? i.IssueAssignee.map((a: any) => ({ id: a.userId, name: a.name || "Unknown", avatarUrl: a.avatar, role: "member" as const, email: "" })) : [],
+        assignee: i.IssueAssignee?.[0]
+          ? {
+              id: i.IssueAssignee[0].userId,
+              name: i.IssueAssignee[0].name,
+              avatarUrl: i.IssueAssignee[0].avatar,
+              role: "member" as const,
+              email: "",
+            }
+          : undefined,
+        assigneeIds: Array.isArray(i.IssueAssignee)
+          ? i.IssueAssignee.map((a: any) => a.userId)
+          : [],
+        assignees: Array.isArray(i.IssueAssignee)
+          ? i.IssueAssignee.map((a: any) => ({
+              id: a.userId,
+              name: a.name || "Unknown",
+              avatarUrl: a.avatar,
+              role: "member" as const,
+              email: "",
+            }))
+          : [],
         reporterId: i.createdByUserId,
         createdAt: i.createdAt,
         updatedAt: i.updatedAt,
@@ -602,19 +821,34 @@ http.route({
       const mappedTeam = (teamMembers ?? []).map((m: any) => ({
         id: m._id,
         userId: m.userId,
-        user: { id: m.userId, name: m.userName ?? "Unknown", avatarUrl: m.userImage, role: m.AccessRole ?? "member", email: "" },
+        user: {
+          id: m.userId,
+          name: m.userName ?? "Unknown",
+          avatarUrl: m.userImage,
+          role: m.AccessRole ?? "member",
+          email: "",
+        },
         role: m.AccessRole ?? "member",
       }));
 
-      return new Response(JSON.stringify({
-        sprints: mappedSprints,
-        tasks: mappedTasks,
-        issues: mappedIssues,
-        teamMembers: mappedTeam,
-        tickets: []
-      }), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(
+        JSON.stringify({
+          sprints: mappedSprints,
+          tasks: mappedTasks,
+          issues: mappedIssues,
+          teamMembers: mappedTeam,
+          tickets: [],
+        }),
+        {
+          status: 200,
+          headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+        },
+      );
     } catch (e: any) {
-      return new Response(JSON.stringify({ error: e.message }), { status: 403, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify({ error: e.message }), {
+        status: 403,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     }
   }),
 });
@@ -628,15 +862,22 @@ http.route({
     if (!auth.ok) return auth.response;
     const url = new URL(request.url);
     const projectId = url.searchParams.get("projectId");
-    if (!projectId) return new Response(JSON.stringify({ error: "projectId required" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    if (!projectId)
+      return new Response(JSON.stringify({ error: "projectId required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     const sprintId = url.searchParams.get("sprintId") || undefined;
 
     try {
-      const tasks = await ctx.runQuery(internal.extensionApi.getProjectTasksFull, {
-        projectId: projectId as any,
-        userId: auth.userId as any,
-        sprintId: sprintId as any
-      });
+      const tasks = await ctx.runQuery(
+        internal.extensionApi.getProjectTasksFull,
+        {
+          projectId: projectId as any,
+          userId: auth.userId as any,
+          sprintId: sprintId as any,
+        },
+      );
       const mapped = (tasks ?? []).map((t: any) => ({
         id: t._id,
         projectId: t.projectId,
@@ -646,10 +887,74 @@ http.route({
         status: t.status,
         type: t.type,
         priority: t.priority ?? "low",
-        assigneeId: Array.isArray(t.assignedTo) && t.assignedTo[0] ? (typeof t.assignedTo[0] === "object" ? t.assignedTo[0].userId : t.assignedTo[0]) : (typeof t.assignedTo === "string" ? t.assignedTo : undefined),
-        assignee: Array.isArray(t.assignedTo) && t.assignedTo[0] ? (typeof t.assignedTo[0] === "object" ? { id: t.assignedTo[0].userId, name: t.assignedTo[0].name || "Unknown", avatarUrl: t.assignedTo[0].avatar, role: "member" as const, email: "" } : { id: t.assignedTo[0], name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" }) : (typeof t.assignedTo === "string" ? { id: t.assignedTo, name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" } : undefined),
-        assigneeIds: Array.isArray(t.assignedTo) ? t.assignedTo.map((a: any) => typeof a === "object" ? a.userId : a) : (typeof t.assignedTo === "string" ? [t.assignedTo] : []),
-        assignees: Array.isArray(t.assignedTo) ? t.assignedTo.map((a: any) => typeof a === "object" ? { id: a.userId, name: a.name || "Unknown", avatarUrl: a.avatar, role: "member" as const, email: "" } : { id: a, name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" }) : (typeof t.assignedTo === "string" ? [{ id: t.assignedTo, name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" }] : []),
+        assigneeId:
+          Array.isArray(t.assignedTo) && t.assignedTo[0]
+            ? typeof t.assignedTo[0] === "object"
+              ? t.assignedTo[0].userId
+              : t.assignedTo[0]
+            : typeof t.assignedTo === "string"
+              ? t.assignedTo
+              : undefined,
+        assignee:
+          Array.isArray(t.assignedTo) && t.assignedTo[0]
+            ? typeof t.assignedTo[0] === "object"
+              ? {
+                  id: t.assignedTo[0].userId,
+                  name: t.assignedTo[0].name || "Unknown",
+                  avatarUrl: t.assignedTo[0].avatar,
+                  role: "member" as const,
+                  email: "",
+                }
+              : {
+                  id: t.assignedTo[0],
+                  name: "Unknown",
+                  avatarUrl: undefined,
+                  role: "member" as const,
+                  email: "",
+                }
+            : typeof t.assignedTo === "string"
+              ? {
+                  id: t.assignedTo,
+                  name: "Unknown",
+                  avatarUrl: undefined,
+                  role: "member" as const,
+                  email: "",
+                }
+              : undefined,
+        assigneeIds: Array.isArray(t.assignedTo)
+          ? t.assignedTo.map((a: any) => (typeof a === "object" ? a.userId : a))
+          : typeof t.assignedTo === "string"
+            ? [t.assignedTo]
+            : [],
+        assignees: Array.isArray(t.assignedTo)
+          ? t.assignedTo.map((a: any) =>
+              typeof a === "object"
+                ? {
+                    id: a.userId,
+                    name: a.name || "Unknown",
+                    avatarUrl: a.avatar,
+                    role: "member" as const,
+                    email: "",
+                  }
+                : {
+                    id: a,
+                    name: "Unknown",
+                    avatarUrl: undefined,
+                    role: "member" as const,
+                    email: "",
+                  },
+            )
+          : typeof t.assignedTo === "string"
+            ? [
+                {
+                  id: t.assignedTo,
+                  name: "Unknown",
+                  avatarUrl: undefined,
+                  role: "member" as const,
+                  email: "",
+                },
+              ]
+            : [],
         reporterId: t.createdByUserId,
         createdAt: t.createdAt,
         updatedAt: t.updatedAt,
@@ -657,9 +962,15 @@ http.route({
         linkWithCodebase: t.linkWithCodebase ?? null,
         estimation: t.estimation ?? null,
       }));
-      return new Response(JSON.stringify(mapped), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify(mapped), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     } catch (e: any) {
-      return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify({ error: e.message }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     }
   }),
 });
@@ -673,14 +984,25 @@ http.route({
     if (!auth.ok) return auth.response;
     const url = new URL(request.url);
     const projectId = url.searchParams.get("projectId");
-    if (!projectId) return new Response(JSON.stringify({ error: "projectId required" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    if (!projectId)
+      return new Response(JSON.stringify({ error: "projectId required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
 
     try {
-      const issues = await ctx.runQuery(internal.extensionApi.getProjectIssuesFull, {
-        projectId: projectId as any,
-        userId: auth.userId as any
-      });
-      const priorityMap: Record<string, string> = { critical: "critical", medium: "medium", low: "low" };
+      const issues = await ctx.runQuery(
+        internal.extensionApi.getProjectIssuesFull,
+        {
+          projectId: projectId as any,
+          userId: auth.userId as any,
+        },
+      );
+      const priorityMap: Record<string, string> = {
+        critical: "critical",
+        medium: "medium",
+        low: "low",
+      };
       const mapped = (issues ?? []).map((i: any) => ({
         id: i._id,
         projectId: i.projectId,
@@ -695,16 +1017,40 @@ http.route({
         fileLinked: i.fileLinked ?? null,
         linkWithCodebase: i.fileLinked ?? null,
         assigneeId: i.IssueAssignee?.[0]?.userId,
-        assignee: i.IssueAssignee?.[0] ? { id: i.IssueAssignee[0].userId, name: i.IssueAssignee[0].name, avatarUrl: i.IssueAssignee[0].avatar, role: "member" as const, email: "" } : undefined,
-        assigneeIds: Array.isArray(i.IssueAssignee) ? i.IssueAssignee.map((a: any) => a.userId) : [],
-        assignees: Array.isArray(i.IssueAssignee) ? i.IssueAssignee.map((a: any) => ({ id: a.userId, name: a.name || "Unknown", avatarUrl: a.avatar, role: "member" as const, email: "" })) : [],
+        assignee: i.IssueAssignee?.[0]
+          ? {
+              id: i.IssueAssignee[0].userId,
+              name: i.IssueAssignee[0].name,
+              avatarUrl: i.IssueAssignee[0].avatar,
+              role: "member" as const,
+              email: "",
+            }
+          : undefined,
+        assigneeIds: Array.isArray(i.IssueAssignee)
+          ? i.IssueAssignee.map((a: any) => a.userId)
+          : [],
+        assignees: Array.isArray(i.IssueAssignee)
+          ? i.IssueAssignee.map((a: any) => ({
+              id: a.userId,
+              name: a.name || "Unknown",
+              avatarUrl: a.avatar,
+              role: "member" as const,
+              email: "",
+            }))
+          : [],
         reporterId: i.createdByUserId,
         createdAt: i.createdAt,
         updatedAt: i.updatedAt,
       }));
-      return new Response(JSON.stringify(mapped), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify(mapped), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     } catch (e: any) {
-      return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify({ error: e.message }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     }
   }),
 });
@@ -718,22 +1064,41 @@ http.route({
     if (!auth.ok) return auth.response;
     const url = new URL(request.url);
     const projectId = url.searchParams.get("projectId");
-    if (!projectId) return new Response(JSON.stringify({ error: "projectId required" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    if (!projectId)
+      return new Response(JSON.stringify({ error: "projectId required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
 
     try {
-      const members = await ctx.runQuery(internal.extensionApi.getProjectMembersFull, {
-        projectId: projectId as any,
-        userId: auth.userId as any
-      });
+      const members = await ctx.runQuery(
+        internal.extensionApi.getProjectMembersFull,
+        {
+          projectId: projectId as any,
+          userId: auth.userId as any,
+        },
+      );
       const mapped = (members ?? []).map((m: any) => ({
         id: m._id,
         userId: m.userId,
-        user: { id: m.userId, name: m.userName ?? "Unknown", avatarUrl: m.userImage, role: m.AccessRole ?? "member", email: "" },
+        user: {
+          id: m.userId,
+          name: m.userName ?? "Unknown",
+          avatarUrl: m.userImage,
+          role: m.AccessRole ?? "member",
+          email: "",
+        },
         role: m.AccessRole ?? "member",
       }));
-      return new Response(JSON.stringify(mapped), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify(mapped), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     } catch (e: any) {
-      return new Response(JSON.stringify({ error: e.message }), { status: 500, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify({ error: e.message }), {
+        status: 500,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     }
   }),
 });
@@ -749,16 +1114,28 @@ http.route({
     const taskId = url.pathname.replace(/^\/ext\/tasks\//, "").split("/")[0];
     const action = url.pathname.replace(/^\/ext\/tasks\//, "").split("/")[1];
     if (!taskId || action !== "mark-as-issue") {
-      return new Response(JSON.stringify({ error: "Invalid path" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify({ error: "Invalid path" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     }
     try {
-      const issueId = await ctx.runMutation(internal.extensionApi.markTaskAsIssueInternal, {
-        taskId: taskId as any,
-        userId: auth.userId as any
+      const issueId = await ctx.runMutation(
+        internal.extensionApi.markTaskAsIssueInternal,
+        {
+          taskId: taskId as any,
+          userId: auth.userId as any,
+        },
+      );
+      return new Response(JSON.stringify({ success: true, issueId }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
       });
-      return new Response(JSON.stringify({ success: true, issueId }), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
     } catch (e: any) {
-      return new Response(JSON.stringify({ error: e.message }), { status: 403, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify({ error: e.message }), {
+        status: 403,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     }
   }),
 });
@@ -772,15 +1149,25 @@ http.route({
     if (!auth.ok) return auth.response;
     const url = new URL(request.url);
     const taskId = url.pathname.replace(/^\/ext\/tasks\//, "").split("/")[0];
-    if (!taskId) return new Response(JSON.stringify({ error: "Missing taskId" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    if (!taskId)
+      return new Response(JSON.stringify({ error: "Missing taskId" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     try {
       await ctx.runMutation(internal.extensionApi.deleteTaskInternal, {
         taskId: taskId as any,
-        userId: auth.userId as any
+        userId: auth.userId as any,
       });
-      return new Response(JSON.stringify({ success: true, taskId }), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify({ success: true, taskId }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     } catch (e: any) {
-      return new Response(JSON.stringify({ error: e.message }), { status: 403, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify({ error: e.message }), {
+        status: 403,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     }
   }),
 });
@@ -794,15 +1181,25 @@ http.route({
     if (!auth.ok) return auth.response;
     const url = new URL(request.url);
     const issueId = url.pathname.replace(/^\/ext\/issues\//, "").split("/")[0];
-    if (!issueId) return new Response(JSON.stringify({ error: "Missing issueId" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    if (!issueId)
+      return new Response(JSON.stringify({ error: "Missing issueId" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     try {
       await ctx.runMutation(internal.extensionApi.deleteIssueInternal, {
         issueId: issueId as any,
-        userId: auth.userId as any
+        userId: auth.userId as any,
       });
-      return new Response(JSON.stringify({ success: true, issueId }), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify({ success: true, issueId }), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     } catch (e: any) {
-      return new Response(JSON.stringify({ error: e.message }), { status: 403, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify({ error: e.message }), {
+        status: 403,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     }
   }),
 });
@@ -818,21 +1215,24 @@ http.route({
       const body = await request.json();
       // Explicitly pick only known/safe fields — never spread raw body into a mutation
       // to prevent field-injection attacks (e.g. overwriting createdAt, userId).
-      const created = await ctx.runMutation(internal.extensionApi.createTaskInternal, {
-        projectId: body.projectId,
-        title: body.title,
-        description: body.description,
-        status: body.status,
-        priority: body.priority,
-        sprintId: body.sprintId,
-        estimation: body.estimation,
-        type: body.type,
-        linkWithCodebase: body.linkWithCodebase,
-        assigneeId: body.assigneeId,
-        assigneeIds: body.assigneeIds,
-        isBlocked: body.isBlocked,
-        userId: auth.userId as any,
-      });
+      const created = await ctx.runMutation(
+        internal.extensionApi.createTaskInternal,
+        {
+          projectId: body.projectId,
+          title: body.title,
+          description: body.description,
+          status: body.status,
+          priority: body.priority,
+          sprintId: body.sprintId,
+          estimation: body.estimation,
+          type: body.type,
+          linkWithCodebase: body.linkWithCodebase,
+          assigneeId: body.assigneeId,
+          assigneeIds: body.assigneeIds,
+          isBlocked: body.isBlocked,
+          userId: auth.userId as any,
+        },
+      );
 
       const mapped = {
         id: created._id,
@@ -843,10 +1243,76 @@ http.route({
         status: created.status,
         type: created.type,
         priority: created.priority ?? "low",
-        assigneeId: Array.isArray(created.assignedTo) && created.assignedTo[0] ? (typeof created.assignedTo[0] === "object" ? created.assignedTo[0].userId : created.assignedTo[0]) : (typeof created.assignedTo === "string" ? created.assignedTo : undefined),
-        assignee: Array.isArray(created.assignedTo) && created.assignedTo[0] ? (typeof created.assignedTo[0] === "object" ? { id: created.assignedTo[0].userId, name: created.assignedTo[0].name || "Unknown", avatarUrl: created.assignedTo[0].avatar, role: "member" as const, email: "" } : { id: created.assignedTo[0], name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" }) : (typeof created.assignedTo === "string" ? { id: created.assignedTo, name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" } : undefined),
-        assigneeIds: Array.isArray(created.assignedTo) ? created.assignedTo.map((a: any) => typeof a === "object" ? a.userId : a) : (typeof created.assignedTo === "string" ? [created.assignedTo] : []),
-        assignees: Array.isArray(created.assignedTo) ? created.assignedTo.map((a: any) => typeof a === "object" ? { id: a.userId, name: a.name || "Unknown", avatarUrl: a.avatar, role: "member" as const, email: "" } : { id: a, name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" }) : (typeof created.assignedTo === "string" ? [{ id: created.assignedTo, name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" }] : []),
+        assigneeId:
+          Array.isArray(created.assignedTo) && created.assignedTo[0]
+            ? typeof created.assignedTo[0] === "object"
+              ? created.assignedTo[0].userId
+              : created.assignedTo[0]
+            : typeof created.assignedTo === "string"
+              ? created.assignedTo
+              : undefined,
+        assignee:
+          Array.isArray(created.assignedTo) && created.assignedTo[0]
+            ? typeof created.assignedTo[0] === "object"
+              ? {
+                  id: created.assignedTo[0].userId,
+                  name: created.assignedTo[0].name || "Unknown",
+                  avatarUrl: created.assignedTo[0].avatar,
+                  role: "member" as const,
+                  email: "",
+                }
+              : {
+                  id: created.assignedTo[0],
+                  name: "Unknown",
+                  avatarUrl: undefined,
+                  role: "member" as const,
+                  email: "",
+                }
+            : typeof created.assignedTo === "string"
+              ? {
+                  id: created.assignedTo,
+                  name: "Unknown",
+                  avatarUrl: undefined,
+                  role: "member" as const,
+                  email: "",
+                }
+              : undefined,
+        assigneeIds: Array.isArray(created.assignedTo)
+          ? created.assignedTo.map((a: any) =>
+              typeof a === "object" ? a.userId : a,
+            )
+          : typeof created.assignedTo === "string"
+            ? [created.assignedTo]
+            : [],
+        assignees: Array.isArray(created.assignedTo)
+          ? created.assignedTo.map((a: any) =>
+              typeof a === "object"
+                ? {
+                    id: a.userId,
+                    name: a.name || "Unknown",
+                    avatarUrl: a.avatar,
+                    role: "member" as const,
+                    email: "",
+                  }
+                : {
+                    id: a,
+                    name: "Unknown",
+                    avatarUrl: undefined,
+                    role: "member" as const,
+                    email: "",
+                  },
+            )
+          : typeof created.assignedTo === "string"
+            ? [
+                {
+                  id: created.assignedTo,
+                  name: "Unknown",
+                  avatarUrl: undefined,
+                  role: "member" as const,
+                  email: "",
+                },
+              ]
+            : [],
         reporterId: created.createdByUserId,
         createdAt: created.createdAt,
         updatedAt: created.updatedAt,
@@ -854,9 +1320,15 @@ http.route({
         linkWithCodebase: created.linkWithCodebase ?? null,
         estimation: created.estimation ?? null,
       };
-      return new Response(JSON.stringify(mapped), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify(mapped), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     } catch (e: any) {
-      return new Response(JSON.stringify({ error: e.message }), { status: 403, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify({ error: e.message }), {
+        status: 403,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     }
   }),
 });
@@ -870,14 +1342,21 @@ http.route({
     if (!auth.ok) return auth.response;
     const url = new URL(request.url);
     const taskId = url.pathname.replace(/^\/ext\/tasks\//, "").split("/")[0];
-    if (!taskId) return new Response(JSON.stringify({ error: "Missing taskId" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    if (!taskId)
+      return new Response(JSON.stringify({ error: "Missing taskId" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     try {
       const body = await request.json();
-      const updated = await ctx.runMutation(internal.extensionApi.updateTaskInternal, {
-        taskId: taskId as any,
-        userId: auth.userId as any,
-        ...body
-      });
+      const updated = await ctx.runMutation(
+        internal.extensionApi.updateTaskInternal,
+        {
+          taskId: taskId as any,
+          userId: auth.userId as any,
+          ...body,
+        },
+      );
       const mapped = {
         id: updated._id,
         projectId: updated.projectId,
@@ -887,10 +1366,76 @@ http.route({
         status: updated.status,
         type: updated.type,
         priority: updated.priority ?? "low",
-        assigneeId: Array.isArray(updated.assignedTo) && updated.assignedTo[0] ? (typeof updated.assignedTo[0] === "object" ? updated.assignedTo[0].userId : updated.assignedTo[0]) : (typeof updated.assignedTo === "string" ? updated.assignedTo : undefined),
-        assignee: Array.isArray(updated.assignedTo) && updated.assignedTo[0] ? (typeof updated.assignedTo[0] === "object" ? { id: updated.assignedTo[0].userId, name: updated.assignedTo[0].name || "Unknown", avatarUrl: updated.assignedTo[0].avatar, role: "member" as const, email: "" } : { id: updated.assignedTo[0], name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" }) : (typeof updated.assignedTo === "string" ? { id: updated.assignedTo, name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" } : undefined),
-        assigneeIds: Array.isArray(updated.assignedTo) ? updated.assignedTo.map((a: any) => typeof a === "object" ? a.userId : a) : (typeof updated.assignedTo === "string" ? [updated.assignedTo] : []),
-        assignees: Array.isArray(updated.assignedTo) ? updated.assignedTo.map((a: any) => typeof a === "object" ? { id: a.userId, name: a.name || "Unknown", avatarUrl: a.avatar, role: "member" as const, email: "" } : { id: a, name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" }) : (typeof updated.assignedTo === "string" ? [{ id: updated.assignedTo, name: "Unknown", avatarUrl: undefined, role: "member" as const, email: "" }] : []),
+        assigneeId:
+          Array.isArray(updated.assignedTo) && updated.assignedTo[0]
+            ? typeof updated.assignedTo[0] === "object"
+              ? updated.assignedTo[0].userId
+              : updated.assignedTo[0]
+            : typeof updated.assignedTo === "string"
+              ? updated.assignedTo
+              : undefined,
+        assignee:
+          Array.isArray(updated.assignedTo) && updated.assignedTo[0]
+            ? typeof updated.assignedTo[0] === "object"
+              ? {
+                  id: updated.assignedTo[0].userId,
+                  name: updated.assignedTo[0].name || "Unknown",
+                  avatarUrl: updated.assignedTo[0].avatar,
+                  role: "member" as const,
+                  email: "",
+                }
+              : {
+                  id: updated.assignedTo[0],
+                  name: "Unknown",
+                  avatarUrl: undefined,
+                  role: "member" as const,
+                  email: "",
+                }
+            : typeof updated.assignedTo === "string"
+              ? {
+                  id: updated.assignedTo,
+                  name: "Unknown",
+                  avatarUrl: undefined,
+                  role: "member" as const,
+                  email: "",
+                }
+              : undefined,
+        assigneeIds: Array.isArray(updated.assignedTo)
+          ? updated.assignedTo.map((a: any) =>
+              typeof a === "object" ? a.userId : a,
+            )
+          : typeof updated.assignedTo === "string"
+            ? [updated.assignedTo]
+            : [],
+        assignees: Array.isArray(updated.assignedTo)
+          ? updated.assignedTo.map((a: any) =>
+              typeof a === "object"
+                ? {
+                    id: a.userId,
+                    name: a.name || "Unknown",
+                    avatarUrl: a.avatar,
+                    role: "member" as const,
+                    email: "",
+                  }
+                : {
+                    id: a,
+                    name: "Unknown",
+                    avatarUrl: undefined,
+                    role: "member" as const,
+                    email: "",
+                  },
+            )
+          : typeof updated.assignedTo === "string"
+            ? [
+                {
+                  id: updated.assignedTo,
+                  name: "Unknown",
+                  avatarUrl: undefined,
+                  role: "member" as const,
+                  email: "",
+                },
+              ]
+            : [],
         reporterId: updated.createdByUserId,
         createdAt: updated.createdAt,
         updatedAt: updated.updatedAt,
@@ -898,9 +1443,15 @@ http.route({
         linkWithCodebase: updated.linkWithCodebase ?? null,
         estimation: updated.estimation ?? null,
       };
-      return new Response(JSON.stringify(mapped), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify(mapped), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     } catch (e: any) {
-      return new Response(JSON.stringify({ error: e.message }), { status: 403, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify({ error: e.message }), {
+        status: 403,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     }
   }),
 });
@@ -916,23 +1467,30 @@ http.route({
       const body = await request.json();
       // Explicitly pick only known/safe fields — never spread raw body into a mutation
       // to prevent field-injection attacks (e.g. overwriting createdAt or userId).
-      const created = await ctx.runMutation(internal.extensionApi.createIssueInternal, {
-        title: body.title,
-        description: body.description,
-        environment: body.environment,
-        severity: body.severity,
-        due_date: body.due_date,
-        status: body.status ?? "not opened",
-        type: body.type ?? "manual",
-        githubIssueUrl: body.githubIssueUrl,
-        fileLinked: body.fileLinked,
-        taskId: body.taskId,
-        projectId: body.projectId,
-        assignees: body.assignees,
-        userId: auth.userId as any,
-      });
+      const created = await ctx.runMutation(
+        internal.extensionApi.createIssueInternal,
+        {
+          title: body.title,
+          description: body.description,
+          environment: body.environment,
+          severity: body.severity,
+          due_date: body.due_date,
+          status: body.status ?? "not opened",
+          type: body.type ?? "manual",
+          githubIssueUrl: body.githubIssueUrl,
+          fileLinked: body.fileLinked,
+          taskId: body.taskId,
+          projectId: body.projectId,
+          assignees: body.assignees,
+          userId: auth.userId as any,
+        },
+      );
 
-      const priorityMap: Record<string, string> = { critical: "critical", medium: "medium", low: "low" };
+      const priorityMap: Record<string, string> = {
+        critical: "critical",
+        medium: "medium",
+        low: "low",
+      };
       const mapped = {
         id: created._id,
         projectId: created.projectId,
@@ -947,16 +1505,40 @@ http.route({
         fileLinked: created.fileLinked ?? null,
         linkWithCodebase: created.fileLinked ?? null,
         assigneeId: created.IssueAssignee?.[0]?.userId,
-        assignee: created.IssueAssignee?.[0] ? { id: created.IssueAssignee[0].userId, name: created.IssueAssignee[0].name || "Unknown", avatarUrl: created.IssueAssignee[0].avatar, role: "member" as const, email: "" } : undefined,
-        assigneeIds: Array.isArray(created.IssueAssignee) ? created.IssueAssignee.map((a: any) => a.userId) : [],
-        assignees: Array.isArray(created.IssueAssignee) ? created.IssueAssignee.map((a: any) => ({ id: a.userId, name: a.name || "Unknown", avatarUrl: a.avatar, role: "member" as const, email: "" })) : [],
+        assignee: created.IssueAssignee?.[0]
+          ? {
+              id: created.IssueAssignee[0].userId,
+              name: created.IssueAssignee[0].name || "Unknown",
+              avatarUrl: created.IssueAssignee[0].avatar,
+              role: "member" as const,
+              email: "",
+            }
+          : undefined,
+        assigneeIds: Array.isArray(created.IssueAssignee)
+          ? created.IssueAssignee.map((a: any) => a.userId)
+          : [],
+        assignees: Array.isArray(created.IssueAssignee)
+          ? created.IssueAssignee.map((a: any) => ({
+              id: a.userId,
+              name: a.name || "Unknown",
+              avatarUrl: a.avatar,
+              role: "member" as const,
+              email: "",
+            }))
+          : [],
         reporterId: created.createdByUserId,
         createdAt: created.createdAt,
         updatedAt: created.updatedAt,
       };
-      return new Response(JSON.stringify(mapped), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify(mapped), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     } catch (e: any) {
-      return new Response(JSON.stringify({ error: e.message }), { status: 403, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify({ error: e.message }), {
+        status: 403,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     }
   }),
 });
@@ -970,15 +1552,26 @@ http.route({
     if (!auth.ok) return auth.response;
     const url = new URL(request.url);
     const issueId = url.pathname.replace(/^\/ext\/issues\//, "").split("/")[0];
-    if (!issueId) return new Response(JSON.stringify({ error: "Missing issueId" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    if (!issueId)
+      return new Response(JSON.stringify({ error: "Missing issueId" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     try {
       const body = await request.json();
-      const updated = await ctx.runMutation(internal.extensionApi.updateIssueInternal, {
-        issueId: issueId as any,
-        userId: auth.userId as any,
-        ...body
-      });
-      const priorityMap: Record<string, string> = { critical: "critical", medium: "medium", low: "low" };
+      const updated = await ctx.runMutation(
+        internal.extensionApi.updateIssueInternal,
+        {
+          issueId: issueId as any,
+          userId: auth.userId as any,
+          ...body,
+        },
+      );
+      const priorityMap: Record<string, string> = {
+        critical: "critical",
+        medium: "medium",
+        low: "low",
+      };
       const mapped = {
         id: updated._id,
         projectId: updated.projectId,
@@ -993,16 +1586,40 @@ http.route({
         fileLinked: updated.fileLinked ?? null,
         linkWithCodebase: updated.fileLinked ?? null,
         assigneeId: updated.IssueAssignee?.[0]?.userId,
-        assignee: updated.IssueAssignee?.[0] ? { id: updated.IssueAssignee[0].userId, name: updated.IssueAssignee[0].name || "Unknown", avatarUrl: updated.IssueAssignee[0].avatar, role: "member" as const, email: "" } : undefined,
-        assigneeIds: Array.isArray(updated.IssueAssignee) ? updated.IssueAssignee.map((a: any) => a.userId) : [],
-        assignees: Array.isArray(updated.IssueAssignee) ? updated.IssueAssignee.map((a: any) => ({ id: a.userId, name: a.name || "Unknown", avatarUrl: a.avatar, role: "member" as const, email: "" })) : [],
+        assignee: updated.IssueAssignee?.[0]
+          ? {
+              id: updated.IssueAssignee[0].userId,
+              name: updated.IssueAssignee[0].name || "Unknown",
+              avatarUrl: updated.IssueAssignee[0].avatar,
+              role: "member" as const,
+              email: "",
+            }
+          : undefined,
+        assigneeIds: Array.isArray(updated.IssueAssignee)
+          ? updated.IssueAssignee.map((a: any) => a.userId)
+          : [],
+        assignees: Array.isArray(updated.IssueAssignee)
+          ? updated.IssueAssignee.map((a: any) => ({
+              id: a.userId,
+              name: a.name || "Unknown",
+              avatarUrl: a.avatar,
+              role: "member" as const,
+              email: "",
+            }))
+          : [],
         reporterId: updated.createdByUserId,
         createdAt: updated.createdAt,
         updatedAt: updated.updatedAt,
       };
-      return new Response(JSON.stringify(mapped), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify(mapped), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     } catch (e: any) {
-      return new Response(JSON.stringify({ error: e.message }), { status: 403, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify({ error: e.message }), {
+        status: 403,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     }
   }),
 });
@@ -1016,16 +1633,29 @@ http.route({
     if (!auth.ok) return auth.response;
     const url = new URL(request.url);
     const projectId = url.searchParams.get("projectId");
-    if (!projectId) return new Response(JSON.stringify({ error: "projectId required" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    if (!projectId)
+      return new Response(JSON.stringify({ error: "projectId required" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
 
     try {
-      const tickets = await ctx.runQuery(internal.extensionApi.getMyTicketsFull, {
-        projectId: projectId as any,
-        userId: auth.userId as any,
+      const tickets = await ctx.runQuery(
+        internal.extensionApi.getMyTicketsFull,
+        {
+          projectId: projectId as any,
+          userId: auth.userId as any,
+        },
+      );
+      return new Response(JSON.stringify(tickets), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
       });
-      return new Response(JSON.stringify(tickets), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
     } catch (e: any) {
-      return new Response(JSON.stringify({ error: e.message }), { status: 403, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify({ error: e.message }), {
+        status: 403,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     }
   }),
 });
@@ -1038,25 +1668,97 @@ http.route({
     const auth = await authenticateRequest(ctx, request);
     if (!auth.ok) return auth.response;
     const url = new URL(request.url);
-    const ticketId = url.pathname.replace(/^\/ext\/tickets\//, "").split("/")[0];
-    if (!ticketId) return new Response(JSON.stringify({ error: "Missing ticketId" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+    const ticketId = url.pathname
+      .replace(/^\/ext\/tickets\//, "")
+      .split("/")[0];
+    if (!ticketId)
+      return new Response(JSON.stringify({ error: "Missing ticketId" }), {
+        status: 400,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
 
     try {
       const body = await request.json();
       if (body.status !== "open" && body.status !== "closed") {
-        return new Response(JSON.stringify({ error: "status must be 'open' or 'closed'" }), { status: 400, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+        return new Response(
+          JSON.stringify({ error: "status must be 'open' or 'closed'" }),
+          {
+            status: 400,
+            headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+          },
+        );
       }
-      const updated = await ctx.runMutation(internal.extensionApi.updateTicketStatusInternal, {
-        ticketId: ticketId as any,
-        userId: auth.userId as any,
-        status: body.status,
+      const updated = await ctx.runMutation(
+        internal.extensionApi.updateTicketStatusInternal,
+        {
+          ticketId: ticketId as any,
+          userId: auth.userId as any,
+          status: body.status,
+        },
+      );
+      return new Response(JSON.stringify(updated), {
+        status: 200,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
       });
-      return new Response(JSON.stringify(updated), { status: 200, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
     } catch (e: any) {
-      return new Response(JSON.stringify({ error: e.message }), { status: 403, headers: { "Content-Type": "application/json", ...CORS_HEADERS } });
+      return new Response(JSON.stringify({ error: e.message }), {
+        status: 403,
+        headers: { "Content-Type": "application/json", ...CORS_HEADERS },
+      });
     }
   }),
 });
 
-export default http;
+// Bulk Insert Tasks (Kaya AI Agent tool)
+http.route({
+  path: "/bulkInsertTasks",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const body = await request.json();
 
+    if (!body.projectId || !Array.isArray(body.tasks)) {
+      return new Response(
+        JSON.stringify({ error: "projectId and tasks array are required" }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
+    }
+
+    const result = await ctx.runMutation(internal.agentTools.bulkInsertTasks, {
+      projectId: body.projectId,
+      tasks: body.tasks,
+    });
+
+    return new Response(JSON.stringify(result), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }),
+});
+
+// Bulk Insert Issues (Kaya AI Agent tool)
+http.route({
+  path: "/bulkInsertIssues",
+  method: "POST",
+  handler: httpAction(async (ctx, request) => {
+    const body = await request.json();
+
+    if (!body.projectId || !Array.isArray(body.issues)) {
+      return new Response(
+        JSON.stringify({ error: "projectId and issues array are required" }),
+        { status: 400, headers: { "Content-Type": "application/json" } },
+      );
+    }
+
+    const result = await ctx.runMutation(internal.agentTools.bulkInsertIssues, {
+      projectId: body.projectId,
+      issues: body.issues,
+    });
+
+    return new Response(JSON.stringify(result), {
+      status: 200,
+      headers: { "Content-Type": "application/json" },
+    });
+  }),
+});
+
+export default http;

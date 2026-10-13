@@ -47,7 +47,7 @@ export interface AgentStreamCallbacks {
 
 async function streamAgent(
   agent: "kaya" | "harry",
-  body: { projectId: string; messages: unknown[] },
+  body: { projectId: string; channelId: string; messages: unknown[] },
   callbacks: AgentStreamCallbacks,
 ) {
   // Only Kaya route exists currently, default to kaya if harry is selected
@@ -274,7 +274,7 @@ export function useTeamspaceAgent(
       try {
         await streamAgent(
           agent,
-          { projectId, messages: allMessages },
+          { projectId, channelId, messages: allMessages },
           {
             onText: (delta: string) => {
               const prevText = assistantTextRef.current;
@@ -326,6 +326,27 @@ export function useTeamspaceAgent(
                 toolStatus: { toolName, status: "done" },
                 text: "",
               });
+
+              if (toolName === "createProjectItem" && output?.success) {
+                toast.success(
+                  output.message ||
+                    `Created ${output.itemType || "item"} successfully!`,
+                  {
+                    position: "top-center",
+                    duration: 4000,
+                  },
+                );
+              }
+
+              if (toolName === "broadcastAnnouncementAndNotify" && output?.success) {
+                toast.success(
+                  `📢 Announcement broadcasted & sent to ${output.notifiedCount || "all"} team member(s)!`,
+                  {
+                    position: "top-center",
+                    duration: 5000,
+                  },
+                );
+              }
             },
             onFinish: async () => {
               // Save final response to the DB

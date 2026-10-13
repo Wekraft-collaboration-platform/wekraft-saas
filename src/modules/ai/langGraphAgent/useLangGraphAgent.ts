@@ -63,7 +63,12 @@ export function useLangGraphAgent<
   const [restoring, setRestoring] = useState(false);
   const [isStreaming, setIsStreaming] = useState(false);
   const [agentStatus, setAgentStatus] = useState<string>("");
+  const [reasoning, setReasoning] = useState<string>("");
+  const [activeToolCalls, setActiveToolCalls] = useState<
+    Array<{ toolName: string; caller?: string }>
+  >([]);
   const [activeNode, setActiveNode] = useState<string>("");
+  const [activeSkill, setActiveSkill] = useState<string | null>(null);
   const [appCheckpoints, setAppCheckpoints] = useState<
     AppCheckpoint<TAgentState, TInterruptValue>[]
   >([]);
@@ -146,11 +151,19 @@ export function useLangGraphAgent<
       throw new Error("Thread id is required");
     }
 
+    const runStartTime = Date.now();
+    let currentTurnReasoning = "";
+    let currentTurnSkill = "";
+    let currentTurnTools: Array<{ toolName: string; caller?: string }> = [];
+
     try {
       setStatus("running");
       setIsStreaming(false);
       setAgentStatus("");
+      setReasoning("");
+      setActiveToolCalls([]);
       setActiveNode("");
+      setActiveSkill(null);
       // Invalidate cache when agent is called
       historyCache.delete(agentInput.thread_id);
 
@@ -159,6 +172,24 @@ export function useLangGraphAgent<
         TInterruptValue,
         TResumeValue
       >(agentInput);
+      let chunkRafId: number | null = null;
+      const queueChunkUpdate = () => {
+        if (chunkRafId === null) {
+          chunkRafId = requestAnimationFrame(() => {
+            setAppCheckpoints([...appCheckpoints]);
+            chunkRafId = null;
+          });
+        }
+      };
+
+      const flushImmediate = () => {
+        if (chunkRafId !== null) {
+          cancelAnimationFrame(chunkRafId);
+          chunkRafId = null;
+        }
+        setAppCheckpoints([...appCheckpoints]);
+      };
+
       for await (const msg of messageStream) {
         if (msg.event === "checkpoint") {
           setIsStreaming(false);
@@ -166,23 +197,69 @@ export function useLangGraphAgent<
             msg.data as Checkpoint<TAgentState, TInterruptValue>,
             appCheckpoints,
           );
-          setAppCheckpoints([...appCheckpoints]);
+          flushImmediate();
         }
 
         if (msg.event === "message_chunk") {
           const chunk = msg.data as NodeMessageChunk;
+          const isKayaNode =
+            !chunk.node_name ||
+            chunk.node_name === "kaya" ||
+            chunk.node_name.startsWith("kaya");
           // Only start streaming UI for 'kaya' node (the main assistant response)
-          if (chunk.message_chunk.content && chunk.node_name === "kaya") {
+          if (chunk.message_chunk.content && isKayaNode) {
             setIsStreaming(true);
             setAgentStatus(""); // Clear intermediate status when final response starts
           }
-          processMessageChunk(chunk, appCheckpoints);
-          setAppCheckpoints([...appCheckpoints]);
+          processMessageChunk(
+            chunk,
+            appCheckpoints,
+            currentTurnReasoning,
+            currentTurnTools,
+            currentTurnSkill,
+          );
+          queueChunkUpdate();
         }
 
         if (msg.event === "custom") {
+          const customData = msg.data as any;
+          if (customData?.skill_activated) {
+            const skillName = customData.skill_activated;
+            currentTurnSkill = skillName;
+            setActiveSkill(skillName);
+          }
+          if (customData?.reasoning) {
+            currentTurnReasoning = customData.reasoning;
+            setReasoning(customData.reasoning);
+          }
+          if (customData?.agent_status) {
+            setAgentStatus(customData.agent_status);
+          }
+          if (customData?.subagent_called) {
+            const sub = customData.subagent_called;
+            if (
+              !currentTurnTools.some(
+                (t) => t.toolName === sub && t.caller === "Kaya",
+              )
+            ) {
+              currentTurnTools.push({ toolName: sub, caller: "Kaya" });
+            }
+            setActiveToolCalls([...currentTurnTools]);
+          }
+          if (customData?.tool_called) {
+            const toolName = customData.tool_called;
+            const caller = customData.caller || "Agent";
+            if (
+              !currentTurnTools.some(
+                (t) => t.toolName === toolName && t.caller === caller,
+              )
+            ) {
+              currentTurnTools.push({ toolName, caller });
+            }
+            setActiveToolCalls([...currentTurnTools]);
+          }
           processCustomEvent(msg.data as Partial<TAgentState>, appCheckpoints);
-          setAppCheckpoints([...appCheckpoints]);
+          flushImmediate();
         }
 
         if (msg.event === "interrupt") {
@@ -190,14 +267,53 @@ export function useLangGraphAgent<
             msg.data as Interrupt<TInterruptValue>[],
             appCheckpoints,
           );
-          setAppCheckpoints([...appCheckpoints]);
+          flushImmediate();
         }
 
         if (msg.event === "error") {
           const errorData = msg.data as { error?: string } | undefined;
           processError(appCheckpoints, errorData?.error);
-          setAppCheckpoints([...appCheckpoints]);
+          flushImmediate();
         }
+      }
+      flushImmediate();
+
+      const elapsedSec = ((Date.now() - runStartTime) / 1000).toFixed(1);
+      if (appCheckpoints.length > 0) {
+        const lastCp = appCheckpoints[appCheckpoints.length - 1];
+        (lastCp as any).executionTime = elapsedSec;
+        if (lastCp.nodes && lastCp.nodes.length > 0) {
+          (lastCp.nodes[0] as any).executionTime = elapsedSec;
+        }
+
+        // Stamp reasoning & subagent_tools onto the last AI message
+        if (
+          lastCp.state &&
+          "messages" in lastCp.state &&
+          Array.isArray((lastCp.state as any).messages)
+        ) {
+          const msgs = (lastCp.state as any).messages;
+          for (let mIdx = msgs.length - 1; mIdx >= 0; mIdx--) {
+            if (msgs[mIdx].type === "ai") {
+              if (currentTurnReasoning && !msgs[mIdx].reasoning) {
+                msgs[mIdx].reasoning = currentTurnReasoning;
+              }
+              if (currentTurnSkill && !msgs[mIdx].selected_skill) {
+                msgs[mIdx].selected_skill = currentTurnSkill;
+              }
+              if (
+                currentTurnTools.length > 0 &&
+                (!msgs[mIdx].subagent_tools ||
+                  msgs[mIdx].subagent_tools.length === 0)
+              ) {
+                msgs[mIdx].subagent_tools = [...currentTurnTools];
+              }
+              break;
+            }
+          }
+        }
+
+        setAppCheckpoints([...appCheckpoints]);
       }
 
       setStatus("idle");
@@ -404,6 +520,9 @@ export function useLangGraphAgent<
   function processMessageChunk(
     nodeMessageChunk: NodeMessageChunk,
     appCheckpoints: AppCheckpoint<TAgentState, TInterruptValue>[],
+    currentTurnReasoning?: string,
+    currentTurnTools?: Array<{ toolName: string; caller?: string }>,
+    currentTurnSkill?: string,
   ) {
     if (appCheckpoints.length === 0) {
       return;
@@ -420,55 +539,101 @@ export function useLangGraphAgent<
       (x) => x.id === nodeMessageChunk.message_chunk.id,
     );
 
+    const isKayaChunk =
+      !nodeMessageChunk.node_name ||
+      nodeMessageChunk.node_name === "kaya" ||
+      nodeMessageChunk.node_name.startsWith("kaya");
+
+    const getMatchingNodes = () => {
+      if (!nodeMessageChunk.node_name) return lastCheckpoint.nodes;
+      const matched = lastCheckpoint.nodes.filter(
+        (node) =>
+          node.name === nodeMessageChunk.node_name ||
+          (isKayaChunk &&
+            (node.name === "kaya" || node.name.startsWith("kaya"))),
+      );
+      return matched.length > 0 ? matched : lastCheckpoint.nodes;
+    };
+
     if (message) {
       message.content += nodeMessageChunk.message_chunk.content;
-      // TODO: handle tool_call_chunks
+      if (currentTurnReasoning && !message.reasoning) {
+        message.reasoning = currentTurnReasoning;
+      }
+      if (currentTurnSkill && !(message as any).selected_skill) {
+        (message as any).selected_skill = currentTurnSkill;
+      }
+      if (
+        currentTurnTools &&
+        currentTurnTools.length > 0 &&
+        (!message.subagent_tools || message.subagent_tools.length === 0)
+      ) {
+        message.subagent_tools = [...currentTurnTools];
+      }
 
       // Update content in matching nodes
-      if (nodeMessageChunk.node_name) {
-        const matchingNodes = lastCheckpoint.nodes.filter(
-          (node) => node.name === nodeMessageChunk.node_name,
+      const matchingNodes = getMatchingNodes();
+      matchingNodes.forEach((node) => {
+        const stateWithMessages = node.state as unknown as WithMessages;
+        if (
+          !("messages" in node.state) ||
+          !Array.isArray(stateWithMessages.messages)
+        ) {
+          stateWithMessages.messages = [];
+        }
+        const nodeMessage = stateWithMessages.messages.find(
+          (x) => x.id === nodeMessageChunk.message_chunk.id,
         );
-        matchingNodes.forEach((node) => {
-          const stateWithMessages = node.state as unknown as WithMessages;
-          const nodeMessage = stateWithMessages.messages.find(
-            (x) => x.id === nodeMessageChunk.message_chunk.id,
-          );
-          if (nodeMessage) {
-            nodeMessage.content += nodeMessageChunk.message_chunk.content;
+        if (nodeMessage) {
+          nodeMessage.content += nodeMessageChunk.message_chunk.content;
+          if (currentTurnReasoning && !nodeMessage.reasoning) {
+            nodeMessage.reasoning = currentTurnReasoning;
           }
-        });
-      }
+          if (currentTurnSkill && !(nodeMessage as any).selected_skill) {
+            (nodeMessage as any).selected_skill = currentTurnSkill;
+          }
+          if (
+            currentTurnTools &&
+            currentTurnTools.length > 0 &&
+            (!nodeMessage.subagent_tools ||
+              nodeMessage.subagent_tools.length === 0)
+          ) {
+            nodeMessage.subagent_tools = [...currentTurnTools];
+          }
+        } else {
+          stateWithMessages.messages.push({ ...message });
+        }
+      });
     } else {
       // When LLM streams input to the tool, tool name is in the first message chunk.
       const toolCalls: ToolCall[] =
         nodeMessageChunk.message_chunk.tool_call_chunks
-          ?.filter((x) => x.name)
-          .map((x) => ({ name: x.name, args: {}, id: x.id })) as ToolCall[];
+            ?.filter((x) => x.name)
+            .map((x) => ({ name: x.name, args: {}, id: x.id })) as ToolCall[];
       const newMessage = {
         type: "ai" as const,
         content: nodeMessageChunk.message_chunk.content,
         id: nodeMessageChunk.message_chunk.id,
         tool_calls: toolCalls,
+        reasoning: currentTurnReasoning || "",
+        selected_skill: currentTurnSkill || (lastCheckpoint.state as any)?.selected_skill || "",
+        subagent_tools: currentTurnTools ? [...currentTurnTools] : [],
       };
       lastCheckpoint.state.messages.push(newMessage);
 
       // Add the message to nodes that match the node message chunk name
-      if (nodeMessageChunk.node_name) {
-        const matchingNodes = lastCheckpoint.nodes.filter(
-          (node) => node.name === nodeMessageChunk.node_name,
-        );
-        matchingNodes.forEach((node) => {
-          // Since we're already in a context where we know the parent state has messages,
-          // we can safely initialize the node state with messages
-          const stateWithMessages = node.state as unknown as WithMessages;
-          if (!("messages" in node.state)) {
-            stateWithMessages.messages = [];
-          }
-          stateWithMessages.messages.push({ ...newMessage });
-          node.state = stateWithMessages as unknown as TAgentState;
-        });
-      }
+      const matchingNodes = getMatchingNodes();
+      matchingNodes.forEach((node) => {
+        const stateWithMessages = node.state as unknown as WithMessages;
+        if (
+          !("messages" in node.state) ||
+          !Array.isArray(stateWithMessages.messages)
+        ) {
+          stateWithMessages.messages = [];
+        }
+        stateWithMessages.messages.push({ ...newMessage });
+        node.state = stateWithMessages as unknown as TAgentState;
+      });
     }
   }
 
@@ -482,10 +647,44 @@ export function useLangGraphAgent<
 
     // Update the last checkpoint state. Update only the properties that are in the custom event.
     const lastCheckpoint = appCheckpoints[appCheckpoints.length - 1];
-    
+
     // Check if the custom event contains an agent_status update
     if ((state as any).agent_status) {
       setAgentStatus((state as any).agent_status);
+    }
+    if ((state as any).reasoning) {
+      setReasoning((state as any).reasoning);
+      (lastCheckpoint as any)._reasoning = (state as any).reasoning;
+    }
+    if ((state as any).subagent_called) {
+      const sub = (state as any).subagent_called;
+      if (!(lastCheckpoint as any)._toolCalls) {
+        (lastCheckpoint as any)._toolCalls = [];
+      }
+      if (
+        !(lastCheckpoint as any)._toolCalls.some(
+          (t: any) => t.toolName === sub && t.caller === "Kaya",
+        )
+      ) {
+        (lastCheckpoint as any)._toolCalls.push({
+          toolName: sub,
+          caller: "Kaya",
+        });
+      }
+    }
+    if ((state as any).tool_called) {
+      const toolName = (state as any).tool_called;
+      const caller = (state as any).caller || "Agent";
+      if (!(lastCheckpoint as any)._toolCalls) {
+        (lastCheckpoint as any)._toolCalls = [];
+      }
+      if (
+        !(lastCheckpoint as any)._toolCalls.some(
+          (t: any) => t.toolName === toolName && t.caller === caller,
+        )
+      ) {
+        (lastCheckpoint as any)._toolCalls.push({ toolName, caller });
+      }
     }
 
     lastCheckpoint.state = deepCopy({
@@ -526,20 +725,29 @@ export function useLangGraphAgent<
   }
 
   function getStateDiff(
-    stateOld: TAgentState,
-    stateNew: TAgentState,
+    stateOld: TAgentState | null | undefined,
+    stateNew: TAgentState | null | undefined,
   ): TAgentState {
-    const diff = {} as TAgentState;
+    if (!stateOld) return (stateNew ? deepCopy(stateNew) : {}) as TAgentState;
+    if (!stateNew) return {} as TAgentState;
 
-    // Get all keys from old state (structure should be the same in both states)
+    const diff = {} as TAgentState;
     const keys = Object.keys(stateOld);
 
     for (const key of keys) {
       const oldValue = (stateOld as any)[key];
       const newValue = (stateNew as any)[key];
 
+      if (newValue === undefined) {
+        continue;
+      }
+
       // Handle arrays - only include new items
       if (Array.isArray(oldValue)) {
+        if (!Array.isArray(newValue)) {
+          (diff as any)[key] = newValue;
+          continue;
+        }
         const newItems = newValue.filter(
           (newItem: any) =>
             !oldValue.some(
@@ -553,7 +761,11 @@ export function useLangGraphAgent<
 
       // For objects, recursively compute diff
       if (typeof oldValue === "object" && oldValue !== null) {
-        (diff as any)[key] = getStateDiff(oldValue, newValue);
+        if (typeof newValue === "object" && newValue !== null) {
+          (diff as any)[key] = getStateDiff(oldValue, newValue);
+        } else {
+          (diff as any)[key] = newValue;
+        }
       }
       // For primitive values, include both changed and unchanged
       else {
@@ -575,7 +787,10 @@ export function useLangGraphAgent<
     setAppCheckpoints([]);
     setStatus("idle");
     setAgentStatus("");
+    setReasoning("");
+    setActiveToolCalls([]);
     setActiveNode("");
+    setActiveSkill(null);
     setIsStreaming(false);
   }
 
@@ -591,7 +806,11 @@ export function useLangGraphAgent<
     restoring,
     isStreaming,
     agentStatus,
+    reasoning,
+    activeToolCalls,
     activeNode,
+    activeSkill,
+    setActiveSkill,
     reset,
   };
 }

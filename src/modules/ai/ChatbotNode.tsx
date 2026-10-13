@@ -4,20 +4,42 @@ import { AgentState } from "@/modules/ai/AgentTypes";
 import { cn } from "@/lib/utils";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
-import { Copy, Check, User, Sparkles, Sparkle } from "lucide-react";
+import {
+  Copy,
+  Check,
+  User,
+  Sparkles,
+  Sparkle,
+  Clock,
+  ThumbsUp,
+  ThumbsDown,
+  ChevronRight,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { useQuery } from "convex/react";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { api } from "../../../convex/_generated/api";
 import Image from "next/image";
+import { ToolCallCard } from "@/modules/ai/ToolCard";
 
 interface ChatbotNodeProps {
   nodeState: Partial<AgentState>;
+  executionTime?: string;
 }
 
-export function ChatbotNode({ nodeState }: ChatbotNodeProps) {
+export function ChatbotNode({ nodeState, executionTime }: ChatbotNodeProps) {
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [likedId, setLikedId] = useState<string | null>(null);
+  const [dislikedId, setDislikedId] = useState<string | null>(null);
+  const [expandedTools, setExpandedTools] = useState<Record<string, boolean>>({});
   const user = useQuery(api.user.getCurrentUser);
+
+  const toggleTools = (id: string) => {
+    setExpandedTools((prev) => ({
+      ...prev,
+      [id]: !(prev[id] ?? true),
+    }));
+  };
 
   const copyToClipboard = (text: string, id: string) => {
     navigator.clipboard.writeText(text);
@@ -30,6 +52,10 @@ export function ChatbotNode({ nodeState }: ChatbotNodeProps) {
       {nodeState?.messages?.map((msg, index) => {
         const isAI = msg.type === "ai";
         const msgId = msg.id ?? `msg-${index}`;
+        const reasoningText = (msg as any).reasoning;
+        const subagentTools = (msg as any).subagent_tools as
+          | Array<{ toolName: string; caller?: string }>
+          | undefined;
 
         return (
           <div
@@ -49,7 +75,6 @@ export function ChatbotNode({ nodeState }: ChatbotNodeProps) {
                   )}
                 >
                   {isAI ? (
-                    // <Sparkle size={12} />
                     <Image src="/kaya.svg" alt="Kaya" width={22} height={22} />
                   ) : (
                     <Avatar className="h-6 w-6 rounded-md overflow-hidden">
@@ -65,53 +90,109 @@ export function ChatbotNode({ nodeState }: ChatbotNodeProps) {
                 </span>
               </div>
 
-              {isAI && msg.content && (
+              {/* User message copy button */}
+              {!isAI && msg.content && (
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-6 w-6 opacity-0 group-hover:opacity-100 transition-opacity text-neutral-500 hover:text-violet-400"
-                  onClick={() => copyToClipboard(msg.content, msgId)}
+                  className="h-5 w-5 text-muted-foreground/60 hover:text-white opacity-100 cursor-pointer"
+                  onClick={() =>
+                    copyToClipboard(
+                      typeof msg.content === "string" ? msg.content : "",
+                      msgId,
+                    )
+                  }
+                  title="Copy your message"
                 >
                   {copiedId === msgId ? (
-                    <Check size={12} />
+                    <Check className="w-3 h-3 text-emerald-400" />
                   ) : (
-                    <Copy size={12} />
+                    <Copy className="w-3 h-3" />
                   )}
                 </Button>
               )}
             </div>
 
+            {/* Selected Skill — separate single line */}
+            {isAI && ((msg as any).selected_skill || (nodeState as any)?.selected_skill) && (
+              <div className="flex items-center gap-2 text-xs text-neutral-300 my-0.5 select-none animate-in fade-in duration-150">
+                <span className="font-semibold text-white">Skill is activated</span>
+                <span className="text-neutral-500">—</span>
+                <span className="text-neutral-200 capitalize font-medium">
+                  {String((msg as any).selected_skill || (nodeState as any)?.selected_skill).replace(/_/g, " ")}
+                </span>
+              </div>
+            )}
+
+            {/* AI Sub-Agent & Tool Call Cards */}
+            {isAI && subagentTools && subagentTools.length > 0 && (() => {
+              const isToolsExpanded = expandedTools[msgId] ?? true;
+              return (
+                <div className="flex flex-col gap-1 my-0.5">
+                  <button
+                    type="button"
+                    onClick={() => toggleTools(msgId)}
+                    className="flex items-center gap-1 text-[11px] font-medium text-muted-foreground/75 hover:text-neutral-200 transition-colors cursor-pointer py-0.5 px-1 rounded select-none w-fit"
+                  >
+                    <ChevronRight
+                      className={cn(
+                        "w-3 h-3 transition-transform duration-200",
+                        isToolsExpanded && "rotate-90",
+                      )}
+                    />
+                    <span>
+                      {subagentTools.length}{" "}
+                      {subagentTools.length === 1 ? "tool called" : "tools called"}
+                    </span>
+                  </button>
+                  {isToolsExpanded && (
+                    <div className="flex flex-col gap-0.5 animate-in fade-in duration-150">
+                      {subagentTools.map((tc, idx) => (
+                        <ToolCallCard
+                          key={`${tc.toolName}-${tc.caller || "agent"}-${idx}`}
+                          toolName={tc.toolName}
+                          caller={tc.caller}
+                        />
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })()}
+
             <div
               className={cn(
-                "text-sm leading-relaxed max-w-none",
-                isAI ? "text-neutral-200" : "text-neutral-400 italic",
+                "text-[13px] font-sans leading-relaxed max-w-none",
+                isAI
+                  ? "text-neutral-200"
+                  : "bg-neutral-900 border border-border/40 rounded-lg px-3.5 py-2 text-neutral-200 shadow-xs max-w-[65%] w-fit",
               )}
             >
               <ReactMarkdown
                 remarkPlugins={[remarkGfm]}
                 components={{
                   h1: ({ children }) => (
-                    <h1 className="text-2xl font-bold text-primary mb-3 mt-4 leading-tight">
+                    <h1 className="text-base font-semibold text-neutral-100 mb-2 mt-3 leading-snug">
                       {children}
                     </h1>
                   ),
                   h2: ({ children }) => (
-                    <h2 className="text-xl font-bold text-primary mb-2 mt-4 leading-tight">
+                    <h2 className="text-[15px] font-semibold text-neutral-100 mb-2 mt-3 leading-snug">
                       {children}
                     </h2>
                   ),
                   h3: ({ children }) => (
-                    <h3 className="text-base font-semibold text-primary mb-2 mt-3">
+                    <h3 className="text-[14px] font-semibold text-neutral-200 mb-1.5 mt-2">
                       {children}
                     </h3>
                   ),
                   p: ({ children }) => (
-                    <p className="mb-3 last:mb-0 text-primary leading-relaxed">
+                    <p className="mb-2.5 last:mb-0 text-neutral-200 leading-relaxed">
                       {children}
                     </p>
                   ),
                   strong: ({ children }) => (
-                    <strong className="font-semibold text-white">
+                    <strong className="font-semibold text-neutral-100">
                       {children}
                     </strong>
                   ),
@@ -119,44 +200,76 @@ export function ChatbotNode({ nodeState }: ChatbotNodeProps) {
                     <em className="italic text-neutral-300">{children}</em>
                   ),
                   ul: ({ children }) => (
-                    <ul className="mb-3 ml-4 space-y-1 list-disc marker:text-blue-400">
+                    <ul className="mb-2.5 ml-4 space-y-1 list-disc marker:text-neutral-400">
                       {children}
                     </ul>
                   ),
                   ol: ({ children }) => (
-                    <ol className="mb-3 ml-4 space-y-1 list-decimal marker:text-blue-400">
+                    <ol className="mb-2.5 ml-4 space-y-1 list-decimal marker:text-neutral-400">
                       {children}
                     </ol>
                   ),
                   li: ({ children }) => (
-                    <li className="text-neutral-200 leading-relaxed pl-1">
+                    <li className="text-neutral-200 leading-relaxed pl-0.5 text-[13px]">
                       {children}
                     </li>
                   ),
                   code: ({ inline, children }: any) =>
                     inline ? (
-                      <code className="bg-neutral-800 text-violet-300 px-1.5 py-0.5 rounded text-[13px] font-mono">
+                      <code className="bg-neutral-800 text-neutral-200 px-1.5 py-0.5 rounded text-[12px] font-mono">
                         {children}
                       </code>
                     ) : (
                       <pre className="bg-muted/40 border border-border rounded-md p-2 mb-3 overflow-x-auto">
-                        <code className="text-primary text-[13px] font-mono leading-relaxed">
+                        <code className="text-neutral-200 text-[12px] font-mono leading-relaxed">
                           {children}
                         </code>
                       </pre>
                     ),
                   blockquote: ({ children }) => (
-                    <blockquote className="border-l-2 border-violet-500 pl-4 mb-3 text-neutral-400 italic">
+                    <blockquote className="border-l-2 border-neutral-600 pl-4 mb-3 text-neutral-400 italic">
                       {children}
                     </blockquote>
                   ),
-                  hr: () => <hr className="border-neutral-700 my-4" />,
+                  table: ({ children }) => (
+                    <div className="my-3 w-full overflow-x-auto rounded-lg border border-neutral-800 bg-neutral-900/50">
+                      <table className="w-full text-left text-[12px] border-collapse">
+                        {children}
+                      </table>
+                    </div>
+                  ),
+                  thead: ({ children }) => (
+                    <thead className="bg-neutral-800/70 border-b border-neutral-800 text-neutral-200 font-medium">
+                      {children}
+                    </thead>
+                  ),
+                  tbody: ({ children }) => (
+                    <tbody className="divide-y divide-neutral-800/60">
+                      {children}
+                    </tbody>
+                  ),
+                  tr: ({ children }) => (
+                    <tr className="transition-colors hover:bg-neutral-800/30">
+                      {children}
+                    </tr>
+                  ),
+                  th: ({ children }) => (
+                    <th className="px-3 py-2 font-semibold text-neutral-100 text-[11.5px]">
+                      {children}
+                    </th>
+                  ),
+                  td: ({ children }) => (
+                    <td className="px-3 py-2 text-neutral-300 align-top leading-normal">
+                      {children}
+                    </td>
+                  ),
+                  hr: () => <hr className="border-neutral-800 my-3" />,
                   a: ({ href, children }) => (
                     <a
                       href={href}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="text-violet-400 underline underline-offset-2 hover:text-violet-300"
+                      className="text-neutral-300 underline underline-offset-2 hover:text-white"
                     >
                       {children}
                     </a>
@@ -166,6 +279,64 @@ export function ChatbotNode({ nodeState }: ChatbotNodeProps) {
                 {typeof msg.content === "string" ? msg.content : ""}
               </ReactMarkdown>
             </div>
+
+            {/* Action Bar: Execution Time, Like, Dislike, Copy */}
+            {isAI && msg.content && (
+              <div className="flex items-center justify-between pt-1  text-muted-foreground">
+                <div className="flex items-center gap-1.5 text-[11px] text-muted-foreground font-mono">
+                  <Clock className="w-3 h-3 text-muted-foreground" />
+                  <span>{executionTime ? `${executionTime}s` : "NA"}</span>
+                </div>
+
+                <div className="flex items-center gap-2">
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={cn(
+                      "h-4 w-4 text-muted-foreground hover:text-white transition-colors cursor-pointer",
+                      likedId === msgId && "text-white",
+                    )}
+                    onClick={() => {
+                      setLikedId(likedId === msgId ? null : msgId);
+                      if (dislikedId === msgId) setDislikedId(null);
+                    }}
+                    title="Helpful"
+                  >
+                    <ThumbsUp className="w-3 h-3" />
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className={cn(
+                      "h-4 w-4 text-muted-foreground hover:text-white transition-colors cursor-pointer",
+                      dislikedId === msgId && "text-white",
+                    )}
+                    onClick={() => {
+                      setDislikedId(dislikedId === msgId ? null : msgId);
+                      if (likedId === msgId) setLikedId(null);
+                    }}
+                    title="Not helpful"
+                  >
+                    <ThumbsDown className="w-3 h-3" />
+                  </Button>
+
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="h-4 w-4 text-muted-foreground hover:text-white transition-colors cursor-pointer"
+                    onClick={() => copyToClipboard(msg.content, msgId)}
+                    title="Copy response"
+                  >
+                    {copiedId === msgId ? (
+                      <Check className="w-3 h-3 text-emerald-400" />
+                    ) : (
+                      <Copy className="w-3 h-3" />
+                    )}
+                  </Button>
+                </div>
+              </div>
+            )}
           </div>
         );
       })}

@@ -43,14 +43,9 @@ export const STEPS: StepConfig[] = [
     label: "Connect your GitHub Account",
     hint: "Required to track commits & PRs",
     description:
-      "Link your GitHub account to unlock commit tracking, pull-request syncing, and developer stats across all your projects.",
-    cta: "Connect GitHub account",
-    action: (router) => {
-      router.push("/dashboard");
-      setTimeout(() => {
-        document.getElementById("connect-github-btn")?.click();
-      }, 400);
-    },
+      "To connect your account, head to your Dashboard and click 'Connect GitHub'. Authorize WeKraft with your GitHub account to sync commits, pull requests, and activity.",
+    cta: "",
+    action: () => {},
   },
   {
     id: 2,
@@ -58,11 +53,9 @@ export const STEPS: StepConfig[] = [
     label: "Link repository to your Project",
     hint: "Connect GitHub repo to your project",
     description:
-      "Connect a GitHub repository to your project so WeKraft can sync commits, pull requests, and branches automatically.",
-    cta: "Link a repository",
-    action: (router) => {
-      router.push("/dashboard/repositories");
-    },
+      "To link a repository, navigate to Repositories from the sidebar or project settings, select your desired GitHub repo from the list, and attach it to your project.",
+    cta: "",
+    action: () => {},
   },
   {
     id: 3,
@@ -70,16 +63,9 @@ export const STEPS: StepConfig[] = [
     label: "Visit your Project workspace",
     hint: "Explore tasks, sprints & team tools",
     description:
-      "Your workspace is the command center for your project. Explore tasks, sprints, issues, and your team — all in one place.",
-    cta: "Go to workspace",
-    action: (router, context) => {
-      const projects = context?.projects;
-      if (projects && projects.length > 0) {
-        router.push(`/dashboard/my-projects/${projects[0].slug}?tour=workspace`);
-      } else {
-        router.push("/dashboard");
-      }
-    },
+      "To open your workspace, select your project name from the sidebar under Projects. This opens the central hub containing tasks, sprints, analytics, and settings.",
+    cta: "",
+    action: () => {},
   },
   {
     id: 4,
@@ -87,16 +73,9 @@ export const STEPS: StepConfig[] = [
     label: "Create your first task",
     hint: "Assign, prioritize & track work",
     description:
-      "Break your project into actionable tasks. Assign them to teammates, set priorities, link to code, and track completion.",
-    cta: "Go to Tasks",
-    action: (router, context) => {
-      const projects = context?.projects;
-      if (projects && projects.length > 0) {
-        router.push(`/dashboard/my-projects/${projects[0].slug}/workspace/tasks?tour=create-task`);
-      } else {
-        router.push("/dashboard");
-      }
-    },
+      "Inside your project workspace, navigate to the Tasks tab, click '+ New Task', enter a title and description, and assign priorities or milestones.",
+    cta: "",
+    action: () => {},
   },
   {
     id: 5,
@@ -104,17 +83,9 @@ export const STEPS: StepConfig[] = [
     label: "Set a project deadline to Track",
     hint: "Keeps the team focused",
     description:
-      "Define a target delivery date for your project. WeKraft will track your time-to-deadline and alert you as it approaches.",
-    cta: "Open workspace overview",
-    action: (router) => {
-      router.push("/dashboard");
-      setTimeout(() => {
-        document.getElementById("tour-projects-tab")?.click();
-        setTimeout(() => {
-          document.getElementById("workspace-link-btn")?.click();
-        }, 350);
-      }, 450);
-    },
+      "Go to your Project Overview or Settings, locate the Deadline field, and pick your target delivery date. WeKraft tracks milestone countdowns automatically.",
+    cta: "",
+    action: () => {},
   },
   {
     id: 6,
@@ -122,16 +93,9 @@ export const STEPS: StepConfig[] = [
     label: "Invite teammates to collaborate",
     hint: "Share the invite link or email",
     description:
-      "Bring your whole team in. Assign roles, control permissions, and collaborate in real time.",
-    cta: "Invite teammates",
-    action: (router, context) => {
-      const projects = context?.projects;
-      if (projects && projects.length > 0) {
-        router.push(`/dashboard/my-projects/${projects[0].slug}?invite=true`);
-      } else {
-        router.push("/dashboard");
-      }
-    },
+      "Open your project workspace, click 'Invite' or go to Project Settings > Team, enter your colleague's email address or copy the direct project invite link.",
+    cta: "",
+    action: () => {},
   },
   {
     id: 7,
@@ -157,11 +121,32 @@ export function GettingStartedChecklist() {
   const [expandedStep, setExpandedStep] = useState<number | null>(-1);
 
   const userDetails = useQuery(api.user.getUserDetails);
+  const [localSteps, setLocalSteps] = useState<number[]>([]);
 
-  const completedIds = useMemo(() => [
-    ...(progressData?.completedSteps ?? []),
-    ...(userDetails?.freeTrialUsed ? [7] : [])
-  ], [progressData?.completedSteps, userDetails?.freeTrialUsed]);
+  useEffect(() => {
+    const updateLocal = () => {
+      try {
+        const stored = JSON.parse(localStorage.getItem("wekraft_completed_steps") || "[]");
+        setLocalSteps(stored);
+      } catch {}
+    };
+    updateLocal();
+    window.addEventListener("wekraft-step-completed", updateLocal);
+    window.addEventListener("storage", updateLocal);
+    return () => {
+      window.removeEventListener("wekraft-step-completed", updateLocal);
+      window.removeEventListener("storage", updateLocal);
+    };
+  }, []);
+
+  const completedIds = useMemo(
+    () => Array.from(new Set([
+      ...(progressData?.completedSteps ?? []),
+      ...(userDetails?.freeTrialUsed ? [7] : []),
+      ...localSteps,
+    ])),
+    [progressData?.completedSteps, userDetails?.freeTrialUsed, localSteps],
+  );
 
   // The first 6 steps are required. Step 7 (free trial) is optional/bonus —
   // skipping it should NOT block gettingstartedcompleted from being set in the DB.
@@ -174,7 +159,9 @@ export function GettingStartedChecklist() {
   // Step 7 (free trial) is optional and does not block this.
   useEffect(() => {
     if (currentUser && !currentUser.gettingstartedcompleted && requiredDone) {
-      completeGettingStarted().catch((err) => console.error("Error completing getting started checklist:", err));
+      completeGettingStarted().catch((err) =>
+        console.error("Error completing getting started checklist:", err),
+      );
     }
   }, [currentUser, requiredDone, completeGettingStarted]);
 
@@ -209,8 +196,14 @@ export function GettingStartedChecklist() {
 
   // -1 = user explicitly closed everything, null = never interacted
   // Auto-open first incomplete step only when user hasn't explicitly closed
-  const firstIncompleteId = STEPS.find((s) => !completedIds.includes(s.id))?.id ?? null;
-  const activeId = expandedStep === -1 ? null : expandedStep !== null ? expandedStep : firstIncompleteId;
+  const firstIncompleteId =
+    STEPS.find((s) => !completedIds.includes(s.id))?.id ?? null;
+  const activeId =
+    expandedStep === -1
+      ? null
+      : expandedStep !== null
+        ? expandedStep
+        : firstIncompleteId;
 
   const handleRowClick = (stepId: number) => {
     // If this step is currently open → close it (use -1 sentinel so auto-expand doesn't re-open)
@@ -228,15 +221,19 @@ export function GettingStartedChecklist() {
         <div className="flex items-center gap-3">
           <Compass className="h-[22px] w-[22px] text-white" />
           <div className="flex flex-col items-start gap-1">
-            <h2 className="text-[15px] font-medium text-white leading-none">Getting Started</h2>
-            <span className="text-[10px] font-medium text-neutral-300 leading-none">{totalDone} of {totalSteps} completed</span>
+            <h2 className="text-[15px] font-medium text-white leading-none">
+              Getting Started
+            </h2>
+            <span className="text-[10px] font-medium text-neutral-300 leading-none">
+              {totalDone} of {totalSteps} completed
+            </span>
           </div>
         </div>
         <div className="flex items-center gap-1.5">
           <button
             type="button"
             onClick={() => {
-              window.dispatchEvent(new CustomEvent('start-quick-tour'));
+              window.dispatchEvent(new CustomEvent("start-quick-tour"));
             }}
             title="Quick Tour"
             className="flex items-center gap-1 h-7 px-3! rounded text-xs font-medium text-primary/70 hover:text-primary bg-primary/5 hover:bg-primary/15 transition-colors cursor-pointer border border-primary/15"
@@ -265,7 +262,13 @@ export function GettingStartedChecklist() {
           const open = activeId === step.id;
 
           return (
-            <div key={step.id} className={cn("rounded-md transition-colors border", open ? "bg-white/5 border-white/5" : "border-transparent")}>
+            <div
+              key={step.id}
+              className={cn(
+                "rounded-md transition-colors border",
+                open ? "bg-white/5 border-white/5" : "border-transparent",
+              )}
+            >
               {/* Step Row */}
               <button
                 id={`tour-step-${step.id}`}
@@ -275,8 +278,10 @@ export function GettingStartedChecklist() {
                 }}
                 className={cn(
                   "w-full flex items-center gap-3 px-3 py-2 rounded-md text-left transition-all duration-150 outline-none group",
-                  open ? "bg-white/5" : "hover:bg-white/5 data-[tour-active=true]:bg-white/5",
-                  !done ? "cursor-pointer" : "cursor-default"
+                  open
+                    ? "bg-white/5"
+                    : "hover:bg-white/5 data-[tour-active=true]:bg-white/5",
+                  !done ? "cursor-pointer" : "cursor-default",
                 )}
               >
                 {/* Completion status */}
@@ -289,7 +294,7 @@ export function GettingStartedChecklist() {
                         "h-4 w-4 transition-colors",
                         open
                           ? "text-muted-foreground/60"
-                          : "text-muted-foreground/25 group-hover:text-muted-foreground/50 group-data-[tour-active=true]:text-muted-foreground/50"
+                          : "text-muted-foreground/25 group-hover:text-muted-foreground/50 group-data-[tour-active=true]:text-muted-foreground/50",
                       )}
                     />
                   )}
@@ -304,7 +309,7 @@ export function GettingStartedChecklist() {
                         ? "text-muted-foreground line-through decoration-muted-foreground/50"
                         : open
                           ? "text-white"
-                          : "text-white group-hover:text-white data-[tour-active=true]:text-white"
+                          : "text-white group-hover:text-white data-[tour-active=true]:text-white",
                     )}
                   >
                     {step.label}
@@ -321,7 +326,7 @@ export function GettingStartedChecklist() {
                   <ChevronDown
                     className={cn(
                       "h-4 w-4 shrink-0 transition-transform duration-200 text-primary",
-                      open ? "rotate-180 text-white" : ""
+                      open ? "rotate-180 text-white" : "",
                     )}
                   />
                 )}
@@ -330,30 +335,30 @@ export function GettingStartedChecklist() {
               {/* Expanded detail panel */}
               {open && (
                 <div className="pl-10 pr-3 pb-4 pt-1">
-                  <p className="text-[11px] leading-relaxed text-muted-foreground mb-4">
+                  <p className={cn("text-[11px] leading-relaxed text-muted-foreground", step.cta ? "mb-4" : "")}>
                     {step.description}
                   </p>
-                  <button
-                    type="button"
-                    onClick={() => {
-                      step.action(router, {
-                        projects: userProjects,
-                      });
-                      setExpandedStep(null);
-                    }}
-                    className="inline-flex items-center gap-1.5 text-xs text-white border border-white/10 rounded-md px-2 py-1.5 hover:bg-white/10 hover:border-white/40 transition-all cursor-pointer"
-                  >
-                    {step.cta}
-                    <ArrowRight className="h-3.5 w-3.5" />
-                  </button>
+                  {step.cta ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        step.action(router, {
+                          projects: userProjects,
+                        });
+                        setExpandedStep(null);
+                      }}
+                      className="inline-flex items-center gap-1.5 text-xs text-white border border-white/10 rounded-md px-2 py-1.5 hover:bg-white/10 hover:border-white/40 transition-all cursor-pointer"
+                    >
+                      {step.cta}
+                      <ArrowRight className="h-3.5 w-3.5" />
+                    </button>
+                  ) : null}
                 </div>
               )}
             </div>
           );
         })}
       </div>
-
-
     </div>
   );
 }

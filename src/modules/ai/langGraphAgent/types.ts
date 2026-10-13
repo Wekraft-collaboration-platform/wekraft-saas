@@ -79,6 +79,8 @@ export interface Message {
   content: string;
   id?: string;
   tool_calls?: ToolCall[];
+  reasoning?: string;
+  subagent_tools?: Array<{ toolName: string; caller?: string }>;
 }
 
 export type ToolCall = { name: string; args: object; id: string };

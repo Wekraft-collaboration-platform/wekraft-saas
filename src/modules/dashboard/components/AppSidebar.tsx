@@ -34,7 +34,6 @@ import {
   FileText,
   Folder,
   FolderCode,
-  Gift,
   GitBranch,
   GitBranchPlus,
   Github,
@@ -88,7 +87,6 @@ import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import CreateProjectDialog from "@/modules/project/CreateProjectDialog";
 import { HelpSupportDialog } from "@/modules/dashboard/components/HelpSupportDialog";
-import { ReferralDialog } from "@/modules/dashboard/components/ReferralDialog";
 
 export const AppSidebar = () => {
   const { theme, setTheme } = useTheme();
@@ -331,7 +329,7 @@ export const AppSidebar = () => {
                                   ? "sidebar-first-project"
                                   : undefined
                               }
-                              href={`/dashboard/my-projects/${project.slug}`}
+                              href={`/dashboard/my-projects/${project.slug}/workspace`}
                               className="flex items-center justify-between gap-2 p-0.5 rounded-md hover:bg-accent/40 cursor-pointer transition-all border border-transparent hover:border-sidebar-border"
                             >
                               <div className="flex items-center gap-2 max-w-[130px]">
@@ -475,22 +473,6 @@ export const AppSidebar = () => {
             <span className="w-10 h-px bg-muted-foreground/30"></span>
           </div>
 
-          {/* My Referral */}
-          <SidebarMenuButton
-            tooltip="My Referral"
-            onClick={() =>
-              window.dispatchEvent(new CustomEvent("open-referral-dialog"))
-            }
-            className="group relative overflow-hidden cursor-pointer"
-          >
-            <div className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center">
-              <Gift className="h-5 w-5" />
-              <span className="text-sm group-data-[collapsible=icon]:hidden font-medium">
-                My Referral
-              </span>
-            </div>
-          </SidebarMenuButton>
-
           {/* 6 */}
           <SidebarMenuButton
             asChild
@@ -529,44 +511,6 @@ export const AppSidebar = () => {
                 Help & Support
               </span>
             </div>
-          </SidebarMenuButton>
-
-          {/* Audit Logs */}
-          <SidebarMenuButton
-            asChild
-            tooltip="Audit Logs"
-            isActive={isActive("/dashboard/audit-logs")}
-            className="group relative overflow-hidden"
-          >
-            <Link
-              href="/dashboard/audit-logs"
-              className="relative z-10 flex items-center gap-3 w-full group-data-[collapsible=icon]:justify-center"
-            >
-              <ShieldCheck className="h-5 w-5 text-primary" />
-              <span className="text-sm group-data-[collapsible=icon]:hidden font-medium">
-                Audit Logs
-              </span>
-              {effectivePlan !== "pro" ? (
-                <div className="ml-auto flex items-center gap-1 group-data-[collapsible=icon]:hidden">
-                  <Badge
-                    variant="outline"
-                    className="text-[10px] h-4 px-1.5 border-border text-muted-foreground bg-muted/40 flex items-center gap-0.5 font-mono"
-                  >
-                    <Lock className="h-2.5 w-2.5" />
-                    Pro
-                  </Badge>
-                </div>
-              ) : (
-                <span
-                  className="
-            pointer-events-none absolute inset-0 -z-10
-            opacity-0 transition-opacity
-            group-data-[active=true]:opacity-100
-            bg-linear-to-l from-blue-600/80 dark:from-blue-600/50 via-blue-600/10 to-transparent
-          "
-                />
-              )}
-            </Link>
           </SidebarMenuButton>
         </SidebarMenu>
       </SidebarContent>
@@ -689,7 +633,6 @@ export const AppSidebar = () => {
         )}
       </SidebarFooter>
       <HelpSupportDialog open={isHelpOpen} onOpenChange={setIsHelpOpen} />
-      <ReferralDialog />
     </Sidebar>
   );
 };

@@ -50,7 +50,7 @@ import { cn } from "@/lib/utils";
 import { api } from "../../../../convex/_generated/api";
 import { IdentityRolePicker } from "./IdentityRolePicker";
 import { OnboardingRightSide } from "./OnboardingRightSide";
-import { PURPOSES, STEPS, SOURCES } from "./StaticContent";
+import { STEPS, SOURCES } from "./StaticContent";
 
 const stepVariants = {
   enter: (direction: number) => ({
@@ -91,7 +91,6 @@ export function MultiStepOnboarding() {
 
   // Mutations
   const updateReferralAndSource = useMutation(api.user.updateUserReferralAndSource);
-  const updatePurposes = useMutation(api.user.updateUserPrimaryUsage);
   const updateIdentity = useMutation(api.user.updateUserIdentity);
   const initProject = useMutation(api.project.projectInitOnboarding);
   const completeOnboarding = useMutation(api.user.completeOnboarding);
@@ -142,21 +141,18 @@ export function MultiStepOnboarding() {
     }
   }
 
-  // Step 2: Purposes
-  const [purposes, setPurposes] = useState<string[]>([]);
-
-  // Step 3: Identity
+  // Step 2: Identity
   const [username, setUsername] = useState("");
   const [selectedRole, setSelectedRole] = useState("");
   const [usernameError, setUsernameError] = useState<string | null>(null);
 
-  // Step 4: Project
+  // Step 3: Project
   const [projectName, setProjectName] = useState("");
   const isPublic = true; // default always true.
   const [projectStatus, setProjectStatus] = useState("");
   const [generatedInviteLink, setGeneratedInviteLink] = useState("");
 
-  // Step 5: Invite
+  // Step 4: Invite
   const [email, setEmail] = useState("");
   const [inviting, setInviting] = useState(false);
   const [role, setRole] = useState<"member" | "admin">("member");
@@ -252,12 +248,6 @@ export function MultiStepOnboarding() {
       }
 
       if (currentStep === 2) {
-        if (purposes.length > 0) {
-          await updatePurposes({ purposes });
-        }
-      }
-
-      if (currentStep === 3) {
         if (usernameError) {
           toast.error(usernameError);
           setIsLoading(false);
@@ -280,7 +270,7 @@ export function MultiStepOnboarding() {
         }
       }
 
-      if (currentStep === 4) {
+      if (currentStep === 3) {
         if (!projectName || !projectStatus) {
           toast.error("Please provide project name and status");
           setIsLoading(false);
@@ -302,7 +292,7 @@ export function MultiStepOnboarding() {
         }
       }
 
-      if (currentStep === 5) {
+      if (currentStep === 4) {
         await completeOnboarding();
         toast.success("Welcome to WeKraft!");
         const postLoginRedirect = typeof window !== "undefined" ? sessionStorage.getItem("wekraft_post_login_redirect") : null;
@@ -342,49 +332,43 @@ export function MultiStepOnboarding() {
     setCurrentStep((prev) => Math.max(prev - 1, 1));
   };
 
-  const togglePurpose = (id: string) => {
-    setPurposes((prev) =>
-      prev.includes(id) ? prev.filter((p) => p !== id) : [...prev, id],
-    );
-  };
-
-  const isSkip = currentStep === 1 || currentStep === 2;
+  const isSkip = currentStep === 1;
 
   return (
-    <div className="min-h-screen w-full bg-black! text-white flex flex-row overflow-hidden font-sans relative">
+    <div className="min-h-screen w-full bg-black! text-white flex flex-col justify-between overflow-x-hidden font-sans relative">
       <div className="noise-bg" />
 
-      {/* Left Column (40% width on Desktop, full width on Mobile) */}
-      <div className="w-full lg:w-[40%] flex flex-col justify-between p-6 min-h-screen relative z-10 border-r border-zinc-800 bg-[#09090b]">
-        {/* Header */}
-        <header className="flex justify-between items-center w-full">
-          <div className="flex items-center gap-2 select-none">
-            <Image
-              src="/logo.svg"
-              alt="WeKraft Logo"
-              width={28}
-              height={28}
-              className="shrink-0"
-            />
-            <span className="font-bold text-xl tracking-tight text-white font-pop">
-              WeKraft
-            </span>
-          </div>
+      {/* Header - Full screen width at top edges */}
+      <header className="flex justify-between items-center w-full px-6 py-5 relative z-10 select-none">
+        <div className="flex items-center gap-2">
+          <Image
+            src="/logo.svg"
+            alt="WeKraft Logo"
+            width={28}
+            height={28}
+            className="shrink-0"
+          />
+          <span className="font-bold text-xl tracking-tight text-white font-pop">
+            WeKraft
+          </span>
+        </div>
 
-          <div className="flex items-center gap-4 text-[11px] truncate max-w-[200px] text-zinc-100">
-            {isUserLoaded && clerkUser?.primaryEmailAddress?.emailAddress && (
-              <span className="hidden sm:inline">
-                Logged in as{" "}
-                <span className="text-zinc-400 font-medium">
-                  {clerkUser.primaryEmailAddress.emailAddress}
-                </span>
+        <div className="flex items-center gap-4 text-[11px] truncate max-w-[260px] text-zinc-100">
+          {isUserLoaded && clerkUser?.primaryEmailAddress?.emailAddress && (
+            <span className="hidden sm:inline">
+              Logged in as{" "}
+              <span className="text-zinc-400 font-medium">
+                {clerkUser.primaryEmailAddress.emailAddress}
               </span>
-            )}
-          </div>
-        </header>
+            </span>
+          )}
+        </div>
+      </header>
 
+      {/* Centered Step Form Container */}
+      <div className="w-full flex-1 flex flex-col justify-between p-6 relative z-10">
         {/* Center content containing active step */}
-        <main className="flex-1 flex flex-col justify-center py-10 w-full max-w-[420px] mx-auto">
+        <main className="flex-1 flex flex-col justify-center py-6 w-full max-w-[420px] mx-auto">
           <AnimatePresence mode="wait" custom={direction}>
             <motion.div
               key={currentStep}
@@ -406,20 +390,15 @@ export function MultiStepOnboarding() {
                   )}
                   {currentStep === 2 && (
                     <>
-                      <span>What brings you to WeKraft</span>
+                      <span>Let’s set up your identity</span>
                     </>
                   )}
                   {currentStep === 3 && (
                     <>
-                      <span>Let’s set up your identity</span>
-                    </>
-                  )}
-                  {currentStep === 4 && (
-                    <>
                       <span>Let's create your first project</span>
                     </>
                   )}
-                  {currentStep === 5 && (
+                  {currentStep === 4 && (
                     <>
                       <span>Share invite link</span>
                     </>
@@ -460,119 +439,11 @@ export function MultiStepOnboarding() {
                         );
                       })}
                     </div>
-
-                    <div className="space-y-2 mt-4 font-sans">
-                      <Label
-                        htmlFor="referralCode"
-                        className="text-sm font-medium text-zinc-300"
-                      >
-                        Referral Code <span className="text-zinc-500 font-normal text-xs">(optional)</span>
-                      </Label>
-                      <div className="relative">
-                        <Input
-                          id="referralCode"
-                          placeholder="e.g. madhav-906y79"
-                          className={cn(
-                            "border rounded-sm h-10 text-xs transition-all tracking-wider font-mono bg-[#0f0f12]!",
-                            referralValid === false
-                              ? "border-red-500! focus-visible:ring-red-500/20!"
-                              : referralValid === true
-                                ? "border-emerald-500! focus-visible:ring-emerald-500/20!"
-                                : "border-zinc-800! focus-visible:ring-zinc-500/30!"
-                          )}
-                          value={referralCode}
-                          onChange={(e) => setReferralCode(e.target.value)}
-                        />
-                        {isCheckingReferral && (
-                          <div className="absolute right-3 top-3">
-                            <Loader2 className="w-4 h-4 animate-spin text-zinc-400" />
-                          </div>
-                        )}
-                        {!isCheckingReferral && referralValid === true && (
-                          <div className="absolute right-3 top-3">
-                            <Check className="w-4 h-4 text-emerald-500" />
-                          </div>
-                        )}
-                      </div>
-                      {referralCode.trim().length > 0 && referralMessage && (
-                        <p className={cn(
-                          "text-[11px] mt-1 font-medium",
-                          referralValid === true ? "text-emerald-500" : "text-red-500"
-                        )}>
-                          {referralMessage}
-                        </p>
-                      )}
-                    </div>
                   </div>
                 )}
 
-                {/* STEP 2 */}
+                {/* STEP 2: Identity Setup */}
                 {currentStep === 2 && (
-                  <div className="space-y-3.5">
-                    {PURPOSES.map((p) => {
-                      const selected = purposes.includes(p.id);
-                      return (
-                        <button
-                          key={p.id}
-                          type="button"
-                          onClick={() => togglePurpose(p.id)}
-                          className={cn(
-                            "w-full flex items-center justify-between px-4 py-3.5 rounded-sm border text-left transition-all duration-200 cursor-pointer select-none",
-                            selected
-                              ? "bg-zinc-900/40! border-zinc-600! shadow-[0_0_12px_rgba(255,255,255,0.015)]"
-                              : "bg-neutral-900/50! border-zinc-800! hover:border-zinc-600! hover:bg-zinc-900/10!",
-                          )}
-                        >
-                          <div className="flex items-center gap-3.5">
-                            <div
-                              className={cn(
-                                "w-8.5 h-8.5 rounded-md border flex items-center justify-center transition-all",
-                                selected
-                                  ? "bg-neutral-800 text-zinc-100 border-zinc-700"
-                                  : "bg-[#161619] text-zinc-455 border-zinc-800/60",
-                              )}
-                            >
-                              <p.icon className="w-4 h-4" />
-                            </div>
-                            <div>
-                              <h4
-                                className={cn(
-                                  "text-sm font-medium tracking-wide transition-colors",
-                                  selected ? "text-white" : "text-zinc-200",
-                                )}
-                              >
-                                {p.label}
-                              </h4>
-                              <p
-                                className={cn(
-                                  "text-[11px] transition-colors mt-0.5",
-                                  selected ? "text-zinc-200" : "text-zinc-400",
-                                )}
-                              >
-                                {p.description}
-                              </p>
-                            </div>
-                          </div>
-                          <div
-                            className={cn(
-                              "w-4 h-4 rounded-full border flex items-center justify-center transition-all shrink-0",
-                              selected
-                                ? "border-zinc-400 bg-zinc-200"
-                                : "border-zinc-700 bg-transparent",
-                            )}
-                          >
-                            {selected && (
-                              <Check className="w-2.5 h-2.5 text-zinc-900 stroke-[3.5px]" />
-                            )}
-                          </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {/* STEP 3 */}
-                {currentStep === 3 && (
                   <IdentityRolePicker
                     username={username}
                     onUsernameChange={setUsername}
@@ -583,8 +454,8 @@ export function MultiStepOnboarding() {
                   />
                 )}
 
-                {/* STEP 4 */}
-                {currentStep === 4 && (
+                {/* STEP 3: Project Setup */}
+                {currentStep === 3 && (
                   <div className="space-y-5">
                     <div className="space-y-1.5 font-sans">
                       <Label
@@ -648,8 +519,8 @@ export function MultiStepOnboarding() {
                   </div>
                 )}
 
-                {/* STEP 5 */}
-                {currentStep === 5 && (
+                {/* STEP 4: Invite Members */}
+                {currentStep === 4 && (
                   <div className="space-y-6 font-sans bg-[#0a0a0a] border border-[#333333] shadow-[0_0_50px_rgba(0,0,0,0.8)] rounded-xl p-6 text-white animate-in fade-in duration-300">
                     {/* Header */}
                     <div className="space-y-1.5 text-left">
@@ -747,7 +618,7 @@ export function MultiStepOnboarding() {
                         {" "}
                         Saving <Loader2 className="w-3 h-3 animate-spin" />{" "}
                       </>
-                    ) : currentStep === 5 ? (
+                    ) : currentStep === 4 ? (
                       <>
                         Get Started
                         <Rocket className="w-3.5 h-3.5" />
@@ -784,7 +655,7 @@ export function MultiStepOnboarding() {
         </footer>
       </div>
 
-      {/* Right Column (60% width on Desktop, hidden on Mobile) */}
+      {/* Right Column (Vector Animation) - Commented out
       <OnboardingRightSide
         currentStep={currentStep}
         purposes={purposes}
@@ -797,6 +668,7 @@ export function MultiStepOnboarding() {
         onLaunch={handleNext}
         isLaunching={isLoading}
       />
+      */}
     </div>
   );
 }
