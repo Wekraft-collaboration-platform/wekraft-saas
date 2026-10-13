@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useInView } from "framer-motion";
-import { GitGraph, MessageSquare, Presentation, Video } from "lucide-react";
+import { GitGraph, MessageSquare, Blocks, Video } from "lucide-react";
 import Image from "next/image";
 import type React from "react";
 import { useRef } from "react";
@@ -24,11 +24,11 @@ const cards: FeatureCard[] = [
     image: "/meet.png",
   },
   {
-    icon: <Presentation className="w-5 h-5" />,
-    title: "Whiteboard",
+    icon: <Blocks className="w-5 h-5" />,
+    title: "Integrations",
     description:
-      "Interactive canvas for visual brainstorming, architecture planning, and real-time diagrams.",
-    image: "/team-chat.png",
+      "Connect 20+ dev tools and AI coding agents directly with your workspace via MCP.",
+    image: "/mcp-img.png",
   },
   {
     icon: <MessageSquare className="w-5 h-5" />,
@@ -116,7 +116,11 @@ const BeyondCode = () => {
                     src={card.image}
                     alt={card.title}
                     fill
-                    className="object-cover object-top-left scale-[1.08] origin-top-left transition-transform duration-500 group-hover:scale-[1.12]"
+                    className={`object-cover ${
+                      card.image === "/mcp-img.png"
+                        ? "object-[22%_8%]"
+                        : "object-top-left"
+                    } scale-[1.08] origin-top-left transition-transform duration-500 group-hover:scale-[1.12]`}
                     sizes="(max-width: 768px) 100vw, (max-width: 1200px) 33vw, 33vw"
                   />
                 </div>
