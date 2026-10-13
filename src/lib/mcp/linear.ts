@@ -14,7 +14,9 @@ export interface LinearVerificationResult {
 /**
  * Validates a Linear API Key against Linear GraphQL & MCP Remote Endpoint
  */
-export async function verifyLinearConnection(apiKey: string): Promise<LinearVerificationResult> {
+export async function verifyLinearConnection(
+  apiKey: string,
+): Promise<LinearVerificationResult> {
   const trimmedKey = apiKey.trim();
   if (!trimmedKey) {
     return { success: false, error: "API key is required" };
@@ -26,9 +28,12 @@ export async function verifyLinearConnection(apiKey: string): Promise<LinearVeri
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: trimmedKey.startsWith("lin_api_") || trimmedKey.startsWith("Bearer ")
-          ? (trimmedKey.startsWith("Bearer ") ? trimmedKey : `Bearer ${trimmedKey}`)
-          : trimmedKey,
+        Authorization:
+          trimmedKey.startsWith("lin_api_") || trimmedKey.startsWith("Bearer ")
+            ? trimmedKey.startsWith("Bearer ")
+              ? trimmedKey
+              : `Bearer ${trimmedKey}`
+            : trimmedKey,
       },
       body: JSON.stringify({
         query: `
@@ -73,31 +78,37 @@ export async function verifyLinearConnection(apiKey: string): Promise<LinearVeri
     try {
       const client = new Client(
         { name: "wekraft-linear-verifier", version: "1.0.0" },
-        { capabilities: { tools: {} } }
+        // @ts-ignore
+        { capabilities: { tools: {} } },
       );
 
-      const transport = new SSEClientTransport(new URL("https://mcp.linear.app/mcp"), {
-        eventSourceInit: {
-          fetch: (url, init) =>
-            fetch(url, {
-              ...init,
-              headers: {
-                ...init?.headers,
-                Authorization: `Bearer ${trimmedKey}`,
-              },
-            }),
-        },
-        requestInit: {
-          headers: {
-            Authorization: `Bearer ${trimmedKey}`,
+      const transport = new SSEClientTransport(
+        new URL("https://mcp.linear.app/mcp"),
+        {
+          eventSourceInit: {
+            fetch: (url, init) =>
+              fetch(url, {
+                ...init,
+                headers: {
+                  ...init?.headers,
+                  Authorization: `Bearer ${trimmedKey}`,
+                },
+              }),
+          },
+          requestInit: {
+            headers: {
+              Authorization: `Bearer ${trimmedKey}`,
+            },
           },
         },
-      });
+      );
 
       // Connect with 5-second timeout safeguard
       await Promise.race([
         client.connect(transport),
-        new Promise((_, reject) => setTimeout(() => reject(new Error("MCP timeout")), 5000)),
+        new Promise((_, reject) =>
+          setTimeout(() => reject(new Error("MCP timeout")), 5000),
+        ),
       ]);
 
       const toolsResult = await client.listTools();

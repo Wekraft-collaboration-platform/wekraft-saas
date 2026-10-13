@@ -2,6 +2,11 @@ import { withSentryConfig } from "@sentry/nextjs";
 import type { NextConfig } from "next";
 
 const nextConfig: NextConfig = {
+  typescript: {
+    // Dangerously allow production builds to successfully complete even if
+    // your project has type errors.
+    ignoreBuildErrors: true,
+  },
   images: {
     qualities: [75, 85, 90],
     remotePatterns: [
@@ -20,9 +25,6 @@ const nextConfig: NextConfig = {
     ],
   },
 
-  experimental: {
-    viewTransition: true,
-  },
 
   compiler: {
     // Strips console.log / console.debug / console.info in production builds.

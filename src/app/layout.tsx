@@ -16,7 +16,6 @@ const inter = Inter({
 import { ClerkProvider } from "@clerk/nextjs";
 import { dark, neobrutalism } from "@clerk/ui/themes";
 import { Analytics } from "@vercel/analytics/next";
-import { ViewTransition } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { ConvexClientProvider } from "@/providers/ConvexClientProvider";
 import { QueryProvider } from "@/providers/QueryProvider";
@@ -191,9 +190,7 @@ export default function RootLayout({
             >
               <ConvexClientProvider>
                 <main>
-                  <ViewTransition>
-                    {children}
-                  </ViewTransition>
+                  {children}
                 </main>
               </ConvexClientProvider>
 
