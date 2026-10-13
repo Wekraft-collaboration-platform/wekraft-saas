@@ -97,7 +97,7 @@ const companyItems = [
   {
     name: "Careers",
     desc: "Join us in crafting the future of developer tools.",
-    badge: "We're hiring",
+    badge: "",
     icon: Briefcase,
     isLink: false,
   },

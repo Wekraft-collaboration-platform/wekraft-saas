@@ -11,6 +11,7 @@ interface SmallCell {
   col: number;
   row: number;
   invert?: boolean;
+  scale?: string;
 }
 
 /* ─── Data: 60 Tools filling the 10x6 keyboard grid ─────────────── */
@@ -23,7 +24,7 @@ const smallCells: SmallCell[] = [
   { logo: "/Notion-logo.png", label: "Notion", col: 4, row: 1 },
   { logo: "/supabase.png", label: "Supabase", col: 5, row: 1 },
   { logo: "/vs-code.png", label: "VS Code", col: 6, row: 1 },
-  { logo: "/cursor.png", label: "Cursor", col: 7, row: 1 },
+  { logo: "/cursor.png", label: "Cursor", col: 7, row: 1, scale: "scale-140" },
   { logo: "/discord.png", label: "Discord", col: 8, row: 1 },
   { logo: "/jira-logo.jpg", label: "Jira", col: 9, row: 1 },
   { logo: "/gitlab.svg", label: "GitLab", col: 10, row: 1 },
@@ -31,9 +32,9 @@ const smallCells: SmallCell[] = [
   // ── Row 2 ──
   { logo: "/sentry.svg", label: "Sentry", col: 1, row: 2 },
   { logo: "/posthog.svg", label: "PostHog", col: 2, row: 2 },
-  { logo: "/stripe.svg", label: "Stripe", col: 3, row: 2 },
+  { logo: "/stripe.svg", label: "Stripe", col: 3, row: 2, scale: "scale-140" },
   { logo: "/vs-code.png", label: "VS Code Ext", col: 4, row: 2 },
-  { logo: "/cursor.png", label: "Cursor AI", col: 5, row: 2 },
+  { logo: "/cursor.png", label: "Cursor AI", col: 5, row: 2, scale: "scale-140" },
   { logo: "/github.png", label: "GitHub PRs", col: 6, row: 2 },
   { logo: "/linear.png", label: "Linear Issues", col: 7, row: 2 },
   { logo: "/asana-logo.svg", label: "Asana", col: 8, row: 2 },
@@ -42,7 +43,7 @@ const smallCells: SmallCell[] = [
 
   // ── Row 3 ──
   { logo: "/beter-stack.svg", label: "Better Stack", col: 1, row: 3 },
-  { logo: "/hubsport.svg", label: "HubSpot", col: 2, row: 3 },
+  { logo: "/hubsport.svg", label: "HubSpot", col: 2, row: 3, scale: "scale-140" },
   { logo: "/plane-so logo.png", label: "Plane", col: 3, row: 3 },
   { logo: "/slack.png", label: "Slack Standup", col: 4, row: 3 },
   { logo: "/Notion-logo.png", label: "Notion Docs", col: 5, row: 3 },
@@ -58,7 +59,7 @@ const smallCells: SmallCell[] = [
   { logo: "/linear.png", label: "Linear Sprints", col: 3, row: 4 },
   { logo: "/sentry.svg", label: "Sentry Triage", col: 4, row: 4 },
   { logo: "/posthog.svg", label: "PostHog Events", col: 5, row: 4 },
-  { logo: "/stripe.svg", label: "Stripe Billing", col: 6, row: 4 },
+  { logo: "/stripe.svg", label: "Stripe Billing", col: 6, row: 4, scale: "scale-140" },
   { logo: "/jira-logo.jpg", label: "Jira Agile", col: 7, row: 4 },
   { logo: "/slack.png", label: "Slack Bot", col: 8, row: 4 },
   { logo: "/Notion-logo.png", label: "Notion Wiki", col: 9, row: 4 },
@@ -66,14 +67,14 @@ const smallCells: SmallCell[] = [
 
   // ── Row 5 ──
   { logo: "/vs-code.png", label: "VS Code Tasks", col: 1, row: 5 },
-  { logo: "/cursor.png", label: "Cursor Bridge", col: 2, row: 5 },
+  { logo: "/cursor.png", label: "Cursor Bridge", col: 2, row: 5, scale: "scale-140" },
   { logo: "/sentry.svg", label: "Sentry Alerts", col: 3, row: 5 },
   { logo: "/asana-logo.svg", label: "Asana Milestones", col: 4, row: 5 },
   { logo: "/gitlab.svg", label: "GitLab Pipelines", col: 5, row: 5 },
   { logo: "/calendly.png", label: "Calendly Sync", col: 6, row: 5 },
   { logo: "/beter-stack.svg", label: "Better Stack Ops", col: 7, row: 5 },
   { logo: "/posthog.svg", label: "PostHog Data", col: 8, row: 5 },
-  { logo: "/stripe.svg", label: "Stripe Webhooks", col: 9, row: 5 },
+  { logo: "/stripe.svg", label: "Stripe Webhooks", col: 9, row: 5, scale: "scale-140" },
   { logo: "/discord.png", label: "Discord Community", col: 10, row: 5 },
 
   // ── Row 6 ──
@@ -83,7 +84,7 @@ const smallCells: SmallCell[] = [
   { logo: "/calendly.png", label: "Calendly Meet", col: 4, row: 6 },
   { logo: "/dd-logo.svg", label: "Datadog Logs", col: 5, row: 6 },
   { logo: "/beter-stack.svg", label: "Better Stack Uptime", col: 6, row: 6 },
-  { logo: "/hubsport.svg", label: "HubSpot CRM", col: 7, row: 6 },
+  { logo: "/hubsport.svg", label: "HubSpot CRM", col: 7, row: 6, scale: "scale-140" },
   { logo: "/plane-so logo.png", label: "Plane Cycles", col: 8, row: 6 },
   { logo: "/cloudfare_black.svg", label: "Cloudflare Edge", col: 9, row: 6, invert: true },
   { logo: "/whatsapp.png", label: "WhatsApp Alerts", col: 10, row: 6 },
@@ -141,11 +142,13 @@ const SmallCellComponent = ({
     whileHover={{ y: -4, scale: 1.03, transition: { duration: 0.18 } }}
     className="rounded-xl border border-white/[0.05] bg-[#121316] hover:bg-[#18191f] hover:border-white/[0.18] flex flex-col items-center justify-center gap-2 p-2 transition-colors duration-200 cursor-pointer select-none group shadow-sm"
   >
-    <div className="w-6 h-6 flex items-center justify-center shrink-0">
+    <div className="w-8 h-8 flex items-center justify-center shrink-0">
       <img
         src={cell.logo}
         alt={cell.label}
         className={`max-w-full max-h-full object-contain filter group-hover:scale-110 transition-transform duration-200 ${
+          cell.scale || ""
+        } ${
           cell.invert ? "brightness-0 invert opacity-90" : ""
         }`}
       />
@@ -225,11 +228,13 @@ const AllInOneSection = () => {
               transition={{ duration: 0.4, delay: i * 0.03 }}
               className="rounded-xl border border-white/[0.05] bg-[#121316] flex flex-col items-center justify-center gap-2 p-3"
             >
-              <div className="w-6 h-6 flex items-center justify-center shrink-0">
+              <div className="w-8 h-8 flex items-center justify-center shrink-0">
                 <img
                   src={cell.logo}
                   alt={cell.label}
                   className={`max-w-full max-h-full object-contain ${
+                    cell.scale || ""
+                  } ${
                     cell.invert ? "brightness-0 invert opacity-90" : ""
                   }`}
                 />

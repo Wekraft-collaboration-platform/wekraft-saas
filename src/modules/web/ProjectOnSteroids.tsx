@@ -188,7 +188,7 @@ const ProjectOnSteroids = () => {
               {/* === SCREEN AREA === */}
               <div className="relative rounded-[10px] md:rounded-[20px] overflow-hidden">
                 <Image
-                  src="/dash.png"
+                  src="/new-dash.png"
                   alt="WeKraft Dashboard"
                   width={1920}
                   height={1080}

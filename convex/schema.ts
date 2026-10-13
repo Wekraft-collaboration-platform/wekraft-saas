@@ -50,7 +50,7 @@ export default defineSchema({
     socialLinks: v.optional(v.array(v.string())), // max 3 links (excluding github)
 
     // usage tracking (Global)
-    cloudStorageUsage: v.optional(v.number()), // How much used 
+    cloudStorageUsage: v.optional(v.number()), // How much used
     kayaUsage: v.optional(v.number()), // Current usage count for this month
     isAdmin: v.optional(v.boolean()),
   })
@@ -177,7 +177,9 @@ export default defineSchema({
     userImage: v.optional(v.string()),
     message: v.optional(v.string()),
     source: v.union(v.literal("invited"), v.literal("manual")),
-    role: v.optional(v.union(v.literal("admin"), v.literal("member"), v.literal("viewer"))),
+    role: v.optional(
+      v.union(v.literal("admin"), v.literal("member"), v.literal("viewer")),
+    ),
     status: v.union(
       v.literal("pending"),
       v.literal("accepted"),
@@ -339,8 +341,8 @@ export default defineSchema({
         v.object({
           percent: v.number(),
           jobId: v.string(),
-        })
-      )
+        }),
+      ),
     ),
   })
     .index("by_project", ["projectId"])
@@ -458,13 +460,13 @@ export default defineSchema({
     .index("by_project", ["projectId"])
     .index("by_issue_user", ["issueId", "userId"]),
 
-   // -------------- IDE Extension Support ---------------------
+  // -------------- IDE Extension Support ---------------------
   userApiKeys: defineTable({
     userId: v.id("users"),
-    key: v.string(),       // Secure, permanent API key (wk_ prefix + 64 hex chars)
+    key: v.string(), // Secure, permanent API key (wk_ prefix + 64 hex chars)
     createdAt: v.number(),
-    lastUsedAt: v.optional(v.number()),  // Tracked on every authenticated request
-    revokedAt: v.optional(v.number()),   // Set on revocation — key is permanently dead
+    lastUsedAt: v.optional(v.number()), // Tracked on every authenticated request
+    revokedAt: v.optional(v.number()), // Set on revocation — key is permanently dead
   })
     .index("by_user", ["userId"])
     .index("by_key", ["key"]),
@@ -473,18 +475,15 @@ export default defineSchema({
   // One document per (apiKeyId, windowStart) pair, auto-cleaned up
   apiKeyRateLimits: defineTable({
     apiKeyId: v.id("userApiKeys"),
-    windowStart: v.number(),  // Unix ms — start of the 1-minute window
-    count: v.number(),         // How many requests in this window
-  })
-    .index("by_key_window", ["apiKeyId", "windowStart"]),
+    windowStart: v.number(), // Unix ms — start of the 1-minute window
+    count: v.number(), // How many requests in this window
+  }).index("by_key_window", ["apiKeyId", "windowStart"]),
 
   handshakeTokens: defineTable({
     token: v.string(), // Short-lived one-time token (5 min TTL)
     userId: v.id("users"),
     expiresAt: v.number(),
-  })
-    .index("by_token", ["token"]),
-
+  }).index("by_token", ["token"]),
 
   // -------------- Project Upvotes (per-user join table) ---------------------
   projectUpvoteRecords: defineTable({
@@ -495,8 +494,6 @@ export default defineSchema({
     .index("by_project", ["projectId"])
     .index("by_user", ["userId"])
     .index("by_project_user", ["projectId", "userId"]),
-
-
 
   // ─── Real-time Notifications (Convex-native) ────────────────────────────
   notifications: defineTable({
@@ -534,7 +531,6 @@ export default defineSchema({
     .index("by_recipient", ["recipientId", "createdAt"])
     .index("by_recipient_unread", ["recipientId", "isRead"]),
 
-
   // -------------------Support----------------
   supportQueries: defineTable({
     title: v.string(),
@@ -548,7 +544,7 @@ export default defineSchema({
 
   // ─── Team Meets ─────────────────────────────────────────────────────────
   team_meets: defineTable({
-    meetingId: v.string(),           // Stream call ID — also the URL segment
+    meetingId: v.string(), // Stream call ID — also the URL segment
     projectId: v.id("projects"),
 
     createdById: v.id("users"),
@@ -556,7 +552,7 @@ export default defineSchema({
     createdByAvatar: v.optional(v.string()),
 
     status: v.union(v.literal("active"), v.literal("inactive")),
-    startedAt: v.number(),           // Date.now() when the row is inserted
+    startedAt: v.number(), // Date.now() when the row is inserted
     endedAt: v.optional(v.number()), // Date.now() when the host ends the call
     durationMs: v.optional(v.number()), // endedAt - startedAt
 
@@ -580,7 +576,7 @@ export default defineSchema({
     email: maybeEncryptedField,
     emailBlindIndex: v.optional(v.string()),
     contact: v.optional(maybeEncryptedField),
-    createdBy: v.id("users"),           // always the Owner
+    createdBy: v.id("users"), // always the Owner
     createdAt: v.number(),
     updatedAt: v.number(),
   })
@@ -594,12 +590,12 @@ export default defineSchema({
     description: v.optional(maybeEncryptedField),
     type: v.union(v.literal("feature_request"), v.literal("bug_report")),
     status: v.union(
-      v.literal("pending"),     // awaiting approval
-      v.literal("approved"),    // approved → task/issue created
-      v.literal("rejected"),    // declined
+      v.literal("pending"), // awaiting approval
+      v.literal("approved"), // approved → task/issue created
+      v.literal("rejected"), // declined
     ),
     // Metadata
-    createdBy: v.id("users"),           // Member/Admin/Owner who logged it
+    createdBy: v.id("users"), // Member/Admin/Owner who logged it
     approvedBy: v.optional(v.id("users")),
     createdAt: v.number(),
     updatedAt: v.number(),
@@ -650,20 +646,17 @@ export default defineSchema({
 
   // ─── Skills Registry (Kaya & MCP Sub-Agents) ───────────────────────────
   skills: defineTable({
-    userId: v.optional(v.id("users")),       // null/undefined for global default skills; user ID for custom skills
-    name: v.string(),                        // "sentry_error_triage", "linear_issue_management"
-    title: v.string(),                       // Human-readable title
-    description: v.optional(v.string()),     // Brief purpose summary
-    content: v.string(),                     // Markdown .md content (Anthropic style)
-    createdBy: v.string(),                   // "default", "user", or "agent"
-    connectorId: v.optional(v.string()),     // "sentry" | "linear" | "cross_app"
-    isDefault: v.optional(v.boolean()),      // default true for pre-installed platform skills
+    userId: v.optional(v.id("users")), // null/undefined for global default skills; user ID for custom skills
+    name: v.string(), // "sentry_error_triage", "linear_issue_management"
+    title: v.string(), // Human-readable title
+    description: v.optional(v.string()), // Brief purpose summary
+    content: v.string(), // Markdown .md content (Anthropic style)
+    createdBy: v.string(), // "default", "user", or "agent"
+    connectorId: v.optional(v.string()), // "sentry" | "linear" | "cross_app"
+    isDefault: v.optional(v.boolean()), // default true for pre-installed platform skills
     createdAt: v.number(),
     updatedAt: v.optional(v.number()),
   })
     .index("by_user", ["userId"])
     .index("by_name", ["name"]),
-
 });
-
-

@@ -38,10 +38,9 @@ export const ProductHuntIcon = (props: React.SVGProps<SVGSVGElement>) => (
 
 export const STEPS = [
   { id: 1, title: "Source" },
-  { id: 2, title: "Usage" },
-  { id: 3, title: "Identity" },
-  { id: 4, title: "Project" },
-  { id: 5, title: "Team" },
+  { id: 2, title: "Identity" },
+  { id: 3, title: "Project" },
+  { id: 4, title: "Team" },
 ];
 
 export const SOURCES = [
