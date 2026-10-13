@@ -318,8 +318,8 @@ const Hero = () => {
 
         <div className="flex flex-col items-center justify-center font-pop relative px-4 text-center">
           <h1 className="text-white font-sans tracking-tight text-[30px] sm:text-[44px] md:text-[62px] font-semibold leading-tight max-w-4xl">
-            <span className="block">Crafted for Devs &amp; PMs.</span>
-            <span className="block mt-1 md:mt-2">Tuned for Agents.</span>
+            <span className="block">Designed for Modern Teams.</span>
+            <span className="block mt-1 md:mt-2">Tuned for AI Agents.</span>
           </h1>
 
           <div className="hidden min-[600px]:block">
