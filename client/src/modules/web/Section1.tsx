@@ -3,10 +3,10 @@
 import Image from "next/image";
 import { useState } from "react";
 import NotificationCenter from "@/components/forgeui/notification-center";
+import SecurityCard from "@/components/forgeui/security-card";
 import { FlickeringGrid } from "@/components/ui/flickering-grid";
 import AIChatSimulation from "./AIChatSimulation";
 import { AnimatedListDemo } from "./NotificationList";
-import { ProjectProgressChart } from "./ProjectProgressChart";
 
 const Section1 = () => {
   const [isHovered2, setIsHovered2] = useState(false);
@@ -211,15 +211,20 @@ const Section1 = () => {
               {/* Content Container */}
               <div className="px-4 py-8 md:px-14 md:py-12 flex-1 flex flex-col justify-between relative z-10 w-full">
                 <div className="w-full flex items-center justify-center">
-                  <ProjectProgressChart />
+                  <SecurityCard
+                    name="Liam Parker"
+                    email="liam.parker@wekraft.io"
+                    cardTitle="End-to-End Encryption"
+                    cardDescription="Every repository, credential, and communication is secured with zero-knowledge cryptographic safeguards."
+                  />
                 </div>
                 <div className="mt-6 md:mt-8">
                   <h3 className="text-white text-lg md:text-xl font-semibold mb-2">
-                    Track Progress in Real Time
+                    E2E Data Privacy & Security
                   </h3>
                   <p className="text-neutral-500 text-xs md:text-sm leading-relaxed max-w-md">
-                    Watch your team's velocity grow sprint-over-sprint. Live
-                    charts update as tasks are completed and milestones are hit.
+                    WeKraft features an enterprise-grade E2E encryption layer
+                    ensuring total privacy and protection for your code and data.
                   </p>
                 </div>
               </div>
